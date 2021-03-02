@@ -84,4 +84,6 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ImageIcon\APITests\ImageIcon_APITests.projitems" Label="Shared" Condition="$(FeatureImageIconEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AnimatedIcon\TestUI\AnimatedIcon_TestUI.projitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AnimatedIcon\APITests\AnimatedIcon_APITests.projitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\MediaTransportControls\TestUI\MediaTransportControls_TestUI.projitems" Label="Shared" Condition="$(FeatureMediaTransportControlsEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\MediaTransportControls\APITests\MediaTransportControls_APITests.projitems" Label="Shared" Condition="$(FeatureMediaTransportControlsEnabled) == 'true'" />
 </Project>

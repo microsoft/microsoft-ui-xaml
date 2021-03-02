@@ -42,4 +42,5 @@
   <Import Project="..\..\dev\PagerControl\InteractionTests\PagerControl_InteractionTests.projitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true'" />
   <Import Project="..\..\dev\PipsPager\InteractionTests\PipsPager_InteractionTests.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
   <Import Project="..\..\dev\Breadcrumb\InteractionTests\Breadcrumb_InteractionTests.projitems" Label="Shared" Condition="$(FeatureBreadcrumbEnabled) == 'true'" />
+  <Import Project="..\..\dev\MediaTransportControls\InteractionTests\MediaTransportControls_InteractionTests.projitems" Label="Shared" Condition="$(FeatureMediaTransportControlsEnabled) == 'true'" />
 </Project>
