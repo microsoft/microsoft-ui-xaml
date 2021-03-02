@@ -43,9 +43,9 @@ function ExecuteMakePri
 function RepackCBSResourcesPri
 {
     Param($WindowsSdkBinDir, $sourceFile, $targetFile, $intermediateFolder)
-    New-Item -Path "$intermediateFolder" -ItemType Directory | Out-Null
+    New-Item -Path "$intermediateFolder" -ItemType Directory -Force | Out-Null
 
-    $priconfigFrom = Join-Path (Get-ScriptDirectory) "cbspriconfig.xml"
+    $priconfigFrom = Join-Path "$PSScriptRoot" "cbspriconfig.xml"
     $priconfig = Join-Path "$intermediateFolder" "priconfig.xml"
     Copy-Item "$priconfigFrom" "$priconfig" -Force | Out-Null
 
@@ -95,6 +95,7 @@ function RepackCBSResourcesPri
     if((Get-FileHash "$sourceFile").hash -eq (Get-FileHash "$targetFile").hash)
     {
         Write-Error("$sourceFile should not equal to $targetFile");
+        Exit 1
     }
 
     # step 5: dump the two pris and compare the content, they should be the same.
@@ -108,6 +109,7 @@ function RepackCBSResourcesPri
     if((Get-FileHash "$file1").hash -ne (Get-FileHash "$file2").hash)
     {
         Write-Error("$file1 should equal to $file2");
+        Exit 1
     }
 }
 
