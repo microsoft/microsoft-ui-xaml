@@ -29,7 +29,7 @@
                 <Button AutomationProperties.AutomationId="ExpandedExpanderContent">Content</Button>
             </controls:Expander>
 
-            <controls:Expander AutomationProperties.AutomationId="CollapsedExpander" AutomationProperties.Name="Expander2" IsExpanded="False" Margin="12" MaxWidth="{ThemeResource FlyoutThemeMaxWidth}">
+            <controls:Expander AutomationProperties.AutomationId="CollapsedExpander" AutomationProperties.Name="Expander2" IsExpanded="False" Margin="12" Width="{ThemeResource FlyoutThemeMaxWidth}">
                 <controls:Expander.Header>
                     <TextBlock Text="This expander is collapsed by default. This is a long title to test the header width. ext should be wrapping here." TextWrapping="Wrap" Margin="0,12,0,13"/>
                 </controls:Expander.Header>
@@ -74,12 +74,12 @@
                 </controls:Expander>
             </local:TestControl>
 
-            <controls:Expander AutomationProperties.Name="ExpanderStretched" ExpandDirection="Down" IsExpanded="True" Margin="12" HorizontalAlignment="Stretch">
+            <controls:Expander AutomationProperties.Name="ExpanderStretched" ExpandDirection="Down" IsExpanded="True" Margin="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right">
                 <controls:Expander.Header>
                     <TextBlock Margin="0,0,0,1">This expander stretches along with its content</TextBlock>
                 </controls:Expander.Header>
                 <StackPanel HorizontalAlignment="Right">
-                    <TextBlock TextAlignment="Right">Content</TextBlock>
+                    <TextBlock>Right Content</TextBlock>
                 </StackPanel>
             </controls:Expander>
         </StackPanel>
