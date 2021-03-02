@@ -131,8 +131,6 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             MinHeight="{TemplateBinding MinHeight}"
-                            MinWidth="{TemplateBinding MinWidth}"
-                            MaxWidth="{TemplateBinding MaxWidth}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             IsEnabled="{TemplateBinding IsEnabled}"
                             Padding="{TemplateBinding Padding}"
@@ -153,8 +151,6 @@
                                 BorderBrush="{ThemeResource ExpanderDropDownBorderBrush}"
                                 BorderThickness="{StaticResource ExpanderDropdownDownBorderThickness}"
                                 MinHeight="{TemplateBinding MinHeight}"
-                                MinWidth="{TemplateBinding MinWidth}"
-                                MaxWidth="{TemplateBinding MaxWidth}"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"
                                 Padding="{StaticResource ExpanderContentPadding}">
