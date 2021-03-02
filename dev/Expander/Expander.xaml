@@ -141,7 +141,7 @@
                             Content="{TemplateBinding Header}"
                             ContentTemplate="{TemplateBinding HeaderTemplate}"
                             ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
-                            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                            HorizontalAlignment="Stretch"
                             IsChecked="{Binding Path=IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" />
                         <!-- The clip is a composition clip applied in code -->
                         <Border x:Name="ExpanderContentClip" Grid.Row="1">
@@ -156,6 +156,8 @@
                                 MinHeight="{TemplateBinding MinHeight}"
                                 MinWidth="{TemplateBinding MinWidth}"
                                 MaxWidth="{TemplateBinding MaxWidth}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
                                 Padding="{StaticResource ExpanderContentPadding}">
                                 <ContentPresenter
                                     Content="{TemplateBinding Content}"
