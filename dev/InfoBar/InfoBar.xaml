@@ -10,7 +10,6 @@
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="CloseButtonStyle" Value="{StaticResource InfoBarCloseButtonStyle}" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="MinHeight" Value="{StaticResource InfoBarMinHeight}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -58,14 +57,14 @@
                             <VisualStateGroup x:Name="IconStates">
                                 <VisualState x:Name="StandardIconVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="UserIconBorder.Visibility" Value="Collapsed"/>
+                                        <Setter Target="UserIconBox.Visibility" Value="Collapsed"/>
                                         <Setter Target="StandardIconArea.Visibility" Value="Visible"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="UserIconVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="UserIconBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="UserIconBox.Visibility" Value="Visible"/>
                                         <Setter Target="StandardIconArea.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -146,11 +145,13 @@
                                     AutomationProperties.AccessibilityView="Raw" />
                             </Grid>
 
-                            <Border x:Name="UserIconBorder"
+                            <Viewbox x:Name="UserIconBox"
                                 Grid.Column="0"
                                 Visibility="Collapsed"
                                 VerticalAlignment="Top"
-                                Margin="{StaticResource InfoBarIconMargin}"
+                                MaxWidth="{ThemeResource InfoBarIconFontSize}"
+                                MaxHeight="{ThemeResource InfoBarIconFontSize}"
+                                Margin="{ThemeResource InfoBarIconMargin}"
                                 Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}" />
 
                             <primitives:InfoBarPanel
@@ -187,6 +188,7 @@
                                     <ContentPresenter.Resources>
                                         <Style TargetType="HyperlinkButton" BasedOn="{StaticResource DefaultHyperlinkButtonStyle}">
                                             <Style.Setters>
+                                                <!-- This negative margin makes the link visually line up with the title/message -->
                                                 <Setter Property="Margin" Value="-12,0,0,0"/>
                                                 <Setter Property="Foreground" Value="{ThemeResource InfoBarHyperlinkButtonForeground}"/>
                                             </Style.Setters>
