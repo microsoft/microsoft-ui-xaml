@@ -108,7 +108,7 @@
                                 <VisualState x:Name="Up">
                                     <VisualState.Setters>
                                         <Setter Target="ExpanderHeader.Style" Value="{StaticResource ExpanderHeaderUpStyle}" />
-                                        <Setter Target="ExpanderContent.BorderThickness" Value="{StaticResource ExpanderDropdownUpBorderThickness}" />
+                                        <Setter Target="ExpanderContent.BorderThickness" Value="{StaticResource ExpanderContentUpBorderThickness}" />
                                         <contract7Present:Setter Target="ExpanderContent.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                         <Setter Target="ExpanderHeader.(Grid.Row)" Value="1" />
                                         <Setter Target="ExpanderContentClip.(Grid.Row)" Value="0" />
@@ -147,11 +147,11 @@
                             <Border
                                 x:Name="ExpanderContent"
                                 Visibility="Collapsed"
-                                Background="{ThemeResource ExpanderDropDownBackground}"
+                                Background="{ThemeResource ExpanderContentBackground}"
                                 contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
                                 contract7Present:CornerRadius="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}"
-                                BorderBrush="{ThemeResource ExpanderDropDownBorderBrush}"
-                                BorderThickness="{StaticResource ExpanderDropdownDownBorderThickness}"
+                                BorderBrush="{ThemeResource ExpanderContentBorderBrush}"
+                                BorderThickness="{StaticResource ExpanderContentDownBorderThickness}"
                                 MinHeight="{TemplateBinding MinHeight}"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"
