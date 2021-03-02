@@ -27,7 +27,7 @@ unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.ContentControl
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     ExpandDirection ExpandDirection{ get; set; };
 
-    event Windows.Foundation.TypedEventHandler<Expander, ExpanderExpandingEventArgs> Expanding;
+    event Windows.Foundation.TypedEventHandler<Expander, ExpanderExpandedEventArgs> Expanded;
     event Windows.Foundation.TypedEventHandler<Expander, ExpanderCollapsedEventArgs> Collapsed;
 
     [MUX_PROPERTY_NEEDS_DP_FIELD]
@@ -52,7 +52,7 @@ enum ExpandDirection
 [MUX_PUBLIC]
 [default_interface]
 [webhosthidden]
-runtimeclass ExpanderExpandingEventArgs
+runtimeclass ExpanderExpandedEventArgs
 {
 }
 
