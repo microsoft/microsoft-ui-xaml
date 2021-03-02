@@ -12,7 +12,7 @@
     <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterThemePadding">0,2,0,2</Thickness>
 
     <Thickness x:Key="BreadcrumbBarItemDefaultMargin">2,2,0,3</Thickness>
-    <Thickness x:Key="BreadcrumbBarItemCurrentMargin">2,2,2,3</Thickness>
+    <Thickness x:Key="BreadcrumbBarItemLastItemMargin">2,2,2,3</Thickness>
 
     <ResourceDictionary.ThemeDictionaries>
 

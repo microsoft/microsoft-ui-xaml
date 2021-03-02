@@ -97,7 +97,7 @@
                                         <Setter Target="PART_ChevronTextBlock.Visibility" Value="Collapsed"/>
                                         <Setter Target="PART_SeparatorColumnDefinition.Width" Value="0px"/>
                                         <Setter Target="PART_ChevronColumnDefinition.Width" Value="0px" />
-                                        <Setter Target="PART_LayoutRoot.Margin" Value="{StaticResource BreadcrumbBarItemCurrentMargin}"/>
+                                        <Setter Target="PART_LayoutRoot.Margin" Value="{StaticResource BreadcrumbBarItemLastItemMargin}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
