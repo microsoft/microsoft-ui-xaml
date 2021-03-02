@@ -10,6 +10,7 @@
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="CloseButtonStyle" Value="{StaticResource InfoBarCloseButtonStyle}" />
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="MinHeight" Value="{StaticResource InfoBarMinHeight}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -29,6 +30,7 @@
                                 <VisualState x:Name="Error">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}"/>
+                                        <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconBackground}"/>
                                         <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarErrorIconGlyph}"/>
                                         <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconForeground}"/>
                                     </VisualState.Setters>
@@ -37,6 +39,7 @@
                                 <VisualState x:Name="Warning">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarWarningSeverityBackgroundBrush}"/>
+                                        <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarWarningSeverityIconBackground}"/>
                                         <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarWarningIconGlyph}"/>
                                         <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarWarningSeverityIconForeground}"/>
                                     </VisualState.Setters>
@@ -45,6 +48,7 @@
                                 <VisualState x:Name="Success">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSuccessSeverityBackgroundBrush}"/>
+                                        <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarSuccessSeverityIconBackground}"/>
                                         <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarSuccessIconGlyph}"/>
                                         <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarSuccessSeverityIconForeground}"/>
                                     </VisualState.Setters>
@@ -54,15 +58,15 @@
                             <VisualStateGroup x:Name="IconStates">
                                 <VisualState x:Name="StandardIconVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="StandardIcon.Visibility" Value="Visible"/>
                                         <Setter Target="UserIconBorder.Visibility" Value="Collapsed"/>
+                                        <Setter Target="StandardIconArea.Visibility" Value="Visible"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                
+
                                 <VisualState x:Name="UserIconVisible">
                                     <VisualState.Setters>
                                         <Setter Target="UserIconBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="StandardIcon.Visibility" Value="Collapsed"/>
+                                        <Setter Target="StandardIconArea.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 
@@ -118,16 +122,29 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <FontIcon x:Name="StandardIcon"
-                                Grid.Column="0"
-                                Visibility="Collapsed"
-                                VerticalAlignment="Top"
-                                Margin="{StaticResource InfoBarIconMargin}"
-                                FontSize="{StaticResource InfoBarIconFontSize}"
-                                Glyph="{StaticResource InfoBarInformationalIconGlyph}"
-                                Foreground="{ThemeResource InfoBarInformationalSeverityIconForeground}"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                AutomationProperties.AccessibilityView="Raw" />
+                            <Grid x:Name="StandardIconArea"
+                                Visibility="Collapsed">
+                                
+                                <FontIcon x:Name="IconBackground"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Top"
+                                    Margin="{StaticResource InfoBarIconMargin}"
+                                    FontSize="{StaticResource InfoBarIconFontSize}"
+                                    Glyph="{StaticResource InfoBarIconBackgroundGlyph}"
+                                    Foreground="{ThemeResource InfoBarInformationalSeverityIconBackground}"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    AutomationProperties.AccessibilityView="Raw" />
+                                
+                                <FontIcon x:Name="StandardIcon"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Top"
+                                    Margin="{StaticResource InfoBarIconMargin}"
+                                    FontSize="{StaticResource InfoBarIconFontSize}"
+                                    Glyph="{StaticResource InfoBarInformationalIconGlyph}"
+                                    Foreground="{ThemeResource InfoBarInformationalSeverityIconForeground}"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    AutomationProperties.AccessibilityView="Raw" />
+                            </Grid>
 
                             <Border x:Name="UserIconBorder"
                                 Grid.Column="0"
