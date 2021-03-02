@@ -137,7 +137,7 @@
                             Style="{StaticResource ExpanderHeaderDownStyle}"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
-                            VerticalContentAlignment="Stretch"
+                            VerticalContentAlignment="Center"
                             Content="{TemplateBinding Header}"
                             ContentTemplate="{TemplateBinding HeaderTemplate}"
                             ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
