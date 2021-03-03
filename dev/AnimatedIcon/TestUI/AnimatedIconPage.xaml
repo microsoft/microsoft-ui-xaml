@@ -16,6 +16,7 @@
     mc:Ignorable="d">
     <Page.Resources>
         <SolidColorBrush x:Key="TestIconForeground" Color="#80808080"/>
+
         <Style TargetType="local:AnimatedIconHost">
             <Setter Property="Template">
                 <Setter.Value>
@@ -524,9 +525,7 @@
                         <Slider x:Name="Slider" Minimum="0" Maximum="100" Width="100" Value="{x:Bind Mode=TwoWay, Path=SliderIcon.(controls:AnimatedIcon.State), Converter={StaticResource DoubleToStringConverter}}">
                             <Slider.Header>
                                 <controls:AnimatedIcon x:Name="SliderIcon" Height="100" Width="100" Foreground="Red">
-                                    <controls:AnimatedIcon.Source>
-                                        <myAnimatedvisuals:BrightnessSun/>
-                                    </controls:AnimatedIcon.Source>
+                                    <myAnimatedvisuals:BrightnessSun/>
                                 </controls:AnimatedIcon>
                             </Slider.Header>
                         </Slider>
@@ -538,6 +537,22 @@
                             <CheckBox x:Name="LargeAnimatedCheckbox" HorizontalAlignment="Center"/>
                         </Viewbox>
                         <TextBlock x:Name="LastTransitionTextBlock"/>
+                    </StackPanel>
+                    <StackPanel Background="Gray">
+                        <TextBlock Text="Button with animated icon child"/>
+                        <Button Width="100" Height="100">
+                            <controls:AnimatedIcon>
+                                <animatedvisuals:AnimatedFindVisualSource/>
+                            </controls:AnimatedIcon>
+                        </Button>
+                        <TextBlock Text="Button with animated icon grandchild"/>
+                        <Button Width="100" Height="100">
+                            <Border>
+                                <controls:AnimatedIcon>
+                                    <animatedvisuals:AnimatedFindVisualSource/>
+                                </controls:AnimatedIcon>
+                            </Border>
+                        </Button>
                     </StackPanel>
                 </StackPanel>
             </ScrollViewer>

@@ -59,17 +59,41 @@ void AnimatedIcon::OnApplyTemplate()
 
 void AnimatedIcon::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
-    // AnimatedIcon might get added to a UI which has already set the State property on the parent.
+    // AnimatedIcon might get added to a UI which has already set the State property on the parent or grand parent.
     // If this is the case and the animated icon being added doesn't have its own state property
-    // We copy the parent value when we load.
+    // We copy the ancestor value when we load. Additionally we attach to our parent and grand parent's property
+    // changed event for AnimatedIcon.State to copy the value to AnimatedIcon.
     auto const property = winrt::AnimatedIcon::StateProperty();
-    auto const stateValue = GetValue(property);
-    if (unbox_value<winrt::hstring>(stateValue).empty())
+    auto const parent = winrt::VisualTreeHelper::GetParent(*this);
+    auto const grandParent = parent ? winrt::VisualTreeHelper::GetParent(parent) : nullptr;
+    auto stateValue = [this, property, parent, grandParent]()
     {
-        if (auto const parent = winrt::VisualTreeHelper::GetParent(*this))
+        auto const value = GetValue(property);
+        if (!unbox_value<winrt::hstring>(value).empty())
         {
-            SetValue(property, parent.GetValue(property));
+            return value;
         }
+        auto const parentValue = parent.GetValue(property);
+        if (!unbox_value<winrt::hstring>(parentValue).empty())
+        {
+            return value;
+        }
+        auto const grandParentValue = grandParent.GetValue(property);
+        if (!unbox_value<winrt::hstring>(grandParentValue).empty())
+        {
+            return value;
+        }
+        return value;
+    }();
+    SetValue(property, stateValue);
+
+    if (parent)
+    {
+        m_parentStatePropertyChangedRevoker = RegisterPropertyChanged(parent, property, { this, &AnimatedIcon::OnAncestorAnimatedIconStatePropertyChanged });
+    }
+    if (grandParent)
+    {
+        m_grandParentStatePropertyChangedRevoker = RegisterPropertyChanged(grandParent, property, { this, &AnimatedIcon::OnAncestorAnimatedIconStatePropertyChanged });
     }
 }
 
@@ -161,13 +185,13 @@ void AnimatedIcon::OnAnimatedIconStatePropertyChanged(
     {
         senderAsAnimatedIcon->OnStatePropertyChanged();
     }
-    else if (winrt::VisualTreeHelper::GetChildrenCount(sender) > 0)
-    {
-        if (auto const childAsAnimatedIcon = winrt::VisualTreeHelper::GetChild(sender, 0).try_as<winrt::AnimatedIcon>())
-        {
-            childAsAnimatedIcon.SetValue(AnimatedIconProperties::s_StateProperty, args.NewValue());
-        }
-    }
+}
+
+void AnimatedIcon::OnAncestorAnimatedIconStatePropertyChanged(
+    const winrt::DependencyObject& sender,
+    const winrt::DependencyProperty& args)
+{
+    SetValue(AnimatedIconProperties::s_StateProperty, sender.GetValue(args));
 }
 
 // When we receive a state change it might be erroneous. This is because these state changes often come from Animated Icon's parent control's

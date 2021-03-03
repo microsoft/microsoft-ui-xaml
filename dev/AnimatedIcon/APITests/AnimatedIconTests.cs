@@ -55,6 +55,83 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(stateString, AnimatedIcon.GetState(animatedIcon));
             });
         }
+        [TestMethod]
+        public void SettingStateOnGrandParentPropagatesToGrandChildAnimatedIcon()
+        {
+            AnimatedIcon animatedIcon = null;
+            Grid parentGrid = null;
+            Grid grandParentGrid = null;
+            RunOnUIThread.Execute(() =>
+            {
+                animatedIcon = new AnimatedIcon();
+                parentGrid = new Grid();
+                grandParentGrid = new Grid();
+                parentGrid.Children.Add(animatedIcon);
+                grandParentGrid.Children.Add(parentGrid);
+
+                Content = grandParentGrid;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                string stateString = "Test State";
+                AnimatedIcon.SetState(grandParentGrid, stateString);
+                Verify.AreEqual(stateString, AnimatedIcon.GetState(animatedIcon));
+            });
+        }
+
+        [TestMethod]
+        public void ChangingVisualTrees()
+        {
+            AnimatedIcon animatedIcon = null;
+            Grid parentGrid = null;
+            Grid grandParentGrid = null;
+            Grid newParentGrid = null;
+            RunOnUIThread.Execute(() =>
+            {
+                animatedIcon = new AnimatedIcon();
+                parentGrid = new Grid();
+                grandParentGrid = new Grid();
+                newParentGrid = new Grid();
+                parentGrid.Children.Add(animatedIcon);
+                grandParentGrid.Children.Add(parentGrid);
+
+                Content = grandParentGrid;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                string stateString = "Test State";
+                AnimatedIcon.SetState(parentGrid, stateString);
+                Verify.AreEqual(stateString, AnimatedIcon.GetState(animatedIcon));
+
+                parentGrid.Children.Clear();
+                newParentGrid.Children.Add(animatedIcon);
+                grandParentGrid.Children.Clear();
+                grandParentGrid.Children.Add(newParentGrid);
+
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                string state2String = "Test State2";
+                AnimatedIcon.SetState(newParentGrid, state2String);
+                Verify.AreEqual(state2String, AnimatedIcon.GetState(animatedIcon));
+
+                string badStateString = "Bad State";
+                AnimatedIcon.SetState(parentGrid, badStateString);
+                Verify.AreNotEqual(badStateString, AnimatedIcon.GetState(animatedIcon));
+            });
+        }
 
         [TestMethod]
         public void SettingStateOnParentDoesNotPropagateToChildNonAnimatedIcon()
