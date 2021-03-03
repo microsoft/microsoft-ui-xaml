@@ -222,8 +222,9 @@
             <Setter Property="Opacity" Value="0" />
             <Setter Property="VerticalAlignment" Value="Bottom" />
             <Setter Property="Height" Value="2" />
-            <Setter Property="Fill" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
-        </Style>
+            <Setter Property="Width" Value="15"/>
+        <Setter Property="Fill" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
+    </Style>
 
         <Style TargetType="InkToolbarBallpointPenButton" BasedOn="{StaticResource InkToolbarCommonButtonStyle}">
             <Setter Property="AutomationProperties.AutomationId" Value="InkToolbarBallpointPenButton" />
@@ -416,10 +417,10 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                  Margin="1,0" CornerRadius="{TemplateBinding CornerRadius}"/>
 
                             </Grid>
-                            <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
+                        <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                         </Grid>
 
@@ -625,7 +626,7 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                  Margin="1,0" CornerRadius="{TemplateBinding CornerRadius}"/>
 
                             </Grid>
                             <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
@@ -833,7 +834,7 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                  Margin="1,0" CornerRadius="{TemplateBinding CornerRadius}"/>
 
                             </Grid>
                             <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
@@ -1007,7 +1008,7 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                  Margin="1,0" CornerRadius="{TemplateBinding CornerRadius}"/>
                             <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                         </Grid>
@@ -1369,7 +1370,7 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                  Margin="1,0" CornerRadius="{TemplateBinding CornerRadius}"/>
 
                             </Grid>
                             <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
@@ -1539,7 +1540,7 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                  Margin="1,0" CornerRadius="{TemplateBinding CornerRadius}"/>
                             <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                         </Grid>
@@ -1658,7 +1659,7 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                  Margin="1,0" CornerRadius="{TemplateBinding CornerRadius}"/>
 
                             </Grid>
                             <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
@@ -1770,7 +1771,7 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                  Margin="1,0" CornerRadius="{TemplateBinding CornerRadius}"/>
                             <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                         </Grid>
@@ -2021,7 +2022,7 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                  Margin="1,0" CornerRadius="{TemplateBinding CornerRadius}"/>
 
                             </Grid>
                             <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
