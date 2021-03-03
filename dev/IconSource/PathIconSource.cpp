@@ -6,3 +6,18 @@
 
 #include "IconSource.h"
 #include "PathIconSource.h"
+
+winrt::IconElement PathIconSource::CreateIconElementCore()
+{
+    winrt::PathIcon pathIcon;
+
+    if (auto const data = Data())
+    {
+        pathIcon.Data(data);
+    }
+    if (const auto newForeground = Foreground())
+    {
+        pathIcon.Foreground(newForeground);
+    }
+    return pathIcon;
+}

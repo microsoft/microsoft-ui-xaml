@@ -1,7 +1,7 @@
 namespace MU_XCP_NAMESPACE
 {
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 [MUX_PROPERTY_NEEDS_DP_FIELD]
 runtimeclass CommandBarFlyoutCommandBarTemplateSettings
@@ -29,7 +29,7 @@ runtimeclass CommandBarFlyoutCommandBarTemplateSettings
     Windows.Foundation.Rect OverflowContentClipRect{ get; };
 };
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass CommandBarFlyoutCommandBar : Windows.UI.Xaml.Controls.CommandBar
 {

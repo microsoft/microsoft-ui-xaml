@@ -39,7 +39,7 @@
 
     <Style x:Key="DateTimePickerFlyoutButtonStyle" TargetType="ButtonBase">
         <Setter Property="Background" Value="{ThemeResource DateTimePickerFlyoutButtonBackground}" />
-        <contract7Present:Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
+        <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="FocusVisualMargin" Value="0" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />

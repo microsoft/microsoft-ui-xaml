@@ -45,10 +45,6 @@
             <SolidColorBrush x:Key="SystemControlAltHighAcrylicWindowBrush" Color="{StaticResource SystemAltHighColor}" />
             <SolidColorBrush x:Key="SystemControlAltHighAcrylicElementBrush" Color="{StaticResource SystemAltHighColor}" />
             <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="#000000" Opacity="0.36" />
-            <StaticResource x:Key="AcrylicBackgroundFillColorDefaultBrush" ResourceKey="SystemChromeMediumLowColor" />
-            <StaticResource x:Key="AcrylicInAppFillColorDefaultBrush" ResourceKey="SystemChromeMediumLowColor" />
-            <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="#F2F2F2" />
-            <StaticResource x:Key="AcrylicBackgroundFillColorBaseBrush" ResourceKey="SystemChromeMediumLowColor" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -91,10 +87,6 @@
             <SolidColorBrush x:Key="SystemControlAltHighAcrylicWindowBrush" Color="{StaticResource SystemAltHighColor}" />
             <SolidColorBrush x:Key="SystemControlAltHighAcrylicElementBrush" Color="{StaticResource SystemAltHighColor}" />
             <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="#000000" Opacity="0.14" />
-            <StaticResource x:Key="AcrylicBackgroundFillColorDefaultBrush" ResourceKey="SystemChromeMediumLowColor" />
-            <StaticResource x:Key="AcrylicInAppFillColorDefaultBrush" ResourceKey="SystemChromeMediumLowColor" />
-            <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="#2B2B2B" />
-            <StaticResource x:Key="AcrylicBackgroundFillColorBaseBrush" ResourceKey="SystemChromeMediumLowColor" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -137,10 +129,6 @@
             <SolidColorBrush x:Key="SystemControlAltHighAcrylicWindowBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="SystemControlAltHighAcrylicElementBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="AcrylicBackgroundFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 

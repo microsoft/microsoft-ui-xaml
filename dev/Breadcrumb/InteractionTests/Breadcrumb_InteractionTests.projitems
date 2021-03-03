@@ -10,6 +10,6 @@
     <Import_RootNamespace>Breadcrumb_InteractionTests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)BreadcrumbTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BreadcrumbBarTests.cs" />
   </ItemGroup>
 </Project>

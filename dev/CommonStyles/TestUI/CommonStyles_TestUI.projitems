@@ -30,7 +30,7 @@
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TextBoxPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TextControlsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
@@ -54,8 +54,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)CornerRadiusPage.xaml.cs">
       <DependentUpon>CornerRadiusPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)TextBoxPage.xaml.cs">
-      <DependentUpon>TextBoxPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)TextControlsPage.xaml.cs">
+      <DependentUpon>TextControlsPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)VisualStatesPage.xaml.cs">
       <DependentUpon>VisualStatesPage.xaml</DependentUpon>

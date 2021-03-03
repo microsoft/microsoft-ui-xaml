@@ -100,6 +100,28 @@
                 </CommandBar.SecondaryCommands>
             </CommandBar>
 
+            <CommandBar HorizontalAlignment="Left">
+                <AppBarButton Icon="Add" Label="Add"/>
+                <AppBarButton Icon="Remove" Label="Remove"/>
+                <AppBarSeparator/>
+                <AppBarButton Icon="Save" Label="Save"/>
+                <AppBarToggleButton Icon="Add" Label="Toggle"/>
+            </CommandBar>
+
+            <CommandBar HorizontalAlignment="Left">
+                <AppBarButton Icon="Add" Label="Add"/>
+                <AppBarButton Icon="Remove" Label="Remove" LabelPosition="Collapsed"/>
+                <AppBarSeparator/>
+                <AppBarButton Icon="Save" Label="Save"/>
+                <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                <CommandBar.SecondaryCommands>
+                    <AppBarButton Icon="Add" Label="Add"/>
+                    <AppBarButton Icon="Remove" Label="Remove"/>
+                    <AppBarSeparator/>
+                    <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                </CommandBar.SecondaryCommands>
+            </CommandBar>
+
         </StackPanel>
 
     </Grid>
