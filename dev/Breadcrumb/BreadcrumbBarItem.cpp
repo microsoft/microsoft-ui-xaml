@@ -552,15 +552,14 @@ void BreadcrumbBarItem::InstantiateFlyout()
         m_ellipsisItemsRepeater.set(ellipsisItemsRepeater);
 
         // Create the Flyout and add the ItemsRepeater as content
-        const auto& ellipsisFlyout = winrt::Flyout();
-        winrt::AutomationProperties::SetName(ellipsisFlyout, s_ellipsisFlyoutAutomationName);
-        ellipsisFlyout.Content(ellipsisItemsRepeater);
-        ellipsisFlyout.Placement(winrt::FlyoutPlacementMode::Bottom);
+        if (const auto& ellipsisFlyout = button.Flyout().try_as<winrt::Flyout>())
+        {
+            winrt::AutomationProperties::SetName(ellipsisFlyout, s_ellipsisFlyoutAutomationName);
+            ellipsisFlyout.Content(ellipsisItemsRepeater);
+            ellipsisFlyout.Placement(winrt::FlyoutPlacementMode::Bottom);
 
-        m_ellipsisFlyout.set(ellipsisFlyout);
-
-        // Set the Flyout to the ellipsis button
-        button.Flyout(ellipsisFlyout);
+            m_ellipsisFlyout.set(ellipsisFlyout);
+        }
     }
 }
 

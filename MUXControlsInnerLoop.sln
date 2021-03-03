@@ -346,6 +346,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TabView", "TabView", "{B3E6
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TabView", "dev\TabView\TabView.vcxitems", "{B9F81FEF-1E8D-4FE1-A46B-7002D4C109D2}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TabView_APITests", "dev\TabView\APITests\TabView_APITests.shproj", "{2F4E95E9-F729-481C-B9AA-C9BEC91AE395}"
+EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TabView_InteractionTests", "dev\TabView\InteractionTests\TabView_InteractionTests.shproj", "{D1E297B4-5E5B-4807-8624-4141C817A98A}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TabView_TestUI", "dev\TabView\TestUI\TabView_TestUI.shproj", "{1D87AAC7-1E11-40FC-90A7-B6CE1C4567AE}"
@@ -574,6 +576,7 @@ Global
 		dev\SplitButton\TestUI\SplitButton_TestUI.projitems*{280c91f4-96b5-4bde-9e02-e573e1def583}*SharedItemsImports = 13
 		dev\Repeater\TestUI\Repeater_TestUI.projitems*{2ed883f5-20db-4445-8c96-517a21e5e657}*SharedItemsImports = 13
 		dev\MenuFlyout\TestUI\MenuFlyout_TestUI.projitems*{2ef860e2-8766-41fc-bde2-e6b18bb8c206}*SharedItemsImports = 13
+		dev\TabView\APITests\TabView_APITests.projitems*{2f4e95e9-f729-481c-b9aa-c9bec91ae395}*SharedItemsImports = 13
 		dev\ParallaxView\ParallaxView.vcxitems*{3095445a-afcd-5154-ac36-9770e6ec1aa5}*SharedItemsImports = 9
 		dev\InfoBar\TestUI\InfoBar_TestUI.projitems*{32dfaf1e-c2ec-4c52-a4d8-b3a3946242b4}*SharedItemsImports = 13
 		dev\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems*{3353a4a7-87b3-4e43-8f8d-43c7380d1d56}*SharedItemsImports = 9
@@ -1129,6 +1132,7 @@ Global
 		{BA914F48-E924-4FD2-AEE1-264F67DB6C9F} = {807E57C8-F3E8-4049-AB88-BE3D3285B441}
 		{B3E64837-A5E4-49CB-97FF-A365307B9191} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{B9F81FEF-1E8D-4FE1-A46B-7002D4C109D2} = {B3E64837-A5E4-49CB-97FF-A365307B9191}
+		{2F4E95E9-F729-481C-B9AA-C9BEC91AE395} = {B3E64837-A5E4-49CB-97FF-A365307B9191}
 		{D1E297B4-5E5B-4807-8624-4141C817A98A} = {B3E64837-A5E4-49CB-97FF-A365307B9191}
 		{1D87AAC7-1E11-40FC-90A7-B6CE1C4567AE} = {B3E64837-A5E4-49CB-97FF-A365307B9191}
 		{CFAFD6A7-FC7B-4C96-B292-A440C7C65D89} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
