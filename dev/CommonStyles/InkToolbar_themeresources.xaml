@@ -223,7 +223,7 @@
             <Setter Property="VerticalAlignment" Value="Bottom" />
             <Setter Property="Height" Value="2" />
             <Setter Property="Width" Value="15"/>
-        <Setter Property="Fill" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
+            <Setter Property="Fill" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
     </Style>
 
         <Style TargetType="InkToolbarBallpointPenButton" BasedOn="{StaticResource InkToolbarCommonButtonStyle}">
