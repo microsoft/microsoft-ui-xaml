@@ -30,7 +30,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}"/>
                                         <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconBackground}"/>
-                                        <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarErrorIconGlyph}"/>
+                                        <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarErrorIconGlyph}"/>
                                         <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -39,7 +39,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarWarningSeverityBackgroundBrush}"/>
                                         <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarWarningSeverityIconBackground}"/>
-                                        <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarWarningIconGlyph}"/>
+                                        <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarWarningIconGlyph}"/>
                                         <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarWarningSeverityIconForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -48,7 +48,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSuccessSeverityBackgroundBrush}"/>
                                         <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarSuccessSeverityIconBackground}"/>
-                                        <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarSuccessIconGlyph}"/>
+                                        <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarSuccessIconGlyph}"/>
                                         <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarSuccessSeverityIconForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -124,22 +124,22 @@
                             <Grid x:Name="StandardIconArea"
                                 Visibility="Collapsed">
                                 
-                                <FontIcon x:Name="IconBackground"
+                                <TextBlock x:Name="IconBackground"
                                     Grid.Column="0"
                                     VerticalAlignment="Top"
                                     Margin="{StaticResource InfoBarIconMargin}"
                                     FontSize="{StaticResource InfoBarIconFontSize}"
-                                    Glyph="{StaticResource InfoBarIconBackgroundGlyph}"
+                                    Text="{StaticResource InfoBarIconBackgroundGlyph}"
                                     Foreground="{ThemeResource InfoBarInformationalSeverityIconBackground}"
                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                     AutomationProperties.AccessibilityView="Raw" />
-                                
-                                <FontIcon x:Name="StandardIcon"
+
+                                <TextBlock x:Name="StandardIcon"
                                     Grid.Column="0"
                                     VerticalAlignment="Top"
                                     Margin="{StaticResource InfoBarIconMargin}"
                                     FontSize="{StaticResource InfoBarIconFontSize}"
-                                    Glyph="{StaticResource InfoBarInformationalIconGlyph}"
+                                    Text="{StaticResource InfoBarInformationalIconGlyph}"
                                     Foreground="{ThemeResource InfoBarInformationalSeverityIconForeground}"
                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                     AutomationProperties.AccessibilityView="Raw" />
@@ -188,8 +188,7 @@
                                     <ContentPresenter.Resources>
                                         <Style TargetType="HyperlinkButton" BasedOn="{StaticResource DefaultHyperlinkButtonStyle}">
                                             <Style.Setters>
-                                                <!-- This negative margin makes the link visually line up with the title/message -->
-                                                <Setter Property="Margin" Value="-12,0,0,0"/>
+                                                <Setter Property="Margin" Value="{StaticResource InfoBarHyperlinkButtonMargin}"/>
                                                 <Setter Property="Foreground" Value="{ThemeResource InfoBarHyperlinkButtonForeground}"/>
                                             </Style.Setters>
                                         </Style>
