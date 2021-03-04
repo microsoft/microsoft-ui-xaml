@@ -10,87 +10,6 @@
     xmlns:Windows10FallCreatorsUpdate="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 5)"
     mc:Ignorable="d">
 
-    <Page.Resources>
-        <ResourceDictionary>
-            <Style x:Key="NavButtonBaseStyle" TargetType="Button" BasedOn="{StaticResource NavigatonButtonBaseStyle}">
-                <Setter Property="Width" Value="30" />
-                <Setter Property="Height" Value="30" />
-                <Setter Property="FontSize" Value="12" />
-            </Style>
-
-            <Style x:Key="PreviousButtonStyle" BasedOn="{StaticResource NavButtonBaseStyle}" TargetType="Button">
-                <Setter Property="Content" Value="{StaticResource PipsPagerPreviousPageButtonGlyph}" />
-            </Style>
-
-            <Style x:Key="NextButtonStyle" BasedOn="{StaticResource NavButtonBaseStyle}" TargetType="Button">
-                <Setter Property="Content" Value="{StaticResource PipsPagerNextPageButtonGlyph}" />
-            </Style>
-
-            <Style x:Key="BasePipStyle" TargetType="Button" BasedOn="{StaticResource PipsPagerButtonBaseStyle}">
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
-                <Setter Property="HorizontalContentAlignment" Value="Center" />
-                <Setter Property="VerticalContentAlignment" Value="Center" />
-                <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-                <Setter Property="HorizontalContentAlignment" Value="Center" />
-                <Setter Property="Width" Value="30" />
-                <Setter Property="Height" Value="30" />
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="Button" >
-                            <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
-                                <VisualStateManager.VisualStateGroups>
-                                    <VisualStateGroup x:Name="CommonStates">
-                                        <VisualState x:Name="Normal" />
-                                        <VisualState x:Name="Pressed">
-                                            <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PipsPagerPageNavigationButtonBackgroundPointerOver}" />
-                                                </ObjectAnimationUsingKeyFrames>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PipsPagerPageNavigationButtonForegroundPointerOver}" />
-                                                </ObjectAnimationUsingKeyFrames>
-                                            </Storyboard>
-                                        </VisualState>
-                                        <VisualState x:Name="PointerOver">
-                                            <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="#545454" />
-                                                </ObjectAnimationUsingKeyFrames>
-                                            </Storyboard>
-                                        </VisualState>
-                                    </VisualStateGroup>
-                                </VisualStateManager.VisualStateGroups>
-                                <FontIcon
-                                x:Name="Content"
-                                FontSize="{TemplateBinding FontSize}"
-                                FontFamily="{TemplateBinding FontFamily}"
-                                Glyph="{TemplateBinding Content}"
-                                MirroredWhenRightToLeft="True"
-                                Foreground="{TemplateBinding Foreground}"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                AutomationProperties.AccessibilityView="Raw" />
-                            </Grid>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-
-            <Style x:Key="SelectedPipStyle" BasedOn="{StaticResource BasePipStyle}" TargetType="Button">
-                <Setter Property="Content" Value="{StaticResource PipsPagerSelectedGlyph}" />
-                <Setter Property="FontSize" Value="12" />
-                <Setter Property="Foreground" Value="#545454" />
-            </Style>
-
-            <Style x:Key="DefaultPipStyle" BasedOn="{StaticResource BasePipStyle}" TargetType="Button">
-                <Setter Property="Content" Value="{StaticResource PipsPagerDefaultGlyph}" />
-                <Setter Property="FontSize" Value="12" />
-                <Setter Property="Foreground" Value="#CDCDCD" />
-            </Style>
-        </ResourceDictionary>
-    </Page.Resources>
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -114,11 +33,6 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="local:PersonInfo">
                         <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 10" Windows10FallCreatorsUpdate:Spacing="10">
-                            <controls:PersonPicture
-                                MaxHeight="50"
-                                MaxWidth="100"
-                                DisplayName="{x:Bind FullName}"
-                                Initials="{x:Bind Initials}" />
                             <TextBlock Text="{x:Bind FullName}" VerticalAlignment="Center" />
                         </StackPanel>
                     </DataTemplate>
@@ -131,10 +45,6 @@
                             VerticalAlignment="Center"
                             AutomationProperties.Name="ListViewPager"
                             Orientation="Vertical" PreviousButtonVisibility="Visible" NextButtonVisibility="Visible" Grid.Column="1"
-                            PreviousButtonStyle="{StaticResource PreviousButtonStyle}"
-                            NextButtonStyle="{StaticResource NextButtonStyle}"
-                            DefaultIndicatorButtonStyle="{StaticResource DefaultPipStyle}"
-                            SelectedIndicatorButtonStyle="{StaticResource SelectedPipStyle}"
                             SelectedIndexChanged="PersonInfoListPager_SelectedIndexChanged" />
 
         <StackPanel Windows10FallCreatorsUpdate:Spacing="20" Grid.Row="2">
@@ -167,11 +77,7 @@
                             Margin="50, 0, 0, 0"
                             VerticalAlignment="Center"
                             AutomationProperties.Name="ItemsRepeaterPager"
-                            Orientation="Vertical" PreviousButtonVisibility="VisibleOnHover" NextButtonVisibility="VisibleOnHover"
-                            PreviousButtonStyle="{StaticResource PreviousButtonStyle}"
-                            NextButtonStyle="{StaticResource NextButtonStyle}"
-                            DefaultIndicatorButtonStyle="{StaticResource DefaultPipStyle}"
-                            SelectedIndicatorButtonStyle="{StaticResource SelectedPipStyle}"
+                            Orientation="Vertical" PreviousButtonVisibility="VisibleOnPointerOver" NextButtonVisibility="VisibleOnPointerOver"
                             SelectedIndexChanged="ButtonListPager_SelectedIndexChanged" />
 
         <StackPanel Windows10FallCreatorsUpdate:Spacing="20" Grid.Column="3">
@@ -195,12 +101,8 @@
                               VerticalAlignment="Center"
                               NumberOfPages="{x:Bind Pictures.Count}"
                               AutomationProperties.Name="FlipViewPipsPager"
-                              NextButtonVisibility="VisibleOnHover"
-                              PreviousButtonVisibility="VisibleOnHover"
-                              PreviousButtonStyle="{StaticResource PreviousButtonStyle}"
-                              NextButtonStyle="{StaticResource NextButtonStyle}"
-                              DefaultIndicatorButtonStyle="{StaticResource DefaultPipStyle}"
-                              SelectedIndicatorButtonStyle="{StaticResource SelectedPipStyle}"
+                              NextButtonVisibility="VisibleOnPointerOver"
+                              PreviousButtonVisibility="VisibleOnPointerOver"
                               SelectedPageIndex="{Binding ElementName=Gallery, Path=SelectedIndex, Mode=TwoWay}" />
     </Grid>
 </Page>

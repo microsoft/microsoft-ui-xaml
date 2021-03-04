@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
 enum RefreshPullDirection
 {
@@ -11,11 +11,8 @@ enum RefreshPullDirection
     BottomToTop = 3,
 };
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IRefreshContainer", 535dc413-b1d5-43c1-b057-8658ce1e0ba2)]
-[WUXC_STATIC_NAME("IRefreshContainerStatics", a20af5a5-7015-475d-9de3-81a0479dda38)]
-[WUXC_CONSTRUCTOR_NAME("IRefreshContainerFactory", 0a04777f-089e-4239-baeb-c4641484c37e)]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass RefreshContainer : Windows.UI.Xaml.Controls.ContentControl

@@ -3,9 +3,6 @@
 
 #include "pch.h"
 #include "common.h"
-#include "RuntimeProfiler.h"
-#include "ResourceAccessor.h"
-
 #include "BreadcrumbIterable.h"
 #include "BreadcrumbIterator.h"
 

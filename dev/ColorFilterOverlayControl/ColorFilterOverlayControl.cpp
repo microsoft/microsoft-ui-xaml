@@ -62,9 +62,11 @@ void ColorFilterOverlayControl::UpdateBrush()
         {
             // Build an effect that takes the source image and uses the alpha channel and replaces all other channels with
             // the ReplacementColor's RGB.
-            auto colorMatrixEffect = winrt::make_self<Microsoft::UI::Composition::Effects::ColorMatrixEffect>();
+            auto colorMatrixEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::ColorMatrixEffect>();
             colorMatrixEffect->Source(winrt::CompositionEffectSourceParameter{ L"source" });
-            winrt::Matrix5x4 colorMatrix = {};
+
+            
+            winrt::Microsoft::UI::Private::Composition::Effects::Matrix5x4 colorMatrix = {};
 
             // If the ReplacementColor is not transparent then use the RGB values as the new color. Otherwise
             // just show the target by using an Identity colorMatrix.

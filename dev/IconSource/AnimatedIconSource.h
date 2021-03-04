@@ -14,4 +14,6 @@ class AnimatedIconSource :
 public:
     using AnimatedIconSourceProperties::EnsureProperties;
     using AnimatedIconSourceProperties::ClearProperties;
+
+    winrt::IconElement CreateIconElementCore();
 };

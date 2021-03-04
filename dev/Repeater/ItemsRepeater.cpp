@@ -307,6 +307,11 @@ winrt::UIElement ItemsRepeater::GetElementFromIndexImpl(int index)
 
 winrt::UIElement ItemsRepeater::GetOrCreateElementImpl(int index)
 {
+    if (ItemsSourceView() == nullptr)
+    {
+       throw winrt::hresult_error(E_FAIL, L"ItemSource doesn't have a value");
+    }
+
     if (index >= 0 && index >= ItemsSourceView().Count())
     {
         throw winrt::hresult_invalid_argument(L"Argument index is invalid.");

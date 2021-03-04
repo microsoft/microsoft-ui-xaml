@@ -8,7 +8,7 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
-            <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFillTimeElapsedText" ResourceKey="TextFillColorSecondaryBrush" />
@@ -24,7 +24,7 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
-            <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFillTimeElapsedText" ResourceKey="TextFillColorSecondaryBrush" />
@@ -46,13 +46,13 @@
                     <Grid x:Name="RootGrid" Background="Transparent">
                         <Grid.Resources>
                             <!-- New AppBar button style 48x48 pixels in size -->
-                            <Style x:Key="AppBarButtonStyle" TargetType="AppBarButton" BasedOn="{StaticResource AppBarButtonRevealStyle}">
+                            <Style x:Key="AppBarButtonStyle" TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}">
                                 <Setter Property="Width" Value="{ThemeResource MTCMediaButtonWidth}" />
                                 <Setter Property="Height" Value="{ThemeResource MTCMediaButtonHeight}" />
                                 <Setter Property="AllowFocusOnInteraction" Value="True" />
                             </Style>
                             <!-- New AppBarToggle button style 48x48 pixels in size -->
-                            <Style x:Key="AppBarToggleButtonStyle" TargetType="AppBarToggleButton" BasedOn="{StaticResource AppBarToggleButtonRevealStyle}">
+                            <Style x:Key="AppBarToggleButtonStyle" TargetType="AppBarToggleButton" BasedOn="{StaticResource DefaultAppBarToggleButtonStyle}">
                                 <Setter Property="Width" Value="{ThemeResource MTCMediaButtonWidth}" />
                                 <Setter Property="Height" Value="{ThemeResource MTCMediaButtonHeight}" />
                                 <Setter Property="AllowFocusOnInteraction" Value="True" />
@@ -331,10 +331,9 @@
                                 <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
                             </Style>
                             <Style x:Key="MediaControlAppBarButtonStyle" TargetType="AppBarButton" >
-                                <Setter Property="Background" Value="{ThemeResource AppBarButtonRevealBackground}" />
+                                <Setter Property="Background" Value="{ThemeResource AppBarButtonBackground}" />
                                 <Setter Property="Foreground" Value="{ThemeResource AppBarButtonForeground}" />
-                                <Setter Property="BorderBrush" Value="{ThemeResource AppBarButtonRevealBorderBrush}" />
-                                <Setter Property="BorderThickness" Value="{ThemeResource AppBarButtonRevealBorderThemeThickness}" />
+                                <Setter Property="BorderBrush" Value="{ThemeResource AppBarButtonBorderBrush}" />
                                 <Setter Property="HorizontalAlignment" Value="Left" />
                                 <Setter Property="VerticalAlignment" Value="Top" />
                                 <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
@@ -444,77 +443,55 @@
                                                         </VisualState>
                                                     </VisualStateGroup>
                                                     <VisualStateGroup x:Name="CommonStates">
-                                                        <VisualState x:Name="Normal">
-                                                            <Storyboard>
-                                                                <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                                            </Storyboard>
-                                                        </VisualState>
+                                                        <VisualState x:Name="Normal" />
                                                         <VisualState x:Name="PointerOver">
                                                             <VisualState.Setters>
-                                                                <Setter Target="Root.(media:RevealBrush.State)" Value="PointerOver" />
-                                                                <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonRevealBackgroundPointerOver}"/>
-                                                                <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarButtonRevealBorderBrushPointerOver}"/>
+                                                                <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonBackgroundPointerOver}"/>
+                                                                <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPointerOver}"/>
                                                                 <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}"/>
                                                                 <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}"/>
                                                                 <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}"/>
                                                             </VisualState.Setters>
-                                                            <Storyboard>
-                                                                <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                                            </Storyboard>
                                                         </VisualState>
                                                         <VisualState x:Name="Pressed">
                                                             <VisualState.Setters>
-                                                                <Setter Target="Root.(media:RevealBrush.State)" Value="Pressed" />
-                                                                <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonRevealBackgroundPressed}"/>
-                                                                <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarButtonRevealBorderBrushPressed}"/>
+                                                                <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonBackgroundPressed}"/>
+                                                                <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPressed}"/>
                                                                 <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}"/>
                                                                 <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}"/>
                                                                 <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}"/>
                                                             </VisualState.Setters>
-                                                            <Storyboard>
-                                                                <PointerDownThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                                            </Storyboard>
                                                         </VisualState>
                                                         <VisualState x:Name="Disabled">
                                                             <VisualState.Setters>
-                                                                <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonRevealBackgroundDisabled}"/>
-                                                                <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarButtonRevealBorderBrushDisabled}"/>
+                                                                <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonBackgroundDisabled}"/>
+                                                                <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushDisabled}"/>
                                                                 <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundDisabled}"/>
                                                                 <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundDisabled}"/>
                                                                 <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundDisabled}"/>
                                                                 <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundDisabled}" />
                                                             </VisualState.Setters>
                                                         </VisualState>
-                                                        <VisualState x:Name="OverflowNormal">
-                                                            <Storyboard>
-                                                                <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                                            </Storyboard>
-                                                        </VisualState>
+                                                        <VisualState x:Name="OverflowNormal" />
                                                         <VisualState x:Name="OverflowPointerOver">
                                                             <VisualState.Setters>
-                                                                <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonRevealBackgroundPointerOver}"/>
-                                                                <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarButtonRevealBorderBrushPointerOver}"/>
+                                                                <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonBackgroundPointerOver}"/>
+                                                                <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPointerOver}"/>
                                                                 <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}"/>
                                                                 <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}"/>
                                                                 <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}"/>
                                                                 <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundPointerOver}" />
                                                             </VisualState.Setters>
-                                                            <Storyboard>
-                                                                <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                                            </Storyboard>
                                                         </VisualState>
                                                         <VisualState x:Name="OverflowPressed">
                                                             <VisualState.Setters>
-                                                                <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonRevealBackgroundPressed}"/>
-                                                                <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarButtonRevealBorderBrushPressed}"/>
+                                                                <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonBackgroundPressed}"/>
+                                                                <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPressed}"/>
                                                                 <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}"/>
                                                                 <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}"/>
                                                                 <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}"/>
                                                                 <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundPressed}" />
                                                             </VisualState.Setters>
-                                                            <Storyboard>
-                                                                <PointerDownThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                                            </Storyboard>
                                                         </VisualState>
                                                     </VisualStateGroup>
                                                     <VisualStateGroup x:Name="InputModeStates">

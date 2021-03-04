@@ -1,7 +1,7 @@
 ﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
 {
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 enum ButtonInteractionInvokeMode
 {
@@ -10,14 +10,14 @@ enum ButtonInteractionInvokeMode
     Hover = 2,
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass ButtonInteractionInvokedEventArgs
 {
     Windows.UI.Xaml.UIElement Target { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass ButtonInteraction :
 #ifdef USE_INTERNAL_SDK

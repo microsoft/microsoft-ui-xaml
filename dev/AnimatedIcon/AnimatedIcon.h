@@ -20,6 +20,7 @@ public:
 
     // IFrameworkElement
     void OnApplyTemplate();
+    void OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&);
     void OnLayoutUpdatedAfterStateChanged(winrt::IInspectable const& sender, winrt::IInspectable const& args);
 
     // FrameworkElement overrides
@@ -46,7 +47,7 @@ private:
     void TransitionAndUpdateStates(const winrt::hstring& fromState, const winrt::hstring& toState, float playbackMultiplier = 1.0f);
     void TransitionStates(const winrt::hstring& fromState, const winrt::hstring& toState, float playtbackMultiplier = 1.0f);
     void PlaySegment(float from, float to, float playbackMultiplier = 1.0f);
-    void TrySetForegroundProperty(const winrt::IRichAnimatedVisualSource source);
+    void TrySetForegroundProperty(winrt::IAnimatedVisualSource2 const& source);
     void OnAnimationCompleted(winrt::IInspectable const&, winrt::CompositionBatchCompletedEventArgs const&);
     void OnForegroundPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void SetRootPanelChildToFallbackIcon();

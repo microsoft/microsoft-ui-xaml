@@ -6,3 +6,17 @@
 
 #include "IconSource.h"
 #include "ImageIconSource.h"
+
+winrt::IconElement ImageIconSource::CreateIconElementCore()
+{
+    winrt::ImageIcon imageIcon;
+    if (const auto imageSource = ImageSource())
+    {
+        imageIcon.Source(imageSource);
+    }
+    if (const auto newForeground = Foreground())
+    {
+        imageIcon.Foreground(newForeground);
+    }
+    return imageIcon;
+}
