@@ -728,7 +728,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
 
         [TestMethod]
-        public void VerifySelectionFromLoaded()
+        public void VerifyTopSelectionFromLoaded()
         {
             NavigationView navView = null;
             RunOnUIThread.Execute(() =>
@@ -753,15 +753,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.MenuItemTemplate = template;
                 navView.IsPaneOpen = false;
                 navView.IsSettingsVisible = false;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
 
                 RoutedEventHandler loaded = null;
                 loaded = (object sender, RoutedEventArgs args) =>
                 {
                     navView.Loaded -= loaded;
 
-                    var items = new List<object>() { new object() }; ;
-                    var footerItems = new List<object>() { new object() };
-                    navView.SelectedItem = footerItems[0];
+                    var items = new List<object>() { new object(), new object(), new object() }; ;
+                    var footerItems = new List<object>() { new object(), new object(), new object() };
+                    navView.SelectedItem = footerItems[1];
                     navView.MenuItemsSource = items;
                     navView.FooterMenuItemsSource = footerItems;
                 };
@@ -770,11 +771,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Content.UpdateLayout();
             });
             IdleSynchronizer.Wait();
-            IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                var footerRepeater = VisualTreeUtils.FindVisualChildByName(navView, "FooterMenuItemsHost") as FrameworkElement;
+                var footerRepeater = VisualTreeUtils.FindVisualChildByName(navView, "TopFooterMenuItemsHost") as FrameworkElement;
                 var menuItem = VisualTreeHelper.GetChild(footerRepeater, 0) as FrameworkElement;
                 var menuItemLayoutRoot = VisualTreeHelper.GetChild(menuItem, 0) as FrameworkElement;
                 var navItemPresenter = VisualTreeHelper.GetChild(menuItemLayoutRoot, 0) as FrameworkElement;
