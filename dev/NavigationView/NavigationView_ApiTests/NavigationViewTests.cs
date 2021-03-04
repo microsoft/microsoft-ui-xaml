@@ -728,6 +728,73 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
 
         [TestMethod]
+        public void VerifySelectionFromLoaded()
+        {
+            NavigationView navView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                Content = navView;
+
+                var template = (DataTemplate)XamlReader.Load(@"
+                    <DataTemplate
+                        xmlns ='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                        <controls:NavigationViewItem
+                            AutomationProperties.AutomationId='AutomationId'
+                            Content='Item'
+                            ToolTipService.ToolTip='ToolTip'>
+                            <controls:NavigationViewItem.Icon>
+                                <FontIcon Glyph='' />
+                            </controls:NavigationViewItem.Icon>
+                         </controls:NavigationViewItem>
+                      </DataTemplate>");
+                navView.MenuItemTemplate = template;
+                navView.IsPaneOpen = false;
+                navView.IsSettingsVisible = false;
+
+                RoutedEventHandler loaded = null;
+                loaded = (object sender, RoutedEventArgs args) =>
+                {
+                    navView.Loaded -= loaded;
+
+                    var items = new List<object>() { new object() }; ;
+                    var footerItems = new List<object>() { new object() };
+                    navView.SelectedItem = footerItems[0];
+                    navView.MenuItemsSource = items;
+                    navView.FooterMenuItemsSource = footerItems;
+                };
+                navView.Loaded += loaded;
+
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var footerRepeater = VisualTreeUtils.FindVisualChildByName(navView, "FooterMenuItemsHost") as FrameworkElement;
+                var menuItem = VisualTreeHelper.GetChild(footerRepeater, 0) as FrameworkElement;
+                var menuItemLayoutRoot = VisualTreeHelper.GetChild(menuItem, 0) as FrameworkElement;
+                var navItemPresenter = VisualTreeHelper.GetChild(menuItemLayoutRoot, 0) as FrameworkElement;
+                var navItemPresenterLayoutRoot = VisualTreeHelper.GetChild(navItemPresenter, 0) as FrameworkElement;
+                var statesGroups = VisualStateManager.GetVisualStateGroups(navItemPresenterLayoutRoot);
+
+                string navItemPresenter1CurrentState = null;
+                foreach (var visualStateGroup in statesGroups)
+                {
+                    if (visualStateGroup.Name == "PointerStates")
+                    {
+                        navItemPresenter1CurrentState = visualStateGroup.CurrentState.Name;
+                    }
+                }
+                
+                Verify.AreEqual("Selected", navItemPresenter1CurrentState);
+            });
+        }
+
+        [TestMethod]
         public void VerifyNavigationItemUIAType()
         {
             RunOnUIThread.Execute(() =>

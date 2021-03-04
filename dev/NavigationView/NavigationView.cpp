@@ -4778,7 +4778,7 @@ template<typename T> T NavigationView::GetContainerForData(const winrt::IInspect
     auto itemIndex = GetIndexFromItem(mainRepeater, data);
     if (itemIndex >= 0)
     {
-        if (auto container = mainRepeater.TryGetElement(itemIndex))
+        if (auto container = mainRepeater.GetOrCreateElement(itemIndex))
         {
             return container.try_as<T>();
         }
@@ -4789,7 +4789,7 @@ template<typename T> T NavigationView::GetContainerForData(const winrt::IInspect
     itemIndex = GetIndexFromItem(footerRepeater, data);
     if (itemIndex >= 0)
     {
-        if (auto container = footerRepeater.TryGetElement(itemIndex))
+        if (auto container = footerRepeater.GetOrCreateElement(itemIndex))
         {
             return container.try_as<T>();
         }
@@ -4817,12 +4817,12 @@ winrt::UIElement NavigationView::SearchEntireTreeForContainer(const winrt::Items
     const auto index = GetIndexFromItem(rootRepeater, data);
     if (index != -1)
     {
-        return rootRepeater.TryGetElement(index);
+        return rootRepeater.GetOrCreateElement(index);
     }
 
     for (int i = 0; i < GetContainerCountInRepeater(rootRepeater); i++)
     {
-        if (auto const container = rootRepeater.TryGetElement(i))
+        if (auto const container = rootRepeater.GetOrCreateElement(i))
         {
             if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
             {
@@ -4843,7 +4843,7 @@ winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::Items
 {
     for (int i = 0; i < GetContainerCountInRepeater(rootRepeater); i++)
     {
-        if (auto const container = rootRepeater.TryGetElement(i))
+        if (auto const container = rootRepeater.GetOrCreateElement(i))
         {
             if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
             {
@@ -4871,7 +4871,7 @@ winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::Navig
             areChildrenRealized = true;
             for (int i = 0; i < GetContainerCountInRepeater(childrenRepeater); i++)
             {
-                if (auto const container = childrenRepeater.TryGetElement(i))
+                if (auto const container = childrenRepeater.GetOrCreateElement(i))
                 {
                     if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
                     {
@@ -5077,15 +5077,15 @@ winrt::UIElement NavigationView::GetContainerForIndex(int index, bool inFooter)
             const auto irIndex = inFooter ? index : m_topDataProvider.ConvertOriginalIndexToIndex(index);
 
         // Get the container of the first item
-        if (auto const container = ir.TryGetElement(irIndex))
+        if (auto const container = ir.GetOrCreateElement(irIndex))
         {
             return container;
         }
     }
     else
     {
-        if (auto container = inFooter ? m_leftNavFooterMenuRepeater.get().TryGetElement(index)
-            : m_leftNavRepeater.get().TryGetElement(index))
+        if (auto container = inFooter ? m_leftNavFooterMenuRepeater.get().GetOrCreateElement(index)
+            : m_leftNavRepeater.get().GetOrCreateElement(index))
         {
             return container.try_as<winrt::NavigationViewItemBase>();
         }
