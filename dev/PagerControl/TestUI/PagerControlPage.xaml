@@ -16,7 +16,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <StackPanel BorderBrush="Black" BorderThickness="2" Grid.Column="0" VerticalAlignment="Center" Padding="20">
+        <StackPanel BorderBrush="Black" BorderThickness="2" Grid.Column="0" VerticalAlignment="Top" Padding="20" Margin="0,0,10,0">
 
             <muxc:PagerControl x:Name="TestPager" AutomationProperties.Name="TestPager" SelectedIndexChanged="OnSelectedIndexChanged" NumberOfPages="5"/>
             <muxc:PagerControl x:Name="CustomizedPager" NumberOfPages="5" Margin="0,50,0,0">

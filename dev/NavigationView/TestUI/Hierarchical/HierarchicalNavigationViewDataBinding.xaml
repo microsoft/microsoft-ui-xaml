@@ -7,6 +7,7 @@
     xmlns:muxcontrols="using:Microsoft.UI.Xaml.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 5)"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -19,7 +20,7 @@
     <Grid>
         <muxcontrols:NavigationView x:Name="navview" MenuItemsSource="{x:Bind categories, Mode=OneWay}" MenuItemTemplate="{StaticResource NavigationViewMenuItem}"
                                     ItemInvoked="{x:Bind ClickedItem}" Expanding="OnItemExpanding" Collapsed="OnItemCollapsed" PaneDisplayMode="Left">
-            <StackPanel Margin="10,10,0,0">
+            <StackPanel Margin="10,10,0,0" contract5Present:Spacing="5">
                 <TextBlock x:Name="SelectedItemLabel" AutomationProperties.Name="SelectedItemLabel" Text="uninitialized"/>
                 <Button Content="Get Selected Item Label" x:Name="GetSelectedItemLabelButton" AutomationProperties.Name="GetSelectedItemLabelButton" Click="PrintSelectedItem"/>
                 <Button Content="Add MenuItem" Click="AddMenuItem"/>

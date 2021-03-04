@@ -8,6 +8,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 5)"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -19,12 +20,16 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <controls:ProgressRing
-                x:Name="TestProgressRing"
-                AutomationProperties.Name="TestProgressRing"
-                IsActive="{x:Bind ShowIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
-                IsIndeterminate="{x:Bind ShowIsIndeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
-            />
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Sample ProgressRing" Style="{ThemeResource StandardGroupHeader}"/>
+            <FontIcon Glyph="&#xF0AF;" Margin="4,0,20,3" FontSize="14" VerticalAlignment="Center"/>
+            <controls:ProgressRing
+                    x:Name="TestProgressRing"
+                    AutomationProperties.Name="TestProgressRing"
+                    IsActive="{x:Bind ShowIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
+                    IsIndeterminate="{x:Bind ShowIsIndeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
+                />
+        </StackPanel>
         <ScrollViewer Grid.Row="1">
             <StackPanel>
                 <Grid Width="200px" HorizontalAlignment="Left">
@@ -74,13 +79,17 @@
                     <TextBlock x:Name="OpacityText" AutomationProperties.Name="OpacityText"/>
                 </StackPanel>
 
-                <Button x:Name="UpdateMinMaxButton" AutomationProperties.Name="UpdateMinMaxButton" Content="Update Min and Max" Click="UpdateMinMax_Click"/>
-                <Button x:Name="UpdateWidthButton" AutomationProperties.Name="UpdateWidthButton" Content="Update Width" Click="UpdateWidth_Click"/>
-                <Button x:Name="UpdateValueButton" AutomationProperties.Name="UpdateValueButton" Content="Update Value" Click="UpdateValue_Click"/>
-                <RepeatButton x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Hold and Change Value" Click="ChangeValue_Click" />
+                <StackPanel Orientation="Horizontal" contract5Present:Spacing="5" Margin="0,5,0,5">
+                    <Button x:Name="UpdateMinMaxButton" AutomationProperties.Name="UpdateMinMaxButton" Content="Update Min and Max" Click="UpdateMinMax_Click"/>
+                    <Button x:Name="UpdateWidthButton" AutomationProperties.Name="UpdateWidthButton" Content="Update Width" Click="UpdateWidth_Click"/>
+                    <Button x:Name="UpdateValueButton" AutomationProperties.Name="UpdateValueButton" Content="Update Value" Click="UpdateValue_Click"/>
+                    <RepeatButton x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Hold and Change Value" Click="ChangeValue_Click" />
+                </StackPanel>
 
-                <Button x:Name="NavigateToCustomLottieSourcePage" AutomationProperties.Name="NavigateToCustomLottieSourcePage">Progress Ring Custom Lottie Source</Button>
-                <Button x:Name="NavigateToStoryboardAnimationPage" AutomationProperties.Name="NavigateToStoryBoardAnimationPage">Progress Ring Storyboard Animation</Button>
+                <StackPanel Orientation="Horizontal" contract5Present:Spacing="5" >
+                    <Button x:Name="NavigateToCustomLottieSourcePage" AutomationProperties.Name="NavigateToCustomLottieSourcePage">Progress Ring Custom Lottie Source</Button>
+                    <Button x:Name="NavigateToStoryboardAnimationPage" AutomationProperties.Name="NavigateToStoryBoardAnimationPage">Progress Ring Storyboard Animation</Button>
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
     </Grid>

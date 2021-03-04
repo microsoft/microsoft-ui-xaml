@@ -7,12 +7,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 5)"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <muxc:NavigationView x:Name="RootNavigationView">
 
-        <StackPanel Padding="10,5">
+        <StackPanel Padding="10,5" contract5Present:Spacing="5">
             <muxc:RadioButtons SelectionChanged="TestCaseSelectionChanged" SelectedIndex="2">
                 <RadioButton AutomationProperties.Name="NoItems">No items</RadioButton>
                 <RadioButton AutomationProperties.Name="NoFooter">No footer</RadioButton>
@@ -23,7 +24,7 @@
             <Button Click="AddFooterItemButton_Click" AutomationProperties.Name="AddFooterItemButton">Add footer item</Button>
             <Button Click="ResetCollectionsButton_Click" AutomationProperties.Name="ResetCollectionsButton">Reset collections</Button>
 
-            <Button Click="GetLayoutHeightsButton_Click" Margin="0,4,0,0" AutomationProperties.Name="GetLayoutHeightsButton">Get layout heights</Button>
+            <Button Click="GetLayoutHeightsButton_Click" Margin="0,10,0,0" AutomationProperties.Name="GetLayoutHeightsButton">Get layout heights</Button>
             <TextBlock x:Name="LayoutHeightsReport" AutomationProperties.Name="LayoutHeightsReport"/>
         </StackPanel>
     </muxc:NavigationView>

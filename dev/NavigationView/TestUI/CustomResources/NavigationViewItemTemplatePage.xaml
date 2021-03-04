@@ -7,9 +7,10 @@
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 5)"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid Padding="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -18,7 +19,7 @@
         <Grid.Resources>
             <local:Customers x:Key="customers"/>
         </Grid.Resources>
-        <Button AutomationProperties.Name="FocusAnchorButton">I'm just for grabbing focus</Button>
+        <Button AutomationProperties.Name="FocusAnchorButton" Margin="0,0,0,10" Content="I'm just for grabbing focus"/>
         <controls:NavigationView 
             x:Name="NavView" 
             PaneDisplayMode="Top"
@@ -35,16 +36,16 @@
                 </DataTemplate>
             </controls:NavigationView.MenuItemTemplate>
 
-            <StackPanel Orientation="Vertical" Margin="8,0,0,0">
+            <StackPanel Orientation="Vertical" Margin="0,10,0,0">
                 <Button x:Name="FlipOrientation" AutomationProperties.Name="FlipOrientationButton" Content="Flip Orientation" Click="FlipOrientation_Click"/>
-                <TextBlock x:Name="SelectionEventResult" AutomationProperties.Name="SelectionEventResult"></TextBlock>
-                <StackPanel Orientation="Vertical">
-                    <StackPanel Orientation="Horizontal">
+                <TextBlock x:Name="SelectionEventResult" AutomationProperties.Name="SelectionEventResult"/>
+                <StackPanel Orientation="Vertical" contract5Present:Spacing="5">
+                    <StackPanel Orientation="Horizontal" contract5Present:Spacing="5">
                         <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">ItemInvoked Arguments (InvokedItem | InvokedItemContainer):</TextBlock>
                         <TextBox Margin="42,0,0,0" x:Name="ItemInvokedItemType" AutomationProperties.Name="ItemInvokedItemType" Text="N/A"/>
                         <TextBox x:Name="ItemInvokedItemContainerType" AutomationProperties.Name="ItemInvokedItemContainerType" Text="N/A"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal" contract5Present:Spacing="5">
                         <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">SelectionChanged Arguments (SelectedItem | SelectedItemContainer):</TextBlock>
                         <TextBox x:Name="SelectionChangedItemType" AutomationProperties.Name="SelectionChangedItemType" Text="N/A"/>
                         <TextBox x:Name="SelectionChangedItemContainerType" AutomationProperties.Name="SelectionChangedItemContainerType" Text="N/A"/>
