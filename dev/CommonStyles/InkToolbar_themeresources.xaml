@@ -5,13 +5,13 @@
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
     <ResourceDictionary.ThemeDictionaries>
     </ResourceDictionary.ThemeDictionaries>
-    <ResourceDictionary x:Key="Default">            
+    <ResourceDictionary x:Key="Default">
             <StaticResource x:Key="InkToolbarButtonWidth" ResourceKey="AppBarThemeCompactHeight" />
             <StaticResource x:Key="InkToolbarButtonHeight" ResourceKey="AppBarThemeCompactHeight" />
             <x:Double x:Key="InkToolbarButtonContentSize">16</x:Double>
             <SolidColorBrush x:Key="InkToolbarButtonBackgroundThemeBrush" Color="{ThemeResource SystemChromeMediumColor}" />
             <SolidColorBrush x:Key="InkToolbarButtonForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemBackgroundThemeBrush" Color="{ThemeResource SystemChromeMediumLowColor}" />
+            <SolidColorBrush x:Key="InkToolbarFlyoutItemBackgroundThemeBrush" Color="{ThemeResource SubtleFillColorTransparentBrush}" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
             <SolidColorBrush x:Key="InkToolbarButtonHoverBackgroundThemeBrush" Color="{ThemeResource SystemListLowColor}" />
             <SolidColorBrush x:Key="InkToolbarButtonHoverForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
@@ -58,7 +58,7 @@
             <x:Double x:Key="InkToolbarButtonContentSize">16</x:Double>
             <SolidColorBrush x:Key="InkToolbarButtonBackgroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="InkToolbarButtonForegroundThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemBackgroundThemeBrush" Color="{ThemeResource SystemColorWindowColor}" />
+        <SolidColorBrush x:Key="InkToolbarFlyoutItemBackgroundThemeBrush" Color="{ThemeResource SubtleFillColorTransparentBrush}" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemForegroundThemeBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="InkToolbarButtonHoverBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="InkToolbarButtonHoverForegroundThemeBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
@@ -174,8 +174,8 @@
         <Style x:Key="InkToolbarFlyoutStyle" TargetType="FlyoutPresenter" >
             <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
             <Setter Property="Padding" Value="0,0,0,0" />
-            <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}" />
-            <Setter Property="BorderBrush" Value="{ThemeResource SystemControlForegroundChromeHighBrush}" />
+            <Setter Property="Background" Value="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource SurfaceStrokeColorDefaultBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="MinWidth" Value="0" />
             <Setter Property="MinHeight" Value="0" />
@@ -224,7 +224,9 @@
             <Setter Property="Height" Value="2" />
             <Setter Property="Width" Value="15"/>
             <Setter Property="Fill" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
-    </Style>
+            <contract7Present:Setter Property="RadiusX" Value="2.0" />
+            <contract7Present:Setter Property="RadiusY" Value="15.0" />
+        </Style>
 
         <Style TargetType="InkToolbarBallpointPenButton" BasedOn="{StaticResource InkToolbarCommonButtonStyle}">
             <Setter Property="AutomationProperties.AutomationId" Value="InkToolbarBallpointPenButton" />
