@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Media;
 using System.Security.Cryptography.X509Certificates;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Automation.Provider;
+using System.Linq;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -300,10 +301,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Flyout ellipsisFlyout = (Flyout)ellipsisButton.Flyout;
-                Verify.IsNotNull(ellipsisButton, "The ellipsis flyout (1) could not be retrieved");
-
-                ItemsRepeater ellipsisItemsRepeater = (ItemsRepeater)ellipsisFlyout.Content;
+                var flyout = VisualTreeHelper.GetOpenPopups(Window.Current).Last();
+                Verify.IsNotNull(flyout, "Flyout could not be retrieved");
+                var ellipsisItemsRepeater = TestUtilities.FindDescendents<ItemsRepeater>(flyout).Single();                
                 Verify.IsNotNull(ellipsisItemsRepeater, "The underlying flyout items repeater (1) could not be retrieved");
 
                 ellipsisItemsRepeater.Loaded += (object sender, RoutedEventArgs e) => {
@@ -366,10 +366,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Flyout ellipsisFlyout = (Flyout)ellipsisButton.Flyout;
-                Verify.IsNotNull(ellipsisButton, "The ellipsis flyout (1) could not be retrieved");
-
-                ItemsRepeater ellipsisItemsRepeater = (ItemsRepeater)ellipsisFlyout.Content;
+                var flyout = VisualTreeHelper.GetOpenPopups(Window.Current).Last();
+                Verify.IsNotNull(flyout, "Flyout could not be retrieved");
+                var ellipsisItemsRepeater = TestUtilities.FindDescendents<ItemsRepeater>(flyout).Single();
                 Verify.IsNotNull(ellipsisItemsRepeater, "The underlying flyout items repeater (1) could not be retrieved");
 
                 ellipsisItemsRepeater.Loaded += (object sender, RoutedEventArgs e) => {
