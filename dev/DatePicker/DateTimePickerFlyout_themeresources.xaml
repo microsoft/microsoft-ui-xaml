@@ -15,6 +15,8 @@
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
 
+            <StaticResource x:Key="LoopingSelectorButtonBackground" ResourceKey="SystemControlBackgroundChromeMediumBrush" />
+
             <StaticResource x:Key="LoopingSelectorItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="LoopingSelectorItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="LoopingSelectorItemForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
@@ -31,6 +33,8 @@
             <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+
+            <StaticResource x:Key="LoopingSelectorButtonBackground" ResourceKey="SystemControlBackgroundChromeMediumBrush" />
 
             <StaticResource x:Key="LoopingSelectorItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="LoopingSelectorItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
@@ -49,6 +53,8 @@
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
 
+            <StaticResource x:Key="LoopingSelectorButtonBackground" ResourceKey="SystemControlBackgroundChromeMediumBrush" />
+
             <StaticResource x:Key="LoopingSelectorItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
@@ -60,6 +66,7 @@
 
     <x:String x:Key="UpIcon">&#xEDDB;</x:String>
     <x:String x:Key="DownIcon">&#xEDDC;</x:String>
+    <Thickness x:Key="LoopingSelectorItemMargin">4,2,4,2</Thickness>
 
     <!-- This style covers the accept/cancel/up/down buttons-->
     <Style x:Key="DateTimePickerFlyoutButtonStyle" TargetType="ButtonBase">
@@ -122,89 +129,12 @@
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             AutomationProperties.AccessibilityView="Raw"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"/>
+                            contract7NotPresent:CornerRadius="{TemplateBinding CornerRadius}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
-
-    <Style TargetType="LoopingSelector">
-        <Setter Property="ShouldLoop" Value="True" />
-        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-        <Setter Property="ItemTemplate">
-            <Setter.Value>
-                <DataTemplate>
-                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
-                        <TextBlock Text="{Binding PrimaryText}" FontFamily="{ThemeResource ContentControlThemeFontFamily}" HorizontalAlignment="Left" MaxWidth="60"/>
-                    </StackPanel>
-                </DataTemplate>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Control">
-                    <Grid>
-
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
-
-                                <VisualState x:Name="PointerOver">
-
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="UpButton" Storyboard.TargetProperty="Visibility">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownButton" Storyboard.TargetProperty="Visibility">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </VisualState>
-
-                            </VisualStateGroup>
-
-                        </VisualStateManager.VisualStateGroups>
-                        <ScrollViewer x:Name="ScrollViewer"
-                VerticalSnapPointsType="Mandatory"
-                VerticalSnapPointsAlignment="Near"
-                VerticalScrollBarVisibility="Hidden"
-                                      HorizontalScrollMode="Disabled"
-                                      IsHorizontalRailEnabled="False"                                     
-                ZoomMode="Disabled"
-                Template="{StaticResource ScrollViewerScrollBarlessTemplate}" />
-                        <RepeatButton x:Name="UpButton"
-                Content="{StaticResource UpIcon}"
-                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                FontSize="8"
-                Height="22"
-                Padding="0"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Top"
-                Visibility="Collapsed"
-                Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
-                Background="{ThemeResource LoopingSelectorButtonBackground}"
-                IsTabStop="False" />
-                        <RepeatButton x:Name="DownButton"
-                Content="{StaticResource DownIcon}"
-                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                FontSize="8"
-                Height="22"
-                Padding="0"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Bottom"
-                Visibility="Collapsed"
-                Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
-                Background="{ThemeResource LoopingSelectorButtonBackground}"
-                IsTabStop="False" />
-
-                    </Grid>
-
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
 
     <Style TargetType="LoopingSelectorItem">
         <Setter Property="HorizontalAlignment" Value="Left" />
@@ -212,14 +142,16 @@
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="Foreground" Value="{ThemeResource LoopingSelectorItemForeground}" />
         <Setter Property="IsTabStop" Value="False" />
-        <Setter Property="Margin" Value="4,2,4,2" />
+        
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="LoopingSelectorItem">
                     <Grid x:Name="Root" Background="Transparent"
+                          Margin="{StaticResource LoopingSelectorItemMargin}" 
                           contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
-
+                        
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -262,9 +194,11 @@
 
                         </VisualStateManager.VisualStateGroups>
 
+                        
                         <Grid.RenderTransform>
                             <ScaleTransform x:Name="ContentScaleTransform" />
                         </Grid.RenderTransform>
+                        
                         <ContentPresenter x:Name="ContentPresenter"
                 Foreground="{TemplateBinding Foreground}"
                 Content="{TemplateBinding Content}"
@@ -274,7 +208,8 @@
                                           HorizontalAlignment="Left"
                 HorizontalContentAlignment="Left"
                 VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                AutomationProperties.AccessibilityView="Raw" />
+                AutomationProperties.AccessibilityView="Raw"
+                                          />
 
                     </Grid>
 
@@ -283,5 +218,162 @@
         </Setter>
     </Style>
 
+    <!-- Default style for Windows.UI.Xaml.Controls.Primitives.LoopingSelector -->
+    <Style TargetType="LoopingSelector">
+        <Setter Property="ShouldLoop" Value="True" />
+        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <Setter Property="ItemTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{Binding PrimaryText}" FontFamily="{ThemeResource ContentControlThemeFontFamily}" />
+                    </StackPanel>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="LoopingSelector">
+                    <Grid Background="Green">
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+
+                                <VisualState x:Name="PointerOver">
+
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="UpButton" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownButton" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+
+                            </VisualStateGroup>
+
+                        </VisualStateManager.VisualStateGroups>
+                        <ScrollViewer x:Name="ScrollViewer"
+                VerticalSnapPointsType="Mandatory"
+                VerticalSnapPointsAlignment="Near"
+                VerticalScrollBarVisibility="Hidden"
+                HorizontalScrollMode="Disabled"
+                ZoomMode="Disabled"
+                Template="{StaticResource ScrollViewerScrollBarlessTemplate}" />
+                        <RepeatButton x:Name="UpButton"
+                Content="&#xE70E;"
+                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                FontSize="8"
+                Height="22"
+                Padding="0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Top"
+                Visibility="Collapsed"
+                Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
+                Background="{ThemeResource LoopingSelectorButtonBackground}"
+                IsTabStop="False" />
+                        <RepeatButton x:Name="DownButton"
+                Content="&#xE70D;"
+                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                FontSize="8"
+                Height="22"
+                Padding="0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Bottom"
+                Visibility="Collapsed"
+                Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
+                Background="{ThemeResource LoopingSelectorButtonBackground}"
+                IsTabStop="False" />
+
+                    </Grid>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--
+    <Style TargetType="LoopingSelector">
+        <Setter Property="Background" Value="Green"/>
+        <Setter Property="ShouldLoop" Value="True" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <Setter Property="ItemTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{Binding PrimaryText}" FontFamily="{ThemeResource ContentControlThemeFontFamily}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="LoopingSelector">
+                    <Grid contract7Present:CornerRadius="{TemplateBinding CornerRadius}" contract7NotPresent:CornerRadius="{TemplateBinding CornerRadius}">
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+
+                                <VisualState x:Name="PointerOver">
+
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="UpButton" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownButton" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+
+                            </VisualStateGroup>
+
+                        </VisualStateManager.VisualStateGroups>
+                        <ScrollViewer x:Name="ScrollViewer"
+                VerticalSnapPointsType="Mandatory"
+                VerticalSnapPointsAlignment="Near"
+                VerticalScrollBarVisibility="Hidden"
+                                      HorizontalScrollMode="Disabled"
+                                      IsHorizontalRailEnabled="False"
+                ZoomMode="Disabled"
+                Template="{StaticResource ScrollViewerScrollBarlessTemplate}"
+                                      contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
+
+                        <RepeatButton x:Name="UpButton"
+                Content="{StaticResource UpIcon}"
+                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                FontSize="8"
+                Height="22"
+                Padding="0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Top"
+                Visibility="Collapsed"
+                Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
+                Background="{ThemeResource LoopingSelectorButtonBackground}"
+                IsTabStop="False" />
+                        <RepeatButton x:Name="DownButton"
+                Content="{StaticResource DownIcon}"
+                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                FontSize="8"
+                Height="22"
+                Padding="0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Bottom"
+                Visibility="Collapsed"
+                Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
+                Background="{ThemeResource LoopingSelectorButtonBackground}"
+                IsTabStop="False" />
+
+                    </Grid>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    -->
 
 </ResourceDictionary>
