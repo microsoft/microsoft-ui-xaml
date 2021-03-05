@@ -27,10 +27,10 @@
                 <AppBarButton Icon="Save" Label="Save"/>
                 <AppBarToggleButton Icon="Add" Label="Toggle"/>
                 <contract7Present:AppBarElementContainer IsTabStop="False">
-                    <controls:SplitButton Content="Split" Style="{StaticResource SplitButtonCommandBarStyle}"/>
+                    <controls:SplitButton Content="Split"/>
                 </contract7Present:AppBarElementContainer>
                 <contract7Present:AppBarElementContainer IsTabStop="False">
-                    <controls:ToggleSplitButton Content="Toggle" Style="{StaticResource SplitButtonCommandBarStyle}"/>
+                    <controls:ToggleSplitButton Content="Toggle"/>
                 </contract7Present:AppBarElementContainer>
             </CommandBar>
             
@@ -55,7 +55,7 @@
                 <AppBarButton Icon="Save" Label="Save"/>
                 <AppBarToggleButton Icon="Add" Label="Toggle"/>
                 <contract7Present:AppBarElementContainer>
-                    <controls:SplitButton Style="{StaticResource SplitButtonCommandBarStyle}">
+                    <controls:SplitButton>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -67,7 +67,7 @@
                     </controls:SplitButton>
                 </contract7Present:AppBarElementContainer>
                 <contract7Present:AppBarElementContainer>
-                    <controls:ToggleSplitButton Style="{StaticResource SplitButtonCommandBarStyle}">
+                    <controls:ToggleSplitButton>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
