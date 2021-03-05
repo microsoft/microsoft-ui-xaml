@@ -4,36 +4,35 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
     <ResourceDictionary.ThemeDictionaries>
-    </ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
             <StaticResource x:Key="InkToolbarButtonWidth" ResourceKey="AppBarThemeCompactHeight" />
             <StaticResource x:Key="InkToolbarButtonHeight" ResourceKey="AppBarThemeCompactHeight" />
             <x:Double x:Key="InkToolbarButtonContentSize">16</x:Double>
-            <SolidColorBrush x:Key="InkToolbarButtonBackgroundThemeBrush" Color="{ThemeResource SystemChromeMediumColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemBackgroundThemeBrush" Color="{ThemeResource SubtleFillColorTransparentBrush}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonHoverBackgroundThemeBrush" Color="{ThemeResource SystemListLowColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonHoverForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemHoverBackgroundThemeBrush" Color="{ThemeResource SystemListLowColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemHoverForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonSelectedBackgroundThemeBrush" Color="{ThemeResource SystemChromeMediumColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonSelectedForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonPressedBackgroundThemeBrush" Color="{ThemeResource SystemListLowColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonPressedForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemPressedBackgroundThemeBrush" Color="{ThemeResource SystemListMediumColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemPressedForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemPressedSelectedBackgroundThemeBrush" Color="{ThemeResource SystemControlHighlightListAccentHighBrush}" />
-            <SolidColorBrush x:Key="InkToolbarDisabledBackgroundThemeBrush" Color="{ThemeResource SystemChromeMediumColor}" />
-            <SolidColorBrush x:Key="InkToolbarDisabledForegroundThemeBrush" Color="{ThemeResource SystemBaseMediumLowColor}" />
-            <SolidColorBrush x:Key="InkToolbarAccentColorThemeBrush" Color="{ThemeResource SystemAccentColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderHoverThemeBrush" Color="{ThemeResource SystemBaseMediumLowColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderSelectedThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutL3PreviewPen" Color="{ThemeResource SystemBaseLowColor}" />
-            <StaticResource x:Key="InkToolbarFlyoutItemHoverSelectedBackgroundThemeBrush" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
-            <StaticResource x:Key="InkToolbarFlyoutItemSelectedBackgroundThemeBrush" ResourceKey="SystemControlHighlightListAccentLowBrush" />
-            <StaticResource x:Key="InkToolbarFlyoutItemSelectedForegroundThemeBrush" ResourceKey="InkToolbarButtonSelectedForegroundThemeBrush" />
+            <StaticResource x:Key="InkToolbarButtonBackgroundThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="InkToolbarButtonForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemBackgroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemForegroundThemeBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="InkToolbarButtonHoverBackgroundThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="InkToolbarButtonHoverForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemHoverBackgroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemHoverForegroundThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="InkToolbarButtonSelectedBackgroundThemeBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="InkToolbarButtonSelectedForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarButtonPressedBackgroundThemeBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="InkToolbarButtonPressedForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemPressedBackgroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemPressedForegroundThemeBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemPressedSelectedBackgroundThemeBrush" ResourceKey="SystemControlHighlightListAccentHighBrush" />
+            <StaticResource x:Key="InkToolbarDisabledBackgroundThemeBrush" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="InkToolbarDisabledForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarAccentColorThemeBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemBorderHoverThemeBrush" ResourceKey="SystemBaseMediumLowColor" />
+            <StaticResource x:Key="InkToolbarFlyoutItemBorderSelectedThemeBrush" ResourceKey="SystemBaseHighColor" />
+            <StaticResource x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" ResourceKey="SystemBaseHighColor" />
+            <StaticResource x:Key="InkToolbarFlyoutL3PreviewPen" ResourceKey="SystemBaseLowColor" />
+            <StaticResource x:Key="InkToolbarFlyoutItemHoverSelectedBackgroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemSelectedBackgroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemSelectedForegroundThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
             <!-- Reveal themes for InkToolbar-->
             <!-- Background -->
             <StaticResource x:Key="InkToolbarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
@@ -56,31 +55,31 @@
             <StaticResource x:Key="InkToolbarButtonWidth" ResourceKey="AppBarThemeCompactHeight" />
             <StaticResource x:Key="InkToolbarButtonHeight" ResourceKey="AppBarThemeCompactHeight" />
             <x:Double x:Key="InkToolbarButtonContentSize">16</x:Double>
-            <SolidColorBrush x:Key="InkToolbarButtonBackgroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonForegroundThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
-        <SolidColorBrush x:Key="InkToolbarFlyoutItemBackgroundThemeBrush" Color="{ThemeResource SubtleFillColorTransparentBrush}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemForegroundThemeBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonHoverBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonHoverForegroundThemeBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemHoverBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemHoverForegroundThemeBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonSelectedBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonSelectedForegroundThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonPressedBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonPressedForegroundThemeBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemPressedBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemPressedForegroundThemeBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemPressedSelectedBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="InkToolbarDisabledBackgroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="InkToolbarDisabledForegroundThemeBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
-            <SolidColorBrush x:Key="InkToolbarAccentColorThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderHoverThemeBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderSelectedThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutL3PreviewPen" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <StaticResource x:Key="InkToolbarFlyoutItemHoverSelectedBackgroundThemeBrush" ResourceKey="InkToolbarFlyoutItemHoverBackgroundThemeBrush" />
-            <StaticResource x:Key="InkToolbarFlyoutItemSelectedBackgroundThemeBrush" ResourceKey="InkToolbarButtonSelectedBackgroundThemeBrush" />
-            <StaticResource x:Key="InkToolbarFlyoutItemSelectedForegroundThemeBrush" ResourceKey="InkToolbarButtonHoverForegroundThemeBrush" />
+            <StaticResource x:Key="InkToolbarButtonBackgroundThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="InkToolbarButtonForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemBackgroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemForegroundThemeBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="InkToolbarButtonHoverBackgroundThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="InkToolbarButtonHoverForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemHoverBackgroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemHoverForegroundThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="InkToolbarButtonSelectedBackgroundThemeBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="InkToolbarButtonSelectedForegroundThemeBrush" ResourceKey="SystemColorButtonTextColor" />
+            <StaticResource x:Key="InkToolbarButtonPressedBackgroundThemeBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="InkToolbarButtonPressedForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemPressedBackgroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemPressedForegroundThemeBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemPressedSelectedBackgroundThemeBrush" ResourceKey="SystemColorHighlightColor" />
+            <StaticResource x:Key="InkToolbarDisabledBackgroundThemeBrush" ResourceKey="SystemColorButtonFaceColor" />
+            <StaticResource x:Key="InkToolbarDisabledForegroundThemeBrush" ResourceKey="SystemColorGrayTextColor" />
+            <StaticResource x:Key="InkToolbarAccentColorThemeBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemBorderHoverThemeBrush" ResourceKey="SystemColorWindowTextColor" />
+            <StaticResource x:Key="InkToolbarFlyoutItemBorderSelectedThemeBrush" ResourceKey="SystemColorButtonTextColor" />
+            <StaticResource x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" ResourceKey="SystemColorHighlightColor" />
+            <StaticResource x:Key="InkToolbarFlyoutL3PreviewPen" ResourceKey="SystemColorWindowTextColor" />
+            <StaticResource x:Key="InkToolbarFlyoutItemHoverSelectedBackgroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemSelectedBackgroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemSelectedForegroundThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
             <!-- Reveal themes for InkToolbar-->
             <!-- Background -->
             <StaticResource x:Key="InkToolbarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
@@ -103,24 +102,24 @@
             <StaticResource x:Key="InkToolbarButtonWidth" ResourceKey="AppBarThemeCompactHeight" />
             <StaticResource x:Key="InkToolbarButtonHeight" ResourceKey="AppBarThemeCompactHeight" />
             <x:Double x:Key="InkToolbarButtonContentSize">16</x:Double>
-            <SolidColorBrush x:Key="InkToolbarButtonBackgroundThemeBrush" Color="{ThemeResource SystemChromeMediumColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutItemBackgroundThemeBrush" Color="{ThemeResource SystemChromeMediumLowColor}" />
+            <SolidColorBrush x:Key="InkToolbarButtonBackgroundThemeBrush" Color="{ThemeResource SubtleFillColorSecondaryBrush}" />
+            <SolidColorBrush x:Key="InkToolbarButtonForegroundThemeBrush" Color="{ThemeResource TextFillColorPrimaryBrush}" />
+            <SolidColorBrush x:Key="InkToolbarFlyoutItemBackgroundThemeBrush" Color="{ThemeResource SubtleFillColorTransparentBrush}" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonHoverBackgroundThemeBrush" Color="{ThemeResource SystemListLowColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonHoverForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
+            <SolidColorBrush x:Key="InkToolbarButtonHoverBackgroundThemeBrush" Color="{ThemeResource SubtleFillColorSecondaryBrush}" />
+            <SolidColorBrush x:Key="InkToolbarButtonHoverForegroundThemeBrush" Color="{ThemeResource TextFillColorPrimaryBrush}" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemHoverBackgroundThemeBrush" Color="{ThemeResource SystemListLowColor}" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemHoverForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
             <SolidColorBrush x:Key="InkToolbarButtonSelectedBackgroundThemeBrush" Color="{ThemeResource SystemChromeMediumColor}" />
             <SolidColorBrush x:Key="InkToolbarButtonSelectedForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
-            <SolidColorBrush x:Key="InkToolbarButtonPressedBackgroundThemeBrush" Color="{ThemeResource SystemListLowColor}" />
+            <SolidColorBrush x:Key="InkToolbarButtonPressedBackgroundThemeBrush" Color="{ThemeResource SubtleFillColorTertiary}" />
             <SolidColorBrush x:Key="InkToolbarButtonPressedForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemPressedBackgroundThemeBrush" Color="{ThemeResource SystemListMediumColor}" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemPressedForegroundThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemPressedSelectedBackgroundThemeBrush" Color="{ThemeResource SystemControlHighlightListAccentHighBrush}" />
             <SolidColorBrush x:Key="InkToolbarDisabledBackgroundThemeBrush" Color="{ThemeResource SystemChromeMediumColor}" />
             <SolidColorBrush x:Key="InkToolbarDisabledForegroundThemeBrush" Color="{ThemeResource SystemBaseMediumLowColor}" />
-            <SolidColorBrush x:Key="InkToolbarAccentColorThemeBrush" Color="{ThemeResource SystemAccentColor}" />
+            <SolidColorBrush x:Key="InkToolbarAccentColorThemeBrush" Color="{ThemeResource AccentAAFillColorDefaultBrush}" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderHoverThemeBrush" Color="{ThemeResource SystemBaseMediumLowColor}" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderSelectedThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" Color="{ThemeResource SystemBaseHighColor}" />
@@ -146,8 +145,9 @@
             <StaticResource x:Key="InkToolbarButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="InkToolbarButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
         </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
 
-        <Style x:Key="InkToolbarGlyphFontStyle" TargetType="TextBlock">
+    <Style x:Key="InkToolbarGlyphFontStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
             <Setter Property="FontSize" Value="{ThemeResource InkToolbarButtonContentSize}" />
             <Setter Property="LineHeight" Value="{ThemeResource InkToolbarButtonContentSize}" />
@@ -205,7 +205,7 @@
             <Setter Property="TextAlignment" Value="Center" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Bottom" />
-            <Setter Property="Margin" Value="0,0,0,2" />
+            <Setter Property="Margin" Value="0,0,0,5" />
             <Setter Property="Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
             <Setter Property="Opacity" Value="0" />
             <Setter Property="Text" Value="&#xE228;" />
@@ -221,11 +221,11 @@
         <Style x:Key="InkToolbarSelectionAccentStyle" TargetType="Rectangle">
             <Setter Property="Opacity" Value="0" />
             <Setter Property="VerticalAlignment" Value="Bottom" />
-            <Setter Property="Height" Value="2" />
-            <Setter Property="Width" Value="15"/>
+            <Setter Property="Height" Value="3" />
+            <Setter Property="Width" Value="16"/>
             <Setter Property="Fill" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
-            <contract7Present:Setter Property="RadiusX" Value="2.0" />
-            <contract7Present:Setter Property="RadiusY" Value="15.0" />
+            <contract7Present:Setter Property="RadiusX" Value="1.5" />
+            <contract7Present:Setter Property="RadiusY" Value="8" />
         </Style>
 
         <Style TargetType="InkToolbarBallpointPenButton" BasedOn="{StaticResource InkToolbarCommonButtonStyle}">
