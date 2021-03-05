@@ -8,6 +8,8 @@ unsealed runtimeclass CommandBarFlyout : Windows.UI.Xaml.Controls.Primitives.Fly
 {
     CommandBarFlyout();
 
+    Boolean AlwaysExpanded{ get; set; };
+
     Windows.Foundation.Collections.IObservableVector<Windows.UI.Xaml.Controls.ICommandBarElement> PrimaryCommands { get; };
     Windows.Foundation.Collections.IObservableVector<Windows.UI.Xaml.Controls.ICommandBarElement> SecondaryCommands { get; };
 };
