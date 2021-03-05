@@ -42,7 +42,7 @@
             <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Hidden" Grid.Column="1">
                 <StackPanel Orientation="Horizontal">
                     <ScrollViewer Margin="5">
-                        <Grid Background="Bisque" MinWidth="300" contract5Available:ColumnSpacing="2" contract5Available:RowSpacing="2">
+                        <Grid Background="{ThemeResource SystemControlHighlightListLowBrush}" MinWidth="300" contract5Available:ColumnSpacing="2" contract5Available:RowSpacing="2">
                             <Grid.RowDefinitions>
                                 <!--0-->
                                 <RowDefinition Height="Auto"/>
@@ -173,7 +173,7 @@
 
                     </ScrollViewer>
                     <!-- Logging Output -->
-                    <Grid Margin="5" MaxWidth="450" Background="Bisque">
+                    <Grid Margin="5" MaxWidth="450" Background="{ThemeResource SystemControlHighlightListLowBrush}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>

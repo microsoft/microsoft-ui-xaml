@@ -7,7 +7,7 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:media="using:Microsoft.UI.Xaml.Media"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 5)"
     mc:Ignorable="d">
 
     <Grid x:Name="RootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
@@ -19,8 +19,10 @@
             </media:RadialGradientBrush>
             
             <Style TargetType="Border">
+                <Setter Property="Margin" Value="0,5,0,5"/>
+                <Setter Property="Padding" Value="5,0,5,5"/>
                 <Setter Property="BorderThickness" Value="1" />
-                <Setter Property="BorderBrush" Value="Black" />
+                <Setter Property="BorderBrush" Value="{ThemeResource SystemControlDisabledChromeHighBrush}" />
             </Style>
             <Style TargetType="StackPanel">
                 <Setter Property="HorizontalAlignment" Value="Left" />
@@ -41,7 +43,7 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="Locally set brush:" Grid.Row="0" Grid.Column="0" />
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="Locally set brush:" Grid.Row="0" Grid.Column="0" />
                         <Rectangle Width="100" Height="100" x:Name="GradientRectangle" AutomationProperties.Name="GradientRectangle" Grid.Row="1" Grid.Column="0">
                             <Rectangle.Fill>
                                 <media:RadialGradientBrush FallbackColor="Red">
@@ -68,21 +70,25 @@
 
                 <Border>
                     <StackPanel>
-                        <TextBlock Text="Shared resource brush:" />
-                        <Rectangle Width="100" Height="100" Fill="{StaticResource SharedRadialGradientBrush}" />
-                        <TextBlock Text="Text with gradient foreground" FontSize="20" Foreground="{StaticResource SharedRadialGradientBrush}" />
-                        <Button Content="Button with gradient background" Background="{StaticResource SharedRadialGradientBrush}" />
+                        <TextBlock Text="Shared resource brush:"  Style="{StaticResource SubtitleTextBlockStyle}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Rectangle Width="100" Height="100" Fill="{StaticResource SharedRadialGradientBrush}" />
+                            <StackPanel Padding="5">
+                                <TextBlock Text="Text with gradient foreground" FontSize="20" Foreground="{StaticResource SharedRadialGradientBrush}" />
+                                <Button Content="Button with gradient background" Background="{StaticResource SharedRadialGradientBrush}" />
+                            </StackPanel>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 
                 <Border>
-                    <StackPanel x:DefaultBindMode="OneWay">
+                    <StackPanel x:DefaultBindMode="OneWay" contract5Present:Spacing="5">
                         <StackPanel.Resources>
                             <Style TargetType="Button">
                                 <Setter Property="Margin" Value="0,0,5,0" />
                             </Style>
                         </StackPanel.Resources>
-                        <TextBlock Text="Dynamically created brush:" />
+                        <TextBlock  Style="{StaticResource SubtitleTextBlockStyle}" Text="Dynamically created brush:" />
 
                         <StackPanel Orientation="Horizontal">
                             <Button x:Name="ReplaceGradientButton" AutomationProperties.Name="ReplaceGradientButton" Content="Create new gradient" Click="ReplaceGradientButton_Click" />
@@ -130,8 +136,13 @@
                             <TextBlock Text="{x:Bind DynamicGradientBrush.RadiusY}" Grid.Row="5" Grid.Column="1" />
                         </Grid>
 
-                        <!-- Samples described in spec document -->
 
+                    </StackPanel>
+                </Border>
+                <Border>
+                    <StackPanel>
+                        <!-- Samples described in spec document -->
+                        <TextBlock Text="Samples described in spec document" Style="{StaticResource SubtitleTextBlockStyle}"/>
                         <!-- Example 1 : Default property values -->
                         <Rectangle Width="200" Height="200" HorizontalAlignment="Left">
                             <Rectangle.Fill>

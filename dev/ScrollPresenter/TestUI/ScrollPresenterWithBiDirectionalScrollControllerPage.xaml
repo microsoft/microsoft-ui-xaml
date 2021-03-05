@@ -10,12 +10,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
@@ -29,18 +28,22 @@
             <Image x:Name="imgSmall" Source="Assets/ingredient8.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
         </localUtilities:BiDirectionalScrollController>
 
-        <StackPanel Grid.Column="2" Margin="2" VerticalAlignment="Top">
-            <Button x:Name="btnSetScrollPresenterScrollControllers" Content="Set ScrollPresenter scroll controllers" Margin="2" HorizontalAlignment="Stretch" Click="BtnSetScrollPresenterScrollControllers_Click"/>
-            <Button x:Name="btnResetScrollPresenterScrollControllers" Content="Reset ScrollPresenter scroll controllers" Margin="2" HorizontalAlignment="Stretch" Click="BtnResetScrollPresenterScrollControllers_Click"/>
-            <CheckBox x:Name="chkIsBiDirectionalScrollControllerRailing" Content="Is BiDirectionalScrollController Railing?" Margin="2" HorizontalAlignment="Left" 
-                      Checked="ChkIsBiDirectionalScrollControllerRailing_Checked" Unchecked="ChkIsBiDirectionalScrollControllerRailing_Unchecked" IsChecked="True"/>
-        </StackPanel>
+        <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Disabled">
+            <StackPanel>
+                <StackPanel Grid.Column="2" Margin="2" VerticalAlignment="Top">
+                    <Button x:Name="btnSetScrollPresenterScrollControllers" Content="Set ScrollPresenter scroll controllers" Margin="2" HorizontalAlignment="Stretch" Click="BtnSetScrollPresenterScrollControllers_Click"/>
+                    <Button x:Name="btnResetScrollPresenterScrollControllers" Content="Reset ScrollPresenter scroll controllers" Margin="2" HorizontalAlignment="Stretch" Click="BtnResetScrollPresenterScrollControllers_Click"/>
+                    <CheckBox x:Name="chkIsBiDirectionalScrollControllerRailing" Content="Is BiDirectionalScrollController Railing?" Margin="2" HorizontalAlignment="Left" 
+                              Checked="ChkIsBiDirectionalScrollControllerRailing_Checked" Unchecked="ChkIsBiDirectionalScrollControllerRailing_Unchecked" IsChecked="True"/>
+                </StackPanel>
 
-        <StackPanel Grid.Column="3" Margin="2" VerticalAlignment="Top">
-            <TextBlock Text="Log" Foreground="Red" Margin="2"/>
-            <CheckBox x:Name="chkLog" Content="Log?" IsChecked="True" Margin="2"/>
-            <Button x:Name="btnClearLog" Content="Clear Log" Margin="2" Click="BtnClearLog_Click"/>
-            <ListBox x:Name="lstLog" MaxHeight="800" Margin="2"/>
-        </StackPanel>
+                <StackPanel Grid.Column="3" Margin="2" VerticalAlignment="Top">
+                    <TextBlock Text="Log" Foreground="Red" Margin="2"/>
+                    <CheckBox x:Name="chkLog" Content="Log?" IsChecked="True" Margin="2"/>
+                    <Button x:Name="btnClearLog" Content="Clear Log" Margin="2" Click="BtnClearLog_Click"/>
+                    <ListBox x:Name="lstLog" MaxHeight="800" Margin="2"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </local:TestPage>

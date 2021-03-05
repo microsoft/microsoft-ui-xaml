@@ -19,7 +19,7 @@
             </Style>
         </VariableSizedWrapGrid.Resources>
 
-        <StackPanel>
+        <StackPanel Padding="5">
             <TextBlock Text="Common Tests"/>
             <Button x:Name="RadioButtonsPage" AutomationProperties.Name="RadioButtons Test" Margin="2" HorizontalAlignment="Stretch">RadioButtons Test</Button>
             <TextBlock Text="Special Tests" />

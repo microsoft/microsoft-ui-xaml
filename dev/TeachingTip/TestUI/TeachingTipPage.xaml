@@ -15,10 +15,10 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
-        <Grid Grid.Column="0" Margin="5" MinWidth="500">
+        <Grid Grid.Column="0" Margin="5" MinWidth="300">
             <ScrollViewer x:Name="ContentScrollViewer">
                 <StackPanel x:Name="ContentStackPanel">
                     <Grid Background="Green" Width="100" Height="1000"/>

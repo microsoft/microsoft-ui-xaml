@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using MUXControlsTestApp;
 using System;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 namespace RadioButtons_TestUI
@@ -20,13 +21,7 @@ namespace RadioButtons_TestUI
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            ChangeTestFrameVisibility(Visibility.Collapsed);
-        }
-
-        private void ChangeTestFrameVisibility(Visibility visibility)
-        {
-            var testFrame = Window.Current.Content as TestFrame;
-            testFrame.ChangeBarVisibility(visibility);
+            TestRadioButtons1.Focus(FocusState.Programmatic);
         }
 
         private void TestRadioButtons_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
@@ -41,7 +36,6 @@ namespace RadioButtons_TestUI
             {
                 SelectedItemTextBlock1.Text = "null";
             }
-
         }
 
         private void TestRadioButtons2_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
@@ -56,7 +50,6 @@ namespace RadioButtons_TestUI
             {
                 SelectedItemTextBlock2.Text = "null";
             }
-
         }
 
         private void TestRadioButtons_GotFocus(object sender, RoutedEventArgs e)

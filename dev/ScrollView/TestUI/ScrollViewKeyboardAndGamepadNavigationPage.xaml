@@ -20,7 +20,7 @@
             <TextBlock Text="MUX ScrollViews" Margin="1"/>
             <controls:ScrollView x:Name="muxScrollView" 
                 Width="400" Height="400" Margin="2"
-                Background="Aqua" IsTabStop="True"
+                Background="{ThemeResource SystemAccentColor}" IsTabStop="True"
                 ContentOrientation="None"
                 HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled" ZoomMode="Enabled">
                 <StackPanel>
@@ -107,7 +107,7 @@
             <TextBlock Text="WUX ScrollViewers" Margin="1"/>
             <ScrollViewer x:Name="wuxScrollViewer" 
                 Width="400" Height="400" Margin="2"
-                Background="Aquamarine" IsTabStop="True"
+                Background="{ThemeResource SystemAccentColorDark1}" IsTabStop="True"
                 HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Auto"
                 ZoomMode="Enabled">
                 <StackPanel>
