@@ -53,7 +53,7 @@
             <StackPanel Grid.Row="1" Orientation="Horizontal">
                 <CheckBox x:Name="TestCheckBox" AutomationProperties.Name="TestCheckBox" Content="CheckBox" />
                 <Button x:Name="GetCheckBoxRectangleCornerRadiusValue" Content="GetCheckBoxRectangleCornerRadiusValue" AutomationProperties.Name="GetCheckBoxRectangleCornerRadiusValue"  Click="GetCheckBoxRectangleCornerRadiusValue_Click"/>
-                <TextBlock x:Name="CheckBoxRectangleCornerRadiusValueTextBlock" AutomationProperties.Name="CheckBoxRectangleCornerRadiusValueTextBlock"></TextBlock>
+                <TextBlock x:Name="CheckBoxRectangleCornerRadiusValueTextBlock" AutomationProperties.Name="CheckBoxRectangleCornerRadiusValueTextBlock"/>
             </StackPanel>
             <controls:TreeView Grid.Row="2">
                 <controls:TreeView.RootNodes>

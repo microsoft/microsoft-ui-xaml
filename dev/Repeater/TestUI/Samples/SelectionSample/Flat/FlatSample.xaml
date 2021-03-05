@@ -57,7 +57,7 @@
             <TextBlock Text="{Binding ElementName=selectionModel, Path=SelectedItem}"  Margin="0,0,10,0"/>
             <!--<TextBlock Text="{x:Bind selectionModel.SelectedItem, Mode=OneWay}" />-->
             <StackPanel>
-                <TextBlock>Collection Changes</TextBlock>
+                <TextBlock Text="Collection Changes"/>
                 <TextBox x:Name="indexPath" Text="1.2.3" />
                 <Button x:Name="insert" Click="insert_Click" Content="Insert" />
                 <Button x:Name="remove" Click="remove_Click" Content="Remove" />

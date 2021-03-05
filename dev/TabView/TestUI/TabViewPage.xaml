@@ -26,7 +26,7 @@
                     <CheckBox x:Name="IsAddButtonVisibleCheckBox" AutomationProperties.Name="IsAddButtonVisibleCheckBox" Content="Add button visible" IsChecked="{x:Bind Tabs.IsAddTabButtonVisible, Mode=TwoWay}"/>
                     <CheckBox x:Name="IsDisabledTabVisibleCheckBox" AutomationProperties.Name="IsDisabledTabVisibleCheckBox" Checked="IsDisabledTabVisibleCheckBox_CheckChanged" Unchecked="IsDisabledTabVisibleCheckBox_CheckChanged" Content="Disabled tab visible" IsChecked="True"/>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                        <TextBlock VerticalAlignment="Center">Tab Width:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="Tab Width:"/>
                         <ComboBox x:Name="TabWidthComboBox" AutomationProperties.Name="TabWidthComboBox" Margin="4,0,0,0" SelectedIndex="0" SelectionChanged="TabWidthComboBox_SelectionChanged">
                             <ComboBoxItem Content="Equal"/>
                             <ComboBoxItem Content="SizeToContent"/>
@@ -77,12 +77,12 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                        <TextBlock>Selected Index:</TextBlock>
+                        <TextBlock Text="Selected Index:"/>
                         <TextBlock x:Name="SelectedIndexTextBlock" AutomationProperties.Name="SelectedIndexTextBlock" Margin="4,0,0,0" Text="0"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                        <TextBlock>Tab dropped out:</TextBlock>
+                        <TextBlock Text="Tab dropped out:"/>
                         <TextBlock x:Name="TabDroppedOutsideTextBlock" AutomationProperties.Name="TabDroppedOutsideTextBlock" Margin="4,0,0,0" Text=""/>
                     </StackPanel>
 
@@ -179,14 +179,14 @@
                         </controls:TabViewItem.IconSource>
 
                         <StackPanel Padding="16">
-                            <TextBlock>Shop text</TextBlock>
+                            <TextBlock Text="Shop text"/>
                             <Button Content="SecondTabButton" AutomationProperties.Name="SecondTabButton"/>
                         </StackPanel>
                     </controls:TabViewItem>
 
                     <controls:TabViewItem x:Name="LongHeaderTab" AutomationProperties.Name="LongHeaderTab" Header="Long Header No Icon">
                         <StackPanel Padding="16">
-                            <TextBlock >Emoji text</TextBlock>
+                            <TextBlock Text="Emoji text"/>
                             <Button Content="Button 3"/>
                         </StackPanel>
                     </controls:TabViewItem>
@@ -197,7 +197,7 @@
                         </controls:TabViewItem.IconSource>
 
                         <StackPanel>
-                            <TextBlock Padding="16">This tab can't be closed.</TextBlock>
+                            <TextBlock Padding="16" Text="This tab can't be closed."/>
                         </StackPanel>
                     </controls:TabViewItem>
 
@@ -207,7 +207,7 @@
                         </controls:TabViewItem.IconSource>
 
                         <StackPanel>
-                            <TextBlock Padding="16">This tab can't be selected.</TextBlock>
+                            <TextBlock Padding="16" Text="This tab can't be selected."/>
                         </StackPanel>
                     </controls:TabViewItem>
 
@@ -216,7 +216,7 @@
                             <controls:SymbolIconSource Symbol="Contact"/>
                         </controls:TabViewItem.IconSource>
 
-                        <TextBlock x:Name="LastTabContent" AutomationProperties.Name="LastTabContent" Padding="16">Contact text</TextBlock>
+                        <TextBlock x:Name="LastTabContent" AutomationProperties.Name="LastTabContent" Padding="16" Text="Contact text"/>
                     </controls:TabViewItem>
 
                 </controls:TabView>
@@ -267,7 +267,7 @@
                                     <controls:SymbolIconSource Symbol="Placeholder"/>
                                 </controls:TabViewItem.IconSource>
 
-                                <TextBlock Padding="16">Content</TextBlock>
+                                <TextBlock Padding="16" Text="Content"/>
                             </controls:TabViewItem>
 
                         </controls:TabView.TabItems>

@@ -39,7 +39,7 @@
                         </muxc:TeachingTip.HeroContent>
                         <muxc:TeachingTip.Content>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock VerticalAlignment="Center"  x:Name="TeachingTipContentTextBlock" Unloaded="RemoveTeachingTipTextBlockContent_Unloaded">Cancel closes:</TextBlock>
+                                <TextBlock VerticalAlignment="Center"  x:Name="TeachingTipContentTextBlock" Unloaded="RemoveTeachingTipTextBlockContent_Unloaded" Text="Cancel closes:"/>
                                 <CheckBox x:Name="CancelClosesCheckBoxInVisualTree" IsChecked="False" VerticalAlignment="Center"/>
                             </StackPanel>
                         </muxc:TeachingTip.Content>
@@ -63,7 +63,7 @@
                                 </muxc:TeachingTip.HeroContent>
                                 <muxc:TeachingTip.Content>
                                     <StackPanel Orientation="Horizontal"   >
-                                        <TextBlock VerticalAlignment="Center">Cancel closes:</TextBlock>
+                                        <TextBlock VerticalAlignment="Center" Text="Cancel closes:"/>
                                         <CheckBox x:Name="CancelClosesCheckBoxInResources" IsChecked="False" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </muxc:TeachingTip.Content>
@@ -556,7 +556,7 @@
                         <StackPanel Grid.Row="50" Orientation="Horizontal">
                             <Button x:Name="GetEdgeTeachingTipOffset" Click="GetEdgeTeachingTipOffset_Clicked"
                                     AutomationProperties.Name="GetEdgeTeachingTipOffset">Get TeachingTip on edge offset</Button>
-                            <TextBlock x:Name="EdgeTeachingTipOffset" AutomationProperties.Name="EdgeTeachingTipOffset">0;0</TextBlock>
+                            <TextBlock x:Name="EdgeTeachingTipOffset" AutomationProperties.Name="EdgeTeachingTipOffset" Text="0;0"/>
                         </StackPanel>
                     </Grid>
                 </ScrollViewer>
@@ -603,7 +603,7 @@
                         </muxc:TeachingTip.HeroContent>
                         <muxc:TeachingTip.Content>
                             <StackPanel Orientation="Horizontal"   >
-                                <TextBlock>Just some demo text</TextBlock>
+                                <TextBlock Text="Just some demo text"/>
                             </StackPanel>
                         </muxc:TeachingTip.Content>
                     </muxc:TeachingTip>

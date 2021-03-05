@@ -206,8 +206,8 @@
                     <StackPanel Orientation="Horizontal">
                         <Button x:Name="GetOverflowMenuCornerRadiusButton" AutomationProperties.Name="GetOverflowMenuCornerRadiusButton" Content="GetOverflowMenuCornerRadius"
                                 Margin="0,0,2,0" Click="GetOverflowMenuCornerRadiusButton_Click"/>
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">CornerRadius:</TextBlock>
-                        <TextBlock x:Name="OverflowMenuCornerRadiusTextBlock" AutomationProperties.Name="OverflowMenuCornerRadiusTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center">-</TextBlock>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="CornerRadius:"/>
+                        <TextBlock x:Name="OverflowMenuCornerRadiusTextBlock" AutomationProperties.Name="OverflowMenuCornerRadiusTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center" Text="-"/>
                     </StackPanel>
 
                     <TextBlock TextWrapping="Wrap" Grid.Row="1" Margin="5">

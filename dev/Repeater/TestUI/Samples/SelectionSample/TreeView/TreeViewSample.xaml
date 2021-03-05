@@ -72,7 +72,7 @@
             <Button Content="Back" Click="OnBackClicked" />
             <Button Content="Debug" Click="Button_Click" />
             <StackPanel>
-                <TextBlock>Collection Changes</TextBlock>
+                <TextBlock Text="Collection Changes"/>
                 <TextBox x:Name="indexPath" Text="0.0.0.0" />
                 <Button x:Name="insert" Click="insert_Click" Content="Insert" />
                 <Button x:Name="remove" Click="remove_Click" Content="Remove" />

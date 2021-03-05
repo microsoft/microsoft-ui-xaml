@@ -189,7 +189,7 @@
                             <ComboBoxItem Content="LeftMinimal" Tag="LeftMinimal"/>
                         </ComboBox>
                         <Button x:Name="ClearSelectionChangeIndicatorButton" AutomationProperties.Name="ClearSelectionChangeIndicatorButton"  Click="ClearSelectionChangeBlock">Clear selection changed indicator</Button>
-                        <TextBlock VerticalAlignment="Center">Selection was raised:  </TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="Selection was raised:"/>
                         <TextBlock VerticalAlignment="Center" x:Name="SelectionChangedRaised" AutomationProperties.Name="SelectionChangedRaised"/>
                     </StackPanel>
 
@@ -234,16 +234,16 @@
 
                     <StackPanel Orientation="Horizontal">
                         <Button x:Name="ReadSettingsSelected" AutomationProperties.Name="ReadSettingsSelected" Content="ReadSettingsSelected" Click="ReadSettingsSelected_Click"/>
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">SettingsSelectionState: </TextBlock>
-                        <TextBlock x:Name="SettingsSelectedState" AutomationProperties.Name="SettingsSelectedState" HorizontalAlignment="Center" VerticalAlignment="Center">False</TextBlock>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="SettingsSelectionState:"/>
+                        <TextBlock x:Name="SettingsSelectedState" AutomationProperties.Name="SettingsSelectedState" HorizontalAlignment="Center" VerticalAlignment="Center" Text="False"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0 5">
                         <Button x:Name="GetHeaderContentMargin" AutomationProperties.Name="GetHeaderContentMargin" Content="GetHeaderContentMargin" Click="GetHeaderContentMargin_Click"/>
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">HeaderContent.Margin: </TextBlock>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="HeaderContent.Margin: "/>
                         <TextBlock x:Name="HeaderContentMarginResult" AutomationProperties.Name="HeaderContentMarginResult" VerticalAlignment="Center"/>
                         <Button x:Name="GetNavViewActiveVisualStates" AutomationProperties.Name="GetNavViewActiveVisualStates" Content="GetNavViewActiveVisualStates" Click="GetNavViewActiveVisualStates_Click"/>
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">NavView Active VisualStates: </TextBlock>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="NavView Active VisualStates: "/>
                         <TextBlock x:Name="NavViewActiveVisualStatesResult" AutomationProperties.Name="NavViewActiveVisualStatesResult" VerticalAlignment="Center"/>
                     </StackPanel>
                     
@@ -251,26 +251,26 @@
                         <Button x:Name="ChangePaneHeader" AutomationProperties.Name="ChangePaneHeader" Content="ChangePaneHeader" Margin="0,0,2,0" Click="ChangePaneHeader_Click"/>
                         <Button x:Name="ChangeFocusVisualKind" AutomationProperties.Name="ChangeFocusVisualKind" Content="ChangeFocusVisualKind" Margin="0,0,2,0" Click="ChangeFocusVisualKind_Click"/>
                         <Button x:Name="GetHomeItemRevealVisualState" AutomationProperties.Name="GetHomeItemRevealVisualState" Click="GetHomeItemRevealVisualState_Click" Content="Get HomeItem Reveal VisualState"/>
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">LeftNavigationReveal?: </TextBlock>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="LeftNavigationReveal?: "/>
                         <TextBlock x:Name="OnLeftNavigationRevealVisualState" AutomationProperties.Name="OnLeftNavigationRevealVisualState" Text="False" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0 5">
                         <Button x:Name="ResetEventCounters" AutomationProperties.Name="ResetEventCounters" Content="Reset Event Counters" Margin="0,0,2,0" Click="ResetEventCounters_Click"/>
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">Number_of_ItemInvoked_events_raised:</TextBlock>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Number_of_ItemInvoked_events_raised:"/>
                         <TextBlock x:Name="NumberOfItemInvokedEventsRaisedTextBlock" AutomationProperties.Name="NumberOfItemInvokedEventsRaisedTextBlock" Text="0" VerticalAlignment="Center"/>
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">Number_of_SelectionChanged_events_raised:</TextBlock>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Number_of_SelectionChanged_events_raised:"/>
                         <TextBlock x:Name="NumberOfSelectionChangedEventsRaisedTextBlock" AutomationProperties.Name="NumberOfSelectionChangedEventsRaisedTextBlock" Text="0" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">ItemInvoked Arguments (InvokedItem | InvokedItemContainer): </TextBlock>
+                            <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ItemInvoked Arguments (InvokedItem | InvokedItemContainer): "/>
                             <TextBox Margin="42,0,0,0" x:Name="ItemInvokedItemType" AutomationProperties.Name="ItemInvokedItemType" Text="N/A"/>
                             <TextBox x:Name="ItemInvokedItemContainerType" AutomationProperties.Name="ItemInvokedItemContainerType" Text="N/A"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">SelectionChanged Arguments (SelectedItem | SelectedItemContainer):</TextBlock>
+                            <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="SelectionChanged Arguments (SelectedItem | SelectedItemContainer):"/>
                             <TextBox x:Name="SelectionChangedItemType" AutomationProperties.Name="SelectionChangedItemType" Text="N/A"/>
                             <TextBox x:Name="SelectionChangedItemContainerType" AutomationProperties.Name="SelectionChangedItemContainerType" Text="N/A"/>
                         </StackPanel>
@@ -299,7 +299,7 @@
                                 Content="GetTopLevelNavViewItemContentPresenterMargin" Margin="0,0,5,0" Click="GetTopLevelNavViewItemContentPresenterMarginButton_Click"/>
                         <Button x:Name="GetChildNavViewItemContentPresenterMarginButton" AutomationProperties.Name="GetChildNavViewItemContentPresenterMarginButton"
                                 Content="GetChildNavViewItemContentPresenterMargin" Margin="0,0,2,0" Click="GetChildNavViewItemContentPresenterMarginButton_Click" />
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">NavViewItemContentPresenter.Margin:</TextBlock>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="NavViewItemContentPresenter.Margin:"/>
                         <TextBlock x:Name="NavViewItemContentPresenterMarginTextBlock" AutomationProperties.Name="NavViewItemContentPresenterMarginTextBlock" VerticalAlignment="Center"/>
                     </StackPanel>
 

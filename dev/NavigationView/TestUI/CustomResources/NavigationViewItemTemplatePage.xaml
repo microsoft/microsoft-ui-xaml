@@ -41,12 +41,12 @@
                 <TextBlock x:Name="SelectionEventResult" AutomationProperties.Name="SelectionEventResult"/>
                 <StackPanel Orientation="Vertical" contract5Present:Spacing="5">
                     <StackPanel Orientation="Horizontal" contract5Present:Spacing="5">
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">ItemInvoked Arguments (InvokedItem | InvokedItemContainer):</TextBlock>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="ItemInvoked Arguments (InvokedItem | InvokedItemContainer):"/>
                         <TextBox Margin="42,0,0,0" x:Name="ItemInvokedItemType" AutomationProperties.Name="ItemInvokedItemType" Text="N/A"/>
                         <TextBox x:Name="ItemInvokedItemContainerType" AutomationProperties.Name="ItemInvokedItemContainerType" Text="N/A"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" contract5Present:Spacing="5">
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">SelectionChanged Arguments (SelectedItem | SelectedItemContainer):</TextBlock>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="SelectionChanged Arguments (SelectedItem | SelectedItemContainer):"/>
                         <TextBox x:Name="SelectionChangedItemType" AutomationProperties.Name="SelectionChangedItemType" Text="N/A"/>
                         <TextBox x:Name="SelectionChangedItemContainerType" AutomationProperties.Name="SelectionChangedItemContainerType" Text="N/A"/>
                     </StackPanel>

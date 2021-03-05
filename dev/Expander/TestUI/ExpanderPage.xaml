@@ -33,7 +33,7 @@
                 <controls:Expander.Header>
                     <TextBlock Text="This expander is collapsed by default. This is a long title to test the header width. ext should be wrapping here." TextWrapping="Wrap" Margin="0,12,0,13"/>
                 </controls:Expander.Header>
-                <TextBlock AutomationProperties.AutomationId="CollapsedExpanderContent">Content</TextBlock>
+                <TextBlock AutomationProperties.AutomationId="CollapsedExpanderContent" Text="Content"/>
             </controls:Expander>
 
             <controls:Expander AutomationProperties.Name="ExpanderWithButtons" IsExpanded="False" Margin="12">
@@ -41,35 +41,35 @@
                     <ToggleButton>This is a toggle button in the header</ToggleButton>
                 </controls:Expander.Header>
                 <StackPanel>
-                    <TextBlock TextWrapping="Wrap">Content. This is long content to test wrapping on the content section, this content should be wrapping.</TextBlock>
+                    <TextBlock TextWrapping="Wrap" Text="Content. This is long content to test wrapping on the content section, this content should be wrapping."/>
                 </StackPanel>
             </controls:Expander>
 
             <controls:Expander AutomationProperties.Name="ExpanderWithUpwardsDirection" ExpandDirection="Up" IsExpanded="False" Margin="12">
                 <controls:Expander.Header>
-                    <TextBlock Margin="0,0,0,1">This expander will expand upwards</TextBlock>
+                    <TextBlock Margin="0,0,0,1" Text="This expander will expand upwards"/>
                 </controls:Expander.Header>
                 <StackPanel>
-                    <TextBlock>Content</TextBlock>
+                    <TextBlock Text="Content"/>
                 </StackPanel>
             </controls:Expander>
 
             <controls:Expander IsEnabled="False" AutomationProperties.Name="ExpanderNotEnabled" ExpandDirection="Down" IsExpanded="False" Margin="12">
                 <controls:Expander.Header>
-                    <TextBlock Margin="0,0,0,1">This expander is not enabled</TextBlock>
+                    <TextBlock Margin="0,0,0,1" Text="This expander is not enabled"/>
                 </controls:Expander.Header>
                 <StackPanel>
-                    <TextBlock>Content</TextBlock>
+                    <TextBlock Text="Content"/>
                 </StackPanel>
             </controls:Expander>
 
             <local:TestControl IsTabStop="True" x:Name="CustomControl" AutomationProperties.Name="CustomControl" Margin="12">
                 <controls:Expander x:Name="ExpanderWithCustomEventsSource" ExpandDirection="Down" IsExpanded="False">
                     <controls:Expander.Header>
-                        <TextBlock Margin="0,0,0,1">This expander has a custom events source</TextBlock>
+                        <TextBlock Margin="0,0,0,1" Text="This expander has a custom events source"/>
                     </controls:Expander.Header>
                     <StackPanel>
-                        <TextBlock>Content</TextBlock>
+                        <TextBlock Text="Content"/>
                     </StackPanel>
                 </controls:Expander>
             </local:TestControl>

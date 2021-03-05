@@ -45,15 +45,15 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Row="0" Grid.Column="0">Selected Index:</TextBlock>
-            <TextBlock x:Name="SelectedIndexTextBlock1" AutomationProperties.Name="SelectedIndexTextBlock1" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left">-1</TextBlock>
-            <TextBlock Grid.Row="1" Grid.Column="0">Selected Item:</TextBlock>
-            <TextBlock x:Name="SelectedItemTextBlock1" AutomationProperties.Name="SelectedItemTextBlock1" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left">null</TextBlock>
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Selected Index:"/>
+            <TextBlock x:Name="SelectedIndexTextBlock1" AutomationProperties.Name="SelectedIndexTextBlock1" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" Text="-1"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Selected Item:"/>
+            <TextBlock x:Name="SelectedItemTextBlock1" AutomationProperties.Name="SelectedItemTextBlock1" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Text="null"/>
 
-            <TextBlock Grid.Row="2" Grid.Column="0">Focused Index:</TextBlock>
-            <TextBlock x:Name="FocusedIndexTextBlock1" AutomationProperties.Name="FocusedIndexTextBlock1" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left">-1</TextBlock>
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Focused Index:"/>
+            <TextBlock x:Name="FocusedIndexTextBlock1" AutomationProperties.Name="FocusedIndexTextBlock1" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" Text="-1"/>
 
-            <TextBlock Grid.Row="3" Grid.Column="0">Has Focus:</TextBlock>
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="Has Focus:"/>
             <CheckBox x:Name="TestRadioButtons1HasFocusCheckBox" AutomationProperties.Name="TestRadioButtons1HasFocusCheckBox" Grid.Row="3" Grid.Column="1" IsTabStop="False"/>
         </Grid>
 
@@ -64,7 +64,7 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0">Index to select:</TextBlock>
+            <TextBlock Grid.Column="0" Text="Index to select:"/>
             <TextBox x:Name="IndexToSelectTextBox1" AutomationProperties.Name="IndexToSelectTextBox1" Grid.Column="1" Text="-1" Margin="5,0,0,0" VerticalAlignment="Top"
                      IsTabStop="False"/>
             <Button x:Name="SelectByIndexButton1" AutomationProperties.Name="SelectByIndexButton1" Grid.Column="2" IsTabStop="False" Click="SelectByIndexButton1_Click"
@@ -95,15 +95,15 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Row="0" Grid.Column="0">Selected Index:</TextBlock>
-            <TextBlock x:Name="SelectedIndexTextBlock2" AutomationProperties.Name="SelectedIndexTextBlock2" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left">-1</TextBlock>
-            <TextBlock Grid.Row="1" Grid.Column="0">Selected Item:</TextBlock>
-            <TextBlock x:Name="SelectedItemTextBlock2" AutomationProperties.Name="SelectedItemTextBlock2" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left">null</TextBlock>
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Selected Index:"/>
+            <TextBlock x:Name="SelectedIndexTextBlock2" AutomationProperties.Name="SelectedIndexTextBlock2" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" Text="-1"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Selected Item:"/>
+            <TextBlock x:Name="SelectedItemTextBlock2" AutomationProperties.Name="SelectedItemTextBlock2" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Text="null"/>
 
-            <TextBlock Grid.Row="2" Grid.Column="0">Focused Index:</TextBlock>
-            <TextBlock x:Name="FocusedIndexTextBlock2" AutomationProperties.Name="FocusedIndexTextBlock2" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left">-1</TextBlock>
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Focused Index:"/>
+            <TextBlock x:Name="FocusedIndexTextBlock2" AutomationProperties.Name="FocusedIndexTextBlock2" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" Text="-1"/>
 
-            <TextBlock Grid.Row="3" Grid.Column="0">Has Focus:</TextBlock>
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="Has Focus:"/>
             <CheckBox x:Name="TestRadioButtons2HasFocusCheckBox" AutomationProperties.Name="TestRadioButtons2HasFocusCheckBox" Grid.Row="3" Grid.Column="1" IsTabStop="False"/>
         </Grid>
 
@@ -114,7 +114,7 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0">Index to select:</TextBlock>
+            <TextBlock Grid.Column="0" Text="Index to select:"/>
             <TextBox x:Name="IndexToSelectTextBox2" AutomationProperties.Name="IndexToSelectTextBox2" Grid.Column="1" Margin="5,0,0,0" VerticalAlignment="Top" Text="-1"
                      IsTabStop="False"/>
             <Button x:Name="SelectByIndexButton2" AutomationProperties.Name="SelectByIndexButton2" Grid.Column="2" IsTabStop="False" Click="SelectByIndexButton2_Click"

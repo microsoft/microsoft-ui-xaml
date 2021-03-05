@@ -36,9 +36,9 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center">Last Expanding:</TextBlock>
+                        <TextBlock Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center" Text="Last Expanding:"/>
                         <TextBlock Grid.Column="1" Margin="0,0,10,0" x:Name="TextBlockExpandingItem"  AutomationProperties.Name="TextBlockExpandingItem" Text="N/A"/>
-                        <TextBlock Grid.Column="2" Margin="0,0,5,0" VerticalAlignment="Center">Expanding Item and Container match:</TextBlock>
+                        <TextBlock Grid.Column="2" Margin="0,0,5,0" VerticalAlignment="Center" Text="Expanding Item and Container match:"/>
                         <TextBlock Grid.Column="3" x:Name="TextblockExpandingItemAndContainerMatch"  AutomationProperties.Name="TextblockExpandingItemAndContainerMatch" Text="N/A"/>
                     </Grid>
                     <Grid x:Name="CollapsedEventStates">
@@ -48,9 +48,9 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center">Last Collapsed:</TextBlock>
+                        <TextBlock Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center" Text="Last Collapsed:"/>
                         <TextBlock Grid.Column="1" Margin="0,0,10,0" x:Name="TextBlockCollapsedItem" AutomationProperties.Name="TextBlockCollapsedItem" Text="N/A"/>
-                        <TextBlock Grid.Column="2" Margin="0,0,5,0"  VerticalAlignment="Center">Collapsed Item and Container match:</TextBlock>
+                        <TextBlock Grid.Column="2" Margin="0,0,5,0"  VerticalAlignment="Center" Text="Collapsed Item and Container match:"/>
                         <TextBlock Grid.Column="3" x:Name="TextblockCollapsedItemAndContainerMatch" AutomationProperties.Name="TextblockCollapsedItemAndContainerMatch" Text="N/A"/>
                     </Grid>
                 </StackPanel>

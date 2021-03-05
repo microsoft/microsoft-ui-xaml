@@ -30,15 +30,15 @@
                               Content="Simulate Touch" Checked="SimulateTouchCheckBox_Checked" Unchecked="SimulateTouchCheckBox_Unchecked"/>
                     <TextBlock Text="Status" FontSize="22"/>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock>Click count:</TextBlock>
+                        <TextBlock Text="Click count:"/>
                         <TextBlock x:Name="ClickCountTextBlock" AutomationProperties.Name="ClickCountTextBlock" Margin="4,0,0,0" Text="0"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock>Flyout opened:</TextBlock>
+                        <TextBlock Text="Flyout opened:"/>
                         <TextBlock x:Name="FlyoutOpenedCountTextBlock" AutomationProperties.Name="FlyoutOpenedCountTextBlock" Margin="4,0,0,0" Text="0"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock>Flyout closed:</TextBlock>
+                        <TextBlock Text="Flyout closed:"/>
                         <TextBlock x:Name="FlyoutClosedCountTextBlock" AutomationProperties.Name="FlyoutClosedCountTextBlock" Margin="4,0,0,0" Text="0"/>
                     </StackPanel>
 
@@ -129,11 +129,11 @@
                 <ToggleButton Content="For Comparison" Margin="6,0,0,0"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <TextBlock>Toggle State:</TextBlock>
+                <TextBlock Text="Toggle State:"/>
                 <TextBlock x:Name="ToggleStateTextBlock" AutomationProperties.Name="ToggleStateTextBlock" Margin="4,0,0,0" Text="Unchecked"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <TextBlock>Toggle State on Click:</TextBlock>
+                <TextBlock Text="Toggle State on Click:"/>
                 <TextBlock x:Name="ToggleStateOnClickTextBlock" AutomationProperties.Name="ToggleStateOnClickTextBlock" Margin="4,0,0,0" Text="Unchecked"/>
             </StackPanel>
 
@@ -154,7 +154,7 @@
                 <CheckBox x:Name="CanExecuteCheckBox" AutomationProperties.Name="CanExecuteCheckBox" Content="CanExecute" Checked="CanExecuteCheckBox_Checked" Unchecked="CanExecuteCheckBox_Unchecked" IsChecked="True" Margin="12,0,0,0"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <TextBlock>Execute Count:</TextBlock>
+                <TextBlock Text="Execute Count:"/>
                 <TextBlock x:Name="ExecuteCountTextBlock" AutomationProperties.Name="ExecuteCountTextBlock" Margin="4,0,0,0" Text="0"/>
             </StackPanel>
 

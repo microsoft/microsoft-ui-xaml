@@ -121,7 +121,7 @@
 
                 <!-- NumberBox for nested scrolling bug(s)-->
                 <StackPanel Margin="30,0,0,0">
-                    <TextBlock>NumberBox inside ScrollViewer test</TextBlock>
+                    <TextBlock Text="NumberBox inside ScrollViewer test"/>
                     <ScrollViewer x:Name="ScrollviewerWithScroll" Height="50"
                                   Width="200"
                             ViewChanged="ScrollviewerWithScroll_ViewChanged">

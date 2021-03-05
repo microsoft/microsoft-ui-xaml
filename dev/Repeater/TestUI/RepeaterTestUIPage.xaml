@@ -43,12 +43,12 @@
             <StackPanel>
                 <TextBlock Text="Built in layouts" Style="{StaticResource SubheaderTextBlockStyle}" />
                 <StackPanel>
-                    <TextBlock>ItemSpacing</TextBlock>
+                    <TextBlock Text="ItemSpacing"/>
                     <TextBox x:Name="itemSpacing" Text="10"></TextBox>
-                    <TextBlock>MinColumnSpacing</TextBlock>
+                    <TextBlock Text="MinColumnSpacing"/>
                     <TextBox x:Name="lineSpacing" Text="10"></TextBox>
-                    <TextBlock>LineAlignment</TextBlock>
-                    <TextBlock>(Start/Center/End/SpaceEvenly/SpaceAround/SpaceBetween)</TextBlock>
+                    <TextBlock Text="LineAlignment"/>
+                    <TextBlock Text="(Start/Center/End/SpaceEvenly/SpaceAround/SpaceBetween)"/>
                     <TextBox x:Name="lineAlingment" Text="Start"></TextBox>
                     <ToggleSwitch x:Name="orientation" OnContent="Horizontal" OffContent="Vertical">Scroll Orientation</ToggleSwitch>
                 </StackPanel>

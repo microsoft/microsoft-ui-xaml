@@ -97,15 +97,15 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <StackPanel Orientation="Vertical" Width="118">
-                    <TextBlock VerticalAlignment="Center">O:</TextBlock>
+                    <TextBlock VerticalAlignment="Center" Text="O:"/>
                     <CheckBox x:Name="SwipeItem8OpenCheckBox" AutomationProperties.Name="SwipeItem8OpenCheckBox" IsChecked="false" IsEnabled="false" Width="40"/>
-                    <TextBlock VerticalAlignment="Center">I:</TextBlock>
+                    <TextBlock VerticalAlignment="Center" Text="I:"/>
                     <CheckBox x:Name="SwipeItem8IdleCheckBox" AutomationProperties.Name="SwipeItem8IdleCheckBox" IsChecked="true" IsEnabled="false"/>
                 </StackPanel>
                 <StackPanel Orientation="Vertical" Width="118">
-                    <TextBlock VerticalAlignment="Center">O:</TextBlock>
+                    <TextBlock VerticalAlignment="Center" Text="O:"/>
                     <CheckBox x:Name="SwipeItem9OpenCheckBox" AutomationProperties.Name="SwipeItem9OpenCheckBox" IsChecked="false" IsEnabled="false"/>
-                    <TextBlock VerticalAlignment="Center">I:</TextBlock>
+                    <TextBlock VerticalAlignment="Center" Text="I:"/>
                     <CheckBox x:Name="SwipeItem9IdleCheckBox" AutomationProperties.Name="SwipeItem9IdleCheckBox" IsChecked="true" IsEnabled="false"/>
                 </StackPanel>
             </StackPanel>
@@ -186,57 +186,57 @@
                 </StackPanel>
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Height="40">
-                        <TextBlock VerticalAlignment="Center">O:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="O:"/>
                         <CheckBox x:Name="SwipeItem1OpenCheckBox" AutomationProperties.Name="SwipeItem1OpenCheckBox" IsChecked="false" IsEnabled="false"/>
-                        <TextBlock VerticalAlignment="Center">I:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="I:"/>
                         <CheckBox x:Name="SwipeItem1IdleCheckBox" AutomationProperties.Name="SwipeItem1IdleCheckBox" IsChecked="true" IsEnabled="false"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Height="40">
-                        <TextBlock VerticalAlignment="Center">O:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="O:"/>
                         <CheckBox x:Name="SwipeItem2OpenCheckBox" AutomationProperties.Name="SwipeItem2OpenCheckBox" IsChecked="false" IsEnabled="false"/>
-                        <TextBlock VerticalAlignment="Center">I:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="I:"/>
                         <CheckBox x:Name="SwipeItem2IdleCheckBox" AutomationProperties.Name="SwipeItem2IdleCheckBox" IsChecked="true" IsEnabled="false"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Height="44">
-                        <TextBlock VerticalAlignment="Center">O:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="O:"/>
                         <CheckBox x:Name="SwipeItem3OpenCheckBox" AutomationProperties.Name="SwipeItem3OpenCheckBox" IsChecked="false" IsEnabled="false"/>
-                        <TextBlock VerticalAlignment="Center">I:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="I:"/>
                         <CheckBox x:Name="SwipeItem3IdleCheckBox" AutomationProperties.Name="SwipeItem3IdleCheckBox" IsChecked="true" IsEnabled="false"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Height="40">
-                        <TextBlock VerticalAlignment="Center">O:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="O:"/>
                         <CheckBox x:Name="SwipeItem4OpenCheckBox" AutomationProperties.Name="SwipeItem4OpenCheckBox" IsChecked="false" IsEnabled="false"/>
-                        <TextBlock VerticalAlignment="Center">I:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="I:"/>
                         <CheckBox x:Name="SwipeItem4IdleCheckBox" AutomationProperties.Name="SwipeItem4IdleCheckBox" IsChecked="true" IsEnabled="false"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Height="40">
-                        <TextBlock VerticalAlignment="Center">O:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="O:"/>
                         <CheckBox x:Name="SwipeItem5OpenCheckBox" AutomationProperties.Name="SwipeItem5OpenCheckBox" IsChecked="false" IsEnabled="false"/>
-                        <TextBlock VerticalAlignment="Center">I:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="I:"/>
                         <CheckBox x:Name="SwipeItem5IdleCheckBox" AutomationProperties.Name="SwipeItem5IdleCheckBox" IsChecked="true" IsEnabled="false"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Height="40">
-                        <TextBlock VerticalAlignment="Center">O:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="O:"/>
                         <CheckBox x:Name="SwipeItem10OpenCheckBox" AutomationProperties.Name="SwipeItem10OpenCheckBox" IsChecked="false" IsEnabled="false"/>
-                        <TextBlock VerticalAlignment="Center">I:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="I:"/>
                         <CheckBox x:Name="SwipeItem10IdleCheckBox" AutomationProperties.Name="SwipeItem10IdleCheckBox" IsChecked="true" IsEnabled="false"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Height="40">
-                        <TextBlock VerticalAlignment="Center">O:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="O:"/>
                         <CheckBox x:Name="SwipeItem11OpenCheckBox" AutomationProperties.Name="SwipeItem11OpenCheckBox" IsChecked="false" IsEnabled="false"/>
-                        <TextBlock VerticalAlignment="Center">I:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="I:"/>
                         <CheckBox x:Name="SwipeItem11IdleCheckBox" AutomationProperties.Name="SwipeItem11IdleCheckBox" IsChecked="true" IsEnabled="false"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Height="60">
-                        <TextBlock VerticalAlignment="Center">O:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="O:"/>
                         <CheckBox x:Name="SwipeItem6OpenCheckBox" AutomationProperties.Name="SwipeItem6OpenCheckBox" IsChecked="false" IsEnabled="false"/>
-                        <TextBlock VerticalAlignment="Center">I:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="I:"/>
                         <CheckBox x:Name="SwipeItem6IdleCheckBox" AutomationProperties.Name="SwipeItem6IdleCheckBox" IsChecked="true" IsEnabled="false"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Height="60">
-                        <TextBlock VerticalAlignment="Center">O:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="O:"/>
                         <CheckBox x:Name="SwipeItem7OpenCheckBox" AutomationProperties.Name="SwipeItem7OpenCheckBox" IsChecked="false" IsEnabled="false"/>
-                        <TextBlock VerticalAlignment="Center">I:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="I:"/>
                         <CheckBox x:Name="SwipeItem7IdleCheckBox" AutomationProperties.Name="SwipeItem7IdleCheckBox" IsChecked="true" IsEnabled="false"/>
                     </StackPanel>
                 </StackPanel>

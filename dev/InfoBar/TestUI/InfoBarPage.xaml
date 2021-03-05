@@ -85,7 +85,7 @@
                 </ScrollViewer>
 
                 <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">
-                    <TextBlock>Events:</TextBlock>
+                    <TextBlock Text="Events:"/>
                     <ListBox x:Name="EventListBox" AutomationProperties.Name="EventListBox" MinWidth="150" MaxHeight="380">
                         <ListBox.Resources>
                             <Style TargetType="ListBoxItem">

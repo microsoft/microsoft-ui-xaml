@@ -98,9 +98,9 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center">Last Expanding:</TextBlock>
+                        <TextBlock Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center" Text="Last Expanding:"/>
                         <TextBlock Grid.Column="1" Margin="0,0,10,0" x:Name="TextBlockExpandingItem"  AutomationProperties.Name="TextBlockExpandingItem" Text="N/A"/>
-                        <TextBlock Grid.Column="2" Margin="0,0,5,0" VerticalAlignment="Center">Expanding Item and Container match:</TextBlock>
+                        <TextBlock Grid.Column="2" Margin="0,0,5,0" VerticalAlignment="Center" Text=">Expanding Item and Container match:"/>
                         <TextBlock Grid.Column="3" x:Name="TextblockExpandingItemAndContainerMatch"  AutomationProperties.Name="TextblockExpandingItemAndContainerMatch" Text="N/A"/>
                     </Grid>
                     <Grid x:Name="CollapsedEventStates">
@@ -110,9 +110,9 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center">Last Collapsed:</TextBlock>
+                        <TextBlock Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center" Text="Last Collapsed:"/>
                         <TextBlock Grid.Column="1" Margin="0,0,10,0" x:Name="TextBlockCollapsedItem" AutomationProperties.Name="TextBlockCollapsedItem" Text="N/A"/>
-                        <TextBlock Grid.Column="2" Margin="0,0,5,0"  VerticalAlignment="Center">Collapsed Item and Container match:</TextBlock>
+                        <TextBlock Grid.Column="2" Margin="0,0,5,0"  VerticalAlignment="Center" Text="Collapsed Item and Container match:"/>
                         <TextBlock Grid.Column="3" x:Name="TextblockCollapsedItemAndContainerMatch" AutomationProperties.Name="TextblockCollapsedItemAndContainerMatch" Text="N/A"/>
                     </Grid>
                 </StackPanel>
@@ -122,8 +122,8 @@
                     <StackPanel Orientation="Horizontal">
                         <Button x:Name="GetMenuItem1ChildrenFlyoutCornerRadiusButton" AutomationProperties.Name="GetMenuItem1ChildrenFlyoutCornerRadiusButton" Content="GetMenuItem1ChildrenFlyoutCornerRadius"
                                 Click="GetMenuItem1ChildrenFlyoutCornerRadiusButton_Click"/>
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">CornerRadius:</TextBlock>
-                        <TextBlock x:Name="MenuItem1ChildrenFlyoutCornerRadiusTextBlock" AutomationProperties.Name="MenuItem1ChildrenFlyoutCornerRadiusTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center">-</TextBlock>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="CornerRadius:"/>
+                        <TextBlock x:Name="MenuItem1ChildrenFlyoutCornerRadiusTextBlock" AutomationProperties.Name="MenuItem1ChildrenFlyoutCornerRadiusTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center" Text="-"/>
                     </StackPanel>
                 </StackPanel>
 

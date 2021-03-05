@@ -58,13 +58,13 @@
                         <RowDefinition />
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0">Click count:</TextBlock>
+                    <TextBlock Grid.Row="0" Text="Click count:"/>
                     <TextBlock x:Name="ClickCountTextBlock" AutomationProperties.Name="ClickCountTextBlock"
                                Margin="4,0,0,0" Text="0" Grid.Row="0" Grid.Column="1"/>
-                    <TextBlock Grid.Row="1">Flyout opened:</TextBlock>
+                    <TextBlock Grid.Row="1" Text="Flyout opened:"/>
                     <TextBlock x:Name="FlyoutOpenedCountTextBlock" AutomationProperties.Name="FlyoutOpenedCountTextBlock"
                                Margin="4,0,0,0" Text="0" Grid.Row="1" Grid.Column="1"/>
-                    <TextBlock Grid.Row="2">Flyout closed:</TextBlock>
+                    <TextBlock Grid.Row="2" Text="Flyout closed:"/>
                     <TextBlock x:Name="FlyoutClosedCountTextBlock" AutomationProperties.Name="FlyoutClosedCountTextBlock"
                                Margin="4,0,0,0" Text="0" Grid.Row="2" Grid.Column="1"/>
                 </Grid>

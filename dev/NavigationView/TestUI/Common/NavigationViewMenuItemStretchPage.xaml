@@ -15,22 +15,22 @@
             <muxcontrols:NavigationView.MenuItems>
                 <muxcontrols:NavigationViewItem HorizontalContentAlignment="Center" Icon="Find" Tag="find" IsSelected="True">
                     <Border Background="Red">
-                        <TextBlock>Center</TextBlock>
+                        <TextBlock Text="Center"/>
                     </Border>
                 </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem HorizontalContentAlignment="Left" Icon="Find" Tag="find" IsSelected="True">
                     <Border Background="Red">
-                        <TextBlock>Left</TextBlock>
+                        <TextBlock Text="Left"/>
                     </Border>
                 </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem HorizontalContentAlignment="Right" Icon="Find" Tag="find" IsSelected="True">
                     <Border Background="Red">
-                        <TextBlock>Right</TextBlock>
+                        <TextBlock Text="Right"/>
                     </Border>
                 </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem HorizontalContentAlignment="Stretch" Icon="Find" Tag="find" IsSelected="True">
                     <Border Background="Red">
-                        <TextBlock>Stretch</TextBlock>
+                        <TextBlock Text="Stretch"/>
                     </Border>
                 </muxcontrols:NavigationViewItem>
 

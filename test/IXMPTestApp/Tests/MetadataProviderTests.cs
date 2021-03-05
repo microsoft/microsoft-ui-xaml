@@ -158,7 +158,7 @@ namespace IXMPTestApp.Tests
                             <controls:NavigationViewItem x:Name='MoviesItem' Content='Movies' Icon='Video' />
                             <controls:NavigationViewItem x:Name='TVItem' Content='TV' Icon='Slideshow' />
                         </controls:NavigationView.MenuItems>
-                        <TextBlock HorizontalAlignment='Center' VerticalAlignment='Center'>Content</TextBlock>
+                        <TextBlock HorizontalAlignment='Center' VerticalAlignment='Center' Text='Content'/>
                     </controls:NavigationView>");
 
                 Log.Comment("Loading PersonPicture...");

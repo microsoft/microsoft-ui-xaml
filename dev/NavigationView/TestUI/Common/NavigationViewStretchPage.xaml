@@ -32,7 +32,7 @@
                 <Button x:Name="PaneCustomContent" Content="PaneCustomContent" HorizontalAlignment="Stretch" IsTabStop="False" />
             </muxcontrols:NavigationView.PaneCustomContent>
             <StackPanel Padding="10">
-                <TextBlock>This is content</TextBlock>
+                <TextBlock Text="This is content"/>
             </StackPanel>
         </muxcontrols:NavigationView>
     </Grid>
