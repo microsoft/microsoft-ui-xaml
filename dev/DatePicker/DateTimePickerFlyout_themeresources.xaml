@@ -15,14 +15,15 @@
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
 
-            <StaticResource x:Key="LoopingSelectorButtonBackground" ResourceKey="SystemControlBackgroundChromeMediumBrush" />
+            <StaticResource x:Key="LoopingSelectorButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
 
-            <StaticResource x:Key="LoopingSelectorItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="LoopingSelectorItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="LoopingSelectorItemForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="LoopingSelectorItemForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="LoopingSelectorItemBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
-            <StaticResource x:Key="LoopingSelectorItemBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
+            <StaticResource x:Key="LoopingSelectorItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="LoopingSelectorItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="LoopingSelectorItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="LoopingSelectorItemForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="LoopingSelectorItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="LoopingSelectorItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="DateTimePickerFlyoutButtonBackground" ResourceKey="SystemControlTransparentBrush" />
@@ -53,12 +54,13 @@
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
 
-            <StaticResource x:Key="LoopingSelectorButtonBackground" ResourceKey="SystemControlBackgroundChromeMediumBrush" />
+            <StaticResource x:Key="LoopingSelectorButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
 
             <StaticResource x:Key="LoopingSelectorItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="LoopingSelectorItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="LoopingSelectorItemForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
         </ResourceDictionary>
@@ -193,7 +195,8 @@
                 VerticalAlignment="Top"
                 Visibility="Collapsed"
                 Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
-                Background="{ThemeResource LoopingSelectorButtonBackground}"
+                Background="{ThemeResource LoopingSelectorUpDownButtonBackground}"
+                                      Margin="{StaticResource LoopingSelectorItemMargin}"
                 IsTabStop="False" />
                         <RepeatButton x:Name="DownButton"
                 Content="{ThemeResource LoopingSelectorDownButtonCaretDown}"
@@ -205,7 +208,8 @@
                 VerticalAlignment="Bottom"
                 Visibility="Collapsed"
                 Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
-                Background="{ThemeResource LoopingSelectorButtonBackground}"
+                Background="{ThemeResource LoopingSelectorUpDownButtonBackground}"
+                                      Margin="{StaticResource LoopingSelectorItemMargin}"
                 IsTabStop="False" />
 
                     </Grid>
