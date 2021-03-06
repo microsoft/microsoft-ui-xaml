@@ -10,9 +10,9 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <contract7NotPresent:StaticResource x:Key="AutoSuggestBoxSuggestionsListBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
-            <contract7NotPresent:StaticResource x:Key="AutoSuggestBoxSuggestionsListBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
+            <contract7NotPresent:StaticResource x:Key="AutoSuggestBoxSuggestionsListBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <contract7Present:StaticResource x:Key="AutoSuggestBoxSuggestionsListBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-            <contract7Present:StaticResource x:Key="AutoSuggestBoxSuggestionsListBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
+            <contract7Present:StaticResource x:Key="AutoSuggestBoxSuggestionsListBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <StaticResource x:Key="AutoSuggestBoxLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <x:Double x:Key="AutoSuggestBoxIconFontSize">12</x:Double>
         </ResourceDictionary>
@@ -25,9 +25,9 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <contract7NotPresent:StaticResource x:Key="AutoSuggestBoxSuggestionsListBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
-            <contract7NotPresent:StaticResource x:Key="AutoSuggestBoxSuggestionsListBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
+            <contract7NotPresent:StaticResource x:Key="AutoSuggestBoxSuggestionsListBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <contract7Present:StaticResource x:Key="AutoSuggestBoxSuggestionsListBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-            <contract7Present:StaticResource x:Key="AutoSuggestBoxSuggestionsListBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
+            <contract7Present:StaticResource x:Key="AutoSuggestBoxSuggestionsListBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <StaticResource x:Key="AutoSuggestBoxLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <x:Double x:Key="AutoSuggestBoxIconFontSize">12</x:Double>
         </ResourceDictionary>

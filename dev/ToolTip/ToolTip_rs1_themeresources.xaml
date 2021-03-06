@@ -10,7 +10,7 @@
             <Thickness x:Key="ToolTipBorderThemeThickness">1</Thickness>
             <StaticResource x:Key="ToolTipForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ToolTipBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
-            <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <SolidColorBrush x:Key="ToolTipBackgroundThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="ToolTipBorderThemeBrush" Color="#FF808080" />
             <SolidColorBrush x:Key="ToolTipForegroundThemeBrush" Color="#FF666666" />
@@ -33,7 +33,7 @@
             <Thickness x:Key="ToolTipBorderThemeThickness">1</Thickness>
             <StaticResource x:Key="ToolTipForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ToolTipBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
-            <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <SolidColorBrush x:Key="ToolTipBackgroundThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="ToolTipBorderThemeBrush" Color="#FF808080" />
             <SolidColorBrush x:Key="ToolTipForegroundThemeBrush" Color="#FF666666" />
