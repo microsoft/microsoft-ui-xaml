@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedFindVisualSource.json
 //       
 //       Input file:
-//           AnimatedFindVisualSource.json (17313 bytes created 12:28-08:00 Feb 8 2021)
+//           AnimatedFindVisualSource.json (23808 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -18,12 +18,10 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-namespace MU_XCAV_NAMESPACE
+namespace AnimatedVisuals
 {
-    [MUX_PUBLIC]
-    [webhosthidden]
     runtimeclass AnimatedFindVisualSource
-        : [default] Microsoft.UI.Xaml.Controls.IAnimatedVisualSource, Microsoft.UI.Xaml.Controls.IAnimatedVisualSource2
+        : [default] Microsoft.UI.Xaml.Controls.IAnimatedVisualSource
     {
         AnimatedFindVisualSource();
     };

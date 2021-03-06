@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedGlobalNavigationButtonVisualSource.json
 //       
 //       Input file:
-//           AnimatedGlobalNavigationButtonVisualSource.json (146400 bytes created 12:28-08:00 Feb 8 2021)
+//           AnimatedGlobalNavigationButtonVisualSource.json (46703 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -21,11 +21,11 @@
 // ____________________________________
 // |       Object stats       | Count |
 // |__________________________|_______|
-// | All CompositionObjects   |   817 |
+// | All CompositionObjects   |   343 |
 // |--------------------------+-------|
-// | Expression animators     |    85 |
-// | KeyFrame animators       |    71 |
-// | Reference parameters     |    92 |
+// | Expression animators     |    37 |
+// | KeyFrame animators       |    32 |
+// | Reference parameters     |    39 |
 // | Expression operations    |     4 |
 // |--------------------------+-------|
 // | Animated brushes         |     1 |
@@ -33,11 +33,11 @@
 // | ExpressionAnimations     |     2 |
 // | PathKeyFrameAnimations   |     - |
 // |--------------------------+-------|
-// | ContainerVisuals         |    19 |
-// | ShapeVisuals             |    18 |
+// | ContainerVisuals         |     7 |
+// | ShapeVisuals             |     6 |
 // |--------------------------+-------|
-// | ContainerShapes          |    43 |
-// | CompositionSpriteShapes  |   162 |
+// | ContainerShapes          |    18 |
+// | CompositionSpriteShapes  |    54 |
 // |--------------------------+-------|
 // | Brushes                  |     1 |
 // | Gradient stops           |     - |
@@ -100,7 +100,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         IClosable>
 {
     winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
-    static constexpr int64_t c_durationTicks{ 32500000L };
+    static constexpr int64_t c_durationTicks{ 13333333L };
     Compositor const _c{ nullptr };
     ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
     CompositionPropertySet const _themeProperties{ nullptr };
@@ -121,7 +121,6 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     CubicBezierEasingFunction _cubicBezierEasingFunction_3{ nullptr };
     CubicBezierEasingFunction _cubicBezierEasingFunction_4{ nullptr };
     CubicBezierEasingFunction _cubicBezierEasingFunction_5{ nullptr };
-    CubicBezierEasingFunction _cubicBezierEasingFunction_6{ nullptr };
     ExpressionAnimation _rootProgress{ nullptr };
     InsetClip _insetClip_0{ nullptr };
     StepEasingFunction _holdThenStepEasingFunction{ nullptr };
@@ -176,152 +175,57 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         return result;
     }
 
-    CompositionSpriteShape CreateSpriteShape(CompositionGeometry geometry, winrt::float3x2 transformMatrix)
+    CompositionSpriteShape CreateSpriteShape(CompositionGeometry geometry, winrt::float3x2 transformMatrix, CompositionBrush fillBrush)
     {
         const auto result = _c.CreateSpriteShape(geometry);
         result.TransformMatrix(transformMatrix);
+        result.FillBrush(fillBrush);
         return result;
     }
 
-    // PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_00()
+    // PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_0()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.923076928F, true);
+        const auto result = CreateBooleanKeyFrameAnimation(0.75F, true);
         return result;
     }
 
-    // PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_01()
+    // PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_1()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.846153855F, true);
-        result.InsertKeyFrame(0.923076928F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.5F, true);
+        result.InsertKeyFrame(0.75F, false);
         return result;
     }
 
-    // PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_02()
+    // PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_2()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.794871807F, true);
-        result.InsertKeyFrame(0.846153855F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.375F, true);
+        result.InsertKeyFrame(0.5F, false);
         return result;
     }
 
-    // PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_03()
+    // PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_3()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.717948735F, true);
-        result.InsertKeyFrame(0.794871807F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.25F, true);
+        result.InsertKeyFrame(0.375F, false);
         return result;
     }
 
-    // PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_04()
+    // PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_4()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.666666687F, true);
-        result.InsertKeyFrame(0.717948735F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.125F, true);
+        result.InsertKeyFrame(0.25F, false);
         return result;
     }
 
-    // PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_05()
+    // PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_5()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.615384638F, true);
-        result.InsertKeyFrame(0.666666687F, false);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_06()
-    {
-        const auto result = CreateBooleanKeyFrameAnimation(0.589743614F, true);
-        result.InsertKeyFrame(0.615384638F, false);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_07()
-    {
-        const auto result = CreateBooleanKeyFrameAnimation(0.538461566F, true);
-        result.InsertKeyFrame(0.589743614F, false);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_08()
-    {
-        const auto result = CreateBooleanKeyFrameAnimation(0.487179488F, true);
-        result.InsertKeyFrame(0.538461566F, false);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_09()
-    {
-        const auto result = CreateBooleanKeyFrameAnimation(0.461538464F, true);
-        result.InsertKeyFrame(0.487179488F, false);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_10()
-    {
-        const auto result = CreateBooleanKeyFrameAnimation(0.410256416F, true);
-        result.InsertKeyFrame(0.461538464F, false);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_11()
-    {
-        const auto result = CreateBooleanKeyFrameAnimation(0.358974367F, true);
-        result.InsertKeyFrame(0.410256416F, false);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_12()
-    {
-        const auto result = CreateBooleanKeyFrameAnimation(0.333333343F, true);
-        result.InsertKeyFrame(0.358974367F, false);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_13()
-    {
-        const auto result = CreateBooleanKeyFrameAnimation(0.282051295F, true);
-        result.InsertKeyFrame(0.333333343F, false);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_14()
-    {
-        const auto result = CreateBooleanKeyFrameAnimation(0.179487184F, true);
-        result.InsertKeyFrame(0.282051295F, false);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_15()
-    {
-        const auto result = CreateBooleanKeyFrameAnimation(0.15384616F, true);
-        result.InsertKeyFrame(0.179487184F, false);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_16()
-    {
-        const auto result = CreateBooleanKeyFrameAnimation(0.102564104F, true);
-        result.InsertKeyFrame(0.15384616F, false);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_17()
-    {
-        const auto result = CreateBooleanKeyFrameAnimation(0.102564104F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.125F, false);
         return result;
     }
 
@@ -331,9 +235,14 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
         winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
-        sink->BeginFigure({ -17.2660007F, -15.9060001F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ 17.3589993F, -15.9060001F });
-        sink->EndFigure(D2D1_FIGURE_END_OPEN);
+        sink->SetFillMode(D2D1_FILL_MODE_WINDING);
+        sink->BeginFigure({ 7.5F, 0.5F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddBezier({ { 7.63500023F, 0.5F }, { 7.75299978F, 0.451000005F }, { 7.85200024F, 0.351999998F } });
+        sink->AddBezier({ { 7.95100021F, 0.252999991F }, { 8.0F, 0.135000005F }, { 8.0F, 0.0F } });
+        sink->AddBezier({ { 8.0F, -0.135000005F }, { 7.95100021F, -0.252999991F }, { 7.85200024F, -0.351999998F } });
+        sink->AddBezier({ { 7.75299978F, -0.451000005F }, { 7.63500023F, -0.5F }, { 7.5F, -0.5F } });
+        sink->AddLine({ 7.5F, 0.5F });
+        sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
         return result;
@@ -345,9 +254,14 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
         winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
-        sink->BeginFigure({ -17.2660007F, -16.875F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ 17.3589993F, -16.875F });
-        sink->EndFigure(D2D1_FIGURE_END_OPEN);
+        sink->SetFillMode(D2D1_FILL_MODE_WINDING);
+        sink->BeginFigure({ 7.5F, -0.486999989F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ 7.5F, 0.513000011F });
+        sink->AddBezier({ { 7.63500023F, 0.513000011F }, { 7.75299978F, 0.463F }, { 7.85200024F, 0.363999993F } });
+        sink->AddBezier({ { 7.95100021F, 0.264999986F }, { 8.0F, 0.148000002F }, { 8.0F, 0.0130000003F } });
+        sink->AddBezier({ { 8.0F, -0.122000001F }, { 7.95100021F, -0.239999995F }, { 7.85200024F, -0.338999987F } });
+        sink->AddBezier({ { 7.75299978F, -0.437999994F }, { 7.63500023F, -0.486999989F }, { 7.5F, -0.486999989F } });
+        sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
         return result;
@@ -359,9 +273,14 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
         winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
-        sink->BeginFigure({ -17.2660007F, -17.8279991F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ 17.3589993F, -17.8279991F });
-        sink->EndFigure(D2D1_FIGURE_END_OPEN);
+        sink->SetFillMode(D2D1_FILL_MODE_WINDING);
+        sink->BeginFigure({ 7.5F, -0.5F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ 7.5F, 0.5F });
+        sink->AddBezier({ { 7.63500023F, 0.5F }, { 7.75299978F, 0.451000005F }, { 7.85200024F, 0.351999998F } });
+        sink->AddBezier({ { 7.95100021F, 0.252999991F }, { 8.0F, 0.135000005F }, { 8.0F, 0.0F } });
+        sink->AddBezier({ { 8.0F, -0.135000005F }, { 7.95100021F, -0.252999991F }, { 7.85200024F, -0.351999998F } });
+        sink->AddBezier({ { 7.75299978F, -0.451000005F }, { 7.63500023F, -0.5F }, { 7.5F, -0.5F } });
+        sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
         return result;
@@ -373,9 +292,14 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
         winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
-        sink->BeginFigure({ 8.76599979F, -15.875F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ 17.3589993F, -15.9060001F });
-        sink->EndFigure(D2D1_FIGURE_END_OPEN);
+        sink->SetFillMode(D2D1_FILL_MODE_WINDING);
+        sink->BeginFigure({ -7.5F, 0.5F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ -7.5F, -0.5F });
+        sink->AddBezier({ { -7.63500023F, -0.5F }, { -7.75299978F, -0.451000005F }, { -7.85200024F, -0.351999998F } });
+        sink->AddBezier({ { -7.95100021F, -0.252999991F }, { -8.0F, -0.135000005F }, { -8.0F, 0.0F } });
+        sink->AddBezier({ { -8.0F, 0.135000005F }, { -7.95100021F, 0.252999991F }, { -7.85200024F, 0.351999998F } });
+        sink->AddBezier({ { -7.75299978F, 0.451000005F }, { -7.63500023F, 0.5F }, { -7.5F, 0.5F } });
+        sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
         return result;
@@ -387,9 +311,14 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
         winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
-        sink->BeginFigure({ 8.76599979F, -16.8279991F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ 17.3589993F, -16.875F });
-        sink->EndFigure(D2D1_FIGURE_END_OPEN);
+        sink->SetFillMode(D2D1_FILL_MODE_WINDING);
+        sink->BeginFigure({ -7.5F, -0.486999989F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddBezier({ { -7.63500023F, -0.486999989F }, { -7.75299978F, -0.437999994F }, { -7.85200024F, -0.338999987F } });
+        sink->AddBezier({ { -7.95100021F, -0.239999995F }, { -8.0F, -0.122000001F }, { -8.0F, 0.0130000003F } });
+        sink->AddBezier({ { -8.0F, 0.148000002F }, { -7.95100021F, 0.264999986F }, { -7.85200024F, 0.363999993F } });
+        sink->AddBezier({ { -7.75299978F, 0.463F }, { -7.63500023F, 0.513000011F }, { -7.5F, 0.513000011F } });
+        sink->AddLine({ -7.5F, -0.486999989F });
+        sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
         return result;
@@ -401,9 +330,14 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
         winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
-        sink->BeginFigure({ 8.76599979F, -17.7810001F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ 17.3589993F, -17.8279991F });
-        sink->EndFigure(D2D1_FIGURE_END_OPEN);
+        sink->SetFillMode(D2D1_FILL_MODE_WINDING);
+        sink->BeginFigure({ -7.5F, -0.5F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddBezier({ { -7.63500023F, -0.5F }, { -7.75299978F, -0.451000005F }, { -7.85200024F, -0.351999998F } });
+        sink->AddBezier({ { -7.95100021F, -0.252999991F }, { -8.0F, -0.135000005F }, { -8.0F, 0.0F } });
+        sink->AddBezier({ { -8.0F, 0.135000005F }, { -7.95100021F, 0.252999991F }, { -7.85200024F, 0.351999998F } });
+        sink->AddBezier({ { -7.75299978F, 0.451000005F }, { -7.63500023F, 0.5F }, { -7.5F, 0.5F } });
+        sink->AddLine({ -7.5F, -0.5F });
+        sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
         return result;
@@ -415,9 +349,13 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
         winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
-        sink->BeginFigure({ -17.2660007F, -15.9060001F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ -7.79699993F, -15.9060001F });
-        sink->EndFigure(D2D1_FIGURE_END_OPEN);
+        sink->SetFillMode(D2D1_FILL_MODE_WINDING);
+        sink->BeginFigure({ -7.58500004F, 0.5F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ 7.65600014F, 0.5F });
+        sink->AddLine({ 7.65600014F, -0.5F });
+        sink->AddLine({ -7.58500004F, -0.5F });
+        sink->AddLine({ -7.58500004F, 0.5F });
+        sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
         return result;
@@ -429,9 +367,13 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
         winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
-        sink->BeginFigure({ -17.2660007F, -16.875F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ -7.79699993F, -16.875F });
-        sink->EndFigure(D2D1_FIGURE_END_OPEN);
+        sink->SetFillMode(D2D1_FILL_MODE_WINDING);
+        sink->BeginFigure({ 7.65600014F, -0.486999989F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ -7.58500004F, -0.486999989F });
+        sink->AddLine({ -7.58500004F, 0.513000011F });
+        sink->AddLine({ 7.65600014F, 0.513000011F });
+        sink->AddLine({ 7.65600014F, -0.486999989F });
+        sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
         return result;
@@ -443,9 +385,13 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
         winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
-        sink->BeginFigure({ -17.2660007F, -17.8279991F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ -7.79699993F, -17.8279991F });
-        sink->EndFigure(D2D1_FIGURE_END_OPEN);
+        sink->SetFillMode(D2D1_FILL_MODE_WINDING);
+        sink->BeginFigure({ 7.65600014F, -0.5F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ -7.58500004F, -0.5F });
+        sink->AddLine({ -7.58500004F, 0.5F });
+        sink->AddLine({ 7.65600014F, 0.5F });
+        sink->AddLine({ 7.65600014F, -0.5F });
+        sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
         return result;
@@ -459,762 +405,351 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    // Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    // Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Right Caps 2
     CompositionContainerShape ContainerShape_00()
     {
         const auto result = _c.CreateContainerShape();
-        result.CenterPoint({ 0.0469999984F, -3.875F });
-        result.Offset({ 24.0F, 27.875F });
+        result.CenterPoint({ 7.5F, -5.0F });
+        result.Scale({ 2.75F, 2.75F });
         const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_000());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_001());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_002());
-        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_0p762_to_0p545_0(), RootProgress());
-        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_1_to_1_0(), _rootProgress);
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_00());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_01());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_02());
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_00(), RootProgress());
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    // Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    // Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Right Caps 2
     CompositionContainerShape ContainerShape_01()
     {
         const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ -7.5F, -5.0F });
+        result.Scale({ 2.75F, 2.75F });
         const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_003());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_004());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_005());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_00(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    // Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_02()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_006());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_007());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_008());
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_03());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_04());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_05());
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_01(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_03()
+    // - PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    // Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Right Caps 2
+    CompositionContainerShape ContainerShape_02()
     {
         const auto result = _c.CreateContainerShape();
-        result.CenterPoint({ 0.0469999984F, -3.875F });
-        result.Offset({ 24.0F, 27.875F });
+        result.CenterPoint({ 0.0359999985F, -5.0F });
+        result.Offset({ 23.9290009F, 28.9139996F });
         const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_009());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_010());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_011());
-        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_0p762_to_0p545_1(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_1_to_1_1(), _rootProgress);
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_06());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_07());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_08());
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_1p445_to_1p963(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p75_to_2p75_0(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_04()
+    // - PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    // Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Right Caps 2
+    CompositionContainerShape ContainerShape_03()
     {
         const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 7.5F, -5.0F });
+        result.Scale({ 2.75F, 2.75F });
         const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_012());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_013());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_014());
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_09());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_10());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_11());
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_02(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_05()
+    // - PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    // Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Right Caps 2
+    CompositionContainerShape ContainerShape_04()
     {
         const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ -7.5F, -5.0F });
+        result.Scale({ 2.75F, 2.75F });
         const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_015());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_016());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_017());
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_12());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_13());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_14());
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_03(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_06()
+    // - PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    // Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Right Caps 2
+    CompositionContainerShape ContainerShape_05()
     {
         const auto result = _c.CreateContainerShape();
-        result.CenterPoint({ 0.0469999984F, -3.875F });
-        result.Offset({ 24.0F, 27.875F });
+        result.CenterPoint({ 0.0359999985F, -5.0F });
+        result.Offset({ 23.9290009F, 28.9139996F });
         const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_018());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_019());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_020());
-        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_0p848_to_0p603(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_1_to_1_2(), _rootProgress);
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_15());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_16());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_17());
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_1p445_to_2p75(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p75_to_2p75_1(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_07()
+    // - PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    // Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
+    CompositionContainerShape ContainerShape_06()
     {
         const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 7.5F, -5.0F });
+        result.Scale({ 2.75F, 2.75F });
         const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_021());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_022());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_023());
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_18());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_19());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_20());
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_04(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_08()
+    // - PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    // Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
+    CompositionContainerShape ContainerShape_07()
     {
         const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ -7.5F, -5.0F });
+        result.Scale({ 2.75F, 2.75F });
         const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_024());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_025());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_026());
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_21());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_22());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_23());
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_05(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
-    // Transforms for Controls - 02 - Hamburger - 15 - PressedOnToNormalOff Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    // Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
+    CompositionContainerShape ContainerShape_08()
+    {
+        const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 0.0359999985F, -5.0F });
+        result.Offset({ 23.9290009F, 28.9139996F });
+        const auto shapes = result.Shapes();
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_24());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_25());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_26());
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_1p963_to_1p445(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p75_to_2p75_2(), _rootProgress);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    // Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Center 2
     CompositionContainerShape ContainerShape_09()
     {
         const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 0.0359999985F, -5.0F });
+        result.Offset({ 23.9290009F, 28.9139996F });
         const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_030());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_031());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_032());
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_27());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_28());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_29());
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_1p963_to_2p75(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p75_to_2p75_3(), _rootProgress);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    // Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Center 2
+    CompositionContainerShape ContainerShape_10()
+    {
+        const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ -7.5F, -5.0F });
+        result.Scale({ 2.75F, 2.75F });
+        const auto shapes = result.Shapes();
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_30());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_31());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_32());
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_06(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
-    // Transforms for Controls - 02 - Hamburger - 15 - PressedOnToNormalOff Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_10()
+    // - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    // Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Center 2
+    CompositionContainerShape ContainerShape_11()
     {
         const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 7.5F, -5.0F });
+        result.Scale({ 2.75F, 2.75F });
         const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_033());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_034());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_035());
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_33());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_34());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_35());
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_07(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Transforms for Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_11()
+    // - PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    // Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
+    CompositionContainerShape ContainerShape_12()
     {
         const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 7.5F, -5.0F });
+        result.Scale({ 2.75F, 2.75F });
         const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_039());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_040());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_041());
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_36());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_37());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_38());
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_08(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Transforms for Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_12()
+    // - PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    // Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
+    CompositionContainerShape ContainerShape_13()
     {
         const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ -7.5F, -5.0F });
+        result.Scale({ 2.75F, 2.75F });
         const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_042());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_043());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_044());
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_39());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_40());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_41());
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_09(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // Transforms for Controls - 02 - Hamburger - 13 - PressedOnToPressedOff Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_13()
+    // - PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    // Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
+    CompositionContainerShape ContainerShape_14()
     {
         const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 0.0359999985F, -5.0F });
+        result.Offset({ 23.9290009F, 28.9139996F });
         const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_048());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_049());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_050());
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_42());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_43());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_44());
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_2p75_to_1p445(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p75_to_2p75_4(), _rootProgress);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    // Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Center 2
+    CompositionContainerShape ContainerShape_15()
+    {
+        const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 0.0359999985F, -5.0F });
+        result.Offset({ 23.9290009F, 28.9139996F });
+        const auto shapes = result.Shapes();
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_45());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_46());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_47());
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_2p75_to_1p963(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p75_to_2p75_5(), _rootProgress);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    // Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Center 2
+    CompositionContainerShape ContainerShape_16()
+    {
+        const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ -7.5F, -5.0F });
+        result.Scale({ 2.75F, 2.75F });
+        const auto shapes = result.Shapes();
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_48());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_49());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_50());
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_10(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // Transforms for Controls - 02 - Hamburger - 13 - PressedOnToPressedOff Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_14()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_051());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_052());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_053());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_11(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    CompositionContainerShape ContainerShape_15()
-    {
-        const auto result = _c.CreateContainerShape();
-        result.Scale({ 0.0F, 0.0F });
-        const auto shapes = result.Shapes();
-        // Scale:0.74729,1, Offset:<24, 27.875>
-        shapes.Append(SpriteShape_054());
-        // Scale:0.74729,1, Offset:<24, 27.875>
-        shapes.Append(SpriteShape_055());
-        // Scale:0.74729,1, Offset:<24, 27.875>
-        shapes.Append(SpriteShape_056());
-        StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_0(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Right 2
-    CompositionContainerShape ContainerShape_16()
-    {
-        const auto result = _c.CreateContainerShape();
-        result.Scale({ 0.0F, 0.0F });
-        const auto shapes = result.Shapes();
-        shapes.Append(ContainerShape_17());
-        shapes.Append(ContainerShape_18());
-        StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_1(), _rootProgress);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Right 2
+    // - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    // Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Center 2
     CompositionContainerShape ContainerShape_17()
     {
         const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 7.5F, -5.0F });
+        result.Scale({ 2.75F, 2.75F });
         const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_057());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_058());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_059());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_12(), _rootProgress);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Right 2
-    CompositionContainerShape ContainerShape_18()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_060());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_061());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_062());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_13(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Transforms for Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    CompositionContainerShape ContainerShape_19()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_066());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_067());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_068());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_14(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Transforms for Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    CompositionContainerShape ContainerShape_20()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_069());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_070());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_071());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_15(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Transforms for Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    CompositionContainerShape ContainerShape_21()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_075());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_076());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_077());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_16(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Transforms for Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    CompositionContainerShape ContainerShape_22()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_078());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_079());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_080());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_17(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Transforms for Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    CompositionContainerShape ContainerShape_23()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_084());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_085());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_086());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_18(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Transforms for Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    CompositionContainerShape ContainerShape_24()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_087());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_088());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_089());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_19(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Transforms for Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    CompositionContainerShape ContainerShape_25()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_093());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_094());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_095());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_20(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Transforms for Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    CompositionContainerShape ContainerShape_26()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_096());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_097());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_098());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_21(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Transforms for Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    CompositionContainerShape ContainerShape_27()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_102());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_103());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_104());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_22(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Transforms for Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    CompositionContainerShape ContainerShape_28()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_105());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_106());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_107());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_23(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // Transforms for Controls - 02 - Hamburger - 06 - NormalOffToPressedOff Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    CompositionContainerShape ContainerShape_29()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_111());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_112());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_113());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_24(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // Transforms for Controls - 02 - Hamburger - 06 - NormalOffToPressedOff Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    CompositionContainerShape ContainerShape_30()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_114());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_115());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_116());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_25(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Transforms for Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    CompositionContainerShape ContainerShape_31()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_120());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_121());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_122());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_26(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Transforms for Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    CompositionContainerShape ContainerShape_32()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_123());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_124());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_125());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_27(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-    // Transforms for Controls - 02 - Hamburger - 04 - NormalOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_33()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_129());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_130());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_131());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_28(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-    // Transforms for Controls - 02 - Hamburger - 04 - NormalOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_34()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_132());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_133());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_134());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_29(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_35()
-    {
-        const auto result = _c.CreateContainerShape();
-        result.Scale({ 0.0F, 0.0F });
-        const auto shapes = result.Shapes();
-        // Scale:0.57401,1, Offset:<24, 27.875>
-        shapes.Append(SpriteShape_135());
-        // Scale:0.57401,1, Offset:<24, 27.875>
-        shapes.Append(SpriteShape_136());
-        // Scale:0.57401,1, Offset:<24, 27.875>
-        shapes.Append(SpriteShape_137());
-        StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_2(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn Scale(1,1,0)
-    // Layer: Hamburger - Right
-    CompositionContainerShape ContainerShape_36()
-    {
-        const auto result = _c.CreateContainerShape();
-        result.Scale({ 0.0F, 0.0F });
-        const auto shapes = result.Shapes();
-        shapes.Append(ContainerShape_37());
-        shapes.Append(ContainerShape_38());
-        StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_3(), _rootProgress);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn Scale(1,1,0)
-    // Layer: Hamburger - Right
-    CompositionContainerShape ContainerShape_37()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_138());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_139());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_140());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_30(), _rootProgress);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn Scale(1,1,0)
-    // Layer: Hamburger - Right
-    CompositionContainerShape ContainerShape_38()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_141());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_142());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_143());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_31(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Transforms for Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_39()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_147());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_148());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_149());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_32(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Transforms for Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_40()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_150());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_151());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_152());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_33(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff 
-    // Transforms for Controls - 02 - Hamburger - 01 - NormalOnToNormalOff  Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_41()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_156());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_157());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_158());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_34(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff 
-    // Transforms for Controls - 02 - Hamburger - 01 - NormalOnToNormalOff  Scale(1,1,0)
-    // Layer: Hamburger - Base
-    CompositionContainerShape ContainerShape_42()
-    {
-        const auto result = _c.CreateContainerShape();
-        const auto shapes = result.Shapes();
-        // ShapeGroup: Shape 1
-        shapes.Append(SpriteShape_159());
-        // ShapeGroup: Shape 2 Offset:<0, 13>
-        shapes.Append(SpriteShape_160());
-        // ShapeGroup: Shape 3 Offset:<0, 26>
-        shapes.Append(SpriteShape_161());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_35(), _rootProgress);
+        // ShapeGroup: Group 3 Offset:<0, -10>
+        shapes.Append(SpriteShape_51());
+        // ShapeGroup: Group 2 Offset:<0, -4.85>
+        shapes.Append(SpriteShape_52());
+        // ShapeGroup: Group 1
+        shapes.Append(SpriteShape_53());
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_11(), _rootProgress);
         return result;
     }
 
@@ -1263,2810 +798,602 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         return _pathGeometry_8 = _c.CreatePathGeometry(CompositionPath(CanvasGeometryToIGeometrySource2D(Geometry_8())));
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_000()
+    CompositionSpriteShape SpriteShape_00()
     {
-        const auto result = _c.CreateSpriteShape(PathGeometry_0());
-        result.StrokeBrush(ThemeColor_Foreground());
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(PathGeometry_0(), { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, ThemeColor_Foreground());
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_001()
+    CompositionSpriteShape SpriteShape_01()
     {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(PathGeometry_1(), { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(PathGeometry_1(), { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_002()
+    CompositionSpriteShape SpriteShape_02()
     {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(PathGeometry_2(), { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(PathGeometry_2());
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_003()
+    CompositionSpriteShape SpriteShape_03()
     {
-        const auto result = _c.CreateSpriteShape(PathGeometry_3());
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(PathGeometry_3(), { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_004()
+    CompositionSpriteShape SpriteShape_04()
     {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(PathGeometry_4(), { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(PathGeometry_4(), { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_005()
+    CompositionSpriteShape SpriteShape_05()
     {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(PathGeometry_5(), { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(PathGeometry_5());
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_006()
+    CompositionSpriteShape SpriteShape_06()
     {
-        const auto result = _c.CreateSpriteShape(PathGeometry_6());
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(PathGeometry_6(), { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_007()
+    CompositionSpriteShape SpriteShape_07()
     {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(PathGeometry_7(), { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(PathGeometry_7(), { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_008()
+    CompositionSpriteShape SpriteShape_08()
     {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(PathGeometry_8(), { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(PathGeometry_8());
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    // - Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_009()
+    CompositionSpriteShape SpriteShape_09()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_0);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    // - Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_010()
+    CompositionSpriteShape SpriteShape_10()
     {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    // - Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_011()
+    CompositionSpriteShape SpriteShape_11()
     {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_2);
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    // - Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_012()
+    CompositionSpriteShape SpriteShape_12()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(_pathGeometry_3, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    // - Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_013()
+    CompositionSpriteShape SpriteShape_13()
     {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    // - Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_014()
+    CompositionSpriteShape SpriteShape_14()
     {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_5);
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    // - Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_015()
+    CompositionSpriteShape SpriteShape_15()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(_pathGeometry_6, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    // - Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_016()
+    CompositionSpriteShape SpriteShape_16()
     {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    // - Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_017()
+    CompositionSpriteShape SpriteShape_17()
     {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_8);
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    // - Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_018()
+    CompositionSpriteShape SpriteShape_18()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_0);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    // - Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_019()
+    CompositionSpriteShape SpriteShape_19()
     {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    // - Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_020()
+    CompositionSpriteShape SpriteShape_20()
     {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_2);
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    // - Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_021()
+    CompositionSpriteShape SpriteShape_21()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(_pathGeometry_3, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    // - Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_022()
+    CompositionSpriteShape SpriteShape_22()
     {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    // - Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_023()
+    CompositionSpriteShape SpriteShape_23()
     {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_5);
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    // - Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_024()
+    CompositionSpriteShape SpriteShape_24()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(_pathGeometry_6, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    // - Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_025()
+    CompositionSpriteShape SpriteShape_25()
     {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    // - Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_026()
+    CompositionSpriteShape SpriteShape_26()
     {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_8);
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
-    // Transforms for Controls - 02 - Hamburger - 15 - PressedOnToNormalOff Scale(1,1,0)
+    // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_027()
+    CompositionSpriteShape SpriteShape_27()
     {
-        // Offset:<24.016628, 27.875>, Scale:<0.64621, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.646210015F, 0.0F, 0.0F, 1.0F, 24.0166283F, 27.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(_pathGeometry_6, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
-    // Transforms for Controls - 02 - Hamburger - 15 - PressedOnToNormalOff Scale(1,1,0)
+    // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_028()
+    CompositionSpriteShape SpriteShape_28()
     {
-        // Offset:<24.016628, 40.875>, Scale:<0.64621, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 0.646210015F, 0.0F, 0.0F, 1.0F, 24.0166283F, 40.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
-    // Transforms for Controls - 02 - Hamburger - 15 - PressedOnToNormalOff Scale(1,1,0)
+    // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_029()
+    CompositionSpriteShape SpriteShape_29()
     {
-        // Offset:<24.016628, 53.875>, Scale:<0.64621, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 0.646210015F, 0.0F, 0.0F, 1.0F, 24.0166283F, 53.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_8);
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
-    // - Transforms for Controls - 02 - Hamburger - 15 - PressedOnToNormalOff Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_030()
+    CompositionSpriteShape SpriteShape_30()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(_pathGeometry_3, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
-    // - Transforms for Controls - 02 - Hamburger - 15 - PressedOnToNormalOff Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_031()
+    CompositionSpriteShape SpriteShape_31()
     {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
-    // - Transforms for Controls - 02 - Hamburger - 15 - PressedOnToNormalOff Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_032()
+    CompositionSpriteShape SpriteShape_32()
     {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_5);
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
-    // - Transforms for Controls - 02 - Hamburger - 15 - PressedOnToNormalOff Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_033()
+    CompositionSpriteShape SpriteShape_33()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
-    // - Transforms for Controls - 02 - Hamburger - 15 - PressedOnToNormalOff Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_034()
+    CompositionSpriteShape SpriteShape_34()
     {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
-    // - Transforms for Controls - 02 - Hamburger - 15 - PressedOnToNormalOff Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_035()
+    CompositionSpriteShape SpriteShape_35()
     {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_2);
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Transforms for Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Scale(1,1,0)
+    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    // - Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_036()
+    CompositionSpriteShape SpriteShape_36()
     {
-        // Offset:<24.011877, 27.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 27.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Transforms for Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Scale(1,1,0)
+    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    // - Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_037()
+    CompositionSpriteShape SpriteShape_37()
     {
-        // Offset:<24.011877, 40.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 40.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Transforms for Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Scale(1,1,0)
+    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    // - Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_038()
+    CompositionSpriteShape SpriteShape_38()
     {
-        // Offset:<24.011877, 53.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 53.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_2);
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    // - Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_039()
+    CompositionSpriteShape SpriteShape_39()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(_pathGeometry_3, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    // - Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_040()
+    CompositionSpriteShape SpriteShape_40()
     {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    // - Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_041()
+    CompositionSpriteShape SpriteShape_41()
     {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_5);
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    // - Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_042()
+    CompositionSpriteShape SpriteShape_42()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(_pathGeometry_6, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    // - Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_043()
+    CompositionSpriteShape SpriteShape_43()
     {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    // - Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Path 1
-    CompositionSpriteShape SpriteShape_044()
+    CompositionSpriteShape SpriteShape_44()
     {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_8);
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // Transforms for Controls - 02 - Hamburger - 13 - PressedOnToPressedOff Scale(1,1,0)
+    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_045()
+    CompositionSpriteShape SpriteShape_45()
     {
-        // Offset:<24.011877, 27.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 27.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(_pathGeometry_6, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // Transforms for Controls - 02 - Hamburger - 13 - PressedOnToPressedOff Scale(1,1,0)
+    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_046()
+    CompositionSpriteShape SpriteShape_46()
     {
-        // Offset:<24.011877, 40.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 40.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // Transforms for Controls - 02 - Hamburger - 13 - PressedOnToPressedOff Scale(1,1,0)
+    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_047()
+    CompositionSpriteShape SpriteShape_47()
     {
-        // Offset:<24.011877, 53.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 53.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_8);
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_048()
+    CompositionSpriteShape SpriteShape_48()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(_pathGeometry_3, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_049()
+    CompositionSpriteShape SpriteShape_49()
     {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_050()
+    CompositionSpriteShape SpriteShape_50()
     {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_5);
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_051()
+    CompositionSpriteShape SpriteShape_51()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -10>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_052()
+    CompositionSpriteShape SpriteShape_52()
     {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        // Offset:<0, -4.85>
+        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Center 2
     // Path 1
-    CompositionSpriteShape SpriteShape_053()
+    CompositionSpriteShape SpriteShape_53()
     {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_2);
+        result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_054()
-    {
-        // Offset:<24.011877, 27.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 27.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_055()
-    {
-        // Offset:<24.011877, 40.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 40.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_056()
-    {
-        // Offset:<24.011877, 53.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 53.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // - - Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // - Layer: Hamburger - Right 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_057()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // - - Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // - Layer: Hamburger - Right 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_058()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // - - Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // - Layer: Hamburger - Right 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_059()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // - - Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // - Layer: Hamburger - Right 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_060()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // - - Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // - Layer: Hamburger - Right 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_061()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // - - Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // - Layer: Hamburger - Right 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_062()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Transforms for Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_063()
-    {
-        // Offset:<24.011877, 27.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 27.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Transforms for Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_064()
-    {
-        // Offset:<24.011877, 40.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 40.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Transforms for Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_065()
-    {
-        // Offset:<24.011877, 53.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 53.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // - Transforms for Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_066()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // - Transforms for Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_067()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // - Transforms for Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_068()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // - Transforms for Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_069()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // - Transforms for Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_070()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // - Transforms for Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_071()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Transforms for Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_072()
-    {
-        // Offset:<24.011877, 27.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 27.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Transforms for Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_073()
-    {
-        // Offset:<24.011877, 40.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 40.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Transforms for Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_074()
-    {
-        // Offset:<24.011877, 53.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 53.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_075()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_076()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_077()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_078()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_079()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_080()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Transforms for Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_081()
-    {
-        // Offset:<24.011877, 27.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 27.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Transforms for Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_082()
-    {
-        // Offset:<24.011877, 40.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 40.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Transforms for Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_083()
-    {
-        // Offset:<24.011877, 53.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 53.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_084()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_085()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_086()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_087()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_088()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_089()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Transforms for Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_090()
-    {
-        // Offset:<24.011877, 27.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 27.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Transforms for Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_091()
-    {
-        // Offset:<24.011877, 40.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 40.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Transforms for Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_092()
-    {
-        // Offset:<24.011877, 53.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 53.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_093()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_094()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_095()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_096()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_097()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_098()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Transforms for Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_099()
-    {
-        // Offset:<24.011877, 27.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 27.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Transforms for Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_100()
-    {
-        // Offset:<24.011877, 40.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 40.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Transforms for Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_101()
-    {
-        // Offset:<24.011877, 53.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 53.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_102()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_103()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_104()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_105()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_106()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_107()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // Transforms for Controls - 02 - Hamburger - 06 - NormalOffToPressedOff Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_108()
-    {
-        // Offset:<24.009842, 27.875>, Scale:<0.79061, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.790610015F, 0.0F, 0.0F, 1.0F, 24.0098419F, 27.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // Transforms for Controls - 02 - Hamburger - 06 - NormalOffToPressedOff Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_109()
-    {
-        // Offset:<24.009842, 40.875>, Scale:<0.79061, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 0.790610015F, 0.0F, 0.0F, 1.0F, 24.0098419F, 40.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // Transforms for Controls - 02 - Hamburger - 06 - NormalOffToPressedOff Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_110()
-    {
-        // Offset:<24.009842, 53.875>, Scale:<0.79061, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 0.790610015F, 0.0F, 0.0F, 1.0F, 24.0098419F, 53.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_111()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_112()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_113()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_114()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_115()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_116()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Transforms for Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_117()
-    {
-        // Offset:<24.011877, 27.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 27.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Transforms for Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_118()
-    {
-        // Offset:<24.011877, 40.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 40.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Transforms for Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_119()
-    {
-        // Offset:<24.011877, 53.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 53.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_120()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_121()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_122()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_123()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_124()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Path 1
-    CompositionSpriteShape SpriteShape_125()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-    // Transforms for Controls - 02 - Hamburger - 04 - NormalOffToNormalOn Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_126()
-    {
-        // Offset:<24.011877, 27.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 27.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-    // Transforms for Controls - 02 - Hamburger - 04 - NormalOffToNormalOn Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_127()
-    {
-        // Offset:<24.011877, 40.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 40.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-    // Transforms for Controls - 02 - Hamburger - 04 - NormalOffToNormalOn Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_128()
-    {
-        // Offset:<24.011877, 53.875>, Scale:<0.74729, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 0.747290015F, 0.0F, 0.0F, 1.0F, 24.0118771F, 53.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 04 - NormalOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_129()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 04 - NormalOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_130()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 04 - NormalOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_131()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 04 - NormalOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_132()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 04 - NormalOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_133()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 04 - NormalOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_134()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_135()
-    {
-        // Offset:<24.020021, 27.875>, Rotation:-0.007594995210313719 degrees,
-        // Scale:<0.57401, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.574010015F, 0.0F, 0.0F, 1.0F, 24.0200214F, 27.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_136()
-    {
-        // Offset:<24.020021, 40.875>, Rotation:-0.007594995210313719 degrees,
-        // Scale:<0.57401, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 0.574010015F, 0.0F, 0.0F, 1.0F, 24.0200214F, 40.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_137()
-    {
-        // Offset:<24.020021, 53.875>, Rotation:-0.007594995210313719 degrees,
-        // Scale:<0.57401, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 0.574010015F, 0.0F, 0.0F, 1.0F, 24.0200214F, 53.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // - - Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // Scale(1,1,0)
-    // - Layer: Hamburger - Right
-    // Path 1
-    CompositionSpriteShape SpriteShape_138()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // - - Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // Scale(1,1,0)
-    // - Layer: Hamburger - Right
-    // Path 1
-    CompositionSpriteShape SpriteShape_139()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // - - Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // Scale(1,1,0)
-    // - Layer: Hamburger - Right
-    // Path 1
-    CompositionSpriteShape SpriteShape_140()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // - - Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // Scale(1,1,0)
-    // - Layer: Hamburger - Right
-    // Path 1
-    CompositionSpriteShape SpriteShape_141()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // - - Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // Scale(1,1,0)
-    // - Layer: Hamburger - Right
-    // Path 1
-    CompositionSpriteShape SpriteShape_142()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // - - Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // Scale(1,1,0)
-    // - Layer: Hamburger - Right
-    // Path 1
-    CompositionSpriteShape SpriteShape_143()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Transforms for Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_144()
-    {
-        // Offset:<24.020021, 27.875>, Rotation:-0.007594995210313719 degrees,
-        // Scale:<0.57401, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.574010015F, 0.0F, 0.0F, 1.0F, 24.0200214F, 27.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Transforms for Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_145()
-    {
-        // Offset:<24.020021, 40.875>, Rotation:-0.007594995210313719 degrees,
-        // Scale:<0.57401, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 0.574010015F, 0.0F, 0.0F, 1.0F, 24.0200214F, 40.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Transforms for Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_146()
-    {
-        // Offset:<24.020021, 53.875>, Rotation:-0.007594995210313719 degrees,
-        // Scale:<0.57401, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 0.574010015F, 0.0F, 0.0F, 1.0F, 24.0200214F, 53.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_147()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_148()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_149()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_150()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_151()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_152()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff 
-    // Transforms for Controls - 02 - Hamburger - 01 - NormalOnToNormalOff  Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_153()
-    {
-        // Offset:<24.025112, 27.875>, Rotation:-0.004629190786896747 degrees,
-        // Scale:<0.4657, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.465700001F, 0.0F, 0.0F, 1.0F, 24.0251122F, 27.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff 
-    // Transforms for Controls - 02 - Hamburger - 01 - NormalOnToNormalOff  Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_154()
-    {
-        // Offset:<24.025112, 40.875>, Rotation:-0.004629190786896747 degrees,
-        // Scale:<0.4657, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 0.465700001F, 0.0F, 0.0F, 1.0F, 24.0251122F, 40.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff 
-    // Transforms for Controls - 02 - Hamburger - 01 - NormalOnToNormalOff  Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_155()
-    {
-        // Offset:<24.025112, 53.875>, Rotation:-0.004629190786896747 degrees,
-        // Scale:<0.4657, 1>
-        const auto result = CreateSpriteShape(_pathGeometry_2, { 0.465700001F, 0.0F, 0.0F, 1.0F, 24.0251122F, 53.875F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff 
-    // - Transforms for Controls - 02 - Hamburger - 01 - NormalOnToNormalOff  Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_156()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_3);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff 
-    // - Transforms for Controls - 02 - Hamburger - 01 - NormalOnToNormalOff  Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_157()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_4, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff 
-    // - Transforms for Controls - 02 - Hamburger - 01 - NormalOnToNormalOff  Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_158()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_5, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff 
-    // - Transforms for Controls - 02 - Hamburger - 01 - NormalOnToNormalOff  Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_159()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_6);
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff 
-    // - Transforms for Controls - 02 - Hamburger - 01 - NormalOnToNormalOff  Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_160()
-    {
-        // Offset:<0, 13>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 13.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff 
-    // - Transforms for Controls - 02 - Hamburger - 01 - NormalOnToNormalOff  Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Path 1
-    CompositionSpriteShape SpriteShape_161()
-    {
-        // Offset:<0, 26>
-        const auto result = CreateSpriteShape(_pathGeometry_8, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 26.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(2.0F);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    ContainerVisual ContainerVisual_00()
+    // PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    ContainerVisual ContainerVisual_0()
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(InsetClip_0());
@@ -4074,14 +1401,14 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         result.Size({ 48.0F, 48.0F });
         // Scale:<1, 1>
         result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_00());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_00(), _rootProgress);
+        // Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+        result.Children().InsertAtTop(ShapeVisual_0());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_0(), _rootProgress);
         return result;
     }
 
-    // PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    ContainerVisual ContainerVisual_01()
+    // PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    ContainerVisual ContainerVisual_1()
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
@@ -4089,15 +1416,14 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         result.Size({ 48.0F, 48.0F });
         // Scale:<1, 1>
         result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-        // Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_01());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_01(), _rootProgress);
+        // Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+        result.Children().InsertAtTop(ShapeVisual_1());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_1(), _rootProgress);
         return result;
     }
 
-    // PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    ContainerVisual ContainerVisual_02()
+    // PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    ContainerVisual ContainerVisual_2()
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
@@ -4105,14 +1431,14 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         result.Size({ 48.0F, 48.0F });
         // Scale:<1, 1>
         result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_02());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_02(), _rootProgress);
+        // Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+        result.Children().InsertAtTop(ShapeVisual_2());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_2(), _rootProgress);
         return result;
     }
 
-    // PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
-    ContainerVisual ContainerVisual_03()
+    // PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    ContainerVisual ContainerVisual_3()
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
@@ -4120,14 +1446,14 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         result.Size({ 48.0F, 48.0F });
         // Scale:<1, 1>
         result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 15 - PressedOnToNormalOff Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_03());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_03(), _rootProgress);
+        // Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+        result.Children().InsertAtTop(ShapeVisual_3());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_3(), _rootProgress);
         return result;
     }
 
-    // PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    ContainerVisual ContainerVisual_04()
+    // PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    ContainerVisual ContainerVisual_4()
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
@@ -4135,212 +1461,23 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         result.Size({ 48.0F, 48.0F });
         // Scale:<1, 1>
         result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-        // Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_04());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_04(), _rootProgress);
+        // Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+        result.Children().InsertAtTop(ShapeVisual_4());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_4(), _rootProgress);
         return result;
     }
 
-    // PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    ContainerVisual ContainerVisual_05()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 13 - PressedOnToPressedOff Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_05());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_05(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    ContainerVisual ContainerVisual_06()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-        // Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_06());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_06(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    ContainerVisual ContainerVisual_07()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-        // Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_07());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_07(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    ContainerVisual ContainerVisual_08()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-        // Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_08());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_08(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    ContainerVisual ContainerVisual_09()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-        // Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_09());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_09(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    ContainerVisual ContainerVisual_10()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-        // Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_10());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_10(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    ContainerVisual ContainerVisual_11()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-        // Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_11());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_11(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    ContainerVisual ContainerVisual_12()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 06 - NormalOffToPressedOff Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_12());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_12(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    ContainerVisual ContainerVisual_13()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-        // Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_13());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_13(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-    ContainerVisual ContainerVisual_14()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 04 - NormalOffToNormalOn Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_14());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_14(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    ContainerVisual ContainerVisual_15()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_15());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_15(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    ContainerVisual ContainerVisual_16()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-        // Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_16());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_16(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff
-    ContainerVisual ContainerVisual_17()
+    // PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    ContainerVisual ContainerVisual_5()
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
         result.Size({ 48.0F, 48.0F });
         // Scale:<1, 1>
         result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 02 - Hamburger - 01 - NormalOnToNormalOff  Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_17());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_17(), _rootProgress);
+        // Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+        result.Children().InsertAtTop(ShapeVisual_5());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_5(), _rootProgress);
         return result;
     }
 
@@ -4352,91 +1489,52 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         propertySet.InsertScalar(L"Progress", 0.0F);
         propertySet.InsertScalar(L"t0", 0.0F);
         propertySet.InsertScalar(L"t1", 0.0F);
-        propertySet.InsertScalar(L"t2", 0.0F);
-        propertySet.InsertScalar(L"t3", 0.0F);
-        propertySet.InsertScalar(L"t4", 0.0F);
-        propertySet.InsertScalar(L"t5", 0.0F);
-        propertySet.InsertScalar(L"t6", 0.0F);
         const auto children = result.Children();
-        // PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-        children.InsertAtTop(ContainerVisual_00());
-        // PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-        children.InsertAtTop(ContainerVisual_01());
-        // PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-        children.InsertAtTop(ContainerVisual_02());
-        // PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
-        children.InsertAtTop(ContainerVisual_03());
-        // PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-        children.InsertAtTop(ContainerVisual_04());
-        // PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-        children.InsertAtTop(ContainerVisual_05());
-        // PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-        children.InsertAtTop(ContainerVisual_06());
-        // PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-        children.InsertAtTop(ContainerVisual_07());
-        // PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-        children.InsertAtTop(ContainerVisual_08());
-        // PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-        children.InsertAtTop(ContainerVisual_09());
-        // PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-        children.InsertAtTop(ContainerVisual_10());
-        // PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-        children.InsertAtTop(ContainerVisual_11());
-        // PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-        children.InsertAtTop(ContainerVisual_12());
-        // PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-        children.InsertAtTop(ContainerVisual_13());
-        // PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-        children.InsertAtTop(ContainerVisual_14());
-        // PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-        children.InsertAtTop(ContainerVisual_15());
-        // PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-        children.InsertAtTop(ContainerVisual_16());
-        // PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff
-        children.InsertAtTop(ContainerVisual_17());
+        // PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+        children.InsertAtTop(ContainerVisual_0());
+        // PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+        children.InsertAtTop(ContainerVisual_1());
+        // PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+        children.InsertAtTop(ContainerVisual_2());
+        // PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+        children.InsertAtTop(ContainerVisual_3());
+        // PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+        children.InsertAtTop(ContainerVisual_4());
+        // PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+        children.InsertAtTop(ContainerVisual_5());
         StartProgressBoundAnimation(propertySet, L"t0", t0ScalarAnimation_0_to_1(), _rootProgress);
         StartProgressBoundAnimation(propertySet, L"t1", t1ScalarAnimation_0_to_1(), _rootProgress);
-        StartProgressBoundAnimation(propertySet, L"t2", t2ScalarAnimation_0_to_1(), _rootProgress);
-        StartProgressBoundAnimation(propertySet, L"t3", t3ScalarAnimation_0_to_1(), _rootProgress);
-        StartProgressBoundAnimation(propertySet, L"t4", t4ScalarAnimation_0_to_1(), _rootProgress);
-        StartProgressBoundAnimation(propertySet, L"t5", t5ScalarAnimation_0_to_1(), _rootProgress);
-        StartProgressBoundAnimation(propertySet, L"t6", t6ScalarAnimation_0_to_1(), _rootProgress);
         return result;
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_0()
     {
-        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.0F }, { 0.0F, 1.0F });
+        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.0F }, { 0.75F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_1()
     {
-        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
+        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_2()
     {
-        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.0F }, { 0.25F, 1.0F });
+        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.25F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_3()
     {
-        return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.150000006F, 1.0F });
+        return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_4()
     {
-        return _cubicBezierEasingFunction_4 = _c.CreateCubicBezierEasingFunction({ 0.550000012F, 0.0F }, { 0.150000006F, 1.0F });
+        return _cubicBezierEasingFunction_4 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.0F }, { 0.0F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_5()
     {
-        return _cubicBezierEasingFunction_5 = _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.0F }, { 0.75F, 1.0F });
-    }
-
-    CubicBezierEasingFunction CubicBezierEasingFunction_6()
-    {
-        return _cubicBezierEasingFunction_6 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F });
+        return _cubicBezierEasingFunction_5 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.25F, 1.0F });
     }
 
     ExpressionAnimation RootProgress()
@@ -4452,471 +1550,261 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Right Caps 2
     // Scale
-    ScalarKeyFrameAnimation ScaleXScalarAnimation_0p762_to_0p545_0()
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_1p445_to_1p963()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.761730015F, StepThenHoldEasingFunction());
-        result.InsertKeyFrame(0.923076928F, 0.761730015F, HoldThenStepEasingFunction());
-        result.InsertKeyFrame(0.994871795F, 0.545130014F, CubicBezierEasingFunction_0());
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.44456995F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.75F, 1.44456995F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.850000024F, 2.88107991F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.987500012F, 1.96300006F, CubicBezierEasingFunction_1());
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    // - Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Right Caps 2
     // Scale
-    ScalarKeyFrameAnimation ScaleXScalarAnimation_0p762_to_0p545_1()
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_1p445_to_2p75()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.761730015F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.846153855F, 0.761730015F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.917948723F, 0.545130014F, _cubicBezierEasingFunction_0);
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.44456995F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.5F, 1.44456995F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.600000024F, 2.88107991F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.737500012F, 2.75F, CubicBezierEasingFunction_2());
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    // - Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Scale
-    ScalarKeyFrameAnimation ScaleXScalarAnimation_0p848_to_0p603()
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_1p963_to_1p445()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.848380029F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.794871807F, 0.848380029F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.841025651F, 0.602890015F, CubicBezierEasingFunction_1());
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.96300006F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.375F, 1.96300006F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.487500012F, 1.44456995F, _cubicBezierEasingFunction_3);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Center 2
     // Scale
-    ScalarKeyFrameAnimation ScaleYScalarAnimation_1_to_1_0()
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_1p963_to_2p75()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.923076928F, 1.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.994871795F, 1.0F, _cubicBezierEasingFunction_0);
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.96291995F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.25F, 1.96291995F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.362500012F, 2.75F, _cubicBezierEasingFunction_3);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    // - Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Scale
-    ScalarKeyFrameAnimation ScaleYScalarAnimation_1_to_1_1()
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_2p75_to_1p445()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.846153855F, 1.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.917948723F, 1.0F, _cubicBezierEasingFunction_0);
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.75F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.125F, 2.75F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.237499997F, 1.44456995F, _cubicBezierEasingFunction_3);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Center 2
     // Scale
-    ScalarKeyFrameAnimation ScaleYScalarAnimation_1_to_1_2()
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_2p75_to_1p963()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.794871807F, 1.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.841025651F, 1.0F, _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.0F }, { 0.0F, 1.0F }));
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.75F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.112499997F, 1.96291995F, CubicBezierEasingFunction_5());
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Right Caps 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleYScalarAnimation_2p75_to_2p75_0()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.75F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.75F, 2.75F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.850000024F, 2.73294997F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.987500012F, 2.75F, _cubicBezierEasingFunction_1);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    // - Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Right Caps 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleYScalarAnimation_2p75_to_2p75_1()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.75F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.5F, 2.75F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.600000024F, 2.73294997F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.737500012F, 2.75F, _cubicBezierEasingFunction_2);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    // - Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleYScalarAnimation_2p75_to_2p75_2()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.75F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.375F, 2.75F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.487500012F, 2.75F, CubicBezierEasingFunction_4());
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Center 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleYScalarAnimation_2p75_to_2p75_3()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.75F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.25F, 2.75F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.362500012F, 2.75F, _cubicBezierEasingFunction_4);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    // - Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleYScalarAnimation_2p75_to_2p75_4()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.75F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.125F, 2.75F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.237499997F, 2.75F, _cubicBezierEasingFunction_4);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Center 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleYScalarAnimation_2p75_to_2p75_5()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.75F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.112499997F, 2.75F, _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.0F }, { 0.25F, 1.0F }));
         return result;
     }
 
     ScalarKeyFrameAnimation t0ScalarAnimation_0_to_1()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.789743662F, 0.0F, _stepThenHoldEasingFunction);
+        const auto result = CreateScalarKeyFrameAnimation(0.850000083F, 0.0F, _stepThenHoldEasingFunction);
         result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.815384567F, 1.0F, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.987499952F, 1.0F, _cubicBezierEasingFunction_1);
         return result;
     }
 
     ScalarKeyFrameAnimation t1ScalarAnimation_0_to_1()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.71282059F, 0.0F, _stepThenHoldEasingFunction);
+        const auto result = CreateScalarKeyFrameAnimation(0.600000083F, 0.0F, _stepThenHoldEasingFunction);
         result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.764102519F, 1.0F, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.737499952F, 1.0F, _cubicBezierEasingFunction_1);
         return result;
     }
 
-    ScalarKeyFrameAnimation t2ScalarAnimation_0_to_1()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.661538541F, 0.0F, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.71282047F, 1.0F, _cubicBezierEasingFunction_2);
-        return result;
-    }
-
-    ScalarKeyFrameAnimation t3ScalarAnimation_0_to_1()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.205128223F, 0.0F, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.27692306F, 1.0F, _cubicBezierEasingFunction_2);
-        return result;
-    }
-
-    ScalarKeyFrameAnimation t4ScalarAnimation_0_to_1()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.107692316F, 0.0F, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.153846145F, 1.0F, _cubicBezierEasingFunction_5);
-        return result;
-    }
-
-    ScalarKeyFrameAnimation t5ScalarAnimation_0_to_1()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.14871797F, 0.0F, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.199999988F, 1.0F, CubicBezierEasingFunction_6());
-        return result;
-    }
-
-    ScalarKeyFrameAnimation t6ScalarAnimation_0_to_1()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0307692327F, 0.0F, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.0974358916F, 1.0F, _cubicBezierEasingFunction_6);
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
+    // PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
     // Layer aggregator
-    ShapeVisual ShapeVisual_00()
+    ShapeVisual ShapeVisual_0()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_00());
-        // Layer: Hamburger - Base
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_01());
-        // Layer: Hamburger - Base
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_02());
         return result;
     }
 
-    // PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
+    // PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
     // Layer aggregator
-    ShapeVisual ShapeVisual_01()
+    ShapeVisual ShapeVisual_1()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_03());
-        // Layer: Hamburger - Base
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_04());
-        // Layer: Hamburger - Base
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_05());
         return result;
     }
 
-    // PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
+    // PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
     // Layer aggregator
-    ShapeVisual ShapeVisual_02()
+    ShapeVisual ShapeVisual_2()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_06());
-        // Layer: Hamburger - Base
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_07());
-        // Layer: Hamburger - Base
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_08());
         return result;
     }
 
-    // PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
+    // PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // Layer aggregator
-    ShapeVisual ShapeVisual_03()
+    ShapeVisual ShapeVisual_3()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_027());
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_028());
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_029());
-        // Layer: Hamburger - Base
+        // Layer: Center 2
         shapes.Append(ContainerShape_09());
-        // Layer: Hamburger - Base
+        // Layer: Center 2
         shapes.Append(ContainerShape_10());
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Layer aggregator
-    ShapeVisual ShapeVisual_04()
-    {
-        const auto result = _c.CreateShapeVisual();
-        result.Size({ 48.0F, 48.0F });
-        const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_036());
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_037());
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_038());
-        // Layer: Hamburger - Base
+        // Layer: Center 2
         shapes.Append(ContainerShape_11());
-        // Layer: Hamburger - Base
-        shapes.Append(ContainerShape_12());
         return result;
     }
 
-    // PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
+    // PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
     // Layer aggregator
-    ShapeVisual ShapeVisual_05()
+    ShapeVisual ShapeVisual_4()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_045());
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_046());
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_047());
-        // Layer: Hamburger - Base
+        // Layer: Right Caps 2
+        shapes.Append(ContainerShape_12());
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_13());
-        // Layer: Hamburger - Base
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_14());
         return result;
     }
 
-    // PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
+    // PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // Layer aggregator
-    ShapeVisual ShapeVisual_06()
+    ShapeVisual ShapeVisual_5()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base 2
+        // Layer: Center 2
         shapes.Append(ContainerShape_15());
-        // Layer: Hamburger - Right 2
+        // Layer: Center 2
         shapes.Append(ContainerShape_16());
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Layer aggregator
-    ShapeVisual ShapeVisual_07()
-    {
-        const auto result = _c.CreateShapeVisual();
-        result.Size({ 48.0F, 48.0F });
-        const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_063());
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_064());
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_065());
-        // Layer: Hamburger - Base 2
-        shapes.Append(ContainerShape_19());
-        // Layer: Hamburger - Base 2
-        shapes.Append(ContainerShape_20());
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Layer aggregator
-    ShapeVisual ShapeVisual_08()
-    {
-        const auto result = _c.CreateShapeVisual();
-        result.Size({ 48.0F, 48.0F });
-        const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_072());
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_073());
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_074());
-        // Layer: Hamburger - Base 2
-        shapes.Append(ContainerShape_21());
-        // Layer: Hamburger - Base 2
-        shapes.Append(ContainerShape_22());
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Layer aggregator
-    ShapeVisual ShapeVisual_09()
-    {
-        const auto result = _c.CreateShapeVisual();
-        result.Size({ 48.0F, 48.0F });
-        const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_081());
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_082());
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_083());
-        // Layer: Hamburger - Base 2
-        shapes.Append(ContainerShape_23());
-        // Layer: Hamburger - Base 2
-        shapes.Append(ContainerShape_24());
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Layer aggregator
-    ShapeVisual ShapeVisual_10()
-    {
-        const auto result = _c.CreateShapeVisual();
-        result.Size({ 48.0F, 48.0F });
-        const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_090());
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_091());
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_092());
-        // Layer: Hamburger - Base 2
-        shapes.Append(ContainerShape_25());
-        // Layer: Hamburger - Base 2
-        shapes.Append(ContainerShape_26());
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Layer aggregator
-    ShapeVisual ShapeVisual_11()
-    {
-        const auto result = _c.CreateShapeVisual();
-        result.Size({ 48.0F, 48.0F });
-        const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_099());
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_100());
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_101());
-        // Layer: Hamburger - Base 2
-        shapes.Append(ContainerShape_27());
-        // Layer: Hamburger - Base 2
-        shapes.Append(ContainerShape_28());
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // Layer aggregator
-    ShapeVisual ShapeVisual_12()
-    {
-        const auto result = _c.CreateShapeVisual();
-        result.Size({ 48.0F, 48.0F });
-        const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_108());
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_109());
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_110());
-        // Layer: Hamburger - Base 2
-        shapes.Append(ContainerShape_29());
-        // Layer: Hamburger - Base 2
-        shapes.Append(ContainerShape_30());
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Layer aggregator
-    ShapeVisual ShapeVisual_13()
-    {
-        const auto result = _c.CreateShapeVisual();
-        result.Size({ 48.0F, 48.0F });
-        const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_117());
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_118());
-        // Layer: Hamburger - Base 2
-        shapes.Append(SpriteShape_119());
-        // Layer: Hamburger - Base 2
-        shapes.Append(ContainerShape_31());
-        // Layer: Hamburger - Base 2
-        shapes.Append(ContainerShape_32());
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-    // Layer aggregator
-    ShapeVisual ShapeVisual_14()
-    {
-        const auto result = _c.CreateShapeVisual();
-        result.Size({ 48.0F, 48.0F });
-        const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_126());
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_127());
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_128());
-        // Layer: Hamburger - Base
-        shapes.Append(ContainerShape_33());
-        // Layer: Hamburger - Base
-        shapes.Append(ContainerShape_34());
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // Layer aggregator
-    ShapeVisual ShapeVisual_15()
-    {
-        const auto result = _c.CreateShapeVisual();
-        result.Size({ 48.0F, 48.0F });
-        const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base
-        shapes.Append(ContainerShape_35());
-        // Layer: Hamburger - Right
-        shapes.Append(ContainerShape_36());
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Layer aggregator
-    ShapeVisual ShapeVisual_16()
-    {
-        const auto result = _c.CreateShapeVisual();
-        result.Size({ 48.0F, 48.0F });
-        const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_144());
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_145());
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_146());
-        // Layer: Hamburger - Base
-        shapes.Append(ContainerShape_39());
-        // Layer: Hamburger - Base
-        shapes.Append(ContainerShape_40());
-        return result;
-    }
-
-    // PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff 
-    // Layer aggregator
-    ShapeVisual ShapeVisual_17()
-    {
-        const auto result = _c.CreateShapeVisual();
-        result.Size({ 48.0F, 48.0F });
-        const auto shapes = result.Shapes();
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_153());
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_154());
-        // Layer: Hamburger - Base
-        shapes.Append(SpriteShape_155());
-        // Layer: Hamburger - Base
-        shapes.Append(ContainerShape_41());
-        // Layer: Hamburger - Base
-        shapes.Append(ContainerShape_42());
+        // Layer: Center 2
+        shapes.Append(ContainerShape_17());
         return result;
     }
 
@@ -4934,543 +1822,157 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Right Caps 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_00()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 28.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.923076928F, { 28.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.994871795F, { 23.9529991F, 27.875F }, _cubicBezierEasingFunction_0);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 27.4769993F, 28.9139996F }, StepThenHoldEasingFunction());
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.75F, { 27.4769993F, 28.9139996F }, HoldThenStepEasingFunction());
+        result.InsertKeyFrame(0.850000024F, { 38.5079994F, 28.9139996F }, CubicBezierEasingFunction_0());
+        result.InsertExpressionKeyFrame(0.987499952F, L"(Pow(1-_.t0,3)*Vector2(38.508,28.914))+(3*Square(1-_.t0)*_.t0*Vector2(39.175,28.914))+(3*(1-_.t0)*Square(_.t0)*Vector2(32.649,28.914))+(Pow(_.t0,3)*Vector2(31.477,28.914))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.987500012F, { 31.4769993F, 28.9139996F }, _stepThenHoldEasingFunction);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 18 - PressedOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Right Caps 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_01()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 18.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.923076928F, { 18.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.994871795F, { 23.9529991F, 27.875F }, _cubicBezierEasingFunction_0);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 20.5079994F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.75F, { 20.5079994F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.850000024F, { 9.50800037F, 28.9139996F }, _cubicBezierEasingFunction_0);
+        result.InsertExpressionKeyFrame(0.987499952F, L"(Pow(1-_.t0,3)*Vector2(9.508,28.914))+(3*Square(1-_.t0)*_.t0*Vector2(8.841001,28.914))+(3*(1-_.t0)*Square(_.t0)*Vector2(15.341,28.914))+(Pow(_.t0,3)*Vector2(16.508,28.914))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.987500012F, { 16.5079994F, 28.9139996F }, _stepThenHoldEasingFunction);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    // - Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Right Caps 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_02()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 28.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.846153855F, { 28.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.917948723F, { 19.9529991F, 27.875F }, _cubicBezierEasingFunction_0);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 27.4769993F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.5F, { 27.4769993F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.600000024F, { 38.5079994F, 28.9139996F }, _cubicBezierEasingFunction_0);
+        result.InsertExpressionKeyFrame(0.737499952F, L"(Pow(1-_.t1,3)*Vector2(38.508,28.914))+(3*Square(1-_.t1)*_.t1*Vector2(40.185,28.914))+(3*(1-_.t1)*Square(_.t1)*Vector2(37.7,28.914))+(Pow(_.t1,3)*Vector2(37.539,28.914))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.737500012F, { 37.5390015F, 28.9139996F }, _stepThenHoldEasingFunction);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 05 - PressedToNormal
+    // - Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Right Caps 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_03()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 18.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.846153855F, { 18.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.917948723F, { 26.9529991F, 27.875F }, _cubicBezierEasingFunction_0);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 20.5079994F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.5F, { 20.5079994F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.600000024F, { 9.50800037F, 28.9139996F }, _cubicBezierEasingFunction_0);
+        result.InsertExpressionKeyFrame(0.737499952F, L"(Pow(1-_.t1,3)*Vector2(9.508,28.914))+(3*Square(1-_.t1)*_.t1*Vector2(7.847,28.914))+(3*(1-_.t1)*Square(_.t1)*Vector2(10.367,28.914))+(Pow(_.t1,3)*Vector2(10.539,28.914))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.737500012F, { 10.5389996F, 28.9139996F }, _stepThenHoldEasingFunction);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    // - Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_04()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 28.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.794871807F, { 28.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.841025651F, { 18.9529991F, 27.875F }, _cubicBezierEasingFunction_1);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 31.4769993F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.375F, { 31.4769993F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.487500012F, { 27.4769993F, 28.9139996F }, CubicBezierEasingFunction_3());
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 16 - PressedOffToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 04 - PointerOverToPressed
+    // - Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_05()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 18.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.794871807F, { 18.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.841025651F, { 28.9529991F, 27.875F }, _cubicBezierEasingFunction_1);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 16.5079994F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.375F, { 16.5079994F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.487500012F, { 20.5079994F, 28.9139996F }, _cubicBezierEasingFunction_3);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
-    // - Transforms for Controls - 02 - Hamburger - 15 - PressedOnToNormalOff Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Center 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_06()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 18.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.717948735F, { 18.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.789743602F, { 23.9529991F, 27.875F }, CubicBezierEasingFunction_2());
-        result.InsertExpressionKeyFrame(0.815384567F, L"(Pow(1-_.t0,3)*Vector2(23.953,27.875))+(3*Square(1-_.t0)*_.t0*Vector2(24.794,27.875))+(3*(1-_.t0)*Square(_.t0)*Vector2(23.992,27.875))+(Pow(_.t0,3)*Vector2(24,27.875))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.815384626F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 16.5079994F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.25F, { 16.5079994F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.362500012F, { 10.5389996F, 28.9139996F }, _cubicBezierEasingFunction_3);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 15 - PressedOnToNormalOff
-    // - Transforms for Controls - 02 - Hamburger - 15 - PressedOnToNormalOff Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
+    // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Center 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_07()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 28.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.717948735F, { 28.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.789743602F, { 23.9529991F, 27.875F }, _cubicBezierEasingFunction_2);
-        result.InsertExpressionKeyFrame(0.815384567F, L"(Pow(1-_.t0,3)*Vector2(23.953,27.875))+(3*Square(1-_.t0)*_.t0*Vector2(23.127,27.875))+(3*(1-_.t0)*Square(_.t0)*Vector2(23.992,27.875))+(Pow(_.t0,3)*Vector2(24,27.875))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.815384626F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 31.4769993F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.25F, { 31.4769993F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.362500012F, { 37.5390015F, 28.9139996F }, _cubicBezierEasingFunction_3);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    // - Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_08()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 19.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.666666687F, { 19.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.71282053F, { 26.9529991F, 27.875F }, _cubicBezierEasingFunction_1);
-        result.InsertExpressionKeyFrame(0.764102519F, L"(Pow(1-_.t1,3)*Vector2(26.953,27.875))+(3*Square(1-_.t1)*_.t1*Vector2(27.786,27.875))+(3*(1-_.t1)*Square(_.t1)*Vector2(24.492,27.875))+(Pow(_.t1,3)*Vector2(24,27.875))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.764102578F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 37.5390015F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.125F, { 37.5390015F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.237499997F, { 27.4769993F, 28.9139996F }, _cubicBezierEasingFunction_3);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 14 - PressedOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalToPressed
+    // - Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Right Caps 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_09()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 29.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.666666687F, { 29.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.71282053F, { 21.0F, 27.875F }, _cubicBezierEasingFunction_1);
-        result.InsertExpressionKeyFrame(0.764102519F, L"(Pow(1-_.t1,3)*Vector2(21,27.875))+(3*Square(1-_.t1)*_.t1*Vector2(20.167,27.875))+(3*(1-_.t1)*Square(_.t1)*Vector2(23.5,27.875))+(Pow(_.t1,3)*Vector2(24,27.875))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.764102578F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 10.5389996F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.125F, { 10.5389996F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.237499997F, { 20.5079994F, 28.9139996F }, _cubicBezierEasingFunction_3);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Center 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_10()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 19.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.615384638F, { 19.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.661538482F, { 28.9529991F, 27.875F }, _cubicBezierEasingFunction_1);
-        result.InsertExpressionKeyFrame(0.71282047F, L"(Pow(1-_.t2,3)*Vector2(28.953,27.875))+(3*Square(1-_.t2)*_.t2*Vector2(29.786,27.875))+(3*(1-_.t2)*Square(_.t2)*Vector2(24.826,27.875))+(Pow(_.t2,3)*Vector2(24,27.875))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.71282053F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 10.5389996F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.112499997F, { 16.5079994F, 28.9139996F }, _cubicBezierEasingFunction_5);
         return result;
     }
 
-    // - - PreComp layer: Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 13 - PressedOnToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
+    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
+    // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Center 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_11()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 29.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.615384638F, { 29.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.661538482F, { 19.0F, 27.875F }, _cubicBezierEasingFunction_1);
-        result.InsertExpressionKeyFrame(0.71282047F, L"(Pow(1-_.t2,3)*Vector2(19,27.875))+(3*Square(1-_.t2)*_.t2*Vector2(18.167,27.875))+(3*(1-_.t2)*Square(_.t2)*Vector2(23.167,27.875))+(Pow(_.t2,3)*Vector2(24,27.875))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.71282053F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        return result;
-    }
-
-    // - - - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // - - Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // - Layer: Hamburger - Right 2
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_12()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 26.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.589743614F, { 26.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.610256433F, { 28.9529991F, 27.875F }, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // - - - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // - - Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // - Layer: Hamburger - Right 2
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_13()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 21.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.589743614F, { 21.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.610256433F, { 18.9529991F, 27.875F }, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // - Transforms for Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_14()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 26.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.538461566F, { 26.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.584615409F, { 24.0F, 27.875F }, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // - Transforms for Controls - 02 - Hamburger - 11 - PointerOverOffToNormalOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_15()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 21.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.538461566F, { 21.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.584615409F, { 24.0F, 27.875F }, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_16()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 26.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.487179488F, { 26.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.533333361F, { 19.9529991F, 27.875F }, CubicBezierEasingFunction_3());
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 10 - PointerOverOffToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_17()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 21.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.487179488F, { 21.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.533333361F, { 26.9529991F, 27.875F }, _cubicBezierEasingFunction_3);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_18()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 19.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.461538464F, { 19.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.482051283F, { 18.9529991F, 27.875F }, CubicBezierEasingFunction_4());
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 09 - PointerOverOnToPressedOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_19()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 26.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.461538464F, { 26.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.482051283F, { 28.9529991F, 27.875F }, _cubicBezierEasingFunction_4);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_20()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 19.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.410256416F, { 19.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.456410259F, { 24.0F, 27.875F }, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 08 - PointerOverOnToNormalOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_21()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 26.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.410256416F, { 26.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.456410259F, { 24.0F, 27.875F }, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_22()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 19.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.358974367F, { 19.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.405128211F, { 26.9529991F, 27.875F }, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 07 - PointerOverOnToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_23()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 26.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.358974367F, { 26.9529991F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.405128211F, { 21.0F, 27.875F }, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_24()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.333333343F, { 24.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.353846163F, { 28.9529991F, 27.875F }, _cubicBezierEasingFunction_4);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 06 - NormalOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_25()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.333333343F, { 24.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.353846163F, { 18.9529991F, 27.875F }, _cubicBezierEasingFunction_4);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_26()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.282051295F, { 24.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.328205138F, { 26.9529991F, 27.875F }, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // - Transforms for Controls - 02 - Hamburger - 05 -NormalOffToPointerOverOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_27()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.282051295F, { 24.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.328205138F, { 21.0F, 27.875F }, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 04 - NormalOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_28()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.179487184F, { 24.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.205128208F, { 29.0F, 27.875F }, _cubicBezierEasingFunction_4);
-        result.InsertExpressionKeyFrame(0.27692306F, L"(Pow(1-_.t3,3)*Vector2(29,27.875))+(3*Square(1-_.t3)*_.t3*Vector2(29,27.875))+(3*(1-_.t3)*Square(_.t3)*Vector2(24.833,27.875))+(Pow(_.t3,3)*Vector2(24,27.875))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.27692309F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 04 - NormalOffToNormalOn
-    // - Transforms for Controls - 02 - Hamburger - 04 - NormalOffToNormalOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_29()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.179487184F, { 24.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.205128208F, { 18.9529991F, 27.875F }, _cubicBezierEasingFunction_4);
-        result.InsertExpressionKeyFrame(0.27692306F, L"(Pow(1-_.t3,3)*Vector2(18.953,27.875))+(3*Square(1-_.t3)*_.t3*Vector2(18.953,27.875))+(3*(1-_.t3)*Square(_.t3)*Vector2(23.159,27.875))+(Pow(_.t3,3)*Vector2(24,27.875))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.27692309F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        return result;
-    }
-
-    // - - - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // - - Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // Scale(1,1,0)
-    // - Layer: Hamburger - Right
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_30()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.107692309F, { 24.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.15384616F, { 24.0F, 27.875F }, _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.850000024F }, { 0.75F, 0.75F }));
-        result.InsertKeyFrame(0.174358979F, { 18.9529991F, 27.875F }, _cubicBezierEasingFunction_4);
-        return result;
-    }
-
-    // - - - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // - - Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // Scale(1,1,0)
-    // - Layer: Hamburger - Right
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_31()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.107692309F, { 24.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertExpressionKeyFrame(0.153846145F, L"(Pow(1-_.t4,3)*Vector2(24,27.875))+(3*Square(1-_.t4)*_.t4*Vector2(23.992,27.875))+(3*(1-_.t4)*Square(_.t4)*Vector2(23.127,27.875))+(Pow(_.t4,3)*Vector2(23.953,27.875))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.174358979F, { 23.9529991F, 27.875F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.174358994F, { 28.9529991F, 27.875F }, _cubicBezierEasingFunction_4);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_32()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.102564104F, { 24.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.148717955F, { 19.9529991F, 27.875F }, CubicBezierEasingFunction_5());
-        result.InsertExpressionKeyFrame(0.199999988F, L"(Pow(1-_.t5,3)*Vector2(19.953,27.875))+(3*Square(1-_.t5)*_.t5*Vector2(19.953,27.875))+(3*(1-_.t5)*Square(_.t5)*Vector2(23.326,27.875))+(Pow(_.t5,3)*Vector2(24,27.875))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.200000003F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // - Transforms for Controls - 02 - Hamburger - 02 - NormalOnToPointerOverOn
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_33()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.102564104F, { 24.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.148717955F, { 26.9529991F, 27.875F }, _cubicBezierEasingFunction_5);
-        result.InsertExpressionKeyFrame(0.199999988F, L"(Pow(1-_.t5,3)*Vector2(26.953,27.875))+(3*Square(1-_.t5)*_.t5*Vector2(26.953,27.875))+(3*(1-_.t5)*Square(_.t5)*Vector2(24.492,27.875))+(Pow(_.t5,3)*Vector2(24,27.875))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.200000003F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff 
-    // - Transforms for Controls - 02 - Hamburger - 01 - NormalOnToNormalOff  Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_34()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.0307692308F, { 15.9530001F, 27.875F }, _cubicBezierEasingFunction_5);
-        result.InsertExpressionKeyFrame(0.0974358916F, L"(Pow(1-_.t6,3)*Vector2(15.953,27.875))+(3*Square(1-_.t6)*_.t6*Vector2(15.953,27.875))+(3*(1-_.t6)*Square(_.t6)*Vector2(22.659,27.875))+(Pow(_.t6,3)*Vector2(24,27.875))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.0974358991F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalOnToNormalOff 
-    // - Transforms for Controls - 02 - Hamburger - 01 - NormalOnToNormalOff  Scale(1,1,0)
-    // Layer: Hamburger - Base
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_35()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 27.875F }, _holdThenStepEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.0307692308F, { 31.9529991F, 27.875F }, _cubicBezierEasingFunction_5);
-        result.InsertExpressionKeyFrame(0.0974358916F, L"(Pow(1-_.t6,3)*Vector2(31.953,27.875))+(3*Square(1-_.t6)*_.t6*Vector2(31.953,27.875))+(3*(1-_.t6)*Square(_.t6)*Vector2(25.326,27.875))+(Pow(_.t6,3)*Vector2(24,27.875))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.0974358991F, { 24.0F, 27.875F }, _stepThenHoldEasingFunction);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Base 2
-    Vector2KeyFrameAnimation ShapeVisibilityAnimation_0()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.569230795F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.671794891F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // - Transforms for Controls - 02 - Hamburger - 12 - PointerOverOffToPressedOff
-    // Scale(1,1,0)
-    // Layer: Hamburger - Right 2
-    Vector2KeyFrameAnimation ShapeVisibilityAnimation_1()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.589743614F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.692307711F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn Scale(1,1,0)
-    // Layer: Hamburger - Base
-    Vector2KeyFrameAnimation ShapeVisibilityAnimation_2()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.071794875F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.179487184F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 02 - Hamburger - 03 - NormalOnToPressedOn
-    // - Transforms for Controls - 02 - Hamburger - 03 - NormalOnToPressedOn Scale(1,1,0)
-    // Layer: Hamburger - Right
-    Vector2KeyFrameAnimation ShapeVisibilityAnimation_3()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.107692309F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.210256413F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 37.5390015F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.112499997F, { 31.4769993F, 28.9139996F }, _cubicBezierEasingFunction_5);
         return result;
     }
 
@@ -5576,7 +2078,7 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedGlobalNavigationBu
 
 double AnimatedGlobalNavigationButtonVisualSource::FrameCount()
 {
-    return 195.0;
+    return 80.0;
 }
 
 double AnimatedGlobalNavigationButtonVisualSource::Framerate()
@@ -5586,12 +2088,12 @@ double AnimatedGlobalNavigationButtonVisualSource::Framerate()
 
 TimeSpan AnimatedGlobalNavigationButtonVisualSource::Duration()
 {
-    return TimeSpan{ 32500000L };
+    return TimeSpan{ 13333333L };
 }
 
 double AnimatedGlobalNavigationButtonVisualSource::FrameToProgress(double frameNumber)
 {
-    return frameNumber / 195.0;
+    return frameNumber / 80.0;
 }
 
 winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedGlobalNavigationButtonVisualSource::Markers()
@@ -5599,42 +2101,18 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedGloba
     return winrt::single_threaded_map<winrt::hstring, double>(
         std::map<winrt::hstring, double>
         {
-            { L"NormalOnToNormalOff_Start", 0.0 },
-            { L"NormalOnToNormalOff_End", 0.0976923076923077 },
-            { L"NormalOnToPointerOverOn_Start", 0.102820512820513 },
-            { L"NormalOnToPointerOverOn_End", 0.148974358974359 },
-            { L"NormalOnToPressedOn_Start", 0.154102564102564 },
-            { L"NormalOnToPressedOn_End", 0.174615384615385 },
-            { L"NormalOffToNormalOn_Start", 0.17974358974359 },
-            { L"NormalOffToNormalOn_End", 0.277179487179487 },
-            { L"NormalOffToPointerOverOff_Start", 0.282307692307692 },
-            { L"NormalOffToPointerOverOff_End", 0.328461538461538 },
-            { L"NormalOffToPressedOff_Start", 0.333589743589744 },
-            { L"NormalOffToPressedOff_End", 0.354102564102564 },
-            { L"PointerOverOnToPointerOverOff_Start", 0.359230769230769 },
-            { L"PointerOverOnToPointerOverOff_End", 0.405384615384615 },
-            { L"PointerOverOnToNormalOn_Start", 0.410512820512821 },
-            { L"PointerOverOnToNormalOn_End", 0.456666666666667 },
-            { L"PointerOverOnToPressedOn_Start", 0.461794871794872 },
-            { L"PointerOverOnToPressedOn_End", 0.482307692307692 },
-            { L"PointerOverOffToPointerOverOn_Start", 0.487435897435897 },
-            { L"PointerOverOffToPointerOverOn_End", 0.533589743589744 },
-            { L"PointerOverOffToNormalOff_Start", 0.538717948717949 },
-            { L"PointerOverOffToNormalOff_End", 0.584871794871795 },
-            { L"PointerOverOffToPressedOff_Start", 0.59 },
-            { L"PointerOverOffToPressedOff_End", 0.610512820512821 },
-            { L"PressedOnToPressedOff_Start", 0.615641025641026 },
-            { L"PressedOnToPressedOff_End", 0.661794871794872 },
-            { L"PressedOnToPointerOverOff_Start", 0.666923076923077 },
-            { L"PressedOnToPointerOverOff_End", 0.713076923076923 },
-            { L"PressedOnToNormalOff_Start", 0.718205128205128 },
-            { L"PressedOnToNormalOff_End", 0.79 },
-            { L"PressedOffToPressedOn_Start", 0.795128205128205 },
-            { L"PressedOffToPressedOn_End", 0.841282051282051 },
-            { L"PressedOffToPointerOverOn_Start", 0.846410256410256 },
-            { L"PressedOffToPointerOverOn_End", 0.918205128205128 },
-            { L"PressedOffToNormalOn_Start", 0.923333333333333 },
-            { L"PressedOffToNormalOn_End", 0.995128205128205 },
+            { L"NormalToPointerOver_Start", 0.0 },
+            { L"NormalToPointerOver_End", 0.113125 },
+            { L"NormalToPressed_Start", 0.125625 },
+            { L"NormalToPressed_End", 0.238125 },
+            { L"PointerOverToNormal_Start", 0.250625 },
+            { L"PointerOverToNormal_End", 0.363125 },
+            { L"PointerOverToPressed_Start", 0.375625 },
+            { L"PointerOverToPressed_End", 0.488125 },
+            { L"PressedToNormal_Start", 0.500625 },
+            { L"PressedToNormal_End", 0.738125 },
+            { L"PressedToPointerOver_Start", 0.750625 },
+            { L"PressedToPointerOver_End", 0.988125 },
         }
     ).GetView();
 }

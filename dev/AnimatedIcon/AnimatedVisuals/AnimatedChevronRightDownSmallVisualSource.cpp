@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedChevronRightDownSmallVisualSource.json
 //       
 //       Input file:
-//           AnimatedChevronRightDownSmallVisualSource.json (33994 bytes created 12:28-08:00 Feb 8 2021)
+//           AnimatedChevronRightDownSmallVisualSource.json (34813 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -21,11 +21,11 @@
 // ____________________________________
 // |       Object stats       | Count |
 // |__________________________|_______|
-// | All CompositionObjects   |   347 |
+// | All CompositionObjects   |   337 |
 // |--------------------------+-------|
-// | Expression animators     |    49 |
-// | KeyFrame animators       |    45 |
-// | Reference parameters     |    52 |
+// | Expression animators     |    43 |
+// | KeyFrame animators       |    42 |
+// | Reference parameters     |    43 |
 // | Expression operations    |     4 |
 // |--------------------------+-------|
 // | Animated brushes         |     1 |
@@ -36,7 +36,7 @@
 // | ContainerVisuals         |    19 |
 // | ShapeVisuals             |    18 |
 // |--------------------------+-------|
-// | ContainerShapes          |    18 |
+// | ContainerShapes          |    16 |
 // | CompositionSpriteShapes  |    18 |
 // |--------------------------+-------|
 // | Brushes                  |     1 |
@@ -100,7 +100,7 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
         IClosable>
 {
     winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
-    static constexpr int64_t c_durationTicks{ 33333333L };
+    static constexpr int64_t c_durationTicks{ 40000000L };
     Compositor const _c{ nullptr };
     ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
     CompositionPropertySet const _themeProperties{ nullptr };
@@ -110,6 +110,9 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     CubicBezierEasingFunction _cubicBezierEasingFunction_0{ nullptr };
     CubicBezierEasingFunction _cubicBezierEasingFunction_1{ nullptr };
     CubicBezierEasingFunction _cubicBezierEasingFunction_2{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_3{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_4{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_5{ nullptr };
     ExpressionAnimation _rootProgress{ nullptr };
     InsetClip _insetClip_0{ nullptr };
     StepEasingFunction _holdThenStepEasingFunction{ nullptr };
@@ -175,142 +178,142 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     // PreComp layer: Controls - 08 - TreeViewExpand - 18 - PressedOffToNormalOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_00()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.925000012F, true);
+        const auto result = CreateBooleanKeyFrameAnimation(0.916666687F, true);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 17 - PressedOffToPointerOverOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_01()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.850000024F, true);
-        result.InsertKeyFrame(0.925000012F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.833333313F, true);
+        result.InsertKeyFrame(0.916666687F, false);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 16 - PressedOffToPressedOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_02()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.800000012F, true);
-        result.InsertKeyFrame(0.850000024F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.791666687F, true);
+        result.InsertKeyFrame(0.833333313F, false);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 15 - PressedOnToNormalOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_03()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.725000024F, true);
-        result.InsertKeyFrame(0.800000012F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.708333313F, true);
+        result.InsertKeyFrame(0.791666687F, false);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 14 - PressedOnToPointerOverOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_04()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.649999976F, true);
-        result.InsertKeyFrame(0.725000024F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.625F, true);
+        result.InsertKeyFrame(0.708333313F, false);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 13 - PressedOnToPressedOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_05()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.600000024F, true);
-        result.InsertKeyFrame(0.649999976F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.583333313F, true);
+        result.InsertKeyFrame(0.625F, false);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 12 - PointerOverOffToPressedOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_06()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.574999988F, true);
-        result.InsertKeyFrame(0.600000024F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.541666687F, true);
+        result.InsertKeyFrame(0.583333313F, false);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 11 - PointerOverOffToNormalOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_07()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.524999976F, true);
-        result.InsertKeyFrame(0.574999988F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.5F, true);
+        result.InsertKeyFrame(0.541666687F, false);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 10 - PointerOverOffToPointerOverOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_08()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.474999994F, true);
-        result.InsertKeyFrame(0.524999976F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.458333343F, true);
+        result.InsertKeyFrame(0.5F, false);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 09 - PointerOverOnToPressedOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_09()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.449999988F, true);
-        result.InsertKeyFrame(0.474999994F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.416666657F, true);
+        result.InsertKeyFrame(0.458333343F, false);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 08 - PointerOverOnToNormalOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_10()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.400000006F, true);
-        result.InsertKeyFrame(0.449999988F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.375F, true);
+        result.InsertKeyFrame(0.416666657F, false);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 07 - PointerOverOnToPointerOverOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_11()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.349999994F, true);
-        result.InsertKeyFrame(0.400000006F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.333333343F, true);
+        result.InsertKeyFrame(0.375F, false);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 06 - NormalOffToPressedOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_12()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.324999988F, true);
-        result.InsertKeyFrame(0.349999994F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.291666657F, true);
+        result.InsertKeyFrame(0.333333343F, false);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 05 -NormalOffToPointerOverOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_13()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.275000006F, true);
-        result.InsertKeyFrame(0.324999988F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.25F, true);
+        result.InsertKeyFrame(0.291666657F, false);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 04 - NormalOffToNormalOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_14()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.174999997F, true);
-        result.InsertKeyFrame(0.275000006F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.166666672F, true);
+        result.InsertKeyFrame(0.25F, false);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 03 - NormalOnToPressedOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_15()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.150000006F, true);
-        result.InsertKeyFrame(0.174999997F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.125F, true);
+        result.InsertKeyFrame(0.166666672F, false);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 02 - NormalOnToPointerOverOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_16()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.100000001F, true);
-        result.InsertKeyFrame(0.150000006F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.0833333358F, true);
+        result.InsertKeyFrame(0.125F, false);
         return result;
     }
 
     // PreComp layer: Controls - 08 - TreeViewExpand - 01 - NormalOnToNormalOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_17()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.100000001F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.0833333358F, false);
         return result;
     }
 
@@ -351,11 +354,11 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     CompositionContainerShape ContainerShape_00()
     {
         const auto result = _c.CreateContainerShape();
-        result.RotationAngleInDegrees(90.0F);
         result.Scale({ 4.0F, 4.0F });
         // ShapeGroup: Group 1 RotationDegrees:270
         result.Shapes().Append(SpriteShape_00());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_00(), RootProgress());
+        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_90_to_0_0(), RootProgress());
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_00(), _rootProgress);
         return result;
     }
 
@@ -368,7 +371,7 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
         result.Scale({ 4.0F, 4.0F });
         // ShapeGroup: Group 1 RotationDegrees:270
         result.Shapes().Append(SpriteShape_01());
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_90_to_0_0(), _rootProgress);
+        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_90_0(), _rootProgress);
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_01(), _rootProgress);
         return result;
     }
@@ -379,11 +382,11 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     CompositionContainerShape ContainerShape_02()
     {
         const auto result = _c.CreateContainerShape();
+        result.Offset({ 24.1709995F, 23.9230003F });
         result.Scale({ 4.0F, 4.0F });
         // ShapeGroup: Group 1 RotationDegrees:270
         result.Shapes().Append(SpriteShape_02());
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_90_to_0_1(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_02(), _rootProgress);
+        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_90_1(), _rootProgress);
         return result;
     }
 
@@ -396,7 +399,8 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
         result.Scale({ 4.0F, 4.0F });
         // ShapeGroup: Group 1 RotationDegrees:270
         result.Shapes().Append(SpriteShape_03());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_03(), _rootProgress);
+        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_90_to_0_1(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_02(), _rootProgress);
         return result;
     }
 
@@ -409,8 +413,8 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
         result.Scale({ 4.0F, 4.0F });
         // ShapeGroup: Group 1 RotationDegrees:270
         result.Shapes().Append(SpriteShape_04());
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_90_0(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_04(), _rootProgress);
+        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_90_to_0_2(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_03(), _rootProgress);
         return result;
     }
 
@@ -420,11 +424,11 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     CompositionContainerShape ContainerShape_05()
     {
         const auto result = _c.CreateContainerShape();
+        result.Offset({ 24.1709995F, 23.9230003F });
         result.Scale({ 4.0F, 4.0F });
         // ShapeGroup: Group 1 RotationDegrees:270
         result.Shapes().Append(SpriteShape_05());
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_90_1(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_05(), _rootProgress);
+        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_90_to_0_3(), _rootProgress);
         return result;
     }
 
@@ -434,11 +438,10 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     CompositionContainerShape ContainerShape_06()
     {
         const auto result = _c.CreateContainerShape();
-        result.RotationAngleInDegrees(90.0F);
         result.Scale({ 4.0F, 4.0F });
         // ShapeGroup: Group 1 RotationDegrees:270
         result.Shapes().Append(SpriteShape_06());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_06(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_04(), _rootProgress);
         return result;
     }
 
@@ -448,11 +451,10 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     CompositionContainerShape ContainerShape_07()
     {
         const auto result = _c.CreateContainerShape();
-        result.Offset({ 24.1709995F, 23.9230003F });
         result.Scale({ 4.0F, 4.0F });
         // ShapeGroup: Group 1 RotationDegrees:270
         result.Shapes().Append(SpriteShape_07());
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_90_to_0_2(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_05(), _rootProgress);
         return result;
     }
 
@@ -463,11 +465,11 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     CompositionContainerShape ContainerShape_08()
     {
         const auto result = _c.CreateContainerShape();
-        result.Offset({ 24.1709995F, 23.9230003F });
         result.Scale({ 4.0F, 4.0F });
         // ShapeGroup: Group 1 RotationDegrees:270
         result.Shapes().Append(SpriteShape_08());
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_90_to_0_3(), _rootProgress);
+        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_90_2(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_06(), _rootProgress);
         return result;
     }
 
@@ -477,6 +479,7 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     CompositionContainerShape ContainerShape_09()
     {
         const auto result = _c.CreateContainerShape();
+        result.RotationAngleInDegrees(90.0F);
         result.Scale({ 4.0F, 4.0F });
         // ShapeGroup: Group 1 RotationDegrees:270
         result.Shapes().Append(SpriteShape_09());
@@ -490,11 +493,11 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     CompositionContainerShape ContainerShape_10()
     {
         const auto result = _c.CreateContainerShape();
-        result.Offset({ 24.1709995F, 23.9230003F });
+        result.RotationAngleInDegrees(90.0F);
         result.Scale({ 4.0F, 4.0F });
         // ShapeGroup: Group 1 RotationDegrees:270
         result.Shapes().Append(SpriteShape_10());
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_90_2(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_08(), _rootProgress);
         return result;
     }
 
@@ -505,94 +508,66 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     CompositionContainerShape ContainerShape_11()
     {
         const auto result = _c.CreateContainerShape();
-        result.Offset({ 24.1709995F, 23.9230003F });
         result.Scale({ 4.0F, 4.0F });
         // ShapeGroup: Group 1 RotationDegrees:270
         result.Shapes().Append(SpriteShape_11());
         StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_90_to_0_4(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 08 - TreeViewExpand - 06 - NormalOffToPressedOff
-    // Transforms for Controls - 08 - TreeViewExpand - 06 - NormalOffToPressedOff
-    // Scale(1,1,0)
-    CompositionContainerShape ContainerShape_12()
-    {
-        const auto result = _c.CreateContainerShape();
-        result.RotationAngleInDegrees(90.0F);
-        result.Scale({ 4.0F, 4.0F });
-        // ShapeGroup: Group 1 RotationDegrees:270
-        result.Shapes().Append(SpriteShape_12());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_08(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_09(), _rootProgress);
         return result;
     }
 
     // - PreComp layer: Controls - 08 - TreeViewExpand - 05 -NormalOffToPointerOverOff
     // Transforms for Controls - 08 - TreeViewExpand - 05 -NormalOffToPointerOverOff
     // Scale(1,1,0)
-    CompositionContainerShape ContainerShape_13()
+    CompositionContainerShape ContainerShape_12()
     {
         const auto result = _c.CreateContainerShape();
-        result.Offset({ 24.1709995F, 23.9230003F });
         result.Scale({ 4.0F, 4.0F });
         // ShapeGroup: Group 1 RotationDegrees:270
         result.Shapes().Append(SpriteShape_13());
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_90_3(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_10(), _rootProgress);
         return result;
     }
 
     // - PreComp layer: Controls - 08 - TreeViewExpand - 04 - NormalOffToNormalOn
     // Transforms for Controls - 08 - TreeViewExpand - 04 - NormalOffToNormalOn
     // Scale(1,1,0)
-    CompositionContainerShape ContainerShape_14()
+    CompositionContainerShape ContainerShape_13()
     {
         const auto result = _c.CreateContainerShape();
         result.Scale({ 4.0F, 4.0F });
         // ShapeGroup: Group 1 RotationDegrees:270
         result.Shapes().Append(SpriteShape_14());
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_90_4(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_09(), _rootProgress);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 08 - TreeViewExpand - 03 - NormalOnToPressedOn
-    // Transforms for Controls - 08 - TreeViewExpand - 03 - NormalOnToPressedOn
-    // Scale(1,1,0)
-    CompositionContainerShape ContainerShape_15()
-    {
-        const auto result = _c.CreateContainerShape();
-        result.Scale({ 4.0F, 4.0F });
-        // ShapeGroup: Group 1 RotationDegrees:270
-        result.Shapes().Append(SpriteShape_15());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_10(), _rootProgress);
+        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_90_3(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_11(), _rootProgress);
         return result;
     }
 
     // - PreComp layer: Controls - 08 - TreeViewExpand - 02 - NormalOnToPointerOverOn
     // Transforms for Controls - 08 - TreeViewExpand - 02 - NormalOnToPointerOverOn
     // Scale(1,1,0)
-    CompositionContainerShape ContainerShape_16()
+    CompositionContainerShape ContainerShape_14()
     {
         const auto result = _c.CreateContainerShape();
-        result.Offset({ 24.1709995F, 23.9230003F });
+        result.RotationAngleInDegrees(90.0F);
         result.Scale({ 4.0F, 4.0F });
         // ShapeGroup: Group 1 RotationDegrees:270
         result.Shapes().Append(SpriteShape_16());
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_90_to_0_5(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_12(), _rootProgress);
         return result;
     }
 
     // - PreComp layer: Controls - 08 - TreeViewExpand - 01 - NormalOnToNormalOff
     // Transforms for Controls - 08 - TreeViewExpand - 01 - NormalOnToNormalOff
     // Scale(1,1,0)
-    CompositionContainerShape ContainerShape_17()
+    CompositionContainerShape ContainerShape_15()
     {
         const auto result = _c.CreateContainerShape();
         result.Scale({ 4.0F, 4.0F });
         // ShapeGroup: Group 1 RotationDegrees:270
         result.Shapes().Append(SpriteShape_17());
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_90_to_0_6(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_11(), _rootProgress);
+        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_90_to_0_5(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_13(), _rootProgress);
         return result;
     }
 
@@ -735,14 +710,14 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
         return result;
     }
 
-    // - - PreComp layer: Controls - 08 - TreeViewExpand - 06 - NormalOffToPressedOff
-    // - Transforms for Controls - 08 - TreeViewExpand - 06 - NormalOffToPressedOff
+    // - PreComp layer: Controls - 08 - TreeViewExpand - 06 - NormalOffToPressedOff
+    // Transforms for Controls - 08 - TreeViewExpand - 06 - NormalOffToPressedOff
     // Scale(1,1,0)
     // Path 1
     CompositionSpriteShape SpriteShape_12()
     {
-        // Rotation:-90 degrees
-        const auto result = CreateSpriteShape(_pathGeometry, { 0.0F, -1.0F, 1.0F, 0.0F, 0.0F, 0.0F }, _themeColor_Foreground);
+        // Offset:<24.171, 23.923>, Rotation:-90 degrees, Scale:<4, 4>
+        const auto result = CreateSpriteShape(_pathGeometry, { 0.0F, -4.0F, 4.0F, 0.0F, 24.1709995F, 23.9230003F }, _themeColor_Foreground);
         return result;
     }
 
@@ -768,14 +743,14 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
         return result;
     }
 
-    // - - PreComp layer: Controls - 08 - TreeViewExpand - 03 - NormalOnToPressedOn
-    // - Transforms for Controls - 08 - TreeViewExpand - 03 - NormalOnToPressedOn
+    // - PreComp layer: Controls - 08 - TreeViewExpand - 03 - NormalOnToPressedOn
+    // Transforms for Controls - 08 - TreeViewExpand - 03 - NormalOnToPressedOn
     // Scale(1,1,0)
     // Path 1
     CompositionSpriteShape SpriteShape_15()
     {
-        // Rotation:-90 degrees
-        const auto result = CreateSpriteShape(_pathGeometry, { 0.0F, -1.0F, 1.0F, 0.0F, 0.0F, 0.0F }, _themeColor_Foreground);
+        // Offset:<24.171, 23.923>, Scale:<4, 4>
+        const auto result = CreateSpriteShape(_pathGeometry, { 4.0F, 0.0F, 0.0F, 4.0F, 24.1709995F, 23.9230003F }, _themeColor_Foreground);
         return result;
     }
 
@@ -1094,9 +1069,6 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
         const auto result = _root = _c.CreateContainerVisual();
         const auto propertySet = result.Properties();
         propertySet.InsertScalar(L"Progress", 0.0F);
-        propertySet.InsertScalar(L"t0", 0.0F);
-        propertySet.InsertScalar(L"t1", 0.0F);
-        propertySet.InsertScalar(L"t2", 0.0F);
         const auto children = result.Children();
         // PreComp layer: Controls - 08 - TreeViewExpand - 18 - PressedOffToNormalOn
         children.InsertAtTop(ContainerVisual_00());
@@ -1134,25 +1106,37 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
         children.InsertAtTop(ContainerVisual_16());
         // PreComp layer: Controls - 08 - TreeViewExpand - 01 - NormalOnToNormalOff
         children.InsertAtTop(ContainerVisual_17());
-        StartProgressBoundAnimation(propertySet, L"t0", t0ScalarAnimation_0_to_1(), _rootProgress);
-        StartProgressBoundAnimation(propertySet, L"t1", t1ScalarAnimation_0_to_1(), _rootProgress);
-        StartProgressBoundAnimation(propertySet, L"t2", t2ScalarAnimation_0_to_1(), _rootProgress);
         return result;
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_0()
     {
-        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F });
+        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.25F, 0.0F }, { 0.0F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_1()
     {
-        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
+        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.0F }, { 0.150000006F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_2()
     {
-        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.0F }, { 0.75F, 1.0F });
+        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.0F }, { 0.0F, 1.0F });
+    }
+
+    CubicBezierEasingFunction CubicBezierEasingFunction_3()
+    {
+        return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.0F }, { 0.75F, 1.0F });
+    }
+
+    CubicBezierEasingFunction CubicBezierEasingFunction_4()
+    {
+        return _cubicBezierEasingFunction_4 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F });
+    }
+
+    CubicBezierEasingFunction CubicBezierEasingFunction_5()
+    {
+        return _cubicBezierEasingFunction_5 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
     }
 
     ExpressionAnimation RootProgress()
@@ -1168,75 +1152,15 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
         return result;
     }
 
-    // - - PreComp layer: Controls - 08 - TreeViewExpand - 14 - PressedOnToPointerOverOff
-    // - Transforms for Controls - 08 - TreeViewExpand - 14 - PressedOnToPointerOverOff
+    // - - PreComp layer: Controls - 08 - TreeViewExpand - 17 - PressedOffToPointerOverOn
+    // - Transforms for Controls - 08 - TreeViewExpand - 17 - PressedOffToPointerOverOn
     // Scale(1,1,0)
     // Rotation
     ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_90_0()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.649999976F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.720000029F, 90.0F, _cubicBezierEasingFunction_0);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 08 - TreeViewExpand - 13 - PressedOnToPressedOff
-    // - Transforms for Controls - 08 - TreeViewExpand - 13 - PressedOnToPressedOff
-    // Scale(1,1,0)
-    // Rotation
-    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_90_1()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.600000024F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.644999981F, 90.0F, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 08 - TreeViewExpand - 08 - PointerOverOnToNormalOn
-    // - Transforms for Controls - 08 - TreeViewExpand - 08 - PointerOverOnToNormalOn
-    // Scale(1,1,0)
-    // Rotation
-    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_90_2()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.400000006F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.444999993F, 90.0F, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 08 - TreeViewExpand - 05 -NormalOffToPointerOverOff
-    // - Transforms for Controls - 08 - TreeViewExpand - 05 -NormalOffToPointerOverOff
-    // Scale(1,1,0)
-    // Rotation
-    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_90_3()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.275000006F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.319999993F, 90.0F, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 08 - TreeViewExpand - 04 - NormalOffToNormalOn
-    // - Transforms for Controls - 08 - TreeViewExpand - 04 - NormalOffToNormalOn
-    // Scale(1,1,0)
-    // Rotation
-    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_90_4()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.174999997F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.200000003F, 90.0F, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 08 - TreeViewExpand - 17 - PressedOffToPointerOverOn
-    // - Transforms for Controls - 08 - TreeViewExpand - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
-    // Rotation
-    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_90_to_0_0()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 90.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.850000024F, 90.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.920000017F, 0.0F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.833333313F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.875F, 90.0F, CubicBezierEasingFunction_2());
         return result;
     }
 
@@ -1244,23 +1168,11 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     // - Transforms for Controls - 08 - TreeViewExpand - 16 - PressedOffToPressedOn
     // Scale(1,1,0)
     // Rotation
-    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_90_to_0_1()
+    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_90_1()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 90.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.800000012F, 90.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.845000029F, 0.0F, CubicBezierEasingFunction_1());
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 08 - TreeViewExpand - 11 - PointerOverOffToNormalOff
-    // - Transforms for Controls - 08 - TreeViewExpand - 11 - PointerOverOffToNormalOff
-    // Scale(1,1,0)
-    // Rotation
-    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_90_to_0_2()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 90.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.524999976F, 90.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.569999993F, 0.0F, _cubicBezierEasingFunction_1);
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.791666687F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.829166651F, 90.0F, CubicBezierEasingFunction_5());
         return result;
     }
 
@@ -1269,11 +1181,71 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     // - Transforms for Controls - 08 - TreeViewExpand - 10 -
     // PointerOverOffToPointerOverOn Scale(1,1,0)
     // Rotation
+    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_90_2()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.458333343F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.495833337F, 90.0F, _cubicBezierEasingFunction_5);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 08 - TreeViewExpand - 04 - NormalOffToNormalOn
+    // - Transforms for Controls - 08 - TreeViewExpand - 04 - NormalOffToNormalOn
+    // Scale(1,1,0)
+    // Rotation
+    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_90_3()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.166666672F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.208333328F, 90.0F, _cubicBezierEasingFunction_2);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 08 - TreeViewExpand - 18 - PressedOffToNormalOn
+    // - Transforms for Controls - 08 - TreeViewExpand - 18 - PressedOffToNormalOn
+    // Scale(1,1,0)
+    // Rotation
+    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_90_to_0_0()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 90.0F, StepThenHoldEasingFunction());
+        result.InsertKeyFrame(0.958333313F, 90.0F, HoldThenStepEasingFunction());
+        result.InsertKeyFrame(0.995833337F, 0.0F, CubicBezierEasingFunction_0());
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 08 - TreeViewExpand - 15 - PressedOnToNormalOff
+    // - Transforms for Controls - 08 - TreeViewExpand - 15 - PressedOnToNormalOff
+    // Scale(1,1,0)
+    // Rotation
+    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_90_to_0_1()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 90.0F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.75F, 90.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.787500024F, 0.0F, _cubicBezierEasingFunction_0);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 08 - TreeViewExpand - 14 - PressedOnToPointerOverOff
+    // - Transforms for Controls - 08 - TreeViewExpand - 14 - PressedOnToPointerOverOff
+    // Scale(1,1,0)
+    // Rotation
+    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_90_to_0_2()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 90.0F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.666666687F, 90.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.704166651F, 0.0F, _cubicBezierEasingFunction_0);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 08 - TreeViewExpand - 13 - PressedOnToPressedOff
+    // - Transforms for Controls - 08 - TreeViewExpand - 13 - PressedOnToPressedOff
+    // Scale(1,1,0)
+    // Rotation
     ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_90_to_0_3()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 90.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.474999994F, 90.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.519999981F, 0.0F, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.583333313F, 90.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.620833337F, 0.0F, _cubicBezierEasingFunction_5);
         return result;
     }
 
@@ -1285,20 +1257,8 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_90_to_0_4()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 90.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.349999994F, 90.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.395000011F, 0.0F, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 08 - TreeViewExpand - 02 - NormalOnToPointerOverOn
-    // - Transforms for Controls - 08 - TreeViewExpand - 02 - NormalOnToPointerOverOn
-    // Scale(1,1,0)
-    // Rotation
-    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_90_to_0_5()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 90.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.100000001F, 90.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.150000006F, 0.0F, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.333333343F, 90.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.370833337F, 0.0F, _cubicBezierEasingFunction_5);
         return result;
     }
 
@@ -1306,34 +1266,11 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     // - Transforms for Controls - 08 - TreeViewExpand - 01 - NormalOnToNormalOff
     // Scale(1,1,0)
     // Rotation
-    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_90_to_0_6()
+    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_90_to_0_5()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 90.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.0250000004F, 0.0F, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    ScalarKeyFrameAnimation t0ScalarAnimation_0_to_1()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.800000072F, 0.0F, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.844999969F, 1.0F, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    ScalarKeyFrameAnimation t1ScalarAnimation_0_to_1()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.600000083F, 0.0F, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.644999921F, 1.0F, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    ScalarKeyFrameAnimation t2ScalarAnimation_0_to_1()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0250000022F, 0.0F, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.0949999914F, 1.0F, _cubicBezierEasingFunction_0);
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 90.0F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.0416666679F, 90.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.0791666657F, 0.0F, _cubicBezierEasingFunction_0);
         return result;
     }
 
@@ -1463,7 +1400,8 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        result.Shapes().Append(ContainerShape_12());
+        // Scale:4,4, Offset:<24.171, 23.923>
+        result.Shapes().Append(SpriteShape_12());
         return result;
     }
 
@@ -1473,7 +1411,7 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        result.Shapes().Append(ContainerShape_13());
+        result.Shapes().Append(ContainerShape_12());
         return result;
     }
 
@@ -1483,7 +1421,7 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        result.Shapes().Append(ContainerShape_14());
+        result.Shapes().Append(ContainerShape_13());
         return result;
     }
 
@@ -1493,7 +1431,8 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        result.Shapes().Append(ContainerShape_15());
+        // Scale:4,4, RotationDegrees:90, Offset:<24.171, 23.923>
+        result.Shapes().Append(SpriteShape_15());
         return result;
     }
 
@@ -1503,7 +1442,7 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        result.Shapes().Append(ContainerShape_16());
+        result.Shapes().Append(ContainerShape_14());
         return result;
     }
 
@@ -1513,7 +1452,7 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        result.Shapes().Append(ContainerShape_17());
+        result.Shapes().Append(ContainerShape_15());
         return result;
     }
 
@@ -1537,9 +1476,10 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_00()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 28.9230003F }, StepThenHoldEasingFunction());
-        result.InsertKeyFrame(0.925000012F, { 24.1709995F, 28.9230003F }, HoldThenStepEasingFunction());
-        result.InsertKeyFrame(0.995000005F, { 24.1709995F, 23.9230003F }, CubicBezierEasingFunction_0());
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 23.9230003F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.916666687F, { 24.1709995F, 23.9230003F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.958333313F, { 24.1709995F, 36.4230003F }, CubicBezierEasingFunction_1());
+        result.InsertKeyFrame(0.995833337F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_0);
         return result;
     }
 
@@ -1549,23 +1489,10 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_01()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 28.9230003F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.850000024F, { 24.1709995F, 28.9230003F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.920000017F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_0);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 08 - TreeViewExpand - 16 - PressedOffToPressedOn
-    // - Transforms for Controls - 08 - TreeViewExpand - 16 - PressedOffToPressedOn
-    // Scale(1,1,0)
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_02()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 28.9230003F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.800000012F, { 24.1709995F, 28.9230003F }, _holdThenStepEasingFunction);
-        result.InsertExpressionKeyFrame(0.844999969F, L"(Pow(1-_.t0,3)*Vector2(24.171,28.923))+(3*Square(1-_.t0)*_.t0*Vector2(23.426,28.09))+(3*(1-_.t0)*Square(_.t0)*Vector2(20.445,24.756))+(Pow(_.t0,3)*Vector2(19.7,23.923))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.845000029F, { 19.7000008F, 23.9230003F }, _stepThenHoldEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 23.9230003F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.833333313F, { 24.1709995F, 23.9230003F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.875F, { 24.1709995F, 32.6730003F }, CubicBezierEasingFunction_3());
+        result.InsertKeyFrame(0.912500024F, { 24.1709995F, 31.4230003F }, CubicBezierEasingFunction_4());
         return result;
     }
 
@@ -1573,11 +1500,12 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     // - Transforms for Controls - 08 - TreeViewExpand - 15 - PressedOnToNormalOff
     // Scale(1,1,0)
     // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_03()
+    Vector2KeyFrameAnimation OffsetVector2Animation_02()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 19.7000008F, 23.9230003F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.725000024F, { 19.7000008F, 23.9230003F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.795000017F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_0);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 23.9230003F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.708333313F, { 24.1709995F, 23.9230003F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.75F, { 24.1709995F, 36.4230003F }, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.787500024F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_0);
         return result;
     }
 
@@ -1585,25 +1513,12 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     // - Transforms for Controls - 08 - TreeViewExpand - 14 - PressedOnToPointerOverOff
     // Scale(1,1,0)
     // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_04()
+    Vector2KeyFrameAnimation OffsetVector2Animation_03()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 19.7000008F, 23.9230003F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.649999976F, { 19.7000008F, 23.9230003F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.720000029F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_0);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 08 - TreeViewExpand - 13 - PressedOnToPressedOff
-    // - Transforms for Controls - 08 - TreeViewExpand - 13 - PressedOnToPressedOff
-    // Scale(1,1,0)
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_05()
-    {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 19.7000008F, 23.9230003F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.600000024F, { 19.7000008F, 23.9230003F }, _holdThenStepEasingFunction);
-        result.InsertExpressionKeyFrame(0.644999921F, L"(Pow(1-_.t1,3)*Vector2(19.7,23.923))+(3*Square(1-_.t1)*_.t1*Vector2(20.445,24.756))+(3*(1-_.t1)*Square(_.t1)*Vector2(23.426,28.09))+(Pow(_.t1,3)*Vector2(24.171,28.923))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.644999981F, { 24.1709995F, 28.9230003F }, _stepThenHoldEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 23.9230003F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.625F, { 24.1709995F, 23.9230003F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.666666687F, { 24.1709995F, 36.4230003F }, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.704166651F, { 34.1710014F, 23.9230003F }, _cubicBezierEasingFunction_0);
         return result;
     }
 
@@ -1611,11 +1526,36 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     // - Transforms for Controls - 08 - TreeViewExpand - 12 - PointerOverOffToPressedOff
     // Scale(1,1,0)
     // Offset
+    Vector2KeyFrameAnimation OffsetVector2Animation_04()
+    {
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 34.1710014F, 23.9230003F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.541666687F, { 34.1710014F, 23.9230003F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.579166651F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_5);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 08 - TreeViewExpand - 11 - PointerOverOffToNormalOff
+    // - Transforms for Controls - 08 - TreeViewExpand - 11 - PointerOverOffToNormalOff
+    // Scale(1,1,0)
+    // Offset
+    Vector2KeyFrameAnimation OffsetVector2Animation_05()
+    {
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 34.1710014F, 23.9230003F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.5F, { 34.1710014F, 23.9230003F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.537500024F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_5);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 08 - TreeViewExpand - 10 -
+    // PointerOverOffToPointerOverOn
+    // - Transforms for Controls - 08 - TreeViewExpand - 10 -
+    // PointerOverOffToPointerOverOn Scale(1,1,0)
+    // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_06()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 23.9230003F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.574999988F, { 24.1709995F, 23.9230003F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.595000029F, { 24.1709995F, 28.9230003F }, CubicBezierEasingFunction_2());
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 34.1710014F, 23.9230003F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.458333343F, { 34.1710014F, 23.9230003F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.495833337F, { 24.1709995F, 31.4230003F }, _cubicBezierEasingFunction_5);
         return result;
     }
 
@@ -1625,21 +1565,46 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_07()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 23.9230003F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.449999988F, { 24.1709995F, 23.9230003F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.469999999F, { 19.7000008F, 23.9230003F }, _cubicBezierEasingFunction_2);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 31.4230003F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.416666657F, { 24.1709995F, 31.4230003F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.454166681F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_5);
         return result;
     }
 
-    // - - PreComp layer: Controls - 08 - TreeViewExpand - 06 - NormalOffToPressedOff
-    // - Transforms for Controls - 08 - TreeViewExpand - 06 - NormalOffToPressedOff
+    // - - PreComp layer: Controls - 08 - TreeViewExpand - 08 - PointerOverOnToNormalOn
+    // - Transforms for Controls - 08 - TreeViewExpand - 08 - PointerOverOnToNormalOn
     // Scale(1,1,0)
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_08()
     {
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 31.4230003F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.375F, { 24.1709995F, 31.4230003F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.412499994F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_5);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 08 - TreeViewExpand - 07 -
+    // PointerOverOnToPointerOverOff
+    // - Transforms for Controls - 08 - TreeViewExpand - 07 -
+    // PointerOverOnToPointerOverOff Scale(1,1,0)
+    // Offset
+    Vector2KeyFrameAnimation OffsetVector2Animation_09()
+    {
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 31.4230003F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.333333343F, { 24.1709995F, 31.4230003F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.370833337F, { 34.1710014F, 23.9230003F }, _cubicBezierEasingFunction_5);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 08 - TreeViewExpand - 05 -NormalOffToPointerOverOff
+    // - Transforms for Controls - 08 - TreeViewExpand - 05 -NormalOffToPointerOverOff
+    // Scale(1,1,0)
+    // Offset
+    Vector2KeyFrameAnimation OffsetVector2Animation_10()
+    {
         const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 23.9230003F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.324999988F, { 24.1709995F, 23.9230003F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.344999999F, { 24.1709995F, 28.9230003F }, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.25F, { 24.1709995F, 23.9230003F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.287499994F, { 34.1710014F, 23.9230003F }, _cubicBezierEasingFunction_5);
         return result;
     }
 
@@ -1647,24 +1612,24 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     // - Transforms for Controls - 08 - TreeViewExpand - 04 - NormalOffToNormalOn
     // Scale(1,1,0)
     // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_09()
+    Vector2KeyFrameAnimation OffsetVector2Animation_11()
     {
         const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 23.9230003F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.174999997F, { 24.1709995F, 23.9230003F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.200000003F, { 24.1709995F, 28.9230003F }, _cubicBezierEasingFunction_2);
-        result.InsertKeyFrame(0.270000011F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.166666672F, { 24.1709995F, 23.9230003F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.208333328F, { 24.1709995F, 32.6730003F }, _cubicBezierEasingFunction_3);
+        result.InsertKeyFrame(0.245833337F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_4);
         return result;
     }
 
-    // - - PreComp layer: Controls - 08 - TreeViewExpand - 03 - NormalOnToPressedOn
-    // - Transforms for Controls - 08 - TreeViewExpand - 03 - NormalOnToPressedOn
+    // - - PreComp layer: Controls - 08 - TreeViewExpand - 02 - NormalOnToPointerOverOn
+    // - Transforms for Controls - 08 - TreeViewExpand - 02 - NormalOnToPointerOverOn
     // Scale(1,1,0)
     // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_10()
+    Vector2KeyFrameAnimation OffsetVector2Animation_12()
     {
         const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 23.9230003F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.150000006F, { 24.1709995F, 23.9230003F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.170000002F, { 19.7000008F, 23.9230003F }, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.0833333358F, { 24.1709995F, 23.9230003F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.12083333F, { 24.1709995F, 31.4230003F }, _cubicBezierEasingFunction_5);
         return result;
     }
 
@@ -1672,13 +1637,11 @@ class AnimatedChevronRightDownSmallVisualSource_AnimatedVisual : public winrt::i
     // - Transforms for Controls - 08 - TreeViewExpand - 01 - NormalOnToNormalOff
     // Scale(1,1,0)
     // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_11()
+    Vector2KeyFrameAnimation OffsetVector2Animation_13()
     {
         const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 23.9230003F }, _holdThenStepEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.0250000004F, { 19.7000008F, 23.9230003F }, _cubicBezierEasingFunction_2);
-        result.InsertExpressionKeyFrame(0.0949999914F, L"(Pow(1-_.t2,3)*Vector2(19.7,23.923))+(3*Square(1-_.t2)*_.t2*Vector2(19.7,23.923))+(3*(1-_.t2)*Square(_.t2)*Vector2(23.426,23.923))+(Pow(_.t2,3)*Vector2(24.171,23.923))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.0949999988F, { 24.1709995F, 23.9230003F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.0416666679F, { 24.1709995F, 36.4230003F }, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.0791666657F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_0);
         return result;
     }
 
@@ -1784,7 +1747,7 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedChevronRightDownSm
 
 double AnimatedChevronRightDownSmallVisualSource::FrameCount()
 {
-    return 200.0;
+    return 240.0;
 }
 
 double AnimatedChevronRightDownSmallVisualSource::Framerate()
@@ -1794,12 +1757,12 @@ double AnimatedChevronRightDownSmallVisualSource::Framerate()
 
 TimeSpan AnimatedChevronRightDownSmallVisualSource::Duration()
 {
-    return TimeSpan{ 33333333L };
+    return TimeSpan{ 40000000L };
 }
 
 double AnimatedChevronRightDownSmallVisualSource::FrameToProgress(double frameNumber)
 {
-    return frameNumber / 200.0;
+    return frameNumber / 240.0;
 }
 
 winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedChevronRightDownSmallVisualSource::Markers()
@@ -1808,41 +1771,41 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedChevr
         std::map<winrt::hstring, double>
         {
             { L"NormalOnToNormalOff_Start", 0.0 },
-            { L"NormalOnToNormalOff_End", 0.09525 },
-            { L"NormalOnToPointerOverOn_Start", 0.10025 },
-            { L"NormalOnToPointerOverOn_End", 0.14525 },
-            { L"NormalOnToPressedOn_Start", 0.15025 },
-            { L"NormalOnToPressedOn_End", 0.17025 },
-            { L"NormalOffToNormalOn_Start", 0.17525 },
-            { L"NormalOffToNormalOn_End", 0.27025 },
-            { L"NormalOffToPointerOverOff_Start", 0.27525 },
-            { L"NormalOffToPointerOverOff_End", 0.32025 },
-            { L"NormalOffToPressedOff_Start", 0.32525 },
-            { L"NormalOffToPressedOff_End", 0.34525 },
-            { L"PointerOverOnToPointerOverOff_Start", 0.35025 },
-            { L"PointerOverOnToPointerOverOff_End", 0.39525 },
-            { L"PointerOverOnToNormalOn_Start", 0.40025 },
-            { L"PointerOverOnToNormalOn_End", 0.44525 },
-            { L"PointerOverOnToPressedOn_Start", 0.45025 },
-            { L"PointerOverOnToPressedOn_End", 0.47025 },
-            { L"PointerOverOffToPointerOverOn_Start", 0.47525 },
-            { L"PointerOverOffToPointerOverOn_End", 0.52025 },
-            { L"PointerOverOffToNormalOff_Start", 0.52525 },
-            { L"PointerOverOffToNormalOff_End", 0.57025 },
-            { L"PointerOverOffToPressedOff_Start", 0.57525 },
-            { L"PointerOverOffToPressedOff_End", 0.59525 },
-            { L"PressedOnToPressedOff_Start", 0.60025 },
-            { L"PressedOnToPressedOff_End", 0.64525 },
-            { L"PressedOnToPointerOverOff_Start", 0.65025 },
-            { L"PressedOnToPointerOverOff_End", 0.72025 },
-            { L"PressedOnToNormalOff_Start", 0.72525 },
-            { L"PressedOnToNormalOff_End", 0.79525 },
-            { L"PressedOffToPressedOn_Start", 0.80025 },
-            { L"PressedOffToPressedOn_End", 0.84525 },
-            { L"PressedOffToPointerOverOn_Start", 0.85025 },
-            { L"PressedOffToPointerOverOn_End", 0.92025 },
-            { L"PressedOffToNormalOn_Start", 0.92525 },
-            { L"PressedOffToNormalOn_End", 0.99525 },
+            { L"NormalOnToNormalOff_End", 0.079375 },
+            { L"NormalOnToPointerOverOn_Start", 0.0835416666666667 },
+            { L"NormalOnToPointerOverOn_End", 0.121041666666667 },
+            { L"NormalOnToPressedOn_Start", 0.125208333333333 },
+            { L"NormalOnToPressedOn_End", 0.162708333333333 },
+            { L"NormalOffToNormalOn_Start", 0.166875 },
+            { L"NormalOffToNormalOn_End", 0.246041666666667 },
+            { L"NormalOffToPointerOverOff_Start", 0.250208333333333 },
+            { L"NormalOffToPointerOverOff_End", 0.287708333333333 },
+            { L"NormalOffToPressedOff_Start", 0.291875 },
+            { L"NormalOffToPressedOff_End", 0.329375 },
+            { L"PointerOverOnToPointerOverOff_Start", 0.333541666666667 },
+            { L"PointerOverOnToPointerOverOff_End", 0.371041666666667 },
+            { L"PointerOverOnToNormalOn_Start", 0.375208333333333 },
+            { L"PointerOverOnToNormalOn_End", 0.412708333333333 },
+            { L"PointerOverOnToPressedOn_Start", 0.416875 },
+            { L"PointerOverOnToPressedOn_End", 0.454375 },
+            { L"PointerOverOffToPointerOverOn_Start", 0.458541666666667 },
+            { L"PointerOverOffToPointerOverOn_End", 0.496041666666667 },
+            { L"PointerOverOffToNormalOff_Start", 0.500208333333333 },
+            { L"PointerOverOffToNormalOff_End", 0.537708333333333 },
+            { L"PointerOverOffToPressedOff_Start", 0.541875 },
+            { L"PointerOverOffToPressedOff_End", 0.579375 },
+            { L"PressedOnToPressedOff_Start", 0.583541666666667 },
+            { L"PressedOnToPressedOff_End", 0.621041666666667 },
+            { L"PressedOnToPointerOverOff_Start", 0.625208333333333 },
+            { L"PressedOnToPointerOverOff_End", 0.704375 },
+            { L"PressedOnToNormalOff_Start", 0.708541666666667 },
+            { L"PressedOnToNormalOff_End", 0.787708333333333 },
+            { L"PressedOffToPressedOn_Start", 0.791875 },
+            { L"PressedOffToPressedOn_End", 0.829375 },
+            { L"PressedOffToPointerOverOn_Start", 0.833541666666667 },
+            { L"PressedOffToPointerOverOn_End", 0.912708333333333 },
+            { L"PressedOffToNormalOn_Start", 0.916875 },
+            { L"PressedOffToNormalOn_End", 0.996041666666667 },
         }
     ).GetView();
 }
