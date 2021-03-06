@@ -13,7 +13,6 @@
         <Setter Property="Background" Value="{ThemeResource TeachingTipBackgroundBrush}"/>
         <Setter Property="Foreground" Value="{ThemeResource TeachingTipForegroundBrush}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource TeachingTipBorderBrush}"/>
-        <Setter Property="BorderBrush" Value="{ThemeResource TeachingTipBorderBrush}"/>
         <Setter Property="BorderThickness" Value="{ThemeResource TeachingTipContentBorderThicknessUntargeted}"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="ActionButtonStyle" Value="{ThemeResource DefaultButtonStyle}"/>
