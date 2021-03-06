@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedFindVisualSource.json
 //       
 //       Input file:
-//           AnimatedFindVisualSource.json (23808 bytes created 11:16-08:00 Mar 5 2021)
+//           AnimatedFindVisualSource.json (17313 bytes created 12:28-08:00 Feb 8 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -18,36 +18,33 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-// __________________________________________________________
-// |       Object stats       | UAP v8 count | UAP v7 count |
-// |__________________________|______________|______________|
-// | All CompositionObjects   |          391 |          231 |
-// |--------------------------+--------------+--------------|
-// | Expression animators     |           62 |           44 |
-// | KeyFrame animators       |           57 |           39 |
-// | Reference parameters     |           66 |           48 |
-// | Expression operations    |            4 |            4 |
-// |--------------------------+--------------+--------------|
-// | Animated brushes         |            1 |            1 |
-// | Animated gradient stops  |            - |            - |
-// | ExpressionAnimations     |            2 |            2 |
-// | PathKeyFrameAnimations   |            - |            - |
-// |--------------------------+--------------+--------------|
-// | ContainerVisuals         |           19 |            7 |
-// | ShapeVisuals             |           18 |           12 |
-// |--------------------------+--------------+--------------|
-// | ContainerShapes          |            6 |            6 |
-// | CompositionSpriteShapes  |           18 |           12 |
-// |--------------------------+--------------+--------------|
-// | Brushes                  |           20 |            1 |
-// | Gradient stops           |            - |            - |
-// | CompositionVisualSurface |           12 |            - |
-// ----------------------------------------------------------
+// ____________________________________
+// |       Object stats       | Count |
+// |__________________________|_______|
+// | All CompositionObjects   |   197 |
+// |--------------------------+-------|
+// | Expression animators     |    38 |
+// | KeyFrame animators       |    30 |
+// | Reference parameters     |    43 |
+// | Expression operations    |     4 |
+// |--------------------------+-------|
+// | Animated brushes         |     1 |
+// | Animated gradient stops  |     - |
+// | ExpressionAnimations     |     2 |
+// | PathKeyFrameAnimations   |     - |
+// |--------------------------+-------|
+// | ContainerVisuals         |     7 |
+// | ShapeVisuals             |     6 |
+// |--------------------------+-------|
+// | ContainerShapes          |     6 |
+// | CompositionSpriteShapes  |    12 |
+// |--------------------------+-------|
+// | Brushes                  |     1 |
+// | Gradient stops           |     - |
+// | CompositionVisualSurface |     - |
+// ------------------------------------
 #include "pch.h"
-#include "AnimatedVisuals.AnimatedFindVisualSource.h"
-#if __has_include("AnimatedVisuals.AnimatedFindVisualSource.g.cpp")
-#include "AnimatedVisuals.AnimatedFindVisualSource.g.cpp"
-#endif
+#include "AnimatedVisuals\AnimatedFindVisualSource.h"
 #include <winrt/Windows.Foundation.Metadata.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.UI.Composition.h>
@@ -55,16 +52,7 @@
 #include <d2d1_1.h>
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
-#ifdef BUILD_WINDOWS
-namespace ABI
-{
-#include <Windows.Graphics.Effects.Interop.h>
-}
-#else
-#include <Windows.Graphics.Effects.Interop.h>
-#endif
 #include <winrt/Windows.Graphics.Effects.h>
-#include <vector>
 
 using namespace winrt::Microsoft::UI::Xaml::Controls;
 using namespace winrt::Windows::Foundation;
@@ -74,2990 +62,1056 @@ using namespace winrt::Windows::UI;
 using namespace winrt::Windows::UI::Composition;
 using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
-namespace winrt::AnimatedVisuals::implementation
+namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 {
-    class CanvasGeometry : public winrt::implements<CanvasGeometry,
-        IGeometrySource2D,
-        ::ABI::Windows::Graphics::IGeometrySource2DInterop>
+    CppWinRTActivatableClassWithBasicFactory(AnimatedFindVisualSource)
+}
+#include "AnimatedVisuals\AnimatedFindVisualSource.g.cpp"
+
+class CanvasGeometry : public winrt::implements<CanvasGeometry,
+    IGeometrySource2D,
+    ::Windows::Graphics::IGeometrySource2DInterop>
+{
+    winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
+
+public:
+    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry)
+        : _geometry{ geometry }
+    { }
+
+    // IGeometrySource2D.
+    winrt::com_ptr<ID2D1Geometry> Geometry() { return _geometry; }
+
+    // IGeometrySource2DInterop.
+    IFACEMETHODIMP GetGeometry(ID2D1Geometry** value) override
     {
-        winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
-
-    public:
-        CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry)
-            : _geometry{ geometry }
-        { }
-
-        // IGeometrySource2D.
-        winrt::com_ptr<ID2D1Geometry> Geometry() { return _geometry; }
-
-        // IGeometrySource2DInterop.
-        IFACEMETHODIMP GetGeometry(ID2D1Geometry** value) override
-        {
-            _geometry.copy_to(value);
-            return S_OK;
-        }
-
-        // IGeometrySource2DInterop.
-        IFACEMETHODIMP TryGetGeometryUsingFactory(ID2D1Factory*, ID2D1Geometry**) override
-        {
-            return E_NOTIMPL;
-        }
-    };
-    
-    enum class CanvasComposite : int
-    {
-        SourceOver = 0,
-        DestinationOver = 1,
-        SourceIn = 2,
-        DestinationIn = 3,
-        SourceOut = 4,
-        DestinationOut = 5,
-        SourceAtop = 6,
-        DestinationAtop = 7,
-        Xor = 8,
-        Add = 9,
-        Copy = 10,
-        BoundedCopy = 11,
-        MaskInvert = 12,
-    };
-
-    // This class is a substitute for the Microsoft::Graphics::Canvas::Effects::CompositeEffect
-    // class so that composite effects can be used with 
-    // Windows::UI::Composition::CompositionEffectBrush without requiring Win2d.
-    class CompositeEffect : public winrt::implements<CompositeEffect,
-        winrt::Windows::Graphics::Effects::IGraphicsEffect,
-        winrt::Windows::Graphics::Effects::IGraphicsEffectSource,
-        ::ABI::Windows::Graphics::Effects::IGraphicsEffectD2D1Interop>
-    {
-        winrt::hstring m_name{};
-        CanvasComposite m_mode{};
-        std::vector<winrt::Windows::Graphics::Effects::IGraphicsEffectSource> m_sources{};
-
-    public:
-        void Mode(CanvasComposite mode) { m_mode = mode; }
-        CanvasComposite Mode(){ return m_mode; }
-
-        void AddSource(winrt::Windows::Graphics::Effects::IGraphicsEffectSource source)
-        {
-            m_sources.emplace_back(source);
-        }
-
-        // IGraphicsEffect.
-        void Name(winrt::hstring name) { m_name = name; }
-        winrt::hstring Name() { return m_name; }
-
-        // IGraphicsEffectD2D1Interop.
-        IFACEMETHODIMP GetEffectId(GUID* id) override
-        {
-            if (id != nullptr)
-            {
-                // CLSID_D2D1Composite.
-                *id = { 0x48fc9f51, 0xf6ac, 0x48f1, { 0x8b, 0x58, 0x3b, 0x28, 0xac, 0x46, 0xf7, 0x6d } };
-            }
-
-            return S_OK;
-        }
-
-        // IGraphicsEffectD2D1Interop.
-        IFACEMETHODIMP GetSourceCount(UINT* count) override
-        {
-            if (count != nullptr)
-            {
-                *count = static_cast<UINT>(m_sources.size());
-            }
-
-            return S_OK;
-        }
-
-        // IGraphicsEffectD2D1Interop.
-        IFACEMETHODIMP GetSource(
-            UINT index,
-            ::ABI::Windows::Graphics::Effects::IGraphicsEffectSource** source) override
-        {
-            if (index >= m_sources.size() ||
-                source == nullptr)
-            {
-                return E_INVALIDARG;
-            }
-
-            m_sources.at(index).as<::ABI::Windows::Graphics::Effects::IGraphicsEffectSource>().copy_to(source);
-
-            return S_OK;
-        }
-
-        // IGraphicsEffectD2D1Interop.
-        IFACEMETHODIMP GetPropertyCount(UINT* count) override { *count = 1; return S_OK; }
-
-        // IGraphicsEffectD2D1Interop.
-        IFACEMETHODIMP GetProperty(
-            UINT index,
-            ::ABI::Windows::Foundation::IPropertyValue** value) override
-        {
-            switch (index)
-            {
-            case D2D1_COMPOSITE_PROP_MODE:
-                winrt::Windows::Foundation::PropertyValue::CreateUInt32(
-                    static_cast<uint32_t>(m_mode)).as<::ABI::Windows::Foundation::IPropertyValue>().copy_to(value);
-                return S_OK;
-            default:
-                *value = nullptr;
-                return E_INVALIDARG;
-            }
-        }
-
-        // IGraphicsEffectD2D1Interop.
-        IFACEMETHODIMP GetNamedPropertyMapping(
-            LPCWSTR,
-            UINT*,
-            ::ABI::Windows::Graphics::Effects::GRAPHICS_EFFECT_PROPERTY_MAPPING*) override
-        {
-            return E_INVALIDARG;
-        }
-    };
-
-    class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<AnimatedFindVisualSource_AnimatedVisual_UAPv8,
-            winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
-            IClosable>
-    {
-        winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
-        static constexpr int64_t c_durationTicks{ 13333333L };
-        Compositor const _c{ nullptr };
-        ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
-        CompositionPropertySet const _themeProperties{ nullptr };
-        BooleanKeyFrameAnimation _isVisibleBooleanAnimation_00{ nullptr };
-        BooleanKeyFrameAnimation _isVisibleBooleanAnimation_01{ nullptr };
-        BooleanKeyFrameAnimation _isVisibleBooleanAnimation_03{ nullptr };
-        BooleanKeyFrameAnimation _isVisibleBooleanAnimation_05{ nullptr };
-        BooleanKeyFrameAnimation _isVisibleBooleanAnimation_07{ nullptr };
-        BooleanKeyFrameAnimation _isVisibleBooleanAnimation_09{ nullptr };
-        CompositionColorBrush _colorBrush_Red{ nullptr };
-        CompositionColorBrush _themeColor_Foreground{ nullptr };
-        CompositionEllipseGeometry _ellipse_14p188{ nullptr };
-        CompositionPathGeometry _pathGeometry_0{ nullptr };
-        CompositionPathGeometry _pathGeometry_1{ nullptr };
-        ContainerVisual _root{ nullptr };
-        CubicBezierEasingFunction _cubicBezierEasingFunction_0{ nullptr };
-        CubicBezierEasingFunction _cubicBezierEasingFunction_1{ nullptr };
-        CubicBezierEasingFunction _cubicBezierEasingFunction_2{ nullptr };
-        CubicBezierEasingFunction _cubicBezierEasingFunction_3{ nullptr };
-        CubicBezierEasingFunction _cubicBezierEasingFunction_4{ nullptr };
-        ExpressionAnimation _rootProgress{ nullptr };
-        InsetClip _insetClip_0{ nullptr };
-        ScalarKeyFrameAnimation _scalarAnimation_1_to_1p2{ nullptr };
-        ScalarKeyFrameAnimation _scalarAnimation_1_to_1p3{ nullptr };
-        ScalarKeyFrameAnimation _scalarAnimation_1p2_to_1{ nullptr };
-        ScalarKeyFrameAnimation _scalarAnimation_1p2_to_1p3{ nullptr };
-        ScalarKeyFrameAnimation _scalarAnimation_1p3_to_1{ nullptr };
-        ScalarKeyFrameAnimation _scalarAnimation_1p3_to_1p2{ nullptr };
-        StepEasingFunction _holdThenStepEasingFunction{ nullptr };
-        StepEasingFunction _stepThenHoldEasingFunction{ nullptr };
-
-        static void StartProgressBoundAnimation(
-            CompositionObject target,
-            winrt::hstring animatedPropertyName,
-            CompositionAnimation animation,
-            ExpressionAnimation controllerProgressExpression)
-        {
-            target.StartAnimation(animatedPropertyName, animation);
-            const auto controller = target.TryGetAnimationController(animatedPropertyName);
-            controller.Pause();
-            controller.StartAnimation(L"Progress", controllerProgressExpression);
-        }
-
-        void BindProperty(
-            CompositionObject target,
-            winrt::hstring animatedPropertyName,
-            winrt::hstring expression,
-            winrt::hstring referenceParameterName,
-            CompositionObject referencedObject)
-        {
-            _reusableExpressionAnimation.ClearAllParameters();
-            _reusableExpressionAnimation.Expression(expression);
-            _reusableExpressionAnimation.SetReferenceParameter(referenceParameterName, referencedObject);
-            target.StartAnimation(animatedPropertyName, _reusableExpressionAnimation);
-        }
-
-        BooleanKeyFrameAnimation CreateBooleanKeyFrameAnimation(float initialProgress, bool initialValue)
-        {
-            const auto result = _c.CreateBooleanKeyFrameAnimation();
-            result.Duration(TimeSpan{ c_durationTicks });
-            result.InsertKeyFrame(initialProgress, initialValue);
-            return result;
-        }
-
-        ScalarKeyFrameAnimation CreateScalarKeyFrameAnimation(float initialProgress, float initialValue, CompositionEasingFunction initialEasingFunction)
-        {
-            const auto result = _c.CreateScalarKeyFrameAnimation();
-            result.Duration(TimeSpan{ c_durationTicks });
-            result.InsertKeyFrame(initialProgress, initialValue, initialEasingFunction);
-            return result;
-        }
-
-        Vector2KeyFrameAnimation CreateVector2KeyFrameAnimation(float initialProgress, float2 initialValue, CompositionEasingFunction initialEasingFunction)
-        {
-            const auto result = _c.CreateVector2KeyFrameAnimation();
-            result.Duration(TimeSpan{ c_durationTicks });
-            result.InsertKeyFrame(initialProgress, initialValue, initialEasingFunction);
-            return result;
-        }
-
-        CompositionSpriteShape CreateSpriteShape(CompositionGeometry geometry, float3x2 transformMatrix)
-        {
-            const auto result = _c.CreateSpriteShape(geometry);
-            result.TransformMatrix(transformMatrix);
-            return result;
-        }
-
-        CompositionSpriteShape CreateSpriteShape(CompositionGeometry geometry, float3x2 transformMatrix, CompositionBrush fillBrush)
-        {
-            const auto result = _c.CreateSpriteShape(geometry);
-            result.TransformMatrix(transformMatrix);
-            result.FillBrush(fillBrush);
-            return result;
-        }
-
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_00()
-        {
-            const auto result = _isVisibleBooleanAnimation_00 = CreateBooleanKeyFrameAnimation(0.75F, true);
-            return result;
-        }
-
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_01()
-        {
-            const auto result = _isVisibleBooleanAnimation_01 = CreateBooleanKeyFrameAnimation(0.5F, true);
-            result.InsertKeyFrame(0.762499988F, false);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_02()
-        {
-            const auto result = CreateBooleanKeyFrameAnimation(0.5F, true);
-            result.InsertKeyFrame(0.75F, false);
-            return result;
-        }
-
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_03()
-        {
-            const auto result = _isVisibleBooleanAnimation_03 = CreateBooleanKeyFrameAnimation(0.375F, true);
-            result.InsertKeyFrame(0.512499988F, false);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_04()
-        {
-            const auto result = CreateBooleanKeyFrameAnimation(0.375F, true);
-            result.InsertKeyFrame(0.5F, false);
-            return result;
-        }
-
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_05()
-        {
-            const auto result = _isVisibleBooleanAnimation_05 = CreateBooleanKeyFrameAnimation(0.25F, true);
-            result.InsertKeyFrame(0.387499988F, false);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_06()
-        {
-            const auto result = CreateBooleanKeyFrameAnimation(0.25F, true);
-            result.InsertKeyFrame(0.375F, false);
-            return result;
-        }
-
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_07()
-        {
-            const auto result = _isVisibleBooleanAnimation_07 = CreateBooleanKeyFrameAnimation(0.125F, true);
-            result.InsertKeyFrame(0.262499988F, false);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_08()
-        {
-            const auto result = CreateBooleanKeyFrameAnimation(0.125F, true);
-            result.InsertKeyFrame(0.25F, false);
-            return result;
-        }
-
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_09()
-        {
-            const auto result = _isVisibleBooleanAnimation_09 = CreateBooleanKeyFrameAnimation(0.137500003F, false);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_10()
-        {
-            const auto result = CreateBooleanKeyFrameAnimation(0.125F, false);
-            return result;
-        }
-
-        winrt::com_ptr<CanvasGeometry> Geometry_0()
-        {
-            winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
-            winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-            winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
-            winrt::check_hresult(path->Open(sink.put()));
-            sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-            sink->BeginFigure({ 12.96F, 278.109985F }, D2D1_FIGURE_BEGIN_FILLED);
-            sink->AddLine({ 9.42300034F, 281.64801F });
-            sink->AddBezier({ { 9.25599957F, 281.815002F }, { 9.25599957F, 282.087006F }, { 9.42300034F, 282.253998F } });
-            sink->AddBezier({ { 9.57199955F, 282.403015F }, { 9.80300045F, 282.419006F }, { 9.97000027F, 282.303009F } });
-            sink->AddLine({ 10.0290003F, 282.253998F });
-            sink->AddLine({ 13.566F, 278.716003F });
-            sink->AddLine({ 12.96F, 278.109985F });
-            sink->EndFigure(D2D1_FIGURE_END_CLOSED);
-            winrt::check_hresult(sink->Close());
-            auto result = winrt::make_self<CanvasGeometry>(path);
-            return result;
-        }
-
-        winrt::com_ptr<CanvasGeometry> Geometry_1()
-        {
-            winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
-            winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-            winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
-            winrt::check_hresult(path->Open(sink.put()));
-            sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-            sink->BeginFigure({ -8.56999969F, 2.22099996F }, D2D1_FIGURE_BEGIN_FILLED);
-            sink->AddLine({ -17.5419998F, 10.75F });
-            sink->AddLine({ -19.0F, 17.7810001F });
-            sink->AddLine({ -12.2290001F, 17.9379997F });
-            sink->AddLine({ -2.77600002F, 8.11999989F });
-            sink->AddBezier({ { -2.77600002F, 8.11999989F }, { -4.44299984F, 7.36399984F }, { -6.00500011F, 5.80000019F } });
-            sink->AddBezier({ { -7.80200005F, 3.92499995F }, { -8.56999969F, 2.22099996F }, { -8.56999969F, 2.22099996F } });
-            sink->EndFigure(D2D1_FIGURE_END_CLOSED);
-            winrt::check_hresult(sink->Close());
-            auto result = winrt::make_self<CanvasGeometry>(path);
-            return result;
-        }
-
-        CompositionColorBrush ColorBrush_Red()
-        {
-            return _colorBrush_Red = _c.CreateColorBrush({ 0xFF, 0xFF, 0x00, 0x00 });
-        }
-
-        // Color bound to theme property value: Foreground
-        CompositionColorBrush ThemeColor_Foreground()
-        {
-            const auto result = _themeColor_Foreground = _c.CreateColorBrush();
-            BindProperty(result, L"Color", L"ColorRGB(_theme.Foreground.W*1,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-        CompositionContainerShape ContainerShape_0()
-        {
-            const auto result = _c.CreateContainerShape();
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
-            result.Shapes().Append(SpriteShape_02());
-            StartProgressBoundAnimation(result, L"Scale.X", _scalarAnimation_1p3_to_1p2, _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p3_to_1p2, _rootProgress);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        CompositionContainerShape ContainerShape_1()
-        {
-            const auto result = _c.CreateContainerShape();
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
-            result.Shapes().Append(SpriteShape_05());
-            StartProgressBoundAnimation(result, L"Scale.X", _scalarAnimation_1p3_to_1, _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p3_to_1, _rootProgress);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-        CompositionContainerShape ContainerShape_2()
-        {
-            const auto result = _c.CreateContainerShape();
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
-            result.Shapes().Append(SpriteShape_08());
-            StartProgressBoundAnimation(result, L"Scale.X", _scalarAnimation_1p2_to_1p3, _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p2_to_1p3, _rootProgress);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-        CompositionContainerShape ContainerShape_3()
-        {
-            const auto result = _c.CreateContainerShape();
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
-            result.Shapes().Append(SpriteShape_11());
-            StartProgressBoundAnimation(result, L"Scale.X", _scalarAnimation_1p2_to_1, _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p2_to_1, _rootProgress);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        CompositionContainerShape ContainerShape_4()
-        {
-            const auto result = _c.CreateContainerShape();
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
-            result.Shapes().Append(SpriteShape_14());
-            StartProgressBoundAnimation(result, L"Scale.X", _scalarAnimation_1_to_1p3, _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_1p3, _rootProgress);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-        CompositionContainerShape ContainerShape_5()
-        {
-            const auto result = _c.CreateContainerShape();
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
-            result.Shapes().Append(SpriteShape_17());
-            StartProgressBoundAnimation(result, L"Scale.X", _scalarAnimation_1_to_1p2, _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_1p2, _rootProgress);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-        CompositionEffectBrush EffectBrush_0()
-        {
-            auto compositeEffect = winrt::make_self<CompositeEffect>();
-            compositeEffect->Mode(CanvasComposite::DestinationIn);
-            compositeEffect->AddSource(CompositionEffectSourceParameter(L"destination"));
-            compositeEffect->AddSource(CompositionEffectSourceParameter(L"source"));
-            const auto effectFactory = _c.CreateEffectFactory(*compositeEffect);
-            const auto result = effectFactory.CreateBrush();
-            result.SetSourceParameter(L"destination", SurfaceBrush_00());
-            result.SetSourceParameter(L"source", SurfaceBrush_01());
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        CompositionEffectBrush EffectBrush_1()
-        {
-            auto compositeEffect = winrt::make_self<CompositeEffect>();
-            compositeEffect->Mode(CanvasComposite::DestinationIn);
-            compositeEffect->AddSource(CompositionEffectSourceParameter(L"destination"));
-            compositeEffect->AddSource(CompositionEffectSourceParameter(L"source"));
-            const auto effectFactory = _c.CreateEffectFactory(*compositeEffect);
-            const auto result = effectFactory.CreateBrush();
-            result.SetSourceParameter(L"destination", SurfaceBrush_02());
-            result.SetSourceParameter(L"source", SurfaceBrush_03());
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-        CompositionEffectBrush EffectBrush_2()
-        {
-            auto compositeEffect = winrt::make_self<CompositeEffect>();
-            compositeEffect->Mode(CanvasComposite::DestinationIn);
-            compositeEffect->AddSource(CompositionEffectSourceParameter(L"destination"));
-            compositeEffect->AddSource(CompositionEffectSourceParameter(L"source"));
-            const auto effectFactory = _c.CreateEffectFactory(*compositeEffect);
-            const auto result = effectFactory.CreateBrush();
-            result.SetSourceParameter(L"destination", SurfaceBrush_04());
-            result.SetSourceParameter(L"source", SurfaceBrush_05());
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-        CompositionEffectBrush EffectBrush_3()
-        {
-            auto compositeEffect = winrt::make_self<CompositeEffect>();
-            compositeEffect->Mode(CanvasComposite::DestinationIn);
-            compositeEffect->AddSource(CompositionEffectSourceParameter(L"destination"));
-            compositeEffect->AddSource(CompositionEffectSourceParameter(L"source"));
-            const auto effectFactory = _c.CreateEffectFactory(*compositeEffect);
-            const auto result = effectFactory.CreateBrush();
-            result.SetSourceParameter(L"destination", SurfaceBrush_06());
-            result.SetSourceParameter(L"source", SurfaceBrush_07());
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        CompositionEffectBrush EffectBrush_4()
-        {
-            auto compositeEffect = winrt::make_self<CompositeEffect>();
-            compositeEffect->Mode(CanvasComposite::DestinationIn);
-            compositeEffect->AddSource(CompositionEffectSourceParameter(L"destination"));
-            compositeEffect->AddSource(CompositionEffectSourceParameter(L"source"));
-            const auto effectFactory = _c.CreateEffectFactory(*compositeEffect);
-            const auto result = effectFactory.CreateBrush();
-            result.SetSourceParameter(L"destination", SurfaceBrush_08());
-            result.SetSourceParameter(L"source", SurfaceBrush_09());
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-        CompositionEffectBrush EffectBrush_5()
-        {
-            auto compositeEffect = winrt::make_self<CompositeEffect>();
-            compositeEffect->Mode(CanvasComposite::DestinationIn);
-            compositeEffect->AddSource(CompositionEffectSourceParameter(L"destination"));
-            compositeEffect->AddSource(CompositionEffectSourceParameter(L"source"));
-            const auto effectFactory = _c.CreateEffectFactory(*compositeEffect);
-            const auto result = effectFactory.CreateBrush();
-            result.SetSourceParameter(L"destination", SurfaceBrush_10());
-            result.SetSourceParameter(L"source", SurfaceBrush_11());
-            return result;
-        }
-
-        // Ellipse Path 1.EllipseGeometry
-        CompositionEllipseGeometry Ellipse_14p188()
-        {
-            const auto result = _ellipse_14p188 = _c.CreateEllipseGeometry();
-            result.Radius({ 14.1875F, 14.1875F });
-            return result;
-        }
-
-        CompositionPathGeometry PathGeometry_0()
-        {
-            return _pathGeometry_0 = _c.CreatePathGeometry(CompositionPath(CanvasGeometryToIGeometrySource2D(Geometry_0())));
-        }
-
-        CompositionPathGeometry PathGeometry_1()
-        {
-            return _pathGeometry_1 = _c.CreatePathGeometry(CompositionPath(CanvasGeometryToIGeometrySource2D(Geometry_1())));
-        }
-
-        // - - - - - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // - - - - - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver
-        // Scale(1,1,0)
-        // Shape tree root for layer: Layer 2
-        // Path 2
-        CompositionSpriteShape SpriteShape_00()
-        {
-            const auto result = _c.CreateSpriteShape(PathGeometry_0());
-            result.CenterPoint({ 13.566F, 278.109985F });
-            result.Scale({ 3.0F, 3.0F });
-            result.FillBrush(ThemeColor_Foreground());
-            StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_0(), RootProgress());
-            return result;
-        }
-
-        // - - - - - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // - - - - - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver
-        // Scale(1,1,0)
-        // Shape tree root for layer: Shape Layer 3
-        // Path 1
-        CompositionSpriteShape SpriteShape_01()
-        {
-            const auto result = _c.CreateSpriteShape(PathGeometry_1());
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            result.FillBrush(ColorBrush_Red());
-            StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p3_to_1p2(), _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p3_to_1p2, _rootProgress);
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-        // Ellipse Path 1
-        CompositionSpriteShape SpriteShape_02()
-        {
-            // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
-            const auto result = CreateSpriteShape(Ellipse_14p188(), { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-            result.StrokeBrush(_themeColor_Foreground);
-            result.StrokeThickness(2.0F);
-            return result;
-        }
-
-        // - - - - - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // - - - - - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        // Shape tree root for layer: Layer 2
-        // Path 2
-        CompositionSpriteShape SpriteShape_03()
-        {
-            const auto result = _c.CreateSpriteShape(_pathGeometry_0);
-            result.CenterPoint({ 13.566F, 278.109985F });
-            result.Scale({ 3.0F, 3.0F });
-            result.FillBrush(_themeColor_Foreground);
-            StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_1(), _rootProgress);
-            return result;
-        }
-
-        // - - - - - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // - - - - - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        // Shape tree root for layer: Shape Layer 3
-        // Path 1
-        CompositionSpriteShape SpriteShape_04()
-        {
-            const auto result = _c.CreateSpriteShape(_pathGeometry_1);
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            result.FillBrush(_colorBrush_Red);
-            StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p3_to_1(), _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p3_to_1, _rootProgress);
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        // Ellipse Path 1
-        CompositionSpriteShape SpriteShape_05()
-        {
-            // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
-            const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-            result.StrokeBrush(_themeColor_Foreground);
-            result.StrokeThickness(2.0F);
-            return result;
-        }
-
-        // - - - - - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // - - - - - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed
-        // Scale(1,1,0)
-        // Shape tree root for layer: Layer 2
-        // Path 2
-        CompositionSpriteShape SpriteShape_06()
-        {
-            // Offset:<-22.266, -804.76196>, Scale:<3, 3>
-            const auto result = CreateSpriteShape(_pathGeometry_0, { 3.0F, 0.0F, 0.0F, 3.0F, -22.2660007F, -804.761963F }, _themeColor_Foreground);
-            return result;
-        }
-
-        // - - - - - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // - - - - - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed
-        // Scale(1,1,0)
-        // Shape tree root for layer: Shape Layer 3
-        // Path 1
-        CompositionSpriteShape SpriteShape_07()
-        {
-            const auto result = _c.CreateSpriteShape(_pathGeometry_1);
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            result.FillBrush(_colorBrush_Red);
-            StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p2_to_1p3(), _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p2_to_1p3, _rootProgress);
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-        // Ellipse Path 1
-        CompositionSpriteShape SpriteShape_08()
-        {
-            // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
-            const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-            result.StrokeBrush(_themeColor_Foreground);
-            result.StrokeThickness(2.0F);
-            return result;
-        }
-
-        // - - - - - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // - - - - - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal
-        // Scale(1,1,0)
-        // Shape tree root for layer: Layer 2
-        // Path 2
-        CompositionSpriteShape SpriteShape_09()
-        {
-            const auto result = _c.CreateSpriteShape(_pathGeometry_0);
-            result.CenterPoint({ 13.566F, 278.109985F });
-            result.Scale({ 3.0F, 3.0F });
-            result.FillBrush(_themeColor_Foreground);
-            StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_2(), _rootProgress);
-            return result;
-        }
-
-        // - - - - - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // - - - - - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal
-        // Scale(1,1,0)
-        // Shape tree root for layer: Shape Layer 3
-        // Path 1
-        CompositionSpriteShape SpriteShape_10()
-        {
-            const auto result = _c.CreateSpriteShape(_pathGeometry_1);
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            result.FillBrush(_colorBrush_Red);
-            StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p2_to_1(), _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p2_to_1, _rootProgress);
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-        // Ellipse Path 1
-        CompositionSpriteShape SpriteShape_11()
-        {
-            // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
-            const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-            result.StrokeBrush(_themeColor_Foreground);
-            result.StrokeThickness(2.0F);
-            return result;
-        }
-
-        // - - - - - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // - - - - - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        // Shape tree root for layer: Layer 2
-        // Path 2
-        CompositionSpriteShape SpriteShape_12()
-        {
-            const auto result = _c.CreateSpriteShape(_pathGeometry_0);
-            result.CenterPoint({ 13.566F, 278.109985F });
-            result.Scale({ 3.0F, 3.0F });
-            result.FillBrush(_themeColor_Foreground);
-            StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_3(), _rootProgress);
-            return result;
-        }
-
-        // - - - - - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // - - - - - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        // Shape tree root for layer: Shape Layer 3
-        // Path 1
-        CompositionSpriteShape SpriteShape_13()
-        {
-            const auto result = _c.CreateSpriteShape(_pathGeometry_1);
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            result.FillBrush(_colorBrush_Red);
-            StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1_to_1p3(), _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_1p3, _rootProgress);
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        // Ellipse Path 1
-        CompositionSpriteShape SpriteShape_14()
-        {
-            // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
-            const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-            result.StrokeBrush(_themeColor_Foreground);
-            result.StrokeThickness(2.0F);
-            return result;
-        }
-
-        // - - - - - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // - - - - - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver
-        // Scale(1,1,0)
-        // Shape tree root for layer: Layer 2
-        // Path 2
-        CompositionSpriteShape SpriteShape_15()
-        {
-            const auto result = _c.CreateSpriteShape(_pathGeometry_0);
-            result.CenterPoint({ 13.566F, 278.109985F });
-            result.Scale({ 3.0F, 3.0F });
-            result.FillBrush(_themeColor_Foreground);
-            StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_4(), _rootProgress);
-            return result;
-        }
-
-        // - - - - - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // - - - - - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver
-        // Scale(1,1,0)
-        // Shape tree root for layer: Shape Layer 3
-        // Path 1
-        CompositionSpriteShape SpriteShape_16()
-        {
-            const auto result = _c.CreateSpriteShape(_pathGeometry_1);
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            result.FillBrush(_colorBrush_Red);
-            StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1_to_1p2(), _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_1p2, _rootProgress);
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-        // Ellipse Path 1
-        CompositionSpriteShape SpriteShape_17()
-        {
-            // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
-            const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-            result.StrokeBrush(_themeColor_Foreground);
-            result.StrokeThickness(2.0F);
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-        CompositionSurfaceBrush SurfaceBrush_00()
-        {
-            return _c.CreateSurfaceBrush(VisualSurface_00());
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-        CompositionSurfaceBrush SurfaceBrush_01()
-        {
-            return _c.CreateSurfaceBrush(VisualSurface_01());
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        CompositionSurfaceBrush SurfaceBrush_02()
-        {
-            return _c.CreateSurfaceBrush(VisualSurface_02());
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        CompositionSurfaceBrush SurfaceBrush_03()
-        {
-            return _c.CreateSurfaceBrush(VisualSurface_03());
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-        CompositionSurfaceBrush SurfaceBrush_04()
-        {
-            return _c.CreateSurfaceBrush(VisualSurface_04());
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-        CompositionSurfaceBrush SurfaceBrush_05()
-        {
-            return _c.CreateSurfaceBrush(VisualSurface_05());
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-        CompositionSurfaceBrush SurfaceBrush_06()
-        {
-            return _c.CreateSurfaceBrush(VisualSurface_06());
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-        CompositionSurfaceBrush SurfaceBrush_07()
-        {
-            return _c.CreateSurfaceBrush(VisualSurface_07());
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        CompositionSurfaceBrush SurfaceBrush_08()
-        {
-            return _c.CreateSurfaceBrush(VisualSurface_08());
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        CompositionSurfaceBrush SurfaceBrush_09()
-        {
-            return _c.CreateSurfaceBrush(VisualSurface_09());
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-        CompositionSurfaceBrush SurfaceBrush_10()
-        {
-            return _c.CreateSurfaceBrush(VisualSurface_10());
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-        CompositionSurfaceBrush SurfaceBrush_11()
-        {
-            return _c.CreateSurfaceBrush(VisualSurface_11());
-        }
-
-        // - - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // - - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-        CompositionVisualSurface VisualSurface_00()
-        {
-            const auto result = _c.CreateVisualSurface();
-            result.SourceVisual(ContainerVisual_01());
-            result.SourceSize({ 48.0F, 48.0F });
-            return result;
-        }
-
-        // - - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // - - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-        CompositionVisualSurface VisualSurface_01()
-        {
-            const auto result = _c.CreateVisualSurface();
-            result.SourceVisual(ContainerVisual_02());
-            result.SourceSize({ 48.0F, 48.0F });
-            return result;
-        }
-
-        // - - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // - - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        CompositionVisualSurface VisualSurface_02()
-        {
-            const auto result = _c.CreateVisualSurface();
-            result.SourceVisual(ContainerVisual_04());
-            result.SourceSize({ 48.0F, 48.0F });
-            return result;
-        }
-
-        // - - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // - - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        CompositionVisualSurface VisualSurface_03()
-        {
-            const auto result = _c.CreateVisualSurface();
-            result.SourceVisual(ContainerVisual_05());
-            result.SourceSize({ 48.0F, 48.0F });
-            return result;
-        }
-
-        // - - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // - - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-        CompositionVisualSurface VisualSurface_04()
-        {
-            const auto result = _c.CreateVisualSurface();
-            result.SourceVisual(ContainerVisual_07());
-            result.SourceSize({ 48.0F, 48.0F });
-            return result;
-        }
-
-        // - - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // - - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-        CompositionVisualSurface VisualSurface_05()
-        {
-            const auto result = _c.CreateVisualSurface();
-            result.SourceVisual(ContainerVisual_08());
-            result.SourceSize({ 48.0F, 48.0F });
-            return result;
-        }
-
-        // - - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // - - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-        CompositionVisualSurface VisualSurface_06()
-        {
-            const auto result = _c.CreateVisualSurface();
-            result.SourceVisual(ContainerVisual_10());
-            result.SourceSize({ 48.0F, 48.0F });
-            return result;
-        }
-
-        // - - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // - - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-        CompositionVisualSurface VisualSurface_07()
-        {
-            const auto result = _c.CreateVisualSurface();
-            result.SourceVisual(ContainerVisual_11());
-            result.SourceSize({ 48.0F, 48.0F });
-            return result;
-        }
-
-        // - - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // - - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        CompositionVisualSurface VisualSurface_08()
-        {
-            const auto result = _c.CreateVisualSurface();
-            result.SourceVisual(ContainerVisual_13());
-            result.SourceSize({ 48.0F, 48.0F });
-            return result;
-        }
-
-        // - - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // - - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        CompositionVisualSurface VisualSurface_09()
-        {
-            const auto result = _c.CreateVisualSurface();
-            result.SourceVisual(ContainerVisual_14());
-            result.SourceSize({ 48.0F, 48.0F });
-            return result;
-        }
-
-        // - - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // - - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-        CompositionVisualSurface VisualSurface_10()
-        {
-            const auto result = _c.CreateVisualSurface();
-            result.SourceVisual(ContainerVisual_16());
-            result.SourceSize({ 48.0F, 48.0F });
-            return result;
-        }
-
-        // - - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // - - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-        CompositionVisualSurface VisualSurface_11()
-        {
-            const auto result = _c.CreateVisualSurface();
-            result.SourceVisual(ContainerVisual_17());
-            result.SourceSize({ 48.0F, 48.0F });
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        ContainerVisual ContainerVisual_00()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.Clip(InsetClip_0());
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Scale:<1, 1>
-            result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-            const auto children = result.Children();
-            // Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-            children.InsertAtTop(SpriteVisual_0());
-            // Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_02());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_00, _rootProgress);
-            return result;
-        }
-
-        // - - - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // - - - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver
-        // Scale(1,1,0)
-        ContainerVisual ContainerVisual_01()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.BorderMode(CompositionBorderMode::Soft);
-            // Shape tree root for layer: Layer 2
-            result.Children().InsertAtTop(ShapeVisual_00());
-            return result;
-        }
-
-        // - - - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // - - - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver
-        // Scale(1,1,0)
-        ContainerVisual ContainerVisual_02()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.BorderMode(CompositionBorderMode::Soft);
-            // Shape tree root for layer: Shape Layer 3
-            result.Children().InsertAtTop(ShapeVisual_01());
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        ContainerVisual ContainerVisual_03()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.Clip(_insetClip_0);
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Scale:<1, 1>
-            result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-            const auto children = result.Children();
-            // Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-            children.InsertAtTop(SpriteVisual_1());
-            // Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_05());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_02(), _rootProgress);
-            return result;
-        }
-
-        // - - - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // - - - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        ContainerVisual ContainerVisual_04()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.BorderMode(CompositionBorderMode::Soft);
-            // Shape tree root for layer: Layer 2
-            result.Children().InsertAtTop(ShapeVisual_03());
-            return result;
-        }
-
-        // - - - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // - - - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        ContainerVisual ContainerVisual_05()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.BorderMode(CompositionBorderMode::Soft);
-            // Shape tree root for layer: Shape Layer 3
-            result.Children().InsertAtTop(ShapeVisual_04());
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        ContainerVisual ContainerVisual_06()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.Clip(_insetClip_0);
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Scale:<1, 1>
-            result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-            const auto children = result.Children();
-            // Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-            children.InsertAtTop(SpriteVisual_2());
-            // Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_08());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_04(), _rootProgress);
-            return result;
-        }
-
-        // - - - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // - - - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed
-        // Scale(1,1,0)
-        ContainerVisual ContainerVisual_07()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.BorderMode(CompositionBorderMode::Soft);
-            // Shape tree root for layer: Layer 2
-            result.Children().InsertAtTop(ShapeVisual_06());
-            return result;
-        }
-
-        // - - - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // - - - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed
-        // Scale(1,1,0)
-        ContainerVisual ContainerVisual_08()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.BorderMode(CompositionBorderMode::Soft);
-            // Shape tree root for layer: Shape Layer 3
-            result.Children().InsertAtTop(ShapeVisual_07());
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        ContainerVisual ContainerVisual_09()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.Clip(_insetClip_0);
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Scale:<1, 1>
-            result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-            const auto children = result.Children();
-            // Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-            children.InsertAtTop(SpriteVisual_3());
-            // Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_11());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_06(), _rootProgress);
-            return result;
-        }
-
-        // - - - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // - - - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-        ContainerVisual ContainerVisual_10()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.BorderMode(CompositionBorderMode::Soft);
-            // Shape tree root for layer: Layer 2
-            result.Children().InsertAtTop(ShapeVisual_09());
-            return result;
-        }
-
-        // - - - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // - - - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-        ContainerVisual ContainerVisual_11()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.BorderMode(CompositionBorderMode::Soft);
-            // Shape tree root for layer: Shape Layer 3
-            result.Children().InsertAtTop(ShapeVisual_10());
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        ContainerVisual ContainerVisual_12()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.Clip(_insetClip_0);
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Scale:<1, 1>
-            result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-            const auto children = result.Children();
-            // Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-            children.InsertAtTop(SpriteVisual_4());
-            // Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_14());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_08(), _rootProgress);
-            return result;
-        }
-
-        // - - - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // - - - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        ContainerVisual ContainerVisual_13()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.BorderMode(CompositionBorderMode::Soft);
-            // Shape tree root for layer: Layer 2
-            result.Children().InsertAtTop(ShapeVisual_12());
-            return result;
-        }
-
-        // - - - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // - - - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        ContainerVisual ContainerVisual_14()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.BorderMode(CompositionBorderMode::Soft);
-            // Shape tree root for layer: Shape Layer 3
-            result.Children().InsertAtTop(ShapeVisual_13());
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        ContainerVisual ContainerVisual_15()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.Clip(_insetClip_0);
-            result.Size({ 48.0F, 48.0F });
-            // Scale:<1, 1>
-            result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-            const auto children = result.Children();
-            // Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-            children.InsertAtTop(SpriteVisual_5());
-            // Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_17());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_10(), _rootProgress);
-            return result;
-        }
-
-        // - - - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // - - - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-        ContainerVisual ContainerVisual_16()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.BorderMode(CompositionBorderMode::Soft);
-            // Shape tree root for layer: Layer 2
-            result.Children().InsertAtTop(ShapeVisual_15());
-            return result;
-        }
-
-        // - - - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // - - - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-        ContainerVisual ContainerVisual_17()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.BorderMode(CompositionBorderMode::Soft);
-            // Shape tree root for layer: Shape Layer 3
-            result.Children().InsertAtTop(ShapeVisual_16());
-            return result;
-        }
-
-        // The root of the composition.
-        ContainerVisual Root()
-        {
-            const auto result = _root = _c.CreateContainerVisual();
-            const auto propertySet = result.Properties();
-            propertySet.InsertScalar(L"Progress", 0.0F);
-            propertySet.InsertScalar(L"t0", 0.0F);
-            propertySet.InsertScalar(L"t1", 0.0F);
-            propertySet.InsertScalar(L"t2", 0.0F);
-            propertySet.InsertScalar(L"t3", 0.0F);
-            const auto children = result.Children();
-            // PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-            children.InsertAtTop(ContainerVisual_00());
-            // PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-            children.InsertAtTop(ContainerVisual_03());
-            // PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-            children.InsertAtTop(ContainerVisual_06());
-            // PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-            children.InsertAtTop(ContainerVisual_09());
-            // PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-            children.InsertAtTop(ContainerVisual_12());
-            // PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-            children.InsertAtTop(ContainerVisual_15());
-            StartProgressBoundAnimation(propertySet, L"t0", t0ScalarAnimation_0_to_1(), _rootProgress);
-            StartProgressBoundAnimation(propertySet, L"t1", t1ScalarAnimation_0_to_1(), _rootProgress);
-            StartProgressBoundAnimation(propertySet, L"t2", t2ScalarAnimation_0_to_1(), _rootProgress);
-            StartProgressBoundAnimation(propertySet, L"t3", t3ScalarAnimation_0_to_1(), _rootProgress);
-            return result;
-        }
-
-        CubicBezierEasingFunction CubicBezierEasingFunction_0()
-        {
-            return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.0F }, { 0.75F, 1.0F });
-        }
-
-        CubicBezierEasingFunction CubicBezierEasingFunction_1()
-        {
-            return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F });
-        }
-
-        CubicBezierEasingFunction CubicBezierEasingFunction_2()
-        {
-            return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.550000012F, 0.0F }, { 0.75F, 1.0F });
-        }
-
-        CubicBezierEasingFunction CubicBezierEasingFunction_3()
-        {
-            return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.449999988F, 1.0F });
-        }
-
-        CubicBezierEasingFunction CubicBezierEasingFunction_4()
-        {
-            return _cubicBezierEasingFunction_4 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
-        }
-
-        ExpressionAnimation RootProgress()
-        {
-            const auto result = _rootProgress = _c.CreateExpressionAnimation(L"_.Progress");
-            result.SetReferenceParameter(L"_", _root);
-            return result;
-        }
-
-        InsetClip InsetClip_0()
-        {
-            const auto result = _insetClip_0 = _c.CreateInsetClip();
-            return result;
-        }
-
-        // Scale
-        ScalarKeyFrameAnimation ScalarAnimation_1_to_1p2()
-        {
-            const auto result = _scalarAnimation_1_to_1p2 = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _holdThenStepEasingFunction);
-            result.InsertKeyFrame(0.112499997F, 1.20000005F, _cubicBezierEasingFunction_4);
-            return result;
-        }
-
-        // Scale
-        ScalarKeyFrameAnimation ScalarAnimation_1_to_1p3()
-        {
-            const auto result = _scalarAnimation_1_to_1p3 = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.125F, 1.0F, _holdThenStepEasingFunction);
-            result.InsertKeyFrame(0.237499997F, 1.29999995F, _cubicBezierEasingFunction_3);
-            return result;
-        }
-
-        // Scale
-        ScalarKeyFrameAnimation ScalarAnimation_1p2_to_1()
-        {
-            const auto result = _scalarAnimation_1p2_to_1 = CreateScalarKeyFrameAnimation(0.0F, 1.20000005F, _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.25F, 1.20000005F, _holdThenStepEasingFunction);
-            result.InsertKeyFrame(0.362500012F, 1.0F, CubicBezierEasingFunction_4());
-            return result;
-        }
-
-        // Scale
-        ScalarKeyFrameAnimation ScalarAnimation_1p2_to_1p3()
-        {
-            const auto result = _scalarAnimation_1p2_to_1p3 = CreateScalarKeyFrameAnimation(0.0F, 1.20000005F, _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.375F, 1.20000005F, _holdThenStepEasingFunction);
-            result.InsertKeyFrame(0.487500012F, 1.29999995F, CubicBezierEasingFunction_3());
-            return result;
-        }
-
-        // Scale
-        ScalarKeyFrameAnimation ScalarAnimation_1p3_to_1()
-        {
-            const auto result = _scalarAnimation_1p3_to_1 = CreateScalarKeyFrameAnimation(0.0F, 1.29999995F, _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.5F, 1.29999995F, _holdThenStepEasingFunction);
-            result.InsertKeyFrame(0.5625F, 0.899999976F, _cubicBezierEasingFunction_2);
-            result.InsertKeyFrame(0.737500012F, 1.0F, _cubicBezierEasingFunction_1);
-            return result;
-        }
-
-        // Scale
-        ScalarKeyFrameAnimation ScalarAnimation_1p3_to_1p2()
-        {
-            const auto result = _scalarAnimation_1p3_to_1p2 = CreateScalarKeyFrameAnimation(0.0F, 1.29999995F, _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.75F, 1.29999995F, _holdThenStepEasingFunction);
-            result.InsertKeyFrame(0.8125F, 0.899999976F, CubicBezierEasingFunction_2());
-            result.InsertKeyFrame(0.987500012F, 1.20000005F, _cubicBezierEasingFunction_1);
-            return result;
-        }
-
-        ScalarKeyFrameAnimation t0ScalarAnimation_0_to_1()
-        {
-            const auto result = CreateScalarKeyFrameAnimation(0.56250006F, 0.0F, _stepThenHoldEasingFunction);
-            result.SetReferenceParameter(L"_", _root);
-            result.InsertKeyFrame(0.737499952F, 1.0F, _cubicBezierEasingFunction_1);
-            return result;
-        }
-
-        ScalarKeyFrameAnimation t1ScalarAnimation_0_to_1()
-        {
-            const auto result = CreateScalarKeyFrameAnimation(0.25000003F, 0.0F, _stepThenHoldEasingFunction);
-            result.SetReferenceParameter(L"_", _root);
-            result.InsertKeyFrame(0.362499982F, 1.0F, _cubicBezierEasingFunction_4);
-            return result;
-        }
-
-        ScalarKeyFrameAnimation t2ScalarAnimation_0_to_1()
-        {
-            const auto result = CreateScalarKeyFrameAnimation(0.125000015F, 0.0F, _stepThenHoldEasingFunction);
-            result.SetReferenceParameter(L"_", _root);
-            result.InsertKeyFrame(0.237499982F, 1.0F, _cubicBezierEasingFunction_4);
-            return result;
-        }
-
-        ScalarKeyFrameAnimation t3ScalarAnimation_0_to_1()
-        {
-            const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-            result.SetReferenceParameter(L"_", _root);
-            result.InsertKeyFrame(0.11249999F, 1.0F, _cubicBezierEasingFunction_4);
-            return result;
-        }
-
-        // - - - - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // - - - - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver
-        // Scale(1,1,0)
-        // Shape tree root for layer: Layer 2
-        ShapeVisual ShapeVisual_00()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // ShapeGroup: Group 1
-            result.Shapes().Append(SpriteShape_00());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_00(), _rootProgress);
-            return result;
-        }
-
-        // - - - - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // - - - - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver
-        // Scale(1,1,0)
-        // Shape tree root for layer: Shape Layer 3
-        ShapeVisual ShapeVisual_01()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Transforms: Shape Layer 3
-            result.Shapes().Append(SpriteShape_01());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_00, _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // Shape tree root for layer: Shape Layer 4
-        ShapeVisual ShapeVisual_02()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Opacity(0.970000029F);
-            result.Size({ 48.0F, 48.0F });
-            result.Shapes().Append(ContainerShape_0());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_00, _rootProgress);
-            return result;
-        }
-
-        // - - - - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // - - - - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        // Shape tree root for layer: Layer 2
-        ShapeVisual ShapeVisual_03()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // ShapeGroup: Group 1
-            result.Shapes().Append(SpriteShape_03());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_01(), _rootProgress);
-            return result;
-        }
-
-        // - - - - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // - - - - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        // Shape tree root for layer: Shape Layer 3
-        ShapeVisual ShapeVisual_04()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Transforms: Shape Layer 3
-            result.Shapes().Append(SpriteShape_04());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_01, _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // Shape tree root for layer: Shape Layer 4
-        ShapeVisual ShapeVisual_05()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Opacity(0.970000029F);
-            result.Size({ 48.0F, 48.0F });
-            result.Shapes().Append(ContainerShape_1());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_01, _rootProgress);
-            return result;
-        }
-
-        // - - - - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // - - - - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed
-        // Scale(1,1,0)
-        // Shape tree root for layer: Layer 2
-        ShapeVisual ShapeVisual_06()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Scale:3,3, Offset:<4.865999, -248.54199>
-            result.Shapes().Append(SpriteShape_06());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_03(), _rootProgress);
-            return result;
-        }
-
-        // - - - - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // - - - - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed
-        // Scale(1,1,0)
-        // Shape tree root for layer: Shape Layer 3
-        ShapeVisual ShapeVisual_07()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Transforms: Shape Layer 3
-            result.Shapes().Append(SpriteShape_07());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_03, _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // Shape tree root for layer: Shape Layer 4
-        ShapeVisual ShapeVisual_08()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Opacity(0.970000029F);
-            result.Size({ 48.0F, 48.0F });
-            result.Shapes().Append(ContainerShape_2());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_03, _rootProgress);
-            return result;
-        }
-
-        // - - - - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // - - - - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal
-        // Scale(1,1,0)
-        // Shape tree root for layer: Layer 2
-        ShapeVisual ShapeVisual_09()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // ShapeGroup: Group 1
-            result.Shapes().Append(SpriteShape_09());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_05(), _rootProgress);
-            return result;
-        }
-
-        // - - - - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // - - - - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal
-        // Scale(1,1,0)
-        // Shape tree root for layer: Shape Layer 3
-        ShapeVisual ShapeVisual_10()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Transforms: Shape Layer 3
-            result.Shapes().Append(SpriteShape_10());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_05, _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // Shape tree root for layer: Shape Layer 4
-        ShapeVisual ShapeVisual_11()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Opacity(0.970000029F);
-            result.Size({ 48.0F, 48.0F });
-            result.Shapes().Append(ContainerShape_3());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_05, _rootProgress);
-            return result;
-        }
-
-        // - - - - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // - - - - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        // Shape tree root for layer: Layer 2
-        ShapeVisual ShapeVisual_12()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // ShapeGroup: Group 1
-            result.Shapes().Append(SpriteShape_12());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_07(), _rootProgress);
-            return result;
-        }
-
-        // - - - - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // - - - - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        // Shape tree root for layer: Shape Layer 3
-        ShapeVisual ShapeVisual_13()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Transforms: Shape Layer 3
-            result.Shapes().Append(SpriteShape_13());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_07, _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // Shape tree root for layer: Shape Layer 4
-        ShapeVisual ShapeVisual_14()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Opacity(0.970000029F);
-            result.Size({ 48.0F, 48.0F });
-            result.Shapes().Append(ContainerShape_4());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_07, _rootProgress);
-            return result;
-        }
-
-        // - - - - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // - - - - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver
-        // Scale(1,1,0)
-        // Shape tree root for layer: Layer 2
-        ShapeVisual ShapeVisual_15()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.Size({ 48.0F, 48.0F });
-            // ShapeGroup: Group 1
-            result.Shapes().Append(SpriteShape_15());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_09(), _rootProgress);
-            return result;
-        }
-
-        // - - - - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // - - - - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver
-        // Scale(1,1,0)
-        // Shape tree root for layer: Shape Layer 3
-        ShapeVisual ShapeVisual_16()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.Size({ 48.0F, 48.0F });
-            // Transforms: Shape Layer 3
-            result.Shapes().Append(SpriteShape_16());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_09, _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // Shape tree root for layer: Shape Layer 4
-        ShapeVisual ShapeVisual_17()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.Opacity(0.970000029F);
-            result.Size({ 48.0F, 48.0F });
-            result.Shapes().Append(ContainerShape_5());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_09, _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-        SpriteVisual SpriteVisual_0()
-        {
-            const auto result = _c.CreateSpriteVisual();
-            result.Size({ 48.0F, 48.0F });
-            result.Brush(EffectBrush_0());
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        SpriteVisual SpriteVisual_1()
-        {
-            const auto result = _c.CreateSpriteVisual();
-            result.Size({ 48.0F, 48.0F });
-            result.Brush(EffectBrush_1());
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-        SpriteVisual SpriteVisual_2()
-        {
-            const auto result = _c.CreateSpriteVisual();
-            result.Size({ 48.0F, 48.0F });
-            result.Brush(EffectBrush_2());
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-        SpriteVisual SpriteVisual_3()
-        {
-            const auto result = _c.CreateSpriteVisual();
-            result.Size({ 48.0F, 48.0F });
-            result.Brush(EffectBrush_3());
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        SpriteVisual SpriteVisual_4()
-        {
-            const auto result = _c.CreateSpriteVisual();
-            result.Size({ 48.0F, 48.0F });
-            result.Brush(EffectBrush_4());
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-        SpriteVisual SpriteVisual_5()
-        {
-            const auto result = _c.CreateSpriteVisual();
-            result.Size({ 48.0F, 48.0F });
-            result.Brush(EffectBrush_5());
-            return result;
-        }
-
-        StepEasingFunction HoldThenStepEasingFunction()
-        {
-            const auto result = _holdThenStepEasingFunction = _c.CreateStepEasingFunction();
-            result.IsFinalStepSingleFrame(true);
-            return result;
-        }
-
-        StepEasingFunction StepThenHoldEasingFunction()
-        {
-            const auto result = _stepThenHoldEasingFunction = _c.CreateStepEasingFunction();
-            result.IsInitialStepSingleFrame(true);
-            return result;
-        }
-
-        // - - - - - - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // - - - - - - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver
-        // Scale(1,1,0)
-        // - Shape tree root for layer: Layer 2
-        // ShapeGroup: Group 1
-        // Offset
-        Vector2KeyFrameAnimation OffsetVector2Animation_0()
-        {
-            const auto result = CreateVector2KeyFrameAnimation(0.0F, { 4.86600018F, -248.542007F }, StepThenHoldEasingFunction());
-            result.InsertKeyFrame(0.75F, { 4.86600018F, -248.542007F }, HoldThenStepEasingFunction());
-            result.InsertKeyFrame(0.8125F, { 6.99100018F, -250.667007F }, CubicBezierEasingFunction_0());
-            result.InsertKeyFrame(0.987500012F, { 4.86600018F, -248.542007F }, CubicBezierEasingFunction_1());
-            return result;
-        }
-
-        // - - - - - - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // - - - - - - Transforms for Controls - 05 - Search - 05 - PressedToNormal
-        // Scale(1,1,0)
-        // - Shape tree root for layer: Layer 2
-        // ShapeGroup: Group 1
-        // Offset
-        Vector2KeyFrameAnimation OffsetVector2Animation_1()
-        {
-            const auto result = CreateVector2KeyFrameAnimation(0.0F, { 4.86600018F, -248.542007F }, _stepThenHoldEasingFunction);
-            result.SetReferenceParameter(L"_", _root);
-            result.InsertKeyFrame(0.5F, { 4.86600018F, -248.542007F }, _holdThenStepEasingFunction);
-            result.InsertKeyFrame(0.5625F, { 6.99100018F, -250.667007F }, _cubicBezierEasingFunction_0);
-            result.InsertExpressionKeyFrame(0.737499952F, L"(Pow(1-_.t0,3)*Vector2(6.991,-250.667))+(3*Square(1-_.t0)*_.t0*Vector2(6.991,-250.667))+(3*(1-_.t0)*Square(_.t0)*Vector2(6.262,-249.938))+(Pow(_.t0,3)*Vector2(6.116,-249.792))", _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.737500012F, { 6.11600018F, -249.792007F }, _stepThenHoldEasingFunction);
-            return result;
-        }
-
-        // - - - - - - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // - - - - - - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal
-        // Scale(1,1,0)
-        // - Shape tree root for layer: Layer 2
-        // ShapeGroup: Group 1
-        // Offset
-        Vector2KeyFrameAnimation OffsetVector2Animation_2()
-        {
-            const auto result = CreateVector2KeyFrameAnimation(0.0F, { 4.86600018F, -248.542007F }, _stepThenHoldEasingFunction);
-            result.SetReferenceParameter(L"_", _root);
-            result.InsertKeyFrame(0.25F, { 4.86600018F, -248.542007F }, _holdThenStepEasingFunction);
-            result.InsertExpressionKeyFrame(0.362499982F, L"(Pow(1-_.t1,3)*Vector2(4.866,-248.542))+(3*Square(1-_.t1)*_.t1*Vector2(5.074,-248.75))+(3*(1-_.t1)*Square(_.t1)*Vector2(5.908,-249.584))+(Pow(_.t1,3)*Vector2(6.116,-249.792))", _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.362500012F, { 6.11600018F, -249.792007F }, _stepThenHoldEasingFunction);
-            return result;
-        }
-
-        // - - - - - - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // - - - - - - Transforms for Controls - 05 - Search - 02 - NormalToPressed
-        // Scale(1,1,0)
-        // - Shape tree root for layer: Layer 2
-        // ShapeGroup: Group 1
-        // Offset
-        Vector2KeyFrameAnimation OffsetVector2Animation_3()
-        {
-            const auto result = CreateVector2KeyFrameAnimation(0.0F, { 6.11600018F, -249.792007F }, _stepThenHoldEasingFunction);
-            result.SetReferenceParameter(L"_", _root);
-            result.InsertKeyFrame(0.125F, { 6.11600018F, -249.792007F }, _holdThenStepEasingFunction);
-            result.InsertExpressionKeyFrame(0.237499982F, L"(Pow(1-_.t2,3)*Vector2(6.116,-249.792))+(3*Square(1-_.t2)*_.t2*Vector2(5.908,-249.584))+(3*(1-_.t2)*Square(_.t2)*Vector2(4.866,-248.542))+(Pow(_.t2,3)*Vector2(4.866,-248.542))", _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.237499997F, { 4.86600018F, -248.542007F }, _stepThenHoldEasingFunction);
-            return result;
-        }
-
-        // - - - - - - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // - - - - - - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver
-        // Scale(1,1,0)
-        // - Shape tree root for layer: Layer 2
-        // ShapeGroup: Group 1
-        // Offset
-        Vector2KeyFrameAnimation OffsetVector2Animation_4()
-        {
-            const auto result = CreateVector2KeyFrameAnimation(0.0F, { 6.11600018F, -249.792007F }, _holdThenStepEasingFunction);
-            result.SetReferenceParameter(L"_", _root);
-            result.InsertExpressionKeyFrame(0.11249999F, L"(Pow(1-_.t3,3)*Vector2(6.116,-249.792))+(3*Square(1-_.t3)*_.t3*Vector2(5.908,-249.584))+(3*(1-_.t3)*Square(_.t3)*Vector2(5.074,-248.75))+(Pow(_.t3,3)*Vector2(4.866,-248.542))", _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.112499997F, { 4.86600018F, -248.542007F }, _stepThenHoldEasingFunction);
-            return result;
-        }
-
-        static IGeometrySource2D CanvasGeometryToIGeometrySource2D(winrt::com_ptr<CanvasGeometry> geo)
-        {
-            return geo.as<IGeometrySource2D>();
-        }
-
-    public:
-        AnimatedFindVisualSource_AnimatedVisual_UAPv8(
-            Compositor compositor,
-            CompositionPropertySet themeProperties)
-            : _c{compositor}
-            , _themeProperties{themeProperties}
-            , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
-        {
-            winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.put()));
-            const auto _ = Root();
-        }
-
-        void Close()
-        {
-            if (_root)
-            {
-                _root.Close();
-            }
-        }
-
-        TimeSpan Duration() const
-        {
-            return TimeSpan{ c_durationTicks };
-        }
-
-        Visual RootVisual() const
-        {
-            return _root;
-        }
-
-        float2 Size() const
-        {
-            return { 48.0F, 48.0F };
-        }
-
-        static bool IsRuntimeCompatible()
-        {
-            return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 8);
-        }
-    };
-
-    class AnimatedFindVisualSource_AnimatedVisual_UAPv7 : public winrt::implements<AnimatedFindVisualSource_AnimatedVisual_UAPv7,
-            winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
-            IClosable>
-    {
-        winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
-        static constexpr int64_t c_durationTicks{ 13333333L };
-        Compositor const _c{ nullptr };
-        ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
-        CompositionPropertySet const _themeProperties{ nullptr };
-        BooleanKeyFrameAnimation _isVisibleBooleanAnimation_00{ nullptr };
-        BooleanKeyFrameAnimation _isVisibleBooleanAnimation_01{ nullptr };
-        BooleanKeyFrameAnimation _isVisibleBooleanAnimation_03{ nullptr };
-        BooleanKeyFrameAnimation _isVisibleBooleanAnimation_05{ nullptr };
-        BooleanKeyFrameAnimation _isVisibleBooleanAnimation_07{ nullptr };
-        BooleanKeyFrameAnimation _isVisibleBooleanAnimation_09{ nullptr };
-        CompositionColorBrush _themeColor_Foreground{ nullptr };
-        CompositionEllipseGeometry _ellipse_14p188{ nullptr };
-        CompositionPathGeometry _pathGeometry{ nullptr };
-        ContainerVisual _root{ nullptr };
-        CubicBezierEasingFunction _cubicBezierEasingFunction_0{ nullptr };
-        CubicBezierEasingFunction _cubicBezierEasingFunction_1{ nullptr };
-        CubicBezierEasingFunction _cubicBezierEasingFunction_2{ nullptr };
-        CubicBezierEasingFunction _cubicBezierEasingFunction_3{ nullptr };
-        CubicBezierEasingFunction _cubicBezierEasingFunction_4{ nullptr };
-        ExpressionAnimation _rootProgress{ nullptr };
-        InsetClip _insetClip_0{ nullptr };
-        ScalarKeyFrameAnimation _scalarAnimation_1_to_1p2{ nullptr };
-        ScalarKeyFrameAnimation _scalarAnimation_1_to_1p3{ nullptr };
-        ScalarKeyFrameAnimation _scalarAnimation_1p2_to_1{ nullptr };
-        ScalarKeyFrameAnimation _scalarAnimation_1p2_to_1p3{ nullptr };
-        ScalarKeyFrameAnimation _scalarAnimation_1p3_to_1{ nullptr };
-        ScalarKeyFrameAnimation _scalarAnimation_1p3_to_1p2{ nullptr };
-        StepEasingFunction _holdThenStepEasingFunction{ nullptr };
-        StepEasingFunction _stepThenHoldEasingFunction{ nullptr };
-
-        static void StartProgressBoundAnimation(
-            CompositionObject target,
-            winrt::hstring animatedPropertyName,
-            CompositionAnimation animation,
-            ExpressionAnimation controllerProgressExpression)
-        {
-            target.StartAnimation(animatedPropertyName, animation);
-            const auto controller = target.TryGetAnimationController(animatedPropertyName);
-            controller.Pause();
-            controller.StartAnimation(L"Progress", controllerProgressExpression);
-        }
-
-        void BindProperty(
-            CompositionObject target,
-            winrt::hstring animatedPropertyName,
-            winrt::hstring expression,
-            winrt::hstring referenceParameterName,
-            CompositionObject referencedObject)
-        {
-            _reusableExpressionAnimation.ClearAllParameters();
-            _reusableExpressionAnimation.Expression(expression);
-            _reusableExpressionAnimation.SetReferenceParameter(referenceParameterName, referencedObject);
-            target.StartAnimation(animatedPropertyName, _reusableExpressionAnimation);
-        }
-
-        BooleanKeyFrameAnimation CreateBooleanKeyFrameAnimation(float initialProgress, bool initialValue)
-        {
-            const auto result = _c.CreateBooleanKeyFrameAnimation();
-            result.Duration(TimeSpan{ c_durationTicks });
-            result.InsertKeyFrame(initialProgress, initialValue);
-            return result;
-        }
-
-        ScalarKeyFrameAnimation CreateScalarKeyFrameAnimation(float initialProgress, float initialValue, CompositionEasingFunction initialEasingFunction)
-        {
-            const auto result = _c.CreateScalarKeyFrameAnimation();
-            result.Duration(TimeSpan{ c_durationTicks });
-            result.InsertKeyFrame(initialProgress, initialValue, initialEasingFunction);
-            return result;
-        }
-
-        Vector2KeyFrameAnimation CreateVector2KeyFrameAnimation(float initialProgress, float2 initialValue, CompositionEasingFunction initialEasingFunction)
-        {
-            const auto result = _c.CreateVector2KeyFrameAnimation();
-            result.Duration(TimeSpan{ c_durationTicks });
-            result.InsertKeyFrame(initialProgress, initialValue, initialEasingFunction);
-            return result;
-        }
-
-        CompositionSpriteShape CreateSpriteShape(CompositionGeometry geometry, float3x2 transformMatrix)
-        {
-            const auto result = _c.CreateSpriteShape(geometry);
-            result.TransformMatrix(transformMatrix);
-            return result;
-        }
-
-        CompositionSpriteShape CreateSpriteShape(CompositionGeometry geometry, float3x2 transformMatrix, CompositionBrush fillBrush)
-        {
-            const auto result = _c.CreateSpriteShape(geometry);
-            result.TransformMatrix(transformMatrix);
-            result.FillBrush(fillBrush);
-            return result;
-        }
-
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_00()
-        {
-            const auto result = _isVisibleBooleanAnimation_00 = CreateBooleanKeyFrameAnimation(0.75F, true);
-            return result;
-        }
-
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_01()
-        {
-            const auto result = _isVisibleBooleanAnimation_01 = CreateBooleanKeyFrameAnimation(0.5F, true);
-            result.InsertKeyFrame(0.762499988F, false);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_02()
-        {
-            const auto result = CreateBooleanKeyFrameAnimation(0.5F, true);
-            result.InsertKeyFrame(0.75F, false);
-            return result;
-        }
-
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_03()
-        {
-            const auto result = _isVisibleBooleanAnimation_03 = CreateBooleanKeyFrameAnimation(0.375F, true);
-            result.InsertKeyFrame(0.512499988F, false);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_04()
-        {
-            const auto result = CreateBooleanKeyFrameAnimation(0.375F, true);
-            result.InsertKeyFrame(0.5F, false);
-            return result;
-        }
-
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_05()
-        {
-            const auto result = _isVisibleBooleanAnimation_05 = CreateBooleanKeyFrameAnimation(0.25F, true);
-            result.InsertKeyFrame(0.387499988F, false);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_06()
-        {
-            const auto result = CreateBooleanKeyFrameAnimation(0.25F, true);
-            result.InsertKeyFrame(0.375F, false);
-            return result;
-        }
-
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_07()
-        {
-            const auto result = _isVisibleBooleanAnimation_07 = CreateBooleanKeyFrameAnimation(0.125F, true);
-            result.InsertKeyFrame(0.262499988F, false);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_08()
-        {
-            const auto result = CreateBooleanKeyFrameAnimation(0.125F, true);
-            result.InsertKeyFrame(0.25F, false);
-            return result;
-        }
-
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_09()
-        {
-            const auto result = _isVisibleBooleanAnimation_09 = CreateBooleanKeyFrameAnimation(0.137500003F, false);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        BooleanKeyFrameAnimation IsVisibleBooleanAnimation_10()
-        {
-            const auto result = CreateBooleanKeyFrameAnimation(0.125F, false);
-            return result;
-        }
-
-        winrt::com_ptr<CanvasGeometry> Geometry()
-        {
-            winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
-            winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-            winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
-            winrt::check_hresult(path->Open(sink.put()));
-            sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-            sink->BeginFigure({ 12.96F, 278.109985F }, D2D1_FIGURE_BEGIN_FILLED);
-            sink->AddLine({ 9.42300034F, 281.64801F });
-            sink->AddBezier({ { 9.25599957F, 281.815002F }, { 9.25599957F, 282.087006F }, { 9.42300034F, 282.253998F } });
-            sink->AddBezier({ { 9.57199955F, 282.403015F }, { 9.80300045F, 282.419006F }, { 9.97000027F, 282.303009F } });
-            sink->AddLine({ 10.0290003F, 282.253998F });
-            sink->AddLine({ 13.566F, 278.716003F });
-            sink->AddLine({ 12.96F, 278.109985F });
-            sink->EndFigure(D2D1_FIGURE_END_CLOSED);
-            winrt::check_hresult(sink->Close());
-            auto result = winrt::make_self<CanvasGeometry>(path);
-            return result;
-        }
-
-        // Color bound to theme property value: Foreground
-        CompositionColorBrush ThemeColor_Foreground()
-        {
-            const auto result = _themeColor_Foreground = _c.CreateColorBrush();
-            BindProperty(result, L"Color", L"ColorRGB(_theme.Foreground.W*1,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-        CompositionContainerShape ContainerShape_0()
-        {
-            const auto result = _c.CreateContainerShape();
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
-            result.Shapes().Append(SpriteShape_01());
-            StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p3_to_1p2(), _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p3_to_1p2, _rootProgress);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        CompositionContainerShape ContainerShape_1()
-        {
-            const auto result = _c.CreateContainerShape();
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
-            result.Shapes().Append(SpriteShape_03());
-            StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p3_to_1(), _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p3_to_1, _rootProgress);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-        CompositionContainerShape ContainerShape_2()
-        {
-            const auto result = _c.CreateContainerShape();
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
-            result.Shapes().Append(SpriteShape_05());
-            StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p2_to_1p3(), _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p2_to_1p3, _rootProgress);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-        CompositionContainerShape ContainerShape_3()
-        {
-            const auto result = _c.CreateContainerShape();
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
-            result.Shapes().Append(SpriteShape_07());
-            StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p2_to_1(), _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p2_to_1, _rootProgress);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        CompositionContainerShape ContainerShape_4()
-        {
-            const auto result = _c.CreateContainerShape();
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
-            result.Shapes().Append(SpriteShape_09());
-            StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1_to_1p3(), _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_1p3, _rootProgress);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-        CompositionContainerShape ContainerShape_5()
-        {
-            const auto result = _c.CreateContainerShape();
-            result.CenterPoint({ 3.81299996F, -3.93799996F });
-            result.Offset({ 24.0F, 24.0F });
-            // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
-            result.Shapes().Append(SpriteShape_11());
-            StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1_to_1p2(), _rootProgress);
-            StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_1p2, _rootProgress);
-            return result;
-        }
-
-        // Ellipse Path 1.EllipseGeometry
-        CompositionEllipseGeometry Ellipse_14p188()
-        {
-            const auto result = _ellipse_14p188 = _c.CreateEllipseGeometry();
-            result.Radius({ 14.1875F, 14.1875F });
-            return result;
-        }
-
-        CompositionPathGeometry PathGeometry()
-        {
-            return _pathGeometry = _c.CreatePathGeometry(CompositionPath(CanvasGeometryToIGeometrySource2D(Geometry())));
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-        // Path 2
-        CompositionSpriteShape SpriteShape_00()
-        {
-            const auto result = _c.CreateSpriteShape(PathGeometry());
-            result.CenterPoint({ 13.566F, 278.109985F });
-            result.Scale({ 3.0F, 3.0F });
-            result.FillBrush(ThemeColor_Foreground());
-            StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_0(), RootProgress());
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-        // Ellipse Path 1
-        CompositionSpriteShape SpriteShape_01()
-        {
-            // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
-            const auto result = CreateSpriteShape(Ellipse_14p188(), { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-            result.StrokeBrush(_themeColor_Foreground);
-            result.StrokeThickness(2.0F);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        // Path 2
-        CompositionSpriteShape SpriteShape_02()
-        {
-            const auto result = _c.CreateSpriteShape(_pathGeometry);
-            result.CenterPoint({ 13.566F, 278.109985F });
-            result.Scale({ 3.0F, 3.0F });
-            result.FillBrush(_themeColor_Foreground);
-            StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_1(), _rootProgress);
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        // Ellipse Path 1
-        CompositionSpriteShape SpriteShape_03()
-        {
-            // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
-            const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-            result.StrokeBrush(_themeColor_Foreground);
-            result.StrokeThickness(2.0F);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-        // Path 2
-        CompositionSpriteShape SpriteShape_04()
-        {
-            // Offset:<-22.266, -804.76196>, Scale:<3, 3>
-            const auto result = CreateSpriteShape(_pathGeometry, { 3.0F, 0.0F, 0.0F, 3.0F, -22.2660007F, -804.761963F }, _themeColor_Foreground);
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-        // Ellipse Path 1
-        CompositionSpriteShape SpriteShape_05()
-        {
-            // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
-            const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-            result.StrokeBrush(_themeColor_Foreground);
-            result.StrokeThickness(2.0F);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-        // Path 2
-        CompositionSpriteShape SpriteShape_06()
-        {
-            const auto result = _c.CreateSpriteShape(_pathGeometry);
-            result.CenterPoint({ 13.566F, 278.109985F });
-            result.Scale({ 3.0F, 3.0F });
-            result.FillBrush(_themeColor_Foreground);
-            StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_2(), _rootProgress);
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-        // Ellipse Path 1
-        CompositionSpriteShape SpriteShape_07()
-        {
-            // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
-            const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-            result.StrokeBrush(_themeColor_Foreground);
-            result.StrokeThickness(2.0F);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        // Path 2
-        CompositionSpriteShape SpriteShape_08()
-        {
-            const auto result = _c.CreateSpriteShape(_pathGeometry);
-            result.CenterPoint({ 13.566F, 278.109985F });
-            result.Scale({ 3.0F, 3.0F });
-            result.FillBrush(_themeColor_Foreground);
-            StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_3(), _rootProgress);
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        // Ellipse Path 1
-        CompositionSpriteShape SpriteShape_09()
-        {
-            // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
-            const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-            result.StrokeBrush(_themeColor_Foreground);
-            result.StrokeThickness(2.0F);
-            return result;
-        }
-
-        // - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-        // Path 2
-        CompositionSpriteShape SpriteShape_10()
-        {
-            const auto result = _c.CreateSpriteShape(_pathGeometry);
-            result.CenterPoint({ 13.566F, 278.109985F });
-            result.Scale({ 3.0F, 3.0F });
-            result.FillBrush(_themeColor_Foreground);
-            StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_4(), _rootProgress);
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-        // Ellipse Path 1
-        CompositionSpriteShape SpriteShape_11()
-        {
-            // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
-            const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-            result.StrokeBrush(_themeColor_Foreground);
-            result.StrokeThickness(2.0F);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        ContainerVisual ContainerVisual_0()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.Clip(InsetClip_0());
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Scale:<1, 1>
-            result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-            const auto children = result.Children();
-            // Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_00());
-            // Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_01());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_00, _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        ContainerVisual ContainerVisual_1()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.Clip(_insetClip_0);
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Scale:<1, 1>
-            result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-            const auto children = result.Children();
-            // Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_02());
-            // Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_03());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_02(), _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        ContainerVisual ContainerVisual_2()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.Clip(_insetClip_0);
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Scale:<1, 1>
-            result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-            const auto children = result.Children();
-            // Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_04());
-            // Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_05());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_04(), _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        ContainerVisual ContainerVisual_3()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.Clip(_insetClip_0);
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Scale:<1, 1>
-            result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-            const auto children = result.Children();
-            // Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_06());
-            // Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_07());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_06(), _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        ContainerVisual ContainerVisual_4()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.Clip(_insetClip_0);
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Scale:<1, 1>
-            result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-            const auto children = result.Children();
-            // Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_08());
-            // Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_09());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_08(), _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        ContainerVisual ContainerVisual_5()
-        {
-            const auto result = _c.CreateContainerVisual();
-            result.Clip(_insetClip_0);
-            result.Size({ 48.0F, 48.0F });
-            // Scale:<1, 1>
-            result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-            const auto children = result.Children();
-            // Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_10());
-            // Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-            children.InsertAtTop(ShapeVisual_11());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_10(), _rootProgress);
-            return result;
-        }
-
-        // The root of the composition.
-        ContainerVisual Root()
-        {
-            const auto result = _root = _c.CreateContainerVisual();
-            const auto propertySet = result.Properties();
-            propertySet.InsertScalar(L"Progress", 0.0F);
-            propertySet.InsertScalar(L"t0", 0.0F);
-            propertySet.InsertScalar(L"t1", 0.0F);
-            propertySet.InsertScalar(L"t2", 0.0F);
-            propertySet.InsertScalar(L"t3", 0.0F);
-            const auto children = result.Children();
-            // PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-            children.InsertAtTop(ContainerVisual_0());
-            // PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-            children.InsertAtTop(ContainerVisual_1());
-            // PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-            children.InsertAtTop(ContainerVisual_2());
-            // PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-            children.InsertAtTop(ContainerVisual_3());
-            // PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-            children.InsertAtTop(ContainerVisual_4());
-            // PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-            children.InsertAtTop(ContainerVisual_5());
-            StartProgressBoundAnimation(propertySet, L"t0", t0ScalarAnimation_0_to_1(), _rootProgress);
-            StartProgressBoundAnimation(propertySet, L"t1", t1ScalarAnimation_0_to_1(), _rootProgress);
-            StartProgressBoundAnimation(propertySet, L"t2", t2ScalarAnimation_0_to_1(), _rootProgress);
-            StartProgressBoundAnimation(propertySet, L"t3", t3ScalarAnimation_0_to_1(), _rootProgress);
-            return result;
-        }
-
-        CubicBezierEasingFunction CubicBezierEasingFunction_0()
-        {
-            return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.0F }, { 0.75F, 1.0F });
-        }
-
-        CubicBezierEasingFunction CubicBezierEasingFunction_1()
-        {
-            return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F });
-        }
-
-        CubicBezierEasingFunction CubicBezierEasingFunction_2()
-        {
-            return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.550000012F, 0.0F }, { 0.75F, 1.0F });
-        }
-
-        CubicBezierEasingFunction CubicBezierEasingFunction_3()
-        {
-            return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.449999988F, 1.0F });
-        }
-
-        CubicBezierEasingFunction CubicBezierEasingFunction_4()
-        {
-            return _cubicBezierEasingFunction_4 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
-        }
-
-        ExpressionAnimation RootProgress()
-        {
-            const auto result = _rootProgress = _c.CreateExpressionAnimation(L"_.Progress");
-            result.SetReferenceParameter(L"_", _root);
-            return result;
-        }
-
-        InsetClip InsetClip_0()
-        {
-            const auto result = _insetClip_0 = _c.CreateInsetClip();
-            return result;
-        }
-
-        // Scale
-        ScalarKeyFrameAnimation ScalarAnimation_1_to_1p2()
-        {
-            const auto result = _scalarAnimation_1_to_1p2 = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _holdThenStepEasingFunction);
-            result.InsertKeyFrame(0.112499997F, 1.20000005F, _cubicBezierEasingFunction_4);
-            return result;
-        }
-
-        // Scale
-        ScalarKeyFrameAnimation ScalarAnimation_1_to_1p3()
-        {
-            const auto result = _scalarAnimation_1_to_1p3 = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.125F, 1.0F, _holdThenStepEasingFunction);
-            result.InsertKeyFrame(0.237499997F, 1.29999995F, _cubicBezierEasingFunction_3);
-            return result;
-        }
-
-        // Scale
-        ScalarKeyFrameAnimation ScalarAnimation_1p2_to_1()
-        {
-            const auto result = _scalarAnimation_1p2_to_1 = CreateScalarKeyFrameAnimation(0.0F, 1.20000005F, _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.25F, 1.20000005F, _holdThenStepEasingFunction);
-            result.InsertKeyFrame(0.362500012F, 1.0F, CubicBezierEasingFunction_4());
-            return result;
-        }
-
-        // Scale
-        ScalarKeyFrameAnimation ScalarAnimation_1p2_to_1p3()
-        {
-            const auto result = _scalarAnimation_1p2_to_1p3 = CreateScalarKeyFrameAnimation(0.0F, 1.20000005F, _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.375F, 1.20000005F, _holdThenStepEasingFunction);
-            result.InsertKeyFrame(0.487500012F, 1.29999995F, CubicBezierEasingFunction_3());
-            return result;
-        }
-
-        // Scale
-        ScalarKeyFrameAnimation ScalarAnimation_1p3_to_1()
-        {
-            const auto result = _scalarAnimation_1p3_to_1 = CreateScalarKeyFrameAnimation(0.0F, 1.29999995F, _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.5F, 1.29999995F, _holdThenStepEasingFunction);
-            result.InsertKeyFrame(0.5625F, 0.899999976F, _cubicBezierEasingFunction_2);
-            result.InsertKeyFrame(0.737500012F, 1.0F, _cubicBezierEasingFunction_1);
-            return result;
-        }
-
-        // Scale
-        ScalarKeyFrameAnimation ScalarAnimation_1p3_to_1p2()
-        {
-            const auto result = _scalarAnimation_1p3_to_1p2 = CreateScalarKeyFrameAnimation(0.0F, 1.29999995F, _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.75F, 1.29999995F, _holdThenStepEasingFunction);
-            result.InsertKeyFrame(0.8125F, 0.899999976F, CubicBezierEasingFunction_2());
-            result.InsertKeyFrame(0.987500012F, 1.20000005F, _cubicBezierEasingFunction_1);
-            return result;
-        }
-
-        ScalarKeyFrameAnimation t0ScalarAnimation_0_to_1()
-        {
-            const auto result = CreateScalarKeyFrameAnimation(0.56250006F, 0.0F, _stepThenHoldEasingFunction);
-            result.SetReferenceParameter(L"_", _root);
-            result.InsertKeyFrame(0.737499952F, 1.0F, _cubicBezierEasingFunction_1);
-            return result;
-        }
-
-        ScalarKeyFrameAnimation t1ScalarAnimation_0_to_1()
-        {
-            const auto result = CreateScalarKeyFrameAnimation(0.25000003F, 0.0F, _stepThenHoldEasingFunction);
-            result.SetReferenceParameter(L"_", _root);
-            result.InsertKeyFrame(0.362499982F, 1.0F, _cubicBezierEasingFunction_4);
-            return result;
-        }
-
-        ScalarKeyFrameAnimation t2ScalarAnimation_0_to_1()
-        {
-            const auto result = CreateScalarKeyFrameAnimation(0.125000015F, 0.0F, _stepThenHoldEasingFunction);
-            result.SetReferenceParameter(L"_", _root);
-            result.InsertKeyFrame(0.237499982F, 1.0F, _cubicBezierEasingFunction_4);
-            return result;
-        }
-
-        ScalarKeyFrameAnimation t3ScalarAnimation_0_to_1()
-        {
-            const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-            result.SetReferenceParameter(L"_", _root);
-            result.InsertKeyFrame(0.11249999F, 1.0F, _cubicBezierEasingFunction_4);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // Shape tree root for layer: Layer 2
-        ShapeVisual ShapeVisual_00()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // ShapeGroup: Group 1
-            result.Shapes().Append(SpriteShape_00());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_00(), _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // Shape tree root for layer: Shape Layer 4
-        ShapeVisual ShapeVisual_01()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Opacity(0.970000029F);
-            result.Size({ 48.0F, 48.0F });
-            result.Shapes().Append(ContainerShape_0());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_00, _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // Shape tree root for layer: Layer 2
-        ShapeVisual ShapeVisual_02()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // ShapeGroup: Group 1
-            result.Shapes().Append(SpriteShape_02());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_01(), _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // Shape tree root for layer: Shape Layer 4
-        ShapeVisual ShapeVisual_03()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Opacity(0.970000029F);
-            result.Size({ 48.0F, 48.0F });
-            result.Shapes().Append(ContainerShape_1());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_01, _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // Shape tree root for layer: Layer 2
-        ShapeVisual ShapeVisual_04()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // Scale:3,3, Offset:<4.865999, -248.54199>
-            result.Shapes().Append(SpriteShape_04());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_03(), _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-        // Shape tree root for layer: Shape Layer 4
-        ShapeVisual ShapeVisual_05()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Opacity(0.970000029F);
-            result.Size({ 48.0F, 48.0F });
-            result.Shapes().Append(ContainerShape_2());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_03, _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // Shape tree root for layer: Layer 2
-        ShapeVisual ShapeVisual_06()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // ShapeGroup: Group 1
-            result.Shapes().Append(SpriteShape_06());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_05(), _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // Shape tree root for layer: Shape Layer 4
-        ShapeVisual ShapeVisual_07()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Opacity(0.970000029F);
-            result.Size({ 48.0F, 48.0F });
-            result.Shapes().Append(ContainerShape_3());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_05, _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // Shape tree root for layer: Layer 2
-        ShapeVisual ShapeVisual_08()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Size({ 48.0F, 48.0F });
-            // ShapeGroup: Group 1
-            result.Shapes().Append(SpriteShape_08());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_07(), _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // Shape tree root for layer: Shape Layer 4
-        ShapeVisual ShapeVisual_09()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.IsVisible(false);
-            result.Opacity(0.970000029F);
-            result.Size({ 48.0F, 48.0F });
-            result.Shapes().Append(ContainerShape_4());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_07, _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // Shape tree root for layer: Layer 2
-        ShapeVisual ShapeVisual_10()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.Size({ 48.0F, 48.0F });
-            // ShapeGroup: Group 1
-            result.Shapes().Append(SpriteShape_10());
-            StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_09(), _rootProgress);
-            return result;
-        }
-
-        // PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // Shape tree root for layer: Shape Layer 4
-        ShapeVisual ShapeVisual_11()
-        {
-            const auto result = _c.CreateShapeVisual();
-            result.Opacity(0.970000029F);
-            result.Size({ 48.0F, 48.0F });
-            result.Shapes().Append(ContainerShape_5());
-            StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_09, _rootProgress);
-            return result;
-        }
-
-        StepEasingFunction HoldThenStepEasingFunction()
-        {
-            const auto result = _holdThenStepEasingFunction = _c.CreateStepEasingFunction();
-            result.IsFinalStepSingleFrame(true);
-            return result;
-        }
-
-        StepEasingFunction StepThenHoldEasingFunction()
-        {
-            const auto result = _stepThenHoldEasingFunction = _c.CreateStepEasingFunction();
-            result.IsInitialStepSingleFrame(true);
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-        // - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-        // ShapeGroup: Group 1
-        // Offset
-        Vector2KeyFrameAnimation OffsetVector2Animation_0()
-        {
-            const auto result = CreateVector2KeyFrameAnimation(0.0F, { 4.86600018F, -248.542007F }, StepThenHoldEasingFunction());
-            result.InsertKeyFrame(0.75F, { 4.86600018F, -248.542007F }, HoldThenStepEasingFunction());
-            result.InsertKeyFrame(0.8125F, { 6.99100018F, -250.667007F }, CubicBezierEasingFunction_0());
-            result.InsertKeyFrame(0.987500012F, { 4.86600018F, -248.542007F }, CubicBezierEasingFunction_1());
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-        // - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-        // ShapeGroup: Group 1
-        // Offset
-        Vector2KeyFrameAnimation OffsetVector2Animation_1()
-        {
-            const auto result = CreateVector2KeyFrameAnimation(0.0F, { 4.86600018F, -248.542007F }, _stepThenHoldEasingFunction);
-            result.SetReferenceParameter(L"_", _root);
-            result.InsertKeyFrame(0.5F, { 4.86600018F, -248.542007F }, _holdThenStepEasingFunction);
-            result.InsertKeyFrame(0.5625F, { 6.99100018F, -250.667007F }, _cubicBezierEasingFunction_0);
-            result.InsertExpressionKeyFrame(0.737499952F, L"(Pow(1-_.t0,3)*Vector2(6.991,-250.667))+(3*Square(1-_.t0)*_.t0*Vector2(6.991,-250.667))+(3*(1-_.t0)*Square(_.t0)*Vector2(6.262,-249.938))+(Pow(_.t0,3)*Vector2(6.116,-249.792))", _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.737500012F, { 6.11600018F, -249.792007F }, _stepThenHoldEasingFunction);
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-        // - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-        // ShapeGroup: Group 1
-        // Offset
-        Vector2KeyFrameAnimation OffsetVector2Animation_2()
-        {
-            const auto result = CreateVector2KeyFrameAnimation(0.0F, { 4.86600018F, -248.542007F }, _stepThenHoldEasingFunction);
-            result.SetReferenceParameter(L"_", _root);
-            result.InsertKeyFrame(0.25F, { 4.86600018F, -248.542007F }, _holdThenStepEasingFunction);
-            result.InsertExpressionKeyFrame(0.362499982F, L"(Pow(1-_.t1,3)*Vector2(4.866,-248.542))+(3*Square(1-_.t1)*_.t1*Vector2(5.074,-248.75))+(3*(1-_.t1)*Square(_.t1)*Vector2(5.908,-249.584))+(Pow(_.t1,3)*Vector2(6.116,-249.792))", _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.362500012F, { 6.11600018F, -249.792007F }, _stepThenHoldEasingFunction);
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-        // - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-        // ShapeGroup: Group 1
-        // Offset
-        Vector2KeyFrameAnimation OffsetVector2Animation_3()
-        {
-            const auto result = CreateVector2KeyFrameAnimation(0.0F, { 6.11600018F, -249.792007F }, _stepThenHoldEasingFunction);
-            result.SetReferenceParameter(L"_", _root);
-            result.InsertKeyFrame(0.125F, { 6.11600018F, -249.792007F }, _holdThenStepEasingFunction);
-            result.InsertExpressionKeyFrame(0.237499982F, L"(Pow(1-_.t2,3)*Vector2(6.116,-249.792))+(3*Square(1-_.t2)*_.t2*Vector2(5.908,-249.584))+(3*(1-_.t2)*Square(_.t2)*Vector2(4.866,-248.542))+(Pow(_.t2,3)*Vector2(4.866,-248.542))", _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.237499997F, { 4.86600018F, -248.542007F }, _stepThenHoldEasingFunction);
-            return result;
-        }
-
-        // - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-        // - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-        // ShapeGroup: Group 1
-        // Offset
-        Vector2KeyFrameAnimation OffsetVector2Animation_4()
-        {
-            const auto result = CreateVector2KeyFrameAnimation(0.0F, { 6.11600018F, -249.792007F }, _holdThenStepEasingFunction);
-            result.SetReferenceParameter(L"_", _root);
-            result.InsertExpressionKeyFrame(0.11249999F, L"(Pow(1-_.t3,3)*Vector2(6.116,-249.792))+(3*Square(1-_.t3)*_.t3*Vector2(5.908,-249.584))+(3*(1-_.t3)*Square(_.t3)*Vector2(5.074,-248.75))+(Pow(_.t3,3)*Vector2(4.866,-248.542))", _stepThenHoldEasingFunction);
-            result.InsertKeyFrame(0.112499997F, { 4.86600018F, -248.542007F }, _stepThenHoldEasingFunction);
-            return result;
-        }
-
-        static IGeometrySource2D CanvasGeometryToIGeometrySource2D(winrt::com_ptr<CanvasGeometry> geo)
-        {
-            return geo.as<IGeometrySource2D>();
-        }
-
-    public:
-        AnimatedFindVisualSource_AnimatedVisual_UAPv7(
-            Compositor compositor,
-            CompositionPropertySet themeProperties)
-            : _c{compositor}
-            , _themeProperties{themeProperties}
-            , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
-        {
-            winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.put()));
-            const auto _ = Root();
-        }
-
-        void Close()
-        {
-            if (_root)
-            {
-                _root.Close();
-            }
-        }
-
-        TimeSpan Duration() const
-        {
-            return TimeSpan{ c_durationTicks };
-        }
-
-        Visual RootVisual() const
-        {
-            return _root;
-        }
-
-        float2 Size() const
-        {
-            return { 48.0F, 48.0F };
-        }
-
-        static bool IsRuntimeCompatible()
-        {
-            return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 7);
-        }
-    };
-
-    float4 AnimatedFindVisualSource::ColorAsVector4(Color color)
-    {
-        return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
+        _geometry.copy_to(value);
+        return S_OK;
     }
 
-    CompositionPropertySet AnimatedFindVisualSource::EnsureThemeProperties(Compositor compositor)
+    // IGeometrySource2DInterop.
+    IFACEMETHODIMP TryGetGeometryUsingFactory(ID2D1Factory*, ID2D1Geometry**) override
     {
-        if (_themeProperties == nullptr)
+        return E_NOTIMPL;
+    }
+};
+class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<AnimatedFindVisualSource_AnimatedVisual,
+        winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
+        IClosable>
+{
+    winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
+    static constexpr int64_t c_durationTicks{ 8333333L };
+    Compositor const _c{ nullptr };
+    ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
+    CompositionPropertySet const _themeProperties{ nullptr };
+    CompositionColorBrush _themeColor_Foreground{ nullptr };
+    CompositionEllipseGeometry _ellipse_14p188{ nullptr };
+    CompositionPathGeometry _pathGeometry{ nullptr };
+    ContainerVisual _root{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_0{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_1{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_2{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_3{ nullptr };
+    ExpressionAnimation _rootProgress{ nullptr };
+    InsetClip _insetClip_0{ nullptr };
+    ScalarKeyFrameAnimation _scalarAnimation_1_to_1p2{ nullptr };
+    ScalarKeyFrameAnimation _scalarAnimation_1_to_1p25{ nullptr };
+    ScalarKeyFrameAnimation _scalarAnimation_1p2_to_1{ nullptr };
+    ScalarKeyFrameAnimation _scalarAnimation_1p2_to_1p25{ nullptr };
+    ScalarKeyFrameAnimation _scalarAnimation_1p25_to_1{ nullptr };
+    ScalarKeyFrameAnimation _scalarAnimation_1p25_to_1p2{ nullptr };
+    StepEasingFunction _holdThenStepEasingFunction{ nullptr };
+    StepEasingFunction _stepThenHoldEasingFunction{ nullptr };
+
+    static void StartProgressBoundAnimation(
+        CompositionObject target,
+        winrt::hstring animatedPropertyName,
+        CompositionAnimation animation,
+        ExpressionAnimation controllerProgressExpression)
+    {
+        target.StartAnimation(animatedPropertyName, animation);
+        const auto controller = target.TryGetAnimationController(animatedPropertyName);
+        controller.Pause();
+        controller.StartAnimation(L"Progress", controllerProgressExpression);
+    }
+
+    void BindProperty(
+        CompositionObject target,
+        winrt::hstring animatedPropertyName,
+        winrt::hstring expression,
+        winrt::hstring referenceParameterName,
+        CompositionObject referencedObject)
+    {
+        _reusableExpressionAnimation.ClearAllParameters();
+        _reusableExpressionAnimation.Expression(expression);
+        _reusableExpressionAnimation.SetReferenceParameter(referenceParameterName, referencedObject);
+        target.StartAnimation(animatedPropertyName, _reusableExpressionAnimation);
+    }
+
+    BooleanKeyFrameAnimation CreateBooleanKeyFrameAnimation(float initialProgress, bool initialValue)
+    {
+        const auto result = _c.CreateBooleanKeyFrameAnimation();
+        result.Duration(TimeSpan{ c_durationTicks });
+        result.InsertKeyFrame(initialProgress, initialValue);
+        return result;
+    }
+
+    ScalarKeyFrameAnimation CreateScalarKeyFrameAnimation(float initialProgress, float initialValue, CompositionEasingFunction initialEasingFunction)
+    {
+        const auto result = _c.CreateScalarKeyFrameAnimation();
+        result.Duration(TimeSpan{ c_durationTicks });
+        result.InsertKeyFrame(initialProgress, initialValue, initialEasingFunction);
+        return result;
+    }
+
+    Vector2KeyFrameAnimation CreateVector2KeyFrameAnimation(float initialProgress, winrt::float2 initialValue, CompositionEasingFunction initialEasingFunction)
+    {
+        const auto result = _c.CreateVector2KeyFrameAnimation();
+        result.Duration(TimeSpan{ c_durationTicks });
+        result.InsertKeyFrame(initialProgress, initialValue, initialEasingFunction);
+        return result;
+    }
+
+    CompositionSpriteShape CreateSpriteShape(CompositionGeometry geometry, winrt::float3x2 transformMatrix)
+    {
+        const auto result = _c.CreateSpriteShape(geometry);
+        result.TransformMatrix(transformMatrix);
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
+    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_0()
+    {
+        const auto result = CreateBooleanKeyFrameAnimation(0.899999976F, true);
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
+    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_1()
+    {
+        const auto result = CreateBooleanKeyFrameAnimation(0.600000024F, true);
+        result.InsertKeyFrame(0.899999976F, false);
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
+    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_2()
+    {
+        const auto result = CreateBooleanKeyFrameAnimation(0.5F, true);
+        result.InsertKeyFrame(0.600000024F, false);
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
+    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_3()
+    {
+        const auto result = CreateBooleanKeyFrameAnimation(0.300000012F, true);
+        result.InsertKeyFrame(0.5F, false);
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
+    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_4()
+    {
+        const auto result = CreateBooleanKeyFrameAnimation(0.200000003F, true);
+        result.InsertKeyFrame(0.300000012F, false);
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
+    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_5()
+    {
+        const auto result = CreateBooleanKeyFrameAnimation(0.200000003F, false);
+        return result;
+    }
+
+    winrt::com_ptr<CanvasGeometry> Geometry()
+    {
+        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
+        winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
+        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
+        winrt::check_hresult(path->Open(sink.put()));
+        sink->SetFillMode(D2D1_FILL_MODE_WINDING);
+        sink->BeginFigure({ 12.96F, 278.109985F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ 9.42300034F, 281.64801F });
+        sink->AddBezier({ { 9.25599957F, 281.815002F }, { 9.25599957F, 282.087006F }, { 9.42300034F, 282.253998F } });
+        sink->AddBezier({ { 9.57199955F, 282.403015F }, { 9.80300045F, 282.419006F }, { 9.97000027F, 282.303009F } });
+        sink->AddLine({ 10.0290003F, 282.253998F });
+        sink->AddLine({ 13.566F, 278.716003F });
+        sink->AddLine({ 12.96F, 278.109985F });
+        sink->EndFigure(D2D1_FIGURE_END_CLOSED);
+        winrt::check_hresult(sink->Close());
+        auto result = winrt::make_self<CanvasGeometry>(path);
+        return result;
+    }
+
+    // Color bound to theme property value: Foreground
+    CompositionColorBrush ThemeColor_Foreground()
+    {
+        const auto result = _themeColor_Foreground = _c.CreateColorBrush();
+        BindProperty(result, L"Color", L"ColorRGB(_theme.Foreground.W*1,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
+    // Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Layer 2
+    CompositionContainerShape ContainerShape_0()
+    {
+        const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 3.81299996F, -3.93799996F });
+        result.Offset({ 24.0F, 24.0F });
+        // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
+        result.Shapes().Append(SpriteShape_01());
+        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p25_to_1p2(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p25_to_1p2, _rootProgress);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
+    // Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Layer 2
+    CompositionContainerShape ContainerShape_1()
+    {
+        const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 3.81299996F, -3.93799996F });
+        result.Offset({ 24.0F, 24.0F });
+        // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
+        result.Shapes().Append(SpriteShape_03());
+        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p25_to_1(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p25_to_1, _rootProgress);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
+    // Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Layer 2
+    CompositionContainerShape ContainerShape_2()
+    {
+        const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 3.81299996F, -3.93799996F });
+        result.Offset({ 24.0F, 24.0F });
+        // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
+        result.Shapes().Append(SpriteShape_05());
+        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p2_to_1p25(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p2_to_1p25, _rootProgress);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
+    // Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Layer 2
+    CompositionContainerShape ContainerShape_3()
+    {
+        const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 3.81299996F, -3.93799996F });
+        result.Offset({ 24.0F, 24.0F });
+        // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
+        result.Shapes().Append(SpriteShape_07());
+        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p2_to_1(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p2_to_1, _rootProgress);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
+    // Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Layer 2
+    CompositionContainerShape ContainerShape_4()
+    {
+        const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 3.81299996F, -3.93799996F });
+        result.Offset({ 24.0F, 24.0F });
+        // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
+        result.Shapes().Append(SpriteShape_09());
+        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1_to_1p25(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_1p25, _rootProgress);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
+    // Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Layer 2
+    CompositionContainerShape ContainerShape_5()
+    {
+        const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 3.81299996F, -3.93799996F });
+        result.Offset({ 24.0F, 24.0F });
+        // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
+        result.Shapes().Append(SpriteShape_11());
+        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1_to_1p2(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_1p2, _rootProgress);
+        return result;
+    }
+
+    // Ellipse Path 1.EllipseGeometry
+    CompositionEllipseGeometry Ellipse_14p188()
+    {
+        const auto result = _ellipse_14p188 = _c.CreateEllipseGeometry();
+        result.Radius({ 14.1875F, 14.1875F });
+        return result;
+    }
+
+    CompositionPathGeometry PathGeometry()
+    {
+        return _pathGeometry = _c.CreatePathGeometry(CompositionPath(CanvasGeometryToIGeometrySource2D(Geometry())));
+    }
+
+    // - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
+    // Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
+    // Path 2
+    CompositionSpriteShape SpriteShape_00()
+    {
+        const auto result = _c.CreateSpriteShape(PathGeometry());
+        result.CenterPoint({ 13.566F, 278.109985F });
+        result.Scale({ 3.0F, 3.0F });
+        result.FillBrush(ThemeColor_Foreground());
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_0(), RootProgress());
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
+    // - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Layer 2
+    // Ellipse Path 1
+    CompositionSpriteShape SpriteShape_01()
+    {
+        // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
+        const auto result = CreateSpriteShape(Ellipse_14p188(), { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
+        result.StrokeBrush(_themeColor_Foreground);
+        result.StrokeThickness(2.0F);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
+    // Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
+    // Path 2
+    CompositionSpriteShape SpriteShape_02()
+    {
+        const auto result = _c.CreateSpriteShape(_pathGeometry);
+        result.CenterPoint({ 13.566F, 278.109985F });
+        result.Scale({ 3.0F, 3.0F });
+        result.FillBrush(_themeColor_Foreground);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_1(), _rootProgress);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
+    // - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Layer 2
+    // Ellipse Path 1
+    CompositionSpriteShape SpriteShape_03()
+    {
+        // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
+        const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
+        result.StrokeBrush(_themeColor_Foreground);
+        result.StrokeThickness(2.0F);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
+    // Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
+    // Path 2
+    CompositionSpriteShape SpriteShape_04()
+    {
+        const auto result = _c.CreateSpriteShape(_pathGeometry);
+        result.CenterPoint({ 13.566F, 278.109985F });
+        result.Scale({ 3.0F, 3.0F });
+        result.FillBrush(_themeColor_Foreground);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_2(), _rootProgress);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
+    // - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Layer 2
+    // Ellipse Path 1
+    CompositionSpriteShape SpriteShape_05()
+    {
+        // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
+        const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
+        result.StrokeBrush(_themeColor_Foreground);
+        result.StrokeThickness(2.0F);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
+    // Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
+    // Path 2
+    CompositionSpriteShape SpriteShape_06()
+    {
+        const auto result = _c.CreateSpriteShape(_pathGeometry);
+        result.CenterPoint({ 13.566F, 278.109985F });
+        result.Scale({ 3.0F, 3.0F });
+        result.FillBrush(_themeColor_Foreground);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_3(), _rootProgress);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
+    // - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Layer 2
+    // Ellipse Path 1
+    CompositionSpriteShape SpriteShape_07()
+    {
+        // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
+        const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
+        result.StrokeBrush(_themeColor_Foreground);
+        result.StrokeThickness(2.0F);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
+    // Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
+    // Path 2
+    CompositionSpriteShape SpriteShape_08()
+    {
+        const auto result = _c.CreateSpriteShape(_pathGeometry);
+        result.CenterPoint({ 13.566F, 278.109985F });
+        result.Scale({ 3.0F, 3.0F });
+        result.FillBrush(_themeColor_Foreground);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_4(), _rootProgress);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
+    // - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Layer 2
+    // Ellipse Path 1
+    CompositionSpriteShape SpriteShape_09()
+    {
+        // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
+        const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
+        result.StrokeBrush(_themeColor_Foreground);
+        result.StrokeThickness(2.0F);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
+    // Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
+    // Path 2
+    CompositionSpriteShape SpriteShape_10()
+    {
+        const auto result = _c.CreateSpriteShape(_pathGeometry);
+        result.CenterPoint({ 13.566F, 278.109985F });
+        result.Scale({ 3.0F, 3.0F });
+        result.FillBrush(_themeColor_Foreground);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_5(), _rootProgress);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
+    // - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Layer 2
+    // Ellipse Path 1
+    CompositionSpriteShape SpriteShape_11()
+    {
+        // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
+        const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
+        result.StrokeBrush(_themeColor_Foreground);
+        result.StrokeThickness(2.0F);
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
+    ContainerVisual ContainerVisual_0()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(InsetClip_0());
+        result.IsVisible(false);
+        result.Size({ 48.0F, 48.0F });
+        // Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
+        // Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
+        result.Children().InsertAtTop(ShapeVisual_0());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_0(), _rootProgress);
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
+    ContainerVisual ContainerVisual_1()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.IsVisible(false);
+        result.Size({ 48.0F, 48.0F });
+        // Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
+        // Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
+        result.Children().InsertAtTop(ShapeVisual_1());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_1(), _rootProgress);
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
+    ContainerVisual ContainerVisual_2()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.IsVisible(false);
+        result.Size({ 48.0F, 48.0F });
+        // Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
+        // Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
+        result.Children().InsertAtTop(ShapeVisual_2());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_2(), _rootProgress);
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
+    ContainerVisual ContainerVisual_3()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.IsVisible(false);
+        result.Size({ 48.0F, 48.0F });
+        // Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
+        // Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
+        result.Children().InsertAtTop(ShapeVisual_3());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_3(), _rootProgress);
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
+    ContainerVisual ContainerVisual_4()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.IsVisible(false);
+        result.Size({ 48.0F, 48.0F });
+        // Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
+        // Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
+        result.Children().InsertAtTop(ShapeVisual_4());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_4(), _rootProgress);
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
+    ContainerVisual ContainerVisual_5()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.Size({ 48.0F, 48.0F });
+        // Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
+        // Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
+        result.Children().InsertAtTop(ShapeVisual_5());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_5(), _rootProgress);
+        return result;
+    }
+
+    // The root of the composition.
+    ContainerVisual Root()
+    {
+        const auto result = _root = _c.CreateContainerVisual();
+        const auto propertySet = result.Properties();
+        propertySet.InsertScalar(L"Progress", 0.0F);
+        propertySet.InsertScalar(L"t0", 0.0F);
+        propertySet.InsertScalar(L"t1", 0.0F);
+        propertySet.InsertScalar(L"t2", 0.0F);
+        propertySet.InsertScalar(L"t3", 0.0F);
+        propertySet.InsertScalar(L"t4", 0.0F);
+        propertySet.InsertScalar(L"t5", 0.0F);
+        const auto children = result.Children();
+        // PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
+        children.InsertAtTop(ContainerVisual_0());
+        // PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
+        children.InsertAtTop(ContainerVisual_1());
+        // PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
+        children.InsertAtTop(ContainerVisual_2());
+        // PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
+        children.InsertAtTop(ContainerVisual_3());
+        // PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
+        children.InsertAtTop(ContainerVisual_4());
+        // PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
+        children.InsertAtTop(ContainerVisual_5());
+        StartProgressBoundAnimation(propertySet, L"t0", t0ScalarAnimation_0_to_1(), _rootProgress);
+        StartProgressBoundAnimation(propertySet, L"t1", t1ScalarAnimation_0_to_1(), _rootProgress);
+        StartProgressBoundAnimation(propertySet, L"t2", t2ScalarAnimation_0_to_1(), _rootProgress);
+        StartProgressBoundAnimation(propertySet, L"t3", t3ScalarAnimation_0_to_1(), _rootProgress);
+        StartProgressBoundAnimation(propertySet, L"t4", t4ScalarAnimation_0_to_1(), _rootProgress);
+        StartProgressBoundAnimation(propertySet, L"t5", t5ScalarAnimation_0_to_1(), _rootProgress);
+        return result;
+    }
+
+    CubicBezierEasingFunction CubicBezierEasingFunction_0()
+    {
+        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
+    }
+
+    CubicBezierEasingFunction CubicBezierEasingFunction_1()
+    {
+        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.550000012F, 0.0F }, { 0.75F, 1.0F });
+    }
+
+    CubicBezierEasingFunction CubicBezierEasingFunction_2()
+    {
+        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F });
+    }
+
+    CubicBezierEasingFunction CubicBezierEasingFunction_3()
+    {
+        return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.449999988F, 1.0F });
+    }
+
+    ExpressionAnimation RootProgress()
+    {
+        const auto result = _rootProgress = _c.CreateExpressionAnimation(L"_.Progress");
+        result.SetReferenceParameter(L"_", _root);
+        return result;
+    }
+
+    InsetClip InsetClip_0()
+    {
+        const auto result = _insetClip_0 = _c.CreateInsetClip();
+        return result;
+    }
+
+    // Scale
+    ScalarKeyFrameAnimation ScalarAnimation_1_to_1p2()
+    {
+        const auto result = _scalarAnimation_1_to_1p2 = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.180000007F, 1.20000005F, _cubicBezierEasingFunction_0);
+        return result;
+    }
+
+    // Scale
+    ScalarKeyFrameAnimation ScalarAnimation_1_to_1p25()
+    {
+        const auto result = _scalarAnimation_1_to_1p25 = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.200000003F, 1.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.280000001F, 1.25F, _cubicBezierEasingFunction_3);
+        return result;
+    }
+
+    // Scale
+    ScalarKeyFrameAnimation ScalarAnimation_1p2_to_1()
+    {
+        const auto result = _scalarAnimation_1p2_to_1 = CreateScalarKeyFrameAnimation(0.0F, 1.20000005F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.300000012F, 1.20000005F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.479999989F, 1.0F, _cubicBezierEasingFunction_0);
+        return result;
+    }
+
+    // Scale
+    ScalarKeyFrameAnimation ScalarAnimation_1p2_to_1p25()
+    {
+        const auto result = _scalarAnimation_1p2_to_1p25 = CreateScalarKeyFrameAnimation(0.0F, 1.20000005F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.5F, 1.20000005F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.579999983F, 1.25F, CubicBezierEasingFunction_3());
+        return result;
+    }
+
+    // Scale
+    ScalarKeyFrameAnimation ScalarAnimation_1p25_to_1()
+    {
+        const auto result = _scalarAnimation_1p25_to_1 = CreateScalarKeyFrameAnimation(0.0F, 1.25F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.600000024F, 1.25F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.699999988F, 0.949999988F, CubicBezierEasingFunction_1());
+        result.InsertKeyFrame(0.879999995F, 1.0F, CubicBezierEasingFunction_2());
+        return result;
+    }
+
+    // Scale
+    ScalarKeyFrameAnimation ScalarAnimation_1p25_to_1p2()
+    {
+        const auto result = _scalarAnimation_1p25_to_1p2 = CreateScalarKeyFrameAnimation(0.0F, 1.25F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.899999976F, 1.25F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.980000019F, 1.20000005F, CubicBezierEasingFunction_0());
+        return result;
+    }
+
+    ScalarKeyFrameAnimation t0ScalarAnimation_0_to_1()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.900000036F, 0.0F, _stepThenHoldEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.979999959F, 1.0F, _cubicBezierEasingFunction_0);
+        return result;
+    }
+
+    ScalarKeyFrameAnimation t1ScalarAnimation_0_to_1()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.600000083F, 0.0F, _stepThenHoldEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.699999928F, 1.0F, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.699999988F, 0.0F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.879999936F, 1.0F, _cubicBezierEasingFunction_2);
+        return result;
+    }
+
+    ScalarKeyFrameAnimation t2ScalarAnimation_0_to_1()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.50000006F, 0.0F, _stepThenHoldEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.579999924F, 1.0F, _cubicBezierEasingFunction_3);
+        return result;
+    }
+
+    ScalarKeyFrameAnimation t3ScalarAnimation_0_to_1()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.300000042F, 0.0F, _stepThenHoldEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.479999959F, 1.0F, _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.833000004F, 0.833000004F }));
+        return result;
+    }
+
+    ScalarKeyFrameAnimation t4ScalarAnimation_0_to_1()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.200000018F, 0.0F, _stepThenHoldEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.279999971F, 1.0F, _cubicBezierEasingFunction_3);
+        return result;
+    }
+
+    ScalarKeyFrameAnimation t5ScalarAnimation_0_to_1()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.179999992F, 1.0F, _cubicBezierEasingFunction_0);
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
+    // Layer aggregator
+    ShapeVisual ShapeVisual_0()
+    {
+        const auto result = _c.CreateShapeVisual();
+        result.Size({ 48.0F, 48.0F });
+        const auto shapes = result.Shapes();
+        // Layer: Layer 2
+        shapes.Append(SpriteShape_00());
+        // Layer: Layer 2
+        shapes.Append(ContainerShape_0());
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
+    // Layer aggregator
+    ShapeVisual ShapeVisual_1()
+    {
+        const auto result = _c.CreateShapeVisual();
+        result.Size({ 48.0F, 48.0F });
+        const auto shapes = result.Shapes();
+        // Layer: Layer 2
+        shapes.Append(SpriteShape_02());
+        // Layer: Layer 2
+        shapes.Append(ContainerShape_1());
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
+    // Layer aggregator
+    ShapeVisual ShapeVisual_2()
+    {
+        const auto result = _c.CreateShapeVisual();
+        result.Size({ 48.0F, 48.0F });
+        const auto shapes = result.Shapes();
+        // Layer: Layer 2
+        shapes.Append(SpriteShape_04());
+        // Layer: Layer 2
+        shapes.Append(ContainerShape_2());
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
+    // Layer aggregator
+    ShapeVisual ShapeVisual_3()
+    {
+        const auto result = _c.CreateShapeVisual();
+        result.Size({ 48.0F, 48.0F });
+        const auto shapes = result.Shapes();
+        // Layer: Layer 2
+        shapes.Append(SpriteShape_06());
+        // Layer: Layer 2
+        shapes.Append(ContainerShape_3());
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
+    // Layer aggregator
+    ShapeVisual ShapeVisual_4()
+    {
+        const auto result = _c.CreateShapeVisual();
+        result.Size({ 48.0F, 48.0F });
+        const auto shapes = result.Shapes();
+        // Layer: Layer 2
+        shapes.Append(SpriteShape_08());
+        // Layer: Layer 2
+        shapes.Append(ContainerShape_4());
+        return result;
+    }
+
+    // PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
+    // Layer aggregator
+    ShapeVisual ShapeVisual_5()
+    {
+        const auto result = _c.CreateShapeVisual();
+        result.Size({ 48.0F, 48.0F });
+        const auto shapes = result.Shapes();
+        // Layer: Layer 2
+        shapes.Append(SpriteShape_10());
+        // Layer: Layer 2
+        shapes.Append(ContainerShape_5());
+        return result;
+    }
+
+    StepEasingFunction HoldThenStepEasingFunction()
+    {
+        const auto result = _holdThenStepEasingFunction = _c.CreateStepEasingFunction();
+        result.IsFinalStepSingleFrame(true);
+        return result;
+    }
+
+    StepEasingFunction StepThenHoldEasingFunction()
+    {
+        const auto result = _stepThenHoldEasingFunction = _c.CreateStepEasingFunction();
+        result.IsInitialStepSingleFrame(true);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
+    // - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Layer 2
+    // Offset
+    Vector2KeyFrameAnimation OffsetVector2Animation_0()
+    {
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 3.61599994F, -247.292007F }, StepThenHoldEasingFunction());
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.899999976F, { 3.61599994F, -247.292007F }, HoldThenStepEasingFunction());
+        result.InsertExpressionKeyFrame(0.979999959F, L"(Pow(1-_.t0,3)*Vector2(3.616,-247.292))+(3*Square(1-_.t0)*_.t0*Vector2(3.72,-247.396))+(3*(1-_.t0)*Square(_.t0)*Vector2(4.137,-247.813))+(Pow(_.t0,3)*Vector2(4.241,-247.917))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.980000019F, { 4.24100018F, -247.917007F }, _stepThenHoldEasingFunction);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
+    // - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Layer 2
+    // Offset
+    Vector2KeyFrameAnimation OffsetVector2Animation_1()
+    {
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 3.61599994F, -247.292007F }, _stepThenHoldEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.600000024F, { 3.61599994F, -247.292007F }, _holdThenStepEasingFunction);
+        result.InsertExpressionKeyFrame(0.699999928F, L"(Pow(1-_.t1,3)*Vector2(3.616,-247.292))+(3*Square(1-_.t1)*_.t1*Vector2(4.074,-247.75))+(3*(1-_.t1)*Square(_.t1)*Vector2(5.949,-249.625))+(Pow(_.t1,3)*Vector2(6.366,-250.042))", _stepThenHoldEasingFunction);
+        result.InsertExpressionKeyFrame(0.879999936F, L"(Pow(1-_.t1,3)*Vector2(6.366,-250.042))+(3*Square(1-_.t1)*_.t1*Vector2(6.783,-250.459))+(3*(1-_.t1)*Square(_.t1)*Vector2(6.158,-249.834))+(Pow(_.t1,3)*Vector2(6.116,-249.792))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.879999995F, { 6.11600018F, -249.792007F }, _stepThenHoldEasingFunction);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
+    // - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
+    // Layer: Layer 2
+    // Offset
+    Vector2KeyFrameAnimation OffsetVector2Animation_2()
+    {
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 4.24100018F, -247.917007F }, _stepThenHoldEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.5F, { 4.24100018F, -247.917007F }, _holdThenStepEasingFunction);
+        result.InsertExpressionKeyFrame(0.579999924F, L"(Pow(1-_.t2,3)*Vector2(4.241,-247.917))+(3*Square(1-_.t2)*_.t2*Vector2(4.137,-247.813))+(3*(1-_.t2)*Square(_.t2)*Vector2(3.72,-247.396))+(Pow(_.t2,3)*Vector2(3.616,-247.292))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.579999983F, { 3.61599994F, -247.292007F }, _stepThenHoldEasingFunction);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
+    // - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Layer 2
+    // Offset
+    Vector2KeyFrameAnimation OffsetVector2Animation_3()
+    {
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 4.24100018F, -247.917007F }, _stepThenHoldEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.300000012F, { 4.24100018F, -247.917007F }, _holdThenStepEasingFunction);
+        result.InsertExpressionKeyFrame(0.479999959F, L"(Pow(1-_.t3,3)*Vector2(4.241,-247.917))+(3*Square(1-_.t3)*_.t3*Vector2(4.553,-248.229))+(3*(1-_.t3)*Square(_.t3)*Vector2(5.804,-249.48))+(Pow(_.t3,3)*Vector2(6.116,-249.792))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.479999989F, { 6.11600018F, -249.792007F }, _stepThenHoldEasingFunction);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
+    // - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Layer 2
+    // Offset
+    Vector2KeyFrameAnimation OffsetVector2Animation_4()
+    {
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 6.11600018F, -249.792007F }, _stepThenHoldEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.200000003F, { 6.11600018F, -249.792007F }, _holdThenStepEasingFunction);
+        result.InsertExpressionKeyFrame(0.279999971F, L"(Pow(1-_.t4,3)*Vector2(6.116,-249.792))+(3*Square(1-_.t4)*_.t4*Vector2(5.699,-249.375))+(3*(1-_.t4)*Square(_.t4)*Vector2(4.033,-247.709))+(Pow(_.t4,3)*Vector2(3.616,-247.292))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.280000001F, { 3.61599994F, -247.292007F }, _stepThenHoldEasingFunction);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
+    // - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Layer 2
+    // Offset
+    Vector2KeyFrameAnimation OffsetVector2Animation_5()
+    {
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 6.11600018F, -249.792007F }, _holdThenStepEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertExpressionKeyFrame(0.179999992F, L"(Pow(1-_.t5,3)*Vector2(6.116,-249.792))+(3*Square(1-_.t5)*_.t5*Vector2(5.804,-249.48))+(3*(1-_.t5)*Square(_.t5)*Vector2(4.553,-248.229))+(Pow(_.t5,3)*Vector2(4.241,-247.917))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.180000007F, { 4.24100018F, -247.917007F }, _stepThenHoldEasingFunction);
+        return result;
+    }
+
+    static IGeometrySource2D CanvasGeometryToIGeometrySource2D(winrt::com_ptr<CanvasGeometry> geo)
+    {
+        return geo.as<IGeometrySource2D>();
+    }
+
+public:
+    AnimatedFindVisualSource_AnimatedVisual(
+        Compositor compositor,
+        CompositionPropertySet themeProperties)
+        : _c{compositor}
+        , _themeProperties{themeProperties}
+        , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
+    {
+        winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.put()));
+        const auto _ = Root();
+    }
+
+    void Close()
+    {
+        if (_root)
         {
-            _themeProperties = compositor.CreatePropertySet();
-            _themeProperties.InsertVector4(L"Foreground", ColorAsVector4((Color)_themeForeground));
+            _root.Close();
         }
-
-        return _themeProperties;
     }
 
-    Color AnimatedFindVisualSource::Foreground()
+    TimeSpan Duration() const
     {
-        return _themeForeground;
+        return TimeSpan{ c_durationTicks };
     }
 
-    void AnimatedFindVisualSource::Foreground(Color value)
+    Visual RootVisual() const
+    {
+        return _root;
+    }
+
+    winrt::float2 Size() const
+    {
+        return { 48.0F, 48.0F };
+    }
+
+    static bool IsRuntimeCompatible()
+    {
+        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 7);
+    }
+};
+
+winrt::float4 AnimatedFindVisualSource::ColorAsVector4(Color color)
+{
+    return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
+}
+
+CompositionPropertySet AnimatedFindVisualSource::EnsureThemeProperties(Compositor compositor)
+{
+    if (_themeProperties == nullptr)
+    {
+        _themeProperties = compositor.CreatePropertySet();
+        _themeProperties.InsertVector4(L"Foreground", ColorAsVector4((Color)_themeForeground));
+    }
+
+    return _themeProperties;
+}
+
+Color AnimatedFindVisualSource::Foreground()
+{
+    return _themeForeground;
+}
+
+void AnimatedFindVisualSource::Foreground(Color value)
+{
+    _themeForeground = value;
+    if (_themeProperties != nullptr)
+    {
+        _themeProperties.InsertVector4(L"Foreground", ColorAsVector4((Color)_themeForeground));
+    }
+}
+
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedFindVisualSource::TryCreateAnimatedVisual(
+    Compositor const& compositor)
+{
+    IInspectable diagnostics = nullptr;
+    return TryCreateAnimatedVisual(compositor, diagnostics);
+}
+
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedFindVisualSource::TryCreateAnimatedVisual(
+    Compositor const& compositor,
+    IInspectable& diagnostics)
+{
+    const auto _ = EnsureThemeProperties(compositor);
+    diagnostics = nullptr;
+
+    if (AnimatedFindVisualSource_AnimatedVisual::IsRuntimeCompatible())
+    {
+        return winrt::make<AnimatedFindVisualSource_AnimatedVisual>(
+            compositor,
+            _themeProperties);
+    }
+
+    return nullptr;
+}
+
+double AnimatedFindVisualSource::FrameCount()
+{
+    return 50.0;
+}
+
+double AnimatedFindVisualSource::Framerate()
+{
+    return 60.0;
+}
+
+TimeSpan AnimatedFindVisualSource::Duration()
+{
+    return TimeSpan{ 8333333L };
+}
+
+double AnimatedFindVisualSource::FrameToProgress(double frameNumber)
+{
+    return frameNumber / 50.0;
+}
+
+winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedFindVisualSource::Markers()
+{
+    return winrt::single_threaded_map<winrt::hstring, double>(
+        std::map<winrt::hstring, double>
+        {
+            { L"NormalToPointerOver_Start", 0.0 },
+            { L"NormalToPointerOver_End", 0.181 },
+            { L"NormalToPressed_Start", 0.201 },
+            { L"NormalToPressed_End", 0.281 },
+            { L"PointerOverToNormal_Start", 0.301 },
+            { L"PointerOverToNormal_End", 0.481 },
+            { L"PointerOverToPressed_Start", 0.501 },
+            { L"PointerOverToPressed_End", 0.581 },
+            { L"PressedToNormal_Start", 0.601 },
+            { L"PressedToNormal_End", 0.881 },
+            { L"PressedToPointerOver_Start", 0.901 },
+            { L"PressedToPointerOver_End", 0.981 },
+        }
+    ).GetView();
+}
+
+void AnimatedFindVisualSource::SetColorProperty(hstring const& propertyName, Color value)
+{
+    if (propertyName == L"Foreground")
     {
         _themeForeground = value;
-        if (_themeProperties != nullptr)
-        {
-            _themeProperties.InsertVector4(L"Foreground", ColorAsVector4((Color)_themeForeground));
-        }
     }
-
-    winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedFindVisualSource::TryCreateAnimatedVisual(
-        Compositor const& compositor)
+    else
     {
-        IInspectable diagnostics = nullptr;
-        return TryCreateAnimatedVisual(compositor, diagnostics);
+        return;
     }
 
-    winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedFindVisualSource::TryCreateAnimatedVisual(
-        Compositor const& compositor,
-        IInspectable& diagnostics)
+    if (_themeProperties != nullptr)
     {
-        const auto _ = EnsureThemeProperties(compositor);
-        diagnostics = nullptr;
-
-        if (AnimatedFindVisualSource_AnimatedVisual_UAPv8::IsRuntimeCompatible())
-        {
-            return winrt::make<AnimatedFindVisualSource_AnimatedVisual_UAPv8>(
-                compositor,
-                _themeProperties);
-        }
-
-        if (AnimatedFindVisualSource_AnimatedVisual_UAPv7::IsRuntimeCompatible())
-        {
-            return winrt::make<AnimatedFindVisualSource_AnimatedVisual_UAPv7>(
-                compositor,
-                _themeProperties);
-        }
-
-        return nullptr;
+        _themeProperties.InsertVector4(propertyName, ColorAsVector4(value));
     }
+}
 
-    double AnimatedFindVisualSource::FrameCount()
-    {
-        return 80.0;
-    }
-
-    double AnimatedFindVisualSource::Framerate()
-    {
-        return 60.0;
-    }
-
-    TimeSpan AnimatedFindVisualSource::Duration()
-    {
-        return TimeSpan{ 13333333L };
-    }
-
-    double AnimatedFindVisualSource::FrameToProgress(double frameNumber)
-    {
-        return frameNumber / 80.0;
-    }
-
-    winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedFindVisualSource::Markers()
-    {
-        return winrt::single_threaded_map<winrt::hstring, double>(
-            std::map<winrt::hstring, double>
-            {
-                { L"NormalToPointerOver_Start", 0.0 },
-                { L"NormalToPointerOver_End", 0.113125 },
-                { L"NormalToPressed_Start", 0.125625 },
-                { L"NormalToPressed_End", 0.238125 },
-                { L"PointerOverToNormal_Start", 0.250625 },
-                { L"PointerOverToNormal_End", 0.363125 },
-                { L"PointerOverToPressed_Start", 0.375625 },
-                { L"PointerOverToPressed_End", 0.488125 },
-                { L"PressedToNormal_Start", 0.500625 },
-                { L"PressedToNormal_End", 0.738125 },
-                { L"PressedToPointerOver_Start", 0.750625 },
-                { L"PressedToPointerOver_End", 0.988125 },
-            }
-        ).GetView();
-    }
-
-    void AnimatedFindVisualSource::SetColorProperty(hstring const& propertyName, Color value)
-    {
-        if (propertyName == L"Foreground")
-        {
-            _themeForeground = value;
-        }
-        else
-        {
-            return;
-        }
-
-        if (_themeProperties != nullptr)
-        {
-            _themeProperties.InsertVector4(propertyName, ColorAsVector4(value));
-        }
-    }
-
-    void AnimatedFindVisualSource::SetScalarProperty(hstring const&, double)
-    {
-    }
-} // end namespace
+void AnimatedFindVisualSource::SetScalarProperty(hstring const&, double)
+{
+}
