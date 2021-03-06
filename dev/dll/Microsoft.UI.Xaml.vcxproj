@@ -588,15 +588,6 @@
     <Natvis Include="$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.natvis">
     </Natvis>
     -->
-    <Page Update="D:\repos\microsoft-ui-xaml\dev\ProgressBar\ProgressBar_themeresources.xaml">
-      <FileType>Document</FileType>
-    </Page>
-    <Page Update="T:\repos\microsoft-ui-xaml\dev\Breadcrumb\BreadcrumbBar.xaml">
-      <FileType>Document</FileType>
-    </Page>
-    <Page Update="T:\repos\microsoft-ui-xaml\dev\Breadcrumb\BreadcrumbBar_themeresources.xaml">
-      <FileType>Document</FileType>
-    </Page>
   </ItemGroup>
   <Import Project="$(CppTargetsFilePath)" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" />
