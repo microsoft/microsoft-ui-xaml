@@ -237,12 +237,14 @@
       <DisableSpecificWarnings>4505;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>
         %(AdditionalIncludeDirectories);
+        $(WindowsSDK_IncludePath)\winrt;
         $(MSBuildProjectDirectory)\..\inc;
         $(MSBuildProjectDirectory)\..\Generated;
         $(OutDir);
       </AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>
-        $(GeneratedFilesDir)\winrt;
+        $(MSBuildProjectDirectory);
+        $(GeneratedFilesDir);
         $(GeneratedFilesDir)\Automation\Peers;
         $(GeneratedFilesDir)\Controls;
         $(GeneratedFilesDir)\Controls\Primitives;
