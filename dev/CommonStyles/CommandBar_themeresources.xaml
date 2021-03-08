@@ -13,7 +13,7 @@
             <x:Double x:Key="CommandBarOverflowMaxHeight">198</x:Double>
             <StaticResource x:Key="CommandBarBackground" ResourceKey="ControlFillColorTransparentBrush" />
             <contract7NotPresent:StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="SolidBackgroundFillColorBaseBrush" />
-            <contract7Present:StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+            <contract7Present:StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
             <StaticResource x:Key="CommandBarBorderBrushOpen" ResourceKey="CardStrokeColorDefaultSolidBrush" />
             <Thickness x:Key="CommandBarBorderThicknessOpen">1</Thickness>
             <StaticResource x:Key="CommandBarForeground" ResourceKey="TextFillColorPrimaryBrush" />
@@ -62,7 +62,7 @@
             <x:Double x:Key="CommandBarOverflowMaxHeight">198</x:Double>
             <StaticResource x:Key="CommandBarBackground" ResourceKey="ControlFillColorTransparentBrush" />
             <contract7NotPresent:StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="SolidBackgroundFillColorBaseBrush" />
-            <contract7Present:StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+            <contract7Present:StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
             <StaticResource x:Key="CommandBarBorderBrushOpen" ResourceKey="CardStrokeColorDefaultSolidBrush" />
             <Thickness x:Key="CommandBarBorderThicknessOpen">1</Thickness>
             <StaticResource x:Key="CommandBarForeground" ResourceKey="TextFillColorPrimaryBrush" />
