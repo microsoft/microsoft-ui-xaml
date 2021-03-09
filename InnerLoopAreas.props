@@ -4,7 +4,7 @@
   <PropertyGroup Condition="$(SolutionName) == 'MUXControlsInnerLoop'">
     <!-- Features to include for inner loop build for example:-->
     <!-- <FeatureRepeaterEnabled>true</FeatureRepeaterEnabled> -->
-
+    
     <!-- Note that after modifying the file, you will need to close and reopen the solution -->
     <!-- for changes to be picked up correctly by Visual Studio and MSBUILD -->
   </PropertyGroup>
