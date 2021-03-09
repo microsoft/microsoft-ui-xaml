@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedBackVisualSource.json
 //       
 //       Input file:
-//           AnimatedBackVisualSource.json (27475 bytes created 11:16-08:00 Mar 5 2021)
+//           AnimatedBackVisualSource.json (27247 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -52,6 +52,14 @@
 #include <d2d1_1.h>
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
+#ifdef BUILD_WINDOWS
+namespace ABI
+{
+#include <Windows.Graphics.Effects.Interop.h>
+}
+#else
+#include <Windows.Graphics.Effects.Interop.h>
+#endif
 #include <winrt/Windows.Graphics.Effects.h>
 
 using namespace winrt::Microsoft::UI::Xaml::Controls;
@@ -70,7 +78,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
-    ABI::Windows::Graphics::IGeometrySource2DInterop>
+    ::ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
     winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 

@@ -10,7 +10,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedFindVisualSource.json
 //       
 //       Input file:
-//           AnimatedFindVisualSource.json (23808 bytes created 11:16-08:00 Mar 5 2021)
+//           AnimatedFindVisualSource.json (23604 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -42,16 +42,16 @@
 // | PressedToPointerOver_Start | M_PressedToPointerOver_Start |    60 | 1000.0 | 0.750625014F |
 // | PressedToPointerOver_End   | M_PressedToPointerOver_End   |    79 | 1316.7 | 0.988125026F |
 // ---------------------------------------------------------------------------------------------
-// _______________________________________________________
-// | Theme property |  Accessor  | Type  | Default value |
-// |________________|____________|_______|_______________|
-// | Foreground     | Foreground | Color |   #FF060808   |
-// -------------------------------------------------------
+// _________________________________________________________
+// | Theme property |  Accessor  | Type  |  Default value  |
+// |________________|____________|_______|_________________|
+// | Foreground     | Foreground | Color | #FF000000 Black |
+// ---------------------------------------------------------
 class AnimatedFindVisualSource
     : public winrt::implementation::AnimatedFindVisualSourceT<AnimatedFindVisualSource>
 {
     winrt::Windows::UI::Composition::CompositionPropertySet _themeProperties{ nullptr };
-    winrt::Windows::UI::Color _themeForeground{ 0xFF, 0x06, 0x08, 0x08 };
+    winrt::Windows::UI::Color _themeForeground{ 0xFF, 0x00, 0x00, 0x00 };
     winrt::Windows::UI::Composition::CompositionPropertySet EnsureThemeProperties(winrt::Windows::UI::Composition::Compositor compositor);
 
     static winrt::Windows::Foundation::Numerics::float4 ColorAsVector4(winrt::Windows::UI::Color color);
@@ -96,7 +96,7 @@ public:
     static constexpr float M_PressedToPointerOver_End{ 0.988125026F };
 
     // Theme property: Foreground.
-    static inline const winrt::Windows::UI::Color c_themeForeground{ 0xFF, 0x06, 0x08, 0x08 };
+    static inline const winrt::Windows::UI::Color c_themeForeground{ 0xFF, 0x00, 0x00, 0x00 };
 
 
     winrt::Windows::UI::Color Foreground();

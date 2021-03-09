@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedFindVisualSource.json
 //       
 //       Input file:
-//           AnimatedFindVisualSource.json (23808 bytes created 11:16-08:00 Mar 5 2021)
+//           AnimatedFindVisualSource.json (23604 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -21,7 +21,7 @@
 // __________________________________________________________
 // |       Object stats       | UAP v8 count | UAP v7 count |
 // |__________________________|______________|______________|
-// | All CompositionObjects   |          391 |          231 |
+// | All CompositionObjects   |          403 |          231 |
 // |--------------------------+--------------+--------------|
 // | Expression animators     |           62 |           44 |
 // | KeyFrame animators       |           57 |           39 |
@@ -36,7 +36,7 @@
 // | ContainerVisuals         |           19 |            7 |
 // | ShapeVisuals             |           18 |           12 |
 // |--------------------------+--------------+--------------|
-// | ContainerShapes          |            6 |            6 |
+// | ContainerShapes          |           12 |            6 |
 // | CompositionSpriteShapes  |           18 |           12 |
 // |--------------------------+--------------+--------------|
 // | Brushes                  |           20 |            1 |
@@ -44,7 +44,6 @@
 // | CompositionVisualSurface |           12 |            - |
 // ----------------------------------------------------------
 #include "pch.h"
-#include <winrt/Windows.Foundation.h>
 #include "AnimatedVisuals\AnimatedFindVisualSource.h"
 #include <winrt/Windows.Foundation.Metadata.h>
 #include <winrt/Windows.Foundation.Collections.h>
@@ -53,10 +52,16 @@
 #include <d2d1_1.h>
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
+#ifdef BUILD_WINDOWS
+namespace ABI
+{
+#include <Windows.Graphics.Effects.Interop.h>
+}
+#else
+#include <Windows.Graphics.Effects.Interop.h>
+#endif
 #include <winrt/Windows.Graphics.Effects.h>
 #include <vector>
-
-#include <Windows.Graphics.Effects.Interop.h>
 
 using namespace winrt::Microsoft::UI::Xaml::Controls;
 using namespace winrt::Windows::Foundation;
@@ -74,7 +79,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
-    ABI::Windows::Graphics::IGeometrySource2DInterop>
+    ::ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
     winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 
@@ -444,9 +449,25 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         return result;
     }
 
+    // - - - - - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
+    // - - - - - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver
+    // Scale(1,1,0)
+    // Shape tree root for layer: Shape Layer 3
+    CompositionContainerShape ContainerShape_00()
+    {
+        const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 3.81299996F, -3.93799996F });
+        result.Offset({ 24.0F, 24.0F });
+        // Transforms: Shape Layer 3 Scale:1.004,1.004
+        result.Shapes().Append(SpriteShape_01());
+        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p3_to_1p2(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p3_to_1p2, _rootProgress);
+        return result;
+    }
+
     // - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
     // Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-    CompositionContainerShape ContainerShape_0()
+    CompositionContainerShape ContainerShape_01()
     {
         const auto result = _c.CreateContainerShape();
         result.CenterPoint({ 3.81299996F, -3.93799996F });
@@ -458,9 +479,24 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         return result;
     }
 
+    // - - - - - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
+    // - - - - - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
+    // Shape tree root for layer: Shape Layer 3
+    CompositionContainerShape ContainerShape_02()
+    {
+        const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 3.81299996F, -3.93799996F });
+        result.Offset({ 24.0F, 24.0F });
+        // Transforms: Shape Layer 3 Scale:1.004,1.004
+        result.Shapes().Append(SpriteShape_04());
+        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p3_to_1(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p3_to_1, _rootProgress);
+        return result;
+    }
+
     // - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
     // Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-    CompositionContainerShape ContainerShape_1()
+    CompositionContainerShape ContainerShape_03()
     {
         const auto result = _c.CreateContainerShape();
         result.CenterPoint({ 3.81299996F, -3.93799996F });
@@ -472,9 +508,25 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         return result;
     }
 
+    // - - - - - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
+    // - - - - - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed
+    // Scale(1,1,0)
+    // Shape tree root for layer: Shape Layer 3
+    CompositionContainerShape ContainerShape_04()
+    {
+        const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 3.81299996F, -3.93799996F });
+        result.Offset({ 24.0F, 24.0F });
+        // Transforms: Shape Layer 3 Scale:1.004,1.004
+        result.Shapes().Append(SpriteShape_07());
+        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p2_to_1p3(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p2_to_1p3, _rootProgress);
+        return result;
+    }
+
     // - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
     // Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-    CompositionContainerShape ContainerShape_2()
+    CompositionContainerShape ContainerShape_05()
     {
         const auto result = _c.CreateContainerShape();
         result.CenterPoint({ 3.81299996F, -3.93799996F });
@@ -486,9 +538,25 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         return result;
     }
 
+    // - - - - - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
+    // - - - - - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal
+    // Scale(1,1,0)
+    // Shape tree root for layer: Shape Layer 3
+    CompositionContainerShape ContainerShape_06()
+    {
+        const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 3.81299996F, -3.93799996F });
+        result.Offset({ 24.0F, 24.0F });
+        // Transforms: Shape Layer 3 Scale:1.004,1.004
+        result.Shapes().Append(SpriteShape_10());
+        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p2_to_1(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p2_to_1, _rootProgress);
+        return result;
+    }
+
     // - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
     // Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-    CompositionContainerShape ContainerShape_3()
+    CompositionContainerShape ContainerShape_07()
     {
         const auto result = _c.CreateContainerShape();
         result.CenterPoint({ 3.81299996F, -3.93799996F });
@@ -500,9 +568,24 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         return result;
     }
 
+    // - - - - - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
+    // - - - - - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
+    // Shape tree root for layer: Shape Layer 3
+    CompositionContainerShape ContainerShape_08()
+    {
+        const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 3.81299996F, -3.93799996F });
+        result.Offset({ 24.0F, 24.0F });
+        // Transforms: Shape Layer 3 Scale:1.004,1.004
+        result.Shapes().Append(SpriteShape_13());
+        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1_to_1p3(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_1p3, _rootProgress);
+        return result;
+    }
+
     // - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
     // Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-    CompositionContainerShape ContainerShape_4()
+    CompositionContainerShape ContainerShape_09()
     {
         const auto result = _c.CreateContainerShape();
         result.CenterPoint({ 3.81299996F, -3.93799996F });
@@ -514,9 +597,25 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         return result;
     }
 
+    // - - - - - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
+    // - - - - - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver
+    // Scale(1,1,0)
+    // Shape tree root for layer: Shape Layer 3
+    CompositionContainerShape ContainerShape_10()
+    {
+        const auto result = _c.CreateContainerShape();
+        result.CenterPoint({ 3.81299996F, -3.93799996F });
+        result.Offset({ 24.0F, 24.0F });
+        // Transforms: Shape Layer 3 Scale:1.004,1.004
+        result.Shapes().Append(SpriteShape_16());
+        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1_to_1p2(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_1p2, _rootProgress);
+        return result;
+    }
+
     // - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
     // Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-    CompositionContainerShape ContainerShape_5()
+    CompositionContainerShape ContainerShape_11()
     {
         const auto result = _c.CreateContainerShape();
         result.CenterPoint({ 3.81299996F, -3.93799996F });
@@ -651,19 +750,15 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         return result;
     }
 
-    // - - - - - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
-    // - - - - - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver
+    // - - - - - - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
+    // - - - - - - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver
     // Scale(1,1,0)
-    // Shape tree root for layer: Shape Layer 3
+    // - Shape tree root for layer: Shape Layer 3
     // Path 1
     CompositionSpriteShape SpriteShape_01()
     {
-        const auto result = _c.CreateSpriteShape(PathGeometry_1());
-        result.CenterPoint({ 3.81299996F, -3.93799996F });
-        result.Offset({ 24.0F, 24.0F });
-        result.FillBrush(ColorBrush_Red());
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p3_to_1p2(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p3_to_1p2, _rootProgress);
+        // Offset:<-0.015251803, 0.015751798>, Scale:<1.004, 1.004>
+        const auto result = CreateSpriteShape(PathGeometry_1(), { 1.00399995F, 0.0F, 0.0F, 1.00399995F, -0.0152518032F, 0.0157517977F }, ColorBrush_Red());
         return result;
     }
 
@@ -693,18 +788,15 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         return result;
     }
 
-    // - - - - - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
-    // - - - - - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-    // Shape tree root for layer: Shape Layer 3
+    // - - - - - - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
+    // - - - - - - Transforms for Controls - 05 - Search - 05 - PressedToNormal
+    // Scale(1,1,0)
+    // - Shape tree root for layer: Shape Layer 3
     // Path 1
     CompositionSpriteShape SpriteShape_04()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_1);
-        result.CenterPoint({ 3.81299996F, -3.93799996F });
-        result.Offset({ 24.0F, 24.0F });
-        result.FillBrush(_colorBrush_Red);
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p3_to_1(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p3_to_1, _rootProgress);
+        // Offset:<-0.015251803, 0.015751798>, Scale:<1.004, 1.004>
+        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.00399995F, 0.0F, 0.0F, 1.00399995F, -0.0152518032F, 0.0157517977F }, _colorBrush_Red);
         return result;
     }
 
@@ -732,19 +824,15 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         return result;
     }
 
-    // - - - - - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
-    // - - - - - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed
+    // - - - - - - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
+    // - - - - - - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed
     // Scale(1,1,0)
-    // Shape tree root for layer: Shape Layer 3
+    // - Shape tree root for layer: Shape Layer 3
     // Path 1
     CompositionSpriteShape SpriteShape_07()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_1);
-        result.CenterPoint({ 3.81299996F, -3.93799996F });
-        result.Offset({ 24.0F, 24.0F });
-        result.FillBrush(_colorBrush_Red);
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p2_to_1p3(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p2_to_1p3, _rootProgress);
+        // Offset:<-0.015251803, 0.015751798>, Scale:<1.004, 1.004>
+        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.00399995F, 0.0F, 0.0F, 1.00399995F, -0.0152518032F, 0.0157517977F }, _colorBrush_Red);
         return result;
     }
 
@@ -775,19 +863,15 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         return result;
     }
 
-    // - - - - - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
-    // - - - - - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal
+    // - - - - - - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
+    // - - - - - - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal
     // Scale(1,1,0)
-    // Shape tree root for layer: Shape Layer 3
+    // - Shape tree root for layer: Shape Layer 3
     // Path 1
     CompositionSpriteShape SpriteShape_10()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_1);
-        result.CenterPoint({ 3.81299996F, -3.93799996F });
-        result.Offset({ 24.0F, 24.0F });
-        result.FillBrush(_colorBrush_Red);
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p2_to_1(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p2_to_1, _rootProgress);
+        // Offset:<-0.015251803, 0.015751798>, Scale:<1.004, 1.004>
+        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.00399995F, 0.0F, 0.0F, 1.00399995F, -0.0152518032F, 0.0157517977F }, _colorBrush_Red);
         return result;
     }
 
@@ -817,18 +901,15 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         return result;
     }
 
-    // - - - - - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
-    // - - - - - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-    // Shape tree root for layer: Shape Layer 3
+    // - - - - - - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
+    // - - - - - - Transforms for Controls - 05 - Search - 02 - NormalToPressed
+    // Scale(1,1,0)
+    // - Shape tree root for layer: Shape Layer 3
     // Path 1
     CompositionSpriteShape SpriteShape_13()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_1);
-        result.CenterPoint({ 3.81299996F, -3.93799996F });
-        result.Offset({ 24.0F, 24.0F });
-        result.FillBrush(_colorBrush_Red);
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1_to_1p3(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_1p3, _rootProgress);
+        // Offset:<-0.015251803, 0.015751798>, Scale:<1.004, 1.004>
+        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.00399995F, 0.0F, 0.0F, 1.00399995F, -0.0152518032F, 0.0157517977F }, _colorBrush_Red);
         return result;
     }
 
@@ -859,19 +940,15 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         return result;
     }
 
-    // - - - - - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
-    // - - - - - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver
+    // - - - - - - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
+    // - - - - - - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver
     // Scale(1,1,0)
-    // Shape tree root for layer: Shape Layer 3
+    // - Shape tree root for layer: Shape Layer 3
     // Path 1
     CompositionSpriteShape SpriteShape_16()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_1);
-        result.CenterPoint({ 3.81299996F, -3.93799996F });
-        result.Offset({ 24.0F, 24.0F });
-        result.FillBrush(_colorBrush_Red);
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1_to_1p2(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_1p2, _rootProgress);
+        // Offset:<-0.015251803, 0.015751798>, Scale:<1.004, 1.004>
+        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.00399995F, 0.0F, 0.0F, 1.00399995F, -0.0152518032F, 0.0157517977F }, _colorBrush_Red);
         return result;
     }
 
@@ -1513,8 +1590,7 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         const auto result = _c.CreateShapeVisual();
         result.IsVisible(false);
         result.Size({ 48.0F, 48.0F });
-        // Transforms: Shape Layer 3
-        result.Shapes().Append(SpriteShape_01());
+        result.Shapes().Append(ContainerShape_00());
         StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_00, _rootProgress);
         return result;
     }
@@ -1527,7 +1603,7 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         result.IsVisible(false);
         result.Opacity(0.970000029F);
         result.Size({ 48.0F, 48.0F });
-        result.Shapes().Append(ContainerShape_0());
+        result.Shapes().Append(ContainerShape_01());
         StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_00, _rootProgress);
         return result;
     }
@@ -1554,8 +1630,7 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         const auto result = _c.CreateShapeVisual();
         result.IsVisible(false);
         result.Size({ 48.0F, 48.0F });
-        // Transforms: Shape Layer 3
-        result.Shapes().Append(SpriteShape_04());
+        result.Shapes().Append(ContainerShape_02());
         StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_01, _rootProgress);
         return result;
     }
@@ -1568,7 +1643,7 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         result.IsVisible(false);
         result.Opacity(0.970000029F);
         result.Size({ 48.0F, 48.0F });
-        result.Shapes().Append(ContainerShape_1());
+        result.Shapes().Append(ContainerShape_03());
         StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_01, _rootProgress);
         return result;
     }
@@ -1597,8 +1672,7 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         const auto result = _c.CreateShapeVisual();
         result.IsVisible(false);
         result.Size({ 48.0F, 48.0F });
-        // Transforms: Shape Layer 3
-        result.Shapes().Append(SpriteShape_07());
+        result.Shapes().Append(ContainerShape_04());
         StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_03, _rootProgress);
         return result;
     }
@@ -1611,7 +1685,7 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         result.IsVisible(false);
         result.Opacity(0.970000029F);
         result.Size({ 48.0F, 48.0F });
-        result.Shapes().Append(ContainerShape_2());
+        result.Shapes().Append(ContainerShape_05());
         StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_03, _rootProgress);
         return result;
     }
@@ -1640,8 +1714,7 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         const auto result = _c.CreateShapeVisual();
         result.IsVisible(false);
         result.Size({ 48.0F, 48.0F });
-        // Transforms: Shape Layer 3
-        result.Shapes().Append(SpriteShape_10());
+        result.Shapes().Append(ContainerShape_06());
         StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_05, _rootProgress);
         return result;
     }
@@ -1654,7 +1727,7 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         result.IsVisible(false);
         result.Opacity(0.970000029F);
         result.Size({ 48.0F, 48.0F });
-        result.Shapes().Append(ContainerShape_3());
+        result.Shapes().Append(ContainerShape_07());
         StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_05, _rootProgress);
         return result;
     }
@@ -1681,8 +1754,7 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         const auto result = _c.CreateShapeVisual();
         result.IsVisible(false);
         result.Size({ 48.0F, 48.0F });
-        // Transforms: Shape Layer 3
-        result.Shapes().Append(SpriteShape_13());
+        result.Shapes().Append(ContainerShape_08());
         StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_07, _rootProgress);
         return result;
     }
@@ -1695,7 +1767,7 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         result.IsVisible(false);
         result.Opacity(0.970000029F);
         result.Size({ 48.0F, 48.0F });
-        result.Shapes().Append(ContainerShape_4());
+        result.Shapes().Append(ContainerShape_09());
         StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_07, _rootProgress);
         return result;
     }
@@ -1722,8 +1794,7 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        // Transforms: Shape Layer 3
-        result.Shapes().Append(SpriteShape_16());
+        result.Shapes().Append(ContainerShape_10());
         StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_09, _rootProgress);
         return result;
     }
@@ -1735,7 +1806,7 @@ class AnimatedFindVisualSource_AnimatedVisual_UAPv8 : public winrt::implements<A
         const auto result = _c.CreateShapeVisual();
         result.Opacity(0.970000029F);
         result.Size({ 48.0F, 48.0F });
-        result.Shapes().Append(ContainerShape_5());
+        result.Shapes().Append(ContainerShape_11());
         StartProgressBoundAnimation(result, L"IsVisible", _isVisibleBooleanAnimation_09, _rootProgress);
         return result;
     }

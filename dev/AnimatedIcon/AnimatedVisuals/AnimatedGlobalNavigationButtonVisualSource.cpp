@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedGlobalNavigationButtonVisualSource.json
 //       
 //       Input file:
-//           AnimatedGlobalNavigationButtonVisualSource.json (46703 bytes created 11:16-08:00 Mar 5 2021)
+//           AnimatedGlobalNavigationButtonVisualSource.json (52910 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -21,11 +21,11 @@
 // ____________________________________
 // |       Object stats       | Count |
 // |__________________________|_______|
-// | All CompositionObjects   |   343 |
+// | All CompositionObjects   |   337 |
 // |--------------------------+-------|
-// | Expression animators     |    37 |
-// | KeyFrame animators       |    32 |
-// | Reference parameters     |    39 |
+// | Expression animators     |    31 |
+// | KeyFrame animators       |    30 |
+// | Reference parameters     |    31 |
 // | Expression operations    |     4 |
 // |--------------------------+-------|
 // | Animated brushes         |     1 |
@@ -52,6 +52,14 @@
 #include <d2d1_1.h>
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
+#ifdef BUILD_WINDOWS
+namespace ABI
+{
+#include <Windows.Graphics.Effects.Interop.h>
+}
+#else
+#include <Windows.Graphics.Effects.Interop.h>
+#endif
 #include <winrt/Windows.Graphics.Effects.h>
 
 using namespace winrt::Microsoft::UI::Xaml::Controls;
@@ -70,7 +78,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
-    ABI::Windows::Graphics::IGeometrySource2DInterop>
+    ::ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
     winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 
@@ -121,6 +129,8 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     CubicBezierEasingFunction _cubicBezierEasingFunction_3{ nullptr };
     CubicBezierEasingFunction _cubicBezierEasingFunction_4{ nullptr };
     CubicBezierEasingFunction _cubicBezierEasingFunction_5{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_6{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_7{ nullptr };
     ExpressionAnimation _rootProgress{ nullptr };
     InsetClip _insetClip_0{ nullptr };
     StepEasingFunction _holdThenStepEasingFunction{ nullptr };
@@ -350,11 +360,11 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ -7.58500004F, 0.5F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ 7.65600014F, 0.5F });
-        sink->AddLine({ 7.65600014F, -0.5F });
-        sink->AddLine({ -7.58500004F, -0.5F });
-        sink->AddLine({ -7.58500004F, 0.5F });
+        sink->BeginFigure({ -7.59299994F, 0.5F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ 7.6880002F, 0.5F });
+        sink->AddLine({ 7.6880002F, -0.5F });
+        sink->AddLine({ -7.59299994F, -0.5F });
+        sink->AddLine({ -7.59299994F, 0.5F });
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -368,11 +378,11 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ 7.65600014F, -0.486999989F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ -7.58500004F, -0.486999989F });
-        sink->AddLine({ -7.58500004F, 0.513000011F });
-        sink->AddLine({ 7.65600014F, 0.513000011F });
-        sink->AddLine({ 7.65600014F, -0.486999989F });
+        sink->BeginFigure({ 7.6880002F, -0.486999989F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ -7.59299994F, -0.486999989F });
+        sink->AddLine({ -7.59299994F, 0.513000011F });
+        sink->AddLine({ 7.6880002F, 0.513000011F });
+        sink->AddLine({ 7.6880002F, -0.486999989F });
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -386,11 +396,11 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ 7.65600014F, -0.5F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ -7.58500004F, -0.5F });
-        sink->AddLine({ -7.58500004F, 0.5F });
-        sink->AddLine({ 7.65600014F, 0.5F });
-        sink->AddLine({ 7.65600014F, -0.5F });
+        sink->BeginFigure({ 7.6880002F, -0.5F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ -7.59200001F, -0.5F });
+        sink->AddLine({ -7.59200001F, 0.5F });
+        sink->AddLine({ 7.6880002F, 0.5F });
+        sink->AddLine({ 7.6880002F, -0.5F });
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -449,8 +459,8 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     CompositionContainerShape ContainerShape_02()
     {
         const auto result = _c.CreateContainerShape();
-        result.CenterPoint({ 0.0359999985F, -5.0F });
-        result.Offset({ 23.9290009F, 28.9139996F });
+        result.CenterPoint({ 0.0480000004F, -5.0F });
+        result.Offset({ 23.9559994F, 28.9139996F });
         const auto shapes = result.Shapes();
         // ShapeGroup: Group 3 Offset:<0, -10>
         shapes.Append(SpriteShape_06());
@@ -458,7 +468,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         shapes.Append(SpriteShape_07());
         // ShapeGroup: Group 1
         shapes.Append(SpriteShape_08());
-        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_1p445_to_1p963(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_1p433_to_1p963(), _rootProgress);
         StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p75_to_2p75_0(), _rootProgress);
         return result;
     }
@@ -507,8 +517,8 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     CompositionContainerShape ContainerShape_05()
     {
         const auto result = _c.CreateContainerShape();
-        result.CenterPoint({ 0.0359999985F, -5.0F });
-        result.Offset({ 23.9290009F, 28.9139996F });
+        result.CenterPoint({ 0.0480000004F, -5.0F });
+        result.Offset({ 23.9559994F, 28.9139996F });
         const auto shapes = result.Shapes();
         // ShapeGroup: Group 3 Offset:<0, -10>
         shapes.Append(SpriteShape_15());
@@ -516,7 +526,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         shapes.Append(SpriteShape_16());
         // ShapeGroup: Group 1
         shapes.Append(SpriteShape_17());
-        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_1p445_to_2p75(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_1p433_to_2p749(), _rootProgress);
         StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p75_to_2p75_1(), _rootProgress);
         return result;
     }
@@ -565,8 +575,8 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     CompositionContainerShape ContainerShape_08()
     {
         const auto result = _c.CreateContainerShape();
-        result.CenterPoint({ 0.0359999985F, -5.0F });
-        result.Offset({ 23.9290009F, 28.9139996F });
+        result.CenterPoint({ 0.0480000004F, -5.0F });
+        result.Offset({ 23.9559994F, 28.9139996F });
         const auto shapes = result.Shapes();
         // ShapeGroup: Group 3 Offset:<0, -10>
         shapes.Append(SpriteShape_24());
@@ -574,19 +584,19 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         shapes.Append(SpriteShape_25());
         // ShapeGroup: Group 1
         shapes.Append(SpriteShape_26());
-        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_1p963_to_1p445(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_1p963_to_1p433(), _rootProgress);
         StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p75_to_2p75_2(), _rootProgress);
         return result;
     }
 
     // - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     CompositionContainerShape ContainerShape_09()
     {
         const auto result = _c.CreateContainerShape();
-        result.CenterPoint({ 0.0359999985F, -5.0F });
-        result.Offset({ 23.9290009F, 28.9139996F });
+        result.CenterPoint({ 7.5F, -5.0F });
+        result.Scale({ 2.75F, 2.75F });
         const auto shapes = result.Shapes();
         // ShapeGroup: Group 3 Offset:<0, -10>
         shapes.Append(SpriteShape_27());
@@ -594,14 +604,13 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         shapes.Append(SpriteShape_28());
         // ShapeGroup: Group 1
         shapes.Append(SpriteShape_29());
-        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_1p963_to_2p75(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p75_to_2p75_3(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_06(), _rootProgress);
         return result;
     }
 
     // - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     CompositionContainerShape ContainerShape_10()
     {
         const auto result = _c.CreateContainerShape();
@@ -614,18 +623,18 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         shapes.Append(SpriteShape_31());
         // ShapeGroup: Group 1
         shapes.Append(SpriteShape_32());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_06(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_07(), _rootProgress);
         return result;
     }
 
     // - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     CompositionContainerShape ContainerShape_11()
     {
         const auto result = _c.CreateContainerShape();
-        result.CenterPoint({ 7.5F, -5.0F });
-        result.Scale({ 2.75F, 2.75F });
+        result.CenterPoint({ 0.0480000004F, -5.0F });
+        result.Offset({ 23.9559994F, 28.9139996F });
         const auto shapes = result.Shapes();
         // ShapeGroup: Group 3 Offset:<0, -10>
         shapes.Append(SpriteShape_33());
@@ -633,7 +642,8 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         shapes.Append(SpriteShape_34());
         // ShapeGroup: Group 1
         shapes.Append(SpriteShape_35());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_07(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_1p963_to_1p963(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p75_to_2p75_3(), _rootProgress);
         return result;
     }
 
@@ -681,8 +691,8 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     CompositionContainerShape ContainerShape_14()
     {
         const auto result = _c.CreateContainerShape();
-        result.CenterPoint({ 0.0359999985F, -5.0F });
-        result.Offset({ 23.9290009F, 28.9139996F });
+        result.CenterPoint({ 0.0480000004F, -5.0F });
+        result.Offset({ 23.9559994F, 28.9139996F });
         const auto shapes = result.Shapes();
         // ShapeGroup: Group 3 Offset:<0, -10>
         shapes.Append(SpriteShape_42());
@@ -690,19 +700,19 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         shapes.Append(SpriteShape_43());
         // ShapeGroup: Group 1
         shapes.Append(SpriteShape_44());
-        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_2p75_to_1p445(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_2p749_to_1p433(), _rootProgress);
         StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p75_to_2p75_4(), _rootProgress);
         return result;
     }
 
     // - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     CompositionContainerShape ContainerShape_15()
     {
         const auto result = _c.CreateContainerShape();
-        result.CenterPoint({ 0.0359999985F, -5.0F });
-        result.Offset({ 23.9290009F, 28.9139996F });
+        result.CenterPoint({ 7.5F, -5.0F });
+        result.Scale({ 2.75F, 2.75F });
         const auto shapes = result.Shapes();
         // ShapeGroup: Group 3 Offset:<0, -10>
         shapes.Append(SpriteShape_45());
@@ -710,14 +720,13 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         shapes.Append(SpriteShape_46());
         // ShapeGroup: Group 1
         shapes.Append(SpriteShape_47());
-        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_2p75_to_1p963(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p75_to_2p75_5(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_10(), _rootProgress);
         return result;
     }
 
     // - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     CompositionContainerShape ContainerShape_16()
     {
         const auto result = _c.CreateContainerShape();
@@ -730,18 +739,18 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         shapes.Append(SpriteShape_49());
         // ShapeGroup: Group 1
         shapes.Append(SpriteShape_50());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_10(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_11(), _rootProgress);
         return result;
     }
 
     // - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     CompositionContainerShape ContainerShape_17()
     {
         const auto result = _c.CreateContainerShape();
-        result.CenterPoint({ 7.5F, -5.0F });
-        result.Scale({ 2.75F, 2.75F });
+        result.CenterPoint({ 0.0480000004F, -5.0F });
+        result.Offset({ 23.9559994F, 28.9139996F });
         const auto shapes = result.Shapes();
         // ShapeGroup: Group 3 Offset:<0, -10>
         shapes.Append(SpriteShape_51());
@@ -749,7 +758,8 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         shapes.Append(SpriteShape_52());
         // ShapeGroup: Group 1
         shapes.Append(SpriteShape_53());
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_11(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_2p749_to_1p963(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p75_to_2p75_5(), _rootProgress);
         return result;
     }
 
@@ -1097,40 +1107,40 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
 
     // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_27()
     {
         // Offset:<0, -10>
-        const auto result = CreateSpriteShape(_pathGeometry_6, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_28()
     {
         // Offset:<0, -4.85>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_29()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_8);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_2);
         result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_30()
     {
@@ -1141,7 +1151,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
 
     // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_31()
     {
@@ -1152,7 +1162,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
 
     // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_32()
     {
@@ -1163,33 +1173,33 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
 
     // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_33()
     {
         // Offset:<0, -10>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(_pathGeometry_6, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_34()
     {
         // Offset:<0, -4.85>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_35()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_2);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_8);
         result.FillBrush(_themeColor_Foreground);
         return result;
     }
@@ -1295,40 +1305,40 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
 
     // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_45()
     {
         // Offset:<0, -10>
-        const auto result = CreateSpriteShape(_pathGeometry_6, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_46()
     {
         // Offset:<0, -4.85>
-        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_47()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_8);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_2);
         result.FillBrush(_themeColor_Foreground);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_48()
     {
@@ -1339,7 +1349,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
 
     // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_49()
     {
@@ -1350,7 +1360,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
 
     // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_50()
     {
@@ -1361,33 +1371,33 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
 
     // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_51()
     {
         // Offset:<0, -10>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(_pathGeometry_6, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_52()
     {
         // Offset:<0, -4.85>
-        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(_pathGeometry_7, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Path 1
     CompositionSpriteShape SpriteShape_53()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_2);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_8);
         result.FillBrush(_themeColor_Foreground);
         return result;
     }
@@ -1487,8 +1497,6 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         const auto result = _root = _c.CreateContainerVisual();
         const auto propertySet = result.Properties();
         propertySet.InsertScalar(L"Progress", 0.0F);
-        propertySet.InsertScalar(L"t0", 0.0F);
-        propertySet.InsertScalar(L"t1", 0.0F);
         const auto children = result.Children();
         // PreComp layer: Controls - 02 - Hamburger - 06 - PressedToPointerOver
         children.InsertAtTop(ContainerVisual_0());
@@ -1502,8 +1510,6 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         children.InsertAtTop(ContainerVisual_4());
         // PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
         children.InsertAtTop(ContainerVisual_5());
-        StartProgressBoundAnimation(propertySet, L"t0", t0ScalarAnimation_0_to_1(), _rootProgress);
-        StartProgressBoundAnimation(propertySet, L"t1", t1ScalarAnimation_0_to_1(), _rootProgress);
         return result;
     }
 
@@ -1519,22 +1525,32 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
 
     CubicBezierEasingFunction CubicBezierEasingFunction_2()
     {
-        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.25F, 1.0F });
+        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_3()
     {
-        return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
+        return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.0F }, { 0.0F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_4()
     {
-        return _cubicBezierEasingFunction_4 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.0F }, { 0.0F, 1.0F });
+        return _cubicBezierEasingFunction_4 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.25F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_5()
     {
-        return _cubicBezierEasingFunction_5 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.25F, 1.0F });
+        return _cubicBezierEasingFunction_5 = _c.CreateCubicBezierEasingFunction({ 0.0F, 0.0F }, { 0.833000004F, 0.833000004F });
+    }
+
+    CubicBezierEasingFunction CubicBezierEasingFunction_6()
+    {
+        return _cubicBezierEasingFunction_6 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.0F }, { 0.25F, 1.0F });
+    }
+
+    CubicBezierEasingFunction CubicBezierEasingFunction_7()
+    {
+        return _cubicBezierEasingFunction_7 = _c.CreateCubicBezierEasingFunction({ 0.0F, 0.0F }, { 0.833000004F, 1.0F });
     }
 
     ExpressionAnimation RootProgress()
@@ -1554,12 +1570,12 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // - Transforms for Controls - 02 - Hamburger - 06 - PressedToPointerOver Scale(1,1,0)
     // Layer: Right Caps 2
     // Scale
-    ScalarKeyFrameAnimation ScaleXScalarAnimation_1p445_to_1p963()
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_1p433_to_1p963()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.44456995F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.75F, 1.44456995F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.850000024F, 2.88107991F, _cubicBezierEasingFunction_0);
-        result.InsertKeyFrame(0.987500012F, 1.96300006F, CubicBezierEasingFunction_1());
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.43256998F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.75F, 1.43256998F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.850000024F, 2.88000011F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.987500012F, 1.96300006F, _cubicBezierEasingFunction_1);
         return result;
     }
 
@@ -1567,12 +1583,12 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // - Transforms for Controls - 02 - Hamburger - 05 - PressedToNormal Scale(1,1,0)
     // Layer: Right Caps 2
     // Scale
-    ScalarKeyFrameAnimation ScaleXScalarAnimation_1p445_to_2p75()
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_1p433_to_2p749()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.44456995F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.5F, 1.44456995F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.600000024F, 2.88107991F, _cubicBezierEasingFunction_0);
-        result.InsertKeyFrame(0.737500012F, 2.75F, CubicBezierEasingFunction_2());
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.43256998F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.5F, 1.43256998F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.600000024F, 2.88000011F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.737500012F, 2.74850011F, _cubicBezierEasingFunction_1);
         return result;
     }
 
@@ -1580,23 +1596,27 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // - Transforms for Controls - 02 - Hamburger - 04 - PointerOverToPressed Scale(1,1,0)
     // Layer: Right Caps 2
     // Scale
-    ScalarKeyFrameAnimation ScaleXScalarAnimation_1p963_to_1p445()
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_1p963_to_1p433()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.96300006F, _stepThenHoldEasingFunction);
         result.InsertKeyFrame(0.375F, 1.96300006F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.487500012F, 1.44456995F, _cubicBezierEasingFunction_3);
+        result.InsertKeyFrame(0.487500012F, 1.43256998F, _cubicBezierEasingFunction_2);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Scale
-    ScalarKeyFrameAnimation ScaleXScalarAnimation_1p963_to_2p75()
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_1p963_to_1p963()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.96291995F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.25F, 1.96291995F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.362500012F, 2.75F, _cubicBezierEasingFunction_3);
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.96300006F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.25F, 1.96300006F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.362500012F, 2.74900007F, _cubicBezierEasingFunction_4);
+        result.InsertKeyFrame(0.625F, 1.96300006F, _cubicBezierEasingFunction_5);
+        result.InsertKeyFrame(0.75F, 1.43256998F, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.850000024F, 2.88000011F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(1.0F, 1.96300006F, _cubicBezierEasingFunction_1);
         return result;
     }
 
@@ -1604,22 +1624,27 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // - Transforms for Controls - 02 - Hamburger - 02 - NormalToPressed Scale(1,1,0)
     // Layer: Right Caps 2
     // Scale
-    ScalarKeyFrameAnimation ScaleXScalarAnimation_2p75_to_1p445()
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_2p749_to_1p433()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.75F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.125F, 2.75F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.237499997F, 1.44456995F, _cubicBezierEasingFunction_3);
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.74900007F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.125F, 2.74900007F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.237499997F, 1.43256998F, _cubicBezierEasingFunction_2);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Scale
-    ScalarKeyFrameAnimation ScaleXScalarAnimation_2p75_to_1p963()
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_2p749_to_1p963()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.75F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.112499997F, 1.96291995F, CubicBezierEasingFunction_5());
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.74900007F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.112499997F, 1.96300006F, _cubicBezierEasingFunction_4);
+        result.InsertKeyFrame(0.375F, 1.96300006F, _cubicBezierEasingFunction_7);
+        result.InsertKeyFrame(0.5F, 1.43256998F, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.600000024F, 2.88000011F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.75F, 1.96300006F, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(1.0F, 1.96300006F, _cubicBezierEasingFunction_7);
         return result;
     }
 
@@ -1645,7 +1670,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.75F, _stepThenHoldEasingFunction);
         result.InsertKeyFrame(0.5F, 2.75F, _holdThenStepEasingFunction);
         result.InsertKeyFrame(0.600000024F, 2.73294997F, _cubicBezierEasingFunction_0);
-        result.InsertKeyFrame(0.737500012F, 2.75F, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.737500012F, 2.75F, _cubicBezierEasingFunction_1);
         return result;
     }
 
@@ -1657,19 +1682,23 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.75F, _stepThenHoldEasingFunction);
         result.InsertKeyFrame(0.375F, 2.75F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.487500012F, 2.75F, CubicBezierEasingFunction_4());
+        result.InsertKeyFrame(0.487500012F, 2.75F, CubicBezierEasingFunction_3());
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Scale
     ScalarKeyFrameAnimation ScaleYScalarAnimation_2p75_to_2p75_3()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.75F, _stepThenHoldEasingFunction);
         result.InsertKeyFrame(0.25F, 2.75F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.362500012F, 2.75F, _cubicBezierEasingFunction_4);
+        result.InsertKeyFrame(0.362500012F, 2.75F, CubicBezierEasingFunction_6());
+        result.InsertKeyFrame(0.625F, 2.75F, CubicBezierEasingFunction_7());
+        result.InsertKeyFrame(0.75F, 2.75F, _cubicBezierEasingFunction_3);
+        result.InsertKeyFrame(0.850000024F, 2.73294997F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(1.0F, 2.75F, _cubicBezierEasingFunction_1);
         return result;
     }
 
@@ -1681,34 +1710,23 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.75F, _stepThenHoldEasingFunction);
         result.InsertKeyFrame(0.125F, 2.75F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.237499997F, 2.75F, _cubicBezierEasingFunction_4);
+        result.InsertKeyFrame(0.237499997F, 2.75F, _cubicBezierEasingFunction_3);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Scale
     ScalarKeyFrameAnimation ScaleYScalarAnimation_2p75_to_2p75_5()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.75F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.112499997F, 2.75F, _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.0F }, { 0.25F, 1.0F }));
-        return result;
-    }
-
-    ScalarKeyFrameAnimation t0ScalarAnimation_0_to_1()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.850000083F, 0.0F, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.987499952F, 1.0F, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    ScalarKeyFrameAnimation t1ScalarAnimation_0_to_1()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.600000083F, 0.0F, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.737499952F, 1.0F, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.112499997F, 2.75F, _cubicBezierEasingFunction_6);
+        result.InsertKeyFrame(0.375F, 2.75F, _cubicBezierEasingFunction_7);
+        result.InsertKeyFrame(0.5F, 2.75F, _cubicBezierEasingFunction_3);
+        result.InsertKeyFrame(0.600000024F, 2.73294997F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.75F, 2.75F, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(1.0F, 2.75F, _cubicBezierEasingFunction_7);
         return result;
     }
 
@@ -1767,11 +1785,11 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Center 2
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_09());
-        // Layer: Center 2
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_10());
-        // Layer: Center 2
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_11());
         return result;
     }
@@ -1799,11 +1817,11 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Center 2
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_15());
-        // Layer: Center 2
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_16());
-        // Layer: Center 2
+        // Layer: Right Caps 2
         shapes.Append(ContainerShape_17());
         return result;
     }
@@ -1828,12 +1846,10 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_00()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 27.4769993F, 28.9139996F }, StepThenHoldEasingFunction());
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.75F, { 27.4769993F, 28.9139996F }, HoldThenStepEasingFunction());
-        result.InsertKeyFrame(0.850000024F, { 38.5079994F, 28.9139996F }, CubicBezierEasingFunction_0());
-        result.InsertExpressionKeyFrame(0.987499952F, L"(Pow(1-_.t0,3)*Vector2(38.508,28.914))+(3*Square(1-_.t0)*_.t0*Vector2(39.175,28.914))+(3*(1-_.t0)*Square(_.t0)*Vector2(32.649,28.914))+(Pow(_.t0,3)*Vector2(31.477,28.914))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.987500012F, { 31.4769993F, 28.9139996F }, _stepThenHoldEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 27.5079994F, 28.9139996F }, StepThenHoldEasingFunction());
+        result.InsertKeyFrame(0.75F, { 27.5079994F, 28.9139996F }, HoldThenStepEasingFunction());
+        result.InsertKeyFrame(0.850000024F, { 38.5040016F, 28.9139996F }, CubicBezierEasingFunction_0());
+        result.InsertKeyFrame(0.987500012F, { 31.5079994F, 28.9139996F }, CubicBezierEasingFunction_1());
         return result;
     }
 
@@ -1844,11 +1860,9 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     Vector2KeyFrameAnimation OffsetVector2Animation_01()
     {
         const auto result = CreateVector2KeyFrameAnimation(0.0F, { 20.5079994F, 28.9139996F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
         result.InsertKeyFrame(0.75F, { 20.5079994F, 28.9139996F }, _holdThenStepEasingFunction);
         result.InsertKeyFrame(0.850000024F, { 9.50800037F, 28.9139996F }, _cubicBezierEasingFunction_0);
-        result.InsertExpressionKeyFrame(0.987499952F, L"(Pow(1-_.t0,3)*Vector2(9.508,28.914))+(3*Square(1-_.t0)*_.t0*Vector2(8.841001,28.914))+(3*(1-_.t0)*Square(_.t0)*Vector2(15.341,28.914))+(Pow(_.t0,3)*Vector2(16.508,28.914))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.987500012F, { 16.5079994F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.987500012F, { 16.5079994F, 28.9139996F }, _cubicBezierEasingFunction_1);
         return result;
     }
 
@@ -1858,12 +1872,10 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_02()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 27.4769993F, 28.9139996F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.5F, { 27.4769993F, 28.9139996F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.600000024F, { 38.5079994F, 28.9139996F }, _cubicBezierEasingFunction_0);
-        result.InsertExpressionKeyFrame(0.737499952F, L"(Pow(1-_.t1,3)*Vector2(38.508,28.914))+(3*Square(1-_.t1)*_.t1*Vector2(40.185,28.914))+(3*(1-_.t1)*Square(_.t1)*Vector2(37.7,28.914))+(Pow(_.t1,3)*Vector2(37.539,28.914))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.737500012F, { 37.5390015F, 28.9139996F }, _stepThenHoldEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 27.5079994F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.5F, { 27.5079994F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.600000024F, { 38.5040016F, 28.9139996F }, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.737500012F, { 37.5079994F, 28.9139996F }, _cubicBezierEasingFunction_1);
         return result;
     }
 
@@ -1874,11 +1886,9 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     Vector2KeyFrameAnimation OffsetVector2Animation_03()
     {
         const auto result = CreateVector2KeyFrameAnimation(0.0F, { 20.5079994F, 28.9139996F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
         result.InsertKeyFrame(0.5F, { 20.5079994F, 28.9139996F }, _holdThenStepEasingFunction);
         result.InsertKeyFrame(0.600000024F, { 9.50800037F, 28.9139996F }, _cubicBezierEasingFunction_0);
-        result.InsertExpressionKeyFrame(0.737499952F, L"(Pow(1-_.t1,3)*Vector2(9.508,28.914))+(3*Square(1-_.t1)*_.t1*Vector2(7.847,28.914))+(3*(1-_.t1)*Square(_.t1)*Vector2(10.367,28.914))+(Pow(_.t1,3)*Vector2(10.539,28.914))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.737500012F, { 10.5389996F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.737500012F, { 10.5039997F, 28.9139996F }, _cubicBezierEasingFunction_1);
         return result;
     }
 
@@ -1888,9 +1898,9 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_04()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 31.4769993F, 28.9139996F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.375F, { 31.4769993F, 28.9139996F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.487500012F, { 27.4769993F, 28.9139996F }, CubicBezierEasingFunction_3());
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 31.5079994F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.375F, { 31.5079994F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.487500012F, { 27.5079994F, 28.9139996F }, CubicBezierEasingFunction_2());
         return result;
     }
 
@@ -1902,31 +1912,39 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         const auto result = CreateVector2KeyFrameAnimation(0.0F, { 16.5079994F, 28.9139996F }, _stepThenHoldEasingFunction);
         result.InsertKeyFrame(0.375F, { 16.5079994F, 28.9139996F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.487500012F, { 20.5079994F, 28.9139996F }, _cubicBezierEasingFunction_3);
+        result.InsertKeyFrame(0.487500012F, { 20.5079994F, 28.9139996F }, _cubicBezierEasingFunction_2);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_06()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 16.5079994F, 28.9139996F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.25F, { 16.5079994F, 28.9139996F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.362500012F, { 10.5389996F, 28.9139996F }, _cubicBezierEasingFunction_3);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 31.5079994F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.25F, { 31.5079994F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.362500012F, { 37.5079994F, 28.9139996F }, CubicBezierEasingFunction_4());
+        result.InsertKeyFrame(0.625F, { 31.5079994F, 28.9139996F }, CubicBezierEasingFunction_5());
+        result.InsertKeyFrame(0.75F, { 27.5079994F, 28.9139996F }, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.850000024F, { 38.5040016F, 28.9139996F }, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(1.0F, { 31.5079994F, 28.9139996F }, _cubicBezierEasingFunction_1);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 03 - PointerOverToNormal
     // - Transforms for Controls - 02 - Hamburger - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_07()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 31.4769993F, 28.9139996F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.25F, { 31.4769993F, 28.9139996F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.362500012F, { 37.5390015F, 28.9139996F }, _cubicBezierEasingFunction_3);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 16.5079994F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.25F, { 16.5079994F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.362500012F, { 10.5039997F, 28.9139996F }, _cubicBezierEasingFunction_4);
+        result.InsertKeyFrame(0.625F, { 16.5079994F, 28.9139996F }, _cubicBezierEasingFunction_5);
+        result.InsertKeyFrame(0.75F, { 20.5079994F, 28.9139996F }, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.850000024F, { 9.50800037F, 28.9139996F }, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(1.0F, { 16.5079994F, 28.9139996F }, _cubicBezierEasingFunction_1);
         return result;
     }
 
@@ -1936,9 +1954,9 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_08()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 37.5390015F, 28.9139996F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.125F, { 37.5390015F, 28.9139996F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.237499997F, { 27.4769993F, 28.9139996F }, _cubicBezierEasingFunction_3);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 37.5079994F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.125F, { 37.5079994F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.237499997F, { 27.5079994F, 28.9139996F }, _cubicBezierEasingFunction_2);
         return result;
     }
 
@@ -1948,31 +1966,39 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_09()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 10.5389996F, 28.9139996F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.125F, { 10.5389996F, 28.9139996F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.237499997F, { 20.5079994F, 28.9139996F }, _cubicBezierEasingFunction_3);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 10.5039997F, 28.9139996F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.125F, { 10.5039997F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.237499997F, { 20.5079994F, 28.9139996F }, _cubicBezierEasingFunction_2);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_10()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 10.5389996F, 28.9139996F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.112499997F, { 16.5079994F, 28.9139996F }, _cubicBezierEasingFunction_5);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 37.5079994F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.112499997F, { 31.5079994F, 28.9139996F }, _cubicBezierEasingFunction_4);
+        result.InsertKeyFrame(0.375F, { 31.5079994F, 28.9139996F }, _cubicBezierEasingFunction_5);
+        result.InsertKeyFrame(0.5F, { 27.5079994F, 28.9139996F }, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.600000024F, { 38.5040016F, 28.9139996F }, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.75F, { 31.5079994F, 28.9139996F }, _cubicBezierEasingFunction_1);
         return result;
     }
 
     // - - PreComp layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver
     // - Transforms for Controls - 02 - Hamburger - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Center 2
+    // Layer: Right Caps 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_11()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 37.5390015F, 28.9139996F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.112499997F, { 31.4769993F, 28.9139996F }, _cubicBezierEasingFunction_5);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 10.5039997F, 28.9139996F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.112499997F, { 16.5079994F, 28.9139996F }, _cubicBezierEasingFunction_4);
+        result.InsertKeyFrame(0.375F, { 16.5079994F, 28.9139996F }, _cubicBezierEasingFunction_5);
+        result.InsertKeyFrame(0.5F, { 20.5079994F, 28.9139996F }, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.600000024F, { 9.50800037F, 28.9139996F }, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.75F, { 16.5079994F, 28.9139996F }, _cubicBezierEasingFunction_1);
         return result;
     }
 

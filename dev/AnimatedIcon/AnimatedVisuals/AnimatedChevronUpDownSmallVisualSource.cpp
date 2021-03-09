@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedChevronUpDownSmallVisualSource.json
 //       
 //       Input file:
-//           AnimatedChevronUpDownSmallVisualSource.json (30525 bytes created 11:16-08:00 Mar 5 2021)
+//           AnimatedChevronUpDownSmallVisualSource.json (30476 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -21,11 +21,11 @@
 // ____________________________________
 // |       Object stats       | Count |
 // |__________________________|_______|
-// | All CompositionObjects   |   331 |
+// | All CompositionObjects   |   323 |
 // |--------------------------+-------|
-// | Expression animators     |    53 |
-// | KeyFrame animators       |    49 |
-// | Reference parameters     |    56 |
+// | Expression animators     |    49 |
+// | KeyFrame animators       |    47 |
+// | Reference parameters     |    50 |
 // | Expression operations    |     4 |
 // |--------------------------+-------|
 // | Animated brushes         |     1 |
@@ -52,6 +52,14 @@
 #include <d2d1_1.h>
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
+#ifdef BUILD_WINDOWS
+namespace ABI
+{
+#include <Windows.Graphics.Effects.Interop.h>
+}
+#else
+#include <Windows.Graphics.Effects.Interop.h>
+#endif
 #include <winrt/Windows.Graphics.Effects.h>
 
 using namespace winrt::Microsoft::UI::Xaml::Controls;
@@ -70,7 +78,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
-    ABI::Windows::Graphics::IGeometrySource2DInterop>
+    ::ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
     winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 
@@ -970,8 +978,6 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual : public winrt::impl
         const auto propertySet = result.Properties();
         propertySet.InsertScalar(L"Progress", 0.0F);
         propertySet.InsertScalar(L"t0", 0.0F);
-        propertySet.InsertScalar(L"t1", 0.0F);
-        propertySet.InsertScalar(L"t2", 0.0F);
         const auto children = result.Children();
         // PreComp layer: Controls - 07 - Dropdown Rotate - 18 - PressedOffToNormalOn
         children.InsertAtTop(ContainerVisual_00());
@@ -1010,8 +1016,6 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual : public winrt::impl
         // PreComp layer: Controls - 07 - Dropdown Rotate - 01 - NormalOnToNormalOff
         children.InsertAtTop(ContainerVisual_17());
         StartProgressBoundAnimation(propertySet, L"t0", t0ScalarAnimation_0_to_1(), _rootProgress);
-        StartProgressBoundAnimation(propertySet, L"t1", t1ScalarAnimation_0_to_1(), _rootProgress);
-        StartProgressBoundAnimation(propertySet, L"t2", t2ScalarAnimation_0_to_1(), _rootProgress);
         return result;
     }
 
@@ -1190,22 +1194,6 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual : public winrt::impl
         const auto result = CreateScalarKeyFrameAnimation(0.416666687F, 0.0F, _stepThenHoldEasingFunction);
         result.SetReferenceParameter(L"_", _root);
         result.InsertKeyFrame(0.454166651F, 1.0F, _cubicBezierEasingFunction_3);
-        return result;
-    }
-
-    ScalarKeyFrameAnimation t1ScalarAnimation_0_to_1()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.125000015F, 0.0F, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.162499979F, 1.0F, _cubicBezierEasingFunction_3);
-        return result;
-    }
-
-    ScalarKeyFrameAnimation t2ScalarAnimation_0_to_1()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.0208333321F, 1.0F, _cubicBezierEasingFunction_4);
         return result;
     }
 
@@ -1621,7 +1609,7 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual : public winrt::impl
     {
         const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 23.9230003F }, _stepThenHoldEasingFunction);
         result.InsertKeyFrame(0.166666672F, { 24.1709995F, 23.9230003F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.1875F, { 24.1709995F, 36.4230003F }, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.1875F, { 24.1709995F, 38.5480003F }, _cubicBezierEasingFunction_1);
         result.InsertKeyFrame(0.245833337F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_2);
         return result;
     }
@@ -1634,10 +1622,8 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual : public winrt::impl
     Vector2KeyFrameAnimation OffsetVector2Animation_15()
     {
         const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 23.9230003F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
         result.InsertKeyFrame(0.125F, { 24.1709995F, 23.9230003F }, _holdThenStepEasingFunction);
-        result.InsertExpressionKeyFrame(0.162499979F, L"(Pow(1-_.t1,3)*Vector2(24.171,23.923))+(3*Square(1-_.t1)*_.t1*Vector2(24.171,21.84))+(3*(1-_.t1)*Square(_.t1)*Vector2(24.171,9.756001))+(Pow(_.t1,3)*Vector2(24.171,11.423))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.162499994F, { 24.1709995F, 11.4230003F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.162499994F, { 24.1709995F, 11.4230003F }, _cubicBezierEasingFunction_3);
         return result;
     }
 
@@ -1662,10 +1648,8 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual : public winrt::impl
     Vector2KeyFrameAnimation OffsetVector2Animation_17()
     {
         const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.1709995F, 23.9230003F }, _holdThenStepEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertExpressionKeyFrame(0.0208333321F, L"(Pow(1-_.t2,3)*Vector2(24.171,23.923))+(3*Square(1-_.t2)*_.t2*Vector2(24.171,21.69))+(3*(1-_.t2)*Square(_.t2)*Vector2(24.171,9.113))+(Pow(_.t2,3)*Vector2(24.171,10.525))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.0791666657F, { 24.1709995F, 10.5249996F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.0791666731F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.020833334F, { 24.1709995F, 9.89999962F }, _cubicBezierEasingFunction_4);
+        result.InsertKeyFrame(0.0791666657F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_2);
         return result;
     }
 
