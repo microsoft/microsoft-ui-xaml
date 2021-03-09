@@ -23,10 +23,10 @@
             <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
             <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
-            <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundDisabled" ResourceKey="ControlFillColorTertiaryBrush" />
-            <StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="DatePickerButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
@@ -97,10 +97,10 @@
             <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
             <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
-            <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundDisabled" ResourceKey="ControlFillColorTertiaryBrush" />
-            <StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="DatePickerButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />

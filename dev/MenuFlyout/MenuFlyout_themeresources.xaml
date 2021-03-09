@@ -9,25 +9,25 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <StaticResource x:Key="MenuFlyoutSeparatorBackground" ResourceKey="DividerStrokeColorDefaultBrush" />
-            <StaticResource x:Key="MenuFlyoutItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="MenuFlyoutItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="MenuFlyoutItemBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="MenuFlyoutItemBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="MenuFlyoutItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="MenuFlyoutItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemBackgroundSubMenuOpened" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemBackgroundSubMenuOpened" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundSubMenuOpened" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemChevron" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemChevron" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemChevronPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemChevronPressed" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemChevronSubMenuOpened" ResourceKey="TextFillColorPrimaryBrush" />
@@ -58,31 +58,31 @@
             <StaticResource x:Key="MenuFlyoutItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="MenuFlyoutItemRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
             <StaticResource x:Key="MenuFlyoutItemRevealBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealBackgroundBrush" />
-            <StaticResource x:Key="MenuFlyoutItemRevealBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="MenuFlyoutItemRevealBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutItemRevealBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutItemRevealBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutItemRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="MenuFlyoutItemRevealBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealBorderBrush" />
-            <StaticResource x:Key="MenuFlyoutItemRevealBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutItemRevealBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <!-- Legacy reveal resources for Windows.UI.Xaml.Controls.ToggleMenuFlyoutItem -->
             <StaticResource x:Key="ToggleMenuFlyoutItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="ToggleMenuFlyoutItemRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
             <StaticResource x:Key="ToggleMenuFlyoutItemRevealBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealBackgroundBrush" />
-            <StaticResource x:Key="ToggleMenuFlyoutItemRevealBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ToggleMenuFlyoutItemRevealBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ToggleMenuFlyoutItemRevealBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ToggleMenuFlyoutItemRevealBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ToggleMenuFlyoutItemRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="ToggleMenuFlyoutItemRevealBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealBorderBrush" />
-            <StaticResource x:Key="ToggleMenuFlyoutItemRevealBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ToggleMenuFlyoutItemRevealBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <!-- Legacy reveal resources for Windows.UI.Xaml.Controls.MenuFlyoutSubItem -->
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundPressed" ResourceKey="SystemControlHighlightAccentRevealBackgroundBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrushSubMenuOpened" ResourceKey="SystemControlTransparentRevealBorderBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -165,25 +165,25 @@
 
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="MenuFlyoutSeparatorBackground" ResourceKey="DividerStrokeColorDefaultBrush" />
-            <StaticResource x:Key="MenuFlyoutItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="MenuFlyoutItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="MenuFlyoutItemBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="MenuFlyoutItemBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="MenuFlyoutItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="MenuFlyoutItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemBackgroundSubMenuOpened" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemBackgroundSubMenuOpened" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundSubMenuOpened" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemChevron" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemChevron" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemChevronPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemChevronPressed" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemChevronSubMenuOpened" ResourceKey="TextFillColorPrimaryBrush" />
@@ -213,44 +213,44 @@
             <StaticResource x:Key="MenuFlyoutItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="MenuFlyoutItemRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
             <StaticResource x:Key="MenuFlyoutItemRevealBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealBackgroundBrush" />
-            <StaticResource x:Key="MenuFlyoutItemRevealBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="MenuFlyoutItemRevealBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutItemRevealBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutItemRevealBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutItemRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="MenuFlyoutItemRevealBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealBorderBrush" />
-            <StaticResource x:Key="MenuFlyoutItemRevealBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutItemRevealBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <!-- Legacy reveal resources for Windows.UI.Xaml.Controls.ToggleMenuFlyoutItem -->
             <StaticResource x:Key="ToggleMenuFlyoutItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="ToggleMenuFlyoutItemRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
             <StaticResource x:Key="ToggleMenuFlyoutItemRevealBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealBackgroundBrush" />
-            <StaticResource x:Key="ToggleMenuFlyoutItemRevealBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ToggleMenuFlyoutItemRevealBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ToggleMenuFlyoutItemRevealBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ToggleMenuFlyoutItemRevealBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ToggleMenuFlyoutItemRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="ToggleMenuFlyoutItemRevealBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealBorderBrush" />
-            <StaticResource x:Key="ToggleMenuFlyoutItemRevealBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ToggleMenuFlyoutItemRevealBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <!-- Legacy reveal resources for Windows.UI.Xaml.Controls.MenuFlyoutSubItem -->
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundPressed" ResourceKey="SystemControlHighlightAccentRevealBackgroundBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrushSubMenuOpened" ResourceKey="SystemControlTransparentRevealBorderBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
     <x:Double x:Key="MenuFlyoutSeparatorHeight">1</x:Double>
-    <Thickness x:Key="MenuFlyoutPresenterThemePadding">0</Thickness>
+    <Thickness x:Key="MenuFlyoutPresenterThemePadding">0,2,0,2</Thickness>
     <x:Double x:Key="MenuFlyoutThemeMinHeight">40</x:Double>
     <Thickness x:Key="MenuFlyoutItemChevronMargin">24,0,0,0</Thickness>
     <Thickness x:Key="MenuFlyoutItemPlaceholderThemeThickness">28,0,0,0</Thickness>
     <Thickness x:Key="MenuFlyoutSeparatorThemePadding">-4,2,-4,2</Thickness>
     <Thickness x:Key="MenuFlyoutItemDoublePlaceholderThemeThickness">56,0,0,0</Thickness>
-    <Thickness x:Key="MenuFlyoutScrollerMargin">4</Thickness>
-    <Thickness x:Key="MenuFlyoutItemThemePadding">11,9,11,10</Thickness>
-    <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,5,11,7</Thickness>
+    <Thickness x:Key="MenuFlyoutItemMargin">4,2,4,2</Thickness>
+    <Thickness x:Key="MenuFlyoutItemThemePadding">11,11,11,12</Thickness>
+    <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,7,11,9</Thickness>
 
     <!-- Default styles -->
     <Style TargetType="MenuFlyoutPresenter" BasedOn="{StaticResource DefaultMenuFlyoutPresenterStyle}" />
@@ -279,7 +279,7 @@
                     <Grid
                         Background="{TemplateBinding Background}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7Present:BackgroundSizing="OuterBorderEdge">
+                        contract7Present:BackgroundSizing="InnerBorderEdge">
                         <ScrollViewer x:Name="MenuFlyoutPresenterScrollViewer"
                             Margin="{TemplateBinding Padding}"
                             MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.FlyoutContentMinWidth}"
@@ -291,7 +291,7 @@
                             IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
                             ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
                             AutomationProperties.AccessibilityView="Raw">
-                            <ItemsPresenter Margin="{StaticResource MenuFlyoutScrollerMargin}" />
+                            <ItemsPresenter />
                         </ScrollViewer>
                         <Border
                             x:Name="MenuFlyoutPresenterBorder"
@@ -313,7 +313,7 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <contract6Present:Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
-        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="MenuFlyoutItem">
@@ -323,14 +323,11 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
+                        Margin="{StaticResource MenuFlyoutItemMargin}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="LayoutRoot" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="Normal" />
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="Background">
@@ -342,7 +339,6 @@
                                         <contract6Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="KeyboardAcceleratorTextBlock" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver}" />
                                         </contract6Present:ObjectAnimationUsingKeyFrames>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="LayoutRoot" />
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -356,7 +352,6 @@
                                         <contract6Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="KeyboardAcceleratorTextBlock" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
                                         </contract6Present:ObjectAnimationUsingKeyFrames>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="LayoutRoot" />
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
@@ -457,7 +452,7 @@
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
-        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleMenuFlyoutItem">
@@ -466,15 +461,11 @@
                         Padding="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Margin="{StaticResource MenuFlyoutItemMargin}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="AnimationRoot" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="Normal" />
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot"
@@ -489,7 +480,6 @@
                                            Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="AnimationRoot" />
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -506,7 +496,6 @@
                                            Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="AnimationRoot" />
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
@@ -545,28 +534,28 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Grid x:Name="AnimationRoot">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <FontIcon
-                                x:Name="CheckGlyph"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Glyph="&#xE001;"
-                                FontSize="12"
-                                Foreground="{ThemeResource MenuFlyoutSubItemChevron}"
-                                Opacity="0"
-                                Margin="0,0,16,0" />
-                            <TextBlock
-                                x:Name="TextBlock"
-                                Grid.Column="1"
-                                Text="{TemplateBinding Text}"
-                                TextTrimming="Clip"
-                                Foreground="{TemplateBinding Foreground}"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                        </Grid>
+                        
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <FontIcon
+                            x:Name="CheckGlyph"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            Glyph="&#xE001;"
+                            FontSize="12"
+                            Foreground="{ThemeResource MenuFlyoutSubItemChevron}"
+                            Opacity="0"
+                            Margin="0,0,16,0" />
+                        <TextBlock
+                            x:Name="TextBlock"
+                            Grid.Column="1"
+                            Text="{TemplateBinding Text}"
+                            TextTrimming="Clip"
+                            Foreground="{TemplateBinding Foreground}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -581,7 +570,7 @@
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="MenuFlyoutSubItem">
@@ -591,6 +580,7 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
+                        Margin="{StaticResource MenuFlyoutItemMargin}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
@@ -765,12 +755,7 @@
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="LayoutRoot" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="Normal" />
 
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
@@ -781,9 +766,6 @@
                                         <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver}" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="LayoutRoot" />
-                                    </Storyboard>
                                 </VisualState>
 
                                 <VisualState x:Name="Pressed">
@@ -795,9 +777,6 @@
                                         <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundPressed}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="LayoutRoot" />
-                                    </Storyboard>
                                 </VisualState>
 
                                 <VisualState x:Name="Disabled">
@@ -908,16 +887,9 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}" >
-
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="AnimationRoot" />
-                                    </Storyboard>
-                                </VisualState>
-
+                                <VisualState x:Name="Normal" />
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.(media:RevealBrush.State)" Value="PointerOver" />
@@ -928,11 +900,7 @@
                                         <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemCheckGlyphForegroundPointerOver}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver}" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="AnimationRoot" />
-                                    </Storyboard>
                                 </VisualState>
-
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.(media:RevealBrush.State)" Value="Pressed" />
@@ -943,11 +911,7 @@
                                         <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemCheckGlyphForegroundPressed}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="AnimationRoot" />
-                                    </Storyboard>
                                 </VisualState>
-
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource ToggleMenuFlyoutItemRevealBackgroundDisabled}" />
@@ -983,7 +947,6 @@
                             <VisualStateGroup x:Name="PaddingSizeStates">
                                 <VisualState x:Name="DefaultPadding" />
                                 <VisualState x:Name="NarrowPadding">
-
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="Padding">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource MenuFlyoutItemThemePaddingNarrow}" />
@@ -999,52 +962,48 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </contract6Present:VisualStateGroup>
-
                         </VisualStateManager.VisualStateGroups>
-                        <Grid x:Name="AnimationRoot">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <FontIcon x:Name="CheckGlyph"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Glyph="&#xE001;"
-                                FontSize="12"
-                                Foreground="{ThemeResource ToggleMenuFlyoutItemCheckGlyphForeground}"
-                                Opacity="0"
-                                Margin="0,0,12,0" />
-                            <Viewbox x:Name="IconRoot" 
-                                Grid.Column="1"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Width="16" 
-                                Height="16"
-                                Visibility="Collapsed">
-                                <ContentPresenter x:Name="IconContent"
-                                Content="{TemplateBinding Icon}"/>
-                            </Viewbox>
-                            <TextBlock x:Name="TextBlock"
-                                Grid.Column="1"
-                                Text="{TemplateBinding Text}"
-                                TextTrimming="Clip"
-                                Foreground="{TemplateBinding Foreground}"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                            <contract6Present:TextBlock x:Name="KeyboardAcceleratorTextBlock"
-                                Grid.Column="2"
-                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                Text="{TemplateBinding KeyboardAcceleratorTextOverride}"
-                                MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}"
-                                Margin="24,0,0,0"
-                                Foreground="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForeground}"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                Visibility="Collapsed"
-                                AutomationProperties.AccessibilityView="Raw" />
+                        
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                        </Grid>
-
+                        <FontIcon x:Name="CheckGlyph"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            Glyph="&#xE001;"
+                            FontSize="12"
+                            Foreground="{ThemeResource ToggleMenuFlyoutItemCheckGlyphForeground}"
+                            Opacity="0"
+                            Margin="0,0,12,0" />
+                        <Viewbox x:Name="IconRoot" 
+                            Grid.Column="1"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Width="16" 
+                            Height="16"
+                            Visibility="Collapsed">
+                            <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}"/>
+                        </Viewbox>
+                        <TextBlock x:Name="TextBlock"
+                            Grid.Column="1"
+                            Text="{TemplateBinding Text}"
+                            TextTrimming="Clip"
+                            Foreground="{TemplateBinding Foreground}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        <contract6Present:TextBlock x:Name="KeyboardAcceleratorTextBlock"
+                            Grid.Column="2"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            Text="{TemplateBinding KeyboardAcceleratorTextOverride}"
+                            MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}"
+                            Margin="24,0,0,0"
+                            Foreground="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForeground}"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Visibility="Collapsed"
+                            AutomationProperties.AccessibilityView="Raw" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

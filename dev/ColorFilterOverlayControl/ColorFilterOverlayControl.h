@@ -11,7 +11,7 @@
 
 #pragma warning(push)
 #pragma warning(disable: 6101)  // Returning uninitialized memory '<value>'.  A successful path through the function does not set the named _Out_ parameter.
-#include "Microsoft.UI.Composition.Effects_impl.h"
+#include "microsoft.ui.private.composition.effects_impl.h"
 #pragma warning(pop)
 
 class ColorFilterOverlayControl :

@@ -2,7 +2,7 @@
 {
 interface IRefreshInfoProviderAdapter;
 
-[WUXC_VERSION_INTERNAL]
+[MUX_INTERNAL]
 [webhosthidden]
 interface IRefreshContainerPrivate
 {

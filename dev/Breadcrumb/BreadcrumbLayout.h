@@ -7,15 +7,14 @@
 
 #include "Vector.h"
 #include "NonVirtualizingLayout.h"
-#include "VirtualizingLayout.h"
 
-#include "BreadcrumbLayout.g.h"
-
-struct BreadcrumbLayout :
-    public ReferenceTracker<BreadcrumbLayout, winrt::implementation::BreadcrumbLayoutT, NonVirtualizingLayout>
+class BreadcrumbLayout :
+    public winrt::implements<BreadcrumbLayout, NonVirtualizingLayout>
 {
 public:
     BreadcrumbLayout();
+    BreadcrumbLayout(const winrt::BreadcrumbBar& breadcrumb);
+
     ~BreadcrumbLayout();
 
     winrt::Size MeasureOverride(
@@ -27,20 +26,24 @@ public:
 
     bool EllipsisIsRendered();
     uint32_t FirstRenderedItemIndexAfterEllipsis();
+    uint32_t GetVisibleItemsCount();
 
 private:
-    void ArrangeItem(const winrt::UIElement& breadcrumbItem, float& accumulatedWidths, float& maxElementHeight);
-    void ArrangeItem(const winrt::NonVirtualizingLayoutContext& context, int index, float& accumulatedWidths, float& maxElementHeight);
+    void ArrangeItem(const winrt::UIElement& breadcrumbItem, float& accumulatedWidths, float maxElementHeight);
+    void ArrangeItem(const winrt::NonVirtualizingLayoutContext& context, int index, float& accumulatedWidths, float maxElementHeight);
     void HideItem(const winrt::UIElement& breadcrumbItem);
     void HideItem(const winrt::NonVirtualizingLayoutContext& context, int index);
-    int GetFirstBreadcrumbItemToArrange(winrt::NonVirtualizingLayoutContext const& context);
+    int GetFirstBreadcrumbBarItemToArrange(winrt::NonVirtualizingLayoutContext const& context);
+    float GetBreadcrumbBarItemsHeight(winrt::NonVirtualizingLayoutContext const& context, int firstItemToRender);
 
     uint32_t GetItemCount(winrt::NonVirtualizingLayoutContext const& context);
     winrt::UIElement GetElementAt(winrt::NonVirtualizingLayoutContext const& context, uint32_t index);
 
     winrt::Size m_availableSize{};
-    tracker_ref<winrt::BreadcrumbItem> m_ellipsisButton{ this };
+    winrt::BreadcrumbBarItem m_ellipsisButton{nullptr};
+    winrt::BreadcrumbBar m_breadcrumb{ nullptr };
 
     bool m_ellipsisIsRendered{};
     uint32_t m_firstRenderedItemIndexAfterEllipsis{};
+    uint32_t m_visibleItemsCount{};
 };
