@@ -43,10 +43,10 @@
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)InkToolbar_themeresources.xaml" >
-	    <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
-	  </Page>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)RadioButton_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
