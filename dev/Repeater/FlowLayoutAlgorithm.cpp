@@ -474,9 +474,9 @@ bool FlowLayoutAlgorithm::ShouldContinueFillingUpSpace(
 
         // Ensure that both minor and major directions are taken into consideration so that if the scrolling direction
         // is the same as the flow direction we still stop at the end of the viewport rectangle.
-        shouldContinue =
-            (direction == GenerateDirection::Forward && elementMajorStart < rectMajorEnd && elementMinorStart < rectMinorEnd) ||
-            (direction == GenerateDirection::Backward && elementMajorEnd > rectMajorStart&& elementMinorEnd > rectMinorStart);
+        shouldContinue = direction == GenerateDirection::Forward
+            ? elementMajorStart < rectMajorEnd && elementMinorStart < rectMinorEnd
+            : elementMajorEnd > rectMajorStart && elementMinorEnd > rectMinorStart;
     }
 
     return shouldContinue;
