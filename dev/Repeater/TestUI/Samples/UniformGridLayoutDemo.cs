@@ -3,6 +3,7 @@
 
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Windows.UI.Xaml;
@@ -14,14 +15,12 @@ namespace MUXControlsTestApp.Samples
 {
     public sealed partial class UniformGridLayoutDemo : Page
     {
-        public ObservableCollection<string> collection
-            = new ObservableCollection<string>();
+        public IEnumerable<int> collection;
 
         public UniformGridLayoutDemo()
         {
+            collection = Enumerable.Range(0, 40);
             this.InitializeComponent();
-            for (int i = 0; i < 40; ++i)
-                collection.Add(i.ToString());
         }
 
         public void GetRepeaterActualHeightButtonClick(object sender, RoutedEventArgs e)

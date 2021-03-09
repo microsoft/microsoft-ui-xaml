@@ -11,14 +11,12 @@
                                 MinRowSpacing="8" MinColumnSpacing="8"
                                 MaximumRowsOrColumns="4"/>
 
-        <!-- The DataTemplate used: CircularTemplate-->
-
-        <DataTemplate x:Key="CircularTemplate" x:DataType="x:String">
-            <Grid Background="Red"
-                  Width="100"
-                  Height="100">
-                <TextBlock Text="{x:Bind}" 
-                           FontSize="20"/>
+        <DataTemplate x:Key="SimpleElementTemplate" x:DataType="x:String">
+            <Grid Background="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+                Width="100"
+                Height="100">
+                <TextBlock Text="{Binding}" 
+                    FontSize="20"/>
             </Grid>
         </DataTemplate>
     </Page.Resources>
@@ -31,8 +29,7 @@
             <controls:ItemsRepeater x:Name="UniformGridRepeater"
                 ItemsSource="{x:Bind collection}"
                 Layout="{StaticResource UniformGridLayout}"
-                ItemTemplate="{StaticResource CircularTemplate}"
-            />
+                ItemTemplate="{StaticResource SimpleElementTemplate}"/>
         </ScrollViewer>
         <StackPanel>
             <Button AutomationProperties.Name="GetRepeaterActualHeightButton"
