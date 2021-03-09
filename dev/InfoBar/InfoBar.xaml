@@ -209,6 +209,57 @@
                                 CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
                                 Style="{TemplateBinding CloseButtonStyle}">
 
+                                <Button.Resources>
+                                    <ResourceDictionary>
+                                        <ResourceDictionary.ThemeDictionaries>
+                                            <ResourceDictionary x:Key="Default">
+                                                <StaticResource x:Key="ButtonBackground" ResourceKey="AppBarButtonBackground" />
+                                                <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="AppBarButtonBackgroundPointerOver" />
+                                                <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="AppBarButtonBackgroundPressed" />
+                                                <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="AppBarButtonBackgroundDisabled" />
+                                                <StaticResource x:Key="ButtonForeground" ResourceKey="AppBarButtonForeground" />
+                                                <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="AppBarButtonForegroundPointerOver" />
+                                                <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="AppBarButtonForegroundPressed" />
+                                                <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="AppBarButtonForegroundDisabled" />
+                                                <StaticResource x:Key="ButtonBorderBrush" ResourceKey="AppBarButtonBorderBrush" />
+                                                <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="AppBarButtonBorderBrushPointerOver" />
+                                                <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="AppBarButtonBorderBrushPressed" />
+                                                <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="AppBarButtonBorderBrushDisabled" />
+                                            </ResourceDictionary>
+
+                                            <ResourceDictionary x:Key="HighContrast">
+                                                <StaticResource x:Key="ButtonBackground" ResourceKey="AppBarButtonBackground" />
+                                                <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="AppBarButtonBackgroundPointerOver" />
+                                                <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="AppBarButtonBackgroundPressed" />
+                                                <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="AppBarButtonBackgroundDisabled" />
+                                                <StaticResource x:Key="ButtonForeground" ResourceKey="AppBarButtonForeground" />
+                                                <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="AppBarButtonForegroundPointerOver" />
+                                                <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="AppBarButtonForegroundPressed" />
+                                                <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="AppBarButtonForegroundDisabled" />
+                                                <StaticResource x:Key="ButtonBorderBrush" ResourceKey="AppBarButtonBorderBrush" />
+                                                <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="AppBarButtonBorderBrushPointerOver" />
+                                                <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="AppBarButtonBorderBrushPressed" />
+                                                <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="AppBarButtonBorderBrushDisabled" />
+                                            </ResourceDictionary>
+
+                                            <ResourceDictionary x:Key="Light">
+                                                <StaticResource x:Key="ButtonBackground" ResourceKey="AppBarButtonBackground" />
+                                                <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="AppBarButtonBackgroundPointerOver" />
+                                                <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="AppBarButtonBackgroundPressed" />
+                                                <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="AppBarButtonBackgroundDisabled" />
+                                                <StaticResource x:Key="ButtonForeground" ResourceKey="AppBarButtonForeground" />
+                                                <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="AppBarButtonForegroundPointerOver" />
+                                                <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="AppBarButtonForegroundPressed" />
+                                                <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="AppBarButtonForegroundDisabled" />
+                                                <StaticResource x:Key="ButtonBorderBrush" ResourceKey="AppBarButtonBorderBrush" />
+                                                <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="AppBarButtonBorderBrushPointerOver" />
+                                                <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="AppBarButtonBorderBrushPressed" />
+                                                <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="AppBarButtonBorderBrushDisabled" />
+                                            </ResourceDictionary>
+                                        </ResourceDictionary.ThemeDictionaries>
+                                    </ResourceDictionary>
+                                </Button.Resources>
+
                                 <Viewbox Width="{StaticResource InfoBarCloseButtonGlyphSize}"
                                     Height="{StaticResource InfoBarCloseButtonGlyphSize}"
                                     HorizontalAlignment="Center"

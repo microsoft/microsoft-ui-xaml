@@ -125,67 +125,7 @@
             <Setter Property="Width" Value="{StaticResource InfoBarCloseButtonSize}"/>
             <Setter Property="Height" Value="{StaticResource InfoBarCloseButtonSize}"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
-            <Setter Property="Background" Value="{ThemeResource AppBarButtonBackground}" />
-            <Setter Property="Foreground" Value="{ThemeResource AppBarButtonForeground}" />
-            <Setter Property="BorderBrush" Value="{ThemeResource AppBarButtonBorderBrush}" />
             <Setter Property="Margin" Value="5"/>
-            <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <ContentPresenter
-                        x:Name="ContentPresenter"
-                        Background="{TemplateBinding Background}"
-                        contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        Content="{TemplateBinding Content}"
-                        ContentTemplate="{TemplateBinding ContentTemplate}"
-                        ContentTransitions="{TemplateBinding ContentTransitions}"
-                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
-                        Padding="{TemplateBinding Padding}"
-                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                        AutomationProperties.AccessibilityView="Raw">
-
-                            <contract7Present:ContentPresenter.BackgroundTransition>
-                                <contract7Present:BrushTransition Duration="0:0:0.083" />
-                            </contract7Present:ContentPresenter.BackgroundTransition>
-
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name="CommonStates">
-                                    <VisualState x:Name="Normal"/>
-
-                                    <VisualState x:Name="PointerOver">
-                                        <VisualState.Setters>
-                                            <Setter Target="ContentPresenter.Background" Value="{ThemeResource AppBarButtonBackgroundPointerOver}"/>
-                                            <Setter Target="ContentPresenter.BorderBrush" Value="{StaticResource AppBarButtonBorderBrushPointerOver}"/>
-                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-
-                                    <VisualState x:Name="Pressed">
-                                        <VisualState.Setters>
-                                            <Setter Target="ContentPresenter.Background" Value="{ThemeResource AppBarButtonBackgroundPressed}"/>
-                                            <Setter Target="ContentPresenter.BorderBrush" Value="{StaticResource AppBarButtonBorderBrushPressed}"/>
-                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-
-                                    <VisualState x:Name="Disabled">
-                                        <VisualState.Setters>
-                                            <Setter Target="ContentPresenter.Background" Value="{ThemeResource AppBarButtonBackgroundDisabled}"/>
-                                            <Setter Target="ContentPresenter.BorderBrush" Value="{StaticResource AppBarButtonBorderBrushDisabled}"/>
-                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource AppBarButtonForegroundDisabled}"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
-                        </ContentPresenter>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
         </Style.Setters>
     </Style>
     
