@@ -121,7 +121,7 @@
         <Setter Property="Foreground" Value="{ThemeResource PipsPagerNavigationButtonForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource PipsPagerNavigationButtonBorderBrush}" />
         <Setter Property="BorderThickness" Value="{StaticResource PipsPagerNavigationButtonBorderThickness}" />
-        <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
+        <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
         <Setter Property="FontSize" Value="{StaticResource PipsPagerNavigationButtonFontSize}" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="FocusVisualMargin" Value="0" />
@@ -211,7 +211,7 @@
         <Setter Property="Foreground" Value="{ThemeResource PipsPagerSelectionIndicatorForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource PipsPagerSelectionIndicatorBorderBrush}" />
         <Setter Property="BorderThickness" Value="{StaticResource PipsPagerButtonBorderThickness}" />
-        <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
+        <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
