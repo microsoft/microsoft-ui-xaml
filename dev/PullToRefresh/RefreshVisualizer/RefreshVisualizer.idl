@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
 enum RefreshVisualizerOrientation
 {
@@ -11,7 +11,7 @@ enum RefreshVisualizerOrientation
     Rotate270DegreesCounterclockwise = 3,
 };
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
 enum RefreshVisualizerState
 {
@@ -22,36 +22,30 @@ enum RefreshVisualizerState
     Refreshing = 4,
 };
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IRefreshInteractionRatioChangedEventArgs", d7e47820-dc47-4b8e-bb27-7f0a83f29a07)]
 runtimeclass RefreshInteractionRatioChangedEventArgs
 {
     Double InteractionRatio { get; };
 }
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IRefreshRequestedEventArgs", 1b089f43-cfcf-4ac6-b31f-8dab6eefdd93)]
 runtimeclass RefreshRequestedEventArgs
 {
     Windows.Foundation.Deferral GetDeferral();
 }
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IRefreshStateChangedEventArgs", bb6c901e-21fe-4109-af80-73ec661b678a)]
 runtimeclass RefreshStateChangedEventArgs
 {
     RefreshVisualizerState OldState { get; };
     RefreshVisualizerState NewState { get; };
 }
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IRefreshVisualizer", c0e30122-f3eb-4baa-a11f-c3f87342cbf4)]
-[WUXC_STATIC_NAME("IRefreshVisualizerStatics", afea56af-362a-4015-b155-733a1f869831)]
-[WUXC_CONSTRUCTOR_NAME("IRefreshVisualizerFactory", 6f5c6132-6e09-4c10-824a-127d36672715)]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass RefreshVisualizer : Windows.UI.Xaml.Controls.Control

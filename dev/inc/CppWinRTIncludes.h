@@ -72,8 +72,8 @@
 #include <winrt\Microsoft.UI.Xaml.Automation.Peers.h>
 #endif
 
-#if __has_include("winrt\Microsoft.UI.Composition.Effects.h")
-#include <winrt\Microsoft.UI.Composition.Effects.h>
+#if __has_include("winrt\Microsoft.UI.Private.Composition.Effects.h")
+#include <winrt\Microsoft.UI.Private.Composition.Effects.h>
 #endif
 
 namespace winrt
@@ -182,7 +182,7 @@ namespace winrt
     }
 
 #ifdef EFFECTS_INCLUDED
-    using namespace ::winrt::Microsoft::UI::Composition::Effects;
+    using namespace ::winrt::Microsoft::UI::Private::Composition::Effects;
 #endif
 
     // using namespace ::winrt::Windows::UI::Xaml::Controls;

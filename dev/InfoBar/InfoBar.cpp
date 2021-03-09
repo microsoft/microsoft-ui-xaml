@@ -206,7 +206,7 @@ void InfoBar::UpdateIcon()
     auto const templateSettings = winrt::get_self<::InfoBarTemplateSettings>(TemplateSettings());
     if (auto const source = IconSource())
     {
-        templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
+        templateSettings->IconElement(source.CreateIconElement());
     }
     else
     {

@@ -81,7 +81,7 @@ foreach ($error in $apiInformationErrors)
 [System.Collections.Generic.List[Compatibility.Error]]$versionUsages = @()
 [System.Collections.Generic.List[Compatibility.Error]]$missingWebhosthiddenAttributes = @()
 
-$files = Get-ChildItem $PSScriptRoot\..\dev -Include "*.idl" -Exclude "Microsoft.UI.Xaml.idl","Microsoft.UI.Composition.Effects.idl" -Recurse
+$files = Get-ChildItem $PSScriptRoot\..\dev -Include "*.idl" -Exclude "Microsoft.UI.Xaml.idl","Microsoft.UI.Private.Composition.Effects.idl" -Recurse
 
 Write-Verbose ""
 Write-Verbose "Checking IDL files..."
@@ -135,7 +135,7 @@ foreach ($file in $files)
 
 foreach ($error in $versionUsages)
 {
-    Write-ErrorInFile "Usage of version() detected, which will not compile on the Windows side.  Use WUXC_VERSION_PREVIEW or WUXC_VERSION_INTERNAL or WUXC_VERSION_RSx." $error.FilePath $error.LineNumber $error.ColumnNumber
+    Write-ErrorInFile "Usage of version() detected, which will not compile on the Windows side.  Use MUX_PREVIEW or MUX_INTERNAL or WUXC_VERSION_RSx." $error.FilePath $error.LineNumber $error.ColumnNumber
 }
 
 foreach ($error in $missingWebhosthiddenAttributes)

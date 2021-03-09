@@ -63,7 +63,7 @@ namespace MUXControlsTestApp
         {
             if (PersonInfoListScrollViewer != null)
             {
-                PersonInfoListScrollViewer.ChangeView(null, args.NewPageIndex * PersonInfoListScrollViewer.ViewportHeight, null);
+                PersonInfoListScrollViewer.ChangeView(null, sender.SelectedPageIndex * PersonInfoListScrollViewer.ViewportHeight, null);
             }
         }
 
@@ -85,7 +85,7 @@ namespace MUXControlsTestApp
 
         private void ButtonListPager_SelectedIndexChanged(PipsPager sender, PipsPagerSelectedIndexChangedEventArgs args)
         {
-            ButtonListScrollViewer.ChangeView(null, args.NewPageIndex * (ButtonListScrollViewer.ViewportHeight + MinRowSpacing), null);
+            ButtonListScrollViewer.ChangeView(null, sender.SelectedPageIndex * (ButtonListScrollViewer.ViewportHeight + MinRowSpacing), null);
         }
 
         private ObservableCollection<PersonInfo> CreatePersonInfoList()

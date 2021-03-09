@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 enum TeachingTipTailVisibility
 {
@@ -10,7 +10,7 @@ enum TeachingTipTailVisibility
     Collapsed,
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 enum TeachingTipCloseReason
 {
@@ -19,7 +19,7 @@ enum TeachingTipCloseReason
     Programmatic,
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 enum TeachingTipPlacementMode
 {
@@ -39,7 +39,7 @@ enum TeachingTipPlacementMode
     Center
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 enum TeachingTipHeroContentPlacementMode
 {
@@ -48,14 +48,14 @@ enum TeachingTipHeroContentPlacementMode
     Bottom,
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 runtimeclass TeachingTipClosedEventArgs
 {
     TeachingTipCloseReason Reason{ get; };
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 runtimeclass TeachingTipClosingEventArgs
 {
@@ -64,7 +64,7 @@ runtimeclass TeachingTipClosingEventArgs
     Windows.Foundation.Deferral GetDeferral();
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass TeachingTipTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
@@ -80,7 +80,7 @@ unsealed runtimeclass TeachingTipTemplateSettings : Windows.UI.Xaml.DependencyOb
     static Windows.UI.Xaml.DependencyProperty IconElementProperty{ get; };
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]

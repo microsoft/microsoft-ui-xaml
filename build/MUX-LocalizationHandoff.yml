@@ -1,3 +1,6 @@
+variables:
+- group: WinUITeamKeyVault-Secrets
+
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: LocalizationHandoff
@@ -19,6 +22,8 @@ jobs:
     displayName: 'Run Loc Workflow'
     inputs:
       filename: '$(Build.SourcesDirectory)\tools\VSTSRunLocWorkflow.cmd'
+    env:
+      MAPPED_LOC_KEY: $(WinUILab-TouchdownLoc-Key)
 
   - powershell: |
       $changes = & git ls-files -m
