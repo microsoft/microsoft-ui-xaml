@@ -95,20 +95,20 @@ void BreadcrumbBarItem::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
 
-    RevokePartsListeners();
-    winrt::IControlProtected controlProtected{ *this };
-
-    if (m_isEllipsisItem)
-    {
-        m_ellipsisFlyout.set(GetTemplateChildT<winrt::Flyout>(s_itemEllipsisFlyoutPartName, controlProtected));
-    }
-
     if (m_isEllipsisDropDownItem)
     {
         UpdateEllipsisDropDownItemCommonVisualState(false /*useTransitions*/);
     }
     else
     {
+        RevokePartsListeners();
+        winrt::IControlProtected controlProtected{ *this };
+
+        if (m_isEllipsisItem)
+        {
+            m_ellipsisFlyout.set(GetTemplateChildT<winrt::Flyout>(s_itemEllipsisFlyoutPartName, controlProtected));
+        }
+
         m_button.set(GetTemplateChildT<winrt::Button>(s_itemButtonPartName, controlProtected));
 
         if (const auto& button = m_button.get())
