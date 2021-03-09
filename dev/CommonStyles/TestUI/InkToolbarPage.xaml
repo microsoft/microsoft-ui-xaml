@@ -13,7 +13,7 @@
 
     <Grid>
         <StackPanel Orientation="Vertical">
-            <InkToolbar VerticalAlignment="Top" TargetInkCanvas="{x:Bind inkCanvas}">
+            <InkToolbar VerticalAlignment="Top" TargetInkCanvas="{x:Bind inkCanvas}" Margin="0,2,0,2">
             </InkToolbar>
             <InkCanvas x:Name="inkCanvas" Height="400"/>
         </StackPanel>
