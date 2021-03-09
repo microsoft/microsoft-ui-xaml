@@ -1128,7 +1128,7 @@
             </Setter>
         </Style>
         <DataTemplate x:Key="InkToolbarEraserButtonFlyoutContentTemplate">
-            <StackPanel x:Name="InkToolbarEraserButtonFlyoutContent" Margin="0,8,0,8">
+            <StackPanel x:Name="InkToolbarEraserButtonFlyoutContent" Margin="0,6,0,6">
                 <InkToolbarFlyoutItem x:Name="StrokeEraser" Kind="RadioCheck" AutomationProperties.AutomationId="InkToolbarStrokeEraser"
                             Style="{StaticResource InkToolbarFlyoutItemStyle}">
                     <InkToolbarFlyoutItem.Content>
