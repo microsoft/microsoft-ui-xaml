@@ -42,6 +42,7 @@
             <StaticResource x:Key="TimePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <SolidColorBrush x:Key="TimePickerHeaderForegroundThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="TimePickerForegroundThemeBrush" Color="#FF000000" />
+            <StaticResource x:Key="TimePickerFlyoutPresenterHighlightForegroundColor" ResourceKey="TextOnAccentAAFillColorPrimary" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="TimePickerSpacerFill" ResourceKey="SystemControlForegroundBaseLowBrush" />
@@ -79,6 +80,7 @@
             <FontWeight x:Key="TimePickerHeaderThemeFontWeight">Normal</FontWeight>
             <SolidColorBrush x:Key="TimePickerForegroundThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="TimePickerHeaderForegroundThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <Color x:Key="DatePickerFlyoutPresenterHighlightForegroundColor">Transparent</Color>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <x:Double x:Key="TimePickerSelectorThemeMinWidth">80</x:Double>
@@ -111,10 +113,11 @@
             <contract7NotPresent:StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <contract7NotPresent:StaticResource x:Key="TimePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <StaticResource x:Key="TimePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
-            <StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="AccentAAFillColorDefaultBrush" />
             <StaticResource x:Key="TimePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <SolidColorBrush x:Key="TimePickerForegroundThemeBrush" Color="#FF000000" />
             <SolidColorBrush x:Key="TimePickerHeaderForegroundThemeBrush" Color="#FF000000" />
+            <StaticResource x:Key="TimePickerFlyoutPresenterHighlightForegroundColor" ResourceKey="TextOnAccentAAFillColorPrimary" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -391,12 +394,14 @@
                                         <ColumnDefinition Width="*" x:Name="ThirdPickerHostColumn" />
                                     </Grid.ColumnDefinitions>
                                     <Grid x:Name="HighlightRect"
+                                        Canvas.ZIndex="9999"
                                         Background="{ThemeResource TimePickerFlyoutPresenterHighlightFill}"
                                         CornerRadius="{TemplateBinding CornerRadius}"
                                         Grid.Column="0"
                                         Grid.ColumnSpan="5"
                                         VerticalAlignment="Center"
                                         Height="{ThemeResource TimePickerFlyoutPresenterHighlightHeight}"
+                                        Margin="4,2,4,2"
                                         IsHitTestVisible="false"/>
                                     <primitives:ColorFilterOverlayControl
                                         Canvas.ZIndex="10000"
