@@ -48,8 +48,8 @@
     <!-- DateTimeFlyoutBorderPadding is defined since RS5. set it here to ensure it's always defined. -->
     <Thickness x:Key="DateTimeFlyoutBorderPadding">0</Thickness>
 
-    <contract7Present:TextCommandBarFlyout x:Key="TextControlCommandBarContextFlyout" Placement="BottomEdgeAlignedLeft" />
-    <contract7Present:TextCommandBarFlyout x:Key="TextControlCommandBarSelectionFlyout" Placement="TopEdgeAlignedLeft" />
+    <contract7Present:TextCommandBarFlyout x:Key="TextControlCommandBarContextFlyout2" Placement="BottomEdgeAlignedLeft" />
+    <contract7Present:TextCommandBarFlyout x:Key="TextControlCommandBarSelectionFlyout2" Placement="TopEdgeAlignedLeft" />
     <!-- Caret/Chevron Icons -->
     <x:String x:Key="ScrollBarCaretLeft">&#xE0E2;</x:String>
     <x:String x:Key="ScrollBarCaretRight">&#xE0E3;</x:String>
