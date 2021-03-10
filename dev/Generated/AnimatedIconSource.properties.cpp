@@ -40,10 +40,10 @@ void AnimatedIconSourceProperties::EnsureProperties()
         s_SourceProperty =
             InitializeDependencyProperty(
                 L"Source",
-                winrt::name_of<winrt::IRichAnimatedVisualSource>(),
+                winrt::name_of<winrt::IAnimatedVisualSource2>(),
                 winrt::name_of<winrt::AnimatedIconSource>(),
                 false /* isAttached */,
-                ValueHelper<winrt::IRichAnimatedVisualSource>::BoxedDefaultValue(),
+                ValueHelper<winrt::IAnimatedVisualSource2>::BoxedDefaultValue(),
                 nullptr);
     }
 }
@@ -68,15 +68,15 @@ winrt::IconSource AnimatedIconSourceProperties::FallbackIconSource()
     return ValueHelper<winrt::IconSource>::CastOrUnbox(static_cast<AnimatedIconSource*>(this)->GetValue(s_FallbackIconSourceProperty));
 }
 
-void AnimatedIconSourceProperties::Source(winrt::IRichAnimatedVisualSource const& value)
+void AnimatedIconSourceProperties::Source(winrt::IAnimatedVisualSource2 const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<AnimatedIconSource*>(this)->SetValue(s_SourceProperty, ValueHelper<winrt::IRichAnimatedVisualSource>::BoxValueIfNecessary(value));
+    static_cast<AnimatedIconSource*>(this)->SetValue(s_SourceProperty, ValueHelper<winrt::IAnimatedVisualSource2>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::IRichAnimatedVisualSource AnimatedIconSourceProperties::Source()
+winrt::IAnimatedVisualSource2 AnimatedIconSourceProperties::Source()
 {
-    return ValueHelper<winrt::IRichAnimatedVisualSource>::CastOrUnbox(static_cast<AnimatedIconSource*>(this)->GetValue(s_SourceProperty));
+    return ValueHelper<winrt::IAnimatedVisualSource2>::CastOrUnbox(static_cast<AnimatedIconSource*>(this)->GetValue(s_SourceProperty));
 }

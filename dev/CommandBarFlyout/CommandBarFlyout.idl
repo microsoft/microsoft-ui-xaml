@@ -1,7 +1,7 @@
-namespace MU_XC_NAMESPACE
+﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 [contentproperty("PrimaryCommands")]
 unsealed runtimeclass CommandBarFlyout : Windows.UI.Xaml.Controls.Primitives.FlyoutBase
@@ -12,7 +12,7 @@ unsealed runtimeclass CommandBarFlyout : Windows.UI.Xaml.Controls.Primitives.Fly
     Windows.Foundation.Collections.IObservableVector<Windows.UI.Xaml.Controls.ICommandBarElement> SecondaryCommands { get; };
 };
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass TextCommandBarFlyout : CommandBarFlyout
 {

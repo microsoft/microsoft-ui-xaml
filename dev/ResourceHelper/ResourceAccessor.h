@@ -113,7 +113,7 @@ public:
 #define SR_FallBackPlaceString L"FallBackPlaceString"
 #define SR_PagerControlPageTextName L"PagerControlPageText"
 #define SR_PagerControlPrefixTextName L"PagerControlPrefixText"
-#define SR_PagerControlSuffixTextName L"PagerControlPrefixText"
+#define SR_PagerControlSuffixTextName L"PagerControlSuffixText"
 #define SR_PagerControlFirstPageButtonTextName L"PagerControlFirstPageButtonText"
 #define SR_PagerControlPreviousPageButtonTextName L"PagerControlPreviousPageButtonText"
 #define SR_PagerControlNextPageButtonTextName L"PagerControlNextPageButtonText"
@@ -181,5 +181,7 @@ public:
 #define SR_InfoBarClosedNotification L"InfoBarClosedNotification"
 #define SR_InfoBarCustomLandmarkName L"InfoBarCustomLandmarkName"
 #define SR_InfoBarCloseButtonTooltip L"InfoBarCloseButtonTooltip"
+
+#define SR_AutomationNameEllipsisBreadcrumbBarItem L"AutomationNameEllipsisBreadcrumbBarItem"
 
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"
