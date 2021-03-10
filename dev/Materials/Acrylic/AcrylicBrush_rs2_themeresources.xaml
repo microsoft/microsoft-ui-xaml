@@ -537,15 +537,15 @@
                 BackgroundSource="Backdrop"/>
             <local:AcrylicBrush
                 x:Key="AccentAcrylicBackgroundFillColorBaseBrush"
-                TintColor="{ThemeResource SystemAccentColorLight2}"
+                TintColor="{ThemeResource SystemAccentColorLight3}"
                 TintOpacity="0.8"
-                FallbackColor="{ThemeResource SystemAccentColorLight2}"
+                FallbackColor="{ThemeResource SystemAccentColorLight3}"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
                 x:Key="AccentAcrylicInAppFillColorBaseBrush"
-                TintColor="{ThemeResource SystemAccentColorLight2}"
+                TintColor="{ThemeResource SystemAccentColorLight3}"
                 TintOpacity="0.8"
-                FallbackColor="{ThemeResource SystemAccentColorLight2}"
+                FallbackColor="{ThemeResource SystemAccentColorLight3}"
                 BackgroundSource="Backdrop"/>
         </ResourceDictionary>
 
