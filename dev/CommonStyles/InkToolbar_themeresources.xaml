@@ -221,6 +221,10 @@
         <Setter Property="Fill" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
     </Style>
 
+    <!--The AttachedFlyout must be created from code behind, otherwise XAML will create *one* flyout for this style and
+        apply to all instances of this kind of InkToolbar button, which means all instances of this kind of InkToolbar
+        button share the same flyout.
+        Similarly, the Palette property also need to be created from code behind to avoid sharing.-->
     <Style TargetType="InkToolbarBallpointPenButton" BasedOn="{StaticResource InkToolbarCommonButtonStyle}">
         <Setter Property="AutomationProperties.AutomationId" Value="InkToolbarBallpointPenButton" />
         <Setter Property="MinStrokeWidth" Value="1" />
@@ -422,14 +426,12 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <!--
-        The AttachedFlyout must be created from code behind, otherwise XAML will create *one* flyout for this style and
-        apply to all instances of this kind of InkToolbar button, which means all instances of this kind of InkToolbar
-        button share the same flyout.
-        Similarly, the Palette property also need to be created from code behind to avoid sharing.
-    -->
     </Style>
 
+    <!--The AttachedFlyout must be created from code behind, otherwise XAML will create *one* flyout for this style and
+        apply to all instances of this kind of InkToolbar button, which means all instances of this kind of InkToolbar
+        button share the same flyout.
+        Similarly, the Palette property also need to be created from code behind to avoid sharing.-->
     <Style TargetType="InkToolbarHighlighterButton" BasedOn="{StaticResource InkToolbarCommonButtonStyle}">
         <Setter Property="AutomationProperties.AutomationId" Value="InkToolbarHighlighterButton" />
         <Setter Property="MinStrokeWidth" Value="12" />
@@ -630,13 +632,12 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <!--
-        The AttachedFlyout must be created from code behind, otherwise XAML will create *one* flyout for this style and
+    </Style>
+
+    <!--The AttachedFlyout must be created from code behind, otherwise XAML will create *one* flyout for this style and
         apply to all instances of this kind of InkToolbar button, which means all instances of this kind of InkToolbar
         button share the same flyout.
-        Similarly, the Palette property also need to be created from code behind to avoid sharing.
-    -->
-    </Style>
+        Similarly, the Palette property also need to be created from code behind to avoid sharing.-->
     <Style TargetType="InkToolbarPencilButton" BasedOn="{StaticResource InkToolbarCommonButtonStyle}">
         <Setter Property="AutomationProperties.AutomationId" Value="InkToolbarPencilButton" />
         <Setter Property="MinStrokeWidth" Value="1" />
@@ -837,13 +838,12 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <!--
-        The AttachedFlyout must be created from code behind, otherwise XAML will create *one* flyout for this style and
+    </Style>
+
+    <!--The AttachedFlyout must be created from code behind, otherwise XAML will create *one* flyout for this style and
         apply to all instances of this kind of InkToolbar button, which means all instances of this kind of InkToolbar
         button share the same flyout.
-        Similarly, the Palette property also need to be created from code behind to avoid sharing.
-    -->
-    </Style>
+        Similarly, the Palette property also need to be created from code behind to avoid sharing.-->
     <Style TargetType="InkToolbarCustomPenButton" BasedOn="{StaticResource InkToolbarCommonButtonStyle}">
         <Setter Property="MinStrokeWidth" Value="1" />
         <Setter Property="MaxStrokeWidth" Value="10" />
@@ -1008,14 +1008,13 @@
 
                 </ControlTemplate>
             </Setter.Value>
-        </Setter>
-        <!--
-        The AttachedFlyout must be created from code behind, otherwise XAML will create *one* flyout for this style and
+        </Setter>        
+    </Style>
+
+    <!--The AttachedFlyout must be created from code behind, otherwise XAML will create *one* flyout for this style and
         apply to all instances of this kind of InkToolbar button, which means all instances of this kind of InkToolbar
         button share the same flyout.
-        Similarly, the Palette property also need to be created from code behind to avoid sharing.
-    -->
-    </Style>
+        Similarly, the Palette property also need to be created from code behind to avoid sharing.-->
     <Style x:Key="InkToolbarFlyoutItemStyle" TargetType="InkToolbarFlyoutItem">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
@@ -1372,13 +1371,12 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <!--
-        The AttachedFlyout must be created from code behind, otherwise XAML will create *one* flyout for this style and
+    </Style>
+
+    <!--The AttachedFlyout must be created from code behind, otherwise XAML will create *one* flyout for this style and
         apply to all instances of this kind of InkToolbar button, which means all instances of this kind of InkToolbar
         button share the same flyout.
-        Similarly, the Palette property also need to be created from code behind to avoid sharing.
-    -->
-    </Style>
+        Similarly, the Palette property also need to be created from code behind to avoid sharing.-->
     <Style TargetType="InkToolbarCustomToolButton" BasedOn="{StaticResource InkToolbarCommonButtonStyle}">
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="Template">
@@ -1540,13 +1538,8 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <!--
-        The AttachedFlyout must be created from code behind, otherwise XAML will create *one* flyout for this style and
-        apply to all instances of this kind of InkToolbar button, which means all instances of this kind of InkToolbar
-        button share the same flyout.
-        Similarly, the Palette property also need to be created from code behind to avoid sharing.
-    -->
     </Style>
+    
     <Style TargetType="InkToolbarRulerButton" BasedOn="{StaticResource InkToolbarCommonButtonStyle}">
         <Setter Property="AutomationProperties.AutomationId" Value="InkToolbarRulerButton" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
@@ -1662,6 +1655,7 @@
             </Setter.Value>
         </Setter>
     </Style>
+    
     <Style TargetType="InkToolbarCustomToggleButton" BasedOn="{StaticResource InkToolbarCommonButtonStyle}">
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="Template">
@@ -1772,6 +1766,7 @@
             </Setter.Value>
         </Setter>
     </Style>
+    
     <DataTemplate x:Key="InkToolbarStencilButtonFlyoutContentTemplate">
         <StackPanel x:Name="InkToolbarStencilButtonFlyoutContent" Margin="0,8,0,8">
             <InkToolbarFlyoutItem x:Name="StencilRuler" Kind="RadioCheck"
@@ -1814,6 +1809,7 @@
             </InkToolbarFlyoutItem>
         </StackPanel>
     </DataTemplate>
+
     <Style TargetType="InkToolbarStencilButton" BasedOn="{StaticResource InkToolbarCommonButtonStyle}">
         <Setter Property="AutomationProperties.AutomationId" Value="InkToolbarStencilButton" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
@@ -2024,6 +2020,7 @@
             </Setter.Value>
         </Setter>
     </Style>
+
     <Style TargetType="InkToolbar">
         <Setter Property="Template">
             <Setter.Value>
@@ -2037,6 +2034,7 @@
             </Setter.Value>
         </Setter>
     </Style>
+
     <Style TargetType="InkToolbarPenConfigurationControl">
         <Setter Property="IsTabStop" Value="false" />
         <Setter Property="Template">
