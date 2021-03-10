@@ -22,7 +22,7 @@
             <StaticResource x:Key="ContentDialogSmokeFill" ResourceKey="SystemColorWindowColorBrush" />
             <StaticResource x:Key="ContentDialogTopOverlay" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
-            <StaticResource x:Key="ContentDialogSeparatorBorderBrush" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="ContentDialogSeparatorBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
             <Thickness x:Key="ContentDialogBorderWidth">2</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
@@ -236,10 +236,11 @@
                                         VerticalScrollBarVisibility="Disabled"
                                         ZoomMode="Disabled"
                                         IsTabStop="False">
-                                        <Grid Background="{ThemeResource ContentDialogTopOverlay}"
-                                              Padding="{StaticResource ContentDialogPadding}"
-                                              BorderThickness="{StaticResource ContentDialogSeparatorThickness}"
-                                              BorderBrush="{ThemeResource ContentDialogSeparatorBorderBrush}">
+                                        <Grid
+                                            Background="{ThemeResource ContentDialogTopOverlay}"
+                                            Padding="{StaticResource ContentDialogPadding}"
+                                            BorderThickness="{StaticResource ContentDialogSeparatorThickness}"
+                                            BorderBrush="{ThemeResource ContentDialogSeparatorBorderBrush}">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="*" />
