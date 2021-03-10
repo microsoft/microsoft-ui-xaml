@@ -18,7 +18,7 @@
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="FontSize" Value="{ThemeResource BreadcrumbBarItemThemeFontSize}"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-        <Setter Property="FocusVisualMargin" Value="0" />
+        <Setter Property="FocusVisualMargin" Value="1" />
         <Setter Property="IsTabStop" Value="True"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
@@ -30,7 +30,11 @@
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ItemTypeStates">
-                                <VisualState x:Name="Inline"/>
+                                <VisualState x:Name="Inline">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_LayoutRoot.Padding" Value="4,0,3,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
                                 <VisualState x:Name="EllipsisDropDown">
                                     <VisualState.Setters>
                                         <Setter Target="PART_ItemButton.Visibility" Value="Collapsed"/>
