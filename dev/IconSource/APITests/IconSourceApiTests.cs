@@ -198,12 +198,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         public void AnimatedIconSourceTest()
         {
             AnimatedIconSource iconSource = null;
-            IRichAnimatedVisualSource source = null;
+            IAnimatedVisualSource2 source = null;
 
             RunOnUIThread.Execute(() =>
             {
                 iconSource = new AnimatedIconSource();
-                source = new Controls_02_UpDown_Dropdown();
+                source = new AnimatedChevronDownSmallVisualSource();
 
                 // IconSource.Foreground should be null to allow foreground inheritance from
                 // the parent to work.

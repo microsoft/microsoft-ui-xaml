@@ -33,11 +33,14 @@ public:
     void OnPointerExited(const winrt::PointerRoutedEventArgs& args);
     void OnPointerCanceled(const winrt::PointerRoutedEventArgs& args);
     void OnKeyDown(const winrt::KeyRoutedEventArgs& args);
+    void LosingFocus(const IInspectable& sender, const winrt::LosingFocusEventArgs& args);
+    void OnLostFocus(const winrt::RoutedEventArgs& args);
+    void OnGotFocus(const winrt::RoutedEventArgs& args);
 
     /* Property changed handlers */
     void OnNumberOfPagesChanged();
     void OnSelectedPageIndexChanged(const int oldValue);
-    void OnMaxVisualIndicatorsChanged();
+    void OnMaxVisiblePipsChanged();
     void OnNavigationButtonVisibilityChanged(
         const winrt::PipsPagerButtonVisibility visibility,
         const wstring_view& collapsedStateName,
@@ -70,6 +73,8 @@ private:
     /* Interaction event listeners */
     void OnPreviousButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnNextButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::GettingFocusEventArgs& args);
+    void OnPipsAreaBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args);
 
     /* Pips Logic */
     void UpdatePipsItems(const int numberOfPages, int maxVisualIndicators);
@@ -79,18 +84,23 @@ private:
     /* Refs */
     tracker_ref<winrt::ItemsRepeater> m_pipsPagerRepeater{ this };
     tracker_ref<winrt::FxScrollViewer> m_pipsPagerScrollViewer{ this };
+    tracker_ref<winrt::Button> m_previousPageButton{ this };
+    tracker_ref<winrt::Button> m_nextPageButton{ this };
 
     /* Revokers */
     winrt::Button::Click_revoker m_previousPageButtonClickRevoker{};
     winrt::Button::Click_revoker m_nextPageButtonClickRevoker{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_pipsPagerElementPreparedRevoker{};
-
+    winrt::UIElement::GettingFocus_revoker m_pipsAreaGettingFocusRevoker{};
+    winrt::ItemsRepeater::BringIntoViewRequested_revoker m_pipsAreaBringIntoViewRequestedRevoker{};
     /* Items */
-    winrt::IObservableVector<IInspectable> m_pipsPagerItems{};
+    winrt::IObservableVector<int> m_pipsPagerItems{};
 
     /* Additional variables class variables*/
     winrt::Size m_defaultPipSize{ 0.0,0.0 };
     winrt::Size m_selectedPipSize{ 0.0, 0.0 };
     int m_lastSelectedPageIndex{ -1 };
     bool m_isPointerOver{ false };
+    bool m_isFocused{ false };
+    bool m_ifNextFocusElementInside{ false };
 };

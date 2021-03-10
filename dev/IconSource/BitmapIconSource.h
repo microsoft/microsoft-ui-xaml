@@ -14,4 +14,6 @@ class BitmapIconSource :
 public:
     using BitmapIconSourceProperties::EnsureProperties;
     using BitmapIconSourceProperties::ClearProperties;
+
+    winrt::IconElement CreateIconElementCore();
 };

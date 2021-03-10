@@ -110,6 +110,8 @@ void ColorSpectrum::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 
     winrt::ColorPickerHsvChannel incrementChannel = winrt::ColorPickerHsvChannel::Hue;
 
+    bool isSaturationValue = false;
+
     if (args.Key() == winrt::VirtualKey::Left ||
         args.Key() == winrt::VirtualKey::Right)
     {
@@ -120,8 +122,10 @@ void ColorSpectrum::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
             incrementChannel = winrt::ColorPickerHsvChannel::Hue;
             break;
 
-        case winrt::ColorSpectrumComponents::SaturationHue:
         case winrt::ColorSpectrumComponents::SaturationValue:
+            isSaturationValue = true;
+            [[fallthrough]]; // fallthrough is explicitly wanted
+        case winrt::ColorSpectrumComponents::SaturationHue:
             incrementChannel = winrt::ColorPickerHsvChannel::Saturation;
             break;
 
@@ -146,8 +150,10 @@ void ColorSpectrum::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
             incrementChannel = winrt::ColorPickerHsvChannel::Saturation;
             break;
 
-        case winrt::ColorSpectrumComponents::HueValue:
         case winrt::ColorSpectrumComponents::SaturationValue:
+            isSaturationValue = true;
+            [[fallthrough]]; // fallthrough is explicitly wanted
+        case winrt::ColorSpectrumComponents::HueValue:
             incrementChannel = winrt::ColorPickerHsvChannel::Value;
             break;
         }
@@ -177,11 +183,28 @@ void ColorSpectrum::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
     // The order of saturation and value in the spectrum is reversed - the max value is at the bottom while the min value is at the top -
     // so we want left and up to be lower for hue, but higher for saturation and value.
     // This will ensure that the icon always moves in the direction of the key press.
-    const IncrementDirection direction =
+    IncrementDirection direction =
         (incrementChannel == winrt::ColorPickerHsvChannel::Hue && (args.Key() == winrt::VirtualKey::Left || args.Key() == winrt::VirtualKey::Up)) ||
         (incrementChannel != winrt::ColorPickerHsvChannel::Hue && (args.Key() == winrt::VirtualKey::Right || args.Key() == winrt::VirtualKey::Down)) ?
         IncrementDirection::Lower :
         IncrementDirection::Higher;
+
+    // Image is flipped in RightToLeft, so we need to invert direction in that case.
+    // The combination saturation and value is also flipped, so we need to invert in that case too.
+    // If both are false, we don't need to invert.
+    // If both are true, we would invert twice, so not invert at all.
+    if ((FlowDirection() == winrt::FlowDirection::RightToLeft) != isSaturationValue &&
+        (args.Key() == winrt::VirtualKey::Left || args.Key() == winrt::VirtualKey::Right))
+    {
+        if (direction == IncrementDirection::Higher)
+        {
+            direction = IncrementDirection::Lower;
+        }
+        else
+        {
+            direction = IncrementDirection::Higher;
+        }
+    }
 
     const IncrementAmount amount = isControlDown ? IncrementAmount::Large : IncrementAmount::Small;
 

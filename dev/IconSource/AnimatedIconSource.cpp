@@ -6,3 +6,21 @@
 
 #include "IconSource.h"
 #include "AnimatedIconSource.h"
+
+winrt::IconElement AnimatedIconSource::CreateIconElementCore()
+{
+    winrt::AnimatedIcon animatedIcon;
+    if (auto const source = Source())
+    {
+        animatedIcon.Source(source);
+    }
+    if (auto const fallbackIconSource = FallbackIconSource())
+    {
+        animatedIcon.FallbackIconSource(fallbackIconSource);
+    }
+    if (const auto newForeground = Foreground())
+    {
+        animatedIcon.Foreground(newForeground);
+    }
+    return animatedIcon;
+}

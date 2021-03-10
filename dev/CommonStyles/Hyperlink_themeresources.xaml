@@ -19,4 +19,6 @@
             <StaticResource x:Key="HyperlinkForegroundPressed" ResourceKey="AccentTextFillColorTertiaryBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
+    
+    <x:Boolean x:Key="HyperlinkUnderlineVisible">False</x:Boolean>
 </ResourceDictionary>
