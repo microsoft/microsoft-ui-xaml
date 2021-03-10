@@ -44,7 +44,7 @@
             <Color x:Key="ControlAltFillColorTransparent">#00FFFFFF</Color>
             <Color x:Key="ControlAltFillColorSecondary">#19000000</Color>
             <Color x:Key="ControlAltFillColorTertiary">#0BFFFFFF</Color>
-            <Color x:Key="ControlAltFillColorQuarternary">#12000000</Color>
+            <Color x:Key="ControlAltFillColorQuarternary">#12FFFFFF</Color>
             <Color x:Key="ControlAltFillColorDisabled">#00FFFFFF</Color>
 
             <Color x:Key="ControlOnImageFillColorDefault">#B31C1C1C</Color>
