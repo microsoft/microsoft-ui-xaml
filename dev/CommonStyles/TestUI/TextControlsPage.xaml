@@ -29,7 +29,8 @@
             <StackPanel Orientation="Vertical" contract5Present:Spacing="12" Margin="0,0,12,0">
                 <TextBlock Text="TextBox"/>
 
-                <TextBox Header="Normal" Text="Text" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}" />
+                <TextBox Header="Normal" Text="Text" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}" Foreground="{ThemeResource SystemAccentColor}"/>
+                <RichEditBox Header="Normal" Foreground="{ThemeResource SystemAccentColor}"/>
                 <TextBox PlaceholderText="Placeholder" Header="Placeholder" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}" />
             </StackPanel>
 
