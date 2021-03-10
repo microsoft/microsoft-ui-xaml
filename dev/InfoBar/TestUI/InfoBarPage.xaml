@@ -40,6 +40,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <ScrollViewer>
@@ -66,9 +67,11 @@
                             <ComboBoxItem Content="Hyperlink" />
                         </ComboBox>
 
-                        <Button Content="Set Foreground" Click="SetForegroundClick"/>
+                    <Button Content="Set Foreground" Click="SetForegroundClick"/>
+                </StackPanel>
 
-                        <CheckBox x:Name="IsOpenCheckBox" AutomationProperties.Name="IsOpenCheckBox" Content="IsOpen" IsChecked="{x:Bind TestInfoBar.IsOpen, Mode=TwoWay}"/>
+                <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">
+                    <CheckBox x:Name="IsOpenCheckBox" AutomationProperties.Name="IsOpenCheckBox" Content="IsOpen" IsChecked="{x:Bind TestInfoBar.IsOpen, Mode=TwoWay}"/>
 
                         <CheckBox x:Name="CancelCheckBox" AutomationProperties.Name="CancelCheckBox" Content="Cancel Close" />
 
@@ -84,8 +87,8 @@
                     </StackPanel>
                 </ScrollViewer>
 
-                <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">
-                    <TextBlock Text="Events:"/>
+                <StackPanel Grid.Column="2" Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">
+                    <TextBlock>Events:</TextBlock>
                     <ListBox x:Name="EventListBox" AutomationProperties.Name="EventListBox" MinWidth="150" MaxHeight="380">
                         <ListBox.Resources>
                             <Style TargetType="ListBoxItem">

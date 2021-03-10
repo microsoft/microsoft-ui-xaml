@@ -37,7 +37,7 @@
             <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
+            <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
 
             <!-- Legacy resources -->
@@ -193,7 +193,7 @@
             <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
+            <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
             <!-- Legacy resources -->
             <Thickness x:Key="MenuFlyoutItemRevealBorderThickness">1</Thickness>

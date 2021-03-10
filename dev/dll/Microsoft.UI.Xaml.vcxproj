@@ -128,25 +128,13 @@
     <Import Project="..\IconSource\IconSource.vcxitems" Label="Shared" Condition="$(FeatureIconSourceEnabled) == 'true' Or $(FeatureIconSourceEnabled) == 'productOnly'" />
     <Import Project="..\Interactions\ButtonInteraction\ButtonInteraction.vcxitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' Or $(FeatureInteractionsEnabled) == 'productOnly'" />
     <Import Project="..\Interactions\SliderInteraction\SliderInteraction.vcxitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' Or $(FeatureInteractionsEnabled) == 'productOnly'" />
-    <Import Project="..\MenuFlyout\MenuFlyout.vcxitems" Label="Shared" Condition="$(FeatureMenuFlyoutEnabled) == 'true' Or $(FeatureMenuFlyoutEnabled) == 'productOnly'" />
     <Import Project="..\TeachingTip\TeachingTip.vcxitems" Label="Shared" Condition="$(FeatureTeachingTipEnabled) == 'true' Or $(FeatureTeachingTipEnabled) == 'productOnly'" />
     <Import Project="..\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems" Label="Shared" Condition="$(FeatureRadioMenuFlyoutItemEnabled) == 'true' Or $(FeatureRadioMenuFlyoutItemEnabled) == 'productOnly'" />
     <Import Project="..\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" Condition="$(FeatureAnimatedVisualPlayerEnabled) == 'true' Or $(FeatureAnimatedVisualPlayerEnabled) == 'productOnly'" />
     <Import Project="..\TabView\TabView.vcxitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true' Or $(FeatureTabViewEnabled) == 'productOnly'" />
     <Import Project="..\AutoSuggestBox\AutoSuggestBox.vcxitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true' Or $(FeatureAutoSuggestBoxEnabled) == 'productOnly'" />
-    <Import Project="..\CheckBox\CheckBox.vcxitems" Label="Shared" Condition="$(FeatureCheckBoxEnabled) == 'true' Or $(FeatureCheckBoxEnabled) == 'productOnly'" />
-    <Import Project="..\CalendarDatePicker\CalendarDatePicker.vcxitems" Label="Shared" Condition="$(FeatureCalendarDatePickerEnabled) == 'true' Or $(FeatureCalendarDatePickerEnabled) == 'productOnly'" />
-    <Import Project="..\DatePicker\DatePicker.vcxitems" Label="Shared" Condition="$(FeatureCalendarDatePickerEnabled) == 'true' Or $(FeatureCalendarDatePickerEnabled) == 'productOnly'" />
-    <Import Project="..\Slider\Slider.vcxitems" Label="Shared" Condition="$(FeatureSliderEnabled) == 'true' Or $(FeatureSliderEnabled) == 'productOnly'" />
-    <Import Project="..\TimePicker\TimePicker.vcxitems" Label="Shared" Condition="$(FeatureTimePickerEnabled) == 'true' Or $(FeatureTimePickerEnabled) == 'productOnly'" />
-    <Import Project="..\ToolTip\ToolTip.vcxitems" Label="Shared" Condition="$(FeatureToolTipEnabled) == 'true' Or $(FeatureToolTipEnabled) == 'productOnly'" />
-    <Import Project="..\FlipView\FlipView.vcxitems" Label="Shared" Condition="$(FeatureFlipViewEnabled) == 'true' Or $(FeatureFlipViewEnabled) == 'productOnly'" />
     <Import Project="..\ComboBox\ComboBox.vcxitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true' Or $(FeatureComboBoxEnabled) == 'productOnly'" />
-    <Import Project="..\Pivot\Pivot.vcxitems" Label="Shared" Condition="$(FeaturePivotEnabled) == 'true' Or $(FeaturePivotEnabled) == 'productOnly'" />
-    <Import Project="..\ScrollBar\ScrollBar.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true' Or $(FeatureScrollBarEnabled) == 'productOnly'" />
-    <Import Project="..\CalendarView\CalendarView.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true' Or $(FeatureScrollBarEnabled) == 'productOnly'" />
     <Import Project="..\SplitView\SplitView.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true' Or $(FeatureScrollBarEnabled) == 'productOnly'" />
-    <Import Project="..\ContentDialog\ContentDialog.vcxitems" Label="Shared" Condition="$(FeatureContentDialogEnabled) == 'true' Or $(FeatureContentDialogEnabled) == 'productOnly'" />
     <Import Project="..\ProgressBar\ProgressBar.vcxitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true' Or $(FeatureProgressBarEnabled) == 'productOnly'" />
     <Import Project="..\ProgressRing\ProgressRing.vcxitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true' Or $(FeatureProgressRingEnabled) == 'productOnly'" />
     <Import Project="..\NumberBox\NumberBox.vcxitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true' Or $(FeatureNumberBoxEnabled) == 'productOnly'" />
@@ -588,15 +576,6 @@
     <Natvis Include="$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.natvis">
     </Natvis>
     -->
-    <Page Update="D:\repos\microsoft-ui-xaml\dev\ProgressBar\ProgressBar_themeresources.xaml">
-      <FileType>Document</FileType>
-    </Page>
-    <Page Update="T:\repos\microsoft-ui-xaml\dev\Breadcrumb\BreadcrumbBar.xaml">
-      <FileType>Document</FileType>
-    </Page>
-    <Page Update="T:\repos\microsoft-ui-xaml\dev\Breadcrumb\BreadcrumbBar_themeresources.xaml">
-      <FileType>Document</FileType>
-    </Page>
   </ItemGroup>
   <Import Project="$(CppTargetsFilePath)" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" />
