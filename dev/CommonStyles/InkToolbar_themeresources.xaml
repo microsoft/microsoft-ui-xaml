@@ -236,9 +236,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="InkToolbarBallpointPenButton">
                     <Grid x:Name="RootElement"
-              Background="{TemplateBinding Background}"
-              Width="{ThemeResource InkToolbarButtonWidth}"
-              Height="{ThemeResource InkToolbarButtonHeight}">
+                        Background="{TemplateBinding Background}"
+                        Width="{ThemeResource InkToolbarButtonWidth}"
+                        Height="{ThemeResource InkToolbarButtonHeight}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -379,44 +379,39 @@
                         </VisualStateManager.VisualStateGroups>
 
                         <Rectangle x:Name="ContentBackground" Fill="Transparent" />
-                        <TextBlock
-                x:Name="ExtensionGlyph"
-                Style="{StaticResource InkToolbarExtensionGlyphStyle}"
-                AutomationProperties.AccessibilityView="Raw" />
+                        <TextBlock x:Name="ExtensionGlyph"
+                            Style="{StaticResource InkToolbarExtensionGlyphStyle}"
+                            AutomationProperties.AccessibilityView="Raw" />
                         <Grid RenderTransformOrigin="0.5, 0.5">
                             <Grid.RenderTransform>
                                 <ScaleTransform x:Name="ContentTransform" />
                             </Grid.RenderTransform>
-                            <TextBlock
-                  x:Name="Content"
-                  Style="{StaticResource InkToolbarGlyphFontStyle}"
-                  Text="&#xE76D;"
-                  AutomationProperties.AccessibilityView="Raw"
-                  Canvas.ZIndex="1"
-                  Foreground="{ThemeResource InkToolbarButtonForegroundThemeBrush}" />
-                            <TextBlock
-                  x:Name="CheckedContent"
-                  Style="{StaticResource InkToolbarGlyphFontStyle}"
-                  Text="&#xE76D;"
-                  AutomationProperties.AccessibilityView="Raw"
-                  Canvas.ZIndex="1"
-                  Foreground="{ThemeResource InkToolbarButtonSelectedForegroundThemeBrush}"
-                  Opacity="0" />
-                            <TextBlock
-                  x:Name="ContentFillGlyph"
-                  Text="&#xE88F;"
-                  Style="{StaticResource InkToolbarGlyphFillFontStyle}"
-                  TextAlignment="Center"
-                  AutomationProperties.AccessibilityView="Raw"
-                  Opacity="1"
-                  Canvas.ZIndex="0"
-                  Foreground="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedBrush, Mode=OneWay}" />
-                            <Border
-                  x:Name="Border"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                            <TextBlock x:Name="Content"
+                                Style="{StaticResource InkToolbarGlyphFontStyle}"
+                                Text="&#xE76D;"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Canvas.ZIndex="1"
+                                Foreground="{ThemeResource InkToolbarButtonForegroundThemeBrush}" />
+                            <TextBlock x:Name="CheckedContent"
+                                Style="{StaticResource InkToolbarGlyphFontStyle}"
+                                Text="&#xE76D;"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Canvas.ZIndex="1"
+                                Foreground="{ThemeResource InkToolbarButtonSelectedForegroundThemeBrush}"
+                                Opacity="0" />
+                            <TextBlock x:Name="ContentFillGlyph"
+                                Text="&#xE88F;"
+                                Style="{StaticResource InkToolbarGlyphFillFontStyle}"
+                                TextAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Opacity="1"
+                                Canvas.ZIndex="0"
+                                Foreground="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedBrush, Mode=OneWay}" />
+                            <Border x:Name="Border"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Grid.RowSpan="2" Grid.ColumnSpan="2"
+                                Margin="1,0"/>
 
                         </Grid>
                         <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
@@ -443,9 +438,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="InkToolbarHighlighterButton">
                     <Grid x:Name="RootElement"
-              Background="{TemplateBinding Background}"
-              Width="{ThemeResource InkToolbarButtonWidth}"
-              Height="{ThemeResource InkToolbarButtonHeight}">
+                        Background="{TemplateBinding Background}"
+                        Width="{ThemeResource InkToolbarButtonWidth}"
+                        Height="{ThemeResource InkToolbarButtonHeight}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -585,44 +580,39 @@
 
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle x:Name="ContentBackground" Fill="Transparent" />
-                        <TextBlock
-                x:Name="ExtensionGlyph"
-                Style="{StaticResource InkToolbarExtensionGlyphStyle}"
-                AutomationProperties.AccessibilityView="Raw" />
+                        <TextBlock x:Name="ExtensionGlyph"
+                            Style="{StaticResource InkToolbarExtensionGlyphStyle}"
+                            AutomationProperties.AccessibilityView="Raw" />
                         <Grid RenderTransformOrigin="0.5, 0.5">
                             <Grid.RenderTransform>
                                 <ScaleTransform x:Name="ContentTransform" />
                             </Grid.RenderTransform>
-                            <TextBlock
-                  x:Name="Content"
-                  Style="{StaticResource InkToolbarGlyphFontStyle}"
-                  Text="&#xE193;"
-                  AutomationProperties.AccessibilityView="Raw"
-                  Canvas.ZIndex="1"
-                  Foreground="{ThemeResource InkToolbarButtonForegroundThemeBrush}" />
-                            <TextBlock
-                  x:Name="CheckedContent"
-                  Style="{StaticResource InkToolbarGlyphFontStyle}"
-                  Text="&#xE193;"
-                  AutomationProperties.AccessibilityView="Raw"
-                  Canvas.ZIndex="1"
-                  Foreground="{ThemeResource InkToolbarButtonSelectedForegroundThemeBrush}"
-                  Opacity="0" />
-                            <TextBlock
-                  x:Name="ContentFillGlyph"
-                  Text="&#xE891;"
-                  Style="{StaticResource InkToolbarGlyphFillFontStyle}"
-                  TextAlignment="Center"
-                  AutomationProperties.AccessibilityView="Raw"
-                  Opacity="1"
-                  Canvas.ZIndex="0"
-                  Foreground="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedBrush, Mode=OneWay}" />
-                            <Border
-                  x:Name="Border"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                            <TextBlock x:Name="Content"
+                                Style="{StaticResource InkToolbarGlyphFontStyle}"
+                                Text="&#xE193;"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Canvas.ZIndex="1"
+                                Foreground="{ThemeResource InkToolbarButtonForegroundThemeBrush}" />
+                            <TextBlock x:Name="CheckedContent"
+                                Style="{StaticResource InkToolbarGlyphFontStyle}"
+                                Text="&#xE193;"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Canvas.ZIndex="1"
+                                Foreground="{ThemeResource InkToolbarButtonSelectedForegroundThemeBrush}"
+                                Opacity="0" />
+                            <TextBlock x:Name="ContentFillGlyph"
+                                Text="&#xE891;"
+                                Style="{StaticResource InkToolbarGlyphFillFontStyle}"
+                                TextAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Opacity="1"
+                                Canvas.ZIndex="0"
+                                Foreground="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedBrush, Mode=OneWay}" />
+                            <Border x:Name="Border"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Grid.RowSpan="2" Grid.ColumnSpan="2"
+                                Margin="1,0"/>
 
                         </Grid>
                         <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
@@ -649,9 +639,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="InkToolbarPencilButton">
                     <Grid x:Name="RootElement"
-              Background="{TemplateBinding Background}"
-              Width="{ThemeResource InkToolbarButtonWidth}"
-              Height="{ThemeResource InkToolbarButtonHeight}">
+                        Background="{TemplateBinding Background}"
+                        Width="{ThemeResource InkToolbarButtonWidth}"
+                        Height="{ThemeResource InkToolbarButtonHeight}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -791,44 +781,39 @@
 
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle x:Name="ContentBackground" Fill="Transparent" />
-                        <TextBlock
-                x:Name="ExtensionGlyph"
-                Style="{StaticResource InkToolbarExtensionGlyphStyle}"
-                AutomationProperties.AccessibilityView="Raw" />
+                        <TextBlock x:Name="ExtensionGlyph"
+                            Style="{StaticResource InkToolbarExtensionGlyphStyle}"
+                            AutomationProperties.AccessibilityView="Raw" />
                         <Grid RenderTransformOrigin="0.5, 0.5">
                             <Grid.RenderTransform>
                                 <ScaleTransform x:Name="ContentTransform" />
                             </Grid.RenderTransform>
-                            <TextBlock
-                  x:Name="Content"
-                  Style="{StaticResource InkToolbarGlyphFontStyle}"
-                  Text="&#xED63;"
-                  AutomationProperties.AccessibilityView="Raw"
-                  Canvas.ZIndex="1"
-                  Foreground="{ThemeResource InkToolbarButtonForegroundThemeBrush}" />
-                            <TextBlock
-                  x:Name="CheckedContent"
-                  Style="{StaticResource InkToolbarGlyphFontStyle}"
-                  Text="&#xED63;"
-                  AutomationProperties.AccessibilityView="Raw"
-                  Canvas.ZIndex="1"
-                  Foreground="{ThemeResource InkToolbarButtonSelectedForegroundThemeBrush}"
-                  Opacity="0" />
-                            <TextBlock
-                  x:Name="ContentFillGlyph"
-                  Text="&#xF0C6;"
-                  Style="{StaticResource InkToolbarGlyphFillFontStyle}"
-                  TextAlignment="Center"
-                  AutomationProperties.AccessibilityView="Raw"
-                  Opacity="1"
-                  Canvas.ZIndex="0"
-                  Foreground="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedBrush, Mode=OneWay}" />
-                            <Border
-                  x:Name="Border"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                        <TextBlock x:Name="Content"
+                            Style="{StaticResource InkToolbarGlyphFontStyle}"
+                            Text="&#xED63;"
+                            AutomationProperties.AccessibilityView="Raw"
+                            Canvas.ZIndex="1"
+                            Foreground="{ThemeResource InkToolbarButtonForegroundThemeBrush}" />
+                        <TextBlock x:Name="CheckedContent"
+                            Style="{StaticResource InkToolbarGlyphFontStyle}"
+                            Text="&#xED63;"
+                            AutomationProperties.AccessibilityView="Raw"
+                            Canvas.ZIndex="1"
+                            Foreground="{ThemeResource InkToolbarButtonSelectedForegroundThemeBrush}"
+                            Opacity="0" />
+                        <TextBlock x:Name="ContentFillGlyph"
+                            Text="&#xF0C6;"
+                            Style="{StaticResource InkToolbarGlyphFillFontStyle}"
+                            TextAlignment="Center"
+                            AutomationProperties.AccessibilityView="Raw"
+                            Opacity="1"
+                            Canvas.ZIndex="0"
+                            Foreground="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedBrush, Mode=OneWay}" />
+                        <Border x:Name="Border"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Grid.RowSpan="2" Grid.ColumnSpan="2"
+                            Margin="1,0"/>
 
                         </Grid>
                         <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
@@ -854,9 +839,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="InkToolbarCustomPenButton">
                     <Grid x:Name="RootElement"
-              Background="{TemplateBinding Background}"
-              Width="{ThemeResource InkToolbarButtonWidth}"
-              Height="{ThemeResource InkToolbarButtonHeight}">
+                        Background="{TemplateBinding Background}"
+                        Width="{ThemeResource InkToolbarButtonWidth}"
+                        Height="{ThemeResource InkToolbarButtonHeight}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -987,28 +972,25 @@
 
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle x:Name="ContentBackground" Fill="Transparent" />
-                        <TextBlock
-                x:Name="ExtensionGlyph"
-                Style="{StaticResource InkToolbarExtensionGlyphStyle}"
-                AutomationProperties.AccessibilityView="Raw" />
-                        <ContentPresenter
-                x:Name="Content"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                HighContrastAdjustment="None" />
-                        <Border
-                  x:Name="Border"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                        <TextBlock x:Name="ExtensionGlyph"
+                            Style="{StaticResource InkToolbarExtensionGlyphStyle}"
+                            AutomationProperties.AccessibilityView="Raw" />
+                        <ContentPresenter x:Name="Content"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            HighContrastAdjustment="None" />
+                        <Border x:Name="Border"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Grid.RowSpan="2" Grid.ColumnSpan="2"
+                            Margin="1,0"/>
                         <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                     </Grid>
 
                 </ControlTemplate>
             </Setter.Value>
-        </Setter>        
+        </Setter>
     </Style>
 
     <!--The AttachedFlyout must be created from code behind, otherwise XAML will create *one* flyout for this style and
@@ -1097,9 +1079,14 @@
                             </VisualStateGroup>
 
                         </VisualStateManager.VisualStateGroups>
-                        <Border x:Name="Border" BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
-                            <ContentPresenter x:Name="Content" Foreground="{TemplateBinding Foreground}"
-      HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        <Border x:Name="Border"
+                            BorderBrush="Transparent"
+                            BorderThickness="0"
+                            Background="Transparent">
+                            <ContentPresenter x:Name="Content"
+                                Foreground="{TemplateBinding Foreground}"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"/>
                         </Border>
 
                     </Grid>
@@ -1119,17 +1106,27 @@
                             <ColumnDefinition Width="auto" />
                             <ColumnDefinition Width="auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="StrokeEraserIcon" Style="{StaticResource InkToolbarGlyphFontStyle}"
-                        Text="&#xF128;" Grid.Column="0" HorizontalAlignment="Center"
-                        VerticalAlignment="Center" Margin="12,0,12,0"/>
-                        <TextBlock x:Name="StrokeEraserName" Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
-                        Text="" TextAlignment="Center" Grid.Column="1" Margin="0,0,12,0"/>
+                        <TextBlock x:Name="StrokeEraserIcon"
+                            Style="{StaticResource InkToolbarGlyphFontStyle}"
+                            Text="&#xF128;"
+                            Grid.Column="0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="12,0,12,0"/>
+                        <TextBlock x:Name="StrokeEraserName"
+                            Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
+                            Text=""
+                            TextAlignment="Center"
+                            Grid.Column="1"
+                            Margin="0,0,12,0"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
             </InkToolbarFlyoutItem>
-            <InkToolbarFlyoutItem x:Name="SmallEraser" Kind="RadioCheck" AutomationProperties.AutomationId="InkToolbarSmallEraser"
-                            Style="{StaticResource InkToolbarFlyoutItemStyle}">
+            <InkToolbarFlyoutItem x:Name="SmallEraser"
+                Kind="RadioCheck"
+                AutomationProperties.AutomationId="InkToolbarSmallEraser"
+                Style="{StaticResource InkToolbarFlyoutItemStyle}">
                 <InkToolbarFlyoutItem.Content>
                     <Grid>
 
@@ -1137,17 +1134,27 @@
                             <ColumnDefinition Width="auto" />
                             <ColumnDefinition Width="auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="SmallEraserIcon" Style="{StaticResource InkToolbarGlyphFontStyle}"
-                        Text="&#xF129;" Grid.Column="0" HorizontalAlignment="Center"
-                        VerticalAlignment="Center" Margin="12,0,12,0"/>
-                        <TextBlock x:Name="SmallEraserName" Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
-                        Text="" TextAlignment="Center" Grid.Column="1" Margin="0,0,12,0"/>
+                        <TextBlock x:Name="SmallEraserIcon"
+                            Style="{StaticResource InkToolbarGlyphFontStyle}"
+                            Text="&#xF129;"
+                            Grid.Column="0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="12,0,12,0"/>
+                        <TextBlock x:Name="SmallEraserName"
+                            Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
+                            Text=""
+                            TextAlignment="Center"
+                            Grid.Column="1"
+                            Margin="0,0,12,0"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
             </InkToolbarFlyoutItem>
-            <InkToolbarFlyoutItem x:Name="LargeEraser" Kind="RadioCheck" AutomationProperties.AutomationId="InkToolbarLargeEraser"
-                            Style="{StaticResource InkToolbarFlyoutItemStyle}">
+            <InkToolbarFlyoutItem x:Name="LargeEraser"
+                Kind="RadioCheck"
+                AutomationProperties.AutomationId="InkToolbarLargeEraser"
+                Style="{StaticResource InkToolbarFlyoutItemStyle}">
                 <InkToolbarFlyoutItem.Content>
                     <Grid>
 
@@ -1155,17 +1162,27 @@
                             <ColumnDefinition Width="auto" />
                             <ColumnDefinition Width="auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="LargeEraserIcon" Style="{StaticResource InkToolbarGlyphFontStyle}"
-                        Text="&#xF12A;" Grid.Column="0" HorizontalAlignment="Center"
-                        VerticalAlignment="Center" Margin="12,0,12,0"/>
-                        <TextBlock x:Name="LargeEraserName" Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
-                        Text="" TextAlignment="Center" Grid.Column="1" Margin="0,0,12,0"/>
+                        <TextBlock x:Name="LargeEraserIcon"
+                            Style="{StaticResource InkToolbarGlyphFontStyle}"
+                            Text="&#xF12A;"
+                            Grid.Column="0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="12,0,12,0"/>
+                        <TextBlock x:Name="LargeEraserName"
+                            Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
+                            Text=""
+                            TextAlignment="Center"
+                            Grid.Column="1"
+                            Margin="0,0,12,0"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
             </InkToolbarFlyoutItem>
-            <InkToolbarFlyoutItem x:Name="ClearAll" Kind="Simple" AutomationProperties.AutomationId="InkToolbarClearAll"
-                            Style="{StaticResource InkToolbarFlyoutItemStyle}">
+            <InkToolbarFlyoutItem x:Name="ClearAll"
+                Kind="Simple"
+                AutomationProperties.AutomationId="InkToolbarClearAll"
+                Style="{StaticResource InkToolbarFlyoutItemStyle}">
                 <InkToolbarFlyoutItem.Content>
                     <Grid>
 
@@ -1173,11 +1190,19 @@
                             <ColumnDefinition Width="auto" />
                             <ColumnDefinition Width="auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="ClearAllIcon" Style="{StaticResource InkToolbarGlyphFontStyle}"
-                        Text="&#xE74D;" Grid.Column="0" HorizontalAlignment="Center"
-                        VerticalAlignment="Center" Margin="12,0,12,0"/>
-                        <TextBlock x:Name="ClearAllName" Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
-                        Text="" TextAlignment="Center" Grid.Column="1" Margin="0,0,12,0"/>
+                        <TextBlock x:Name="ClearAllIcon"
+                            Style="{StaticResource InkToolbarGlyphFontStyle}"
+                            Text="&#xE74D;"
+                            Grid.Column="0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="12,0,12,0"/>
+                        <TextBlock x:Name="ClearAllName"
+                            Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
+                            Text=""
+                            TextAlignment="Center"
+                            Grid.Column="1"
+                            Margin="0,0,12,0"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
@@ -1191,9 +1216,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="InkToolbarEraserButton">
                     <Grid x:Name="RootElement"
-              Background="{TemplateBinding Background}"
-              Width="{ThemeResource InkToolbarButtonWidth}"
-              Height="{ThemeResource InkToolbarButtonHeight}">
+                        Background="{TemplateBinding Background}"
+                        Width="{ThemeResource InkToolbarButtonWidth}"
+                        Height="{ThemeResource InkToolbarButtonHeight}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -1333,35 +1358,32 @@
 
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle x:Name="ContentBackground" Fill="Transparent" />
-                        <TextBlock
-                x:Name="ExtensionGlyph"
-                Style="{StaticResource InkToolbarExtensionGlyphStyle}"
-                AutomationProperties.AccessibilityView="Raw" />
+                        <TextBlock x:Name="ExtensionGlyph"
+                            Style="{StaticResource InkToolbarExtensionGlyphStyle}"
+                            AutomationProperties.AccessibilityView="Raw" />
                         <Grid RenderTransformOrigin="0.5, 0.5">
                             <Grid.RenderTransform>
                                 <ScaleTransform x:Name="ContentTransform" />
                             </Grid.RenderTransform>
-                            <TextBlock
-                  x:Name="Content"
-                  Style="{StaticResource InkToolbarGlyphFontStyle}"
-                  Text="&#xED60;"
-                  AutomationProperties.AccessibilityView="Raw"
-                  Canvas.ZIndex="1"
-                  Foreground="{ThemeResource InkToolbarButtonForegroundThemeBrush}" />
-                            <TextBlock
-                  x:Name="CheckedContent"
-                  Style="{StaticResource InkToolbarGlyphFontStyle}"
-                  Text="&#xED60;"
-                  AutomationProperties.AccessibilityView="Raw"
-                  Canvas.ZIndex="1"
-                  Foreground="{ThemeResource InkToolbarButtonSelectedForegroundThemeBrush}"
-                  Opacity="0" />
-                            <Border
-                  x:Name="Border"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                            <TextBlock x:Name="Content"
+                                Style="{StaticResource InkToolbarGlyphFontStyle}"
+                                Text="&#xED60;"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Canvas.ZIndex="1"
+                                Foreground="{ThemeResource InkToolbarButtonForegroundThemeBrush}" />
+                            <TextBlock x:Name="CheckedContent"
+                                Style="{StaticResource InkToolbarGlyphFontStyle}"
+                                Text="&#xED60;"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Canvas.ZIndex="1"
+                                Foreground="{ThemeResource InkToolbarButtonSelectedForegroundThemeBrush}"
+                                Opacity="0" />
+                            <Border x:Name="Border"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Grid.RowSpan="2"
+                                Grid.ColumnSpan="2"
+                                Margin="1,0"/>
 
                         </Grid>
                         <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
@@ -1383,9 +1405,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="InkToolbarCustomToolButton">
                     <Grid x:Name="RootElement"
-              Background="{TemplateBinding Background}"
-              Width="{ThemeResource InkToolbarButtonWidth}"
-              Height="{ThemeResource InkToolbarButtonHeight}">
+                        Background="{TemplateBinding Background}"
+                        Width="{ThemeResource InkToolbarButtonWidth}"
+                        Height="{ThemeResource InkToolbarButtonHeight}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -1516,21 +1538,19 @@
 
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle x:Name="ContentBackground" Fill="Transparent" />
-                        <TextBlock
-                x:Name="ExtensionGlyph"
-                Style="{StaticResource InkToolbarExtensionGlyphStyle}"
-                AutomationProperties.AccessibilityView="Raw" />
-                        <ContentPresenter
-                x:Name="Content"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                HighContrastAdjustment="None" />
-                        <Border
-                  x:Name="Border"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                        <TextBlock x:Name="ExtensionGlyph"
+                            Style="{StaticResource InkToolbarExtensionGlyphStyle}"
+                            AutomationProperties.AccessibilityView="Raw" />
+                        <ContentPresenter x:Name="Content"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            HighContrastAdjustment="None" />
+                        <Border x:Name="Border"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Grid.RowSpan="2"
+                            Grid.ColumnSpan="2"
+                            Margin="1,0"/>
                         <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                     </Grid>
@@ -1547,9 +1567,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="InkToolbarRulerButton">
                     <Grid x:Name="RootElement"
-              Background="{TemplateBinding Background}"
-              Width="{ThemeResource InkToolbarButtonWidth}"
-              Height="{ThemeResource InkToolbarButtonHeight}">
+                        Background="{TemplateBinding Background}"
+                        Width="{ThemeResource InkToolbarButtonWidth}"
+                        Height="{ThemeResource InkToolbarButtonHeight}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -1616,35 +1636,32 @@
 
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle x:Name="ContentBackground" Fill="Transparent" />
-                        <TextBlock
-                x:Name="ExtensionGlyph"
-                Style="{StaticResource InkToolbarExtensionGlyphStyle}"
-                AutomationProperties.AccessibilityView="Raw" />
+                        <TextBlock x:Name="ExtensionGlyph"
+                            Style="{StaticResource InkToolbarExtensionGlyphStyle}"
+                            AutomationProperties.AccessibilityView="Raw" />
                         <Grid RenderTransformOrigin="0.5, 0.5">
                             <Grid.RenderTransform>
                                 <ScaleTransform x:Name="ContentTransform" />
                             </Grid.RenderTransform>
-                            <TextBlock
-                  x:Name="Content"
-                  Style="{StaticResource InkToolbarGlyphFontStyle}"
-                  Text="&#xECC6;"
-                  AutomationProperties.AccessibilityView="Raw"
-                  Canvas.ZIndex="1"
-                  Foreground="{ThemeResource InkToolbarButtonForegroundThemeBrush}" />
-                            <TextBlock
-                  x:Name="CheckedContent"
-                  Style="{StaticResource InkToolbarGlyphFontStyle}"
-                  Text="&#xECC6;"
-                  AutomationProperties.AccessibilityView="Raw"
-                  Canvas.ZIndex="1"
-                  Foreground="{ThemeResource InkToolbarButtonSelectedForegroundThemeBrush}"
-                  Opacity="0" />
-                            <Border
-                  x:Name="Border"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                            <TextBlock x:Name="Content"
+                                Style="{StaticResource InkToolbarGlyphFontStyle}"
+                                Text="&#xECC6;"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Canvas.ZIndex="1"
+                                Foreground="{ThemeResource InkToolbarButtonForegroundThemeBrush}" />
+                            <TextBlock x:Name="CheckedContent"
+                                Style="{StaticResource InkToolbarGlyphFontStyle}"
+                                Text="&#xECC6;"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Canvas.ZIndex="1"
+                                Foreground="{ThemeResource InkToolbarButtonSelectedForegroundThemeBrush}"
+                                Opacity="0" />
+                            <Border x:Name="Border"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Grid.RowSpan="2"
+                                Grid.ColumnSpan="2"
+                                Margin="1,0"/>
 
                         </Grid>
                         <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
@@ -1662,9 +1679,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="InkToolbarCustomToggleButton">
                     <Grid x:Name="RootElement"
-              Background="{TemplateBinding Background}"
-              Width="{ThemeResource InkToolbarButtonWidth}"
-              Height="{ThemeResource InkToolbarButtonHeight}">
+                        Background="{TemplateBinding Background}"
+                        Width="{ThemeResource InkToolbarButtonWidth}"
+                        Height="{ThemeResource InkToolbarButtonHeight}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -1747,17 +1764,16 @@
 
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle x:Name="ContentBackground" Fill="Transparent" />
-                        <ContentPresenter
-                x:Name="Content"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                HighContrastAdjustment="None" />
-                        <Border
-                  x:Name="Border"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                        <ContentPresenter x:Name="Content"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            HighContrastAdjustment="None" />
+                        <Border x:Name="Border"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Grid.RowSpan="2"
+                            Grid.ColumnSpan="2"
+                            Margin="1,0"/>
                         <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                     </Grid>
@@ -1770,8 +1786,8 @@
     <DataTemplate x:Key="InkToolbarStencilButtonFlyoutContentTemplate">
         <StackPanel x:Name="InkToolbarStencilButtonFlyoutContent" Margin="0,8,0,8">
             <InkToolbarFlyoutItem x:Name="StencilRuler" Kind="RadioCheck"
-                          AutomationProperties.AutomationId="InkToolbarStencilRuler"
-                          Style="{StaticResource InkToolbarFlyoutItemStyle}">
+                AutomationProperties.AutomationId="InkToolbarStencilRuler"
+                Style="{StaticResource InkToolbarFlyoutItemStyle}">
                 <InkToolbarFlyoutItem.Content>
                     <Grid>
 
@@ -1779,18 +1795,26 @@
                             <ColumnDefinition Width="auto" />
                             <ColumnDefinition Width="auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="RulerIcon" Style="{StaticResource InkToolbarGlyphFontStyle}"
-                    Text="&#xECC6;" Grid.Column="0" HorizontalAlignment="Center"
-                    VerticalAlignment="Center" Margin="12,0,12,0"/>
-                        <TextBlock x:Name="RulerName" Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
-                    Text="" TextAlignment="Center" Grid.Column="1" Margin="0,0,12,0"/>
+                        <TextBlock x:Name="RulerIcon"
+                            Style="{StaticResource InkToolbarGlyphFontStyle}"
+                            Text="&#xECC6;"
+                            Grid.Column="0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="12,0,12,0"/>
+                        <TextBlock x:Name="RulerName"
+                            Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
+                            Text=""
+                            TextAlignment="Center"
+                            Grid.Column="1"
+                            Margin="0,0,12,0"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
             </InkToolbarFlyoutItem>
             <InkToolbarFlyoutItem x:Name="StencilProtractor" Kind="RadioCheck"
-                          AutomationProperties.AutomationId="InkToolbarStencilProtractor"
-                          Style="{StaticResource InkToolbarFlyoutItemStyle}">
+                AutomationProperties.AutomationId="InkToolbarStencilProtractor"
+                Style="{StaticResource InkToolbarFlyoutItemStyle}">
                 <InkToolbarFlyoutItem.Content>
                     <Grid>
 
@@ -1798,11 +1822,19 @@
                             <ColumnDefinition Width="auto" />
                             <ColumnDefinition Width="auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="ProtractorIcon" Style="{StaticResource InkToolbarGlyphFontStyle}"
-                        Text="&#xF0B4;" Grid.Column="0" HorizontalAlignment="Center"
-                        VerticalAlignment="Center" Margin="12,0,12,0"/>
-                        <TextBlock x:Name="ProtractorName" Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
-                        Text="" TextAlignment="Center" Grid.Column="1" Margin="0,0,12,0"/>
+                        <TextBlock x:Name="ProtractorIcon"
+                            Style="{StaticResource InkToolbarGlyphFontStyle}"
+                            Text="&#xF0B4;"
+                            Grid.Column="0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="12,0,12,0"/>
+                        <TextBlock x:Name="ProtractorName"
+                            Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
+                            Text=""
+                            TextAlignment="Center"
+                            Grid.Column="1"
+                            Margin="0,0,12,0"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
@@ -1817,9 +1849,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="InkToolbarStencilButton">
                     <Grid x:Name="RootElement"
-              Background="{TemplateBinding Background}"
-              Width="{ThemeResource InkToolbarButtonWidth}"
-              Height="{ThemeResource InkToolbarButtonHeight}">
+                        Background="{TemplateBinding Background}"
+                        Width="{ThemeResource InkToolbarButtonWidth}"
+                        Height="{ThemeResource InkToolbarButtonHeight}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -1981,35 +2013,32 @@
 
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle x:Name="ContentBackground" Fill="Transparent" />
-                        <TextBlock
-                x:Name="ExtensionGlyph"
-                Style="{StaticResource InkToolbarExtensionGlyphStyle}"
-                AutomationProperties.AccessibilityView="Raw" />
+                        <TextBlock x:Name="ExtensionGlyph"
+                            Style="{StaticResource InkToolbarExtensionGlyphStyle}"
+                            AutomationProperties.AccessibilityView="Raw" />
                         <Grid RenderTransformOrigin="0.5, 0.5">
                             <Grid.RenderTransform>
                                 <ScaleTransform x:Name="ContentTransform" />
                             </Grid.RenderTransform>
-                            <TextBlock
-                  x:Name="Content"
-                  Style="{StaticResource InkToolbarGlyphFontStyle}"
-                  Text=""
-                  AutomationProperties.AccessibilityView="Raw"
-                  Canvas.ZIndex="1"
-                  Foreground="{ThemeResource InkToolbarButtonForegroundThemeBrush}" />
-                            <TextBlock
-                  x:Name="CheckedContent"
-                  Style="{StaticResource InkToolbarGlyphFontStyle}"
-                  Text=""
-                  AutomationProperties.AccessibilityView="Raw"
-                  Canvas.ZIndex="1"
-                  Foreground="{ThemeResource InkToolbarButtonSelectedForegroundThemeBrush}"
-                  Opacity="0" />
-                            <Border
-                  x:Name="Border"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  Grid.RowSpan="2" Grid.ColumnSpan="2"
-                  Margin="1,0"/>
+                            <TextBlock x:Name="Content"
+                                Style="{StaticResource InkToolbarGlyphFontStyle}"
+                                Text=""
+                                AutomationProperties.AccessibilityView="Raw"
+                                Canvas.ZIndex="1"
+                                Foreground="{ThemeResource InkToolbarButtonForegroundThemeBrush}" />
+                            <TextBlock x:Name="CheckedContent"
+                                Style="{StaticResource InkToolbarGlyphFontStyle}"
+                                Text=""
+                                AutomationProperties.AccessibilityView="Raw"
+                                Canvas.ZIndex="1"
+                                Foreground="{ThemeResource InkToolbarButtonSelectedForegroundThemeBrush}"
+                                Opacity="0" />
+                            <Border x:Name="Border"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Grid.RowSpan="2"
+                                Grid.ColumnSpan="2"
+                                Margin="1,0"/>
 
                         </Grid>
                         <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
@@ -2025,10 +2054,11 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="InkToolbar">
-                    <StackPanel x:Name="Panel" Orientation="Horizontal"
-    Background="{TemplateBinding Background}"
-    BorderBrush="{TemplateBinding BorderBrush}"
-    BorderThickness="{TemplateBinding BorderThickness}" />
+                    <StackPanel x:Name="Panel"
+                        Orientation="Horizontal"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}" />
 
                 </ControlTemplate>
             </Setter.Value>
@@ -2066,19 +2096,30 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="PenColorPaletteTitle" Grid.Row="1" Grid.Column="0" Padding="12,0,12,0"
-           Style="{ThemeResource BodyTextBlockStyle}" HighContrastAdjustment="None" Text="Colors" />
+                        <TextBlock x:Name="PenColorPaletteTitle"
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Padding="12,0,12,0"
+                            Style="{ThemeResource BodyTextBlockStyle}"
+                            HighContrastAdjustment="None"
+                            Text="Colors" />
                         <!-- Color palette -->
                         <!-- Note: ItemsSource and selection are set in code-behind -->
-                        <GridView x:Name="PenColorPalette" Grid.Row="3" Grid.Column="0" Padding="4,0,4,2"
-    Background="{TemplateBinding Background}" >
+                        <GridView x:Name="PenColorPalette"
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            Padding="4,0,4,2"
+                            Background="{TemplateBinding Background}" >
                             <GridView.Resources>
                                 <DataTemplate x:Key="HighContrastItemTemplate">
                                     <!-- Keep in sync with the GridView ItemTemplate, down below -->
-                                    <Ellipse Margin="8,8,8,8" UseLayoutRounding="false" Fill="{Binding}"
-         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-         Stroke="{ThemeResource InkToolbarFlyoutItemBorderSelectedThemeBrush}"
-         StrokeThickness="1"/>
+                                    <Ellipse Margin="8,8,8,8"
+                                        UseLayoutRounding="false"
+                                        Fill="{Binding}"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"
+                                        Stroke="{ThemeResource InkToolbarFlyoutItemBorderSelectedThemeBrush}"
+                                        StrokeThickness="1"/>
                                 </DataTemplate>
                             </GridView.Resources>
                             <GridView.ItemsPanel>
@@ -2101,10 +2142,7 @@
                                         <Setter.Value>
                                             <ControlTemplate TargetType="GridViewItem">
                                                 <Grid>
-                                                    <!--
-                                GridViewItem visual states are documented here:
-                                https://msdn.microsoft.com/en-us/library/windows/apps/mt299127.aspx
-                            -->
+                                                    <!--GridViewItem visual states are documented here:https://msdn.microsoft.com/en-us/library/windows/apps/mt299127.aspx-->
                                                     <VisualStateManager.VisualStateGroups>
                                                         <VisualStateGroup x:Name="CommonStates">
                                                             <VisualState x:Name="Normal" />
@@ -2134,10 +2172,15 @@
                                                         </VisualStateGroup>
                                                     </VisualStateManager.VisualStateGroups>
                                                     <Ellipse x:Name="ItemBorder"
-         Margin="6,6,6,6" UseLayoutRounding="false"
-         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-         Fill="Transparent" Stroke="Transparent" StrokeThickness="2" />
-                                                    <ContentPresenter x:Name="ItemContent" UseLayoutRounding="false" />
+                                                        Margin="6,6,6,6"
+                                                        UseLayoutRounding="false"
+                                                        HorizontalAlignment="Stretch"
+                                                        VerticalAlignment="Stretch"
+                                                        Fill="Transparent"
+                                                        Stroke="Transparent"
+                                                        StrokeThickness="2" />
+                                                    <ContentPresenter x:Name="ItemContent"
+                                                        UseLayoutRounding="false" />
                                                 </Grid>
                                             </ControlTemplate>
                                         </Setter.Value>
@@ -2147,29 +2190,43 @@
                             <GridView.ItemTemplate>
                                 <DataTemplate>
                                     <!-- Keep in sync with HighContrastItemTemplate item template above -->
-                                    <Ellipse Margin="8,8,8,8" UseLayoutRounding="false"
-         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-         Fill="{Binding}" />
+                                    <Ellipse Margin="8,8,8,8"
+                                        UseLayoutRounding="false"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"
+                                        Fill="{Binding}" />
                                 </DataTemplate>
                             </GridView.ItemTemplate>
                         </GridView>
                         <!-- StrokeWidth -->
-                        <TextBlock x:Name="PenStrokeWidthTitle" Grid.Row="5" Grid.Column="0" Padding="12,0,12,0"
-           VerticalAlignment="Center" Style="{ThemeResource BodyTextBlockStyle}"
-           Text="Size" HighContrastAdjustment="None" />
-                        <Grid x:Name="StrokePreviewGrid" Grid.Row="6" UseLayoutRounding="false"
-      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-      MinHeight="24">
+                        <TextBlock x:Name="PenStrokeWidthTitle"
+                            Grid.Row="5"
+                            Grid.Column="0"
+                            Padding="12,0,12,0"
+                            VerticalAlignment="Center"
+                            Style="{ThemeResource BodyTextBlockStyle}"
+                            Text="Size"
+                            HighContrastAdjustment="None" />
+                        <Grid x:Name="StrokePreviewGrid"
+                            Grid.Row="6"
+                            UseLayoutRounding="false"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            MinHeight="24">
                             <Canvas x:Name="StrokePreviewCanvas" Margin="12, 0, 12, 4" />
 
                         </Grid>
                         <Slider x:Name="PenStrokeWidthSlider"
-        Grid.Row="7" Grid.Column="0" Width="296" Height="44" Margin="12,0,12,0"
-        HorizontalAlignment="Stretch"
-        Minimum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PenButton.MinStrokeWidth}"
-        Maximum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PenButton.MaxStrokeWidth}"
-        Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PenButton.SelectedStrokeWidth, Mode=TwoWay}"
-        Style="{StaticResource FlyoutStrokeWidthSelectorStyle}" />
+                            Grid.Row="7"
+                            Grid.Column="0"
+                            Width="296"
+                            Height="44"
+                            Margin="12,0,12,0"
+                            HorizontalAlignment="Stretch"
+                            Minimum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PenButton.MinStrokeWidth}"
+                            Maximum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PenButton.MaxStrokeWidth}"
+                            Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PenButton.SelectedStrokeWidth, Mode=TwoWay}"
+                            Style="{StaticResource FlyoutStrokeWidthSelectorStyle}" />
 
                     </Grid>
 
