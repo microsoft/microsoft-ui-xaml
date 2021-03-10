@@ -53,7 +53,10 @@ namespace MUXControlsTestApp
             TestPipsPagerOrientationComboBox.SelectionChanged += OnOrientationChanged;
             TestPipsPager.PointerEntered += TestPipsPager_PointerEntered;
             TestPipsPager.PointerExited += TestPipsPager_PointerExited;
-            previousPageButton.IsEnabledChanged += OnButtonEnabledChanged; ;
+            TestPipsPager.GotFocus += TestPipsPager_GotFocus;
+            TestPipsPager.LostFocus += TestPipsPager_LostFocus;
+            TestPipsPager.PointerCanceled += TestPipsPager_PointerCanceled;
+            previousPageButton.IsEnabledChanged += OnButtonEnabledChanged;
             nextPageButton.IsEnabledChanged += OnButtonEnabledChanged;
             repeater.GotFocus += OnRepeaterGotFocus;
    
@@ -102,27 +105,46 @@ namespace MUXControlsTestApp
             return btn?.Visibility == Visibility.Visible && btn?.Opacity != 0;
         }
 
-        private void TestPipsPager_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        private void UpdateButtonVisibilityCheckboxes()
         {
             PreviousPageButtonIsVisibleCheckBox.IsChecked = IsButtonVisible(previousPageButton);
             NextPageButtonIsVisibleCheckBox.IsChecked = IsButtonVisible(nextPageButton);
         }
 
+        private void TestPipsPager_GotFocus(object sender, RoutedEventArgs e)
+        {
+            UpdateButtonVisibilityCheckboxes();
+        }
+
+        private void TestPipsPager_LostFocus(object sender, RoutedEventArgs e)
+        {
+            UpdateButtonVisibilityCheckboxes();
+        }
+
+        private void TestPipsPager_PointerCanceled(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            UpdateButtonVisibilityCheckboxes();
+        }
+
+        private void TestPipsPager_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            UpdateButtonVisibilityCheckboxes();
+        }
+
         private void TestPipsPager_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            PreviousPageButtonIsVisibleCheckBox.IsChecked = IsButtonVisible(previousPageButton);
-            NextPageButtonIsVisibleCheckBox.IsChecked = IsButtonVisible(nextPageButton);
+            UpdateButtonVisibilityCheckboxes();
         }
 
         public void OnPreviousPageButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
         {
             TestPipsPager.PreviousButtonVisibility = ConvertComboBoxItemToVisibilityEnum((sender as ComboBox).SelectedItem as ComboBoxItem, TestPipsPager.PreviousButtonVisibility);
-            PreviousPageButtonIsVisibleCheckBox.IsChecked = IsButtonVisible(previousPageButton);
+            UpdateButtonVisibilityCheckboxes();
         }
         public void OnNextPageButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
         {
             TestPipsPager.NextButtonVisibility = ConvertComboBoxItemToVisibilityEnum((sender as ComboBox).SelectedItem as ComboBoxItem, TestPipsPager.NextButtonVisibility);
-            NextPageButtonIsVisibleCheckBox.IsChecked = IsButtonVisible(nextPageButton);
+            UpdateButtonVisibilityCheckboxes();
         }
         public void OnNumberOfPagesChanged(object sender, SelectionChangedEventArgs e)
         {

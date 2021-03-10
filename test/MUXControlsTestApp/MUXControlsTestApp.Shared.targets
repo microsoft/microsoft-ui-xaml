@@ -19,7 +19,6 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Materials\Acrylic\TestUI\AcrylicBrush_TestUI.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Materials\Reveal\TestUI\Reveal_TestUI.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\MenuBar\MenuBar_TestUI\MenuBar_TestUI.projitems" Label="Shared" Condition="$(FeatureMenuBarEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\MenuFlyout\TestUI\MenuFlyout_TestUI.projitems" Label="Shared" Condition="$(FeatureMenuFlyoutEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\NavigationView\TestUI\NavigationView_TestUI.projitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ParallaxView\TestUI\ParallaxView_TestUI.projitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PersonPicture\TestUI\PersonPicture_TestUI.projitems" Label="Shared" Condition="$(FeaturePersonPictureEnabled) == 'true'" />
@@ -61,26 +60,14 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TwoPaneView\APITests\TwoPaneView_APITests.projitems" Label="Shared" Condition="$(FeatureTwoPaneViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.projitems" Label="Shared" Condition="$(FeatureAnimatedVisualPlayerEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CommonStyles\APITests\CommonStyles_ApiTests.projitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CheckBox\TestUI\CheckBox_TestUI.projitems" Label="Shared" Condition="$(FeatureCheckBoxEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\DatePicker\TestUI\DatePicker_TestUI.projitems" Label="Shared" Condition="$(FeatureDatePickerEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CalendarDatePicker\TestUI\CalendarDatePicker_TestUI.projitems" Label="Shared" Condition="$(FeatureCalendarDatePickerEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AutoSuggestBox\APITests\AutoSuggestBox_APITests.projitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AutoSuggestBox\TestUI\AutoSuggestBox_TestUI.projitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Slider\TestUI\Slider_TestUI.projitems" Label="Shared" Condition="$(FeatureSliderEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TimePicker\TestUI\TimePicker_TestUI.projitems" Label="Shared" Condition="$(FeatureTimePickerEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ToolTip\TestUI\ToolTip_TestUI.projitems" Label="Shared" Condition="$(FeatureToolTipEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TabView\TestUI\TabView_TestUI.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TabView\APITests\TabView_APITests.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\FlipView\TestUI\FlipView_TestUI.projitems" Label="Shared" Condition="$(FeatureFlipViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ComboBox\TestUI\ComboBox_TestUI.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ComboBox\APITests\ComboBox_APITests.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Pivot\TestUI\Pivot_TestUI.projitems" Label="Shared" Condition="$(FeaturePivotEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollBar\TestUI\ScrollBar_TestUI.projitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ContentDialog\TestUI\ContentDialog_TestUI.projitems" Label="Shared" Condition="$(FeatureContentDialogEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\NumberBox\APITests\NumberBox_APITests.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\NumberBox\TestUI\NumberBox_TestUI.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CalendarView\TestUI\CalendarView_TestUI.projitems" Label="Shared" Condition="$(FeatureCalendarViewEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CalendarView\APITests\CalendarView_APITests.projitems" Label="Shared" Condition="$(FeatureCalendarViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SplitView\TestUI\SplitView_TestUI.projitems" Label="Shared" Condition="$(FeatureSplitViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ProgressBar\TestUI\ProgressBar_TestUI.projitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ProgressRing\TestUI\ProgressRing_TestUI.projitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true'" />
