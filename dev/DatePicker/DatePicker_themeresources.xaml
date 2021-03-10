@@ -38,7 +38,7 @@
             <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
             <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="DatePickerFlyoutPresenterHighlightForegroundColor" ResourceKey="TextOnAccentAAFillColorPrimary" />
+            <StaticResource x:Key="DatePickerFlyoutPresenterHighlightForegroundColor" ResourceKey="TextFillColorPrimary" />
             <StaticResource x:Key="DatePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <SolidColorBrush x:Key="DatePickerHeaderForegroundThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="DatePickerForegroundThemeBrush" Color="#FF000000" />
@@ -378,7 +378,7 @@
         <Setter Property="AutomationProperties.AutomationId" Value="DatePickerFlyoutPresenter" />
         <Setter Property="BorderBrush" Value="{ThemeResource DatePickerFlyoutPresenterBorderBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource DateTimeFlyoutBorderThickness}" />
-        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="DatePickerFlyoutPresenter">

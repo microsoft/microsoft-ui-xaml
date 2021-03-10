@@ -42,7 +42,7 @@
             <StaticResource x:Key="TimePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <SolidColorBrush x:Key="TimePickerHeaderForegroundThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="TimePickerForegroundThemeBrush" Color="#FF000000" />
-            <StaticResource x:Key="TimePickerFlyoutPresenterHighlightForegroundColor" ResourceKey="TextOnAccentAAFillColorPrimary" />
+            <StaticResource x:Key="TimePickerFlyoutPresenterHighlightForegroundColor" ResourceKey="TextFillColorPrimary" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="TimePickerSpacerFill" ResourceKey="SystemControlForegroundBaseLowBrush" />
@@ -365,7 +365,7 @@
         <Setter Property="AutomationProperties.AutomationId" Value="TimePickerFlyoutPresenter" />
         <Setter Property="BorderBrush" Value="{ThemeResource TimePickerFlyoutPresenterBorderBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource DateTimeFlyoutBorderThickness}" />
-        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TimePickerFlyoutPresenter">
