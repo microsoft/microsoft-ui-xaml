@@ -120,6 +120,9 @@ header.masthead h1 {
  
  #action-btn-2 {
    margin-left: 1rem;
+   padding-top:3%;
+    padding-bottom: 3%;
+    height: 100%;
  }
 }
 
@@ -136,6 +139,9 @@ header.masthead h1 {
  #action-btn-2{
    margin-left: 0;
    margin-right: 0;
+   padding-top:3%;
+    padding-bottom: 3%;
+    height: 100%;
  }
 }
 
@@ -237,6 +243,10 @@ header.masthead h1 {
 
  #download-div {
    margin-top: 40px;
+ }
+
+ #download-div a {
+   text-align: left;
  }
 
 }
