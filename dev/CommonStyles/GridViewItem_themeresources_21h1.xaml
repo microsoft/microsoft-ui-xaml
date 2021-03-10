@@ -29,6 +29,8 @@
             <StaticResource x:Key="GridViewItemCheckBoxPointerOverBorderBrush" ResourceKey="ControlAAStrokeColorDefaultBrush" />
             <StaticResource x:Key="GridViewItemCheckBoxPressedBorderBrush" ResourceKey="ControlAAStrokeColorDisabledBrush" />
             <StaticResource x:Key="GridViewItemCheckBoxDisabledBorderBrush" ResourceKey="ControlAAStrokeColorDisabledBrush" />
+            <StaticResource x:Key="GridViewItemFocusVisualPrimaryBrush" ResourceKey="FocusStrokeColorOuterBrush" />
+            <StaticResource x:Key="GridViewItemFocusVisualSecondaryBrush" ResourceKey="FocusStrokeColorInnerBrush" />
             <StaticResource x:Key="GridViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="GridViewItemForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="GridViewItemBackgroundSelected" ResourceKey="SubtleFillColorTertiaryBrush" />
@@ -65,6 +67,8 @@
             <SolidColorBrush x:Key="GridViewItemCheckBoxPointerOverBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="GridViewItemCheckBoxPressedBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="GridViewItemCheckBoxDisabledBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="GridViewItemFocusVisualPrimaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="GridViewItemFocusVisualSecondaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="GridViewItemBackgroundPointerOver" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="GridViewItemForegroundPointerOver" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="GridViewItemBackgroundSelected" Color="{ThemeResource SystemColorWindowColor}" />
@@ -101,6 +105,8 @@
             <StaticResource x:Key="GridViewItemCheckBoxPointerOverBorderBrush" ResourceKey="ControlAAStrokeColorDefaultBrush" />
             <StaticResource x:Key="GridViewItemCheckBoxPressedBorderBrush" ResourceKey="ControlAAStrokeColorDisabledBrush" />
             <StaticResource x:Key="GridViewItemCheckBoxDisabledBorderBrush" ResourceKey="ControlAAStrokeColorDisabledBrush" />
+            <StaticResource x:Key="GridViewItemFocusVisualPrimaryBrush" ResourceKey="FocusStrokeColorOuterBrush" />
+            <StaticResource x:Key="GridViewItemFocusVisualSecondaryBrush" ResourceKey="FocusStrokeColorInnerBrush" />
             <StaticResource x:Key="GridViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="GridViewItemForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="GridViewItemBackgroundSelected" ResourceKey="SubtleFillColorTertiaryBrush" />
@@ -128,7 +134,11 @@
         <Setter Property='MinHeight' Value='{ThemeResource GridViewItemMinHeight}' />
         <Setter Property='AllowDrop' Value='True' />
         <Setter Property='UseSystemFocusVisuals' Value='{StaticResource UseSystemFocusVisuals}' />
-        <Setter Property='FocusVisualMargin' Value='-2' />
+        <Setter Property='FocusVisualMargin' Value='-3' />
+        <Setter Property="FocusVisualPrimaryBrush" Value="{ThemeResource GridViewItemFocusVisualPrimaryBrush}" />
+        <Setter Property="FocusVisualPrimaryThickness" Value="2" />
+        <Setter Property="FocusVisualSecondaryBrush" Value="{ThemeResource GridViewItemFocusVisualSecondaryBrush}" />
+        <Setter Property="FocusVisualSecondaryThickness" Value="1" />
         <Setter Property='Template'>
             <Setter.Value>
                 <ControlTemplate TargetType='GridViewItem'>
@@ -137,6 +147,10 @@
                         ContentTransitions='{TemplateBinding ContentTransitions}'
                         Control.IsTemplateFocusTarget='True'
                         FocusVisualMargin='{TemplateBinding FocusVisualMargin}'
+                        FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}"
+                        FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}"
+                        FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}"
+                        FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}"
                         SelectionCheckMarkVisualEnabled='{ThemeResource GridViewItemSelectionCheckMarkVisualEnabled}'
                         CheckBrush='{ThemeResource GridViewItemCheckBrush}'
                         CheckBoxBrush='{ThemeResource GridViewItemCheckBoxBrush}'
