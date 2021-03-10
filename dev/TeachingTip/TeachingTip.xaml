@@ -13,6 +13,7 @@
         <Setter Property="Background" Value="{ThemeResource TeachingTipBackgroundBrush}"/>
         <Setter Property="Foreground" Value="{ThemeResource TeachingTipForegroundBrush}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource TeachingTipBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="{ThemeResource TeachingTipContentBorderThicknessUntargeted}"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="ActionButtonStyle" Value="{ThemeResource DefaultButtonStyle}"/>
         <Setter Property="CloseButtonStyle" Value="{ThemeResource DefaultButtonStyle}"/>
@@ -461,7 +462,6 @@
                                 </VisualState>
                                 <VisualState x:Name="Untargeted">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessUntargeted}"/>
                                         <Setter Target="TailEdgeBorder.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopTailPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
@@ -537,6 +537,7 @@
                                       AutomationProperties.LandmarkType="Custom"
                                       Background="{TemplateBinding Background}"
                                       BorderBrush="{TemplateBinding BorderBrush}"
+                                      BorderThickness="{TemplateBinding BorderThickness}"
                                       FlowDirection="{TemplateBinding FlowDirection}"
                                       Grid.Row="1"
                                       Grid.Column="1"
