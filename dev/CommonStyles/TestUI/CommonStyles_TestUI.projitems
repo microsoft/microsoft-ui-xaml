@@ -40,6 +40,7 @@
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
+<<<<<<< HEAD
     <Page Include="$(MSBuildThisFileDirectory)CalendarDatePickerPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -65,10 +66,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)MenuFlyoutPage.xaml">
+=======
+    <Page Include="$(MSBuildThisFileDirectory)MediaTransportControlsPage.xaml">
+>>>>>>> 6d8db450 (add mediatransportcontrols to commonstyles page)
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
+<<<<<<< HEAD
     <Page Include="$(MSBuildThisFileDirectory)PivotPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -89,6 +94,8 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+=======
+>>>>>>> 6d8db450 (add mediatransportcontrols to commonstyles page)
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)BorderThicknessPage.xaml.cs">
@@ -109,6 +116,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)VisualStatesPage.xaml.cs">
       <DependentUpon>VisualStatesPage.xaml</DependentUpon>
     </Compile>
+<<<<<<< HEAD
     <Compile Include="$(MSBuildThisFileDirectory)CalendarDatePickerPage.xaml.cs">
       <DependentUpon>CalendarDatePickerPage.xaml</DependentUpon>
     </Compile>
@@ -144,6 +152,10 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ToolTipPage.xaml.cs">
       <DependentUpon>ToolTipPage.xaml</DependentUpon>
+=======
+    <Compile Include="$(MSBuildThisFileDirectory)MediaTransportControlsPage.xaml.cs">
+      <DependentUpon>VisualStatesPage.xaml</DependentUpon>
+>>>>>>> 6d8db450 (add mediatransportcontrols to commonstyles page)
     </Compile>
   </ItemGroup>
   <ItemGroup>
