@@ -129,6 +129,7 @@
                             FontFamily="{TemplateBinding FontFamily}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             BorderBrush="{TemplateBinding BorderBrush}"
+                            Padding="{TemplateBinding Padding}"
                             Foreground="{TemplateBinding Foreground}"
                             TextAlignment="{TemplateBinding TextAlignment}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}" />
