@@ -69,6 +69,7 @@
     <x:String x:Key="UpIcon">&#xEDDB;</x:String>
     <x:String x:Key="DownIcon">&#xEDDC;</x:String>
     <Thickness x:Key="LoopingSelectorItemMargin">4,2,4,2</Thickness>
+    <Thickness x:Key="LoopingSelectorUpDownButtonMargin">4</Thickness>
 
     <!-- This style covers the accept/cancel/up/down buttons-->
     <Style x:Key="DateTimePickerFlyoutButtonStyle" TargetType="ButtonBase">
@@ -197,7 +198,7 @@
                 Visibility="Collapsed"
                 Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
                 Background="{ThemeResource LoopingSelectorUpDownButtonBackground}"
-                                      Margin="{StaticResource LoopingSelectorItemMargin}"
+                Margin="{StaticResource LoopingSelectorUpDownButtonMargin}"
                 IsTabStop="False" />
                         <RepeatButton x:Name="DownButton"
                 Content="{ThemeResource LoopingSelectorDownButtonCaretDown}"
@@ -210,7 +211,7 @@
                 Visibility="Collapsed"
                 Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
                 Background="{ThemeResource LoopingSelectorUpDownButtonBackground}"
-                                      Margin="{StaticResource LoopingSelectorItemMargin}"
+                Margin="{StaticResource LoopingSelectorUpDownButtonMargin}"
                 IsTabStop="False" />
 
                     </Grid>
