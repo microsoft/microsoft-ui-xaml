@@ -10,7 +10,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedGlobalNavigationButtonVisualSource.json
 //       
 //       Input file:
-//           AnimatedGlobalNavigationButtonVisualSource.json (52910 bytes created 11:16-08:00 Mar 5 2021)
+//           AnimatedGlobalNavigationButtonVisualSource.json (52226 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -47,6 +47,7 @@
 // |________________|____________|_______|_________________|
 // | Foreground     | Foreground | Color | #FF000000 Black |
 // ---------------------------------------------------------
+
 class AnimatedGlobalNavigationButtonVisualSource
     : public winrt::implementation::AnimatedGlobalNavigationButtonVisualSourceT<AnimatedGlobalNavigationButtonVisualSource>
 {
