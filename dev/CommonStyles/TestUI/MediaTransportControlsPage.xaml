@@ -11,8 +11,6 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-        <MediaPlayerElement Source="ms-appx:///Assets/ladybug.wmv" MaxWidth="400" MaxHeight="225" AutoPlay="True"
-                        AreTransportControlsEnabled="True" />
-
+        <MediaPlayerElement Source="ms-appx:///Assets/ladybug.wmv" MaxWidth="400" MaxHeight="225" AutoPlay="True" AreTransportControlsEnabled="True" />
     </Grid>
 </local:TestPage>
