@@ -16,7 +16,7 @@
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
 
             <StaticResource x:Key="LoopingSelectorButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="LoopingSelectorUpDownButtonBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
 
             <StaticResource x:Key="LoopingSelectorItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
@@ -149,7 +149,8 @@
             <Setter.Value>
                 <DataTemplate>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{Binding PrimaryText}" FontFamily="{ThemeResource ContentControlThemeFontFamily}" />
+                        <TextBlock Text="{Binding PrimaryText}"
+                                   FontFamily="{ThemeResource ContentControlThemeFontFamily}"/>
                     </StackPanel>
                 </DataTemplate>
             </Setter.Value>
@@ -184,7 +185,7 @@
                 VerticalScrollBarVisibility="Hidden"
                 HorizontalScrollMode="Disabled"
                 ZoomMode="Disabled"
-                Template="{StaticResource ScrollViewerScrollBarlessTemplate}" />
+                Template="{StaticResource ScrollViewerScrollBarlessTemplate}"/>
                         <RepeatButton x:Name="UpButton"
                 Content="{ThemeResource LoopingSelectorUpButtonCaretUp}"
                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
@@ -220,8 +221,7 @@
     </Style>
 
     <Style TargetType="LoopingSelectorItem">
-        <Setter Property="HorizontalAlignment" Value="Left" />
-        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="Foreground" Value="{ThemeResource LoopingSelectorItemForeground}" />
         <Setter Property="IsTabStop" Value="False" />
@@ -288,8 +288,7 @@
                 ContentTemplate="{TemplateBinding ContentTemplate}"
                 Padding="{TemplateBinding Padding}"
                 Margin="2,0,2,0"
-                                          HorizontalAlignment="Left"
-                HorizontalContentAlignment="Left"
+                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                 VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                 AutomationProperties.AccessibilityView="Raw"
                                           />

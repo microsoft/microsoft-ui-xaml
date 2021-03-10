@@ -488,17 +488,4 @@
         </Setter>
     </Style>
 
-    <Style x:Key="TimePickerFlyoutButtonStyle" TargetType="LoopingSelector">
-        <Setter Property="ItemTemplate">
-            <Setter.Value>
-                <DataTemplate>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{Binding PrimaryText}" FontFamily="{ThemeResource ContentControlThemeFontFamily}"
-                                   HorizontalTextAlignment="Center"/>
-                    </StackPanel>
-                </DataTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
 </ResourceDictionary>

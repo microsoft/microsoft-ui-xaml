@@ -64,8 +64,6 @@ void ColorFilterOverlayControl::UpdateBrush()
             // the ReplacementColor's RGB.
             auto colorMatrixEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::ColorMatrixEffect>();
             colorMatrixEffect->Source(winrt::CompositionEffectSourceParameter{ L"source" });
-
-            
             winrt::Microsoft::UI::Private::Composition::Effects::Matrix5x4 colorMatrix = {};
 
             // If the ReplacementColor is not transparent then use the RGB values as the new color. Otherwise

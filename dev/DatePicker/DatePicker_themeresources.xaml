@@ -26,12 +26,12 @@
             <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundDisabled" ResourceKey="ControlFillColorTertiaryBrush" />
-            <StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="AccentAAFillColorDefaultBrush" />
             <StaticResource x:Key="DatePickerButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="DatePickerButtonForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="DatePickerButtonForegroundFocused" ResourceKey="TextOnAccentFillColorDefault" />
             <contract7NotPresent:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7NotPresent:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
@@ -151,6 +151,7 @@
         <Setter Property="VerticalAlignment" Value="Center" />
         <contract6Present:Setter Property="UseSystemFocusVisuals" Value="{ThemeResource IsApplicationFocusVisualKindReveal}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="DatePicker">
@@ -232,6 +233,7 @@
                                                     BorderThickness="{ThemeResource DatePickerBorderThemeThickness}"
                                                     Content="{TemplateBinding Content}"
                                                     Foreground="{TemplateBinding Foreground}"
+                                                                  
                                                     HorizontalContentAlignment="Stretch"
                                                     VerticalContentAlignment="Stretch"
                                                     AutomationProperties.AccessibilityView="Raw"
