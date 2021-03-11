@@ -17,4 +17,47 @@
         Text="Microsoft.UI.Xaml nuget package requires TargetPlatformVersion &gt;= 10.0.18362.0 (current project is $(MicrosoftUIXamlTargetPlatformCheckValue))" 
         Condition="$(MicrosoftUIXamlTargetPlatformCheckValue) &lt; 18362" />
   </Target>
+  <!-- WACK certification requires that types referenced by dependent packages exist in WinMD files in the root of the AppX.
+       However, the BuildNativePackage target requires that it *not* be in that location, or else that target will return an error.
+       In order to enable apps to pass WACK certification that reference packages that reference us, we'll add it to the package payload
+       after that target has completed. -->
+  <ItemGroup>
+    <XamlWinmd Include="$(MSBuildThisFileDirectory)..\lib\uap10.0\Microsoft.UI.Xaml.winmd">
+      <SkipHarvestingWinmdRegistration Condition="'$(_IsMUXFrameworkPackage)' == 'true'">true</SkipHarvestingWinmdRegistration>
+      <TargetPath>$(WinMetadataDir)\Microsoft.UI.Xaml.winmd</TargetPath>
+      <OutputGroup>CustomOutputGroupForPackaging</OutputGroup>
+      <ProjectName>$(ProjectName)</ProjectName>
+      <Implementation Condition="'$(_IsMUXFrameworkPackage)' != 'true'">Microsoft.UI.Xaml.dll</Implementation>
+    </XamlWinmd>
+  </ItemGroup>
+  <PropertyGroup>
+    <XamlWinmdName>Microsoft.UI.Xaml.winmd</XamlWinmdName>
+    <XamlCompactXbfName>Microsoft.UI.Xaml\DensityStyles\Compact.xbf</XamlCompactXbfName>
+  </PropertyGroup>
+  <Target Name="_FixWinmdCopyLocal" AfterTargets="ResolveNuGetPackageAssets">
+    <ItemGroup>
+      <XamlWinMdCopyLocal Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)' == '$(XamlWinmdName)'" />
+    </ItemGroup>
+    <ItemGroup Condition="'@(XamlWinMdCopyLocal)' != ''">
+      <ReferenceCopyLocalPaths Remove="@(XamlWinMdCopyLocal)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="_FixWinmdPackaging" BeforeTargets="_ComputeAppxPackagePayload">
+    <ItemGroup>
+      <XamlWinmdPackagingOutput Include="@(PackagingOutputs)" Condition="'%(PackagingOutputs.Filename)%(PackagingOutputs.Extension)' == '$(XamlWinmdName)'" />
+    </ItemGroup>
+    <ItemGroup Condition="'@(XamlWinmdPackagingOutput)' != ''">
+      <PackagingOutputs Remove="@(XamlWinmdPackagingOutput)" />
+    </ItemGroup>
+    <ItemGroup>
+      <PackagingOutputs Include="@(XamlWinmd)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="_AddXamlWinmdToPackageLayoutRoot" AfterTargets="BuildNativePackage">
+    <ItemGroup>
+      <AppxPackagePayload Include="@(XamlWinmd)">
+        <TargetPath>Microsoft.UI.Xaml.winmd</TargetPath>
+      </AppxPackagePayload>
+    </ItemGroup>
+  </Target>
 </Project>
