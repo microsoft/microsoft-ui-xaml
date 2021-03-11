@@ -67,6 +67,7 @@ void PipsPager::OnApplyTemplate()
     m_previousPageButtonClickRevoker.revoke();
     [this](const winrt::Button button)
     {
+        m_previousPageButton.set(button);
         if (button)
         {
             winrt::AutomationProperties::SetName(button, ResourceAccessor::GetLocalizedStringResource(SR_PipsPagerPreviousPageButtonText));
@@ -77,6 +78,7 @@ void PipsPager::OnApplyTemplate()
     m_nextPageButtonClickRevoker.revoke();
     [this](const winrt::Button button)
     {
+        m_nextPageButton.set(button);
         if (button)
         {
             winrt::AutomationProperties::SetName(button, ResourceAccessor::GetLocalizedStringResource(SR_PipsPagerNextPageButtonText));
@@ -165,47 +167,6 @@ void PipsPager::OnKeyDown(const winrt::KeyRoutedEventArgs& args) {
     __super::OnKeyDown(args);
 }
 
-void PipsPager::OnPointerEntered(const winrt::PointerRoutedEventArgs& args) {
-    __super::OnPointerEntered(args);
-    m_isPointerOver = true;
-    UpdateNavigationButtonVisualStates();
-}
-void PipsPager::OnPointerExited(const winrt::PointerRoutedEventArgs& args) {
-    // We can get a spurious Exited and then Entered if the button
-    // that is being clicked on hides itself. In order to avoid switching
-    // visual states in this case, we check if the pointer is over the
-    // control bounds when we get the exited event.
-    if (IsOutOfControlBounds(args.GetCurrentPoint(*this).Position()))
-    {
-        m_isPointerOver = false;
-        UpdateNavigationButtonVisualStates();
-    }
-    else
-    {
-        args.Handled(true);
-    }
-    __super::OnPointerExited(args);
-}
-
-void PipsPager::OnPointerCanceled(const winrt::PointerRoutedEventArgs& args)
-{
-    __super::OnPointerCanceled(args);
-    m_isPointerOver = false;
-    UpdateNavigationButtonVisualStates();
-}
-
-bool PipsPager::IsOutOfControlBounds(const winrt::Point& point) {
-    // This is a conservative check. It is okay to say we are
-    // out of the bounds when close to the edge to account for rounding.
-    const auto tolerance = 1.0;
-    const auto actualWidth = ActualWidth();
-    const auto actualHeight = ActualHeight();
-    return point.X < tolerance ||
-        point.X > actualWidth - tolerance ||
-        point.Y < tolerance ||
-        point.Y  > actualHeight - tolerance;
-}
-
 void PipsPager::UpdateIndividualNavigationButtonVisualState(
     const bool hiddenOnEdgeCondition,
     const ButtonVisibility visibility,
@@ -217,7 +178,7 @@ void PipsPager::UpdateIndividualNavigationButtonVisualState(
     const auto ifGenerallyVisible = !hiddenOnEdgeCondition && NumberOfPages() != 0 && MaxVisiblePips() > 0;
     if (visibility != ButtonVisibility::Collapsed)
     {
-        if ((visibility == ButtonVisibility::Visible || m_isPointerOver) && ifGenerallyVisible)
+        if ((visibility == ButtonVisibility::Visible || m_isPointerOver || m_isFocused) && ifGenerallyVisible)
         {
             winrt::VisualStateManager::GoToState(*this, visibleStateName, false);
             winrt::VisualStateManager::GoToState(*this, enabledStateName, false);
@@ -528,6 +489,45 @@ void PipsPager::OnNextButtonClicked(const IInspectable& sender, const winrt::Rou
     SelectedPageIndex(SelectedPageIndex() + 1);
 }
 
+
+void PipsPager::OnGotFocus(const winrt::RoutedEventArgs& args)
+{
+    if (const auto btn = args.OriginalSource().try_as<winrt::Button>())
+    {
+        // If the element inside the Pager is already keyboard focused
+        // and the user will use the mouse to focus on something else
+        // the LostFocus will not be triggered on keyboard focused element
+        // while GotFocus will be triggered on the new mouse focused element.
+        // We account for this scenario and update m_isFocused in case
+        // user will use mouse while being in keyboard focus.
+        if (btn.FocusState() != winrt::FocusState::Pointer)
+        {
+            m_isFocused = true;
+            UpdateNavigationButtonVisualStates();
+        }
+        else
+        {
+            m_isFocused = false;
+        }
+    }
+}
+
+// In order to avoid switching visibility of the navigation buttons while moving focus inside the Pager,
+// we'll check if the next focused element is inside the Pager.
+void PipsPager::LosingFocus(const IInspectable& sender, const winrt::LosingFocusEventArgs& args)
+{
+    if (const auto repeater = m_pipsPagerRepeater.get())
+    {
+        if (const auto nextFocusElement = args.NewFocusedElement().try_as<winrt::UIElement>())
+        {
+            m_ifNextFocusElementInside = repeater.GetElementIndex(nextFocusElement) != -1
+                || nextFocusElement == m_previousPageButton.get()
+                || nextFocusElement == m_nextPageButton.get();
+
+        }
+    }
+}
+
 void PipsPager::OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::GettingFocusEventArgs& args)
 {
     if (const auto repeater = m_pipsPagerRepeater.get())
@@ -561,6 +561,59 @@ void PipsPager::OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::
             }
         }
     }
+}
+
+void PipsPager::OnLostFocus(const winrt::RoutedEventArgs& args)
+{
+    if (!m_ifNextFocusElementInside)
+    {
+        m_isFocused = false;
+        UpdateNavigationButtonVisualStates();
+    }
+}
+
+void PipsPager::OnPointerEntered(const winrt::PointerRoutedEventArgs& args)
+{
+    __super::OnPointerEntered(args);
+    m_isPointerOver = true;
+    UpdateNavigationButtonVisualStates();
+}
+void PipsPager::OnPointerExited(const winrt::PointerRoutedEventArgs& args)
+{
+    // We can get a spurious Exited and then Entered if the button
+    // that is being clicked on hides itself. In order to avoid switching
+    // visual states in this case, we check if the pointer is over the
+    // control bounds when we get the exited event.
+    if (IsOutOfControlBounds(args.GetCurrentPoint(*this).Position()))
+    {
+        m_isPointerOver = false;
+        UpdateNavigationButtonVisualStates();
+    }
+    else
+    {
+        args.Handled(true);
+    }
+    __super::OnPointerExited(args);
+}
+
+void PipsPager::OnPointerCanceled(const winrt::PointerRoutedEventArgs& args)
+{
+    __super::OnPointerCanceled(args);
+    m_isPointerOver = false;
+    UpdateNavigationButtonVisualStates();
+}
+
+bool PipsPager::IsOutOfControlBounds(const winrt::Point& point)
+{
+    // This is a conservative check. It is okay to say we are
+    // out of the bounds when close to the edge to account for rounding.
+    const auto tolerance = 1.0;
+    const auto actualWidth = ActualWidth();
+    const auto actualHeight = ActualHeight();
+    return point.X < tolerance ||
+        point.X > actualWidth - tolerance ||
+        point.Y < tolerance ||
+        point.Y  > actualHeight - tolerance;
 }
 
 void PipsPager::OnPipsAreaBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args)

@@ -11,5 +11,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CommonStylesTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CalendarViewTests.cs" />
   </ItemGroup>
 </Project>
