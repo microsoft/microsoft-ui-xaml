@@ -447,6 +447,8 @@ private:
 
     winrt::FlyoutBase::Closing_revoker m_flyoutClosingRevoker{};
 
+    winrt::Storyboard::Completed_revoker m_shadowCasterEaseOutStoryboardRevoker{};
+
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };
     bool m_blockNextClosingEvent{ false };

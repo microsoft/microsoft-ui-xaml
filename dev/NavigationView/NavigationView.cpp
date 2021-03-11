@@ -173,6 +173,8 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
 
     m_topNavOverflowItemsCollectionChangedRevoker.revoke();
 
+    m_shadowCasterEaseOutStoryboardRevoker.revoke();
+
     if (isFromDestructor)
     {
         m_selectionChangedRevoker.revoke();
@@ -4786,9 +4788,11 @@ void NavigationView::UnsetDropShadow()
     if (const auto shadowCasterEaseOutStoryboard = m_shadowCasterEaseOutStoryboard.get())
     {
         shadowCasterEaseOutStoryboard.Begin();
-        shadowCasterEaseOutStoryboard.Completed(winrt::auto_revoke,
+
+        m_shadowCasterEaseOutStoryboardRevoker =
+            shadowCasterEaseOutStoryboard.Completed(winrt::auto_revoke,
             {
-                [this, shadowCaster](auto const&, auto const&) {ShadowCasterEaseOutStoryboard_Completed(shadowCaster); }
+                [this, shadowCaster](auto const&, auto const&) { ShadowCasterEaseOutStoryboard_Completed(shadowCaster); }
             });
     }
 }
