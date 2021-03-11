@@ -5,9 +5,13 @@ CommandBar/CommandBarFlyout updates
 
 # Background
 
-This spec will address three main shortcomings in the [CommandBar](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.commandbar?view=winrt-19041) and [CommandBarFlyout](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.commandbarflyout?view=winrt-19041) space, and propose solutions to these shortcomings. All of these solutions will lead to a more customizable, flexible commanding experience. 
+This spec will address three main shortcomings in the
+[CommandBar](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.commandbar?view=winrt-19041)
+and [CommandBarFlyout](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.commandbarflyout?view=winrt-19041)
+space, and propose solutions to these shortcomings. All of these solutions will lead to a more customizable, flexible commanding experience. 
 
-A `CommandBar` provides access to app-level or page-specific commands. A `CommandBarFlyout` is a `CommandBar` that appears in a `Flyout` menu, and must be invoked.
+A `CommandBar` provides access to app-level or page-specific commands. 
+A `CommandBarFlyout` is a `CommandBar` that appears in a `Flyout` menu, and must be invoked.
 
 *CommandBar:*
 
@@ -19,7 +23,12 @@ A `CommandBar` provides access to app-level or page-specific commands. A `Comman
 
 ### Issue #1: You can only use a select few object types inside of a CommandBar/CommandBarFlyout. 
 
-When using the `CommandBar`or `CommandBarFlyout` controls today, the only supported types for items are [AppBarButton](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.appbarbutton?view=winrt-19041), [AppBarToggleButton](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.appbartogglebutton?view=winrt-19041), and [AppBarSeparator](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.appbarseparator?view=winrt-19041). When you use an AppBarButton in a `CommandBar` or `CommandBarFlyout`, all of the interactions and styles needed to conform with the parent control are included - height, width, the background color when hovered/pressed, the font size, etc. 
+When using the `CommandBar`or `CommandBarFlyout` controls today, the only supported types for items are 
+[AppBarButton](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.appbarbutton?view=winrt-19041), 
+[AppBarToggleButton](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.appbartogglebutton?view=winrt-19041), 
+and [AppBarSeparator](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.appbarseparator?view=winrt-19041). 
+When you use an AppBarButton in a `CommandBar` or `CommandBarFlyout`, all of the interactions and styles needed to conform with
+the parent control are included - height, width, the background color when hovered/pressed, the font size, etc. 
 
 ```c#
 <CommandBar>
@@ -27,7 +36,12 @@ When using the `CommandBar`or `CommandBarFlyout` controls today, the only suppor
 </CommandBar>
 ```
 
-It is possible to add other types of objects into your `CommandBar` or `CommandBarFlyout`, using the wrapper class [AppBarElementContainer](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.appbarelementcontainer?view=winrt-19041). This allows for objects of different types (such as `SplitButton` or `DropdownButton`) to be placed in a `CommandBar` or `CommandBarFlyout`, but it does not provide the proper styling to make these objects conform. Visually, they won't blend in with the AppBarButton objects being displayed in the `CommandBar[Flyout]` without serious styling work.
+It is possible to add other types of objects into your `CommandBar` or `CommandBarFlyout`, 
+using the wrapper class
+[AppBarElementContainer](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.appbarelementcontainer?view=winrt-19041).
+This allows for objects of different types (such as `SplitButton` or `DropdownButton`) to be placed in a 
+`CommandBar` or `CommandBarFlyout`, but it does not provide the proper styling to make these objects conform.
+Visually, they won't blend in with the AppBarButton objects being displayed in the `CommandBar[Flyout]` without serious styling work.
 
 ```c#
 <CommandBar>
@@ -39,7 +53,9 @@ It is possible to add other types of objects into your `CommandBar` or `CommandB
 
 ### Issue #2: RadioMenuFlyoutItems don't provide nested functionality.
 
-`CommandBar` and `CommandBarFlyout` items often have their own attached [MenuFlyout](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.menuflyout?view=winrt-19041), via the `AppBarButton.Flyout` property. See a simple example of this below:
+`CommandBar` and `CommandBarFlyout` items often have their own attached
+[MenuFlyout](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.menuflyout?view=winrt-19041), 
+via the `AppBarButton.Flyout` property. See a simple example of this below:
 
 
 ```xaml
@@ -56,11 +72,13 @@ It is possible to add other types of objects into your `CommandBar` or `CommandB
 
 ![Simple MenuFlyout within a CommandBar](images/simple-menuflyout.PNG)
 
- Items within a `MenuFlyout` (such as "Sort by artist name") can also have their own MenuFlyouts, creating a  cascading or nested MenuFlyout. See an example of this below. 
+ Items within a `MenuFlyout` (such as "Sort by artist name") can also have their own MenuFlyouts, 
+creating a  cascading or nested MenuFlyout. See an example of this below. 
  
 ![Image of a cascading menu](images/nested-menuflyout.PNG)
 
-In order to create this cascading/nested menu today, you can use a class called [MenuFlyoutSubItem](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.menuflyoutsubitem?view=winrt-19041) as an item in the menu. 
+In order to create this cascading/nested menu today, you can use a class called
+[MenuFlyoutSubItem](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.menuflyoutsubitem?view=winrt-19041) as an item in the menu. 
 
 ```xaml
 <MenuFlyout>
@@ -76,11 +94,15 @@ In order to create this cascading/nested menu today, you can use a class called 
 ```
 
 The `MenuFlyoutSubItem` class represents a "parent" MenuFlyout item. It has an
-[Items](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.menuflyout.items?view=winrt-19041) property, where you can assign all of its child items.  Here's the above example with labels showing which item is which type:
+[Items](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.menuflyout.items?view=winrt-19041) 
+property, where you can assign all of its child items.  Here's the above example with labels showing which item is which type:
 
 ![Anatomy of a MenuFlyout](images/anatomy-diagram.PNG)
 
-You also have the option of using [RadioMenuFlyoutItem](https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.radiomenuflyoutitem?view=winui-2.5), which has a [GroupName](https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.radiomenuflyoutitem.groupname?view=winui-2.5#Microsoft_UI_Xaml_Controls_RadioMenuFlyoutItem_GroupName) property. Items with the same GroupName will be a part of the same selection model - only one of the items in a Group can be "selected" and display the selection indicator at a time:
+You also have the option of using 
+[RadioMenuFlyoutItem](https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.radiomenuflyoutitem?view=winui-2.5), 
+which has a [GroupName](https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.radiomenuflyoutitem.groupname?view=winui-2.5#Microsoft_UI_Xaml_Controls_RadioMenuFlyoutItem_GroupName) 
+property. Items with the same GroupName will be a part of the same selection model - only one of the items in a Group can be "selected" and display the selection indicator at a time:
 
 ```xaml
 <AppBarButton>View
@@ -101,24 +123,34 @@ You also have the option of using [RadioMenuFlyoutItem](https://docs.microsoft.c
 
 ![Image of a menu flyout with radio items](images/radiomenuflyoutitems.png)
 
-The issue arises when you want to combine these two concepts. It would be useful to have `RadioMenuFlyoutItems` have their own child items that participate in the same Group as their parent. This would allow for cleaner UIs by decreasing the size of `MenuFlyouts` that have a long list of `RadioMenuFlyoutItems`. See an example below:
+The issue arises when you want to combine these two concepts. It would be useful to have `RadioMenuFlyoutItems` have 
+their own child items that participate in the same Group as their parent.
+This would allow for cleaner UIs by decreasing the size of `MenuFlyouts` that have a long list of `RadioMenuFlyoutItems`. 
+See an example below:
 
 ![Nested radio menu flyout example](images/commandbar2.png)
 
 ### Issue #3: CommandBarFlyout does not have an "always expanded" state.
 
-Currently, a `CommandBarFlyout` with secondary commands always shows a […] button that allows the user to collapse the `CommandBarFlyout` into just the top bar (primary commands). There's currently no way to have a `CommandBarFlyout` with secondary commands that is always expanded when invoked. 
+Currently, a `CommandBarFlyout` with secondary commands always shows a […] "more" button that
+allows the user to collapse the `CommandBarFlyout` into just the top bar (primary commands). 
+There's currently no way to have a `CommandBarFlyout` with secondary commands that is always expanded when invoked. 
 
-When the `CommandBarFlyout` is invoked via touch, only the primary commands are shown (with the option for the user to expand the list of secondary commands). The developer is currently not able to control how the `CommandBarFlyout` appears when invoked, and cannot control whether it can be collapsed or not. 
+![Command bar with more button](images/more-button.jpg)
 
+When the `CommandBarFlyout` is invoked via touch, only the primary commands are shown (with the option for the user to
+expand the list of secondary commands). The developer is currently not able to control how the `CommandBarFlyout` appears when invoked, 
+and cannot control whether it can be collapsed or not. 
 
 # Description
 
 ### Feature #1. Built-in styles to support adding `SplitButton` to `CommandBar` and `CommandBarFlyout`
 
-WinUI will provide built in styles for SplitButton that will allow them to conform with the look and feel of an `AppBarButton`. These styles will change properties such as the `SplitButton`'s height/width, font size, color, interactions (color changes), and more. 
+WinUI will provide built in styles for SplitButton that will allow them to conform with the look and feel of an `AppBarButton`. 
+These styles will change properties such as the `SplitButton`'s height/width, font size, color, interactions (color changes), and more. 
 
-There will be two styles provided: `CommandBarSplitButtonStyle` and `CommandBarFlyoutSplitButtonStyle`. These styles can be accessed as ThemeResources in any WinUI app. 
+There will be two styles provided: `CommandBarSplitButtonStyle` and `CommandBarFlyoutSplitButtonStyle`. 
+These styles can be accessed as ThemeResources in any WinUI app. 
 
 For example:
 
@@ -152,13 +184,20 @@ For example:
 
 ### Feature #2. `RadioMenuFlyoutSubItem`
 
-`RadioMenuFlyoutSubItem` is a new class that represents a "parent" `RadioMenuFlyout` item. It is very similar to the [MenuFlyoutSubItem](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.menuflyoutsubitem?view=winrt-19041) class.
+`RadioMenuFlyoutSubItem` is a new class that represents a "parent" `RadioMenuFlyout` item. 
+It is very similar to the [MenuFlyoutSubItem](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.menuflyoutsubitem?view=winrt-19041) class.
 
-All child items of a `RadioMenuFlyoutSubItem` should be of type [RadioMenuFlyoutItem](https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.radiomenuflyoutitem?view=winui-2.5) (although this is not enforced by the API). If a child item is selected, the parent item will show as selected. All child items should have the same GroupName as siblings of the parents. 
+All child items of a `RadioMenuFlyoutSubItem` should be of type 
+[RadioMenuFlyoutItem](https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.radiomenuflyoutitem?view=winui-2.5) 
+(although this is not enforced by the API). If a child item is selected, the parent item will show as selected. 
+All child items should have the same GroupName as siblings of the parents. 
 
-The parent (`RadioMenuFlyoutSubItem`) cannot be selected. Thus it does not have `GroupName` or `IsChecked` properties. It can only achieve selection (and show the selection indicator) if it is bubbled up from one of its child items. Therefore, only one item out of the child items and other top-level RadioMenuFlyout items in the same Group can be selected at a time. 
+The parent (`RadioMenuFlyoutSubItem`) cannot be selected. Thus it does not have `GroupName` or `IsChecked` properties.
+It can only achieve selection (and show the selection indicator) if it is bubbled up from one of its child items.
+Therefore, only one item out of the child items and other top-level RadioMenuFlyout items in the same Group can be selected at a time. 
 
-If a child item becomes selected, the selection indicator will bubble up to its parent when its `MenuFlyout` is closed. If a child is selected and the `MenuFlyout` is open, both the parent and child will show the selection indicator (similar to a hierarchical `NavigationView`).
+If a child item becomes selected, the selection indicator will bubble up to its parent when its `MenuFlyout` is closed.
+If a child is selected and the `MenuFlyout` is open, both the parent and child will show the selection indicator (similar to a hierarchical `NavigationView`).
 
 These are the three main visual states for this new API, using the same Xaml Controls Gallery sample that was previously shown:
 
@@ -211,9 +250,12 @@ For example:
 
 This will be a new API added to `CommandBarFlyout` that will give the developer the ability to keep the `CommandBarFlyout` in its expanded mode at all times.
 
-When the AlwaysExpanded property is set to true, the [...] button will not appear, and the user will not be able to collapse the `CommandBarFlyout`. Once the [...] button is collapsed, other `AppBarButtons`/`CommandBarFlyout` items should be able to take its space. 
+When the AlwaysExpanded property is set to true, the [...] button will not appear, 
+and the user will not be able to collapse the `CommandBarFlyout`. 
+Once the [...] button is collapsed, other `AppBarButtons`/`CommandBarFlyout` items should be able to take its space. 
 
-This property will only have an effect if the `CommandBarFlyout` has secondary commands. If there are no secondary commands, the `CommandBarFlyout` will always be in collapsed mode (hence why there’s no `AlwaysCollapsed` property). 
+This property will only have an effect if the `CommandBarFlyout` has secondary commands. 
+If there are no secondary commands, the `CommandBarFlyout` will always be in collapsed mode (hence why there’s no `AlwaysCollapsed` property). 
 
 `CommandBarFlyout` can still be collapsed/expanded by the developer programmatically even when this property is set to true. 
 
