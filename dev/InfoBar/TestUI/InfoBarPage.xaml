@@ -36,14 +36,8 @@
                 Closing="OnClosing"
                 Closed="OnClosed"/>
 
-            <Grid Grid.Row="1" Margin="0,20,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <ScrollViewer>
+            <ScrollViewer>
+                <StackPanel Orientation="Horizontal">
                     <StackPanel Orientation="Vertical" contract5Present:Spacing="6" HorizontalAlignment="Left">
                         <ComboBox x:Name="SeverityComboBox" AutomationProperties.Name="SeverityComboBox" Header="Severity" SelectionChanged="SeverityComboBox_SelectionChanged">
                             <x:String>Error</x:String>
@@ -67,11 +61,11 @@
                             <ComboBoxItem Content="Hyperlink" />
                         </ComboBox>
 
-                    <Button Content="Set Foreground" Click="SetForegroundClick"/>
-                </StackPanel>
+                        <Button Content="Set Foreground" Click="SetForegroundClick"/>
+                    </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">
-                    <CheckBox x:Name="IsOpenCheckBox" AutomationProperties.Name="IsOpenCheckBox" Content="IsOpen" IsChecked="{x:Bind TestInfoBar.IsOpen, Mode=TwoWay}"/>
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">
+                        <CheckBox x:Name="IsOpenCheckBox" AutomationProperties.Name="IsOpenCheckBox" Content="IsOpen" IsChecked="{x:Bind TestInfoBar.IsOpen, Mode=TwoWay}"/>
 
                         <CheckBox x:Name="CancelCheckBox" AutomationProperties.Name="CancelCheckBox" Content="Cancel Close" />
 
@@ -85,31 +79,31 @@
 
                         <CheckBox x:Name="CloseButtonStyleCheckBox" AutomationProperties.Name="CloseButtonStyleCheckBox" Content="Custom Close Button Style" Checked="CloseStyleChanged" Unchecked="CloseStyleChanged"/>
                     </StackPanel>
-                </ScrollViewer>
 
-                <StackPanel Grid.Column="2" Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">
-                    <TextBlock>Events:</TextBlock>
-                    <ListBox x:Name="EventListBox" AutomationProperties.Name="EventListBox" MinWidth="150" MaxHeight="380">
-                        <ListBox.Resources>
-                            <Style TargetType="ListBoxItem">
-                                <Style.Setters>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="ListBoxItem">
-                                                <TextBlock Text="{TemplateBinding Content}"/>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style.Setters>
-                            </Style>
-                        </ListBox.Resources>
-                    </ListBox>
-                    <Button AutomationProperties.Name="ClearButton" Content="Clear" Margin="0,6,0,0" Click="ClearButtonClick"/>
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">
+                        <TextBlock>Events:</TextBlock>
+                        <ListBox x:Name="EventListBox" AutomationProperties.Name="EventListBox" MinWidth="150" MaxHeight="380">
+                            <ListBox.Resources>
+                                <Style TargetType="ListBoxItem">
+                                    <Style.Setters>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ListBoxItem">
+                                                    <TextBlock Text="{TemplateBinding Content}"/>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style.Setters>
+                                </Style>
+                            </ListBox.Resources>
+                        </ListBox>
+                        <Button AutomationProperties.Name="ClearButton" Content="Clear" Margin="0,6,0,0" Click="ClearButtonClick"/>
 
-                    <TextBlock Text="Default InfoBar (should be invisible):" Margin="0,20,0,0"/>
-                    <controls:InfoBar AutomationProperties.Name="DefaultInfoBar" />
+                        <TextBlock Text="Default InfoBar (should be invisible):" Margin="0,20,0,0"/>
+                        <controls:InfoBar AutomationProperties.Name="DefaultInfoBar" />
+                    </StackPanel>
                 </StackPanel>
-            </Grid>
+            </ScrollViewer>
         </Grid>
     </Grid>
 </local:TestPage>
