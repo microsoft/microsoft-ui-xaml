@@ -10,7 +10,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedFindVisualSource.json
 //       
 //       Input file:
-//           AnimatedFindVisualSource.json (17313 bytes created 12:28-08:00 Feb 8 2021)
+//           AnimatedFindVisualSource.json (17499 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -22,81 +22,81 @@
 #include "common.h"
 #include "AnimatedVisuals\AnimatedFindVisualSource.g.h"
 
-// Name:        AnimatedFindVisualSource
+// Name:        Controls_05_Search
 // Frame rate:  60 fps
-// Frame count: 50
-// Duration:    833.3 mS
-// ____________________________________________________________________________________________
-// |           Marker           |           Constant           | Frame |  mS   |   Progress   |
-// |____________________________|______________________________|_______|_______|______________|
-// | NormalToPointerOver_Start  | M_NormalToPointerOver_Start  |     0 |   0.0 | 0.0F         |
-// | NormalToPointerOver_End    | M_NormalToPointerOver_End    |     9 | 150.0 | 0.180999994F |
-// | NormalToPressed_Start      | M_NormalToPressed_Start      |    10 | 166.7 | 0.201000005F |
-// | NormalToPressed_End        | M_NormalToPressed_End        |    14 | 233.3 | 0.280999988F |
-// | PointerOverToNormal_Start  | M_PointerOverToNormal_Start  |    15 | 250.0 | 0.300999999F |
-// | PointerOverToNormal_End    | M_PointerOverToNormal_End    |    24 | 400.0 | 0.481000006F |
-// | PointerOverToPressed_Start | M_PointerOverToPressed_Start |    25 | 416.7 | 0.500999987F |
-// | PointerOverToPressed_End   | M_PointerOverToPressed_End   |    29 | 483.3 | 0.58099997F  |
-// | PressedToNormal_Start      | M_PressedToNormal_Start      |    30 | 500.0 | 0.601000011F |
-// | PressedToNormal_End        | M_PressedToNormal_End        |    44 | 733.3 | 0.880999982F |
-// | PressedToPointerOver_Start | M_PressedToPointerOver_Start |    45 | 750.0 | 0.901000023F |
-// | PressedToPointerOver_End   | M_PressedToPointerOver_End   |    49 | 816.7 | 0.981000006F |
-// --------------------------------------------------------------------------------------------
-// _______________________________________________________
-// | Theme property |  Accessor  | Type  | Default value |
-// |________________|____________|_______|_______________|
-// | Foreground     | Foreground | Color |   #FF060808   |
-// -------------------------------------------------------
+// Frame count: 80
+// Duration:    1333.3 mS
+// _____________________________________________________________________________________________
+// |           Marker           |           Constant           | Frame |   mS   |   Progress   |
+// |____________________________|______________________________|_______|________|______________|
+// | NormalToPointerOver_Start  | M_NormalToPointerOver_Start  |     0 |    0.0 | 0.0F         |
+// | NormalToPointerOver_End    | M_NormalToPointerOver_End    |     9 |  150.0 | 0.113124996F |
+// | NormalToPressed_Start      | M_NormalToPressed_Start      |    10 |  166.7 | 0.125624999F |
+// | NormalToPressed_End        | M_NormalToPressed_End        |    19 |  316.7 | 0.238124996F |
+// | PointerOverToNormal_Start  | M_PointerOverToNormal_Start  |    20 |  333.3 | 0.250625014F |
+// | PointerOverToNormal_End    | M_PointerOverToNormal_End    |    29 |  483.3 | 0.363124996F |
+// | PointerOverToPressed_Start | M_PointerOverToPressed_Start |    30 |  500.0 | 0.375625014F |
+// | PointerOverToPressed_End   | M_PointerOverToPressed_End   |    39 |  650.0 | 0.488124996F |
+// | PressedToNormal_Start      | M_PressedToNormal_Start      |    40 |  666.7 | 0.500625014F |
+// | PressedToNormal_End        | M_PressedToNormal_End        |    59 |  983.3 | 0.738125026F |
+// | PressedToPointerOver_Start | M_PressedToPointerOver_Start |    60 | 1000.0 | 0.750625014F |
+// | PressedToPointerOver_End   | M_PressedToPointerOver_End   |    79 | 1316.7 | 0.988125026F |
+// ---------------------------------------------------------------------------------------------
+// _________________________________________________________
+// | Theme property |  Accessor  | Type  |  Default value  |
+// |________________|____________|_______|_________________|
+// | Foreground     | Foreground | Color | #FF000000 Black |
+// ---------------------------------------------------------
 class AnimatedFindVisualSource
     : public winrt::implementation::AnimatedFindVisualSourceT<AnimatedFindVisualSource>
 {
     winrt::Windows::UI::Composition::CompositionPropertySet _themeProperties{ nullptr };
-    winrt::Windows::UI::Color _themeForeground{ 0xFF, 0x06, 0x08, 0x08 };
+    winrt::Windows::UI::Color _themeForeground{ 0xFF, 0x00, 0x00, 0x00 };
     winrt::Windows::UI::Composition::CompositionPropertySet EnsureThemeProperties(winrt::Windows::UI::Composition::Compositor compositor);
 
     static winrt::Windows::Foundation::Numerics::float4 ColorAsVector4(winrt::Windows::UI::Color color);
 public:
-    // Animation duration: 0.833 seconds.
-    static constexpr int64_t c_durationTicks{ 8333333L };
+    // Animation duration: 1.333 seconds.
+    static constexpr int64_t c_durationTicks{ 13333333L };
 
     // Marker: NormalToPointerOver_Start.
     static constexpr float M_NormalToPointerOver_Start{ 0.0F };
 
     // Marker: NormalToPointerOver_End.
-    static constexpr float M_NormalToPointerOver_End{ 0.180999994F };
+    static constexpr float M_NormalToPointerOver_End{ 0.113124996F };
 
     // Marker: NormalToPressed_Start.
-    static constexpr float M_NormalToPressed_Start{ 0.201000005F };
+    static constexpr float M_NormalToPressed_Start{ 0.125624999F };
 
     // Marker: NormalToPressed_End.
-    static constexpr float M_NormalToPressed_End{ 0.280999988F };
+    static constexpr float M_NormalToPressed_End{ 0.238124996F };
 
     // Marker: PointerOverToNormal_Start.
-    static constexpr float M_PointerOverToNormal_Start{ 0.300999999F };
+    static constexpr float M_PointerOverToNormal_Start{ 0.250625014F };
 
     // Marker: PointerOverToNormal_End.
-    static constexpr float M_PointerOverToNormal_End{ 0.481000006F };
+    static constexpr float M_PointerOverToNormal_End{ 0.363124996F };
 
     // Marker: PointerOverToPressed_Start.
-    static constexpr float M_PointerOverToPressed_Start{ 0.500999987F };
+    static constexpr float M_PointerOverToPressed_Start{ 0.375625014F };
 
     // Marker: PointerOverToPressed_End.
-    static constexpr float M_PointerOverToPressed_End{ 0.58099997F };
+    static constexpr float M_PointerOverToPressed_End{ 0.488124996F };
 
     // Marker: PressedToNormal_Start.
-    static constexpr float M_PressedToNormal_Start{ 0.601000011F };
+    static constexpr float M_PressedToNormal_Start{ 0.500625014F };
 
     // Marker: PressedToNormal_End.
-    static constexpr float M_PressedToNormal_End{ 0.880999982F };
+    static constexpr float M_PressedToNormal_End{ 0.738125026F };
 
     // Marker: PressedToPointerOver_Start.
-    static constexpr float M_PressedToPointerOver_Start{ 0.901000023F };
+    static constexpr float M_PressedToPointerOver_Start{ 0.750625014F };
 
     // Marker: PressedToPointerOver_End.
-    static constexpr float M_PressedToPointerOver_End{ 0.981000006F };
+    static constexpr float M_PressedToPointerOver_End{ 0.988125026F };
 
     // Theme property: Foreground.
-    static inline const winrt::Windows::UI::Color c_themeForeground{ 0xFF, 0x06, 0x08, 0x08 };
+    static inline const winrt::Windows::UI::Color c_themeForeground{ 0xFF, 0x00, 0x00, 0x00 };
 
 
     winrt::Windows::UI::Color Foreground();
