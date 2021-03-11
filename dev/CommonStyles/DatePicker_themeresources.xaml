@@ -32,10 +32,11 @@
             <StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="AccentAAFillColorDefaultBrush" />
             
             <StaticResource x:Key="DatePickerButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="DatePickerButtonForegroundDefault" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="DatePickerButtonForegroundFocused" ResourceKey="TextOnAccentFillColorDefault" />
+            <StaticResource x:Key="DatePickerButtonForegroundFocused" ResourceKey="TextOnAccentAAFillColorPrimary" />
             
             <contract7NotPresent:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7NotPresent:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
@@ -68,6 +69,7 @@
             <StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="SystemControlHighlightAccentBrush" />
 
             <StaticResource x:Key="DatePickerButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="DatePickerButtonForegroundDefault" ResourceKey="SystemControlHighlightBaseHighBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="SystemControlHighlightBaseHighBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
@@ -115,6 +117,7 @@
             <StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="AccentAAFillColorDefaultBrush" />
             
             <StaticResource x:Key="DatePickerButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="DatePickerButtonForegroundDefault" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
@@ -282,11 +285,11 @@
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="HasDateStates">
                                 <VisualState x:Name="HasDate" />
-                                <VisualState x:Name="HasNoDate">
+                                <VisualState x:Name="HasNoDate">                                    
                                     <VisualState.Setters>
-                                        <Setter Target="DayTextBlock.Foreground" Value="{ThemeResource TextControlPlaceholderForeground}" />
-                                        <Setter Target="MonthTextBlock.Foreground" Value="{ThemeResource TextControlPlaceholderForeground}" />
-                                        <Setter Target="YearTextBlock.Foreground" Value="{ThemeResource TextControlPlaceholderForeground}" />
+                                        <Setter Target="DayTextBlock.Foreground" Value="{ThemeResource DatePickerButtonForegroundDefault}" />
+                                        <Setter Target="MonthTextBlock.Foreground" Value="{ThemeResource DatePickerButtonForegroundDefault}" />
+                                        <Setter Target="YearTextBlock.Foreground" Value="{ThemeResource DatePickerButtonForegroundDefault}" />
                                     </VisualState.Setters>
                                 </VisualState>
 

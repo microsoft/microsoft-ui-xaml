@@ -35,7 +35,7 @@
             <StaticResource x:Key="TimePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="TimePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TimePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="TimePickerButtonForegroundFocused" ResourceKey="TextOnAccentFillColorDefault" />
+            <StaticResource x:Key="TimePickerButtonForegroundFocused" ResourceKey="TextOnAccentAAFillColorPrimary" />
             
             <contract7Present:StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7Present:StaticResource x:Key="TimePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
