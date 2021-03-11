@@ -69,6 +69,11 @@
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MediaTransportControlsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)PivotPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -144,6 +149,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ToolTipPage.xaml.cs">
       <DependentUpon>ToolTipPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)MediaTransportControlsPage.xaml.cs">
+      <DependentUpon>MediaTransportControlsPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

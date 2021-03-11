@@ -185,7 +185,7 @@
   <!-- Dependencies for ImageIcon -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureImageIconEnabled) == 'true'">
   </PropertyGroup>
-    <!-- Dependencies for AnimatedIcon -->
+  <!-- Dependencies for AnimatedIcon -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureAnimatedIconEnabled) == 'true'">
     <FeatureAnimatedVisualPlayerEnabled>productOnly</FeatureAnimatedVisualPlayerEnabled>
   </PropertyGroup>
