@@ -9,6 +9,16 @@
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
 
+    <LinearGradientBrush x:Key="MyTransitionBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,4">
+        <LinearGradientBrush.RelativeTransform>
+            <ScaleTransform ScaleY="-1" CenterY="0.5"/>
+        </LinearGradientBrush.RelativeTransform>
+        <LinearGradientBrush.GradientStops>
+            <GradientStop Offset="1.0" Color="Transparent"/>
+            <GradientStop Offset="1.0" Color="{ThemeResource CardStrokeColorDefault}"/>
+        </LinearGradientBrush.GradientStops>
+    </LinearGradientBrush>
+    
     <Style TargetType="local:TabView" BasedOn="{StaticResource DefaultTabViewStyle}" />
 
     <Style x:Key="DefaultTabViewStyle" TargetType="local:TabView">
@@ -364,87 +374,131 @@
     <Style TargetType="local:TabViewItem">
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <Setter Property="CornerRadius" Value="8, 8, 0, 0"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TabViewItem">
 
                     <Grid x:Name="LayoutRoot"
                         Padding="{TemplateBinding Padding}"
-                        Margin="-1,0,0,0"> <!-- This item will cover the separator on its left side. -->
+                        Margin="0,0,0,0">
+                        <!-- This item will cover the separator on its left side. -->
 
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition x:Name="LeftColumn" Width="0"/>
+                            <ColumnDefinition x:Name="LeftColumn" Width="Auto"/>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition x:Name="RightColumn" Width="0"/>
+                            <ColumnDefinition x:Name="RightColumn" Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        
+
                         <Grid.RenderTransform>
                             <ScaleTransform x:Name="LayoutRootScale" />
                         </Grid.RenderTransform>
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Normal">
+                                    <VisualState.Setters>
+                                        <!--<Setter Target="TabContainer.CornerRadius" Value="8,8,0, 0"/> -->
+                                        <!-- <Setter Target="ContentPresenter.Margin" Value="0,0,0,0"/>
+                                             <Setter Target="TabContainer.BorderThickness" Value="1,1,1,1"/> -->
+
+                                    </VisualState.Setters>
+                                </VisualState>
 
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
+                                        <!-- <Setter Target="TabContainer.BorderThickness" Value="1,1,1,1"/> -->
                                         <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundPointerOver}" />
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewItemHeaderPointerOverCloseButtonBackground}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewItemHeaderPointerOverCloseButtonForeground}" />
+                                        <!-- <Setter Target="TabContainer.CornerRadius" Value="8,8,4,4"/> -->
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
+                                        <!-- <Setter Target="TabContainer.BorderThickness" Value="1,1,1,1"/> -->
                                         <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundPressed}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundPressed}" />
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewItemHeaderPressedCloseButtonBackground}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewItemHeaderPressedCloseButtonForeground}" />
+                                        <!-- <Setter Target="TabContainer.CornerRadius" Value="8,8,4,4"/> -->
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Selected">
                                     <VisualState.Setters>
                                         <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
-                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
-                                        <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
+                                        <Setter Target="TabContainer.BorderBrush" Value="{StaticResource MyTransitionBrush}"/>
+                                        <Setter Target="TabContainer.BorderThickness" Value="1,1,1,1"/>
+                                        <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <Setter Target="TabContainer.Margin" Value="-1,0,-1,0"/>
+                                        <!-- <Setter Target="TabContainer.CornerRadius" Value="8,8,0,0"/> -->
+                                        <Setter Target="TabSeparator.Opacity" Value="0"/>
+                                        <!-- <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
+                                            <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />-->
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonBackground}" />
-                                        <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonForeground}" />
-                                        <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
-                                        <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
+                                        <!-- <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonForeground}" />-->
+
+                                        <!-- <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRender.Visibility" Value="Visible"/> -->
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
-                                        <Setter Target="ContentPresenter.FontWeight" Value="SemiBold"/>
+                                        <!--<Setter Target="ContentPresenter.FontWeight" Value="SemiBold"/>-->
+                                        <!-- <Setter Target="LowerStroke.Visibility" Value="Collapsed"/> -->
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="PointerOverSelected">
                                     <VisualState.Setters>
                                         <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
-                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
-                                        <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
+                                        <Setter Target="TabContainer.BorderBrush" Value="{StaticResource MyTransitionBrush}"/>
+                                        <Setter Target="TabContainer.BorderThickness" Value="1,1,1,1"/>
+                                        <Setter Target="TabContainer.Margin" Value="-1,0,-1,0"/>
+                                        <!-- <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
+                                            <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" /> -->
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonBackground}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonForeground}" />
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
-                                        <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
-                                        <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
-                                        <Setter Target="ContentPresenter.FontWeight" Value="SemiBold"/>
+                                        <Setter Target="TabSeparator.Opacity" Value="0"/>
+                                        <!--<Setter Target="TabContainer.CornerRadius" Value="8,8,0,0"/> -->
+                                        <!--<Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRender.Visibility" Value="Visible"/> -->
+                                        <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <!-- <Setter Target="ContentPresenter.FontWeight" Value="SemiBold"/>-->
+                                        <!-- <Setter Target="LowerStroke.Visibility" Value="Collapsed"/> -->
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="PressedSelected">
                                     <VisualState.Setters>
                                         <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
-                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
-                                        <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
+                                        <Setter Target="TabContainer.BorderBrush" Value="{StaticResource MyTransitionBrush}"/>
+                                        <Setter Target="TabContainer.BorderThickness" Value="1,1,1,1"/>
+                                        <Setter Target="TabSeparator.Opacity" Value="0"/>
+                                        <Setter Target="TabContainer.Margin" Value="-1,0,-1,0"/>
+                                        <!-- <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
+                                            <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" /> -->
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonBackground}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonForeground}" />
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
-                                        <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
-                                        <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
+                                        <!-- <Setter Target="TabContainer.CornerRadius" Value="8,8,0,0"/> -->
+                                        <!--<Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRender.Visibility" Value="Visible"/> -->
+                                        <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRenderTriangle.Visibility" Value="Visible"/>
                                         <Setter Target="ContentPresenter.FontWeight" Value="SemiBold"/>
+                                        <!-- <Setter Target="LowerStroke.Visibility" Value="Collapsed"/> -->
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -605,7 +659,44 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="AdjacencyStates">
+                                <VisualState x:Name="NotAdjacent">
+                                    <VisualState.Setters>
+                                        <Setter Target="TabSeparator.BorderBrush" Value="Green"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="AdjacentOnTheLeft">
+                                    <VisualState.Setters>
+                                        <Setter Target="TabContainer.CornerRadius" Value="8,8,4,0"/>
+                                        <Setter Target="TabSeparator.Opacity" Value="0"/>
+                                        <Setter Target="TabSeparator.BorderBrush" Value="Blue"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="AdjacentOnTheRight">
+                                    <VisualState.Setters>
+                                        <Setter Target="TabContainer.CornerRadius" Value="8, 8, 0, 4"/>
+                                        <Setter Target="TabSeparator.BorderBrush" Value="Red"/>
+
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
+
+
+                        <Path Data="M4 0C4 1.19469 3.47624 2.26706 2.64582 3C1.94069 3.62236 1.01445 4 0 4V3C1.65685 3 3 1.65685 3 0H4Z" Fill="{ThemeResource CardStrokeColorDefaultBrush}"
+                                  VerticalAlignment="Bottom" Visibility="Collapsed"  x:Name="LeftRadiusRenderArc" Margin="-3,0,0,1"/>
+                        <Path Data="M0 4H4V0C4 2.20914 2.20914 4 0 4Z" Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                                  VerticalAlignment="Bottom" Visibility="Collapsed"  x:Name="LeftRadiusRenderTriangle"  Margin="-3, 0, 0, 1"/>
+
+
+
+
+
+                        <Path Data="M0 0C0 1.19469 0.523755 2.26706 1.35418 3C2.05931 3.62236 2.98555 4 4 4V3C2.34315 3 1 1.65685 1 0H0Z" Fill="{ThemeResource CardStrokeColorDefaultBrush}"
+                                  VerticalAlignment="Bottom" Grid.Column="2"  Visibility="Collapsed"  x:Name="RightRadiusRenderArc"  Margin="0, 0, -3, 1"/>
+                        <Path Data="M4 4H0V0C0 2.20914 1.79086 4 4 4Z" Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}" VerticalAlignment="Bottom" Margin="0, 0, -3, 1"
+                                  Grid.Column="2"  Visibility="Collapsed"  x:Name="RightRadiusRenderTriangle" />
 
                         <Path 
                             x:Name="LeftRadiusRender"
@@ -618,7 +709,7 @@
                                 Converter={StaticResource TabViewLeftInsetCornerConverter}}"
                             Stretch="Uniform"
                             Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
-                            Data="M4 0 L4 4 L0 4 A4,4 90 0 0 4 0 Z" /> 
+                            Data="M4 0 L4 4 L0 4 A4,4 90 0 0 4 0 Z" />
                         <Path
                             x:Name="RightRadiusRender"
                             x:Load="False"
@@ -634,21 +725,27 @@
 
                         <Border x:Name="TabSeparator"
                             HorizontalAlignment="Right"
+                                    Opacity="1"
                             Width="1"
                             Grid.Column="1"
                             BorderBrush="{ThemeResource TabViewItemSeparator}"
                             BorderThickness="1"
-                            Margin="{ThemeResource TabViewItemSeparatorMargin}"/>
+                            Margin="0,6,0,6"/>
+
+                        <!--<Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1"
+                                    Opacity="1" Height="1" Grid.Column="1" x:Name="LowerStroke" VerticalAlignment="Bottom" /> -->
 
                         <Grid x:Name="TabContainer"
                             Grid.Column="1"
-                            Background="{ThemeResource TabViewItemHeaderBackground}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Background="Transparent"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="0,0,0,1"
                             Control.IsTemplateFocusTarget="True"
                             Padding="{ThemeResource TabViewItemHeaderPadding}"
-                            CornerRadius="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}"
-                            FocusVisualMargin="{TemplateBinding FocusVisualMargin}">
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Margin="0"
+                            FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
+                            >
 
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition x:Name="IconColumn" Width="Auto" />
@@ -700,5 +797,15 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <LinearGradientBrush x:Key="MyTransitionBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,5">
+        <LinearGradientBrush.RelativeTransform>
+            <ScaleTransform ScaleY="-1" CenterY="0.5"/>
+        </LinearGradientBrush.RelativeTransform>
+        <LinearGradientBrush.GradientStops>
+            <GradientStop Offset="1.0" Color="Transparent"/>
+            <GradientStop Offset="1.0" Color="{ThemeResource CardStrokeColorDefault}"/>
+        </LinearGradientBrush.GradientStops>
+    </LinearGradientBrush>
 
 </ResourceDictionary>

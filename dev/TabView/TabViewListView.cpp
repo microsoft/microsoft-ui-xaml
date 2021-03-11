@@ -51,6 +51,9 @@ void TabViewListView::PrepareContainerForItemOverride(const winrt::DependencyObj
 {
     const auto itemContainer = element.as<winrt::TabViewItem>();
     const auto tvi = winrt::get_self<TabViewItem>(itemContainer);
+    bool k = itemContainer.Template() == nullptr ? false : true;
+    bool f = tvi->Template() == nullptr ? false : true;
+    
 
     // Due to virtualization, a TabViewItem might be recycled to display a different tab data item.
     // In that case, there is no need to set the TabWidthMode of the TabViewItem or its parent TabView
@@ -61,6 +64,9 @@ void TabViewListView::PrepareContainerForItemOverride(const winrt::DependencyObj
     {
         if (const auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
         {
+           /* const auto internalTabView = winrt::get_self<TabView>(tabView);
+            const auto selectedIndex = tabView.SelectedIndex();
+            internalTabView->UpdateBottomStrokes(selectedIndex, selectedIndex); */
             tvi->OnTabViewWidthModeChanged(tabView.TabWidthMode());
             tvi->SetParentTabView(tabView);
         }

@@ -11,6 +11,8 @@
 #include "ResourceAccessor.h"
 #include "SharedHelpers.h"
 #include <Vector.h>
+#include <typeinfo>
+#include <math.h>
 
 static constexpr double c_tabMinimumWidth = 48.0;
 static constexpr double c_tabMaximumWidth = 200.0;
@@ -28,7 +30,17 @@ TabView::TabView()
     auto items = winrt::make<Vector<winrt::IInspectable, MakeVectorParam<VectorFlag::Observable>()>>();
     SetValue(s_TabItemsProperty, items);
 
+    s_tabViewItemRevokersProperty =
+        InitializeDependencyProperty(
+            L"TabViewItemHandlers",
+            winrt::name_of<TabViewItemRevokers>(),
+            winrt::name_of<winrt::TabView>(),
+            true,
+            nullptr,
+            nullptr);
+
     SetDefaultStyleKey(this);
+
 
     Loaded({ this, &TabView::OnLoaded });
 
@@ -76,7 +88,7 @@ void TabView::OnApplyTemplate()
 
     m_tabContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"TabContentPresenter", controlProtected));
     m_rightContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"RightContentPresenter", controlProtected));
-    
+
     m_leftContentColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"LeftContentColumn", controlProtected));
     m_tabColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"TabColumn", controlProtected));
     m_addButtonColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"AddButtonColumn", controlProtected));
@@ -111,7 +123,7 @@ void TabView::OnApplyTemplate()
             m_listViewAllowDropPropertyChangedRevoker = RegisterPropertyChanged(listView, winrt::UIElement::AllowDropProperty(), { this, &TabView::OnListViewDraggingPropertyChanged });
         }
         return listView;
-    }());
+        }());
 
     m_addButton.set([this, controlProtected]() {
         auto addButton = GetTemplateChildT<winrt::Button>(L"AddButton", controlProtected);
@@ -135,7 +147,7 @@ void TabView::OnApplyTemplate()
             m_addButtonClickRevoker = addButton.Click(winrt::auto_revoke, { this, &TabView::OnAddButtonClick });
         }
         return addButton;
-    }());
+        }());
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
@@ -158,6 +170,25 @@ void TabView::OnApplyTemplate()
     }
 
     UpdateListViewItemContainerTransitions();
+}
+
+void TabView::OnPrepareContainerForItemOverride(const winrt::DependencyObject& element, const winrt::IInspectable& item)
+{
+    const auto container = element.as<winrt::TabViewItem>();
+    const auto indexDifference = SelectedIndex() - m_listView.get().IndexFromContainer(container);
+    if (indexDifference == 1)
+    {
+        winrt::VisualStateManager::GoToState(container, L"AdjacentOnTheLeft", false);
+    }
+    else if (indexDifference == -1)
+    {
+        winrt::VisualStateManager::GoToState(container, L"AdjacentOnTheLeft", false);
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(container, L"NotAdjacent", false);
+    }
+
 }
 
 void TabView::OnListViewDraggingPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
@@ -198,7 +229,7 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
                         const winrt::FindNextElementOptions options;
                         options.ExclusionRect(listViewBounds);
                         const auto next = winrt::FocusManager::FindNextElement(direction, options);
-                        if(const auto args2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                        if (const auto args2 = args.try_as<winrt::IGettingFocusEventArgs2>())
                         {
                             args2.TrySetNewFocusedElement(next);
                         }
@@ -206,9 +237,9 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
                         {
                             // Without TrySetNewFocusedElement, we cannot set focus while it is changing.
                             m_dispatcherHelper.RunAsync([next]()
-                            {
-                                SetFocus(next, winrt::FocusState::Programmatic);
-                            });
+                                {
+                                    SetFocus(next, winrt::FocusState::Programmatic);
+                                });
                         }
                         args.Handled(true);
                     }
@@ -223,9 +254,65 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
     }
 }
 
+void TabView::UpdateBottomStrokes(int newIndex, int previousIndex, bool updatePreviousAdjacentTabs)
+{
+    if (updatePreviousAdjacentTabs)
+    {
+        if (auto const previousOnTheLeft = TabFromIndex(previousIndex - 1).try_as<winrt::TabViewItem>())
+        {
+           bool m1 = winrt::VisualStateManager::GoToState(previousOnTheLeft, L"NotAdjacent", false);
+           int k = 5;
+        }
+        if (auto const previousOnTheRight = TabFromIndex(previousIndex + 1).try_as<winrt::TabViewItem>())
+        {
+            bool m2 =winrt::VisualStateManager::GoToState(previousOnTheRight, L"NotAdjacent", false);
+            int k = 5;
+        }
+    }
+    if (auto const nextOnTheLeft = TabFromIndex(newIndex - 1).try_as<winrt::TabViewItem>())
+    {
+        bool switchedVisualState = winrt::VisualStateManager::GoToState(nextOnTheLeft, L"AdjacentOnTheLeft", false);
+        if (!switchedVisualState)
+        {
+            auto tabViewItemRevokers = winrt::make_self<TabViewItemRevokers>();
+            tabViewItemRevokers->loadedRevoker = nextOnTheLeft.Loaded(winrt::auto_revoke,
+                [this, tabViewItemRevokers](auto const& sender, auto const& args)
+                {
+                    this->UpdateBottomStrokes(this->SelectedIndex());
+                    tabViewItemRevokers->loadedRevoker.revoke();
+                }
+            );
+            nextOnTheLeft.SetValue(s_tabViewItemRevokersProperty, tabViewItemRevokers.as<winrt::IInspectable>());
+        }
+    }
+    if (auto const nextOnTheRight = TabFromIndex(newIndex + 1).try_as<winrt::TabViewItem>())
+    {
+        bool switchedVisualState = winrt::VisualStateManager::GoToState(nextOnTheRight, L"AdjacentOnTheRight", false);
+        if (!switchedVisualState)
+        {
+            auto tabViewItemRevokers = winrt::make_self<TabViewItemRevokers>();
+            tabViewItemRevokers->loadedRevoker = nextOnTheRight.Loaded(winrt::auto_revoke,
+                [this, tabViewItemRevokers](auto const& sender, auto const& args)
+                {
+                    this->UpdateBottomStrokes(this->SelectedIndex());
+                    tabViewItemRevokers->loadedRevoker.revoke();
+                }
+            );
+            nextOnTheRight.SetValue(s_tabViewItemRevokersProperty, tabViewItemRevokers.as<winrt::IInspectable>());
+        }
+    }
+    if (auto const selectedTab = TabFromIndex(newIndex).try_as<winrt::TabViewItem>())
+    {
+        bool m5 = winrt::VisualStateManager::GoToState(selectedTab, L"NotAdjacent", false);
+        int k = 5;
+    }
+
+}
+
 void TabView::OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateSelectedIndex();
+    UpdateBottomStrokes(SelectedIndex(), winrt::unbox_value<int>(args.OldValue()), true);
 }
 
 void TabView::OnSelectedItemPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -436,6 +523,9 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
         SelectedIndex(listView.SelectedIndex());
         SelectedItem(listView.SelectedItem());
 
+
+        UpdateBottomStrokes(SelectedIndex());
+
         // Find TabsItemsPresenter and listen for SizeChanged
         m_itemsPresenter.set([this, listView]() {
             auto itemsPresenter = SharedHelpers::FindInVisualTreeByName(listView, L"TabsItemsPresenter").as<winrt::ItemsPresenter>();
@@ -444,7 +534,7 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
                 m_itemsPresenterSizeChangedRevoker = itemsPresenter.SizeChanged(winrt::auto_revoke, { this, &TabView::OnItemsPresenterSizeChanged });
             }
             return itemsPresenter;
-        }());
+            }());
 
         auto scrollViewer = SharedHelpers::FindInVisualTreeByName(listView, L"ScrollViewer").as<winrt::FxScrollViewer>();
         m_scrollViewer.set(scrollViewer);
@@ -461,6 +551,27 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
             }
         }
     }
+    m_isListViewLoaded = true;
+}
+
+winrt::IInspectable TabView::TabFromIndex(int index)
+{
+    int tabItemsLength = static_cast<int>(TabItems().Size());
+    if (index >= 0 && index < tabItemsLength)
+    {
+        return TabItems().GetAt(index).as<winrt::TabViewItem>();
+    }
+    return nullptr;
+}
+
+int TabView::IndexFromTab(const winrt::IInspectable& item)
+{
+    uint32_t index;
+    if (TabItems().IndexOf(item, index))
+    {
+        return index;
+    }
+    return -1;
 }
 
 void TabView::OnTabStripPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
@@ -468,9 +579,9 @@ void TabView::OnTabStripPointerExited(const winrt::IInspectable& sender, const w
     if (m_updateTabWidthOnPointerLeave)
     {
         auto scopeGuard = gsl::finally([this]()
-        {
-            m_updateTabWidthOnPointerLeave = false;
-        });
+            {
+                m_updateTabWidthOnPointerLeave = false;
+            });
         UpdateTabWidths();
     }
 }
@@ -495,7 +606,7 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
                 m_scrollDecreaseClickRevoker = decreaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollDecreaseClick });
             }
             return decreaseButton;
-        }());
+            }());
 
         m_scrollIncreaseButton.set([this, scrollViewer]() {
             const auto increaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>();
@@ -513,7 +624,7 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
                 m_scrollIncreaseClickRevoker = increaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollIncreaseClick });
             }
             return increaseButton;
-        }());
+            }());
 
         m_scrollViewerViewChangedRevoker = scrollViewer.ViewChanged(winrt::auto_revoke, { this, &TabView::OnScrollViewerViewChanged });
     }
@@ -590,9 +701,21 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
         m_tabItemsChangedEventSource(*this, args);
 
         int numItems = static_cast<int>(TabItems().Size());
-
+        const auto selectedIndex = SelectedIndex();
+        const auto itemIndex = static_cast<int32_t>(args.Index());
+        const auto lsitViewIndex = m_listView.get() ? m_listView.get().SelectedIndex() : -1000;
+        
         if (args.CollectionChange() == winrt::CollectionChange::ItemRemoved)
         {
+            if (itemIndex < selectedIndex)
+            {
+                SelectedIndex(selectedIndex - 1);
+            }
+            else if (itemIndex - selectedIndex == 1)
+            {
+                UpdateBottomStrokes(selectedIndex);
+            }
+
             m_updateTabWidthOnPointerLeave = true;
             if (numItems > 0)
             {
@@ -626,7 +749,6 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
                         }
                     } while (index != startIndex);
                 }
-
             }
             // Last item removed, update sizes
             // The index of the last element is "Size() - 1", but in TabItems, it is already removed.
@@ -635,13 +757,36 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
                 m_updateTabWidthOnPointerLeave = true;
                 if (args.Index() == TabItems().Size())
                 {
-                    UpdateTabWidths(true,false);
+                    UpdateTabWidths(true, false);
                 }
             }
         }
         else
         {
+            if (args.CollectionChange() == winrt::CollectionChange::ItemInserted && IsLoaded())
+            {
+                if (itemIndex - selectedIndex == 1)
+                {
+                    if (const auto previousTabOnTheRight = TabFromIndex(selectedIndex + 2).try_as<winrt::TabViewItem>())
+                    {
+                        bool mk = winrt::VisualStateManager::GoToState(previousTabOnTheRight, L"NotAdjacent", false);
+                    }
+                }
+                else if (itemIndex - selectedIndex <= 0)
+                {
+                    if (m_listView.get().SelectedIndex() >= 0)
+                    {
+                        SelectedIndex(selectedIndex + 1);
+                    }
+                    if (const auto previousTabOnTheLeft = TabFromIndex(SelectedIndex() - 2).try_as<winrt::TabViewItem>())
+                    {
+                        bool mk = winrt::VisualStateManager::GoToState(previousTabOnTheLeft, L"NotAdjacent", false);
+                    }
+                }
+
+            }
             UpdateTabWidths();
+            UpdateBottomStrokes(SelectedIndex());
         }
     }
 
@@ -751,9 +896,9 @@ void TabView::UpdateTabContent()
                 // move focus later.
                 bool shouldMoveFocusToNewTab = false;
                 auto revoker = tabContentPresenter.LosingFocus(winrt::auto_revoke, [&shouldMoveFocusToNewTab](const winrt::IInspectable&, const winrt::LosingFocusEventArgs& args)
-                {
-                    shouldMoveFocusToNewTab = true;
-                });
+                    {
+                        shouldMoveFocusToNewTab = true;
+                    });
 
                 tabContentPresenter.Content(tvi.Content());
                 tabContentPresenter.ContentTemplate(tvi.ContentTemplate());
@@ -787,7 +932,7 @@ void TabView::RequestCloseTab(winrt::TabViewItem const& container)
     if (auto&& listView = m_listView.get())
     {
         auto args = winrt::make_self<TabViewTabCloseRequestedEventArgs>(listView.ItemFromContainer(container), container);
-            
+
         m_tabCloseRequestedEventSource(*this, *args);
 
         if (auto internalTabViewItem = winrt::get_self<TabViewItem>(container))
@@ -825,7 +970,7 @@ winrt::Size TabView::MeasureOverride(winrt::Size const& availableSize)
     return __super::MeasureOverride(availableSize);
 }
 
-void TabView::UpdateTabWidths(bool shouldUpdateWidths,bool fillAllAvailableSpace)
+void TabView::UpdateTabWidths(bool shouldUpdateWidths, bool fillAllAvailableSpace)
 {
     double tabWidth = std::numeric_limits<double>::quiet_NaN();
 
