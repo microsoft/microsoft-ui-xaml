@@ -6,8 +6,6 @@
     xmlns:localPrimitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
-    <Thickness x:Key="ScrollViewScrollBarMargin">1</Thickness>
-
     <Style TargetType="local:ScrollView" BasedOn="{StaticResource DefaultScrollViewStyle}" />
 
     <Style x:Key="DefaultScrollViewStyle" TargetType="local:ScrollView">
@@ -222,7 +220,7 @@
                         <Grid
                             Grid.Row="1"
                             Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
-                            Padding="{StaticResource ScrollViewScrollBarMargin}">
+                            Padding="{StaticResource ScrollViewScrollBarsMargin}">
                             <ScrollBar x:Name="PART_HorizontalScrollBar"
                                 Orientation="Horizontal"                                
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
@@ -230,7 +228,7 @@
                         <Grid
                             Grid.Column="1"
                             Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"
-                            Padding="{StaticResource ScrollViewScrollBarMargin}">
+                            Padding="{StaticResource ScrollViewScrollBarsMargin}">
                             <ScrollBar x:Name="PART_VerticalScrollBar"                             
                                 Orientation="Vertical"
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
