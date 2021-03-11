@@ -152,6 +152,8 @@ These styles will change properties such as the `SplitButton`'s height/width, fo
 There will be two styles provided: `CommandBarSplitButtonStyle` and `CommandBarFlyoutSplitButtonStyle`. 
 These styles can be accessed as ThemeResources in any WinUI app. 
 
+Note: if a SplitButton item inside of a CommandBar enters the CommandBar's overflow menu, it will pick up the `CommandBarFlyoutSplitButtonStyle`.
+
 For example:
 
 ```xml
@@ -257,7 +259,7 @@ Once the [...] button is collapsed, other `AppBarButtons`/`CommandBarFlyout` ite
 This property will only have an effect if the `CommandBarFlyout` has secondary commands. 
 If there are no secondary commands, the `CommandBarFlyout` will always be in collapsed mode (hence why there’s no `AlwaysCollapsed` property). 
 
-`CommandBarFlyout` can still be collapsed/expanded by the developer programmatically even when this property is set to true. 
+`CommandBarFlyout` can still be collapsed/expanded by the developer programmatically even when this property is set to true. When an item in the primary commands list is invoked, the CommandBarFlyout should stay open and expanded. If an item in the secondary commands list is invoked, the CommandBarFlyout should close completely. 
 
 For example:
 
