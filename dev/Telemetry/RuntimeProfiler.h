@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 
@@ -55,7 +55,6 @@ namespace RuntimeProfiler
         ProfId_PipsPager,
         ProfId_ImageIcon,
         ProfId_AnimatedIcon,
-        ProfId_MediaTransportControls,
         ProfId_Size // ProfId_Size is the last always. 
     } ProfilerClassId;
 
@@ -92,7 +91,5 @@ namespace RuntimeProfiler
             RuntimeProfiler::RegisterMethod(RuntimeProfiler::PG_Class, (UINT16)typeindex, (UINT16)memberindex, &__RuntimeProfiler_Counter); \
         } \
     }
-
-
 
 
