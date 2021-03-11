@@ -27,6 +27,16 @@ static constexpr auto c_chevronHidden = L"ChevronHidden"sv;
 static constexpr auto c_chevronVisibleOpen = L"ChevronVisibleOpen"sv;
 static constexpr auto c_chevronVisibleClosed = L"ChevronVisibleClosed"sv;
 
+static constexpr auto c_normalChevronHidden = L"NormalChevronHidden"sv;
+static constexpr auto c_normalChevronVisibleOpen = L"NormalChevronVisibleOpen"sv;
+static constexpr auto c_normalChevronVisibleClosed = L"NormalChevronVisibleClosed"sv;
+static constexpr auto c_pointerOverChevronHidden = L"PointerOverChevronHidden"sv;
+static constexpr auto c_pointerOverChevronVisibleOpen = L"PointerOverChevronVisibleOpen"sv;
+static constexpr auto c_pointerOverChevronVisibleClosed = L"PointerOverChevronVisibleClosed"sv;
+static constexpr auto c_pressedChevronHidden = L"PressedChevronHidden"sv;
+static constexpr auto c_pressedChevronVisibleOpen = L"PressedChevronVisibleOpen"sv;
+static constexpr auto c_pressedChevronVisibleClosed = L"PressedChevronVisibleClosed"sv;
+
 NavigationViewItem::NavigationViewItem()
 {
     SetDefaultStyleKey(this);
@@ -202,11 +212,6 @@ void NavigationViewItem::UpdateIsClosedCompact()
             && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline);
 
         UpdateVisualState(true /*useTransitions*/);
-
-        if (const auto presenter = GetPresenter())
-        {
-            presenter->UpdateClosedCompactVisualState(IsTopLevelItem(), m_isClosedCompact);
-        }
     }
 }
 
@@ -267,6 +272,7 @@ void NavigationViewItem::OnIsExpandedPropertyChanged(const winrt::DependencyProp
                 winrt::ExpandCollapseState::Collapsed
         );
     }
+    UpdateVisualState(true);
 }
 
 void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -305,6 +311,14 @@ void NavigationViewItem::UpdateVisualStateForIconAndContent(bool showIcon, bool 
     {
         auto stateName = showIcon ? (showContent ? L"IconOnLeft" : L"IconOnly") : L"ContentOnly";
         winrt::VisualStateManager::GoToState(presenter, stateName, false /*useTransitions*/);
+    }
+}
+
+void NavigationViewItem::UpdateVisualStateForClosedCompact()
+{
+    if (const auto presenter = GetPresenter())
+    {
+        presenter->UpdateClosedCompactVisualState(IsTopLevelItem(), m_isClosedCompact);
     }
 }
 
@@ -471,6 +485,8 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
             // Backward Compatibility with RS4-, new implementation prefer IconOnLeft/IconOnly/ContentOnly
             winrt::VisualStateManager::GoToState(presenter, shouldShowIcon ? L"IconVisible" : L"IconCollapsed", useTransitions);
         }
+
+        UpdateVisualStateForClosedCompact();
     } 
    
     UpdateVisualStateForToolTip();
@@ -487,8 +503,96 @@ void NavigationViewItem::UpdateVisualStateForChevron()
 {
     if (auto const presenter = m_navigationViewItemPresenter.get())
     {
-        auto const chevronState = HasChildren() && !(m_isClosedCompact && ShouldRepeaterShowInFlyout()) ? ( IsExpanded() ? c_chevronVisibleOpen : c_chevronVisibleClosed) : c_chevronHidden;
-        winrt::VisualStateManager::GoToState(presenter, chevronState, true);
+        enum class PointerStateValue{ Normal, PointerOver, Pressed };
+        enum class ChevronStateValue { ChevronHidden, ChevronVisibleOpen, ChevronVisibleClosed };
+        const auto pointerStateValue = [this, isEnabled = IsEnabled(), isSelected = IsSelected()]()
+        {
+            if (isEnabled)
+            {
+                if (m_isPointerOver)
+                {
+                    if (m_isPressed)
+                    {
+                        return PointerStateValue::Pressed; //Pressed
+                    }
+                    else
+                    {
+                        return PointerStateValue::PointerOver; //PointerOver
+                    }
+                }
+                else if (m_isPressed)
+                {
+                    return PointerStateValue::Pressed; //Pressed
+                }
+            }
+            return PointerStateValue::Normal; //Normal
+        }();
+        auto const chevronState = HasChildren() && !(m_isClosedCompact && ShouldRepeaterShowInFlyout()) ? (IsExpanded() ? ChevronStateValue::ChevronVisibleOpen : ChevronStateValue::ChevronVisibleClosed) : ChevronStateValue::ChevronHidden;
+
+        auto const pointerChevronState = [this, pointerStateValue, chevronState]() {
+            if (chevronState == ChevronStateValue::ChevronHidden)
+            {
+                if (pointerStateValue == PointerStateValue::Normal)
+                {
+                    return c_normalChevronHidden;
+                }
+                else if (pointerStateValue == PointerStateValue::PointerOver)
+                {
+                    return c_pointerOverChevronHidden;
+                }
+                else if (pointerStateValue == PointerStateValue::Pressed)
+                {
+                    return c_pressedChevronHidden;
+                }
+            }
+            else if (chevronState == ChevronStateValue::ChevronVisibleOpen)
+            {
+                if (pointerStateValue == PointerStateValue::Normal)
+                {
+                    return c_normalChevronVisibleOpen;
+                }
+                else if (pointerStateValue == PointerStateValue::PointerOver)
+                {
+                    return c_pointerOverChevronVisibleOpen;
+                }
+                else if (pointerStateValue == PointerStateValue::Pressed)
+                {
+                    return c_pressedChevronVisibleOpen;
+                }
+            }
+            else if (chevronState == ChevronStateValue::ChevronVisibleClosed)
+            {
+                if (pointerStateValue == PointerStateValue::Normal)
+                {
+                    return c_normalChevronVisibleClosed;
+                }
+                else if (pointerStateValue == PointerStateValue::PointerOver)
+                {
+                    return c_pointerOverChevronVisibleClosed;
+                }
+                else if (pointerStateValue == PointerStateValue::Pressed)
+                {
+                    return c_pressedChevronVisibleClosed;
+                }
+            }
+            return c_normalChevronHidden;
+        }();
+        // Go to the appropriate pointerChevronState
+        winrt::VisualStateManager::GoToState(presenter, pointerChevronState, true);
+
+        // Go to the appropriate chevronState
+        if (chevronState == ChevronStateValue::ChevronHidden)
+        {
+            winrt::VisualStateManager::GoToState(presenter, c_chevronHidden, true);
+        }
+        else if (chevronState == ChevronStateValue::ChevronVisibleOpen)
+        {
+            winrt::VisualStateManager::GoToState(presenter, c_chevronVisibleOpen, true);
+        }
+        else if (chevronState == ChevronStateValue::ChevronVisibleClosed)
+        {
+            winrt::VisualStateManager::GoToState(presenter, c_chevronVisibleClosed, true);
+        }
     }
 }
 
@@ -867,10 +971,30 @@ void NavigationViewItem::ProcessPointerCanceled(const winrt::PointerRoutedEventA
     }
 
     m_isPressed = false;
-    m_isPointerOver = false;
+    // m_isPointerOver should be true before this event so this doesn't need to be set to true in the else block...
+    // What this flag tracks is complicated because of the NavigationView sub items and the m_capturedPointers that are being tracked..
+    // We do this check because PointerCaptureLost can sometimes take the place of PointerReleased events.
+    // In these cases we need to test if the pointer is over the item to maintain the proper state.
+    if (IsOutOfControlBounds(args.GetCurrentPoint(*this).Position()))
+    {
+        m_isPointerOver = false;
+    }
+
     m_capturedPointer = nullptr;
     ResetTrackedPointerId();
     UpdateVisualState(true);
+}
+
+bool NavigationViewItem::IsOutOfControlBounds(const winrt::Point& point) {
+    // This is a conservative check. It is okay to say we are
+    // out of the bounds when close to the edge to account for rounding.
+    const auto tolerance = 1.0;
+    const auto actualWidth = ActualWidth();
+    const auto actualHeight = ActualHeight();
+    return point.X < tolerance ||
+        point.X > actualWidth - tolerance ||
+        point.Y < tolerance ||
+        point.Y  > actualHeight - tolerance;
 }
 
 void NavigationViewItem::ProcessPointerOver(const winrt::PointerRoutedEventArgs& args)

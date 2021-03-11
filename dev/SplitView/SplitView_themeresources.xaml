@@ -603,8 +603,8 @@
                             </Grid.RenderTransform>
                             <Border Child="{TemplateBinding Pane}" />
                             <Rectangle x:Name="HCPaneBorder" x:DeferLoadStrategy="Lazy" Visibility="Collapsed" Fill="{ThemeResource SystemControlForegroundTransparentBrush}" Width="1" HorizontalAlignment="Right" />
-
                         </Grid>
+
                         <!-- Content Area -->
                         <Grid x:Name="ContentRoot" Grid.ColumnSpan="2">
                             <Grid.RenderTransform>

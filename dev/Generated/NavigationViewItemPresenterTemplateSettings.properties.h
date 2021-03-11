@@ -9,17 +9,17 @@ class NavigationViewItemPresenterTemplateSettingsProperties
 public:
     NavigationViewItemPresenterTemplateSettingsProperties();
 
-    void IconColumnWidth(double value);
-    double IconColumnWidth();
+    void IconWidth(double value);
+    double IconWidth();
 
-    void LatestIconColumnWidth(double value);
-    double LatestIconColumnWidth();
+    void SmallerIconWidth(double value);
+    double SmallerIconWidth();
 
-    static winrt::DependencyProperty IconColumnWidthProperty() { return s_IconColumnWidthProperty; }
-    static winrt::DependencyProperty LatestIconColumnWidthProperty() { return s_LatestIconColumnWidthProperty; }
+    static winrt::DependencyProperty IconWidthProperty() { return s_IconWidthProperty; }
+    static winrt::DependencyProperty SmallerIconWidthProperty() { return s_SmallerIconWidthProperty; }
 
-    static GlobalDependencyProperty s_IconColumnWidthProperty;
-    static GlobalDependencyProperty s_LatestIconColumnWidthProperty;
+    static GlobalDependencyProperty s_IconWidthProperty;
+    static GlobalDependencyProperty s_SmallerIconWidthProperty;
 
     static void EnsureProperties();
     static void ClearProperties();

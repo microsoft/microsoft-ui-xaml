@@ -55,9 +55,9 @@ It focuses on enabling three main use cases:
 3. **Enabling other frameworks**
     * Providing the native implementation for other frameworks like [React Native](https://github.com/Microsoft/react-native-windows) when running on Windows
 
-WinUI 3 is currently in development, and the team recently released WinUI 3 Preview 3, which is a pre-release version that works with Win32 and UWP apps. Preview 3 is available for anyone to try, but note that it has limitations and known issues, so it is not equipped for production apps. Get started or read more about Preview 3 here: 
+WinUI 3 is currently in development, and the team recently released WinUI 3 - Project Reunion 0.5 Preview, which is a pre-release version that works with Win32 and UWP apps. WinUI 3 - Project Reunion 0.5 Preview is available for anyone to try, but note that it has limitations and known issues, so it is not equipped for production apps. Get started or read more about WinUI 3 - Project Reunion 0.5 Preview here: 
 
-[WinUI 3.0 Preview 3 (November 2020)](https://docs.microsoft.com/windows/apps/winui/winui3/)
+[Windows UI Library 3 - Project Reunion 0.5 Preview (March 2021)](https://docs.microsoft.com/windows/apps/winui/winui3/)
 
 The 3rd generation of WinUI has some key benefits over the 2nd generation, including:
 
@@ -85,7 +85,7 @@ The existing UWP XAML APIs that ship as part of the OS will no longer receive ne
 
 The Universal Windows Platform contains more than just the XAML framework (e.g. application and security model, media pipeline, Xbox and Windows 10 shell integrations, broad device support) and will continue to evolve.
 
-[**Project Reunion**](https://github.com/microsoft/ProjectReunion) is a set of libraries, frameworks, components, and tools that you can use in your apps to access powerful Windows platform functionality from all kinds of apps on many versions of Windows. **WinUI 3 will be a component of Project Reunion** as it brings modern UI to a variety of Windows app types. 
+[**Project Reunion**](https://github.com/microsoft/ProjectReunion) is a set of libraries, frameworks, components, and tools that you can use in your apps to access powerful Windows platform functionality from all kinds of apps on many versions of Windows. **WinUI 3 ships as a component of Project Reunion** as it brings modern UI to a variety of Windows app types. 
 
 
 ### Updating your apps to use WinUI 3
@@ -96,7 +96,7 @@ For existing UWP XAML apps there will be some updates required when migrating to
 
 ### WinUI 3.0 Timelines and Milestones
 
-WinUI 3 will release as a series of preview releases throughout 2020, culminating with our first supported, production-ready release shipping in March 2021. 
+WinUI 3 was shipped as a series of preview releases throughout 2020. We expect to ship Project Reunion 0.5 in late March 2021, which will include the first stable, supported version of WinUI 3. 
 
 As we move towards releasing a stable, supported version of WinUI 3, we're looking to transition into a release cadence that includes more frequent pre-releases alongside less frequent stable releases, similar to the release cadence of WinUI 2.x. 
 
@@ -123,7 +123,7 @@ For questions or status updates on either features listed here, or features not 
 Blank -  Not available
 
 
-**Preview 3** is our latest release. 
+**WinUI 3 - Project Reunion 0.5 Preview** is our latest release. 
 
 | Customer Capability                                                         | Preview 3 (Nov 2020)                | Preview 4 (Feb 2021)                | Reunion 0.5 (March 2021)            | Reunion 0.8 (May 2021)              | Planned for a future update         |
 |-----------------------------------------------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|
@@ -145,11 +145,12 @@ Blank -  Not available
 | Mouse cursor customization                                                  | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
 | Animated Gif support                                                        | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
 | VirtualSurfaceImageSource (VSIS) support                                    |                                     | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
+| In-app acrylic                                               |                                     |                                     |    <div align="center">&#128994;</div>                                 |   <div align="center">&#128994;</div> | <div align="center">&#128994;</div>                                  | <div align="center">&#128994;</div> | 
 | Supports non-MSIX deployment                                                |                                     |                                     |                                     |                                     | <div align="center">&#128994;</div> |
 | XAML Islands                                                                |                                     |                                     |                                     |                                     | <div align="center">&#128994;</div> |
 | Works on Windows 10X                                                        |                                     |                                     |                                     |                                     | <div align="center">&#128994;</div> |
 | Works on additional Windows form factors (Xbox, HoloLens, IoT, Surface Hub) |                                     |                                     |                                     |                                     | <div align="center">&#128994;</div> |
-| Acrylic material                                                            |                                     |                                     |                                     |                                     | <div align="center">&#128994;</div> |
+| Background acrylic                                                            |                                     |                                     |                                     |                                     | <div align="center">&#128994;</div> |
 | Reveal Highlight                                                            |                                     |                                     |                                     |                                     | <div align="center">&#129002;</div> |
 | Media Controls                                                              |                                     |                                     |                                     |                                     | <div align="center">&#128994;</div> |
 | `<InkCanvas>`                                                               |                                     |                                     |                                     |                                     | <div align="center">&#128994;</div> |

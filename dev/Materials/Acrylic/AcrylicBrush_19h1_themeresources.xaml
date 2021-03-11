@@ -29,21 +29,47 @@
                 FallbackColor="#F9F9F9"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
+                x:Key="AcrylicInAppFillColorDefaultInverseBrush"
+                TintColor="#FCFCFC"
+                TintOpacity="0.0"
+                FallbackColor="#F9F9F9"
+                BackgroundSource="Backdrop"/>
+            <local:AcrylicBrush
                 x:Key="AcrylicBackgroundFillColorBaseBrush"
                 TintColor="#202020"
                 TintOpacity="0.0"
                 FallbackColor="#202020"
                 BackgroundSource="HostBackdrop"/>
-            <local:AcrylicBrush x:Key="AccentAcrylicBackgroundFillColorDefaultBrush"
+            <local:AcrylicBrush
+                x:Key="AcrylicInAppFillColorBaseBrush"
+                TintColor="#202020"
+                TintOpacity="0.0"
+                FallbackColor="#202020"
+                BackgroundSource="Backdrop"/>
+            <local:AcrylicBrush
+                x:Key="AccentAcrylicBackgroundFillColorDefaultBrush"
                 TintColor="{ThemeResource SystemAccentColorDark1}"
                 TintOpacity="0.8"
                 FallbackColor="{ThemeResource SystemAccentColorDark1}"
                 BackgroundSource="HostBackdrop"/>
-            <local:AcrylicBrush x:Key="AccentAcrylicBackgroundFillColorBaseBrush"
+            <local:AcrylicBrush
+                x:Key="AccentAcrylicInAppFillColorDefaultBrush"
+                TintColor="{ThemeResource SystemAccentColorDark1}"
+                TintOpacity="0.8"
+                FallbackColor="{ThemeResource SystemAccentColorDark1}"
+                BackgroundSource="Backdrop"/>
+            <local:AcrylicBrush
+                x:Key="AccentAcrylicBackgroundFillColorBaseBrush"
                 TintColor="{ThemeResource SystemAccentColorDark2}"
                 TintOpacity="0.8"
                 FallbackColor="{ThemeResource SystemAccentColorDark2}"
                 BackgroundSource="HostBackdrop"/>
+            <local:AcrylicBrush
+                x:Key="AccentAcrylicInAppFillColorBaseBrush"
+                TintColor="{ThemeResource SystemAccentColorDark2}"
+                TintOpacity="0.8"
+                FallbackColor="{ThemeResource SystemAccentColorDark2}"
+                BackgroundSource="Backdrop"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -66,30 +92,60 @@
                 FallbackColor="#2C2C2C"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
+                x:Key="AcrylicInAppFillColorDefaultInverseBrush"
+                TintColor="#2C2C2C"
+                TintOpacity="0.15"
+                FallbackColor="#2C2C2C"
+                BackgroundSource="Backdrop"/>
+            <local:AcrylicBrush
                 x:Key="AcrylicBackgroundFillColorBaseBrush"
                 TintColor="#F3F3F3"
                 TintOpacity="0.0"
                 FallbackColor="#F3F3F3"
                 BackgroundSource="HostBackdrop"/>
-            <local:AcrylicBrush x:Key="AccentAcrylicBackgroundFillColorDefaultBrush"
+            <local:AcrylicBrush
+                x:Key="AcrylicInAppFillColorBaseBrush"
+                TintColor="#F3F3F3"
+                TintOpacity="0.0"
+                FallbackColor="#F3F3F3"
+                BackgroundSource="Backdrop"/>
+            <local:AcrylicBrush
+                x:Key="AccentAcrylicBackgroundFillColorDefaultBrush"
                 TintColor="{ThemeResource SystemAccentColorLight3}"
                 TintOpacity="0.8"
                 FallbackColor="{ThemeResource SystemAccentColorLight3}"
                 BackgroundSource="HostBackdrop"/>
-            <local:AcrylicBrush x:Key="AccentAcrylicBackgroundFillColorBaseBrush"
-                TintColor="{ThemeResource SystemAccentColorLight2}"
+            <local:AcrylicBrush
+                x:Key="AccentAcrylicInAppFillColorDefaultBrush"
+                TintColor="{ThemeResource SystemAccentColorLight3}"
                 TintOpacity="0.8"
-                FallbackColor="{ThemeResource SystemAccentColorLight2}"
+                FallbackColor="{ThemeResource SystemAccentColorLight3}"
+                BackgroundSource="Backdrop"/>
+            <local:AcrylicBrush
+                x:Key="AccentAcrylicBackgroundFillColorBaseBrush"
+                TintColor="{ThemeResource SystemAccentColorLight3}"
+                TintOpacity="0.8"
+                FallbackColor="{ThemeResource SystemAccentColorLight3}"
                 BackgroundSource="HostBackdrop"/>
+            <local:AcrylicBrush
+                x:Key="AccentAcrylicInAppFillColorBaseBrush"
+                TintColor="{ThemeResource SystemAccentColorLight3}"
+                TintOpacity="0.8"
+                FallbackColor="{ThemeResource SystemAccentColorLight3}"
+                BackgroundSource="Backdrop"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
             <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
             <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultInverseBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="AcrylicBackgroundFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="AcrylicInAppFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}"/>
             <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="AccentAcrylicInAppFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
             <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="AccentAcrylicInAppFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}"/>
         </ResourceDictionary>
 
     </ResourceDictionary.ThemeDictionaries>

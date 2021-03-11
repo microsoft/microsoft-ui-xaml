@@ -156,10 +156,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                animatedIcon.Source = new Controls_02_UpDown_Dropdown();
+                animatedIcon.Source = new AnimatedChevronDownSmallVisualSource();
                 AnimatedIcon.SetState(parentGrid, "Normal");
-                animatedIcon.Source = new Controls_07_Settings();
-                AnimatedIcon.SetState(parentGrid, "Hover");
+                animatedIcon.Source = new AnimatedSettingsVisualSource();
+                AnimatedIcon.SetState(parentGrid, "PointerOver");
                 animatedIcon.Source = null;
                 AnimatedIcon.SetState(parentGrid, "");
             });
@@ -174,7 +174,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 animatedIcon = new AnimatedIcon();
-                animatedIcon.Source = new MockIRichAnimatedIconSource();
+                animatedIcon.Source = new MockIAnimatedIconSource2();
 
                 Content = animatedIcon;
                 Content.UpdateLayout();
@@ -218,7 +218,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual("bToc_Start", AnimatedIconTestHooks.GetLastAnimationSegmentStart(animatedIcon));
-                // bToc_End is undefined in MockIRichAnimatedIconSource
+                // bToc_End is undefined in MockIAnimatedIconSource2
                 Verify.AreEqual("", AnimatedIconTestHooks.GetLastAnimationSegmentEnd(animatedIcon));
 
                 layoutUpdatedEvent.Reset();
@@ -231,7 +231,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // cTod_Start is undefined in MockIRichAnimatedIconSource
+                // cTod_Start is undefined in MockIAnimatedIconSource2
                 Verify.AreEqual("", AnimatedIconTestHooks.GetLastAnimationSegmentStart(animatedIcon));
                 Verify.AreEqual("cTod_End", AnimatedIconTestHooks.GetLastAnimationSegmentEnd(animatedIcon));
 
@@ -245,7 +245,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // dToe_Start and dToe_End are undefined in MockIRichAnimatedIconSource, the first backup is dToe
+                // dToe_Start and dToe_End are undefined in MockIAnimatedIconSource2, the first backup is dToe
                 Verify.AreEqual("", AnimatedIconTestHooks.GetLastAnimationSegmentStart(animatedIcon));
                 Verify.AreEqual("dToe", AnimatedIconTestHooks.GetLastAnimationSegmentEnd(animatedIcon));
 
@@ -259,7 +259,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // eTof_Start, eTof_End, and eTof are undefined in MockIRichAnimatedIconSource, the second backup is f
+                // eTof_Start, eTof_End, and eTof are undefined in MockIAnimatedIconSource2, the second backup is f
                 Verify.AreEqual("", AnimatedIconTestHooks.GetLastAnimationSegmentStart(animatedIcon));
                 Verify.AreEqual("f", AnimatedIconTestHooks.GetLastAnimationSegmentEnd(animatedIcon));
 
@@ -273,7 +273,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // fTob_Start, fTob_End, fTob and b are all undefined in MockIRichAnimatedIconSource, the third backup is any
+                // fTob_Start, fTob_End, fTob and b are all undefined in MockIAnimatedIconSource2, the third backup is any
                 // marker which ends with the string "Tob_End"
                 Verify.AreEqual("", AnimatedIconTestHooks.GetLastAnimationSegmentStart(animatedIcon));
                 Verify.AreEqual("aTob_End", AnimatedIconTestHooks.GetLastAnimationSegmentEnd(animatedIcon));
@@ -288,7 +288,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // bTo0.12345_Start, bTo0.12345_End, bTo0.12345, and 0.12345  are all undefined in MockIRichAnimatedIconSource, and
+                // bTo0.12345_Start, bTo0.12345_End, bTo0.12345, and 0.12345  are all undefined in MockIAnimatedIconSource2, and
                 // there are no markers which end with the string "To0.12345_End" so finally we attempt to interpret the state as
                 // a float to get the position to animate to.
                 Verify.AreEqual("", AnimatedIconTestHooks.GetLastAnimationSegmentStart(animatedIcon));
@@ -304,7 +304,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // 0.12345ToFailure_Start, 0.12345ToFailure_End, 0.12345ToFailure, and Failure are all undefined in MockIRichAnimatedIconSource, and
+                // 0.12345ToFailure_Start, 0.12345ToFailure_End, 0.12345ToFailure, and Failure are all undefined in MockIAnimatedIconSource2, and
                 // there are no markers which end with the string "ToFailure_End" and Failure is not a float, so we have failed to find a marker.
                 Verify.AreEqual("", AnimatedIconTestHooks.GetLastAnimationSegmentStart(animatedIcon));
                 Verify.AreEqual("0.0", AnimatedIconTestHooks.GetLastAnimationSegmentEnd(animatedIcon));
