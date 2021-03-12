@@ -170,6 +170,16 @@
                     <AutoSuggestBox PlaceholderText="Auto"/>
                     <RichEditBox PlaceholderText="Rich"/>
                 </StackPanel>
+              
+                <!-- Property propagation -->
+                <StackPanel Orientation="Horizontal">
+                    <TextBox Header="Header text" FontSize="14" Foreground="{ThemeResource SystemAccentColor}"
+                        Padding="20" Margin="20" BorderThickness="5" BorderBrush="Red"
+                        Height="100" Width="200"/>
+                    <controls:NumberBox Header="Header text" FontSize="14" Foreground="{ThemeResource SystemAccentColor}" SpinButtonPlacementMode="Inline"
+                        Padding="20" Margin="20" BorderThickness="5" BorderBrush="Red"
+                        Height="100" Width="200"/>
+                </StackPanel>
             </StackPanel>
         </Grid>
 

@@ -15,10 +15,12 @@
         <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextControlSelectionHighlightColor}" />
         <contract7Present:Setter Property="SelectionFlyout" Value="{StaticResource TextControlCommandBarSelectionFlyout}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}"/>
+        <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderBrush}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NumberBox">
-                    <Grid>
+                    <Grid Height="{TemplateBinding Height}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -125,6 +127,10 @@
                             FontSize="{TemplateBinding FontSize}"
                             FontWeight="{TemplateBinding FontWeight}"
                             FontFamily="{TemplateBinding FontFamily}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            Padding="{TemplateBinding Padding}"
+                            Foreground="{TemplateBinding Foreground}"
                             TextAlignment="{TemplateBinding TextAlignment}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}" />
 
@@ -163,6 +169,7 @@
                             Grid.Column="1"
                             Visibility="Collapsed"
                             FontSize="{TemplateBinding FontSize}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
                             Content="&#xE70E;"
                             Style="{StaticResource NumberBoxSpinButtonStyle}"
                             contract7Present:CornerRadius="0"/>
@@ -172,6 +179,7 @@
                             Grid.Column="2"
                             Visibility="Collapsed"
                             FontSize="{TemplateBinding FontSize}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
                             Content="&#xE70D;"
                             Style="{StaticResource NumberBoxSpinButtonStyle}"
                             contract7Present:CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
@@ -205,7 +213,6 @@
             <Setter Property="AutomationProperties.AccessibilityView" Value="Raw"/>
             <Setter Property="IsTabStop" Value="False"/>
             <Setter Property="Width" Value="40"/>
-            <Setter Property="Height" Value="32"/>
             <Setter Property="Background" Value="{ThemeResource NumberBoxPopupSpinButtonBackground}"/>
             <Setter Property="BorderThickness" Value="{ThemeResource NumberBoxPopupSpinButtonBorderThickness}"/>
             <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
@@ -425,6 +432,7 @@
                             IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
                             Margin="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}"
+                            Foreground="{TemplateBinding Foreground}"
                             IsTabStop="False"
                             AutomationProperties.AccessibilityView="Raw"
                             ZoomMode="Disabled" />
@@ -452,6 +460,7 @@
                             Visibility="Collapsed"
                             AutomationProperties.AccessibilityView="Raw"
                             FontSize="{TemplateBinding FontSize}"
+                            HorizontalAlignment="Right"
                             MinWidth="34"
                             VerticalAlignment="Stretch" />
                         <contract7Present:ContentPresenter x:Name="DescriptionPresenter"
