@@ -20,12 +20,12 @@
                Without this override, the narrator user that focuses the expander on a touch screen will see that pressing "Tab"
                doesn't work how they would expect.-->
         <Setter Property="IsTabStop" Value="False"/>
-        <Setter Property="Background" Value="{ThemeResource ExpanderBackground}" />
+        <Setter Property="Background" Value="{ThemeResource ExpanderContentBackground}" />
         <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
         <Setter Property="MinWidth" Value="{ThemeResource FlyoutThemeMinWidth}" />
         <Setter Property="MinHeight" Value="{StaticResource ExpanderMinHeight}" />
-        <Setter Property="BorderThickness" Value="{ThemeResource ExpanderBorderThickness}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource ExpanderBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource ExpanderContentDownBorderThickness}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ExpanderContentBorderBrush}" />
         <Setter Property="Padding" Value="{StaticResource ExpanderContentPadding}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
@@ -126,10 +126,10 @@
                         <ToggleButton
                             x:Name="ExpanderHeader"
                             AutomationProperties.AutomationId="ExpanderToggleButton"
-                            Background="{TemplateBinding Background}"
+                            Background="{ThemeResource ExpanderHeaderBackground}"
                             contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{ThemeResource ExpanderHeaderBorderBrush}"
+                            BorderThickness="{ThemeResource ExpanderHeaderBorderThickness}"
                             MinHeight="{TemplateBinding MinHeight}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             IsEnabled="{TemplateBinding IsEnabled}"
@@ -147,11 +147,11 @@
                             <Border
                                 x:Name="ExpanderContent"
                                 Visibility="Collapsed"
-                                Background="{ThemeResource ExpanderContentBackground}"
+                                Background="{TemplateBinding Background}"
                                 contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
                                 contract7Present:CornerRadius="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}"
-                                BorderBrush="{ThemeResource ExpanderContentBorderBrush}"
-                                BorderThickness="{StaticResource ExpanderContentDownBorderThickness}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
                                 MinHeight="{TemplateBinding MinHeight}"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"
