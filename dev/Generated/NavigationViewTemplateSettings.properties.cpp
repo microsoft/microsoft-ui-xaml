@@ -15,6 +15,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_BackButtonVisibilityProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_LeftPaneVisibilityProperty{ nullptr };
+GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_NegativeSplitViewWidthMinusCompactLengthProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_OverflowButtonVisibilityProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_PaneToggleButtonVisibilityProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_PaneToggleButtonWidthProperty{ nullptr };
@@ -50,6 +51,17 @@ void NavigationViewTemplateSettingsProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationViewTemplateSettings>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Visibility>::BoxValueIfNecessary(winrt::Visibility::Visible),
+                nullptr);
+    }
+    if (!s_NegativeSplitViewWidthMinusCompactLengthProperty)
+    {
+        s_NegativeSplitViewWidthMinusCompactLengthProperty =
+            InitializeDependencyProperty(
+                L"NegativeSplitViewWidthMinusCompactLength",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::NavigationViewTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_OverflowButtonVisibilityProperty)
@@ -135,6 +147,7 @@ void NavigationViewTemplateSettingsProperties::ClearProperties()
 {
     s_BackButtonVisibilityProperty = nullptr;
     s_LeftPaneVisibilityProperty = nullptr;
+    s_NegativeSplitViewWidthMinusCompactLengthProperty = nullptr;
     s_OverflowButtonVisibilityProperty = nullptr;
     s_PaneToggleButtonVisibilityProperty = nullptr;
     s_PaneToggleButtonWidthProperty = nullptr;
@@ -168,6 +181,19 @@ void NavigationViewTemplateSettingsProperties::LeftPaneVisibility(winrt::Visibil
 winrt::Visibility NavigationViewTemplateSettingsProperties::LeftPaneVisibility()
 {
     return ValueHelper<winrt::Visibility>::CastOrUnbox(static_cast<NavigationViewTemplateSettings*>(this)->GetValue(s_LeftPaneVisibilityProperty));
+}
+
+void NavigationViewTemplateSettingsProperties::NegativeSplitViewWidthMinusCompactLength(double value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<NavigationViewTemplateSettings*>(this)->SetValue(s_NegativeSplitViewWidthMinusCompactLengthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
+}
+
+double NavigationViewTemplateSettingsProperties::NegativeSplitViewWidthMinusCompactLength()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<NavigationViewTemplateSettings*>(this)->GetValue(s_NegativeSplitViewWidthMinusCompactLengthProperty));
 }
 
 void NavigationViewTemplateSettingsProperties::OverflowButtonVisibility(winrt::Visibility const& value)

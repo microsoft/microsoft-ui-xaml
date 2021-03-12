@@ -186,6 +186,10 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
+    <x:Double x:Key="RadioButtonCheckGlyphSize">12</x:Double>
+    <x:Double x:Key="RadioButtonCheckGlyphPointerOverSize">14</x:Double>
+    <x:Double x:Key="RadioButtonCheckGlyphPressedOverSize">10</x:Double>
+
     <Style x:Key="DefaultRadioButtonStyle" TargetType="RadioButton">
         <Setter Property="Background" Value="{ThemeResource RadioButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource RadioButtonForeground}" />
@@ -227,14 +231,6 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Stroke">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource RadioButtonCheckGlyphStroke}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.ScaleX)">
-                                            <!-- 0.86 is relative scale from 14px to 12px -->
-                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="0.86" />
-                                        </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.ScaleY)">
-                                            <!-- 0.86 is relative scale from 14px to 12px -->
-                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="0.86" />
-                                        </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="PointerOver">
@@ -266,13 +262,11 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Stroke">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource RadioButtonCheckGlyphStrokePointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.ScaleX)">
-                                            <!-- 1.167 is relative scale from 12px to 14px -->
-                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="1.167" />
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Width" EnableDependentAnimation="True">
+                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="14" />
                                         </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.ScaleY)">
-                                            <!-- 1.167 is relative scale from 12px to 14px -->
-                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="1.167" />
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Height" EnableDependentAnimation="True">
+                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="14" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -305,24 +299,20 @@
                                         <ObjectAnimationUsingKeyFrames  Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Stroke">
                                             <DiscreteObjectKeyFrame  KeyTime="0" Value="{ThemeResource RadioButtonCheckGlyphStrokePressed}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.ScaleX)">
-                                            <!-- 0.71 is relative scale from 14px to 10px -->
-                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="0.71" />
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Width" EnableDependentAnimation="True">
+                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="10" />
                                         </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.ScaleY)">
-                                            <!-- 0.71 is relative scale from 14px to 10px -->
-                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="0.71" />
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Height" EnableDependentAnimation="True">
+                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="10" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressedCheckGlyph" Storyboard.TargetProperty="Opacity">
                                             <LinearDoubleKeyFrame KeyTime="0" Value="1" />
                                         </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressedCheckGlyph" Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.ScaleX)">
-                                            <!-- 2.5 is relative scale from 4px to 10px -->
-                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="2.5" />
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressedCheckGlyph" Storyboard.TargetProperty="Width" EnableDependentAnimation="True">
+                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="10" />
                                         </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressedCheckGlyph" Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.ScaleY)">
-                                            <!-- 2.5 is relative scale from 4px to 10px -->
-                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="2.5" />
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressedCheckGlyph" Storyboard.TargetProperty="Height" EnableDependentAnimation="True">
+                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="10" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -355,13 +345,11 @@
                                         <ObjectAnimationUsingKeyFrames  Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Stroke">
                                             <DiscreteObjectKeyFrame  KeyTime="0" Value="{ThemeResource RadioButtonCheckGlyphStrokeDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.ScaleX)">
-                                            <!-- 1.167 is relative scale from 12px to 14px -->
-                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="1.167" />
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Width" EnableDependentAnimation="True">
+                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="14" />
                                         </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.ScaleY)">
-                                            <!-- 1.167 is relative scale from 12px to 14px -->
-                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="1.167" />
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Height" EnableDependentAnimation="True">
+                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="14" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -392,16 +380,10 @@
                             <Ellipse x:Name="OuterEllipse" Width="20" Height="20" UseLayoutRounding="False" Stroke="{ThemeResource RadioButtonOuterEllipseStroke}" Fill="{StaticResource RadioButtonOuterEllipseFill}" StrokeThickness="{ThemeResource RadioButtonBorderThemeThickness}" />
                             <!-- A seperate element is added since the two orthogonal state groups that cannot touch the same property -->
                             <Ellipse x:Name="CheckOuterEllipse" Width="20" Height="20" UseLayoutRounding="False" Stroke="{ThemeResource RadioButtonOuterEllipseCheckedStroke}" Fill="{ThemeResource RadioButtonOuterEllipseCheckedFill}" Opacity="0" StrokeThickness="{ThemeResource RadioButtonBorderThemeThickness}" />
-                            <Ellipse x:Name="CheckGlyph" Width="12" Height="12" RenderTransformOrigin="0.5, 0.5" UseLayoutRounding="False" Opacity="0" Fill="{ThemeResource RadioButtonCheckGlyphFill}" Stroke="{ThemeResource RadioButtonCheckGlyphStroke}">
-                                <Ellipse.RenderTransform>
-                                    <CompositeTransform />
-                                </Ellipse.RenderTransform>
+                            <Ellipse x:Name="CheckGlyph" Width="{ThemeResource RadioButtonCheckGlyphSize}" Height="{ThemeResource RadioButtonCheckGlyphSize}" UseLayoutRounding="False" Opacity="0" Fill="{ThemeResource RadioButtonCheckGlyphFill}" Stroke="{ThemeResource RadioButtonCheckGlyphStroke}">
                             </Ellipse>
                             <!-- A seperate element is added since the two orthogonal state groups that cannot touch the same property -->
-                            <Border x:Name="PressedCheckGlyph" Width="4" Height="4" CornerRadius="6" RenderTransformOrigin="0.5, 0.5" UseLayoutRounding="False" Opacity="0" Background="{ThemeResource RadioButtonCheckGlyphFill}" contract7Present:BackgroundSizing="OuterBorderEdge" BorderBrush="{ThemeResource RadioButtonCheckGlyphStroke}">
-                                <Border.RenderTransform>
-                                    <CompositeTransform />
-                                </Border.RenderTransform>
+                            <Border x:Name="PressedCheckGlyph" Width="4" Height="4" CornerRadius="6" UseLayoutRounding="False" Opacity="0" Background="{ThemeResource RadioButtonCheckGlyphFill}" contract7Present:BackgroundSizing="OuterBorderEdge" BorderBrush="{ThemeResource RadioButtonCheckGlyphStroke}">
                             </Border>
                         </Grid>
                         <ContentPresenter x:Name="ContentPresenter" Content="{TemplateBinding Content}" ContentTransitions="{TemplateBinding ContentTransitions}" ContentTemplate="{TemplateBinding ContentTemplate}" Foreground="{TemplateBinding Foreground}" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Grid.Column="1" AutomationProperties.AccessibilityView="Raw" TextWrapping="Wrap" />

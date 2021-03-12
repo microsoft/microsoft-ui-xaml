@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedAcceptVisualSource.json
 //       
 //       Input file:
-//           AnimatedAcceptVisualSource.json (32315 bytes created 16:32-08:00 Nov 23 2020)
+//           AnimatedAcceptVisualSource.json (26824 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -17,7 +17,6 @@
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 // </auto-generated>
-//------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 namespace MU_XCAV_NAMESPACE
 {

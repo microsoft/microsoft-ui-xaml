@@ -2428,3 +2428,18 @@
                 FocusVisualPrimaryBrush=#FF000000
                 Visibility=Collapsed
                 RenderSize=0,0
+      [Windows.UI.Xaml.Controls.Grid]
+          Padding=0,0,0,0
+          CornerRadius=0,0,0,0
+          BorderThickness=0,0,0,0
+          BorderBrush=[NULL]
+          Background=[NULL]
+          Width=120
+          Name=ShadowCaster
+          Margin=0,0,0,0
+          FocusVisualSecondaryThickness=1,1,1,1
+          FocusVisualSecondaryBrush=#99FFFFFF
+          FocusVisualPrimaryThickness=2,2,2,2
+          FocusVisualPrimaryBrush=#FF000000
+          Visibility=Visible
+          RenderSize=120,600
