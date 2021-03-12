@@ -37,8 +37,8 @@
             <Color x:Key="ControlSolidFillColorDefault">#454545</Color>
 
             <Color x:Key="SubtleFillColorTransparent">#00FFFFFF</Color>
-            <Color x:Key="SubtleFillColorSecondary">#0AFFFFFF</Color>
-            <Color x:Key="SubtleFillColorTertiary">#04FFFFFF</Color>
+            <Color x:Key="SubtleFillColorSecondary">#0FFFFFFF</Color>
+            <Color x:Key="SubtleFillColorTertiary">#0AFFFFFF</Color>
             <Color x:Key="SubtleFillColorDisabled">#00FFFFFF</Color>
 
             <Color x:Key="ControlAltFillColorTransparent">#00FFFFFF</Color>
@@ -80,7 +80,7 @@
             <Color x:Key="CardBackgroundFillColorDefault">#0DFFFFFF</Color>
             <Color x:Key="CardBackgroundFillColorSecondary">#08FFFFFF</Color>
 
-            <Color x:Key="SmokeFillColorDefault">#4C000000</Color>
+            <Color x:Key="SmokeFillColorDefault">#332C2C2C</Color>
 
             <Color x:Key="LayerFillColorDefault">#09FFFFFF</Color>
             <Color x:Key="LayerFillColorAlt">#0DFFFFFF</Color>
@@ -266,8 +266,8 @@
             <Color x:Key="ControlSolidFillColorDefault">#FFFFFF</Color>
 
             <Color x:Key="SubtleFillColorTransparent">#00FFFFFF</Color>
-            <Color x:Key="SubtleFillColorSecondary">#06000000</Color>
-            <Color x:Key="SubtleFillColorTertiary">#03000000</Color>
+            <Color x:Key="SubtleFillColorSecondary">#09000000</Color>
+            <Color x:Key="SubtleFillColorTertiary">#06000000</Color>
             <Color x:Key="SubtleFillColorDisabled">#00FFFFFF</Color>
 
             <Color x:Key="ControlAltFillColorTransparent">#00FFFFFF</Color>
@@ -309,7 +309,7 @@
             <Color x:Key="CardBackgroundFillColorDefault">#B3FFFFFF</Color>
             <Color x:Key="CardBackgroundFillColorSecondary">#80F6F6F6</Color>
 
-            <Color x:Key="SmokeFillColorDefault">#4D000000</Color>
+            <Color x:Key="SmokeFillColorDefault">#4DFFFFFF</Color>
 
             <Color x:Key="LayerFillColorDefault">#80FFFFFF</Color>
             <Color x:Key="LayerFillColorAlt">#FFFFFF</Color>
