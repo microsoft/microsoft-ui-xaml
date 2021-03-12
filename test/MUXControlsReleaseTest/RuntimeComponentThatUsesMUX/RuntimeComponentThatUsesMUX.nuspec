@@ -24,5 +24,7 @@
     
     <file target="runtimes\win10-$BUILDARCH$\native" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\RuntimeComponentThatUsesMUX\RuntimeComponentThatUsesMUX.dll"/>
     <file target="runtimes\win10-$BUILDARCH$\native" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\RuntimeComponentThatUsesMUX\RuntimeComponentThatUsesMUX.pri"/>
+    
+    <file target="runtimes\win10-$BUILDARCH$\native\RuntimeComponentThatUsesMUX\Microsoft.UI.Xaml\DensityStyles" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\RuntimeComponentThatUsesMUX\RuntimeComponentThatUsesMUX\Microsoft.UI.Xaml\DensityStyles\Compact.xbf"/>
   </files>
 </package>

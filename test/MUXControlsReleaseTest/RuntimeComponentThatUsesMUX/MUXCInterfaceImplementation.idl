@@ -4,7 +4,5 @@
     runtimeclass MUXCInterfaceImplementation : Microsoft.UI.Xaml.Controls.IAnimatedVisualSource
     {
         MUXCInterfaceImplementation();
-
-        Microsoft.UI.Xaml.Controls.IAnimatedVisual TryCreateAnimatedVisual(Windows.UI.Composition.Compositor compositor, out Object diagnostics);
     }
 }
