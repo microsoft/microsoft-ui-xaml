@@ -39,7 +39,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 autoSuggestBox.CornerRadius = new CornerRadius(2);
                 autoSuggestBox.Focus(FocusState.Keyboard);
                 autoSuggestBox.Text = "123";
-                autoSuggestBox.MaxHeight = 50;
+                autoSuggestBox.MaxHeight = 32;
             });
             IdleSynchronizer.Wait();
 
