@@ -107,9 +107,6 @@
 
     <Style TargetType="CalendarView" BasedOn="{StaticResource CalendarViewRevealStyle}" />
 
-    <x:String x:Key="CalendarViewPreviousButtonCaretUp">&#xE0E4;</x:String>
-    <x:String x:Key="CalendarViewNextButtonCaretDown">&#xE0E5;</x:String>
-
     <Style x:Key="CalendarViewRevealStyle" TargetType="CalendarView">
         <Setter Property="FocusBorderBrush" Value="{ThemeResource CalendarViewFocusBorderBrush}" />
         <Setter Property="SelectedHoverBorderBrush" Value="{ThemeResource CalendarViewSelectedHoverBorderBrush}" />
