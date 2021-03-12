@@ -174,9 +174,10 @@ private:
 
     winrt::TabViewItem FindTabViewItemFromDragItem(const winrt::IInspectable& item);
 
+    void SetTabViewItemAdjacentState(const int index, const winrt::hstring& state);
+
     bool m_updateTabWidthOnPointerLeave{ false };
-    bool m_isListViewLoaded{ false };
-    int m_listViewSelectedIndex{ -1 };
+
 
     tracker_ref<winrt::ColumnDefinition> m_leftContentColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_tabColumn{ this };

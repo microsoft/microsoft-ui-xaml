@@ -254,59 +254,51 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
     }
 }
 
+void TabView::SetTabViewItemAdjacentState(const int index, const winrt::hstring& adjacentState)
+{
+    auto tbi = TabFromIndex(index).try_as<winrt::TabViewItem>();
+    if (!tbi)
+    {
+        tbi = ContainerFromIndex(index).try_as<winrt::TabViewItem>();
+    }
+
+    if (tbi)
+    {
+        bool visualStateChanged = winrt::VisualStateManager::GoToState(tbi, adjacentState, false);
+        if (!visualStateChanged)
+        {
+            auto tabViewItemRevokers = winrt::make_self<TabViewItemRevokers>();
+            tabViewItemRevokers->loadedRevoker = tbi.Loaded(winrt::auto_revoke,
+                [tabViewItemRevokers, adjacentState](const winrt::IInspectable& sender, auto const& args)
+                {
+                    // What if something happens that changes position of this tab
+                    // and adjacent state passed to this function will be invalid?
+                    // Another option is to capture TabView and call UpdateBottomStrokes once again
+                    // It will not work for when we want to update selectedIndex +-2 objects to
+                    // NonAdjacent state, but, GoToState should not initially fail on them
+                    // because they're either present and rendered or they are not present.
+                    // Thoughts?
+                    winrt::VisualStateManager::GoToState(sender.as<winrt::TabViewItem>(), adjacentState, false);
+                    tabViewItemRevokers->loadedRevoker.revoke();
+                }
+            );
+            tbi.SetValue(s_tabViewItemRevokersProperty, tabViewItemRevokers.as<winrt::IInspectable>());
+        }
+    }
+
+}
+
 void TabView::UpdateBottomStrokes(int newIndex, int previousIndex, bool updatePreviousAdjacentTabs)
 {
     if (updatePreviousAdjacentTabs)
     {
-        if (auto const previousOnTheLeft = TabFromIndex(previousIndex - 1).try_as<winrt::TabViewItem>())
-        {
-           bool m1 = winrt::VisualStateManager::GoToState(previousOnTheLeft, L"NotAdjacent", false);
-           int k = 5;
-        }
-        if (auto const previousOnTheRight = TabFromIndex(previousIndex + 1).try_as<winrt::TabViewItem>())
-        {
-            bool m2 =winrt::VisualStateManager::GoToState(previousOnTheRight, L"NotAdjacent", false);
-            int k = 5;
-        }
-    }
-    if (auto const nextOnTheLeft = TabFromIndex(newIndex - 1).try_as<winrt::TabViewItem>())
-    {
-        bool switchedVisualState = winrt::VisualStateManager::GoToState(nextOnTheLeft, L"AdjacentOnTheLeft", false);
-        if (!switchedVisualState)
-        {
-            auto tabViewItemRevokers = winrt::make_self<TabViewItemRevokers>();
-            tabViewItemRevokers->loadedRevoker = nextOnTheLeft.Loaded(winrt::auto_revoke,
-                [this, tabViewItemRevokers](auto const& sender, auto const& args)
-                {
-                    this->UpdateBottomStrokes(this->SelectedIndex());
-                    tabViewItemRevokers->loadedRevoker.revoke();
-                }
-            );
-            nextOnTheLeft.SetValue(s_tabViewItemRevokersProperty, tabViewItemRevokers.as<winrt::IInspectable>());
-        }
-    }
-    if (auto const nextOnTheRight = TabFromIndex(newIndex + 1).try_as<winrt::TabViewItem>())
-    {
-        bool switchedVisualState = winrt::VisualStateManager::GoToState(nextOnTheRight, L"AdjacentOnTheRight", false);
-        if (!switchedVisualState)
-        {
-            auto tabViewItemRevokers = winrt::make_self<TabViewItemRevokers>();
-            tabViewItemRevokers->loadedRevoker = nextOnTheRight.Loaded(winrt::auto_revoke,
-                [this, tabViewItemRevokers](auto const& sender, auto const& args)
-                {
-                    this->UpdateBottomStrokes(this->SelectedIndex());
-                    tabViewItemRevokers->loadedRevoker.revoke();
-                }
-            );
-            nextOnTheRight.SetValue(s_tabViewItemRevokersProperty, tabViewItemRevokers.as<winrt::IInspectable>());
-        }
-    }
-    if (auto const selectedTab = TabFromIndex(newIndex).try_as<winrt::TabViewItem>())
-    {
-        bool m5 = winrt::VisualStateManager::GoToState(selectedTab, L"NotAdjacent", false);
-        int k = 5;
+        SetTabViewItemAdjacentState(previousIndex - 1, L"NotAdjacent");
+        SetTabViewItemAdjacentState(previousIndex + 1, L"NotAdjacent");
     }
 
+    SetTabViewItemAdjacentState(newIndex - 1, L"AdjacentOnTheLeft");
+    SetTabViewItemAdjacentState(newIndex + 1, L"AdjacentOnTheRight");
+    SetTabViewItemAdjacentState(newIndex, L"NotAdjacent");
 }
 
 void TabView::OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -523,7 +515,6 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
         SelectedIndex(listView.SelectedIndex());
         SelectedItem(listView.SelectedItem());
 
-
         UpdateBottomStrokes(SelectedIndex());
 
         // Find TabsItemsPresenter and listen for SizeChanged
@@ -551,7 +542,6 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
             }
         }
     }
-    m_isListViewLoaded = true;
 }
 
 winrt::IInspectable TabView::TabFromIndex(int index)
@@ -559,7 +549,7 @@ winrt::IInspectable TabView::TabFromIndex(int index)
     int tabItemsLength = static_cast<int>(TabItems().Size());
     if (index >= 0 && index < tabItemsLength)
     {
-        return TabItems().GetAt(index).as<winrt::TabViewItem>();
+        return TabItems().GetAt(index);
     }
     return nullptr;
 }
@@ -701,17 +691,19 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
         m_tabItemsChangedEventSource(*this, args);
 
         int numItems = static_cast<int>(TabItems().Size());
-        const auto selectedIndex = SelectedIndex();
         const auto itemIndex = static_cast<int32_t>(args.Index());
-        const auto lsitViewIndex = m_listView.get() ? m_listView.get().SelectedIndex() : -1000;
-        
+        const auto listViewInnerSelectedIndex = m_listView.get().SelectedIndex();
+        auto selectedIndex = SelectedIndex();
+
+        if (selectedIndex != listViewInnerSelectedIndex && listViewInnerSelectedIndex != -1)
+        {
+            SelectedIndex(listViewInnerSelectedIndex);
+            selectedIndex = SelectedIndex();
+        }
+
         if (args.CollectionChange() == winrt::CollectionChange::ItemRemoved)
         {
-            if (itemIndex < selectedIndex)
-            {
-                SelectedIndex(selectedIndex - 1);
-            }
-            else if (itemIndex - selectedIndex == 1)
+            if (itemIndex - selectedIndex == 1 && listViewInnerSelectedIndex != -1)
             {
                 UpdateBottomStrokes(selectedIndex);
             }
@@ -763,34 +755,28 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
         }
         else
         {
-            if (args.CollectionChange() == winrt::CollectionChange::ItemInserted && IsLoaded())
+            if (args.CollectionChange() == winrt::CollectionChange::ItemInserted && listViewInnerSelectedIndex != -1)
             {
+                // UpdateBottomStrokes repeats in both if statements
+                // I can't wrap my head around on how to write it better
+                // Thoughts?
                 if (itemIndex - selectedIndex == 1)
                 {
-                    if (const auto previousTabOnTheRight = TabFromIndex(selectedIndex + 2).try_as<winrt::TabViewItem>())
-                    {
-                        bool mk = winrt::VisualStateManager::GoToState(previousTabOnTheRight, L"NotAdjacent", false);
-                    }
+                    SetTabViewItemAdjacentState(selectedIndex + 2, L"NotAdjacent");
+                    UpdateBottomStrokes(SelectedIndex());
                 }
-                else if (itemIndex - selectedIndex <= 0)
+                else if (itemIndex - selectedIndex == -1)
                 {
-                    if (m_listView.get().SelectedIndex() >= 0)
-                    {
-                        SelectedIndex(selectedIndex + 1);
-                    }
-                    if (const auto previousTabOnTheLeft = TabFromIndex(SelectedIndex() - 2).try_as<winrt::TabViewItem>())
-                    {
-                        bool mk = winrt::VisualStateManager::GoToState(previousTabOnTheLeft, L"NotAdjacent", false);
-                    }
+                    SetTabViewItemAdjacentState(selectedIndex - 2, L"NotAdjacent");
+                    UpdateBottomStrokes(SelectedIndex());
                 }
-
             }
             UpdateTabWidths();
-            UpdateBottomStrokes(SelectedIndex());
         }
     }
 
 }
+
 
 void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
 {

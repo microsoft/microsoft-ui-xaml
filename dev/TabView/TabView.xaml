@@ -371,13 +371,13 @@
         </Setter>
     </Style>
 
-    <Style TargetType="local:TabViewItem">
+    <Style TargetType="controls:TabViewItem">
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="CornerRadius" Value="8, 8, 0, 0"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="local:TabViewItem">
+                <ControlTemplate TargetType="controls:TabViewItem">
 
                     <Grid x:Name="LayoutRoot"
                         Padding="{TemplateBinding Padding}"
@@ -401,6 +401,7 @@
                                         <!--<Setter Target="TabContainer.CornerRadius" Value="8,8,0, 0"/> -->
                                         <!-- <Setter Target="ContentPresenter.Margin" Value="0,0,0,0"/>
                                              <Setter Target="TabContainer.BorderThickness" Value="1,1,1,1"/> -->
+                                        <!-- <Setter Target="TabSeparator.BorderBrush" Value="Yellow"/> -->
 
                                     </VisualState.Setters>
                                 </VisualState>
@@ -661,23 +662,16 @@
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="AdjacencyStates">
-                                <VisualState x:Name="NotAdjacent">
-                                    <VisualState.Setters>
-                                        <Setter Target="TabSeparator.BorderBrush" Value="Green"/>
-                                    </VisualState.Setters>
-                                </VisualState>
+                                <VisualState x:Name="NotAdjacent"/>
                                 <VisualState x:Name="AdjacentOnTheLeft">
                                     <VisualState.Setters>
                                         <Setter Target="TabContainer.CornerRadius" Value="8,8,4,0"/>
                                         <Setter Target="TabSeparator.Opacity" Value="0"/>
-                                        <Setter Target="TabSeparator.BorderBrush" Value="Blue"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="AdjacentOnTheRight">
                                     <VisualState.Setters>
                                         <Setter Target="TabContainer.CornerRadius" Value="8, 8, 0, 4"/>
-                                        <Setter Target="TabSeparator.BorderBrush" Value="Red"/>
-
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -698,30 +692,6 @@
                         <Path Data="M4 4H0V0C0 2.20914 1.79086 4 4 4Z" Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}" VerticalAlignment="Bottom" Margin="0, 0, -3, 1"
                                   Grid.Column="2"  Visibility="Collapsed"  x:Name="RightRadiusRenderTriangle" />
 
-                        <Path 
-                            x:Name="LeftRadiusRender"
-                            x:Load="False"
-                            Grid.Column="0"
-                            Visibility="Collapsed"
-                            VerticalAlignment="Bottom"
-                            Height="{Binding Source={ThemeResource OverlayCornerRadius}, Path=BottomLeft}"
-                            Margin="{Binding Source={ThemeResource OverlayCornerRadius},
-                                Converter={StaticResource TabViewLeftInsetCornerConverter}}"
-                            Stretch="Uniform"
-                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
-                            Data="M4 0 L4 4 L0 4 A4,4 90 0 0 4 0 Z" />
-                        <Path
-                            x:Name="RightRadiusRender"
-                            x:Load="False"
-                            Grid.Column="2"
-                            Visibility="Collapsed"
-                            VerticalAlignment="Bottom"
-                            Height="{Binding Source={ThemeResource OverlayCornerRadius}, Path=BottomRight}"
-                            Margin="{Binding Source={ThemeResource OverlayCornerRadius},
-                                Converter={StaticResource TabViewRightInsetCornerConverter}}"
-                            Stretch="Uniform"
-                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
-                            Data="M0 0 L0 4 L4 4 A4 4 90 0 1 0 0 Z" />
 
                         <Border x:Name="TabSeparator"
                             HorizontalAlignment="Right"
@@ -738,8 +708,8 @@
                         <Grid x:Name="TabContainer"
                             Grid.Column="1"
                             Background="Transparent"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="0,0,0,1"
+                            BorderBrush="{ThemeResource MyTransitionBrush1}"
+                            BorderThickness="1"
                             Control.IsTemplateFocusTarget="True"
                             Padding="{ThemeResource TabViewItemHeaderPadding}"
                             CornerRadius="{TemplateBinding CornerRadius}"
@@ -797,6 +767,16 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <LinearGradientBrush x:Key="MyTransitionBrush1" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,1">
+        <LinearGradientBrush.RelativeTransform>
+            <ScaleTransform ScaleY="-1" CenterY="0.5"/>
+        </LinearGradientBrush.RelativeTransform>
+        <LinearGradientBrush.GradientStops>
+            <GradientStop Offset="1.0" Color="{ThemeResource CardStrokeColorDefault}"/>
+            <GradientStop Offset="1.0" Color="Transparent"/>
+        </LinearGradientBrush.GradientStops>
+    </LinearGradientBrush>
 
     <LinearGradientBrush x:Key="MyTransitionBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,5">
         <LinearGradientBrush.RelativeTransform>

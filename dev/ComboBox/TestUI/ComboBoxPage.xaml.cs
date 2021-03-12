@@ -6,20 +6,40 @@ using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-
-
+using System.Collections.ObjectModel;
+using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
 namespace MUXControlsTestApp
 {
+    public class TabDataItemTemp : DependencyObject
+    {
+        public String Header { get; set; }
+        public SymbolIconSource IconSource { get; set; }
+        public String Content { get; set; }
+    }
     [TopLevelTestPage(Name = "ComboBox", Icon = "ComboBox.png")]
     public sealed partial class ComboBoxPage : TestPage
     {
+        SymbolIconSource _iconSource;
         int myIndex = 5;
         public ComboBoxPage()
         {
             this.InitializeComponent();
-            Tabs.Loaded += Tabs_Loaded;
-            Tabs.SelectionChanged += Tabs_SelectionChanged;
+            //Tabs.Loaded += Tabs_Loaded;
+            //Tabs.SelectionChanged += Tabs_SelectionChanged;
+            _iconSource = new SymbolIconSource();
+            _iconSource.Symbol = Symbol.Placeholder;
 
+
+            ObservableCollection<TabDataItemTemp> itemSource = new ObservableCollection<TabDataItemTemp>();
+            for (int i = 0; i < 5; i++)
+            {
+                var item = new TabDataItemTemp();
+                item.IconSource = _iconSource;
+                item.Header = "Item " + i;
+                item.Content = "This is tab " + i + ".";
+                itemSource.Add(item);
+            }
+            DataBindingTabView.TabItemsSource = itemSource;
             //TabViewListView lv = FindVisualChildByName(Tabs, "TabListView") as TabViewListView;
             //lv.ContainerContentChanging += Lv_ContainerContentChanging;
         }
@@ -37,7 +57,7 @@ namespace MUXControlsTestApp
 
         private void Tabs_Loaded(object sender, RoutedEventArgs e)
         {
-            var myList = Tabs.TabItems;
+            //var myList = Tabs.TabItems;
            // throw new NotImplementedException();
         }
 
@@ -59,7 +79,7 @@ namespace MUXControlsTestApp
 
         private void ClearListView(object sender, RoutedEventArgs args)
         {
-            var index = Tabs.SelectedIndex;
+            /*var index = Tabs.SelectedIndex;
 
             Tabs.TabItems.Clear();
             var newIndex = Tabs.SelectedIndex;
@@ -72,7 +92,7 @@ namespace MUXControlsTestApp
             var index3 = Tabs.SelectedIndex;
             Tabs.TabItems.Add(newTab2);
             var index4 = Tabs.SelectedIndex;
-            var whatever = 2;
+            var whatever = 2;*/
             /*var indexBefore = MyListCheck.SelectedIndex;
             MyListCheck.Items.Clear();
 
