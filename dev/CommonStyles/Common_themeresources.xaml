@@ -58,4 +58,7 @@
     <x:String x:Key="FlipViewCaretUp">&#xE0E4;</x:String>
     <x:String x:Key="FlipViewCaretDown">&#xE0E5;</x:String>
 
+    <x:String x:Key="LoopingSelectorUpButtonCaretUp">&#xE0E4;</x:String>
+    <x:String x:Key="LoopingSelectorDownButtonCaretDown">&#xE0E5;</x:String>
+
 </ResourceDictionary>

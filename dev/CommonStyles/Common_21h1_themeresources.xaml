@@ -26,6 +26,4 @@
     <x:String x:Key="LoopingSelectorUpButtonCaretUp">&#xF090;</x:String>
     <x:String x:Key="LoopingSelectorDownButtonCaretDown">&#xF08E;</x:String>
 
-    
- 
 </ResourceDictionary>
