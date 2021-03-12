@@ -94,6 +94,7 @@
             <SolidColorBrush x:Key="DatePickerForegroundThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <Thickness x:Key="DatePickerBorderThemeThickness">1</Thickness>
         </ResourceDictionary>
+
         <ResourceDictionary x:Key="Light">
             <x:Double x:Key="DatePickerSelectorThemeMinWidth">80</x:Double>
             <x:Double x:Key="DatePickerSpacerThemeWidth">1</x:Double>
@@ -349,7 +350,7 @@
                                     FontFamily="{TemplateBinding FontFamily}"
                                     FontWeight="{TemplateBinding FontWeight}"
                                     FontSize="{TemplateBinding FontSize}"
-                                AutomationProperties.AccessibilityView="Raw" />
+                                    AutomationProperties.AccessibilityView="Raw" />
                                 <TextBlock x:Name="MonthTextBlock"
                                     Text="Month"
                                     TextAlignment="Left"
@@ -430,17 +431,17 @@
                                         <ColumnDefinition Width="78*" x:Name="YearColumn" />
                                     </Grid.ColumnDefinitions>
                                     <Rectangle x:Name="FirstPickerSpacing"
-                                    Fill="{ThemeResource DatePickerFlyoutPresenterSpacerFill}"
-                                    HorizontalAlignment="Center"
-                                    Width="{ThemeResource DatePickerSpacerThemeWidth}"
-                                    Canvas.ZIndex="10000"
-                                    Grid.Column="1" />
+                                        Fill="{ThemeResource DatePickerFlyoutPresenterSpacerFill}"
+                                        HorizontalAlignment="Center"
+                                        Width="{ThemeResource DatePickerSpacerThemeWidth}"
+                                        Canvas.ZIndex="10000"
+                                        Grid.Column="1" />
                                     <Rectangle x:Name="SecondPickerSpacing"
-                                    Fill="{ThemeResource DatePickerFlyoutPresenterSpacerFill}"
-                                    HorizontalAlignment="Center"
-                                    Width="{ThemeResource DatePickerSpacerThemeWidth}"
-                                    Canvas.ZIndex="10000"
-                                    Grid.Column="3" />
+                                        Fill="{ThemeResource DatePickerFlyoutPresenterSpacerFill}"
+                                        HorizontalAlignment="Center"
+                                        Width="{ThemeResource DatePickerSpacerThemeWidth}"
+                                        Canvas.ZIndex="10000"
+                                        Grid.Column="3" />
                                     <Grid x:Name="HighlightRect"
                                         Canvas.ZIndex="9999"
                                         Background="{ThemeResource DatePickerFlyoutPresenterHighlightFill}"

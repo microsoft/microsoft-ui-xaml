@@ -181,38 +181,38 @@
 
                         </VisualStateManager.VisualStateGroups>
                         <ScrollViewer x:Name="ScrollViewer"
-                VerticalSnapPointsType="Mandatory"
-                VerticalSnapPointsAlignment="Near"
-                VerticalScrollBarVisibility="Hidden"
-                HorizontalScrollMode="Disabled"
-                ZoomMode="Disabled"
-                Template="{StaticResource ScrollViewerScrollBarlessTemplate}"/>
+                            VerticalSnapPointsType="Mandatory"
+                            VerticalSnapPointsAlignment="Near"
+                            VerticalScrollBarVisibility="Hidden"
+                            HorizontalScrollMode="Disabled"
+                            ZoomMode="Disabled"
+                            Template="{StaticResource ScrollViewerScrollBarlessTemplate}"/> 
                         <RepeatButton x:Name="UpButton"
-                Content="{ThemeResource LoopingSelectorUpButtonCaretUp}"
-                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                FontSize="8"
-                Height="22"
-                Padding="0"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Top"
-                Visibility="Collapsed"
-                Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
-                Background="{ThemeResource LoopingSelectorUpDownButtonBackground}"
-                Margin="{StaticResource LoopingSelectorUpDownButtonMargin}"
-                IsTabStop="False" />
+                            Content="{ThemeResource LoopingSelectorUpButtonCaretUp}"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            FontSize="8"
+                            Height="22"
+                            Padding="0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Top"
+                            Visibility="Collapsed"
+                            Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
+                            Background="{ThemeResource LoopingSelectorUpDownButtonBackground}"
+                            Margin="{StaticResource LoopingSelectorUpDownButtonMargin}"
+                            IsTabStop="False" />
                         <RepeatButton x:Name="DownButton"
-                Content="{ThemeResource LoopingSelectorDownButtonCaretDown}"
-                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                FontSize="8"
-                Height="22"
-                Padding="0"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Bottom"
-                Visibility="Collapsed"
-                Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
-                Background="{ThemeResource LoopingSelectorUpDownButtonBackground}"
-                Margin="{StaticResource LoopingSelectorUpDownButtonMargin}"
-                IsTabStop="False" />
+                            Content="{ThemeResource LoopingSelectorDownButtonCaretDown}"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            FontSize="8"
+                            Height="22"
+                            Padding="0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Bottom"
+                            Visibility="Collapsed"
+                            Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
+                            Background="{ThemeResource LoopingSelectorUpDownButtonBackground}"
+                            Margin="{StaticResource LoopingSelectorUpDownButtonMargin}"
+                            IsTabStop="False" />    
 
                     </Grid>
 
@@ -284,15 +284,14 @@
                         </Grid.RenderTransform>
                         
                         <ContentPresenter x:Name="ContentPresenter"
-                Foreground="{TemplateBinding Foreground}"
-                Content="{TemplateBinding Content}"
-                ContentTemplate="{TemplateBinding ContentTemplate}"
-                Padding="{TemplateBinding Padding}"
-                Margin="2,0,2,0"
-                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                AutomationProperties.AccessibilityView="Raw"
-                                          />
+                            Foreground="{TemplateBinding Foreground}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Padding="{TemplateBinding Padding}"
+                            Margin="2,0,2,0"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            AutomationProperties.AccessibilityView="Raw"/>
 
                     </Grid>
 

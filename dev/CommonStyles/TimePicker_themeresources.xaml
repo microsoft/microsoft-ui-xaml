@@ -459,17 +459,17 @@
                                     <Border x:Name="FirstPickerHost" Grid.Column="0"/>
                                     <Rectangle x:Name="FirstPickerSpacing"
                                         Canvas.ZIndex="10000"
-                                    Fill="{ThemeResource TimePickerFlyoutPresenterSpacerFill}"
-                                    HorizontalAlignment="Center"
-                                    Width="{ThemeResource TimePickerSpacerThemeWidth}"
-                                    Grid.Column="1" />
+                                        Fill="{ThemeResource TimePickerFlyoutPresenterSpacerFill}"
+                                        HorizontalAlignment="Center"
+                                        Width="{ThemeResource TimePickerSpacerThemeWidth}"
+                                        Grid.Column="1" />
                                     <Border x:Name="SecondPickerHost" Grid.Column="2" />
                                     <Rectangle x:Name="SecondPickerSpacing"
                                         Canvas.ZIndex="10000"
-                                    Fill="{ThemeResource TimePickerFlyoutPresenterSpacerFill}"
-                                    HorizontalAlignment="Center"
-                                    Width="{ThemeResource TimePickerSpacerThemeWidth}"
-                                    Grid.Column="3" />
+                                        Fill="{ThemeResource TimePickerFlyoutPresenterSpacerFill}"
+                                        HorizontalAlignment="Center"
+                                        Width="{ThemeResource TimePickerSpacerThemeWidth}"
+                                        Grid.Column="3" />
                                     <Border x:Name="ThirdPickerHost" Grid.Column="4" />
 
                                 </Grid>
