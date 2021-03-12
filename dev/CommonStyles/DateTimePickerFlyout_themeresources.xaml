@@ -66,8 +66,6 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <x:String x:Key="UpIcon">&#xEDDB;</x:String>
-    <x:String x:Key="DownIcon">&#xEDDC;</x:String>
     <Thickness x:Key="LoopingSelectorItemMargin">4,2,4,2</Thickness>
     <Thickness x:Key="LoopingSelectorUpDownButtonMargin">4</Thickness>
 

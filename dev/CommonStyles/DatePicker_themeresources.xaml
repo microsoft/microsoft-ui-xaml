@@ -157,9 +157,6 @@
     <Thickness x:Key="DatePickerFlyoutPresenterAcceptMargin">4,4,2,4</Thickness>
     <Thickness x:Key="DatePickerFlyoutPresenterDismissMargin">2,4,4,4</Thickness>
 
-    <x:String x:Key="AcceptIcon">&#xE8FB;</x:String>
-    <x:String x:Key="DismissIcon">&#xE711;</x:String>
-
     <Style TargetType="DatePicker" BasedOn="{StaticResource DefaultDatePickerStyle}" />
 
     <Style x:Key="DefaultDatePickerStyle" TargetType="DatePicker">
@@ -488,7 +485,7 @@
                                     Grid.ColumnSpan="2" />
                                 <Button x:Name="AcceptButton"
                                     Grid.Column="0"
-                                    Content="{StaticResource AcceptIcon}"
+                                    Content="&#xE8FB;"
                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                     FontSize="16"
                                     HorizontalAlignment="Stretch"
@@ -498,7 +495,7 @@
                                     Style="{StaticResource DateTimePickerFlyoutButtonStyle}"/>
                                 <Button x:Name="DismissButton"
                                     Grid.Column="1"
-                                    Content="{StaticResource DismissIcon}"
+                                    Content="&#xE711;"
                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                     FontSize="16"
                                     HorizontalAlignment="Stretch"
