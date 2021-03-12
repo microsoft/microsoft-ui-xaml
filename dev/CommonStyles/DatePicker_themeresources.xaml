@@ -24,6 +24,7 @@
             <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="ControlElevationBorderBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrushFocused" ResourceKey="AccentControlElevationBorderBrush" />
             
             <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
@@ -61,6 +62,7 @@
             <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
             <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrushFocused" ResourceKey="AccentControlElevationBorderBrush" />
 
             <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
@@ -109,6 +111,7 @@
             <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="ControlElevationBorderBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrushFocused" ResourceKey="AccentControlElevationBorderBrush" />
             
             <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
@@ -180,7 +183,7 @@
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
-                                            <Grid Background="{TemplateBinding Background}">
+                                            <Grid>
 
                                                 <VisualStateManager.VisualStateGroups>
                                                     <VisualStateGroup x:Name="CommonStates">
@@ -191,10 +194,10 @@
                                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBorderBrushPointerOver}" />
                                                                 </ObjectAnimationUsingKeyFrames>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="Background">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBackgroundPointerOver}" />
                                                                 </ObjectAnimationUsingKeyFrames>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="Foreground">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonForegroundPointerOver}" />
                                                                 </ObjectAnimationUsingKeyFrames>
                                                             </Storyboard>
@@ -202,13 +205,13 @@
 
                                                         <VisualState x:Name="Pressed">
                                                             <Storyboard>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
-                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBackgroundPressed}" />
-                                                                </ObjectAnimationUsingKeyFrames>
                                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBorderBrushPressed}" />
                                                                 </ObjectAnimationUsingKeyFrames>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="Background">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBackgroundPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="Foreground">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonForegroundPressed}" />
                                                                 </ObjectAnimationUsingKeyFrames>
                                                             </Storyboard>
@@ -216,13 +219,13 @@
 
                                                         <VisualState x:Name="Disabled">
                                                             <Storyboard>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
-                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBackgroundDisabled}" />
-                                                                </ObjectAnimationUsingKeyFrames>
                                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBorderBrushDisabled}" />
                                                                 </ObjectAnimationUsingKeyFrames>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="Background">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBackgroundDisabled}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="Foreground">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonForegroundDisabled}" />
                                                                 </ObjectAnimationUsingKeyFrames>
                                                             </Storyboard>
@@ -237,25 +240,30 @@
                                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonForegroundFocused}" />
                                                                 </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBackgroundFocused}" />
+                                                                </ObjectAnimationUsingKeyFrames>
                                                             </Storyboard>
                                                         </VisualState>
                                                         <VisualState x:Name="Unfocused" />
-                                                        <VisualState x:Name="PointerFocused" />
                                                     </VisualStateGroup>
                                                 </VisualStateManager.VisualStateGroups>
 
-                                                <ContentPresenter x:Name="ContentPresenter"
-                                                    BorderBrush="{ThemeResource DatePickerButtonBorderBrush}"
-                                                    Background="{ThemeResource DatePickerButtonBackground}"
-                                                    BorderThickness="{ThemeResource DatePickerBorderThemeThickness}"
-                                                    Content="{TemplateBinding Content}"
-                                                    Foreground="{TemplateBinding Foreground}"
-                                                                  
-                                                    HorizontalContentAlignment="Stretch"
-                                                    VerticalContentAlignment="Stretch"
-                                                    AutomationProperties.AccessibilityView="Raw"
-                                                    contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                                    contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"/>
+                                                <ContentPresenter x:Name="WrappingContentPresenter"
+                                                        Foreground="{TemplateBinding Foreground}"
+                                                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
+                                                    <ContentPresenter x:Name="ContentPresenter"
+                                                        BorderBrush="{ThemeResource DatePickerButtonBorderBrush}"
+                                                        Background="Transparent"
+                                                        BorderThickness="{ThemeResource DatePickerBorderThemeThickness}"
+                                                        Content="{TemplateBinding Content}"
+                                                        HorizontalContentAlignment="Stretch"
+                                                        VerticalContentAlignment="Stretch"
+                                                        AutomationProperties.AccessibilityView="Raw"
+                                                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"/>
+                                                </ContentPresenter>
                                             </Grid>
                                         </ControlTemplate>
                                     </Setter.Value>
@@ -287,9 +295,7 @@
                                 <VisualState x:Name="HasDate" />
                                 <VisualState x:Name="HasNoDate">                                    
                                     <VisualState.Setters>
-                                        <Setter Target="DayTextBlock.Foreground" Value="{ThemeResource DatePickerButtonForegroundDefault}" />
-                                        <Setter Target="MonthTextBlock.Foreground" Value="{ThemeResource DatePickerButtonForegroundDefault}" />
-                                        <Setter Target="YearTextBlock.Foreground" Value="{ThemeResource DatePickerButtonForegroundDefault}" />
+                                        <Setter Target="FlyoutButton.Foreground" Value="{ThemeResource DatePickerButtonForegroundDefault}" />
                                     </VisualState.Setters>
                                 </VisualState>
 
