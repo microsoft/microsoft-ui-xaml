@@ -266,12 +266,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)CalendarView_21h1_themeresources.xaml">
-      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
-      <Version>21H1</Version>
-      <Type>ThemeResources</Type>
-    </Page>
-
     <Page Include="$(MSBuildThisFileDirectory)CheckBox_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
