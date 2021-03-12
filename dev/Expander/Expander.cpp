@@ -91,9 +91,9 @@ void Expander::OnContentSizeChanged(const winrt::IInspectable&, const winrt::Siz
 }
 
 
-void Expander::RaiseExpandedEvent(const winrt::Expander& container)
+void Expander::RaiseExpandingEvent(const winrt::Expander& container)
 {
-    m_expandedEventSource(*this, nullptr);
+    m_expandingEventSource(*this, nullptr);
 }
 
 void Expander::RaiseCollapsedEvent(const winrt::Expander& container)
@@ -107,7 +107,7 @@ void Expander::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChange
 
     if (IsExpanded())
     {
-        RaiseExpandedEvent(*this);
+        RaiseExpandingEvent(*this);
     }
     else
     {

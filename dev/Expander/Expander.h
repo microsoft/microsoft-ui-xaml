@@ -26,7 +26,7 @@ public:
     void OnApplyTemplate();
 
 
-    void RaiseExpandedEvent(const winrt::Expander& container);
+    void RaiseExpandingEvent(const winrt::Expander& container);
     void RaiseCollapsedEvent(const winrt::Expander& container);
 
     void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
