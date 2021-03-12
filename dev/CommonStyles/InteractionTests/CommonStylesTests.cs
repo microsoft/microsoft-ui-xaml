@@ -149,5 +149,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(textBlock, "Verify corner radius page doesn't crash");
             }
         }
+
+        [TestMethod]
+        public void InkToolbarTest()
+        {
+            using (var setup = new TestSetupHelper("InkToolbar Tests"))
+            {
+                var textBlock = FindElement.ByName("InkToolbar");
+                Verify.IsNotNull(textBlock, "Verify InkToolbar page doesn't crash");
+            }
+        }
     }
 }

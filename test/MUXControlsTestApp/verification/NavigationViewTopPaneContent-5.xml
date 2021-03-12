@@ -955,64 +955,38 @@
                       FocusVisualPrimaryBrush=#FF000000
                       Visibility=Visible
                       RenderSize=156,47
-                  [Windows.UI.Xaml.Controls.Grid]
-                      Padding=1,1,1,1
-                      CornerRadius=0,0,0,0
+                  [Windows.UI.Xaml.Controls.Primitives.ScrollBar]
+                      Padding=0,0,0,0
+                      Foreground=#00FFFFFF
                       BorderThickness=0,0,0,0
-                      BorderBrush=[NULL]
-                      Background=[NULL]
-                      Margin=0,0,0,0
+                      BorderBrush=#00FFFFFF
+                      Background=#00FFFFFF
+                      Name=VerticalScrollBar
+                      MinWidth=12
+                      MinHeight=12
+                      Margin=1,1,1,1
                       FocusVisualSecondaryThickness=1,1,1,1
                       FocusVisualSecondaryBrush=#99FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
                       FocusVisualPrimaryBrush=#FF000000
                       Visibility=Collapsed
                       RenderSize=0,0
-                    [Windows.UI.Xaml.Controls.Primitives.ScrollBar]
-                        Padding=0,0,0,0
-                        Foreground=#00FFFFFF
-                        BorderThickness=0,0,0,0
-                        BorderBrush=#00FFFFFF
-                        Background=#00FFFFFF
-                        Name=VerticalScrollBar
-                        MinWidth=12
-                        MinHeight=12
-                        Margin=0,0,0,0
-                        FocusVisualSecondaryThickness=1,1,1,1
-                        FocusVisualSecondaryBrush=#99FFFFFF
-                        FocusVisualPrimaryThickness=2,2,2,2
-                        FocusVisualPrimaryBrush=#FF000000
-                        Visibility=Visible
-                        RenderSize=0,0
-                  [Windows.UI.Xaml.Controls.Grid]
-                      Padding=1,1,1,1
-                      CornerRadius=0,0,0,0
+                  [Windows.UI.Xaml.Controls.Primitives.ScrollBar]
+                      Padding=0,0,0,0
+                      Foreground=#00FFFFFF
                       BorderThickness=0,0,0,0
-                      BorderBrush=[NULL]
-                      Background=[NULL]
-                      Margin=0,0,0,0
+                      BorderBrush=#00FFFFFF
+                      Background=#00FFFFFF
+                      Name=HorizontalScrollBar
+                      MinWidth=12
+                      MinHeight=12
+                      Margin=1,1,1,1
                       FocusVisualSecondaryThickness=1,1,1,1
                       FocusVisualSecondaryBrush=#99FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
                       FocusVisualPrimaryBrush=#FF000000
                       Visibility=Collapsed
                       RenderSize=0,0
-                    [Windows.UI.Xaml.Controls.Primitives.ScrollBar]
-                        Padding=0,0,0,0
-                        Foreground=#00FFFFFF
-                        BorderThickness=0,0,0,0
-                        BorderBrush=#00FFFFFF
-                        Background=#00FFFFFF
-                        Name=HorizontalScrollBar
-                        MinWidth=12
-                        MinHeight=12
-                        Margin=0,0,0,0
-                        FocusVisualSecondaryThickness=1,1,1,1
-                        FocusVisualSecondaryBrush=#99FFFFFF
-                        FocusVisualPrimaryThickness=2,2,2,2
-                        FocusVisualPrimaryBrush=#FF000000
-                        Visibility=Visible
-                        RenderSize=0,0
                   [Windows.UI.Xaml.Controls.Border]
                       Padding=0,0,0,0
                       CornerRadius=0,0,0,0
@@ -1262,64 +1236,38 @@
                                   FocusVisualPrimaryBrush=#FF000000
                                   Visibility=Visible
                                   RenderSize=17,31
-                              [Windows.UI.Xaml.Controls.Grid]
-                                  Padding=1,1,1,1
-                                  CornerRadius=0,0,0,0
+                              [Windows.UI.Xaml.Controls.Primitives.ScrollBar]
+                                  Padding=0,0,0,0
+                                  Foreground=#00FFFFFF
                                   BorderThickness=0,0,0,0
-                                  BorderBrush=[NULL]
-                                  Background=[NULL]
-                                  Margin=0,0,0,0
+                                  BorderBrush=#00FFFFFF
+                                  Background=#00FFFFFF
+                                  Name=VerticalScrollBar
+                                  MinWidth=12
+                                  MinHeight=12
+                                  Margin=1,1,1,1
                                   FocusVisualSecondaryThickness=1,1,1,1
                                   FocusVisualSecondaryBrush=#99FFFFFF
                                   FocusVisualPrimaryThickness=2,2,2,2
                                   FocusVisualPrimaryBrush=#FF000000
                                   Visibility=Collapsed
                                   RenderSize=0,0
-                                [Windows.UI.Xaml.Controls.Primitives.ScrollBar]
-                                    Padding=0,0,0,0
-                                    Foreground=#00FFFFFF
-                                    BorderThickness=0,0,0,0
-                                    BorderBrush=#00FFFFFF
-                                    Background=#00FFFFFF
-                                    Name=VerticalScrollBar
-                                    MinWidth=12
-                                    MinHeight=12
-                                    Margin=0,0,0,0
-                                    FocusVisualSecondaryThickness=1,1,1,1
-                                    FocusVisualSecondaryBrush=#99FFFFFF
-                                    FocusVisualPrimaryThickness=2,2,2,2
-                                    FocusVisualPrimaryBrush=#FF000000
-                                    Visibility=Visible
-                                    RenderSize=0,0
-                              [Windows.UI.Xaml.Controls.Grid]
-                                  Padding=1,1,1,1
-                                  CornerRadius=0,0,0,0
+                              [Windows.UI.Xaml.Controls.Primitives.ScrollBar]
+                                  Padding=0,0,0,0
+                                  Foreground=#00FFFFFF
                                   BorderThickness=0,0,0,0
-                                  BorderBrush=[NULL]
-                                  Background=[NULL]
-                                  Margin=0,0,0,0
+                                  BorderBrush=#00FFFFFF
+                                  Background=#00FFFFFF
+                                  Name=HorizontalScrollBar
+                                  MinWidth=12
+                                  MinHeight=12
+                                  Margin=1,1,1,1
                                   FocusVisualSecondaryThickness=1,1,1,1
                                   FocusVisualSecondaryBrush=#99FFFFFF
                                   FocusVisualPrimaryThickness=2,2,2,2
                                   FocusVisualPrimaryBrush=#FF000000
                                   Visibility=Collapsed
                                   RenderSize=0,0
-                                [Windows.UI.Xaml.Controls.Primitives.ScrollBar]
-                                    Padding=0,0,0,0
-                                    Foreground=#00FFFFFF
-                                    BorderThickness=0,0,0,0
-                                    BorderBrush=#00FFFFFF
-                                    Background=#00FFFFFF
-                                    Name=HorizontalScrollBar
-                                    MinWidth=12
-                                    MinHeight=12
-                                    Margin=0,0,0,0
-                                    FocusVisualSecondaryThickness=1,1,1,1
-                                    FocusVisualSecondaryBrush=#99FFFFFF
-                                    FocusVisualPrimaryThickness=2,2,2,2
-                                    FocusVisualPrimaryBrush=#FF000000
-                                    Visibility=Visible
-                                    RenderSize=0,0
                               [Windows.UI.Xaml.Controls.Border]
                                   Padding=0,0,0,0
                                   CornerRadius=0,0,0,0
