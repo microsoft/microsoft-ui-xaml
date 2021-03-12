@@ -112,6 +112,16 @@ void TeachingTip::OnApplyTemplate()
 
     EstablishShadows();
 
+    if (ToggleVisibilityForEmptyContent(m_titleTextBox.get(), Title()))
+    {
+        TeachingTipTestHooks::NotifyTitleVisibilityChanged(*this);
+    }
+    if (ToggleVisibilityForEmptyContent(m_subtitleTextBox.get(), Subtitle()))
+    {
+        TeachingTipTestHooks::NotifySubtitleVisibilityChanged(*this);
+    }
+
+
     m_isTemplateApplied = true;
 }
 

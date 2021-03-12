@@ -52,6 +52,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private CheckBox isLightDismissEnabledCheckBox;
 
+        public UIObject GetTitleVisibilityTextBlock()
+        {
+            return GetElement(ref titleVisibilityTextBlock, "TitleVisibilityTextBlock");
+        }
+        private UIObject titleVisibilityTextBlock;
+
+        public UIObject GetSubtitleVisibilityTextBlock()
+        {
+            return GetElement(ref subtitleVisibilityTextBlock, "SubtitleVisibilityTextBlock");
+        }
+        private UIObject subtitleVisibilityTextBlock;
+
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
             if (element == null)

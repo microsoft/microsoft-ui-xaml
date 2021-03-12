@@ -856,6 +856,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void VerifyTeachingTipInitialEmptyHeaderCollapsed()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTipFocus Test" }))
+            {
+                var elements = new TeachingTipFocusTestPageElements();
+                var openTeachingTipButton = elements.GetOpenButton();
+
+                OpenTeachingTip();
+                Verify.AreEqual("Collapsed", elements.GetTitleVisibilityTextBlock().GetText());
+                Verify.AreEqual("Collapsed", elements.GetSubtitleVisibilityTextBlock().GetText());
+
+                void OpenTeachingTip()
+                {
+                    if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.On)
+                    {
+                        openTeachingTipButton.InvokeAndWait();
+                        WaitForChecked(elements.GetIsOpenCheckBox());
+                        WaitForChecked(elements.GetIsIdleCheckBox());
+                    }
+                }
+            }
+        }
+
         private void TestAutoPlacementForWindowOrScreenBounds(Vector4 targetRect, bool forWindowBounds)
         {
             TestAutoPlacementForWindowOrScreenBounds(targetRect, forWindowBounds, null);

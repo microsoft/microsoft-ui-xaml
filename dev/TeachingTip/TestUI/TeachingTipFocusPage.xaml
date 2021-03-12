@@ -12,7 +12,9 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid Margin="10">
-        <muxc:TeachingTip x:Name="TestTeachingTip" Title="Title" IsLightDismissEnabled="{x:Bind (x:Boolean)IsLightDismissEnabledCheckBox.IsChecked, Mode=OneWay}" />
+        <muxc:TeachingTip x:Name="TestTeachingTip" IsLightDismissEnabled="{x:Bind (x:Boolean)IsLightDismissEnabledCheckBox.IsChecked, Mode=OneWay}" >
+            <TextBlock Text="Content"/>
+        </muxc:TeachingTip>
 
         <StackPanel>
             <TextBlock Text="TeachingTip special focus test page" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,0,0,15"/>
@@ -27,6 +29,14 @@
 
             <TextBlock Text="TeachingTip configuration:" Margin="0,10,0,0"/>
             <CheckBox x:Name="IsLightDismissEnabledCheckBox" AutomationProperties.Name="IsLightDismissEnabledCheckBox" Content="IsLightDismissEnabled" IsChecked="False" IsTabStop="False"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Title Vis:"/>
+                <TextBlock x:Name="TitleVisibilityTextBlock" AutomationProperties.Name="TitleVisibilityTextBlock"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Subtitle Vis:"/>
+                <TextBlock x:Name="SubtitleVisibilityTextBlock" AutomationProperties.Name="SubtitleVisibilityTextBlock"/>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </local:TestPage>

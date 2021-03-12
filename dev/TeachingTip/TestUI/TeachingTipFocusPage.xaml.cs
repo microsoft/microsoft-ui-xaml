@@ -14,6 +14,7 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
             TeachingTipTestHooks.IdleStatusChanged += TeachingTipTestHooks_IdleStatusChanged;
             TeachingTipTestHooks.OpenedStatusChanged += TeachingTipTestHooks_OpenedStatusChanged;
+            TestTeachingTip.Loaded += TestTeachingTip_Loaded;
 
             this.Loaded += OnLoaded;
         }
@@ -61,6 +62,12 @@ namespace MUXControlsTestApp
             {
                 this.IsIdleCheckBox.IsChecked = false;
             }
+        }
+
+        private void TestTeachingTip_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.TitleVisibilityTextBlock.Text = TeachingTipTestHooks.GetTitleVisibility(TestTeachingTip).ToString();
+            this.SubtitleVisibilityTextBlock.Text = TeachingTipTestHooks.GetSubtitleVisibility(TestTeachingTip).ToString();
         }
     }
 }
