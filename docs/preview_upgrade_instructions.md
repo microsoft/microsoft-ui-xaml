@@ -15,14 +15,11 @@ Before starting, make sure you have all the WinUI 3 - Project Reunion 0.5 Previe
 
 Go to Tools->Nuget Package Manager-> Package Manager Console in Visual Studio
 
-  1. Right Click your Application (Package) folder in the solution explorer and select "unload project"
-  2. Type in ```uninstall-package Microsoft.WinUI -ProjectName {yourProject}```
-  3. Type in ```install-package Microsoft.ProjectReunion -Version 0.5.0-prerelease -ProjectName {yourProjectName}```
-  4. Type in ```install-package Microsoft.ProjectReunion.Foundation -Version 0.5.0-prerelease -ProjectName {yourProjectName}```
-  5. Type in ```install-package Microsoft.ProjectReunion.WinUI -Version 0.5.0-prerelease -ProjectName {yourProjectName}```
-  6. Reload the (package) folder
-
-  7. Make the following changes in your Application (package).wapproj:
+  1. Type in ```uninstall-package Microsoft.WinUI -ProjectName {yourProject}```
+  2. Type in ```install-package Microsoft.ProjectReunion -Version 0.5.0-prerelease -ProjectName {yourProjectName}```
+  3. Type in ```install-package Microsoft.ProjectReunion.Foundation -Version 0.5.0-prerelease -ProjectName {yourProjectName}```
+  4. Type in ```install-package Microsoft.ProjectReunion.WinUI -Version 0.5.0-prerelease -ProjectName {yourProjectName}```
+  5. Make the following changes in your Application (package).wapproj:
   
   Add this section:
   ```xml
