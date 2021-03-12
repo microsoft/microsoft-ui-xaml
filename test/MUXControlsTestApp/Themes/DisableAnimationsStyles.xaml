@@ -15,7 +15,7 @@
 
     <Style TargetType="ListView" BasedOn="{StaticResource ListViewCommon}"/>
 
-    <!-- There"s no good way to disable ScrollViewer's indicator transitions so just make a ScrollViewer style that doesn't have VSM -->
+    <!-- There is no good way to disable ScrollViewer's indicator transitions so just make a ScrollViewer style that doesn't have VSM -->
     <Style TargetType="ScrollViewer">
         <Setter Property="Template">
             <Setter.Value>
@@ -31,36 +31,43 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <ScrollContentPresenter x:Name="ScrollContentPresenter"
-                                            Grid.RowSpan="2"
-                                            Grid.ColumnSpan="2"
-                                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                                            Margin="{TemplateBinding Padding}" />
-                            <Grid Grid.RowSpan="2"
-                            Grid.ColumnSpan="2" />
-                            <ScrollBar x:Name="VerticalScrollBar"
+                                Grid.RowSpan="2"
+                                Grid.ColumnSpan="2"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Margin="{TemplateBinding Padding}" />
+                            <Grid
+                                Grid.RowSpan="2"
+                                Grid.ColumnSpan="2" />
+                            <Grid
                                 Grid.Column="1"
-                                IsTabStop="False"
-                                Maximum="{TemplateBinding ScrollableHeight}"
-                                Orientation="Vertical"
                                 Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"
-                                Value="{TemplateBinding VerticalOffset}"
-                                ViewportSize="{TemplateBinding ViewportHeight}"
-                                HorizontalAlignment="Right" 
-                                IndicatorMode="MouseIndicator"/>
-                            <ScrollBar x:Name="HorizontalScrollBar"
-                                IsTabStop="False"
-                                Maximum="{TemplateBinding ScrollableWidth}"
-                                Orientation="Horizontal"
+                                Padding="{ThemeResource ScrollViewerScrollBarMargin}">
+                                <ScrollBar x:Name="VerticalScrollBar"
+                                    IsTabStop="False"
+                                    Maximum="{TemplateBinding ScrollableHeight}"
+                                    Orientation="Vertical"
+                                    Value="{TemplateBinding VerticalOffset}"
+                                    ViewportSize="{TemplateBinding ViewportHeight}"
+                                    HorizontalAlignment="Right"
+                                    IndicatorMode="MouseIndicator"/>
+                            </Grid>
+                            <Grid
                                 Grid.Row="1"
                                 Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
-                                Value="{TemplateBinding HorizontalOffset}"
-                                ViewportSize="{TemplateBinding ViewportWidth}"
-                                IndicatorMode="MouseIndicator"/>
+                                Padding="{ThemeResource ScrollViewerScrollBarMargin}">
+                                <ScrollBar x:Name="HorizontalScrollBar"
+                                    IsTabStop="False"
+                                    Maximum="{TemplateBinding ScrollableWidth}"
+                                    Orientation="Horizontal"
+                                    Value="{TemplateBinding HorizontalOffset}"
+                                    ViewportSize="{TemplateBinding ViewportWidth}"
+                                    IndicatorMode="MouseIndicator"/>
+                            </Grid>
                             <Border x:Name="ScrollBarSeparator"
-                            Grid.Row="1"
-                            Grid.Column="1"
-                            Opacity="0"
-                            Background="{ThemeResource ScrollViewerScrollBarSeparatorBackground}" />
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Opacity="0"
+                                Background="{ThemeResource ScrollViewerScrollBarSeparatorBackground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>

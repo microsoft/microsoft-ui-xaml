@@ -80,6 +80,7 @@
 
         <ScrollViewer 
             x:Name="wuxScrollViewer"
+            Style="{ThemeResource DefaultScrollViewerStyle}"
             Width="300" Height="400"
             Grid.Row="2" Margin="1"
             Background="SkyBlue" VerticalAlignment="Top">

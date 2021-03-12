@@ -220,7 +220,7 @@
                         <Grid
                             Grid.Row="1"
                             Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
-                            Padding="{StaticResource ScrollViewScrollBarsMargin}">
+                            Padding="{ThemeResource ScrollViewScrollBarsMargin}">
                             <ScrollBar x:Name="PART_HorizontalScrollBar"
                                 Orientation="Horizontal"                                
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
@@ -228,7 +228,7 @@
                         <Grid
                             Grid.Column="1"
                             Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"
-                            Padding="{StaticResource ScrollViewScrollBarsMargin}">
+                            Padding="{ThemeResource ScrollViewScrollBarsMargin}">
                             <ScrollBar x:Name="PART_VerticalScrollBar"                             
                                 Orientation="Vertical"
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
