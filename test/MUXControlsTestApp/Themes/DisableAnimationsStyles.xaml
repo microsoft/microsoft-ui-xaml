@@ -35,8 +35,7 @@
                                 Grid.ColumnSpan="2"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
                                 Margin="{TemplateBinding Padding}" />
-                            <Grid
-                                Grid.RowSpan="2"
+                            <Grid Grid.RowSpan="2"
                                 Grid.ColumnSpan="2" />
                             <Grid
                                 Grid.Column="1"
