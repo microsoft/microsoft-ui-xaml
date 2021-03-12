@@ -26,7 +26,7 @@
         <Setter Property="MinHeight" Value="{StaticResource ExpanderMinHeight}" />
         <Setter Property="BorderThickness" Value="{ThemeResource ExpanderBorderThickness}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ExpanderBorderBrush}" />
-        <Setter Property="Padding" Value="{StaticResource ExpanderHeaderPadding}" />
+        <Setter Property="Padding" Value="{StaticResource ExpanderContentPadding}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
@@ -133,7 +133,7 @@
                             MinHeight="{TemplateBinding MinHeight}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             IsEnabled="{TemplateBinding IsEnabled}"
-                            Padding="{TemplateBinding Padding}"
+                            Padding="{StaticResource ExpanderHeaderPadding}"
                             Style="{StaticResource ExpanderHeaderDownStyle}"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
@@ -155,7 +155,7 @@
                                 MinHeight="{TemplateBinding MinHeight}"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"
-                                Padding="{StaticResource ExpanderContentPadding}">
+                                Padding="{TemplateBinding Padding}">
                                 <ContentPresenter
                                     Content="{TemplateBinding Content}"
                                     ContentTemplate="{TemplateBinding ContentTemplate}"
