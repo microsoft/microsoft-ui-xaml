@@ -187,7 +187,6 @@
     <x:String x:Key="ScrollBarContractDelay">00:00:02</x:String>
     <x:String x:Key="ScrollBarContractFinalKeyframe">00:00:02.1</x:String>
     <x:Double x:Key="ScrollBarSize">12</x:Double>
-    <Thickness x:Key="ScrollBarMargin">1</Thickness>
 
     <x:Double x:Key="ScrollBarVerticalThumbMinHeight">30</x:Double>
     <x:Double x:Key="ScrollBarVerticalThumbMinWidth">8</x:Double>
@@ -213,7 +212,6 @@
     <Style x:Key="DefaultScrollBarStyle" TargetType="ScrollBar">
         <Setter Property="MinWidth" Value="{StaticResource ScrollBarSize}" />
         <Setter Property="MinHeight" Value="{StaticResource ScrollBarSize}" />
-        <Setter Property="Margin" Value="{StaticResource ScrollBarMargin}"/>
         <Setter Property="Background" Value="{ThemeResource ScrollBarBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource ScrollBarForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ScrollBarBorderBrush}" />
