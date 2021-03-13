@@ -469,6 +469,22 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+                            <VisualStateGroup x:Name="TitleBlockStates">
+                                <VisualState x:Name="ShowTitleTextBlock">
+                                    <VisualState.Setters>
+                                        <Setter Target="TitleTextBlock.Visibility" Value="Visible"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="CollapseTitleTextBlock"/>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="SubtitleBlockStates">
+                                <VisualState x:Name="ShowSubtitleTextBlock">
+                                    <VisualState.Setters>
+                                        <Setter Target="SubtitleTextBlock.Visibility" Value="Visible"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="CollapseSubtitleTextBlock"/>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Grid MinHeight="{ThemeResource TeachingTipMinHeight}" 
                               MinWidth="{ThemeResource TeachingTipMinWidth}"
@@ -569,10 +585,10 @@
                                                     <StackPanel x:Name="TitlesStackPanel" Grid.Column="1">
                                                         <TextBlock x:Name="TitleTextBlock" Grid.Column="0" Text="{TemplateBinding Title}" TextWrapping="WrapWholeWords"
                                                             Foreground="{ThemeResource TeachingTipTitleForegroundBrush}" FontFamily="{TemplateBinding FontFamily}"
-                                                            FontWeight="SemiBold"/>
+                                                            FontWeight="SemiBold" Visibility="Collapsed"/>
                                                         <TextBlock x:Name="SubtitleTextBlock" Grid.Row="1" Text="{TemplateBinding Subtitle}"
                                                             Foreground="{ThemeResource TeachingTipSubtitleForegroundBrush}" FontFamily="{TemplateBinding FontFamily}"
-                                                            TextWrapping="WrapWholeWords"/>
+                                                            TextWrapping="WrapWholeWords" Visibility="Collapsed"/>
                                                     </StackPanel>
                                                 </Grid>
                                                 <ContentPresenter x:Name="MainContentPresenter" Grid.Row="1" Content="{TemplateBinding Content}"
