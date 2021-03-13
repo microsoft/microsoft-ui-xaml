@@ -521,10 +521,10 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
 
                 if (thisAsUIElement11)
                 {
-                    winrt::Rect availableMonitorBounds = {};
+                    winrt::Rect monitorBounds = {};
                     winrt::Point screenOffset = {};
-                    thisAsUIElement11.GetMonitorInformation(availableMonitorBounds, screenOffset);
-                    availableHeight = availableMonitorBounds.Height;
+                    thisAsUIElement11.GetMonitorInformation(monitorBounds, screenOffset);
+                    availableHeight = monitorBounds.Height;
                     controlBounds.X += screenOffset.X;
                     controlBounds.Y += screenOffset.Y;
                 }
