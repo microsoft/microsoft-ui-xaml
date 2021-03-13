@@ -151,7 +151,7 @@
                                 contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
                                 contract7Present:CornerRadius="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
+                                BorderThickness="{StaticResource ExpanderContentDownBorderThickness}"
                                 MinHeight="{TemplateBinding MinHeight}"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"
