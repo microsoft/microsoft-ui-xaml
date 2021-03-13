@@ -12,8 +12,8 @@ public:
     void FallbackIconSource(winrt::IconSource const& value);
     winrt::IconSource FallbackIconSource();
 
-    void Source(winrt::IRichAnimatedVisualSource const& value);
-    winrt::IRichAnimatedVisualSource Source();
+    void Source(winrt::IAnimatedVisualSource2 const& value);
+    winrt::IAnimatedVisualSource2 Source();
 
     static void SetState(winrt::DependencyObject const& target, winrt::hstring const& value);
     static winrt::hstring GetState(winrt::DependencyObject const& target);

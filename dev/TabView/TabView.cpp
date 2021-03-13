@@ -88,7 +88,10 @@ void TabView::OnApplyTemplate()
         m_tabStripPointerExitedRevoker = containerGrid.PointerExited(winrt::auto_revoke, { this,&TabView::OnTabStripPointerExited });
     }
 
-    m_shadowReceiver.set(GetTemplateChildT<winrt::Grid>(L"ShadowReceiver", controlProtected));
+    if (!SharedHelpers::Is21H1OrHigher())
+    {
+        m_shadowReceiver.set(GetTemplateChildT<winrt::Grid>(L"ShadowReceiver", controlProtected));
+    }
 
     m_listView.set([this, controlProtected]() {
         auto listView = GetTemplateChildT<winrt::ListView>(L"TabListView", controlProtected);
@@ -136,18 +139,21 @@ void TabView::OnApplyTemplate()
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-        if (auto shadowCaster = GetTemplateChildT<winrt::Grid>(L"ShadowCaster", controlProtected))
+        if (!SharedHelpers::Is21H1OrHigher())
         {
-            winrt::ThemeShadow shadow;
-            shadow.Receivers().Append(GetShadowReceiver());
+            if (auto shadowCaster = GetTemplateChildT<winrt::Grid>(L"ShadowCaster", controlProtected))
+            {
+                winrt::ThemeShadow shadow;
+                shadow.Receivers().Append(GetShadowReceiver());
 
-            double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
+                double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
 
-            const auto currentTranslation = shadowCaster.Translation();
-            const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
-            shadowCaster.Translation(translation);
+                const auto currentTranslation = shadowCaster.Translation();
+                const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
+                shadowCaster.Translation(translation);
 
-            shadowCaster.Shadow(shadow);
+                shadowCaster.Shadow(shadow);
+            }
         }
     }
 

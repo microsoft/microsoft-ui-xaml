@@ -42,7 +42,7 @@
             <SolidColorBrush x:Key="BreadcrumbBarBorderBrush" Color="Transparent"/>
 
             <StaticResource x:Key="BreadcrumbBarEllipsisFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
+            <StaticResource x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderThemeThickness">1</Thickness>
 
             <StaticResource x:Key="BreadcrumbBarItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
@@ -75,7 +75,7 @@
             <SolidColorBrush x:Key="BreadcrumbBarBorderBrush" Color="Transparent"/>
 
             <StaticResource x:Key="BreadcrumbBarEllipsisFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
+            <StaticResource x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderThemeThickness">1</Thickness>
 
             <StaticResource x:Key="BreadcrumbBarItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />

@@ -5,6 +5,8 @@
 [webhosthidden]
 unsealed runtimeclass IconSource : Windows.UI.Xaml.DependencyObject
 {
+    Windows.UI.Xaml.Controls.IconElement CreateIconElement();
+
     Windows.UI.Xaml.Media.Brush Foreground { get; set; };
 
     static Windows.UI.Xaml.DependencyProperty ForegroundProperty { get; };
@@ -92,7 +94,7 @@ unsealed runtimeclass AnimatedIconSource : IconSource
 {
     AnimatedIconSource();
 
-    IRichAnimatedVisualSource Source{ get; set; };
+    IAnimatedVisualSource2 Source{ get; set; };
     IconSource FallbackIconSource{ get; set; };
 
     static Windows.UI.Xaml.DependencyProperty SourceProperty { get; };

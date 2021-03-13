@@ -155,7 +155,7 @@ private:
     static std::array<winrt::TeachingTipPlacementMode, 13> GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPalcement);
     void EstablishShadows();
     void TrySetCenterPoint(const winrt::IUIElement9& element, const winrt::float3& centerPoint);
-    bool ToggleVisibilityForEmptyContent(const winrt::UIElement& element, const winrt::hstring& content);
+    bool ToggleVisibilityForEmptyContent(const wstring_view visibleStateName, const wstring_view collapsedStateName, const winrt::hstring& content);
 
     // The tail is designed as an 8x16 pixel shape, however it is actually a 10x20 shape which is partially occluded by the tip content.
     // This is done to get the border of the tip to follow the tail shape without drawing the border on the tip edge of the tail.
@@ -181,8 +181,8 @@ private:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::Polygon> m_tailPolygon{ this };
     tracker_ref<winrt::Grid> m_tailEdgeBorder{ this };
-    tracker_ref<winrt::UIElement> m_titleTextBox{ this };
-    tracker_ref<winrt::UIElement> m_subtitleTextBox{ this };
+    tracker_ref<winrt::UIElement> m_titleTextBlock{ this };
+    tracker_ref<winrt::UIElement> m_subtitleTextBlock{ this };
 
     weak_ref<winrt::DependencyObject> m_previouslyFocusedElement{ };
 
