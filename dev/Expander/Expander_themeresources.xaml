@@ -106,6 +106,8 @@
     <x:Double x:Key="ExpanderMinHeight">48</x:Double>
 
     <!-- Header -->
+    <HorizontalAlignment x:Key="ExpanderHeaderHorizontalContentAlignment">Stretch</HorizontalAlignment>
+    <VerticalAlignment x:Key="ExpanderHeaderVerticalContentAlignment">Center</VerticalAlignment>
     <Thickness x:Key="ExpanderHeaderPadding">16,0,0,0</Thickness>
     <Thickness x:Key="ExpanderChevronMargin">20,0,8,0</Thickness>
     <x:String x:Key="ExpanderChevronUpGlyph">&#xE70E;</x:String>

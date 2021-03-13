@@ -76,10 +76,10 @@
 
             <controls:Expander AutomationProperties.Name="ExpanderStretched" ExpandDirection="Down" IsExpanded="True" Margin="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right">
                 <controls:Expander.Header>
-                    <TextBlock Margin="0,0,0,1">This expander stretches along with its content</TextBlock>
+                    <TextBlock HorizontalAlignment="Right" Margin="0,0,0,1">This expander stretches along with its content</TextBlock>
                 </controls:Expander.Header>
                 <StackPanel HorizontalAlignment="Right">
-                    <TextBlock>Right Content</TextBlock>
+                    <TextBlock>Header and Content is right aligned</TextBlock>
                 </StackPanel>
             </controls:Expander>
 
