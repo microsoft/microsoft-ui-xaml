@@ -55,7 +55,7 @@ When CommandBarFlyout does *not* have enough space below its primary commands, w
 
 ![Shows the CommandBarFlyout not yet open with insufficient monitor space below it](images/CommandBarFlyout-InsufficientSpace.png)
 
-![Shows the CommandBarFlyout opened up](images/CommandBarFlyout-InsufficientSpace-Open
+![Shows the CommandBarFlyout opened up](images/CommandBarFlyout-InsufficientSpace-Open.png)
 
 # API Notes
 <!-- Option 1: Give a one or two line description of each API (type
