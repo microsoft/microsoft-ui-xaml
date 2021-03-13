@@ -46,7 +46,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var textBox = TestUtilities.FindDescendents<TextBox>(autoSuggestBox).Where(e => e.Name == "TextBox").Single();
-                Verify.AreEqual(new CornerRadius(2, 2, 0, 0), textBox.CornerRadius);
+
+                // Flyout might open differently and as such flip corner radii values
+                Verify.IsTrue(new CornerRadius(2, 2, 0, 0) == textBox.CornerRadius || new CornerRadius(0,0,2,2) == textBox.CornerRadius);
 
                 var overlayCornerRadius = new CornerRadius(0, 0, 0, 0);
                 var radius = App.Current.Resources["OverlayCornerRadius"];
@@ -57,7 +59,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var popup = VisualTreeHelper.GetOpenPopups(Window.Current).Last();
                 var popupBorder = popup.Child as Border;
 
-                Verify.AreEqual(new CornerRadius(0, 0, overlayCornerRadius.BottomRight, overlayCornerRadius.BottomLeft), popupBorder.CornerRadius);
+                // Flyout might open differently and as such flip corner radii values
+                Verify.IsTrue(new CornerRadius(0, 0, overlayCornerRadius.BottomRight, overlayCornerRadius.BottomLeft) == popupBorder.CornerRadius
+                    || new CornerRadius(overlayCornerRadius.TopRight, overlayCornerRadius.TopLeft, 0, 0) == popupBorder.CornerRadius);
             });
         }
 
