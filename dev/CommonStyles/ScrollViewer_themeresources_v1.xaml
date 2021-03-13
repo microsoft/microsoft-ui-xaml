@@ -7,14 +7,12 @@
             <StaticResource x:Key="ScrollViewerScrollBarSeparatorBackground" ResourceKey="ControlFillColorTransparentBrush"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="ScrollViewerScrollBarSeparatorBackground" ResourceKey="SystemControlTransparentBrush"/>
+            <StaticResource x:Key="ScrollViewerScrollBarSeparatorBackground" ResourceKey="ControlFillColorTransparentBrush"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="ScrollViewerScrollBarSeparatorBackground" ResourceKey="ControlFillColorTransparentBrush"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-
-    <Thickness x:Key="ScrollViewerScrollBarMargin">1</Thickness>
 
     <Style TargetType="ScrollViewer" BasedOn="{StaticResource DefaultScrollViewerStyle}" />
 
@@ -226,29 +224,23 @@
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
                                 Margin="{TemplateBinding Padding}" />
                             <Grid Grid.RowSpan="2" Grid.ColumnSpan="2" />
-                            <Grid
+                            <ScrollBar x:Name="VerticalScrollBar"
                                 Grid.Column="1"
                                 Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"
-                                Padding="{ThemeResource ScrollViewerScrollBarMargin}">
-                                <ScrollBar x:Name="VerticalScrollBar"
-                                    IsTabStop="False"
-                                    Maximum="{TemplateBinding ScrollableHeight}"
-                                    Orientation="Vertical"                                    
-                                    Value="{TemplateBinding VerticalOffset}"
-                                    ViewportSize="{TemplateBinding ViewportHeight}"
-                                    HorizontalAlignment="Right" />
-                            </Grid>
-                            <Grid
+                                IsTabStop="False"
+                                Maximum="{TemplateBinding ScrollableHeight}"
+                                Orientation="Vertical"                                    
+                                Value="{TemplateBinding VerticalOffset}"
+                                ViewportSize="{TemplateBinding ViewportHeight}"
+                                HorizontalAlignment="Right" />
+                            <ScrollBar x:Name="HorizontalScrollBar"
                                 Grid.Row="1"
                                 Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
-                                Padding="{ThemeResource ScrollViewerScrollBarMargin}">
-                                <ScrollBar x:Name="HorizontalScrollBar"
-                                    IsTabStop="False"
-                                    Maximum="{TemplateBinding ScrollableWidth}"
-                                    Orientation="Horizontal"                                    
-                                    Value="{TemplateBinding HorizontalOffset}"
-                                    ViewportSize="{TemplateBinding ViewportWidth}" />
-                            </Grid>
+                                IsTabStop="False"
+                                Maximum="{TemplateBinding ScrollableWidth}"
+                                Orientation="Horizontal"                                    
+                                Value="{TemplateBinding HorizontalOffset}"
+                                ViewportSize="{TemplateBinding ViewportWidth}" />
                             <Border x:Name="ScrollBarSeparator"
                                 Grid.Row="1"
                                 Grid.Column="1"
