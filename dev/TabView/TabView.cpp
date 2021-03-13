@@ -256,19 +256,17 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
 
 void TabView::SetTabViewItemAdjacentState(const int index, const winrt::hstring& adjacentState)
 {
-    auto tbi = TabFromIndex(index).try_as<winrt::TabViewItem>();
-    if (!tbi)
+    if (const auto tab = TabFromIndex(index).try_as<winrt::TabViewItem>())
     {
-        tbi = ContainerFromIndex(index).try_as<winrt::TabViewItem>();
-    }
-
-    if (tbi)
-    {
-        bool visualStateChanged = winrt::VisualStateManager::GoToState(tbi, adjacentState, false);
+        bool visualStateChanged = winrt::VisualStateManager::GoToState(tab, adjacentState, false);
+        // If element was not yet loaded and added to the tree,
+        // GoToState will return false and visual state will not be changed.
+        // In order to set the visual state in this case, we attach a Loaded handler
+        // that will set the visual state and then will be removed.
         if (!visualStateChanged)
         {
             auto tabViewItemRevokers = winrt::make_self<TabViewItemRevokers>();
-            tabViewItemRevokers->loadedRevoker = tbi.Loaded(winrt::auto_revoke,
+            tabViewItemRevokers->loadedRevoker = tab.Loaded(winrt::auto_revoke,
                 [tabViewItemRevokers, adjacentState](const winrt::IInspectable& sender, auto const& args)
                 {
                     // What if something happens that changes position of this tab
@@ -282,7 +280,7 @@ void TabView::SetTabViewItemAdjacentState(const int index, const winrt::hstring&
                     tabViewItemRevokers->loadedRevoker.revoke();
                 }
             );
-            tbi.SetValue(s_tabViewItemRevokersProperty, tabViewItemRevokers.as<winrt::IInspectable>());
+            tab.SetValue(s_tabViewItemRevokersProperty, tabViewItemRevokers.as<winrt::IInspectable>());
         }
     }
 
@@ -549,7 +547,14 @@ winrt::IInspectable TabView::TabFromIndex(int index)
     int tabItemsLength = static_cast<int>(TabItems().Size());
     if (index >= 0 && index < tabItemsLength)
     {
-        return TabItems().GetAt(index);
+        if (const auto tab = TabItems().GetAt(index).try_as<winrt::TabViewItem>())
+        {
+            return tab;
+        }
+        else if (const auto listView = m_listView.get())
+        {
+            return listView.ContainerFromIndex(index);
+        }
     }
     return nullptr;
 }
