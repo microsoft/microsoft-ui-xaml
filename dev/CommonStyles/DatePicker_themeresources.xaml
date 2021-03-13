@@ -15,6 +15,7 @@
             <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,4</Thickness>
             <FontWeight x:Key="DatePickerHeaderThemeFontWeight">Normal</FontWeight>
             <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
+            <StaticResource x:Key="DatePickerSpacerFillFocused" ResourceKey="DividerStrokeColorFocusBrush" />
             <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
             
             <StaticResource x:Key="DatePickerHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
@@ -104,6 +105,7 @@
             <FontWeight x:Key="DatePickerHeaderThemeFontWeight">Normal</FontWeight>
             
             <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
+            <StaticResource x:Key="DatePickerSpacerFillFocused" ResourceKey="DividerStrokeColorFocusBrush" />
             <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
             <StaticResource x:Key="DatePickerHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DatePickerHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
@@ -176,12 +178,20 @@
                     <Grid x:Name="LayoutRoot" Margin="{TemplateBinding Padding}">
                         <Grid.Resources>
                             <Style x:Key="DatePickerFlyoutButtonStyle" TargetType="Button">
+                                <Setter Property="BorderBrush" Value="{ThemeResource DatePickerSpacerFill}" />
                                 <Setter Property="UseSystemFocusVisuals" Value="False" />
                                 <Setter Property="ElementSoundMode" Value="FocusOnly" />
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
-                                            <Grid>
+                                            <!--
+                                            The Button BorderBrush property is used to bubble up the correct Separator color, as the DatePicker
+                                            has no focus state then we use the Button focus state to set the focus separator color, the bubbling
+                                            is made by creating a two way binding to the templated parent (FlyoutButton) which is in turn binded
+                                            by FirstPickerSpacing & SecondPickerSpacing to set the fill color.
+                                            -->
+                                            <Grid x:Name="LayoutRoot"
+                                                  BorderBrush="{Binding BorderBrush, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
 
                                                 <VisualStateManager.VisualStateGroups>
                                                     <VisualStateGroup x:Name="CommonStates">
@@ -190,7 +200,7 @@
                                                         <VisualState x:Name="PointerOver">
                                                             <Storyboard>
                                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
-                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBorderBrushPointerOver}" />
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonForegroundPointerOver}" />
                                                                 </ObjectAnimationUsingKeyFrames>
                                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="Background">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBackgroundPointerOver}" />
@@ -204,7 +214,7 @@
                                                         <VisualState x:Name="Pressed">
                                                             <Storyboard>
                                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
-                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBorderBrushPressed}" />
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonForegroundPressed}" />
                                                                 </ObjectAnimationUsingKeyFrames>
                                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="Background">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBackgroundPressed}" />
@@ -238,8 +248,14 @@
                                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonForegroundFocused}" />
                                                                 </ObjectAnimationUsingKeyFrames>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="BorderBrush">
-                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBackgroundFocused}" />
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderThickness">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerBorderThemeThickness}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="BorderThickness">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="0" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerSpacerFillFocused}" />
                                                                 </ObjectAnimationUsingKeyFrames>
                                                             </Storyboard>
                                                         </VisualState>
@@ -247,14 +263,26 @@
                                                     </VisualStateGroup>
                                                 </VisualStateManager.VisualStateGroups>
 
+                                                <!--
+                                                We add a second ContentPresenter element to handle correctly the interaction between the focused
+                                                state and the pointer over/pressed states, as well as the foreground color when the date picker
+                                                has no date assigned. When the DatePicker has no date specified, the foreground is set to
+                                                DatePickerButtonForegroundDefault but it the control gains focus then the foreground is updated
+                                                to DatePickerButtonForegroundFocused, this is done by setting the default color to the
+                                                WrappingContentPresenter, while the focus color is set to the inner ContentPresenter, this
+                                                avoids overriding the ContentPresenter foreground color when the control is in HasNoDate state or
+                                                the button transitions to a pointer over/pressed event.
+                                                -->
                                                 <ContentPresenter x:Name="WrappingContentPresenter"
                                                         Foreground="{TemplateBinding Foreground}"
+                                                        BorderBrush="{ThemeResource DatePickerButtonBorderBrush}"
+                                                        BorderThickness="{ThemeResource DatePickerBorderThemeThickness}"
                                                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                                                         contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                                                     <ContentPresenter x:Name="ContentPresenter"
                                                         BorderBrush="{ThemeResource DatePickerButtonBorderBrush}"
                                                         Background="Transparent"
-                                                        BorderThickness="{ThemeResource DatePickerBorderThemeThickness}"
+                                                        BorderThickness="0"
                                                         Content="{TemplateBinding Content}"
                                                         HorizontalContentAlignment="Stretch"
                                                         VerticalContentAlignment="Stretch"
@@ -366,12 +394,12 @@
                                     FontSize="{TemplateBinding FontSize}"
                                     AutomationProperties.AccessibilityView="Raw" />
                                 <Rectangle x:Name="FirstPickerSpacing"
-                                    Fill="{ThemeResource DatePickerSpacerFill}"
+                                    Fill="{Binding ElementName=FlyoutButton, Path=BorderBrush}"
                                     HorizontalAlignment="Center"
                                     Width="{ThemeResource DatePickerSpacerThemeWidth}"
                                     Grid.Column="1" />
                                 <Rectangle x:Name="SecondPickerSpacing"
-                                    Fill="{ThemeResource DatePickerSpacerFill}"
+                                    Fill="{Binding ElementName=FlyoutButton, Path=BorderBrush}"
                                     HorizontalAlignment="Center"
                                     Width="{ThemeResource DatePickerSpacerThemeWidth}"
                                     Grid.Column="3" />
