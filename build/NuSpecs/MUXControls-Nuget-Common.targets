@@ -23,11 +23,11 @@
        after that target has completed. -->
   <ItemGroup>
     <XamlWinmd Include="$(MSBuildThisFileDirectory)..\lib\uap10.0\Microsoft.UI.Xaml.winmd">
-      <SkipHarvestingWinmdRegistration Condition="'$(_IsMUXFrameworkPackage)' == 'true'">true</SkipHarvestingWinmdRegistration>
+      <SkipHarvestingWinmdRegistration Condition="'$(MicrosoftUIXamlAppxVersion)' != ''">true</SkipHarvestingWinmdRegistration>
       <TargetPath>$(WinMetadataDir)\Microsoft.UI.Xaml.winmd</TargetPath>
       <OutputGroup>CustomOutputGroupForPackaging</OutputGroup>
       <ProjectName>$(ProjectName)</ProjectName>
-      <Implementation Condition="'$(_IsMUXFrameworkPackage)' != 'true'">Microsoft.UI.Xaml.dll</Implementation>
+      <Implementation Condition="'$(MicrosoftUIXamlAppxVersion)' == ''">Microsoft.UI.Xaml.dll</Implementation>
     </XamlWinmd>
   </ItemGroup>
   <PropertyGroup>
