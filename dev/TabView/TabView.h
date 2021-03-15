@@ -138,8 +138,6 @@ private:
     void OnTabStripPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
 
-    void OnPrepareContainerForItemOverride(const winrt::DependencyObject& element, const winrt::IInspectable& item);
-
     void OnListViewDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args);
     void OnListViewDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args);
     void OnListViewDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);

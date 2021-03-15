@@ -11,8 +11,6 @@
 #include "ResourceAccessor.h"
 #include "SharedHelpers.h"
 #include <Vector.h>
-#include <typeinfo>
-#include <math.h>
 
 static constexpr double c_tabMinimumWidth = 48.0;
 static constexpr double c_tabMaximumWidth = 200.0;
@@ -168,27 +166,7 @@ void TabView::OnApplyTemplate()
             }
         }
     }
-
     UpdateListViewItemContainerTransitions();
-}
-
-void TabView::OnPrepareContainerForItemOverride(const winrt::DependencyObject& element, const winrt::IInspectable& item)
-{
-    const auto container = element.as<winrt::TabViewItem>();
-    const auto indexDifference = SelectedIndex() - m_listView.get().IndexFromContainer(container);
-    if (indexDifference == 1)
-    {
-        winrt::VisualStateManager::GoToState(container, L"AdjacentOnTheLeft", false);
-    }
-    else if (indexDifference == -1)
-    {
-        winrt::VisualStateManager::GoToState(container, L"AdjacentOnTheLeft", false);
-    }
-    else
-    {
-        winrt::VisualStateManager::GoToState(container, L"NotAdjacent", false);
-    }
-
 }
 
 void TabView::OnListViewDraggingPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
@@ -702,6 +680,9 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
         const auto listViewInnerSelectedIndex = m_listView.get().SelectedIndex();
         auto selectedIndex = SelectedIndex();
 
+        // This is done in order to set SelectedIndex property to the correct value.
+        // It won't be updated automatically when Index of the selected item changes
+        // due to shifting of the selected tab due to reordering.
         if (selectedIndex != listViewInnerSelectedIndex && listViewInnerSelectedIndex != -1)
         {
             SelectedIndex(listViewInnerSelectedIndex);
@@ -769,6 +750,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
                 // Thoughts?
                 if (itemIndex - selectedIndex == 1)
                 {
+                    // Set previously adjacent tab to non adjacent
                     SetTabViewItemAdjacentState(selectedIndex + 2, L"NotAdjacent");
                     UpdateBottomStrokes(SelectedIndex());
                 }
