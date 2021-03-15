@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedSettingsVisualSource.json
 //       
 //       Input file:
-//           AnimatedSettingsVisualSource.json (31188 bytes created 11:16-08:00 Mar 5 2021)
+//           AnimatedSettingsVisualSource.json (28755 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -52,6 +52,14 @@
 #include <d2d1_1.h>
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
+#ifdef BUILD_WINDOWS
+namespace ABI
+{
+#include <Windows.Graphics.Effects.Interop.h>
+}
+#else
+#include <Windows.Graphics.Effects.Interop.h>
+#endif
 #include <winrt/Windows.Graphics.Effects.h>
 
 using namespace winrt::Microsoft::UI::Xaml::Controls;
@@ -70,7 +78,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
-    ABI::Windows::Graphics::IGeometrySource2DInterop>
+    ::ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
     winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 
@@ -390,7 +398,7 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
         result.Offset({ -31.8590012F, -9.23899841F });
         result.Scale({ 3.0F, 3.0F });
         result.FillBrush(ThemeColor_Foreground());
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_m20_to_375(), RootProgress());
+        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_m20_to_345(), RootProgress());
         return result;
     }
 
@@ -418,7 +426,7 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
         result.Offset({ -31.8590012F, -9.23899841F });
         result.Scale({ 3.0F, 3.0F });
         result.FillBrush(_themeColor_Foreground);
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_15_to_m20(), _rootProgress);
+        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_m10_to_m20(), _rootProgress);
         return result;
     }
 
@@ -432,7 +440,7 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
         result.Offset({ -31.8590012F, -9.23899841F });
         result.Scale({ 3.0F, 3.0F });
         result.FillBrush(_themeColor_Foreground);
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_15_to_0(), _rootProgress);
+        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_m10_to_0(), _rootProgress);
         return result;
     }
 
@@ -460,7 +468,7 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
         result.Offset({ -31.8590012F, -9.23899841F });
         result.Scale({ 3.0F, 3.0F });
         result.FillBrush(_themeColor_Foreground);
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_15(), _rootProgress);
+        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_m10(), _rootProgress);
         return result;
     }
 
@@ -607,10 +615,10 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
     // - Transforms for Controls - 04 - Settings - 01 - NormalToPointerOver Scale(1,1,0)
     // ShapeGroup: Group 1
     // Rotation
-    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_15()
+    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_m10()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.075000003F, 15.0F, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.075000003F, -10.0F, _cubicBezierEasingFunction_2);
         return result;
     }
 
@@ -630,10 +638,10 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
     // - Transforms for Controls - 04 - Settings - 03 - PointerOverToNormal Scale(1,1,0)
     // ShapeGroup: Group 1
     // Rotation
-    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_15_to_0()
+    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_m10_to_0()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 15.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.166666672F, 15.0F, _holdThenStepEasingFunction);
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, -10.0F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.166666672F, -10.0F, _holdThenStepEasingFunction);
         result.InsertKeyFrame(0.24166666F, 0.0F, CubicBezierEasingFunction_2());
         return result;
     }
@@ -642,11 +650,23 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
     // - Transforms for Controls - 04 - Settings - 04 - PointerOverToPressed Scale(1,1,0)
     // ShapeGroup: Group 1
     // Rotation
-    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_15_to_m20()
+    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_m10_to_m20()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 15.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.25F, 15.0F, _holdThenStepEasingFunction);
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, -10.0F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.25F, -10.0F, _holdThenStepEasingFunction);
         result.InsertKeyFrame(0.324999988F, -20.0F, CubicBezierEasingFunction_1());
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 04 - Settings - 06 - PressedToPointerOver
+    // - Transforms for Controls - 04 - Settings - 06 - PressedToPointerOver Scale(1,1,0)
+    // ShapeGroup: Group 1
+    // Rotation
+    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_m20_to_345()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, -20.0F, StepThenHoldEasingFunction());
+        result.InsertKeyFrame(0.666666687F, -20.0F, HoldThenStepEasingFunction());
+        result.InsertKeyFrame(0.991666675F, 345.0F, CubicBezierEasingFunction_0());
         return result;
     }
 
@@ -659,18 +679,6 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
         const auto result = CreateScalarKeyFrameAnimation(0.0F, -20.0F, _stepThenHoldEasingFunction);
         result.InsertKeyFrame(0.333333343F, -20.0F, _holdThenStepEasingFunction);
         result.InsertKeyFrame(0.658333361F, 360.0F, _cubicBezierEasingFunction_0);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 04 - Settings - 06 - PressedToPointerOver
-    // - Transforms for Controls - 04 - Settings - 06 - PressedToPointerOver Scale(1,1,0)
-    // ShapeGroup: Group 1
-    // Rotation
-    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_m20_to_375()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, -20.0F, StepThenHoldEasingFunction());
-        result.InsertKeyFrame(0.666666687F, -20.0F, HoldThenStepEasingFunction());
-        result.InsertKeyFrame(0.991666675F, 375.0F, CubicBezierEasingFunction_0());
         return result;
     }
 
