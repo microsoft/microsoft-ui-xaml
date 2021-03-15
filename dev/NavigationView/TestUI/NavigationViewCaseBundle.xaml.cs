@@ -41,6 +41,7 @@ namespace MUXControlsTestApp
             NavigateToHierarchicalNavigationViewDataBindingPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(HierarchicalNavigationViewDataBinding), 0); };
             PaneLayoutTestPageButton.Click += delegate { Frame.NavigateWithoutAnimation(typeof(PaneLayoutTestPage), 0); };
             FooterItemsSelectionTestPageButton.Click += delegate { Frame.NavigateWithoutAnimation(typeof(FooterItemsSelectionTestPage), 0); };
+            FooterItemsTemplateTestPageButton.Click += delegate { Frame.NavigateWithoutAnimation(typeof(FooterItemsTemplateTestPage), 0); };
         }
     }
 }

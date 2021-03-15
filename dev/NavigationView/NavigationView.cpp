@@ -3952,7 +3952,9 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         UpdateTitleBarPadding();
     }
     else if (property == s_MenuItemTemplateProperty ||
-        property == s_MenuItemTemplateSelectorProperty)
+        property == s_MenuItemTemplateSelectorProperty ||
+        property == s_FooterMenuItemTemplateProperty ||
+        property == s_FooterMenuItemTemplateSelectorProperty)
     {
         SyncItemTemplates();
     }

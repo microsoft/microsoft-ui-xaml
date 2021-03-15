@@ -433,6 +433,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
+        public void PaneFooterTemplateRendersTest()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "FooterItemsTemplateTestPage" }))
+            {
+                Log.Comment("Verify that button in PaneFooterContent exists");
+                VerifyElement.Found("MenuItemFromTemplate", FindBy.Name);
+                VerifyElement.Found("FooterMenuItemFromTemplate", FindBy.Name);
+            }
+        }
+
+        [TestMethod]
         public void VerifyPaneIsClosedWhenClickingOnSelectedItem()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
