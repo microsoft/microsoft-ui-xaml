@@ -117,9 +117,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies that the main command bar sizes itself to be the size of the overflow popup when open if the primary items section width is smaller than the secondary items section width.")]
         public void VerifyCommandBarSizingSecondaryItemsLarger()
         {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.NineteenH1))
             {
-                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                Log.Warning("Test is disabled pre-19h1 since the default behavior on RS5 and below is intervening with opening/closing the flyout.");
                 return;
             }
 
@@ -130,9 +130,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies that the command bar and overflow popup do not size themselves to be larger than the max width if a very wide AppBarButton is present.")]
         public void VerifyCommandBarSizingSecondaryItemsMaxWidth()
         {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.NineteenH1))
             {
-                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                Log.Warning("Test is disabled pre-19h1 since the default behavior on RS5 and below is intervening with opening/closing the flyout.");
                 return;
             }
 
