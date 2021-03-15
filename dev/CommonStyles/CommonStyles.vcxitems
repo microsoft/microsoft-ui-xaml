@@ -26,12 +26,6 @@
       <Type>ThemeResources</Type>
       <Priority>1</Priority>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)Common_21h1_themeresources.xaml">
-      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
-      <Version>21H1</Version>
-      <Type>ThemeResources</Type>
-      <Priority>1</Priority>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Common_themeresources_any.xaml">
       <ControlsResourcesVersion>Any</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -272,12 +266,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)CalendarView_21h1_themeresources.xaml">
-      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
-      <Version>21H1</Version>
-      <Type>ThemeResources</Type>
-    </Page>
-
     <Page Include="$(MSBuildThisFileDirectory)CheckBox_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
