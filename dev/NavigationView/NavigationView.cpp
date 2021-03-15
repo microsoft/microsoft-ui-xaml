@@ -1759,10 +1759,6 @@ void NavigationView::UpdatePaneButtonsWidths()
 
     const auto newButtonWidths = [this]()
     {
-        if (DisplayMode() == winrt::NavigationViewDisplayMode::Minimal)
-        {
-            return static_cast<double>(c_paneToggleButtonWidth);
-        }
         return CompactPaneLength();
     }();
  
