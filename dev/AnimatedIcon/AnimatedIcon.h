@@ -76,8 +76,7 @@ private:
     winrt::Composition::CompositionScopedBatch m_batch{ nullptr };
 
     ScopedBatchCompleted_revoker m_batchCompletedRevoker{ };
-    PropertyChanged_revoker m_parentStatePropertyChangedRevoker{};
-    PropertyChanged_revoker m_grandParentStatePropertyChangedRevoker{};
+    PropertyChanged_revoker m_ancestorStatePropertyChangedRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedRevoker{};
 
     winrt::AnimatedIconAnimationQueueBehavior m_queueBehavior{ winrt::AnimatedIconAnimationQueueBehavior::SpeedUpQueueOne };

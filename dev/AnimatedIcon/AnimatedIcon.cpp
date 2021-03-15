@@ -59,41 +59,35 @@ void AnimatedIcon::OnApplyTemplate()
 
 void AnimatedIcon::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
-    // AnimatedIcon might get added to a UI which has already set the State property on the parent or grand parent.
+    // AnimatedIcon might get added to a UI which has already set the State property on an ancestor.
     // If this is the case and the animated icon being added doesn't have its own state property
-    // We copy the ancestor value when we load. Additionally we attach to our parent and grand parent's property
+    // We copy the ancestor value when we load. Additionally we attach to our ancestor's property
     // changed event for AnimatedIcon.State to copy the value to AnimatedIcon.
     auto const property = winrt::AnimatedIcon::StateProperty();
-    auto const parent = winrt::VisualTreeHelper::GetParent(*this);
-    auto const grandParent = parent ? winrt::VisualTreeHelper::GetParent(parent) : nullptr;
-    auto stateValue = [this, property, parent, grandParent]()
-    {
-        auto const value = GetValue(property);
-        if (!unbox_value<winrt::hstring>(value).empty())
-        {
-            return value;
-        }
-        auto const parentValue = parent.GetValue(property);
-        if (!unbox_value<winrt::hstring>(parentValue).empty())
-        {
-            return value;
-        }
-        auto const grandParentValue = grandParent.GetValue(property);
-        if (!unbox_value<winrt::hstring>(grandParentValue).empty())
-        {
-            return value;
-        }
-        return value;
-    }();
-    SetValue(property, stateValue);
 
-    if (parent)
+    auto const [ancestorWithState, stateValue] = [this, property]()
     {
-        m_parentStatePropertyChangedRevoker = RegisterPropertyChanged(parent, property, { this, &AnimatedIcon::OnAncestorAnimatedIconStatePropertyChanged });
+        auto parent = winrt::VisualTreeHelper::GetParent(*this);
+        while (parent)
+        {
+            auto const stateValue = parent.GetValue(property);
+            if (!unbox_value<winrt::hstring>(stateValue).empty())
+            {
+                return std::make_tuple(parent, stateValue);
+            }
+            parent = winrt::VisualTreeHelper::GetParent(parent);
+        }
+        return std::make_tuple(static_cast<winrt::DependencyObject>(nullptr), winrt::box_value(winrt::hstring{}));
+    }();
+
+    if (unbox_value<winrt::hstring>(GetValue(property)).empty())
+    {
+        SetValue(property, stateValue);
     }
-    if (grandParent)
+
+    if (ancestorWithState)
     {
-        m_grandParentStatePropertyChangedRevoker = RegisterPropertyChanged(grandParent, property, { this, &AnimatedIcon::OnAncestorAnimatedIconStatePropertyChanged });
+        m_ancestorStatePropertyChangedRevoker = RegisterPropertyChanged(ancestorWithState, property, { this, &AnimatedIcon::OnAncestorAnimatedIconStatePropertyChanged });
     }
 }
 

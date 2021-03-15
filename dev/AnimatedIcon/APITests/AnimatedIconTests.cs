@@ -41,6 +41,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 animatedIcon = new AnimatedIcon();
                 parentGrid = new Grid();
                 parentGrid.Children.Add(animatedIcon);
+                AnimatedIcon.SetState(parentGrid, "Initial State");
 
                 Content = parentGrid;
                 Content.UpdateLayout();
@@ -68,6 +69,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 grandParentGrid = new Grid();
                 parentGrid.Children.Add(animatedIcon);
                 grandParentGrid.Children.Add(parentGrid);
+                AnimatedIcon.SetState(grandParentGrid, "Initial State");
 
                 Content = grandParentGrid;
                 Content.UpdateLayout();
@@ -98,6 +100,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 newParentGrid = new Grid();
                 parentGrid.Children.Add(animatedIcon);
                 grandParentGrid.Children.Add(parentGrid);
+                AnimatedIcon.SetState(parentGrid, "Initial State");
 
                 Content = grandParentGrid;
                 Content.UpdateLayout();
@@ -115,6 +118,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 newParentGrid.Children.Add(animatedIcon);
                 grandParentGrid.Children.Clear();
                 grandParentGrid.Children.Add(newParentGrid);
+                AnimatedIcon.SetState(newParentGrid, "Initial State");
 
                 Content.UpdateLayout();
             });
@@ -146,6 +150,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 childGrid = new Grid();
                 parentGrid.Children.Add(childGrid);
                 childGrid.Children.Add(animatedIcon);
+                AnimatedIcon.SetState(parentGrid, "Initial State");
+
+                Content = parentGrid;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                string stateString = "Test State";
+                AnimatedIcon.SetState(parentGrid, stateString);
+                Verify.AreNotEqual(stateString, AnimatedIcon.GetState(childGrid));
+                Verify.AreEqual(stateString, AnimatedIcon.GetState(animatedIcon));
+            });
+        }
+
+        [TestMethod]
+        public void AddingAnimatedIconToGridWithoutAStateDoesNotPropogateState()
+        {
+            // This is not actually a desired behavior.  Ideally we would be able to set
+            // the AnimatedIcon.State property on any ancestor of an animated icon at any
+            // time and that would reach the icon. However this is challenging to do
+            // efficiently so instead we require that the parent have an AnimatedIcon.State
+            // value when the icon is loaded.
+            AnimatedIcon animatedIcon = null;
+            Grid parentGrid = null;
+            RunOnUIThread.Execute(() =>
+            {
+                animatedIcon = new AnimatedIcon();
+                parentGrid = new Grid();
+                parentGrid.Children.Add(animatedIcon);
 
                 Content = parentGrid;
                 Content.UpdateLayout();
@@ -158,7 +194,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 string stateString = "Test State";
                 AnimatedIcon.SetState(parentGrid, stateString);
                 Verify.AreNotEqual(stateString, AnimatedIcon.GetState(animatedIcon));
-                Verify.AreNotEqual(stateString, AnimatedIcon.GetState(childGrid));
             });
         }
 
