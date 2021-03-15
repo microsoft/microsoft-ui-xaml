@@ -165,6 +165,49 @@ unsealed runtimeclass ColorFilterOverlayControl : Windows.UI.Xaml.Controls.Grid
 <!-- Anything else that you want to write down for posterity, but 
 that isn't necessary to understand the purpose and usage of the API.
 For example, implementation details. -->
+
+## DatePicker
+
+In WinUI 2.2, controls began to be re-designed to have rounded corners, marking a shift in our overall design language. 
+There's more information on rounded corners in WinUI [here](https://docs.microsoft.com/en-us/windows/uwp/design/style/rounded-corner), 
+but the general purpose of the rounded corners design shift is to evoke warmth and trust, 
+and make the UI easier for users to visually process. 
+Since this shift, certain controls have adopted the new styling and recieved rounded corners, but some have not. 
+This creates a strong visual inconsistency in WinUI apps, where certain pieces of an app may look modern and others may look dated. 
+Examples of this include the DatePicker and TimePicker controls. While the corners of the controls themselves are rounded, the selection rectangle within the control is still squared off. Buttons and other areas inside these controls are also still squared off, making them look dated when placed alongside other controls that are more modernly designed, such as 
+[NavigationView](https://docs.microsoft.com/en-us/windows/uwp/design/controls-and-patterns/navigationview).
+
+Recently, [ListView was given design updates](https://github.com/microsoft/microsoft-ui-xaml-specs/blob/user/anawish/ListViewGridViewDesignUpdates/active/ListViewGridView/listviewgridview-designupdates.md) to round the corners of its items. DatePicker and TimePicker should follow in these footsteps, and make sure that they adopt any of the ListView design elements that are relevant. This includes general rounding of selection visuals, as well as rounded grey backplates for items that get hovered. 
+
+This spec will detail a number of changes to update the designs of DatePicker and TimePicker so that they are more 
+visually aligned with modern WinUI controls. At a high level, some key parts of these updated styles are: a rounded selection rectangle; rounded backplates on items, buttons, and scroll buttons on  hover; and new animations that are aligned with other controls. 
+
+These visual changes to DatePicker and TimePicker will in part be made possible by the new `ElementBackgroundGrid` API which is described above. This class provides the logic behind displaying the 'inverted' selection rectangle that spans across all three columns in DatePicker and TimePicker, and giving it the correct foreground color to have appropriate contrast over the accent colored background.
+
+### Visual Examples
+<!-- Use this section to provide a brief description of the feature.
+For an example, see the introduction to the PasswordBox control 
+(http://docs.microsoft.com/windows/uwp/design/controls-and-patterns/password-box). -->
+
+**DatePicker:**
+
+As you can see on the left, the old version of DatePicker contains squared elements inside of it. The new version of DatePicker will round off these elements.
+
+![Shows the old DatePicker visuals alongside the new DatePicker visuals](images/datepicker-evolution.PNG)
+
+**TimePicker:**
+
+Similarly to DatePicker, the old version of TimePicker contains squared elements inside of it. The new version of TimePicker will round off these elements.
+
+![Shows the old TimePicker visuals alongside the new TimePicker visuals](images/timepicker-evolution.PNG)
+
+**Rounded backplates and focus visuals**
+
+As you can see in the mockup below, all buttons and items (individual cells) within DatePicker and TimePicker will receive a rounded grey backplate when hovered or pressed. In addition to this, columns within DatePicker and TimePicker will receive rounded focus rectangles (as shown below).
+
+![Shows a DatePicker with scroll and check buttons being hovered, as well as the last column being focused upon](images/DPTP-other-states.PNG)
+
+
 ## Detailed Task Breakdown for styling implementation
 The following steps apply to both DatePicker and TimePicker, unless otherwise noted.
 
@@ -190,43 +233,3 @@ The following steps apply to both DatePicker and TimePicker, unless otherwise no
 
 11. Animations: Date/TimePicker should have an opening/closing animation and use the same easing/timing as other controls.
 
-## DatePicker
-
-In WinUI 2.2, controls began to be re-designed to have rounded corners, marking a shift in our overall design language. 
-There's more information on rounded corners in WinUI [here](https://docs.microsoft.com/en-us/windows/uwp/design/style/rounded-corner), 
-but the general purpose of the rounded corners design shift is to evoke warmth and trust, 
-and make the UI easier for users to visually process. 
-Since this shift, certain controls have adopted the new styling and recieved rounded corners, but some have not. 
-This creates a strong visual inconsistency in WinUI apps, where certain pieces of an app may look modern and others may look dated. 
-Examples of this include the DatePicker and TimePicker controls. While the corners of the controls themselves are rounded, the selection rectangle within the control is still squared off. Buttons and other areas inside these controls are also still squared off, making them look dated when placed alongside other controls that are more modernly designed, such as 
-[NavigationView](https://docs.microsoft.com/en-us/windows/uwp/design/controls-and-patterns/navigationview).
-
-Recently, [ListView was given design updates](https://github.com/microsoft/microsoft-ui-xaml-specs/blob/user/anawish/ListViewGridViewDesignUpdates/active/ListViewGridView/listviewgridview-designupdates.md) to round the corners of its items. DatePicker and TimePicker should follow in these footsteps, and make sure that they adopt any of the ListView design elements that are relevant. This includes general rounding of selection visuals, as well as rounded grey backplates for items that get hovered. 
-
-This spec will detail a number of changes to update the designs of DatePicker and TimePicker so that they are more 
-visually aligned with modern WinUI controls. At a high level, some key parts of these updated styles are: a rounded selection rectangle; rounded backplates on items, buttons, and scroll buttons on  hover; and new animations that are aligned with other controls. 
-
-There is only one major API change that will come with these styling updates, which is adding a new class called `ColorFilterOverlayControl`. This class provides the logic behind displaying the 'inverted' selection rectangle that spans across all three columns in DatePicker and TimePicker, and giving it the correct foreground color to have appropriate contrast over the accent colored background.
-
-### Visual Examples
-<!-- Use this section to provide a brief description of the feature.
-For an example, see the introduction to the PasswordBox control 
-(http://docs.microsoft.com/windows/uwp/design/controls-and-patterns/password-box). -->
-
-**DatePicker:**
-
-As you can see on the left, the old version of DatePicker contains squared elements inside of it. The new version of DatePicker will round off these elements.
-
-![Shows the old DatePicker visuals alongside the new DatePicker visuals](images/datepicker-evolution.PNG)
-
-**TimePicker:**
-
-Similarly to DatePicker, the old version of TimePicker contains squared elements inside of it. The new version of TimePicker will round off these elements.
-
-![Shows the old TimePicker visuals alongside the new TimePicker visuals](images/timepicker-evolution.PNG)
-
-**Rounded backplates and focus visuals**
-
-As you can see in the mockup below, all buttons and items (individual cells) within DatePicker and TimePicker will receive a rounded grey backplate when hovered or pressed. In addition to this, columns within DatePicker and TimePicker will receive rounded focus rectangles (as shown below).
-
-![Shows a DatePicker with scroll and check buttons being hovered, as well as the last column being focused upon](images/DPTP-other-states.PNG)
