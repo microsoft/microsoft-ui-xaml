@@ -686,6 +686,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 UIObject moreButton = TryFindElement.ById("MoreButton");
                 Verify.IsNull(moreButton);
 
+                Log.Comment("Tapping on one of the primary commands");
+                FindElement.ById<Button>("CutButton9").InvokeAndWait();
+                ElementCache.Clear();
+
+                Log.Comment("Verifying that the secondary commands are still visible.");
+                undoButton = FindElement.ById<Button>("UndoButton9");
+                Verify.IsNotNull(undoButton);
+
                 Log.Comment("Tapping on a button to hide the CommandBarFlyout.");
                 InputHelper.Tap(showCommandBarFlyoutButton);
             }
