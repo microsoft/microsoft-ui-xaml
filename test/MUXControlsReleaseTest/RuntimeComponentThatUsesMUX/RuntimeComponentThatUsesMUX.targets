@@ -1,0 +1,16 @@
+<!--
+  Copyright (c) Microsoft Corporation. Licensed under the MIT License
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_RuntimeIdentifier Condition="'$(Platform)' == 'Win32'">win10-x86</_RuntimeIdentifier>
+    <_RuntimeIdentifier Condition="'$(Platform)' != 'Win32'">win10-$(Platform)</_RuntimeIdentifier>
+    <_DllDir>$(MSBuildThisFileDirectory)..\runtimes\$(_WinUIRuntimeIdentifier)\native\</_DllDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ReferenceCopyLocalPaths Include="$(_DllDir)*.dll" />
+    <ReferenceCopyLocalPaths Include="$(_DllDir)*.pri" />
+  </ItemGroup>
+</Project>
+
