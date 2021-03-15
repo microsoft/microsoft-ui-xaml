@@ -259,7 +259,7 @@
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="{ThemeResource ScrollBarCaretRight}" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True" />
+                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDDA;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True" />
                                 </Grid>
                             </ControlTemplate>
                             <ControlTemplate x:Key="HorizontalDecrementTemplate" TargetType="RepeatButton">
@@ -290,7 +290,7 @@
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="{ThemeResource ScrollBarCaretLeft}" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True" />
+                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDD9;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True" />
                                 </Grid>
                             </ControlTemplate>
                             <ControlTemplate x:Key="VerticalIncrementTemplate" TargetType="RepeatButton">
@@ -321,7 +321,7 @@
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="{ThemeResource ScrollBarCaretDown}" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" />
+                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDDC;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" />
                                 </Grid>
                             </ControlTemplate>
                             <ControlTemplate x:Key="VerticalDecrementTemplate" TargetType="RepeatButton">
@@ -352,7 +352,7 @@
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="{ThemeResource ScrollBarCaretUp}" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" />
+                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDDB;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" />
                                 </Grid>
                             </ControlTemplate>
                             <ControlTemplate x:Key="VerticalThumbTemplate" TargetType="Thumb">
