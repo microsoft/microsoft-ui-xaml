@@ -40,7 +40,7 @@
                             <Grid
                                 Grid.Column="1"
                                 Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"
-                                Padding="{ThemeResource AppScrollViewerScrollBarMargin}">
+                                Padding="{ThemeResource ScrollViewerScrollBarMargin}">
                                 <ScrollBar x:Name="VerticalScrollBar"
                                     IsTabStop="False"
                                     Maximum="{TemplateBinding ScrollableHeight}"
@@ -53,7 +53,7 @@
                             <Grid
                                 Grid.Row="1"
                                 Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
-                                Padding="{ThemeResource AppScrollViewerScrollBarMargin}">
+                                Padding="{ThemeResource ScrollViewerScrollBarMargin}">
                                 <ScrollBar x:Name="HorizontalScrollBar"
                                     IsTabStop="False"
                                     Maximum="{TemplateBinding ScrollableWidth}"
