@@ -22,6 +22,8 @@ GlobalDependencyProperty NavigationViewProperties::s_DisplayModeProperty{ nullpt
 GlobalDependencyProperty NavigationViewProperties::s_ExpandedModeThresholdWidthProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_FooterMenuItemsProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_FooterMenuItemsSourceProperty{ nullptr };
+GlobalDependencyProperty NavigationViewProperties::s_FooterMenuItemTemplateProperty{ nullptr };
+GlobalDependencyProperty NavigationViewProperties::s_FooterMenuItemTemplateSelectorProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_HeaderProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_HeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_IsBackButtonVisibleProperty{ nullptr };
@@ -166,6 +168,28 @@ void NavigationViewProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnFooterMenuItemsSourcePropertyChanged));
+    }
+    if (!s_FooterMenuItemTemplateProperty)
+    {
+        s_FooterMenuItemTemplateProperty =
+            InitializeDependencyProperty(
+                L"FooterMenuItemTemplate",
+                winrt::name_of<winrt::DataTemplate>(),
+                winrt::name_of<winrt::NavigationView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnFooterMenuItemTemplatePropertyChanged));
+    }
+    if (!s_FooterMenuItemTemplateSelectorProperty)
+    {
+        s_FooterMenuItemTemplateSelectorProperty =
+            InitializeDependencyProperty(
+                L"FooterMenuItemTemplateSelector",
+                winrt::name_of<winrt::DataTemplateSelector>(),
+                winrt::name_of<winrt::NavigationView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::DataTemplateSelector>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnFooterMenuItemTemplateSelectorPropertyChanged));
     }
     if (!s_HeaderProperty)
     {
@@ -488,6 +512,8 @@ void NavigationViewProperties::ClearProperties()
     s_ExpandedModeThresholdWidthProperty = nullptr;
     s_FooterMenuItemsProperty = nullptr;
     s_FooterMenuItemsSourceProperty = nullptr;
+    s_FooterMenuItemTemplateProperty = nullptr;
+    s_FooterMenuItemTemplateSelectorProperty = nullptr;
     s_HeaderProperty = nullptr;
     s_HeaderTemplateProperty = nullptr;
     s_IsBackButtonVisibleProperty = nullptr;
@@ -605,6 +631,22 @@ void NavigationViewProperties::OnFooterMenuItemsPropertyChanged(
 }
 
 void NavigationViewProperties::OnFooterMenuItemsSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NavigationView>();
+    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
+}
+
+void NavigationViewProperties::OnFooterMenuItemTemplatePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NavigationView>();
+    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
+}
+
+void NavigationViewProperties::OnFooterMenuItemTemplateSelectorPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -943,6 +985,32 @@ void NavigationViewProperties::FooterMenuItemsSource(winrt::IInspectable const& 
 winrt::IInspectable NavigationViewProperties::FooterMenuItemsSource()
 {
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<NavigationView*>(this)->GetValue(s_FooterMenuItemsSourceProperty));
+}
+
+void NavigationViewProperties::FooterMenuItemTemplate(winrt::DataTemplate const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<NavigationView*>(this)->SetValue(s_FooterMenuItemTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::DataTemplate NavigationViewProperties::FooterMenuItemTemplate()
+{
+    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<NavigationView*>(this)->GetValue(s_FooterMenuItemTemplateProperty));
+}
+
+void NavigationViewProperties::FooterMenuItemTemplateSelector(winrt::DataTemplateSelector const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<NavigationView*>(this)->SetValue(s_FooterMenuItemTemplateSelectorProperty, ValueHelper<winrt::DataTemplateSelector>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::DataTemplateSelector NavigationViewProperties::FooterMenuItemTemplateSelector()
+{
+    return ValueHelper<winrt::DataTemplateSelector>::CastOrUnbox(static_cast<NavigationView*>(this)->GetValue(s_FooterMenuItemTemplateSelectorProperty));
 }
 
 void NavigationViewProperties::Header(winrt::IInspectable const& value)

@@ -36,6 +36,12 @@ public:
     void FooterMenuItemsSource(winrt::IInspectable const& value);
     winrt::IInspectable FooterMenuItemsSource();
 
+    void FooterMenuItemTemplate(winrt::DataTemplate const& value);
+    winrt::DataTemplate FooterMenuItemTemplate();
+
+    void FooterMenuItemTemplateSelector(winrt::DataTemplateSelector const& value);
+    winrt::DataTemplateSelector FooterMenuItemTemplateSelector();
+
     void Header(winrt::IInspectable const& value);
     winrt::IInspectable Header();
 
@@ -129,6 +135,8 @@ public:
     static winrt::DependencyProperty ExpandedModeThresholdWidthProperty() { return s_ExpandedModeThresholdWidthProperty; }
     static winrt::DependencyProperty FooterMenuItemsProperty() { return s_FooterMenuItemsProperty; }
     static winrt::DependencyProperty FooterMenuItemsSourceProperty() { return s_FooterMenuItemsSourceProperty; }
+    static winrt::DependencyProperty FooterMenuItemTemplateProperty() { return s_FooterMenuItemTemplateProperty; }
+    static winrt::DependencyProperty FooterMenuItemTemplateSelectorProperty() { return s_FooterMenuItemTemplateSelectorProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
     static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
     static winrt::DependencyProperty IsBackButtonVisibleProperty() { return s_IsBackButtonVisibleProperty; }
@@ -167,6 +175,8 @@ public:
     static GlobalDependencyProperty s_ExpandedModeThresholdWidthProperty;
     static GlobalDependencyProperty s_FooterMenuItemsProperty;
     static GlobalDependencyProperty s_FooterMenuItemsSourceProperty;
+    static GlobalDependencyProperty s_FooterMenuItemTemplateProperty;
+    static GlobalDependencyProperty s_FooterMenuItemTemplateSelectorProperty;
     static GlobalDependencyProperty s_HeaderProperty;
     static GlobalDependencyProperty s_HeaderTemplateProperty;
     static GlobalDependencyProperty s_IsBackButtonVisibleProperty;
@@ -260,6 +270,14 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnFooterMenuItemsSourcePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnFooterMenuItemTemplatePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnFooterMenuItemTemplateSelectorPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

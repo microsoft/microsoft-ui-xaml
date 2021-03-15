@@ -116,10 +116,17 @@ void NavigationViewItem::OnApplyTemplate()
             m_repeater.set(repeater);
 
             // Primary element setup happens in NavigationView
-            m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { nvImpl,  &NavigationView::OnRepeaterElementPrepared });
+            m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { nvImpl, &NavigationView::OnRepeaterElementPrepared });
             m_repeaterElementClearingRevoker = repeater.ElementClearing(winrt::auto_revoke, { nvImpl, &NavigationView::OnRepeaterElementClearing });
 
-            repeater.ItemTemplate(*(nvImpl->GetNavigationViewItemsFactory()));
+            if (m_isOnFooter)
+            {
+                repeater.ItemTemplate(*(nvImpl->GetNavigationViewFooterItemsFactory()));
+            }
+            else
+            {
+                repeater.ItemTemplate(*(nvImpl->GetNavigationViewMenuItemsFactory()));
+            }
         }
 
         UpdateRepeaterItemsSource();

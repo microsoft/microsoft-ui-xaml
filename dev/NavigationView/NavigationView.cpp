@@ -210,7 +210,9 @@ NavigationView::NavigationView()
     m_selectionChangedRevoker = m_selectionModel.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionModelSelectionChanged });
     m_childrenRequestedRevoker = m_selectionModel.ChildrenRequested(winrt::auto_revoke, { this, &NavigationView::OnSelectionModelChildrenRequested });
 
-    m_navigationViewItemsFactory = winrt::make_self<NavigationViewItemsFactory>();
+    m_navigationViewMenuItemsFactory = winrt::make_self<NavigationViewItemsFactory>();
+    m_navigationViewFooterItemsFactory = winrt::make_self<NavigationViewItemsFactory>();
+    m_navigationViewFooterItemsFactory.get()->IsFooterFactory(true);
 
     s_NavigationViewItemRevokersProperty =
         InitializeDependencyProperty(
@@ -452,7 +454,7 @@ void NavigationView::OnApplyTemplate()
 
         m_leftNavRepeaterGettingFocusRevoker = leftNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
 
-        leftNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
+        leftNavRepeater.ItemTemplate(*m_navigationViewMenuItemsFactory);
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
@@ -474,7 +476,7 @@ void NavigationView::OnApplyTemplate()
 
         m_topNavRepeaterGettingFocusRevoker = topNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
 
-        topNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
+        topNavRepeater.ItemTemplate(*m_navigationViewMenuItemsFactory);
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
@@ -493,7 +495,7 @@ void NavigationView::OnApplyTemplate()
         m_topNavOverflowItemsRepeaterElementPreparedRevoker = topNavListOverflowRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
         m_topNavOverflowItemsRepeaterElementClearingRevoker = topNavListOverflowRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementClearing });
 
-        topNavListOverflowRepeater.ItemTemplate(*m_navigationViewItemsFactory);
+        topNavListOverflowRepeater.ItemTemplate(*m_navigationViewMenuItemsFactory);
     }
 
     if (auto topNavOverflowButton = GetTemplateChildT<winrt::Button>(c_topNavOverflowButton, controlProtected))
@@ -542,6 +544,7 @@ void NavigationView::OnApplyTemplate()
 
         m_leftNavFooterMenuRepeaterGettingFocusRevoker = leftFooterMenuNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
 
+        leftFooterMenuNavRepeater.ItemTemplate(*m_navigationViewFooterItemsFactory);
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
@@ -564,6 +567,7 @@ void NavigationView::OnApplyTemplate()
 
         m_topNavFooterMenuRepeaterGettingFocusRevoker = topFooterMenuNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
 
+        topFooterMenuNavRepeater.ItemTemplate(*m_navigationViewFooterItemsFactory);
     }
 
     m_topNavContentOverlayAreaGrid.set(GetTemplateChildT<winrt::Border>(c_topNavContentOverlayAreaGrid, controlProtected));
@@ -821,7 +825,7 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReset,
             m_settingsItem.set(winrt::make < ::NavigationViewItem>());
             auto settingsItem = m_settingsItem.get();
             settingsItem.Name(L"SettingsItem");
-            m_navigationViewItemsFactory.get()->SettingsItem(settingsItem);
+            m_navigationViewFooterItemsFactory.get()->SettingsItem(settingsItem);
         }
 
         if (sourceCollectionReset)
@@ -1933,7 +1937,7 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
     }
 
     winrt::UIElement prevIndicator = m_activeIndicator.get();
-    winrt::UIElement nextIndicator = FindSelectionIndicator(nextItem);
+    winrt::UIElement nextIndicator = FindSelectionIndicator(nextItem); 
 
     bool haveValidAnimation = false;
     // It's possible that AnimateSelectionChanged is called multiple times before the first animation is complete.
@@ -3954,19 +3958,26 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }
 }
 
-void NavigationView::UpdateNavigationViewItemsFactory()
+void NavigationView::UpdateNavigationViewItemsFactories()
 {
-    winrt::IInspectable newItemTemplate = MenuItemTemplate();
-    if (!newItemTemplate)
+    winrt::IInspectable newMenutItemTemplate = MenuItemTemplate();
+    if (!newMenutItemTemplate)
     {
-        newItemTemplate = MenuItemTemplateSelector();
+        newMenutItemTemplate = MenuItemTemplateSelector();
     }
-    m_navigationViewItemsFactory->UserElementFactory(newItemTemplate);
+    m_navigationViewMenuItemsFactory->UserElementFactory(newMenutItemTemplate);
+
+    winrt::IInspectable newFooterItemTemplate = FooterMenuItemTemplate();
+    if (!newFooterItemTemplate)
+    {
+        newFooterItemTemplate = FooterMenuItemTemplateSelector();
+    }
+    m_navigationViewFooterItemsFactory->UserElementFactory(newFooterItemTemplate);
 }
 
 void NavigationView::SyncItemTemplates()
 {
-    UpdateNavigationViewItemsFactory();
+    UpdateNavigationViewItemsFactories();
 }
 
 void NavigationView::OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -4952,7 +4963,14 @@ winrt::NavigationViewItemBase NavigationView::ResolveContainerForItem(const winr
     args->Data(item);
     args->Index(index);
 
-    if (auto container = m_navigationViewItemsFactory.get()->GetElement(static_cast<winrt::ElementFactoryGetArgs>(*args)))
+    if (auto container = m_navigationViewMenuItemsFactory.get()->GetElement(static_cast<winrt::ElementFactoryGetArgs>(*args)))
+    {
+        if (auto nvib = container.try_as<winrt::NavigationViewItemBase>())
+        {
+            return nvib;
+        }
+    }
+    else if (auto container = m_navigationViewFooterItemsFactory.get()->GetElement(static_cast<winrt::ElementFactoryGetArgs>(*args)))
     {
         if (auto nvib = container.try_as<winrt::NavigationViewItemBase>())
         {
@@ -4966,7 +4984,9 @@ void NavigationView::RecycleContainer(const winrt::UIElement& container)
 {
     auto const args = winrt::make_self<ElementFactoryRecycleArgs>();
     args->Element(container);
-    m_navigationViewItemsFactory.get()->RecycleElement(static_cast<winrt::ElementFactoryRecycleArgs>(*args));
+    // Factories don't tell us if they know the item so let's try both
+    m_navigationViewMenuItemsFactory.get()->RecycleElement(static_cast<winrt::ElementFactoryRecycleArgs>(*args));
+    m_navigationViewFooterItemsFactory.get()->RecycleElement(static_cast<winrt::ElementFactoryRecycleArgs>(*args));
 }
 
 int NavigationView::GetContainerCountInRepeater(const winrt::ItemsRepeater& ir)

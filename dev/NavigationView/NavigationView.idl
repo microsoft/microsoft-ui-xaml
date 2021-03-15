@@ -142,7 +142,7 @@ unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.Dependenc
     Windows.UI.Xaml.Visibility LeftPaneVisibility { get; };
     Boolean SingleSelectionFollowsFocus { get; };
     Double PaneToggleButtonWidth{ get; };
-    Double SmallerPaneToggleButtonWidth{ get; };   
+    Double SmallerPaneToggleButtonWidth{ get; };
 
     static Windows.UI.Xaml.DependencyProperty TopPaddingProperty { get; };
     static Windows.UI.Xaml.DependencyProperty OverflowButtonVisibilityProperty { get; };
@@ -200,6 +200,11 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
     Windows.UI.Xaml.Controls.DataTemplateSelector MenuItemTemplateSelector { get; set; };
     Windows.UI.Xaml.Style MenuItemContainerStyle { get; set; };
     Windows.UI.Xaml.Controls.StyleSelector MenuItemContainerStyleSelector { get; set; };
+    [MUX_PREVIEW]
+    {
+        Windows.UI.Xaml.DataTemplate FooterMenuItemTemplate{ get; set; };
+        Windows.UI.Xaml.Controls.DataTemplateSelector FooterMenuItemTemplateSelector{ get; set; };
+    }
     Object MenuItemFromContainer(Windows.UI.Xaml.DependencyObject container);
     Windows.UI.Xaml.DependencyObject ContainerFromMenuItem(Object item);
     event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewSelectionChangedEventArgs> SelectionChanged;
@@ -230,6 +235,11 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty MenuItemTemplateSelectorProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MenuItemContainerStyleProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MenuItemContainerStyleSelectorProperty { get; };
+    [MUX_PREVIEW]
+    {
+        static Windows.UI.Xaml.DependencyProperty FooterMenuItemTemplateProperty { get; };
+        static Windows.UI.Xaml.DependencyProperty FooterMenuItemTemplateSelectorProperty { get; };
+    }
 
     [MUX_PUBLIC]
             {
@@ -284,7 +294,7 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
     Boolean IsTitleBarAutoPaddingEnabled { get; set; };
 
     static Windows.UI.Xaml.DependencyProperty IsTitleBarAutoPaddingEnabledProperty { get; };
-    
+
     [MUX_PUBLIC]
     {
         event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewItemExpandingEventArgs> Expanding;

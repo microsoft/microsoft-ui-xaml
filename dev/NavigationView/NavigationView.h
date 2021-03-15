@@ -79,7 +79,8 @@ public:
     void OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
     void OnRepeaterElementClearing(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementClearingEventArgs& args);
 
-    com_ptr<NavigationViewItemsFactory> GetNavigationViewItemsFactory() { return m_navigationViewItemsFactory; };
+    com_ptr<NavigationViewItemsFactory> GetNavigationViewMenuItemsFactory() { return m_navigationViewMenuItemsFactory; };
+    com_ptr<NavigationViewItemsFactory> GetNavigationViewFooterItemsFactory() { return m_navigationViewFooterItemsFactory; };
 
     // Used in AutomationPeer
     winrt::ItemsRepeater LeftNavRepeater();
@@ -168,7 +169,7 @@ private:
     void UpdateVisualStateForOverflowButton();
     void UpdateLeftNavigationOnlyVisualState(bool useTransitions);
     void UpdatePaneShadow();
-    void UpdateNavigationViewItemsFactory();
+    void UpdateNavigationViewItemsFactories();
     void SyncItemTemplates();
     bool IsRootGridOfFlyout(const winrt::DependencyObject& element);
     bool IsRootItemsRepeater(const winrt::DependencyObject& element);
@@ -330,7 +331,8 @@ private:
     void FocusNextUpItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args);
     void ApplyCustomMenuItemContainerStyling(const winrt::NavigationViewItemBase& nvib, const winrt::ItemsRepeater& ir, int index);
 
-    com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
+    com_ptr<NavigationViewItemsFactory> m_navigationViewMenuItemsFactory{ nullptr };
+    com_ptr<NavigationViewItemsFactory> m_navigationViewFooterItemsFactory{ nullptr };
 
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };

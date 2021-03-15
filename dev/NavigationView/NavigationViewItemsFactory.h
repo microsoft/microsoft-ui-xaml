@@ -13,6 +13,8 @@ public:
     void UserElementFactory(winrt::IInspectable const& newValue);
     void SettingsItem(winrt::NavigationViewItemBase const& settingsItem);
 
+    void IsFooterFactory(const bool value) { m_isFooterFactory = value; }
+
 #pragma region IElementFactoryOverrides
     winrt::UIElement GetElementCore(winrt::ElementFactoryGetArgs const& args);
     void RecycleElementCore(winrt::ElementFactoryRecycleArgs const& args);
@@ -22,6 +24,8 @@ private:
     winrt::IElementFactoryShim m_itemTemplateWrapper{ nullptr };
     winrt::NavigationViewItemBase m_settingsItem{ nullptr };
     std::vector<winrt::NavigationViewItem> navigationViewItemPool;
+
+    bool m_isFooterFactory{ false };
 
     void UnlinkElementFromParent(winrt::ElementFactoryRecycleArgs const& args);
 };

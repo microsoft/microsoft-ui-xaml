@@ -60,6 +60,7 @@ public:
     bool IsRepeaterVisible() const;
     void PropagateDepthToChildren(int depth);
     bool HasChildren();
+    void SetIsOnFooter(const bool value) { m_isOnFooter = value; }
 
 private:
     winrt::UIElement const GetPresenterOrItem() const;
@@ -152,4 +153,5 @@ private:
     bool m_isPointerOver{ false };
 
     bool m_isRepeaterParentedToFlyout{ false };
+    bool m_isOnFooter{ false };
 };

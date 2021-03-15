@@ -33,7 +33,6 @@ void NavigationViewItemsFactory::SettingsItem(winrt::NavigationViewItemBase cons
     m_settingsItem = settingsItem;
 }
 
-
 // Retrieve the element that will be displayed for a specific data item.
 // If the resolved element is not derived from NavigationViewItemBase, wrap in a NavigationViewItem before returning.
 winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactoryGetArgs const& args)
@@ -78,6 +77,7 @@ winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactor
     }();
     auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
     nviImpl->CreatedByNavigationViewItemsFactory(true);
+    nviImpl->SetIsOnFooter(m_isFooterFactory);
 
     // If a user provided item template exists, just pass the template and data down to the ContentPresenter of the NavigationViewItem
     if (m_itemTemplateWrapper)
