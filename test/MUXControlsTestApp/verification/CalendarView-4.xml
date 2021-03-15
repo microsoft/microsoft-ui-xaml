@@ -1,6 +1,6 @@
 [Windows.UI.Xaml.Controls.CalendarView]
     FocusBorderBrush=#E4000000
-    SelectedPressedBorderBrush=#03000000
+    SelectedPressedBorderBrush=#06000000
     CalendarItemBorderThickness=2,2,2,2
     CalendarItemBorderBrush=Microsoft.UI.Xaml.Media.RevealBorderBrush
     HoverBorderBrush=#0F000000

@@ -24,6 +24,8 @@
                 <ResourceDictionary x:Name="_styleOverridesPlaceholder"/>
             </ResourceDictionary.MergedDictionaries>
 
+            <Thickness x:Key="AppScrollViewerScrollBarMargin">1</Thickness> <!-- use 0 when switching to Version1 -->
+
             <Style x:Key="StandardGroupHeader" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="22"/>
                 <Setter Property="Margin" Value="0,0,0,8"/>

@@ -34,6 +34,11 @@ namespace MUXControlsTestApp
                 Frame.NavigateWithoutAnimation(typeof(BasicDemo));
             };
 
+            uniformGridLayoutDemo.Click += delegate 
+            {
+                Frame.NavigateWithoutAnimation(typeof(UniformGridLayoutDemo));
+            };
+
             itemsSourceDemo.Click += delegate 
             {
                 Frame.NavigateWithoutAnimation(typeof(ElementsInItemsSourcePage));
@@ -224,6 +229,7 @@ namespace MUXControlsTestApp
                         Orientation = orientation.IsOn ? Orientation.Horizontal : Orientation.Vertical,
                     });
             };
+
         }
 
         private VirtualizingLayout GetStackLayout()

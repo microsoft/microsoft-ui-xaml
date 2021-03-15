@@ -334,6 +334,10 @@ private:
     com_ptr<NavigationViewItemsFactory> m_navigationViewMenuItemsFactory{ nullptr };
     com_ptr<NavigationViewItemsFactory> m_navigationViewFooterItemsFactory{ nullptr };
 
+    void SetDropShadow();
+    void UnsetDropShadow();
+    void ShadowCasterEaseOutStoryboard_Completed(const winrt::Grid& shadowCaster);
+
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };
     tracker_ref<winrt::SplitView> m_rootSplitView{ this };
@@ -357,6 +361,10 @@ private:
     tracker_ref<winrt::ItemsRepeater> m_topNavRepeaterOverflowView{ this };
     tracker_ref<winrt::Grid> m_topNavGrid{ this };
     tracker_ref<winrt::Border> m_topNavContentOverlayAreaGrid{ this };
+    tracker_ref<winrt::Grid> m_shadowCaster{ this };
+    tracker_ref<winrt::Storyboard> m_shadowCasterEaseInStoryboard{ this };
+    tracker_ref<winrt::Storyboard> m_shadowCasterSmallPaneEaseInStoryboard{ this };
+    tracker_ref<winrt::Storyboard> m_shadowCasterEaseOutStoryboard{ this };
 
     // Indicator animations
     tracker_ref<winrt::UIElement> m_prevIndicator{ this };
@@ -440,6 +448,8 @@ private:
     winrt::ItemsSourceView::CollectionChanged_revoker m_topNavOverflowItemsCollectionChangedRevoker{};
 
     winrt::FlyoutBase::Closing_revoker m_flyoutClosingRevoker{};
+
+    winrt::Storyboard::Completed_revoker m_shadowCasterEaseOutStoryboardRevoker{};
 
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };

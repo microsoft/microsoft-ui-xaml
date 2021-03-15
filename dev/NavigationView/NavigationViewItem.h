@@ -93,6 +93,7 @@ private:
     void UpdateVisualStateForToolTip();
     void UpdateVisualStateForPointer();
     void UpdateVisualStateForChevron();
+    void UpdateVisualStateForClosedCompact();
 
     void UpdateVisualState(bool useTransitions);
     bool ShouldShowIcon();
