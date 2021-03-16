@@ -220,14 +220,15 @@
                                     VerticalAlignment="Top"
                                     MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SmallerPaneToggleButtonWidth}">
                                     <TextBlock
-                                        x:Name="PaneTitleTextBlock" 
+                                        x:Name="PaneTitleTextBlock"
                                         Grid.Column="0"
                                         Text="{TemplateBinding PaneTitle}"
                                         HorizontalAlignment="Left"
                                         VerticalAlignment="Center"
                                         Style="{StaticResource NavigationViewItemHeaderTextStyle}"/>
-                                </Button>
-                                <Grid
+                                    </Button>
+
+                                    <Grid
                                     x:Name="PaneTitleHolder"
                                     Visibility="Collapsed">
                                     <ContentControl
@@ -494,7 +495,7 @@
                                                 x:Name="PaneAutoSuggestButton"
                                                 Visibility="Collapsed"
                                                 Style="{ThemeResource NavigationViewPaneSearchButtonStyle}"
-                                                Width="{TemplateBinding CompactPaneLength}"/>
+                                                Width="{TemplateBinding CompactPaneLength}" />
                                         </Grid>
 
                                         <ContentControl
