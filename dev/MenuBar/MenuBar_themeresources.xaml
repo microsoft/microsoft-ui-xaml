@@ -22,6 +22,9 @@
             <StaticResource x:Key="MenuBarItemBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="MenuBarItemBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="MenuBarItemBorderBrushSelected" ResourceKey="ControlStrokeColorDefaultBrush" />
+
+            <StaticResource x:Key="MenuBarItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MenuBarItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -38,6 +41,9 @@
             <StaticResource x:Key="MenuBarItemBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="MenuBarItemBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="MenuBarItemBorderBrushSelected" ResourceKey="ControlStrokeColorDefaultBrush" />
+
+            <StaticResource x:Key="MenuBarItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MenuBarItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -54,6 +60,9 @@
             <StaticResource x:Key="MenuBarItemBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumBrush" />
             <StaticResource x:Key="MenuBarItemBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="MenuBarItemBorderBrushSelected" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
+
+            <StaticResource x:Key="MenuBarItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MenuBarItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
