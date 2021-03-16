@@ -398,7 +398,7 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
         result.Offset({ -31.8590012F, -9.23899841F });
         result.Scale({ 3.0F, 3.0F });
         result.FillBrush(ThemeColor_Foreground());
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_m20_to_345(), RootProgress());
+        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_m20_to_350(), RootProgress());
         return result;
     }
 
@@ -662,11 +662,11 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
     // - Transforms for Controls - 04 - Settings - 06 - PressedToPointerOver Scale(1,1,0)
     // ShapeGroup: Group 1
     // Rotation
-    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_m20_to_345()
+    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_m20_to_350()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, -20.0F, StepThenHoldEasingFunction());
         result.InsertKeyFrame(0.666666687F, -20.0F, HoldThenStepEasingFunction());
-        result.InsertKeyFrame(0.991666675F, 345.0F, CubicBezierEasingFunction_0());
+        result.InsertKeyFrame(0.991666675F, 350.0F, CubicBezierEasingFunction_0());
         return result;
     }
 

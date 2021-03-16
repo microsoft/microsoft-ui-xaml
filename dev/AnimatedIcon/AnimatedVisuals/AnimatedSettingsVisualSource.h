@@ -48,7 +48,7 @@
 // | Foreground     | Foreground | Color |   #FF131718   |
 // -------------------------------------------------------
 class AnimatedSettingsVisualSource
-    : public  winrt::implementation::AnimatedSettingsVisualSourceT<AnimatedSettingsVisualSource>
+    : public winrt::implementation::AnimatedSettingsVisualSourceT<AnimatedSettingsVisualSource>
 {
     winrt::Windows::UI::Composition::CompositionPropertySet _themeProperties{ nullptr };
     winrt::Windows::UI::Color _themeForeground{ 0xFF, 0x13, 0x17, 0x18 };
