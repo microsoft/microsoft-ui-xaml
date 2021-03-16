@@ -26,7 +26,8 @@
                 <ControlTemplate TargetType="local:BreadcrumbBarItem">
                     <Grid x:Name="PART_LayoutRoot"
                           Margin="{StaticResource BreadcrumbBarItemDefaultMargin}"
-                          Padding="{StaticResource BreadcrumbBarItemDefaultPadding}">
+                          Padding="{StaticResource BreadcrumbBarItemDefaultPadding}"
+                          contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ItemTypeStates">
