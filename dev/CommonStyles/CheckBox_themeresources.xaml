@@ -396,7 +396,8 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CombinedStates">
@@ -815,7 +816,9 @@
                                 Height="{StaticResource CheckBoxSize}"
                                 Width="{StaticResource CheckBoxSize}"
                                 contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"/>
+                                contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"/>
                             <contract7NotPresent:FontIcon
                                 x:Name="DownLevelCheckGlyph"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
