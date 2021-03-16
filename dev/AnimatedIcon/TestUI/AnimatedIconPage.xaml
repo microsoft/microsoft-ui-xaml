@@ -130,6 +130,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        
         <local:DoubleToStringConverter x:Key="DoubleToStringConverter"/>
         
     </Page.Resources>
@@ -325,8 +326,8 @@
                     
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_Cut" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
-                                <local:ToggleAnimatedIconHost.IconSource>
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_Cut" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
+                                <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
                                             <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
@@ -335,13 +336,13 @@
                                             <controls:FontIconSource Glyph="&#xE700;"/>
                                         </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
-                                </local:ToggleAnimatedIconHost.IconSource>
-                            </local:ToggleAnimatedIconHost>
+                                </local:AnimatedIconHost.IconSource>
+                            </local:AnimatedIconHost>
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_Queue" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
-                                <local:ToggleAnimatedIconHost.IconSource>
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_Queue" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
+                                <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
                                             <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
@@ -350,13 +351,13 @@
                                             <controls:FontIconSource Glyph="&#xE700;"/>
                                         </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
-                                </local:ToggleAnimatedIconHost.IconSource>
-                            </local:ToggleAnimatedIconHost>
+                                </local:AnimatedIconHost.IconSource>
+                            </local:AnimatedIconHost>
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_SpeedUpQueue" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
-                                <local:ToggleAnimatedIconHost.IconSource>
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_SpeedUpQueue" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
+                                <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
                                             <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
@@ -365,8 +366,8 @@
                                             <controls:FontIconSource Glyph="&#xE700;"/>
                                         </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
-                                </local:ToggleAnimatedIconHost.IconSource>
-                            </local:ToggleAnimatedIconHost>
+                                </local:AnimatedIconHost.IconSource>
+                            </local:AnimatedIconHost>
                             <TextBlock Text="Speed Up Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </StackPanel>

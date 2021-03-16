@@ -1,6 +1,6 @@
 [Windows.UI.Xaml.Controls.CalendarView]
     FocusBorderBrush=#E4000000
-    SelectedPressedBorderBrush=#03000000
+    SelectedPressedBorderBrush=#06000000
     CalendarItemBorderThickness=2,2,2,2
     CalendarItemBorderBrush=Microsoft.UI.Xaml.Media.RevealBorderBrush
     HoverBorderBrush=#0F000000
@@ -138,7 +138,7 @@
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualPrimaryBrush=#FF000000
                 Visibility=Visible
-                RenderSize=20,20
+                RenderSize=8,8
         [Windows.UI.Xaml.Controls.Button]
             Padding=1,1,1,1
             Foreground=#E4000000
@@ -177,7 +177,7 @@
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualPrimaryBrush=#FF000000
                 Visibility=Visible
-                RenderSize=20,20
+                RenderSize=8,8
       [Windows.UI.Xaml.Controls.Grid]
           Padding=0,0,0,0
           CornerRadius=0,0,0,0
