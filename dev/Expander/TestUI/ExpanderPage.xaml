@@ -76,7 +76,7 @@
 
             <controls:Expander AutomationProperties.Name="ExpanderStretched" ExpandDirection="Down" IsExpanded="True" Margin="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right">
                 <controls:Expander.Header>
-                    <TextBlock HorizontalAlignment="Right" Margin="0,0,0,1">This expander stretches along with its content</TextBlock>
+                    <TextBlock HorizontalAlignment="Right">This expander stretches along with its content</TextBlock>
                 </controls:Expander.Header>
                 <StackPanel HorizontalAlignment="Right">
                     <TextBlock>Header and Content is right aligned</TextBlock>
@@ -85,7 +85,7 @@
 
             <controls:Expander AutomationProperties.Name="ExpanderSetHeight" ExpandDirection="Down" IsExpanded="False" Margin="12" Height="150" MaxWidth="{ThemeResource FlyoutThemeMaxWidth}">
                 <controls:Expander.Header>
-                    <TextBlock Margin="0,0,0,1">This expander sets a fixed height</TextBlock>
+                    <TextBlock>This expander sets a fixed height</TextBlock>
                 </controls:Expander.Header>
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                     <TextBlock TextWrapping="Wrap">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id lacinia tellus. Integer eu mollis leo, ornare ultricies neque. Sed diam lectus, varius sed justo vel, malesuada condimentum lorem. Proin porttitor quis enim a facilisis. Suspendisse vehicula imperdiet egestas. Suspendisse imperdiet, ipsum in commodo cursus, mi nisl volutpat nulla, in interdum mi nulla a nulla. Cras feugiat odio ac eros ullamcorper suscipit. Praesent ultricies ligula eget efficitur tristique. Donec imperdiet ultrices dolor sollicitudin bibendum. In hac habitasse platea dictumst. Fusce vel lacinia purus. Sed tempor est sed suscipit luctus. Aenean laoreet tellus vitae efficitur scelerisque. Sed suscipit risus ac nisl rhoncus hendrerit.</TextBlock>
