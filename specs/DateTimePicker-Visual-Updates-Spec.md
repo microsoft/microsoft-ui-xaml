@@ -54,7 +54,7 @@ If the `ReplacementColor` property is set, the `SourceElement` is treated as a m
 every non-transparent pixel will be replaced by this color.
 
 
-The image below shows another use of the `ColorFilterOverlayControl` API, where it manipulates the colors of an element on screen where the contents of that element are moving. Here, the control is overlaid on a ScrollViewer that has a fixed position but moving content. 
+The image below shows another use of the `ElementBackgroundGrid` API, where it manipulates the colors of an element on screen where the contents of that element are moving. Here, the control is overlaid on a ScrollViewer that has a fixed position but moving content. 
 
 ### ElementBackgroundGrid examples
 
@@ -93,14 +93,14 @@ across the center of the scrolling text.
 
 ![Example showing the ColorFilterOverlay control overlaid on moving content within a ScrollViewer, changing the foreground color and background color of words that pass through.](images/api-example.gif)
 
-The example below shows how the new `ColorFilterOverlayControl` API can be used to partially highlight a TextBlock.
+The example below shows how the new `ElementBackgroundGrid` API can be used to partially highlight a TextBlock.
 
 ```xml
  <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel x:Name="Panel" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Grid Margin="2,10,0,0">
                 <TextBlock x:Name="Target" Text="This string will be partially highlighted"/>
-                <ColorFilterOverlayControl
+                <ElementBackgroundGrid
                     ReplacementColor="Black"
                     TargetElement="{Binding ElementName=Target}"
                     Width="50"
@@ -146,14 +146,14 @@ namespace Microsoft.UI.Xaml.Controls
 
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
-unsealed runtimeclass ColorFilterOverlayControl : Windows.UI.Xaml.Controls.Grid
+unsealed runtimeclass ElementBackgroundGrid : Windows.UI.Xaml.Controls.Grid
 {
-    ColorFilterOverlayControl();
+    ElementBackgroundGrid();
 
-    Windows.UI.Xaml.UIElement TargetElement { get; set; };
+    Windows.UI.Xaml.UIElement SourceElement { get; set; };
     Windows.UI.Color ReplacementColor { get; set; };
 
-    static Windows.UI.Xaml.DependencyProperty TargetElementProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SourceElementProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ReplacementColorProperty{ get; };
 }
 
