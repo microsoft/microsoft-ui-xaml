@@ -110,12 +110,12 @@ property. Items with the same GroupName will be a part of the same selection mod
         <MenuFlyout>
             <MenuFlyoutItem>Open</MenuFlyoutItem>
             <MenuFlyoutSeparator/>
-            <RadioMenuFlyoutItem>Landscape</RadioMenuFlyoutItem>
-            <RadioMenuFlyoutItem IsChecked="True">Portrait</RadioMenuFlyoutItem>
+            <RadioMenuFlyoutItem GroupName="Orientation">Landscape</RadioMenuFlyoutItem>
+            <RadioMenuFlyoutItem GroupName="Orientation" IsChecked="True">Portrait</RadioMenuFlyoutItem>
             <MenuFlyoutSeparator/>
-            <RadioMenuFlyoutItem>Small icons</RadioMenuFlyoutItem>
-            <RadioMenuFlyoutItem IsChecked="True">Medium icons</RadioMenuFlyoutItem>
-            <RadioMenuFlyoutItem>Large icons</RadioMenuFlyoutItem>
+            <RadioMenuFlyoutItem GroupName="IconSize">Small icons</RadioMenuFlyoutItem>
+            <RadioMenuFlyoutItem GroupName="IconSize" IsChecked="True">Medium icons</RadioMenuFlyoutItem>
+            <RadioMenuFlyoutItem GroupName="IconSize">Large icons</RadioMenuFlyoutItem>
         </MenuFlyout>
     </AppBarButton.Flyout>
 </AppBarButton>
@@ -345,5 +345,4 @@ unsealed runtimeclass RadioMenuFlyoutSubItem : Microsoft.UI.Xaml.Controls.MenuFl
     static Windows.UI.Xaml.DependencyProperty Text { get; }
 }
 ```
-
 
