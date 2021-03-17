@@ -17,6 +17,7 @@
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}"/>
         <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderBrush}"/>
+        <Setter Property="Padding" Value="{ThemeResource TextControlThemePadding}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NumberBox">
