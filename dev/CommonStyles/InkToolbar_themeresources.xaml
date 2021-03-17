@@ -214,7 +214,7 @@
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="Padding" Value="2,2,2,2" />
-        <Setter Property="Margin" Value="2,2,2,2" />
+        <Setter Property="Margin" Value="2,4,2,4" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
     </Style>
 
@@ -227,7 +227,7 @@
         <Setter Property="TextAlignment" Value="Center" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Bottom" />
-        <Setter Property="Margin" Value="0,0,0,5" />
+        <Setter Property="Margin" Value="0,0,0,0" />
         <Setter Property="Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
         <Setter Property="Opacity" Value="0" />
         <Setter Property="Text" Value="&#xE228;" />
@@ -313,7 +313,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -326,7 +327,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -339,7 +341,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -352,7 +355,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -559,7 +563,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -572,7 +577,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -585,7 +591,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -598,7 +605,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -804,7 +812,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -817,7 +826,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -830,7 +840,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -843,7 +854,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -1044,7 +1056,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -1057,7 +1070,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -1070,7 +1084,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -1083,7 +1098,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -1477,7 +1493,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -1490,7 +1507,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -1503,7 +1521,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -1516,7 +1535,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -1867,7 +1887,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -1880,7 +1901,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -1893,7 +1915,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -1906,7 +1929,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -2195,7 +2219,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -2208,7 +2233,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -2221,7 +2247,8 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -2237,7 +2264,8 @@
                                         <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPointerOver}" />
                                         <Setter Target="CheckedContent.Foreground" Value="{ThemeResource InkToolbarButtonHoverForegroundThemeBrush}" />
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="IndeterminatePointerOver">
@@ -2247,7 +2275,8 @@
                                         <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPointerOver}" />
                                         <Setter Target="CheckedContent.Foreground" Value="{ThemeResource InkToolbarButtonHoverForegroundThemeBrush}" />
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorThemeBrush}" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -2261,10 +2290,11 @@
                             <VisualStateGroup x:Name="GlyphVisualStates">
                                 <VisualState x:Name="ShowExtensionGlyph">
                                     <VisualState.Setters>
-                                        <Setter Target="ExtensionGlyph.Opacity" Value="0" />
+                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="HideExtensionGlyph" />
+                                <!--Without commenting this one, glyph is getting invisible when pressing the button-->
+                                <!--<VisualState x:Name="HideExtensionGlyph" />-->
 
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="FlowDirectionStates">
