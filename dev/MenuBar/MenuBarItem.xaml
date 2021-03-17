@@ -8,8 +8,8 @@
         <Setter Property="Background" Value="{ThemeResource MenuBarItemBackground}"/>
         <Setter Property="BorderThickness" Value="{ThemeResource MenuBarItemBorderThickness}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource MenuBarItemBorderBrush}"/>
-        <Setter Property="Margin" Value="5,5"/>
-        <Setter Property="contract7Present:CornerRadius" Value="3"/>
+        <Setter Property="Margin" Value="{StaticResource MenuBarItemMargin}"/>
+        <Setter Property="contract7Present:CornerRadius" Value="{StaticResource MenuBarItemCornerRadius}"/>
         <Setter Property="Title" Value="Item"/>
         <Setter Property="IsTabStop" Value="True"/>
         <Setter Property="ExitDisplayModeOnAccessKeyInvoked" Value="False"/>
@@ -71,40 +71,38 @@
 
                         <Button x:Name ="ContentButton"
                             Content="{TemplateBinding Title}"
+                            Style="{StaticResource MenuBarItemButtonStyle}"
                             IsTabStop="False">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <ContentPresenter x:Name="ButtonCP"
-                                                    Background="Transparent"
-                                                    BorderThickness="0"
-                                                    Content="{TemplateBinding Content}"
-                                                    Foreground="{ThemeResource MenuBarItemForeground}"
-                                                    Padding="11,5,11,5"
-                                                    VerticalAlignment="Stretch"
-                                                    AutomationProperties.AccessibilityView="Raw">
-                                                    <VisualStateManager.VisualStateGroups>
-                                                        <VisualStateGroup x:Name="CommonStates">
-                                                            <VisualState x:Name="Normal"/>
-                                                            <VisualState x:Name="Disabled">
-                                                                <VisualState.Setters>
-                                                                    <Setter Target="ButtonCP.Foreground" Value="{ThemeResource MenuBarItemForegroundDisabled}"/>
-                                                                </VisualState.Setters>
-                                                            </VisualState>
-                                                        </VisualStateGroup>
-                                                    </VisualStateManager.VisualStateGroups>
-                                                </ContentPresenter>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </Button.Style>
                         </Button>
-                        
                     </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
+    <Style TargetType="Button" x:Key="MenuBarItemButtonStyle">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ContentPresenter x:Name="ButtonCP"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Content="{TemplateBinding Content}"
+                                    Foreground="{ThemeResource MenuBarItemForeground}"
+                                    Padding="{StaticResource MenuBarItemButtonPadding}"
+                                    VerticalAlignment="Stretch"
+                                    AutomationProperties.AccessibilityView="Raw">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="ButtonCP.Foreground" Value="{ThemeResource MenuBarItemForegroundDisabled}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </ContentPresenter>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
