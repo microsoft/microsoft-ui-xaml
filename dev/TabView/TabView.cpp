@@ -77,8 +77,8 @@ TabView::~TabView()
     UnhookEventsAndClearFields();
     if (const auto footer = TabStripFooter().try_as<winrt::FrameworkElement>())
     {
-        footer.UnregisterPropertyChangedCallback(winrt::FrameworkElement::MinWidthProperty(), m_footerMinWidthProperyChangedToken);
-        footer.UnregisterPropertyChangedCallback(winrt::FrameworkElement::WidthProperty(), m_footerWidthProperyChangedToken);
+        m_footerMinWidthProperyChangedRevoker.revoke();
+        m_footerWidthProperyChangedRevoker.revoke();
     }
 }
 
@@ -354,13 +354,13 @@ void TabView::OnTabStripFooterPropertyChanged(const winrt::DependencyPropertyCha
 {
     if (const auto oldFooter = args.OldValue().try_as<winrt::FrameworkElement>())
     {
-        oldFooter.UnregisterPropertyChangedCallback(winrt::FrameworkElement::MinWidthProperty(), m_footerMinWidthProperyChangedToken);
-        oldFooter.UnregisterPropertyChangedCallback(winrt::FrameworkElement::WidthProperty(), m_footerWidthProperyChangedToken);
+        m_footerMinWidthProperyChangedRevoker.revoke();
+        m_footerWidthProperyChangedRevoker.revoke();
     }
     if (const auto newFooter = args.NewValue().try_as<winrt::FrameworkElement>())
     {
-        m_footerMinWidthProperyChangedToken = newFooter.RegisterPropertyChangedCallback(winrt::FrameworkElement::MinWidthProperty(), { this,&TabView::OnFooterSizeChanged });
-        m_footerWidthProperyChangedToken = newFooter.RegisterPropertyChangedCallback(winrt::FrameworkElement::WidthProperty(), { this,&TabView::OnFooterSizeChanged });
+        m_footerMinWidthProperyChangedRevoker = RegisterPropertyChanged(newFooter,winrt::FrameworkElement::MinWidthProperty(), { this,&TabView::OnFooterSizeChanged });
+        m_footerWidthProperyChangedRevoker = RegisterPropertyChanged(newFooter,winrt::FrameworkElement::WidthProperty(), { this,&TabView::OnFooterSizeChanged });
     }
 }
 

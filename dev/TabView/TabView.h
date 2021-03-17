@@ -201,8 +201,8 @@ private:
 
     tracker_ref<winrt::Grid> m_shadowReceiver{ this };
 
-    int64_t m_footerMinWidthProperyChangedToken{};
-    int64_t m_footerWidthProperyChangedToken{};
+    PropertyChanged_revoker m_footerMinWidthProperyChangedRevoker{};
+    PropertyChanged_revoker m_footerWidthProperyChangedRevoker{};
 
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::ListView::PointerExited_revoker m_tabStripPointerExitedRevoker{};
