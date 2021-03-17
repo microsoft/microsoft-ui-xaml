@@ -163,13 +163,14 @@
 
     <Style x:Key="DefaultDatePickerStyle" TargetType="DatePicker">
         <Setter Property="Orientation" Value="Horizontal" />
-        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="FocusVisualMargin" Value="0" />
+        <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="Foreground" Value="{ThemeResource DatePickerButtonForeground}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
-        <contract6Present:Setter Property="UseSystemFocusVisuals" Value="{ThemeResource IsApplicationFocusVisualKindReveal}" />
+        <contract6Present:Setter Property="UseSystemFocusVisuals" Value="{ThemeResource UseSystemFocusVisuals}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
 
         <Setter Property="Template">
@@ -199,10 +200,10 @@
 
                                                         <VisualState x:Name="PointerOver">
                                                             <Storyboard>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="Background">
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBackgroundPointerOver}" />
                                                                 </ObjectAnimationUsingKeyFrames>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonForegroundPointerOver}" />
                                                                 </ObjectAnimationUsingKeyFrames>
                                                             </Storyboard>
@@ -210,10 +211,10 @@
 
                                                         <VisualState x:Name="Pressed">
                                                             <Storyboard>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="Background">
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBackgroundPressed}" />
                                                                 </ObjectAnimationUsingKeyFrames>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonForegroundPressed}" />
                                                                 </ObjectAnimationUsingKeyFrames>
                                                             </Storyboard>
@@ -221,10 +222,10 @@
 
                                                         <VisualState x:Name="Disabled">
                                                             <Storyboard>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="Background">
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBackgroundDisabled}" />
                                                                 </ObjectAnimationUsingKeyFrames>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonForegroundDisabled}" />
                                                                 </ObjectAnimationUsingKeyFrames>
                                                             </Storyboard>
@@ -233,15 +234,6 @@
                                                     <VisualStateGroup x:Name="FocusStates">
                                                         <VisualState x:Name="Focused">
                                                             <Storyboard>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
-                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBackgroundFocused}" />
-                                                                </ObjectAnimationUsingKeyFrames>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonForegroundFocused}" />
-                                                                </ObjectAnimationUsingKeyFrames>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="WrappingContentPresenter" Storyboard.TargetProperty="BorderThickness">
-                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="0" />
-                                                                </ObjectAnimationUsingKeyFrames>
                                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="BorderBrush">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerSpacerFillFocused}" />
                                                                 </ObjectAnimationUsingKeyFrames>
@@ -261,22 +253,17 @@
                                                 avoids overriding the ContentPresenter foreground color when the control is in HasNoDate state or
                                                 the button transitions to a pointer over/pressed event.
                                                 -->
-                                                <ContentPresenter x:Name="WrappingContentPresenter"
-                                                        Foreground="{TemplateBinding Foreground}"
-                                                        BorderBrush="{ThemeResource DatePickerButtonBorderBrush}"
-                                                        BorderThickness="{ThemeResource DatePickerBorderThemeThickness}"
-                                                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
-                                                    <ContentPresenter x:Name="ContentPresenter"
-                                                        Background="Transparent"
-                                                        BorderThickness="0"
-                                                        Content="{TemplateBinding Content}"
-                                                        HorizontalContentAlignment="Stretch"
-                                                        VerticalContentAlignment="Stretch"
-                                                        AutomationProperties.AccessibilityView="Raw"
-                                                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"/>
-                                                </ContentPresenter>
+                                                <ContentPresenter x:Name="ContentPresenter"
+                                                    Foreground="{TemplateBinding Foreground}"
+                                                    Background="Transparent"
+                                                    BorderBrush="{ThemeResource DatePickerButtonBorderBrush}"
+                                                    BorderThickness="{ThemeResource DatePickerBorderThemeThickness}"
+                                                    Content="{TemplateBinding Content}"
+                                                    HorizontalContentAlignment="Stretch"
+                                                    VerticalContentAlignment="Stretch"
+                                                    AutomationProperties.AccessibilityView="Raw"
+                                                    contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                                    contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"/>
                                             </Grid>
                                         </ControlTemplate>
                                     </Setter.Value>
