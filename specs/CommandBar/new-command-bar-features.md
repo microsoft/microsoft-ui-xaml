@@ -150,7 +150,7 @@ WinUI will provide built in styles for SplitButton that will allow them to confo
 These styles will change properties such as the `SplitButton`'s height/width, font size, color, interactions (color changes), and more. 
 
 There will be two styles provided: `CommandBarSplitButtonStyle` and `CommandBarFlyoutSplitButtonStyle`. 
-These styles can be accessed as ThemeResources in any WinUI app. 
+These styles will automatically be applied to any SplitButton object that's placed in a CommandBar or CommandBarFlyout - the only thing other thing that's required is to put the SplitButton element into an AppBarElementContainer, which has always been required to place a SplitButton inside of a CommandBar or CommandBarFlyout. These styles can also be accessed as ThemeResources in any WinUI app. 
 
 Note: if a SplitButton item inside of a CommandBar enters the CommandBar's overflow menu, it will pick up the `CommandBarFlyoutSplitButtonStyle`.
 
@@ -162,8 +162,7 @@ For example:
 
     <CommandBarFlyout.SecondaryCommands>
         <AppBarElementContainer>
-            <SplitButton ToolTipService.ToolTip="Insert"
-                         Style="{ThemeResource SplitButtonCommandBarFlyoutStyle}">
+            <SplitButton ToolTipService.ToolTip="Insert">
                 <SplitButton.Content>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock>Insert</TextBlock>
@@ -189,10 +188,9 @@ For example:
 `RadioMenuFlyoutSubItem` is a new class that represents a "parent" `RadioMenuFlyout` item. 
 It is very similar to the [MenuFlyoutSubItem](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.menuflyoutsubitem?view=winrt-19041) class.
 
-All child items of a `RadioMenuFlyoutSubItem` should be of type 
-[RadioMenuFlyoutItem](https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.radiomenuflyoutitem?view=winui-2.5) 
-(although this is not enforced by the API). If a child item is selected, the parent item will show as selected. 
-All child items should have the same GroupName as siblings of the parents. 
+Generally, child items of a `RadioMenuFlyoutSubItem` should be of type 
+[RadioMenuFlyoutItem](https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.radiomenuflyoutitem?view=winui-2.5). If a child item is selected, the parent item will show as selected. 
+All child items should have the same GroupName as at least one sibling of the parent. 
 
 The parent (`RadioMenuFlyoutSubItem`) cannot be selected. Thus it does not have `GroupName` or `IsChecked` properties.
 It can only achieve selection (and show the selection indicator) if it is bubbled up from one of its child items.
@@ -254,12 +252,17 @@ This will be a new API added to `CommandBarFlyout` that will give the developer 
 
 When the AlwaysExpanded property is set to true, the [...] button will not appear, 
 and the user will not be able to collapse the `CommandBarFlyout`. 
-Once the [...] button is collapsed, other `AppBarButtons`/`CommandBarFlyout` items should be able to take its space. 
+If the [...] button is not visible, then other `AppBarButtons`/`CommandBarFlyout` items are able to take its space. 
+
+![CommandBarFlyout with the AlwaysExpanded property](images/always-expanded.png)
+
 
 This property will only have an effect if the `CommandBarFlyout` has secondary commands. 
 If there are no secondary commands, the `CommandBarFlyout` will always be in collapsed mode (hence why there’s no `AlwaysCollapsed` property). 
 
-`CommandBarFlyout` can still be collapsed/expanded by the developer programmatically even when this property is set to true. When an item in the primary commands list is invoked, the CommandBarFlyout should stay open and expanded. If an item in the secondary commands list is invoked, the CommandBarFlyout should close completely. 
+`CommandBarFlyout` can still be collapsed/expanded by the developer programmatically even when this property is set to true.
+
+When an item in the primary commands list is invoked, the CommandBarFlyout should stay open and not change its collapsed/expanded state. If an item in the secondary commands list is invoked, the CommandBarFlyout should close completely. 
 
 For example:
 
@@ -340,8 +343,8 @@ unsealed runtimeclass RadioMenuFlyoutSubItem : Microsoft.UI.Xaml.Controls.MenuFl
     IconElement Icon { get; set; }
     string Text { get; set; }
 
-    static Windows.UI.Xaml.DependencyProperty Items { get; }
-    static Windows.UI.Xaml.DependencyProperty Icon { get; }
-    static Windows.UI.Xaml.DependencyProperty Text { get; }
+    static Windows.UI.Xaml.DependencyProperty ItemsProperty { get; }
+    static Windows.UI.Xaml.DependencyProperty IconProperty { get; }
+    static Windows.UI.Xaml.DependencyProperty TextProperty { get; }
 }
 ```
