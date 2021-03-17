@@ -657,12 +657,22 @@
                             </StackPanel>
                         </Button>
                         <StackPanel Background="Maroon">
-                            <controls:AnimatedIcon Height="100" Width="100" Foreground="Pink">
+                            <controls:AnimatedIcon Height="100" Width="100" Foreground="Black">
                                 <controls:AnimatedIcon.FallbackIconSource>
-                                    <controls:SymbolIconSource Symbol="AddFriend" Foreground="Purple"/>
+                                    <controls:SymbolIconSource Symbol="AddFriend" Foreground="Cyan"/>
                                 </controls:AnimatedIcon.FallbackIconSource>
                             </controls:AnimatedIcon>
                         </StackPanel>
+                        <local:AnimatedIconHost x:Name="BindingToFallback" Foreground="{StaticResource TestIconForeground}" Title="AnimatedFindVisualSource" Background="DarkSlateGray" FallbackGlyph="&#xE001;">
+                            <local:AnimatedIconHost.IconSource>
+                                <controls:AnimatedIconSource>
+                                    <controls:AnimatedIconSource.FallbackIconSource>
+                                        <controls:FontIconSource Glyph="{Binding ElementName=BindingToFallback, Path=FallbackGlyph}"/>
+                                    </controls:AnimatedIconSource.FallbackIconSource>
+                                </controls:AnimatedIconSource>
+                            </local:AnimatedIconHost.IconSource>
+                        </local:AnimatedIconHost>
+                        <FontIcon Glyph="{Binding ElementName=BindingToFallback, Path=FallbackGlyph}"/>
                     </StackPanel>
                 </StackPanel>
             </ScrollViewer>

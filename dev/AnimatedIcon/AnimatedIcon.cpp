@@ -8,6 +8,7 @@
 #include "ResourceAccessor.h"
 #include <AnimatedIconTestHooks.h>
 #include "Utils.h"
+#include "C:/Program Files (x86)/Windows Kits/10/References/10.0.18362.0/Windows.Foundation.UniversalApiContract/8.0.0.0/Windows.Foundation.UniversalApiContract.winmd"
 
 static constexpr wstring_view s_progressPropertyName{ L"Progress"sv };
 static constexpr wstring_view s_foregroundPropertyName{ L"Foreground"sv };
@@ -481,6 +482,8 @@ void AnimatedIcon::SetRootPanelChildToFallbackIcon()
     if (auto const iconSource = FallbackIconSource())
     {
         auto const iconElement = iconSource.CreateIconElement();
+        auto const iconElementAsINPC = iconElement.as<INotifyPropertyChanged>();
+        //iconElementAsINPC.PropertyChanged(winrt::auto_revoke, { this, [this](auto&&, auto&&) { } });
         if (auto const rootPanel = m_rootPanel.get())
         {
             // Remove the second child, if it exists, as this is the previous
