@@ -28,7 +28,7 @@ When using the `CommandBar`or `CommandBarFlyout` controls today, the only suppor
 [AppBarToggleButton](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.appbartogglebutton?view=winrt-19041), 
 and [AppBarSeparator](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.appbarseparator?view=winrt-19041). 
 When you use an AppBarButton in a `CommandBar` or `CommandBarFlyout`, all of the interactions and styles needed to conform with
-the parent control are included - height, width, the background color when hovered/pressed, the font size, etc. 
+the parent control are provided automatically - height, width, the background color when hovered/pressed, the font size, etc. 
 
 ```c#
 <CommandBar>
@@ -345,4 +345,3 @@ unsealed runtimeclass RadioMenuFlyoutSubItem : Microsoft.UI.Xaml.Controls.MenuFl
     static Windows.UI.Xaml.DependencyProperty Text { get; }
 }
 ```
-
