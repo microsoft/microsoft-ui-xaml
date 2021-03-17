@@ -260,14 +260,14 @@ void MenuBarItem::OpenFlyoutFrom(FlyoutLocation location)
         CloseMenuFlyout();
         if (location == FlyoutLocation::Left)
         {
-            if (const auto item = GetNextItem(index, -1).try_as<MenuBarItem>())
+            if (const auto item = FocusAndReturnNextFocusableItem(index, -1).try_as<MenuBarItem>())
             {
                 item->ShowMenuFlyout();
             }
         }
         else
         {
-            if (const auto item = GetNextItem(index, +1).try_as<MenuBarItem>())
+            if (const auto item = FocusAndReturnNextFocusableItem(index, +1).try_as<MenuBarItem>())
             {
                 item->ShowMenuFlyout();
             }
@@ -275,7 +275,7 @@ void MenuBarItem::OpenFlyoutFrom(FlyoutLocation location)
     }
 }
 
-winrt::MenuBarItem MenuBarItem::GetNextItem(int index, int direction)
+winrt::MenuBarItem MenuBarItem::FocusAndReturnNextFocusableItem(int index, int direction)
 {
     if (const auto menuBar = m_menuBar.get())
     {
