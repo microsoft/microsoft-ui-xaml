@@ -77,6 +77,11 @@ jobs:
 
   - template: MUX-BuildProject-Steps.yml
     parameters:
+      solutionPath: test\MUXControlsReleaseTest\RuntimeComponentThatUsesMUX\RuntimeComponentThatUsesMUX.sln
+      artifactName: ${{ parameters.buildArtifactName }}
+
+  - template: MUX-BuildProject-Steps.yml
+    parameters:
       solutionPath: $(solutionPath)
       artifactName: ${{ parameters.buildArtifactName }}
 

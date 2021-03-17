@@ -15,6 +15,9 @@ public:
     void LeftPaneVisibility(winrt::Visibility const& value);
     winrt::Visibility LeftPaneVisibility();
 
+    void NegativeSplitViewWidthMinusCompactLength(double value);
+    double NegativeSplitViewWidthMinusCompactLength();
+
     void OverflowButtonVisibility(winrt::Visibility const& value);
     winrt::Visibility OverflowButtonVisibility();
 
@@ -38,6 +41,7 @@ public:
 
     static winrt::DependencyProperty BackButtonVisibilityProperty() { return s_BackButtonVisibilityProperty; }
     static winrt::DependencyProperty LeftPaneVisibilityProperty() { return s_LeftPaneVisibilityProperty; }
+    static winrt::DependencyProperty NegativeSplitViewWidthMinusCompactLengthProperty() { return s_NegativeSplitViewWidthMinusCompactLengthProperty; }
     static winrt::DependencyProperty OverflowButtonVisibilityProperty() { return s_OverflowButtonVisibilityProperty; }
     static winrt::DependencyProperty PaneToggleButtonVisibilityProperty() { return s_PaneToggleButtonVisibilityProperty; }
     static winrt::DependencyProperty PaneToggleButtonWidthProperty() { return s_PaneToggleButtonWidthProperty; }
@@ -48,6 +52,7 @@ public:
 
     static GlobalDependencyProperty s_BackButtonVisibilityProperty;
     static GlobalDependencyProperty s_LeftPaneVisibilityProperty;
+    static GlobalDependencyProperty s_NegativeSplitViewWidthMinusCompactLengthProperty;
     static GlobalDependencyProperty s_OverflowButtonVisibilityProperty;
     static GlobalDependencyProperty s_PaneToggleButtonVisibilityProperty;
     static GlobalDependencyProperty s_PaneToggleButtonWidthProperty;

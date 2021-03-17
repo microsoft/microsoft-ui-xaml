@@ -1,0 +1,53 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.SliderPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="1.25*"/>
+        </Grid.ColumnDefinitions>
+
+        <ScrollViewer  Grid.Column="0">
+            <StackPanel Orientation="Vertical" Margin="12" Grid.Column="0">
+                <TextBlock Text="Sample Horizontal Sliders" Style="{ThemeResource StandardGroupHeader}"/>
+                <StackPanel Orientation="Vertical">
+                    <Slider Margin="12,12,12,32" />
+                    <Slider Header="Slider with header" Margin="12" />
+                    <Slider Header="Slider with preset values" Value="25" Minimum="0" Maximum="50" Margin="12" />
+                    <Slider Header="Slider with TickPlacement Inline" Margin="12" TickPlacement="Inline" TickFrequency="12"/>
+                    <Slider Header="Slider with TickPlacement Outside" Margin="12" TickPlacement="Outside" TickFrequency="12"/>
+                    <Slider Header="Slider with TickPlacement TopLeft" Margin="12" TickPlacement="TopLeft" TickFrequency="12"/>
+                    <Slider Header="Slider with TickPlacement BottomRight" Margin="12" TickPlacement="BottomRight" TickFrequency="12"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <ScrollViewer  Grid.Column="1">
+            <StackPanel Orientation="Vertical" Margin="12">
+                <TextBlock Text="Sample Vertical Sliders" Style="{ThemeResource StandardGroupHeader}"/>
+                <StackPanel Orientation="Horizontal" Height="240">
+                    <Slider Orientation="Vertical" Margin="12,12,64,12"/>
+                    <Slider Header="Slider with header" Orientation="Vertical" Margin="12" />
+                    <Slider Header="Slider with preset values" Value="25" Minimum="0" Maximum="50" Orientation="Vertical" Margin="12" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Height="240" Margin="0,12,0,0">
+                    <Slider Header="Slider with TickPlacement Inline" Orientation="Vertical" Margin="12" TickPlacement="Inline" TickFrequency="12"/>
+                    <Slider Header="Slider with TickPlacement Outside" Orientation="Vertical" Margin="12" TickPlacement="Outside" TickFrequency="12"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Height="240" Margin="0,12,0,0">
+                    <Slider Header="Slider with TickPlacement TopLeft" Orientation="Vertical" Margin="12" TickPlacement="TopLeft" TickFrequency="12"/>
+                    <Slider Header="Slider with TickPlacement BottomRight" Orientation="Vertical" Margin="12" TickPlacement="BottomRight" TickFrequency="12"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid> 
+
+</local:TestPage>

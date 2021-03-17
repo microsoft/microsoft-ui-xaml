@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>RuntimeComponentThatUsesMUX</id>
+    <version>1.0.0</version>
+    <title>RuntimeComponentThatUsesMUX</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <description>This package tests the functionality of having a NuGet package reference Microsoft.UI.Xaml.</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <dependencies>
+      <group targetFramework="UAP10.0.15063">
+        <dependency id="Microsoft.NETCore.UniversalWindowsPlatform" version="6.2.8" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.UI.Xaml" version="2.5.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file target="build" src="RuntimeComponentThatUsesMUX.targets"/>
+    <file target="build\native\RuntimeComponentThatUsesMUX.targets" src="RuntimeComponentThatUsesMUX.native.targets"/>
+    
+    <file target="lib\uap10.0" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\RuntimeComponentThatUsesMUX\RuntimeComponentThatUsesMUX.winmd"/>
+    
+    <file target="runtimes\win10-$BUILDARCH$\native" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\RuntimeComponentThatUsesMUX\RuntimeComponentThatUsesMUX.dll"/>
+    <file target="runtimes\win10-$BUILDARCH$\native" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\RuntimeComponentThatUsesMUX\RuntimeComponentThatUsesMUX.pri"/>
+  </files>
+</package>

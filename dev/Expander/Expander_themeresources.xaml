@@ -89,6 +89,7 @@
     <x:String x:Key="ExpanderChevronUpGlyph">&#xE70E;</x:String>
     <x:String x:Key="ExpanderChevronDownGlyph">&#xE70D;</x:String>
     <x:Double x:Key="ExpanderChevronButtonSize">32</x:Double>
+    <x:Double x:Key="ExpanderChevronGlyphSize">12</x:Double>
     <x:Double x:Key="ExpanderMinHeight">48</x:Double>
     <Thickness x:Key="ExpanderContentPadding">16</Thickness>
     <Thickness x:Key="ExpanderHeaderPadding">16,0,0,0</Thickness>
@@ -338,7 +339,8 @@
                             BorderThickness="{ThemeResource ExpanderChevronBorderThickness}"
                             Background="{ThemeResource ExpanderChevronBackground}">
                             <local:AnimatedIcon
-                                Margin="7"
+                                Width="{StaticResource ExpanderChevronGlyphSize}"
+                                Height="{StaticResource ExpanderChevronGlyphSize}"
                                 x:Name="ExpandCollapseChevron"
                                 RenderTransformOrigin="0.5, 0.5"
                                 Foreground="{ThemeResource ExpanderChevronForeground}"
@@ -609,7 +611,8 @@
                             BorderThickness="{ThemeResource ExpanderChevronBorderThickness}"
                             Background="{ThemeResource ExpanderChevronBackground}">
                             <local:AnimatedIcon
-                                Margin="7"
+                                Width="{StaticResource ExpanderChevronGlyphSize}"
+                                Height="{StaticResource ExpanderChevronGlyphSize}"
                                 x:Name="ExpandCollapseChevron"
                                 RenderTransformOrigin="0.5, 0.5"
                                 Foreground="{ThemeResource ExpanderChevronForeground}"
