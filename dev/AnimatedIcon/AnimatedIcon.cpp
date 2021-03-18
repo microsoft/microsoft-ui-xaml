@@ -8,7 +8,6 @@
 #include "ResourceAccessor.h"
 #include <AnimatedIconTestHooks.h>
 #include "Utils.h"
-#include "C:/Program Files (x86)/Windows Kits/10/References/10.0.18362.0/Windows.Foundation.UniversalApiContract/8.0.0.0/Windows.Foundation.UniversalApiContract.winmd"
 
 static constexpr wstring_view s_progressPropertyName{ L"Progress"sv };
 static constexpr wstring_view s_foregroundPropertyName{ L"Foreground"sv };
@@ -28,7 +27,9 @@ AnimatedIcon::AnimatedIcon()
 void AnimatedIcon::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
-    OnSourcePropertyChanged(nullptr);
+    // Construct the visual from the Source property in on apply template so that it participates
+    // in the initial measure for the object.
+    ConstructAndInsertVisual();
     auto const panel = winrt::VisualTreeHelper::GetChild(*this, 0).as<winrt::Panel>();
     m_rootPanel.set(panel);
     m_currentState = GetState(*this);
@@ -47,7 +48,6 @@ void AnimatedIcon::OnApplyTemplate()
                 path.Visibility(winrt::Visibility::Collapsed);
             }
         }
-        OnFallbackIconSourcePropertyChanged(nullptr);
         if (auto const visual = m_animatedVisual.get())
         {
             winrt::ElementCompositionPreview::SetElementChildVisual(panel, visual.RootVisual());
@@ -73,6 +73,11 @@ void AnimatedIcon::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs c
             SetValue(property, parent.GetValue(property));
         }
     }
+
+    // Wait until loaded to apply the fallback icon source property because we need the icon source
+    // properties to be set before we create the icon element from it.  If those poperties are bound in,
+    // they will not have been set during OnApplyTemplate.
+    OnFallbackIconSourcePropertyChanged(nullptr);
 }
 
 winrt::Size AnimatedIcon::MeasureOverride(winrt::Size const& availableSize)
@@ -418,6 +423,14 @@ void AnimatedIcon::PlaySegment(float from, float to, float playbackMultiplier)
 
 void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
 {
+    if(!ConstructAndInsertVisual())
+    {
+        SetRootPanelChildToFallbackIcon();
+    }
+}
+
+bool AnimatedIcon::ConstructAndInsertVisual()
+{
     auto const visual = [this]()
     {
         if (auto const source = Source())
@@ -461,11 +474,13 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
         auto const progressAnimation = compositor.CreateExpressionAnimation(expression);
         progressAnimation.SetReferenceParameter(L"_", m_progressPropertySet);
         visual.Properties().StartAnimation(s_progressPropertyName, progressAnimation);
+
+        return true;
     }
     else
     {
         m_canDisplayPrimaryContent = false;
-        SetRootPanelChildToFallbackIcon();
+        return false;
     }
 }
 
@@ -482,8 +497,6 @@ void AnimatedIcon::SetRootPanelChildToFallbackIcon()
     if (auto const iconSource = FallbackIconSource())
     {
         auto const iconElement = iconSource.CreateIconElement();
-        auto const iconElementAsINPC = iconElement.as<INotifyPropertyChanged>();
-        //iconElementAsINPC.PropertyChanged(winrt::auto_revoke, { this, [this](auto&&, auto&&) { } });
         if (auto const rootPanel = m_rootPanel.get())
         {
             // Remove the second child, if it exists, as this is the previous

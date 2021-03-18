@@ -13,6 +13,4 @@ class IconSource :
 public:
     winrt::IconElement CreateIconElement();
     virtual winrt::IconElement CreateIconElementCore() = 0;
-
-    event_source<winrt::TypedEventHandler<winrt::BreadcrumbBar, winrt::BreadcrumbBarItemClickedEventArgs>> m_itemClickedEventSource;
 };

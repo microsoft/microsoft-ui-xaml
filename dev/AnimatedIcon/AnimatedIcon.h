@@ -44,6 +44,7 @@ public:
     winrt::hstring GetLastAnimationSegmentStart();
     winrt::hstring GetLastAnimationSegmentEnd();
 private:
+    bool ConstructAndInsertVisual();
     void TransitionAndUpdateStates(const winrt::hstring& fromState, const winrt::hstring& toState, float playbackMultiplier = 1.0f);
     void TransitionStates(const winrt::hstring& fromState, const winrt::hstring& toState, float playtbackMultiplier = 1.0f);
     void PlaySegment(float from, float to, float playbackMultiplier = 1.0f);
