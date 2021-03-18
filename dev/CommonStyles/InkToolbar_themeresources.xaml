@@ -50,7 +50,6 @@
             <StaticResource x:Key="InkToolbarFlyoutItemBorderHoverThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderSelectedThemeBrush" Color="#FFFFFF" />
             <StaticResource x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" ResourceKey="InkToolbarFlyoutItemBorderSelectedThemeBrush" />
-            <StaticResource x:Key="InkToolbarFlyoutL3PreviewPen" ResourceKey="SystemColorWindowTextColor" />
             <StaticResource x:Key="InkToolbarAccentColorThemeBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
@@ -101,7 +100,6 @@
             <StaticResource x:Key="InkToolbarFlyoutItemBorderHoverThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderSelectedThemeBrush" Color="#000000" />
             <StaticResource x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" ResourceKey="InkToolbarFlyoutItemBorderSelectedThemeBrush" />
-            <StaticResource x:Key="InkToolbarFlyoutL3PreviewPen" ResourceKey="SystemColorWindowTextColor" />
             <StaticResource x:Key="InkToolbarAccentColorThemeBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
@@ -122,7 +120,6 @@
             <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderHoverThemeBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderSelectedThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="InkToolbarFlyoutL3PreviewPen" Color="{ThemeResource SystemColorWindowTextColor}" />
             <StaticResource x:Key="InkToolbarFlyoutItemHoverSelectedBackgroundThemeBrush" ResourceKey="InkToolbarFlyoutItemHoverBackgroundThemeBrush" />
             <StaticResource x:Key="InkToolbarFlyoutItemSelectedBackgroundThemeBrush" ResourceKey="InkToolbarButtonSelectedBackgroundThemeBrush" />
             <StaticResource x:Key="InkToolbarFlyoutItemSelectedForegroundThemeBrush" ResourceKey="InkToolbarButtonHoverForegroundThemeBrush" />
