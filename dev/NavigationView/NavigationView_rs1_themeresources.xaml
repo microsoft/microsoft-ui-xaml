@@ -374,6 +374,7 @@
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
         <Setter Property="Content" Value="&#xE11A;" />
         <Setter Property="MinHeight" Value="36" />
+        <Setter Property="FocusVisualMargin" Value="0" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
