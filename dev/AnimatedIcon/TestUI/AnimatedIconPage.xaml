@@ -665,8 +665,7 @@
                                     <controls:AnimatedIconSource FallbackIconSource="{StaticResource MyFontIconSource}"/>
                                 </local:AnimatedIconHost.IconSource>
                             </local:AnimatedIconHost>
-                            <controls:AnimatedIcon FallbackIconSource="{StaticResource MyFontIconSource}">
-                            </controls:AnimatedIcon>
+                            <controls:AnimatedIcon FallbackIconSource="{StaticResource MyFontIconSource}"/>
                             <Button Content="Change FallbackGlyph" Click="ChangeFallbackGlyphButton_Click"/>
                         </StackPanel>
                     </StackPanel>

@@ -28,5 +28,5 @@ winrt::DependencyProperty ImageIconSource::GetIconElementPropertyCore(winrt::Dep
         return winrt::ImageIcon::SourceProperty();
     }
 
-    return nullptr;
+    return __super::GetIconElementPropertyCore(sourceProperty);
 }

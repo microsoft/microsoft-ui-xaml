@@ -36,5 +36,5 @@ winrt::DependencyProperty AnimatedIconSource::GetIconElementPropertyCore(winrt::
         return winrt::AnimatedIcon::FallbackIconSourceProperty();
     }
 
-    return nullptr;
+    return __super::GetIconElementPropertyCore(sourceProperty);
 }

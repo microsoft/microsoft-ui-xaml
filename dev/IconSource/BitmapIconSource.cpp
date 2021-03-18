@@ -36,5 +36,5 @@ winrt::DependencyProperty BitmapIconSource::GetIconElementPropertyCore(winrt::De
         return winrt::BitmapIcon::UriSourceProperty();
     }
 
-    return nullptr;
+    return __super::GetIconElementPropertyCore(sourceProperty);
 }

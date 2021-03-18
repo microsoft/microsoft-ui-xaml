@@ -62,5 +62,5 @@ winrt::DependencyProperty FontIconSource::GetIconElementPropertyCore(winrt::Depe
         return winrt::FontIcon::MirroredWhenRightToLeftProperty();
     }
 
-    return nullptr;
+    return __super::GetIconElementPropertyCore(sourceProperty);
 }

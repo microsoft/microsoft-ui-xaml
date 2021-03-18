@@ -13,7 +13,7 @@ class IconSource :
 public:
     winrt::IconElement CreateIconElement();
     virtual winrt::IconElement CreateIconElementCore() = 0;
-    virtual winrt::DependencyProperty GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty) = 0;
+    virtual winrt::DependencyProperty GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 protected:

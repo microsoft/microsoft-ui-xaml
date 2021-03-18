@@ -30,7 +30,17 @@ void IconSource::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
                     element.SetValue(iconProp, newValue);
                 }
                 return !element;
-            }));
+            }), m_createdIconElements.end());
         }
     }
+}
+
+winrt::DependencyProperty IconSource::GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty)
+{
+    if (sourceProperty == s_ForegroundProperty)
+    {
+        return winrt::IconElement::ForegroundProperty();
+    }
+
+    return nullptr;
 }
