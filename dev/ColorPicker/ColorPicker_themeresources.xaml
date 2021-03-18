@@ -12,6 +12,7 @@
             <StaticResource x:Key="ColorPickerSliderTrackFillDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
             <StaticResource x:Key="ColorPickerHeaderContentDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="ColorPickerBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <CornerRadius x:Key="ColorPickerSliderCornerRadius">6,6,6,6</CornerRadius>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="ColorPickerSliderThumbBackground" ResourceKey="TextFillColorPrimaryBrush" />
@@ -21,6 +22,7 @@
             <StaticResource x:Key="ColorPickerSliderTrackFillDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
             <StaticResource x:Key="ColorPickerHeaderContentDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="ColorPickerBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <CornerRadius x:Key="ColorPickerSliderCornerRadius">6,6,6,6</CornerRadius>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="ColorPickerSliderThumbBackground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -30,6 +32,7 @@
             <StaticResource x:Key="ColorPickerSliderTrackFillDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
             <StaticResource x:Key="ColorPickerHeaderContentDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="ColorPickerBorderBrush" ResourceKey="SystemControlForegroundListLowBrush" />
+            <CornerRadius x:Key="ColorPickerSliderCornerRadius">6,6,6,6</CornerRadius>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
     <Style x:Key="ColorPickerBorderStyle" TargetType="Shape">
