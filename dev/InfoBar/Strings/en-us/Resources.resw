@@ -117,9 +117,21 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="InfoBarCloseButtonName" xml:space="preserve">
-    <value>Close</value>
-    <comment>Automation name of the close button.</comment>
+  <data name="InfoBarCloseButtonNameSeverityError" xml:space="preserve">
+    <value>Close error infobar</value>
+    <comment>Automation name of the close button of an InfoBar with severity error.</comment>
+  </data>
+  <data name="InfoBarCloseButtonNameSeverityInformational" xml:space="preserve">
+    <value>Close informational infobar</value>
+    <comment>Automation name of the close button of an InfoBar with severity informational.</comment>
+  </data>
+  <data name="InfoBarCloseButtonNameSeveritySuccess" xml:space="preserve">
+    <value>Close success infobar</value>
+    <comment>Automation name of the close button of an InfoBar with severity success.</comment>
+  </data>
+  <data name="InfoBarCloseButtonNameSeverityWarning" xml:space="preserve">
+    <value>Close warning infobar</value>
+    <comment>Automation name of the close button of an InfoBar with severity warning.</comment>
   </data>
   <data name="InfoBarCloseButtonTooltip" xml:space="preserve">
     <value>Close</value>

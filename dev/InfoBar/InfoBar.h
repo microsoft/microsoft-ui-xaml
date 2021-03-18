@@ -44,11 +44,14 @@ private:
     void UpdateCloseButton();
     void UpdateForeground();
 
+    const winrt::hstring GetCloseButtonResourceName(winrt::InfoBarSeverity severity);
+
     void OnForegroundChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
     winrt::InfoBarCloseReason m_lastCloseReason{ winrt::InfoBarCloseReason::Programmatic };
 
     winrt::Button::Click_revoker m_closeButtonClickRevoker{};
+    tracker_ref<winrt::Button> m_closeButton{ this };
 
     bool m_applyTemplateCalled{ false };
     bool m_notifyOpen{ false };

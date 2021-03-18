@@ -176,11 +176,14 @@ public:
 #define SR_NumberBoxDownSpinButtonName L"NumberBoxDownSpinButtonName"
 #define SR_ExpanderDefaultControlName L"ExpanderDefaultControlName"
 
-#define SR_InfoBarCloseButtonName L"InfoBarCloseButtonName"
 #define SR_InfoBarOpenedNotification L"InfoBarOpenedNotification"
 #define SR_InfoBarClosedNotification L"InfoBarClosedNotification"
 #define SR_InfoBarCustomLandmarkName L"InfoBarCustomLandmarkName"
 #define SR_InfoBarCloseButtonTooltip L"InfoBarCloseButtonTooltip"
+#define SR_InfoBarCloseButtonNameSeverityInformational L"InfoBarCloseButtonNameSeverityInformational"
+#define SR_InfoBarCloseButtonNameSeveritySuccess L"InfoBarCloseButtonNameSeveritySuccess"
+#define SR_InfoBarCloseButtonNameSeverityWarning L"InfoBarCloseButtonNameSeverityWarning"
+#define SR_InfoBarCloseButtonNameSeverityError L"InfoBarCloseButtonNameSeverityError"
 
 #define SR_AutomationNameEllipsisBreadcrumbBarItem L"AutomationNameEllipsisBreadcrumbBarItem"
 
