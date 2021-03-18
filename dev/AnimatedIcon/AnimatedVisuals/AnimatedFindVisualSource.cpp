@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedFindVisualSource.json
 //       
 //       Input file:
-//           AnimatedFindVisualSource.json (17313 bytes created 12:28-08:00 Feb 8 2021)
+//           AnimatedFindVisualSource.json (17499 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -21,16 +21,16 @@
 // ____________________________________
 // |       Object stats       | Count |
 // |__________________________|_______|
-// | All CompositionObjects   |   197 |
+// | All CompositionObjects   |   199 |
 // |--------------------------+-------|
-// | Expression animators     |    38 |
+// | Expression animators     |    40 |
 // | KeyFrame animators       |    30 |
-// | Reference parameters     |    43 |
-// | Expression operations    |     4 |
+// | Reference parameters     |    44 |
+// | Expression operations    |     8 |
 // |--------------------------+-------|
-// | Animated brushes         |     1 |
+// | Animated brushes         |     2 |
 // | Animated gradient stops  |     - |
-// | ExpressionAnimations     |     2 |
+// | ExpressionAnimations     |     3 |
 // | PathKeyFrameAnimations   |     - |
 // |--------------------------+-------|
 // | ContainerVisuals         |     7 |
@@ -39,7 +39,7 @@
 // | ContainerShapes          |     6 |
 // | CompositionSpriteShapes  |    12 |
 // |--------------------------+-------|
-// | Brushes                  |     1 |
+// | Brushes                  |     2 |
 // | Gradient stops           |     - |
 // | CompositionVisualSurface |     - |
 // ------------------------------------
@@ -52,6 +52,14 @@
 #include <d2d1_1.h>
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
+#ifdef BUILD_WINDOWS
+namespace ABI
+{
+#include <Windows.Graphics.Effects.Interop.h>
+}
+#else
+#include <Windows.Graphics.Effects.Interop.h>
+#endif
 #include <winrt/Windows.Graphics.Effects.h>
 
 using namespace winrt::Microsoft::UI::Xaml::Controls;
@@ -70,7 +78,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
-    ::Windows::Graphics::IGeometrySource2DInterop>
+    ::ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
     winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 
@@ -100,11 +108,12 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         IClosable>
 {
     winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
-    static constexpr int64_t c_durationTicks{ 8333333L };
+    static constexpr int64_t c_durationTicks{ 13333333L };
     Compositor const _c{ nullptr };
     ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
     CompositionPropertySet const _themeProperties{ nullptr };
-    CompositionColorBrush _themeColor_Foreground{ nullptr };
+    CompositionColorBrush _themeColor_Foreground_0{ nullptr };
+    CompositionColorBrush _themeColor_Foreground_1{ nullptr };
     CompositionEllipseGeometry _ellipse_14p188{ nullptr };
     CompositionPathGeometry _pathGeometry{ nullptr };
     ContainerVisual _root{ nullptr };
@@ -115,11 +124,11 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
     ExpressionAnimation _rootProgress{ nullptr };
     InsetClip _insetClip_0{ nullptr };
     ScalarKeyFrameAnimation _scalarAnimation_1_to_1p2{ nullptr };
-    ScalarKeyFrameAnimation _scalarAnimation_1_to_1p25{ nullptr };
+    ScalarKeyFrameAnimation _scalarAnimation_1_to_1p3{ nullptr };
     ScalarKeyFrameAnimation _scalarAnimation_1p2_to_1{ nullptr };
-    ScalarKeyFrameAnimation _scalarAnimation_1p2_to_1p25{ nullptr };
-    ScalarKeyFrameAnimation _scalarAnimation_1p25_to_1{ nullptr };
-    ScalarKeyFrameAnimation _scalarAnimation_1p25_to_1p2{ nullptr };
+    ScalarKeyFrameAnimation _scalarAnimation_1p2_to_1p3{ nullptr };
+    ScalarKeyFrameAnimation _scalarAnimation_1p3_to_1{ nullptr };
+    ScalarKeyFrameAnimation _scalarAnimation_1p3_to_1p2{ nullptr };
     StepEasingFunction _holdThenStepEasingFunction{ nullptr };
     StepEasingFunction _stepThenHoldEasingFunction{ nullptr };
 
@@ -182,46 +191,46 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
     // PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_0()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.899999976F, true);
+        const auto result = CreateBooleanKeyFrameAnimation(0.75F, true);
         return result;
     }
 
     // PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_1()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.600000024F, true);
-        result.InsertKeyFrame(0.899999976F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.5F, true);
+        result.InsertKeyFrame(0.75F, false);
         return result;
     }
 
     // PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_2()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.5F, true);
-        result.InsertKeyFrame(0.600000024F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.375F, true);
+        result.InsertKeyFrame(0.5F, false);
         return result;
     }
 
     // PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_3()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.300000012F, true);
-        result.InsertKeyFrame(0.5F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.25F, true);
+        result.InsertKeyFrame(0.375F, false);
         return result;
     }
 
     // PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_4()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.200000003F, true);
-        result.InsertKeyFrame(0.300000012F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.125F, true);
+        result.InsertKeyFrame(0.25F, false);
         return result;
     }
 
     // PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_5()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.200000003F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.125F, false);
         return result;
     }
 
@@ -232,13 +241,14 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ 12.96F, 278.109985F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->BeginFigure({ 12.9329996F, 278.140015F }, D2D1_FIGURE_BEGIN_FILLED);
         sink->AddLine({ 9.42300034F, 281.64801F });
         sink->AddBezier({ { 9.25599957F, 281.815002F }, { 9.25599957F, 282.087006F }, { 9.42300034F, 282.253998F } });
         sink->AddBezier({ { 9.57199955F, 282.403015F }, { 9.80300045F, 282.419006F }, { 9.97000027F, 282.303009F } });
         sink->AddLine({ 10.0290003F, 282.253998F });
-        sink->AddLine({ 13.566F, 278.716003F });
-        sink->AddLine({ 12.96F, 278.109985F });
+        sink->AddLine({ 13.5340004F, 278.748993F });
+        sink->AddBezier({ { 13.5340004F, 278.748993F }, { 13.3599997F, 278.609985F }, { 13.1879997F, 278.432007F } });
+        sink->AddBezier({ { 13.0159998F, 278.253998F }, { 12.9329996F, 278.140015F }, { 12.9329996F, 278.140015F } });
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -246,16 +256,24 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
     }
 
     // Color bound to theme property value: Foreground
-    CompositionColorBrush ThemeColor_Foreground()
+    CompositionColorBrush ThemeColor_Foreground_0()
     {
-        const auto result = _themeColor_Foreground = _c.CreateColorBrush();
+        const auto result = _themeColor_Foreground_0 = _c.CreateColorBrush();
         BindProperty(result, L"Color", L"ColorRGB(_theme.Foreground.W*1,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties);
+        return result;
+    }
+
+    // Color bound to theme property value: Foreground
+    CompositionColorBrush ThemeColor_Foreground_1()
+    {
+        const auto result = _themeColor_Foreground_1 = _c.CreateColorBrush();
+        BindProperty(result, L"Color", L"ColorRGB(_theme.Foreground.W*0.97,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties);
         return result;
     }
 
     // - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
     // Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     CompositionContainerShape ContainerShape_0()
     {
         const auto result = _c.CreateContainerShape();
@@ -263,14 +281,14 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         result.Offset({ 24.0F, 24.0F });
         // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
         result.Shapes().Append(SpriteShape_01());
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p25_to_1p2(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p25_to_1p2, _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p3_to_1p2(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p3_to_1p2, _rootProgress);
         return result;
     }
 
     // - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
     // Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     CompositionContainerShape ContainerShape_1()
     {
         const auto result = _c.CreateContainerShape();
@@ -278,14 +296,14 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         result.Offset({ 24.0F, 24.0F });
         // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
         result.Shapes().Append(SpriteShape_03());
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p25_to_1(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p25_to_1, _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p3_to_1(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p3_to_1, _rootProgress);
         return result;
     }
 
     // - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
     // Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     CompositionContainerShape ContainerShape_2()
     {
         const auto result = _c.CreateContainerShape();
@@ -293,14 +311,14 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         result.Offset({ 24.0F, 24.0F });
         // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
         result.Shapes().Append(SpriteShape_05());
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p2_to_1p25(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p2_to_1p25, _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1p2_to_1p3(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1p2_to_1p3, _rootProgress);
         return result;
     }
 
     // - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
     // Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     CompositionContainerShape ContainerShape_3()
     {
         const auto result = _c.CreateContainerShape();
@@ -315,7 +333,7 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
 
     // - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
     // Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     CompositionContainerShape ContainerShape_4()
     {
         const auto result = _c.CreateContainerShape();
@@ -323,14 +341,14 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         result.Offset({ 24.0F, 24.0F });
         // ShapeGroup: Ellipse 1 Scale:0.92286,0.92286, Offset:<3.812, -3.938>
         result.Shapes().Append(SpriteShape_09());
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1_to_1p25(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_1p25, _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1_to_1p3(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_1p3, _rootProgress);
         return result;
     }
 
     // - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
     // Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     CompositionContainerShape ContainerShape_5()
     {
         const auto result = _c.CreateContainerShape();
@@ -364,20 +382,20 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateSpriteShape(PathGeometry());
         result.CenterPoint({ 13.566F, 278.109985F });
         result.Scale({ 3.0F, 3.0F });
-        result.FillBrush(ThemeColor_Foreground());
+        result.FillBrush(ThemeColor_Foreground_0());
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_0(), RootProgress());
         return result;
     }
 
     // - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
     // - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     // Ellipse Path 1
     CompositionSpriteShape SpriteShape_01()
     {
         // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
         const auto result = CreateSpriteShape(Ellipse_14p188(), { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-        result.StrokeBrush(_themeColor_Foreground);
+        result.StrokeBrush(ThemeColor_Foreground_1());
         result.StrokeThickness(2.0F);
         return result;
     }
@@ -390,20 +408,20 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateSpriteShape(_pathGeometry);
         result.CenterPoint({ 13.566F, 278.109985F });
         result.Scale({ 3.0F, 3.0F });
-        result.FillBrush(_themeColor_Foreground);
+        result.FillBrush(_themeColor_Foreground_0);
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_1(), _rootProgress);
         return result;
     }
 
     // - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
     // - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     // Ellipse Path 1
     CompositionSpriteShape SpriteShape_03()
     {
         // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
         const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-        result.StrokeBrush(_themeColor_Foreground);
+        result.StrokeBrush(_themeColor_Foreground_1);
         result.StrokeThickness(2.0F);
         return result;
     }
@@ -416,20 +434,20 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateSpriteShape(_pathGeometry);
         result.CenterPoint({ 13.566F, 278.109985F });
         result.Scale({ 3.0F, 3.0F });
-        result.FillBrush(_themeColor_Foreground);
+        result.FillBrush(_themeColor_Foreground_0);
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_2(), _rootProgress);
         return result;
     }
 
     // - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
     // - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     // Ellipse Path 1
     CompositionSpriteShape SpriteShape_05()
     {
         // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
         const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-        result.StrokeBrush(_themeColor_Foreground);
+        result.StrokeBrush(_themeColor_Foreground_1);
         result.StrokeThickness(2.0F);
         return result;
     }
@@ -442,20 +460,20 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateSpriteShape(_pathGeometry);
         result.CenterPoint({ 13.566F, 278.109985F });
         result.Scale({ 3.0F, 3.0F });
-        result.FillBrush(_themeColor_Foreground);
+        result.FillBrush(_themeColor_Foreground_0);
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_3(), _rootProgress);
         return result;
     }
 
     // - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
     // - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     // Ellipse Path 1
     CompositionSpriteShape SpriteShape_07()
     {
         // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
         const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-        result.StrokeBrush(_themeColor_Foreground);
+        result.StrokeBrush(_themeColor_Foreground_1);
         result.StrokeThickness(2.0F);
         return result;
     }
@@ -468,20 +486,20 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateSpriteShape(_pathGeometry);
         result.CenterPoint({ 13.566F, 278.109985F });
         result.Scale({ 3.0F, 3.0F });
-        result.FillBrush(_themeColor_Foreground);
+        result.FillBrush(_themeColor_Foreground_0);
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_4(), _rootProgress);
         return result;
     }
 
     // - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
     // - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     // Ellipse Path 1
     CompositionSpriteShape SpriteShape_09()
     {
         // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
         const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-        result.StrokeBrush(_themeColor_Foreground);
+        result.StrokeBrush(_themeColor_Foreground_1);
         result.StrokeThickness(2.0F);
         return result;
     }
@@ -494,20 +512,20 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateSpriteShape(_pathGeometry);
         result.CenterPoint({ 13.566F, 278.109985F });
         result.Scale({ 3.0F, 3.0F });
-        result.FillBrush(_themeColor_Foreground);
+        result.FillBrush(_themeColor_Foreground_0);
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_5(), _rootProgress);
         return result;
     }
 
     // - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
     // - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     // Ellipse Path 1
     CompositionSpriteShape SpriteShape_11()
     {
         // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
         const auto result = CreateSpriteShape(_ellipse_14p188, { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
-        result.StrokeBrush(_themeColor_Foreground);
+        result.StrokeBrush(_themeColor_Foreground_1);
         result.StrokeThickness(2.0F);
         return result;
     }
@@ -637,22 +655,22 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
 
     CubicBezierEasingFunction CubicBezierEasingFunction_0()
     {
-        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
+        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.550000012F, 0.0F }, { 0.75F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_1()
     {
-        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.550000012F, 0.0F }, { 0.75F, 1.0F });
+        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_2()
     {
-        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F });
+        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.449999988F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_3()
     {
-        return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.449999988F, 1.0F });
+        return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
     }
 
     ExpressionAnimation RootProgress()
@@ -672,16 +690,16 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
     ScalarKeyFrameAnimation ScalarAnimation_1_to_1p2()
     {
         const auto result = _scalarAnimation_1_to_1p2 = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.180000007F, 1.20000005F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.112499997F, 1.20000005F, _cubicBezierEasingFunction_3);
         return result;
     }
 
     // Scale
-    ScalarKeyFrameAnimation ScalarAnimation_1_to_1p25()
+    ScalarKeyFrameAnimation ScalarAnimation_1_to_1p3()
     {
-        const auto result = _scalarAnimation_1_to_1p25 = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.200000003F, 1.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.280000001F, 1.25F, _cubicBezierEasingFunction_3);
+        const auto result = _scalarAnimation_1_to_1p3 = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.125F, 1.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.237499997F, 1.29999995F, _cubicBezierEasingFunction_3);
         return result;
     }
 
@@ -689,78 +707,81 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
     ScalarKeyFrameAnimation ScalarAnimation_1p2_to_1()
     {
         const auto result = _scalarAnimation_1p2_to_1 = CreateScalarKeyFrameAnimation(0.0F, 1.20000005F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.300000012F, 1.20000005F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.479999989F, 1.0F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.25F, 1.20000005F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.362500012F, 1.0F, CubicBezierEasingFunction_3());
         return result;
     }
 
     // Scale
-    ScalarKeyFrameAnimation ScalarAnimation_1p2_to_1p25()
+    ScalarKeyFrameAnimation ScalarAnimation_1p2_to_1p3()
     {
-        const auto result = _scalarAnimation_1p2_to_1p25 = CreateScalarKeyFrameAnimation(0.0F, 1.20000005F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.5F, 1.20000005F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.579999983F, 1.25F, CubicBezierEasingFunction_3());
+        const auto result = _scalarAnimation_1p2_to_1p3 = CreateScalarKeyFrameAnimation(0.0F, 1.20000005F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.375F, 1.20000005F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.487500012F, 1.29999995F, CubicBezierEasingFunction_2());
         return result;
     }
 
     // Scale
-    ScalarKeyFrameAnimation ScalarAnimation_1p25_to_1()
+    ScalarKeyFrameAnimation ScalarAnimation_1p3_to_1()
     {
-        const auto result = _scalarAnimation_1p25_to_1 = CreateScalarKeyFrameAnimation(0.0F, 1.25F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.600000024F, 1.25F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.699999988F, 0.949999988F, CubicBezierEasingFunction_1());
-        result.InsertKeyFrame(0.879999995F, 1.0F, CubicBezierEasingFunction_2());
+        const auto result = _scalarAnimation_1p3_to_1 = CreateScalarKeyFrameAnimation(0.0F, 1.29999995F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.5F, 1.29999995F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.5625F, 0.899999976F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.737500012F, 1.0F, _cubicBezierEasingFunction_1);
         return result;
     }
 
     // Scale
-    ScalarKeyFrameAnimation ScalarAnimation_1p25_to_1p2()
+    ScalarKeyFrameAnimation ScalarAnimation_1p3_to_1p2()
     {
-        const auto result = _scalarAnimation_1p25_to_1p2 = CreateScalarKeyFrameAnimation(0.0F, 1.25F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.899999976F, 1.25F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.980000019F, 1.20000005F, CubicBezierEasingFunction_0());
+        const auto result = _scalarAnimation_1p3_to_1p2 = CreateScalarKeyFrameAnimation(0.0F, 1.29999995F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.75F, 1.29999995F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.8125F, 0.899999976F, CubicBezierEasingFunction_0());
+        result.InsertKeyFrame(0.987500012F, 1.20000005F, CubicBezierEasingFunction_1());
         return result;
     }
 
     ScalarKeyFrameAnimation t0ScalarAnimation_0_to_1()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.900000036F, 0.0F, _stepThenHoldEasingFunction);
+        const auto result = CreateScalarKeyFrameAnimation(0.75000006F, 0.0F, _stepThenHoldEasingFunction);
         result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.979999959F, 1.0F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.81249994F, 1.0F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.8125F, 0.0F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.987499952F, 1.0F, _cubicBezierEasingFunction_1);
         return result;
     }
 
     ScalarKeyFrameAnimation t1ScalarAnimation_0_to_1()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.600000083F, 0.0F, _stepThenHoldEasingFunction);
+        const auto result = CreateScalarKeyFrameAnimation(0.50000006F, 0.0F, _stepThenHoldEasingFunction);
         result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.699999928F, 1.0F, _cubicBezierEasingFunction_1);
-        result.InsertKeyFrame(0.699999988F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.879999936F, 1.0F, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.56249994F, 1.0F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.5625F, 0.0F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.737499952F, 1.0F, _cubicBezierEasingFunction_1);
         return result;
     }
 
     ScalarKeyFrameAnimation t2ScalarAnimation_0_to_1()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.50000006F, 0.0F, _stepThenHoldEasingFunction);
+        const auto result = CreateScalarKeyFrameAnimation(0.37500003F, 0.0F, _stepThenHoldEasingFunction);
         result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.579999924F, 1.0F, _cubicBezierEasingFunction_3);
+        result.InsertKeyFrame(0.487499982F, 1.0F, _cubicBezierEasingFunction_2);
         return result;
     }
 
     ScalarKeyFrameAnimation t3ScalarAnimation_0_to_1()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.300000042F, 0.0F, _stepThenHoldEasingFunction);
+        const auto result = CreateScalarKeyFrameAnimation(0.25000003F, 0.0F, _stepThenHoldEasingFunction);
         result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.479999959F, 1.0F, _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.833000004F, 0.833000004F }));
+        result.InsertKeyFrame(0.362499982F, 1.0F, _cubicBezierEasingFunction_3);
         return result;
     }
 
     ScalarKeyFrameAnimation t4ScalarAnimation_0_to_1()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.200000018F, 0.0F, _stepThenHoldEasingFunction);
+        const auto result = CreateScalarKeyFrameAnimation(0.125000015F, 0.0F, _stepThenHoldEasingFunction);
         result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.279999971F, 1.0F, _cubicBezierEasingFunction_3);
+        result.InsertKeyFrame(0.237499982F, 1.0F, _cubicBezierEasingFunction_3);
         return result;
     }
 
@@ -768,7 +789,7 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
         result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.179999992F, 1.0F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.11249999F, 1.0F, _cubicBezierEasingFunction_3);
         return result;
     }
 
@@ -779,9 +800,9 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Layer 2
+        // Layer: Layer 4
         shapes.Append(SpriteShape_00());
-        // Layer: Layer 2
+        // Layer: Layer 4
         shapes.Append(ContainerShape_0());
         return result;
     }
@@ -793,9 +814,9 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Layer 2
+        // Layer: Layer 4
         shapes.Append(SpriteShape_02());
-        // Layer: Layer 2
+        // Layer: Layer 4
         shapes.Append(ContainerShape_1());
         return result;
     }
@@ -807,9 +828,9 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Layer 2
+        // Layer: Layer 4
         shapes.Append(SpriteShape_04());
-        // Layer: Layer 2
+        // Layer: Layer 4
         shapes.Append(ContainerShape_2());
         return result;
     }
@@ -821,9 +842,9 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Layer 2
+        // Layer: Layer 4
         shapes.Append(SpriteShape_06());
-        // Layer: Layer 2
+        // Layer: Layer 4
         shapes.Append(ContainerShape_3());
         return result;
     }
@@ -835,9 +856,9 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Layer 2
+        // Layer: Layer 4
         shapes.Append(SpriteShape_08());
-        // Layer: Layer 2
+        // Layer: Layer 4
         shapes.Append(ContainerShape_4());
         return result;
     }
@@ -849,9 +870,9 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Layer 2
+        // Layer: Layer 4
         shapes.Append(SpriteShape_10());
-        // Layer: Layer 2
+        // Layer: Layer 4
         shapes.Append(ContainerShape_5());
         return result;
     }
@@ -872,85 +893,86 @@ class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<Animate
 
     // - - PreComp layer: Controls - 05 - Search - 06 - PressedToPointerOver
     // - Transforms for Controls - 05 - Search - 06 - PressedToPointerOver Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_0()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 3.61599994F, -247.292007F }, StepThenHoldEasingFunction());
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 2.58400011F, -246.261002F }, StepThenHoldEasingFunction());
         result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.899999976F, { 3.61599994F, -247.292007F }, HoldThenStepEasingFunction());
-        result.InsertExpressionKeyFrame(0.979999959F, L"(Pow(1-_.t0,3)*Vector2(3.616,-247.292))+(3*Square(1-_.t0)*_.t0*Vector2(3.72,-247.396))+(3*(1-_.t0)*Square(_.t0)*Vector2(4.137,-247.813))+(Pow(_.t0,3)*Vector2(4.241,-247.917))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.980000019F, { 4.24100018F, -247.917007F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.75F, { 2.58400011F, -246.261002F }, HoldThenStepEasingFunction());
+        result.InsertExpressionKeyFrame(0.81249994F, L"(Pow(1-_.t0,3)*Vector2(2.584,-246.261))+(3*Square(1-_.t0)*_.t0*Vector2(3.24,-246.917))+(3*(1-_.t0)*Square(_.t0)*Vector2(6.522,-250.198))+(Pow(_.t0,3)*Vector2(6.522,-250.198))", _stepThenHoldEasingFunction);
+        result.InsertExpressionKeyFrame(0.987499952F, L"(Pow(1-_.t0,3)*Vector2(6.522,-250.198))+(3*Square(1-_.t0)*_.t0*Vector2(6.522,-250.198))+(3*(1-_.t0)*Square(_.t0)*Vector2(4.1,-247.776))+(Pow(_.t0,3)*Vector2(3.616,-247.292))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.987500012F, { 3.61599994F, -247.292007F }, _stepThenHoldEasingFunction);
         return result;
     }
 
     // - - PreComp layer: Controls - 05 - Search - 05 - PressedToNormal
     // - Transforms for Controls - 05 - Search - 05 - PressedToNormal Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_1()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 3.61599994F, -247.292007F }, _stepThenHoldEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 2.58400011F, -246.261002F }, _stepThenHoldEasingFunction);
         result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.600000024F, { 3.61599994F, -247.292007F }, _holdThenStepEasingFunction);
-        result.InsertExpressionKeyFrame(0.699999928F, L"(Pow(1-_.t1,3)*Vector2(3.616,-247.292))+(3*Square(1-_.t1)*_.t1*Vector2(4.074,-247.75))+(3*(1-_.t1)*Square(_.t1)*Vector2(5.949,-249.625))+(Pow(_.t1,3)*Vector2(6.366,-250.042))", _stepThenHoldEasingFunction);
-        result.InsertExpressionKeyFrame(0.879999936F, L"(Pow(1-_.t1,3)*Vector2(6.366,-250.042))+(3*Square(1-_.t1)*_.t1*Vector2(6.783,-250.459))+(3*(1-_.t1)*Square(_.t1)*Vector2(6.158,-249.834))+(Pow(_.t1,3)*Vector2(6.116,-249.792))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.879999995F, { 6.11600018F, -249.792007F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.5F, { 2.58400011F, -246.261002F }, _holdThenStepEasingFunction);
+        result.InsertExpressionKeyFrame(0.56249994F, L"(Pow(1-_.t1,3)*Vector2(2.584,-246.261))+(3*Square(1-_.t1)*_.t1*Vector2(3.24,-246.917))+(3*(1-_.t1)*Square(_.t1)*Vector2(6.522,-250.198))+(Pow(_.t1,3)*Vector2(6.522,-250.198))", _stepThenHoldEasingFunction);
+        result.InsertExpressionKeyFrame(0.737499952F, L"(Pow(1-_.t1,3)*Vector2(6.522,-250.198))+(3*Square(1-_.t1)*_.t1*Vector2(6.522,-250.198))+(3*(1-_.t1)*Square(_.t1)*Vector2(5.793,-249.469))+(Pow(_.t1,3)*Vector2(5.647,-249.323))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.737500012F, { 5.64699984F, -249.322998F }, _stepThenHoldEasingFunction);
         return result;
     }
 
     // - - PreComp layer: Controls - 05 - Search - 04 - PointerOverToPressed
     // - Transforms for Controls - 05 - Search - 04 - PointerOverToPressed Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_2()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 4.24100018F, -247.917007F }, _stepThenHoldEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 3.55299997F, -247.229004F }, _stepThenHoldEasingFunction);
         result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.5F, { 4.24100018F, -247.917007F }, _holdThenStepEasingFunction);
-        result.InsertExpressionKeyFrame(0.579999924F, L"(Pow(1-_.t2,3)*Vector2(4.241,-247.917))+(3*Square(1-_.t2)*_.t2*Vector2(4.137,-247.813))+(3*(1-_.t2)*Square(_.t2)*Vector2(3.72,-247.396))+(Pow(_.t2,3)*Vector2(3.616,-247.292))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.579999983F, { 3.61599994F, -247.292007F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.375F, { 3.55299997F, -247.229004F }, _holdThenStepEasingFunction);
+        result.InsertExpressionKeyFrame(0.487499982F, L"(Pow(1-_.t2,3)*Vector2(3.553,-247.229))+(3*Square(1-_.t2)*_.t2*Vector2(3.392,-247.068))+(3*(1-_.t2)*Square(_.t2)*Vector2(2.745,-246.422))+(Pow(_.t2,3)*Vector2(2.584,-246.261))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.487500012F, { 2.58400011F, -246.261002F }, _stepThenHoldEasingFunction);
         return result;
     }
 
     // - - PreComp layer: Controls - 05 - Search - 03 - PointerOverToNormal
     // - Transforms for Controls - 05 - Search - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_3()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 4.24100018F, -247.917007F }, _stepThenHoldEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 3.61599994F, -247.292007F }, _stepThenHoldEasingFunction);
         result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.300000012F, { 4.24100018F, -247.917007F }, _holdThenStepEasingFunction);
-        result.InsertExpressionKeyFrame(0.479999959F, L"(Pow(1-_.t3,3)*Vector2(4.241,-247.917))+(3*Square(1-_.t3)*_.t3*Vector2(4.553,-248.229))+(3*(1-_.t3)*Square(_.t3)*Vector2(5.804,-249.48))+(Pow(_.t3,3)*Vector2(6.116,-249.792))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.479999989F, { 6.11600018F, -249.792007F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.25F, { 3.61599994F, -247.292007F }, _holdThenStepEasingFunction);
+        result.InsertExpressionKeyFrame(0.362499982F, L"(Pow(1-_.t3,3)*Vector2(3.616,-247.292))+(3*Square(1-_.t3)*_.t3*Vector2(3.955,-247.631))+(3*(1-_.t3)*Square(_.t3)*Vector2(5.308,-248.984))+(Pow(_.t3,3)*Vector2(5.647,-249.323))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.362500012F, { 5.64699984F, -249.322998F }, _stepThenHoldEasingFunction);
         return result;
     }
 
     // - - PreComp layer: Controls - 05 - Search - 02 - NormalToPressed
     // - Transforms for Controls - 05 - Search - 02 - NormalToPressed Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_4()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 6.11600018F, -249.792007F }, _stepThenHoldEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 5.64699984F, -249.322998F }, _stepThenHoldEasingFunction);
         result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.200000003F, { 6.11600018F, -249.792007F }, _holdThenStepEasingFunction);
-        result.InsertExpressionKeyFrame(0.279999971F, L"(Pow(1-_.t4,3)*Vector2(6.116,-249.792))+(3*Square(1-_.t4)*_.t4*Vector2(5.699,-249.375))+(3*(1-_.t4)*Square(_.t4)*Vector2(4.033,-247.709))+(Pow(_.t4,3)*Vector2(3.616,-247.292))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.280000001F, { 3.61599994F, -247.292007F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.125F, { 5.64699984F, -249.322998F }, _holdThenStepEasingFunction);
+        result.InsertExpressionKeyFrame(0.237499982F, L"(Pow(1-_.t4,3)*Vector2(5.647,-249.323))+(3*Square(1-_.t4)*_.t4*Vector2(5.137,-248.813))+(3*(1-_.t4)*Square(_.t4)*Vector2(3.094,-246.771))+(Pow(_.t4,3)*Vector2(2.584,-246.261))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.237499997F, { 2.58400011F, -246.261002F }, _stepThenHoldEasingFunction);
         return result;
     }
 
     // - - PreComp layer: Controls - 05 - Search - 01 - NormalToPointerOver
     // - Transforms for Controls - 05 - Search - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Layer 2
+    // Layer: Layer 4
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_5()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 6.11600018F, -249.792007F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 5.64699984F, -249.322998F }, _holdThenStepEasingFunction);
         result.SetReferenceParameter(L"_", _root);
-        result.InsertExpressionKeyFrame(0.179999992F, L"(Pow(1-_.t5,3)*Vector2(6.116,-249.792))+(3*Square(1-_.t5)*_.t5*Vector2(5.804,-249.48))+(3*(1-_.t5)*Square(_.t5)*Vector2(4.553,-248.229))+(Pow(_.t5,3)*Vector2(4.241,-247.917))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.180000007F, { 4.24100018F, -247.917007F }, _stepThenHoldEasingFunction);
+        result.InsertExpressionKeyFrame(0.11249999F, L"(Pow(1-_.t5,3)*Vector2(5.647,-249.323))+(3*Square(1-_.t5)*_.t5*Vector2(5.308,-248.984))+(3*(1-_.t5)*Square(_.t5)*Vector2(3.955,-247.631))+(Pow(_.t5,3)*Vector2(3.616,-247.292))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.112499997F, { 3.61599994F, -247.292007F }, _stepThenHoldEasingFunction);
         return result;
     }
 
@@ -1056,7 +1078,7 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedFindVisualSource::
 
 double AnimatedFindVisualSource::FrameCount()
 {
-    return 50.0;
+    return 80.0;
 }
 
 double AnimatedFindVisualSource::Framerate()
@@ -1066,12 +1088,12 @@ double AnimatedFindVisualSource::Framerate()
 
 TimeSpan AnimatedFindVisualSource::Duration()
 {
-    return TimeSpan{ 8333333L };
+    return TimeSpan{ 13333333L };
 }
 
 double AnimatedFindVisualSource::FrameToProgress(double frameNumber)
 {
-    return frameNumber / 50.0;
+    return frameNumber / 80.0;
 }
 
 winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedFindVisualSource::Markers()
@@ -1080,17 +1102,17 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedFindV
         std::map<winrt::hstring, double>
         {
             { L"NormalToPointerOver_Start", 0.0 },
-            { L"NormalToPointerOver_End", 0.181 },
-            { L"NormalToPressed_Start", 0.201 },
-            { L"NormalToPressed_End", 0.281 },
-            { L"PointerOverToNormal_Start", 0.301 },
-            { L"PointerOverToNormal_End", 0.481 },
-            { L"PointerOverToPressed_Start", 0.501 },
-            { L"PointerOverToPressed_End", 0.581 },
-            { L"PressedToNormal_Start", 0.601 },
-            { L"PressedToNormal_End", 0.881 },
-            { L"PressedToPointerOver_Start", 0.901 },
-            { L"PressedToPointerOver_End", 0.981 },
+            { L"NormalToPointerOver_End", 0.113125 },
+            { L"NormalToPressed_Start", 0.125625 },
+            { L"NormalToPressed_End", 0.238125 },
+            { L"PointerOverToNormal_Start", 0.250625 },
+            { L"PointerOverToNormal_End", 0.363125 },
+            { L"PointerOverToPressed_Start", 0.375625 },
+            { L"PointerOverToPressed_End", 0.488125 },
+            { L"PressedToNormal_Start", 0.500625 },
+            { L"PressedToNormal_End", 0.738125 },
+            { L"PressedToPointerOver_Start", 0.750625 },
+            { L"PressedToPointerOver_End", 0.988125 },
         }
     ).GetView();
 }

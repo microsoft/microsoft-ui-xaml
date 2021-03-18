@@ -46,19 +46,4 @@
 
     <!-- DateTimeFlyoutBorderPadding is defined since RS5. set it here to ensure it's always defined. -->
     <Thickness x:Key="DateTimeFlyoutBorderPadding">0</Thickness>
-
-    <!-- Caret/Chevron Icons -->
-    <x:String x:Key="ScrollBarCaretLeft">&#xE0E2;</x:String>
-    <x:String x:Key="ScrollBarCaretRight">&#xE0E3;</x:String>
-    <x:String x:Key="ScrollBarCaretUp">&#xE0E4;</x:String>
-    <x:String x:Key="ScrollBarCaretDown">&#xE0E5;</x:String>
-
-    <x:String x:Key="FlipViewCaretLeft">&#xE0E2;</x:String>
-    <x:String x:Key="FlipViewCaretRight">&#xE0E3;</x:String>
-    <x:String x:Key="FlipViewCaretUp">&#xE0E4;</x:String>
-    <x:String x:Key="FlipViewCaretDown">&#xE0E5;</x:String>
-
-    <x:String x:Key="LoopingSelectorUpButtonCaretUp">&#xE0E4;</x:String>
-    <x:String x:Key="LoopingSelectorDownButtonCaretDown">&#xE0E5;</x:String>
-
 </ResourceDictionary>

@@ -319,7 +319,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource NavigationViewButtonBackgroundPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource NavigationViewButtonForegroundPointerOver}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource NavigationViewButtonForegroundPointerOver}" />
-                                        <Setter Target="Icon.(AnimatedIcon.State)" Value="PointerOverOff"/>
+                                        <Setter Target="Icon.(AnimatedIcon.State)" Value="PointerOver"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -327,41 +327,13 @@
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource NavigationViewButtonBackgroundPressed}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource NavigationViewButtonForegroundPressed}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource NavigationViewButtonForegroundPressed}" />
-                                        <Setter Target="Icon.(AnimatedIcon.State)" Value="PressedOff"/>
+                                        <Setter Target="Icon.(AnimatedIcon.State)" Value="Pressed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource NavigationViewButtonBackgroundDisabled}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource NavigationViewButtonForegroundDisabled}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="Checked">
-                                    <VisualState.Setters>
-                                        <Setter Target="LayoutRoot.Background" Value="{ThemeResource ToggleButtonBackgroundChecked}" />
-                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ToggleButtonForegroundChecked}" />
-                                        <Setter Target="Icon.(AnimatedIcon.State)" Value="NormalOn"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="CheckedPointerOver">
-                                    <VisualState.Setters>
-                                        <Setter Target="LayoutRoot.Background" Value="{ThemeResource ToggleButtonBackgroundCheckedPointerOver}" />
-                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ToggleButtonForegroundCheckedPointerOver}" />
-                                        <Setter Target="Icon.(AnimatedIcon.State)" Value="PointerOverOn"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="CheckedPressed">
-                                    <VisualState.Setters>
-                                        <Setter Target="LayoutRoot.Background" Value="{ThemeResource ToggleButtonBackgroundCheckedPressed}" />
-                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ToggleButtonForegroundCheckedPressed}" />
-                                        <Setter Target="Icon.(AnimatedIcon.State)" Value="PressedOn"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="CheckedDisabled">
-                                    <VisualState.Setters>
-                                        <Setter Target="LayoutRoot.Background" Value="{ThemeResource ToggleButtonBackgroundCheckedDisabled}" />
-                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ToggleButtonForegroundCheckedDisabled}" />
-                                        <Setter Target="Icon.(AnimatedIcon.State)" Value="NormalOn"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -374,7 +346,7 @@
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                                 AutomationProperties.AccessibilityView="Raw"
-                                                local:AnimatedIcon.State="NormalOff">
+                                                local:AnimatedIcon.State="Normal">
                                 <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
                                 <local:AnimatedIcon.FallbackIconSource>
                                     <local:FontIconSource Glyph="&#xE700;" FontSize="16"/>

@@ -11,6 +11,9 @@
 #include <d2d1_1.h>
 #include <d2d1effects_2.h>
 
+#include <Windows.Graphics.Effects.h>
+#include <winrt\Windows.Graphics.Effects.h>
+
 #pragma warning(push)
 #pragma warning(disable : 28285 28196 6387 6319 26812 26496)
 
@@ -64,8 +67,8 @@ typedef enum GRAPHICS_EFFECT_PROPERTY_MAPPING
 
 namespace abi
 {
-    struct IPropertyValue : IInspectable {};
-    struct IGraphicsEffectSource : IInspectable {};
+    using ABI::Windows::Foundation::IPropertyValue;
+    using ABI::Windows::Graphics::Effects::IGraphicsEffectSource;
 }
 
 // NOTE: We are redefining this to work around VS15.5 issue where the MIDL headers give errors with the new
