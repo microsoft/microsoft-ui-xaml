@@ -27,6 +27,7 @@ AnimatedIcon::AnimatedIcon()
 void AnimatedIcon::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
+    OnSourcePropertyChanged(nullptr);
     auto const panel = winrt::VisualTreeHelper::GetChild(*this, 0).as<winrt::Panel>();
     m_rootPanel.set(panel);
     m_currentState = GetState(*this);
@@ -460,7 +461,8 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
         progressAnimation.SetReferenceParameter(L"_", m_progressPropertySet);
         visual.Properties().StartAnimation(s_progressPropertyName, progressAnimation);
     }
-    else
+    // If we were previously able to display primary content and now cannot, use the fallback icon.
+    else if (m_canDisplayPrimaryContent)
     {
         m_canDisplayPrimaryContent = false;
         SetRootPanelChildToFallbackIcon();

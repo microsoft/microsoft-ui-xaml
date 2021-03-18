@@ -30,3 +30,37 @@ winrt::IconElement FontIconSource::CreateIconElementCore()
 
     return fontIcon;
 }
+
+winrt::DependencyProperty FontIconSource::GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty)
+{
+    if (sourceProperty == s_FontFamilyProperty)
+    {
+        return winrt::FontIcon::FontFamilyProperty();
+    }
+    else if (sourceProperty == s_FontSizeProperty)
+    {
+        return winrt::FontIcon::FontSizeProperty();
+    }
+    else if (sourceProperty == s_FontStyleProperty)
+    {
+        return winrt::FontIcon::FontStyleProperty();
+    }
+    else if (sourceProperty == s_FontWeightProperty)
+    {
+        return winrt::FontIcon::FontWeightProperty();
+    }
+    else if (sourceProperty == s_GlyphProperty)
+    {
+        return winrt::FontIcon::GlyphProperty();
+    }
+    else if (sourceProperty == s_IsTextScaleFactorEnabledProperty)
+    {
+        return winrt::FontIcon::IsTextScaleFactorEnabledProperty();
+    }
+    else if (sourceProperty == s_MirroredWhenRightToLeftProperty)
+    {
+        return winrt::FontIcon::MirroredWhenRightToLeftProperty();
+    }
+
+    return nullptr;
+}

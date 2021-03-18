@@ -24,3 +24,17 @@ winrt::IconElement AnimatedIconSource::CreateIconElementCore()
     }
     return animatedIcon;
 }
+
+winrt::DependencyProperty AnimatedIconSource::GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty)
+{
+    if (sourceProperty == s_SourceProperty)
+    {
+        return winrt::AnimatedIcon::SourceProperty();
+    }
+    else if (sourceProperty == s_FallbackIconSourceProperty)
+    {
+        return winrt::AnimatedIcon::FallbackIconSourceProperty();
+    }
+
+    return nullptr;
+}

@@ -269,5 +269,10 @@ namespace MUXControlsTestApp
                 AnimatedIconTestHooks.SetSpeedUpMultiplier(CheckIcon, (float)e.NewValue);
             }
         }
+
+        private void ChangeFallbackGlyphButton_Click(object sender, RoutedEventArgs e)
+        {
+            boundFallback.FallbackGlyph = "\uE9AE";
+        }
     }
 }

@@ -13,4 +13,9 @@ class IconSource :
 public:
     winrt::IconElement CreateIconElement();
     virtual winrt::IconElement CreateIconElementCore() = 0;
+    virtual winrt::DependencyProperty GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty) = 0;
+
+    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+protected:
+    std::vector<winrt::weak_ref<winrt::IconElement>> m_createdIconElements{};
 };

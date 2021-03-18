@@ -21,3 +21,13 @@ winrt::IconElement PathIconSource::CreateIconElementCore()
     }
     return pathIcon;
 }
+
+winrt::DependencyProperty PathIconSource::GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty)
+{
+    if (sourceProperty == s_DataProperty)
+    {
+        return winrt::PathIcon::DataProperty();
+    }
+
+    return nullptr;
+}

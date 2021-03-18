@@ -17,3 +17,13 @@ winrt::IconElement SymbolIconSource::CreateIconElementCore()
     }
     return symbolIcon;
 }
+
+winrt::DependencyProperty SymbolIconSource::GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty)
+{
+    if (sourceProperty == s_SymbolProperty)
+    {
+        return winrt::SymbolIcon::SymbolProperty();
+    }
+
+    return nullptr;
+}

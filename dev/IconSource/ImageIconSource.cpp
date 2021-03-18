@@ -20,3 +20,13 @@ winrt::IconElement ImageIconSource::CreateIconElementCore()
     }
     return imageIcon;
 }
+
+winrt::DependencyProperty ImageIconSource::GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty)
+{
+    if (sourceProperty == s_ImageSourceProperty)
+    {
+        return winrt::ImageIcon::SourceProperty();
+    }
+
+    return nullptr;
+}
