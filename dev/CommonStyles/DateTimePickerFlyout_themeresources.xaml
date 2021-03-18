@@ -36,6 +36,7 @@
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
 
             <StaticResource x:Key="LoopingSelectorButtonBackground" ResourceKey="SystemControlBackgroundChromeMediumBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
 
             <StaticResource x:Key="LoopingSelectorItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="LoopingSelectorItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
