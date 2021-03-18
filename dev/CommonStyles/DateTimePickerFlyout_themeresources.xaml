@@ -186,7 +186,7 @@
                             ZoomMode="Disabled"
                             Template="{StaticResource ScrollViewerScrollBarlessTemplate}"/> 
                         <RepeatButton x:Name="UpButton"
-                            Content="{ThemeResource LoopingSelectorUpButtonCaretUp}"
+                            Content="&#xEDDB;"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             FontSize="8"
                             Height="22"
@@ -199,7 +199,7 @@
                             Margin="{StaticResource LoopingSelectorUpDownButtonMargin}"
                             IsTabStop="False" />
                         <RepeatButton x:Name="DownButton"
-                            Content="{ThemeResource LoopingSelectorDownButtonCaretDown}"
+                            Content="&#xEDDC;"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             FontSize="8"
                             Height="22"
