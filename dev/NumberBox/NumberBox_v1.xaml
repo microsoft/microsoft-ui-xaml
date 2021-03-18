@@ -15,8 +15,8 @@
         <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextControlSelectionHighlightColor}" />
         <contract7Present:Setter Property="SelectionFlyout" Value="{StaticResource TextControlCommandBarSelectionFlyout}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
-        <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}" />
         <Setter Property="Padding" Value="{ThemeResource TextControlThemePadding}" />
         <Setter Property="Template">
             <Setter.Value>
