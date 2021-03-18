@@ -31,21 +31,6 @@
                                     <DiscreteObjectKeyFrame KeyTime="0" Value="Left"/>
                                 </ObjectAnimationUsingKeyFrames>
                             </Storyboard>
-                            <Storyboard x:Name="ShadowCasterSmallPaneEaseInStoryboard">
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
-                                    <DiscreteDoubleKeyFrame KeyTime="0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.NegativeSplitViewWidthMinusCompactLength}" />
-                                    <SplineDoubleKeyFrame KeyTime="0:0:0.2" KeySpline="0.1,0.9 0.2,1.0" Value="0" />
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Opacity">
-                                    <LinearDoubleKeyFrame KeyTime="0:0:0.35" Value="1" />
-                                </DoubleAnimationUsingKeyFrames>
-                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Width">
-                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=RootSplitView, Path=Width}"/>
-                                </ObjectAnimationUsingKeyFrames>
-                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="HorizontalAlignment">
-                                    <DiscreteObjectKeyFrame KeyTime="0" Value="Stretch"/>
-                                </ObjectAnimationUsingKeyFrames>
-                            </Storyboard>
                             <Storyboard x:Name="ShadowCasterEaseOutStoryboard">
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
                                     <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
