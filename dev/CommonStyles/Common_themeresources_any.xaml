@@ -572,7 +572,7 @@
             <SolidColorBrush x:Key="SystemFillColorNeutralBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
 
             <SolidColorBrush x:Key="SystemControlFocusVisualPrimaryBrush" Color="{StaticResource SystemColorWindowTextColor }"/>
-            <SolidColorBrush x:Key="SystemControlFocusVisualSecondaryBrush" Color="{StaticResource SystemColorButtonTextColor}"/>
+            <SolidColorBrush x:Key="SystemControlFocusVisualSecondaryBrush" Color="{StaticResource SystemColorWindowColor}"/>
 
             <!-- Elevation border brushes-->
 
