@@ -19,19 +19,16 @@ void IconSource::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
 {
     if (auto const iconProp = GetIconElementPropertyCore(args.Property()))
     {
-        if(m_createdIconElements.size() > 0)
+        m_createdIconElements.erase(std::remove_if(m_createdIconElements.begin(), m_createdIconElements.end(),
+            [iconProp, newValue = args.NewValue()](winrt::weak_ref<winrt::IconElement> weakElement)
         {
-            m_createdIconElements.erase(std::remove_if(m_createdIconElements.begin(), m_createdIconElements.end(),
-                [iconProp, newValue = args.NewValue()](winrt::weak_ref<winrt::IconElement> weakElement)
+            auto const element = weakElement.get();
+            if (element)
             {
-                auto const element = weakElement.get();
-                if (element)
-                {
-                    element.SetValue(iconProp, newValue);
-                }
-                return !element;
-            }), m_createdIconElements.end());
-        }
+                element.SetValue(iconProp, newValue);
+            }
+            return !element;
+        }), m_createdIconElements.end());
     }
 }
 
