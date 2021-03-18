@@ -45,6 +45,8 @@ private:
     void UpdateForeground();
 
     const winrt::hstring GetCloseButtonResourceName(winrt::InfoBarSeverity severity);
+    const winrt::hstring GetSeverityLevelResourceName(winrt::InfoBarSeverity severity);
+    const winrt::hstring GetIconSeverityLevelResourceName(winrt::InfoBarSeverity severity);
 
     void OnForegroundChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
@@ -52,6 +54,7 @@ private:
 
     winrt::Button::Click_revoker m_closeButtonClickRevoker{};
     tracker_ref<winrt::Button> m_closeButton{ this };
+    tracker_ref<winrt::FrameworkElement> m_standardIconTextBlock{ this };
 
     bool m_applyTemplateCalled{ false };
     bool m_notifyOpen{ false };

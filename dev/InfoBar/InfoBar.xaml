@@ -141,8 +141,7 @@
                                     FontSize="{StaticResource InfoBarIconFontSize}"
                                     Text="{StaticResource InfoBarInformationalIconGlyph}"
                                     Foreground="{ThemeResource InfoBarInformationalSeverityIconForeground}"
-                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                    AutomationProperties.AccessibilityView="Raw" />
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
                             </Grid>
 
                             <Viewbox x:Name="UserIconBox"

@@ -13,6 +13,7 @@
 #include "../ResourceHelper/Utils.h"
 
 static constexpr wstring_view c_closeButtonName{ L"CloseButton"sv };
+static constexpr wstring_view c_iconTextBlockName{ L"StandardIcon"sv };
 static constexpr wstring_view c_contentRootName{ L"ContentRoot"sv };
 
 InfoBar::InfoBar()
@@ -53,6 +54,12 @@ void InfoBar::OnApplyTemplate()
         const auto closeButtonTooltipText = ResourceAccessor::GetLocalizedStringResource(SR_InfoBarCloseButtonTooltip);
         tooltip.Content(box_value(closeButtonTooltipText));
         winrt::ToolTipService::SetToolTip(closeButton, tooltip);
+    }
+
+    if (const auto iconTextblock = GetTemplateChildT<winrt::FrameworkElement>(c_iconTextBlockName, controlProtected))
+    {
+        m_standardIconTextBlock.set(iconTextblock);
+        winrt::AutomationProperties::SetName(iconTextblock, ResourceAccessor::GetLocalizedStringResource(GetIconSeverityLevelResourceName(Severity())));
     }
 
     if (auto&& contentRootGrid = GetTemplateChildT<winrt::Button>(c_contentRootName, controlProtected))
@@ -161,7 +168,8 @@ void InfoBar::UpdateVisibility(bool notify, bool force)
                     auto const notificationString = StringUtil::FormatString(
                         ResourceAccessor::GetLocalizedStringResource(SR_InfoBarOpenedNotification),
                         Title().data(),
-                        Message().data());
+                        Message().data(),
+                        ResourceAccessor::GetLocalizedStringResource(GetSeverityLevelResourceName(Severity())));
 
                     winrt::get_self<InfoBarAutomationPeer>(peer)->RaiseOpenedEvent(Severity(), notificationString);
                 }
@@ -207,11 +215,13 @@ void InfoBar::UpdateSeverity()
     // Do localization for the close button
     if (const auto closeButton = m_closeButton.get())
     {
-        if (winrt::AutomationProperties::GetName(closeButton).empty())
-        {
-            const auto closeButtonName = ResourceAccessor::GetLocalizedStringResource(GetCloseButtonResourceName(Severity()));
-            winrt::AutomationProperties::SetName(closeButton, closeButtonName);
-        }
+        const auto closeButtonName = ResourceAccessor::GetLocalizedStringResource(GetCloseButtonResourceName(Severity()));
+        winrt::AutomationProperties::SetName(closeButton, closeButtonName);
+    }
+
+    if (const auto iconTextblock = m_standardIconTextBlock.get())
+    {
+        winrt::AutomationProperties::SetName(iconTextblock, ResourceAccessor::GetLocalizedStringResource(GetIconSeverityLevelResourceName(Severity())));
     }
 
     winrt::VisualStateManager::GoToState(*this, severityState, false);
@@ -255,9 +265,31 @@ const winrt::hstring InfoBar::GetCloseButtonResourceName(winrt::InfoBarSeverity 
 {
     switch (severity)
     {
-        case winrt::InfoBarSeverity::Success: return SR_InfoBarCloseButtonNameSeveritySuccess;
-        case winrt::InfoBarSeverity::Warning: return SR_InfoBarCloseButtonNameSeverityWarning;
-        case winrt::InfoBarSeverity::Error: return SR_InfoBarCloseButtonNameSeverityError;
+    case winrt::InfoBarSeverity::Success: return SR_InfoBarCloseButtonNameSeveritySuccess;
+    case winrt::InfoBarSeverity::Warning: return SR_InfoBarCloseButtonNameSeverityWarning;
+    case winrt::InfoBarSeverity::Error: return SR_InfoBarCloseButtonNameSeverityError;
     };
     return SR_InfoBarCloseButtonNameSeverityInformational;
+}
+
+const winrt::hstring InfoBar::GetSeverityLevelResourceName(winrt::InfoBarSeverity severity)
+{
+    switch (severity)
+    {
+    case winrt::InfoBarSeverity::Success: return SR_InfoBarSeveritySuccessName;
+    case winrt::InfoBarSeverity::Warning: return SR_InfoBarSeverityWarningName;
+    case winrt::InfoBarSeverity::Error: return SR_InfoBarSeverityErrorName;
+    };
+    return SR_InfoBarSeverityInformationalName;
+}
+
+const winrt::hstring InfoBar::GetIconSeverityLevelResourceName(winrt::InfoBarSeverity severity)
+{
+    switch (severity)
+    {
+    case winrt::InfoBarSeverity::Success: return SR_InfoBarIconSeveritySuccessName;
+    case winrt::InfoBarSeverity::Warning: return SR_InfoBarIconSeverityWarningName;
+    case winrt::InfoBarSeverity::Error: return SR_InfoBarIconSeverityErrorName;
+    };
+    return SR_InfoBarIconSeverityInformationalName;
 }
