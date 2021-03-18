@@ -205,6 +205,10 @@
             <SolidColorBrush x:Key="SystemFillColorCautionBackgroundBrush" Color="{StaticResource SystemFillColorCautionBackground}" />
             <SolidColorBrush x:Key="SystemFillColorCriticalBackgroundBrush" Color="{StaticResource SystemFillColorCriticalBackground}" />
             <SolidColorBrush x:Key="SystemFillColorNeutralBackgroundBrush" Color="{StaticResource SystemFillColorNeutralBackground}" />
+
+            <SolidColorBrush x:Key="SystemControlFocusVisualPrimaryBrush" Color="{StaticResource FocusStrokeColorOuter}"/>
+            <SolidColorBrush x:Key="SystemControlFocusVisualSecondaryBrush" Color="{StaticResource FocusStrokeColorInner}"/>
+
             <!-- Elevation border brushes-->
 
             <LinearGradientBrush x:Key="ControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
@@ -432,6 +436,9 @@
             <SolidColorBrush x:Key="SystemFillColorCriticalBackgroundBrush" Color="{StaticResource SystemFillColorCriticalBackground}" />
             <SolidColorBrush x:Key="SystemFillColorNeutralBackgroundBrush" Color="{StaticResource SystemFillColorNeutralBackground}" />
 
+            <SolidColorBrush x:Key="SystemControlFocusVisualPrimaryBrush" Color="{StaticResource FocusStrokeColorOuter}"/>
+            <SolidColorBrush x:Key="SystemControlFocusVisualSecondaryBrush" Color="{StaticResource FocusStrokeColorInner}"/>
+
             <!-- Elevation border brushes-->
 
             <LinearGradientBrush x:Key="ControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
@@ -563,6 +570,9 @@
             <SolidColorBrush x:Key="SystemFillColorCautionBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="SystemFillColorCriticalBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="SystemFillColorNeutralBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+
+            <SolidColorBrush x:Key="SystemControlFocusVisualPrimaryBrush" Color="{StaticResource SystemColorButtonTextColor}"/>
+            <SolidColorBrush x:Key="SystemControlFocusVisualSecondaryBrush" Color="{StaticResource SystemColorButtonTextColor}"/>
 
             <!-- Elevation border brushes-->
 
