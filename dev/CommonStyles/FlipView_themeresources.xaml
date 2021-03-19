@@ -128,7 +128,7 @@
                                     BorderThickness="{ThemeResource FlipViewButtonBorderThemeThickness}"
                                     BorderBrush="{ThemeResource FlipViewNextPreviousButtonBorderBrush}"
                                     contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                    contract7NotPresent:CornerRadius="{TemplateBinding CornerRadius}">
+                                    contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
                                             <VisualState x:Name="Normal" />
