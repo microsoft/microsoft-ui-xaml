@@ -205,7 +205,6 @@
             <SolidColorBrush x:Key="SystemFillColorCautionBackgroundBrush" Color="{StaticResource SystemFillColorCautionBackground}" />
             <SolidColorBrush x:Key="SystemFillColorCriticalBackgroundBrush" Color="{StaticResource SystemFillColorCriticalBackground}" />
             <SolidColorBrush x:Key="SystemFillColorNeutralBackgroundBrush" Color="{StaticResource SystemFillColorNeutralBackground}" />
-
             <!-- Elevation border brushes-->
 
             <LinearGradientBrush x:Key="ControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
