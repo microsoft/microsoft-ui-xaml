@@ -50,7 +50,8 @@
             <StaticResource x:Key="InkToolbarFlyoutItemBorderHoverThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderSelectedThemeBrush" Color="#FFFFFF" />
             <StaticResource x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" ResourceKey="InkToolbarFlyoutItemBorderSelectedThemeBrush" />
-            <StaticResource x:Key="InkToolbarAccentColorThemeBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <SolidColorBrush x:Key="InkToolbarAccentColorSelectedThemeBrush" Color="#003E92" />
+            <StaticResource x:Key="InkToolbarAccentColorThemeBrush" ResourceKey="InkToolbarAccentColorSelectedThemeBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <!--Background-->
@@ -100,7 +101,8 @@
             <StaticResource x:Key="InkToolbarFlyoutItemBorderHoverThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderSelectedThemeBrush" Color="#000000" />
             <StaticResource x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" ResourceKey="InkToolbarFlyoutItemBorderSelectedThemeBrush" />
-            <StaticResource x:Key="InkToolbarAccentColorThemeBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <SolidColorBrush x:Key="InkToolbarAccentColorSelectedThemeBrush" Color="#003E92" />
+            <StaticResource x:Key="InkToolbarAccentColorThemeBrush" ResourceKey="InkToolbarAccentColorSelectedThemeBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="InkToolbarFlyoutItemBackgroundThemeBrush" Color="{ThemeResource SystemColorWindowColor}" />
@@ -215,8 +217,8 @@
 
     <Style x:Key="InkToolbarExtensionGlyphStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
-        <Setter Property="FontSize" Value="8" />
-        <Setter Property="LineHeight" Value="8" />
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="LineHeight" Value="10" />
         <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
         <Setter Property="TextLineBounds" Value="Tight" />
         <Setter Property="TextAlignment" Value="Center" />
