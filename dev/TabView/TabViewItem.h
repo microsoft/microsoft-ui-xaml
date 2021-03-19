@@ -22,7 +22,7 @@ public:
 
     // IFrameworkElement
     void OnApplyTemplate();
-
+    void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     // IUIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
 
@@ -73,7 +73,6 @@ public:
     bool m_isDragging = false;
     bool m_isPointerOver = false;
 
-    void UpdateShadow();
     winrt::IInspectable m_shadow{ nullptr };
 
     winrt::weak_ref<winrt::TabView> m_parentTabView{ nullptr };

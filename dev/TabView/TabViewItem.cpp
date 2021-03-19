@@ -19,6 +19,8 @@ TabViewItem::TabViewItem()
 
     SetValue(s_TabViewTemplateSettingsProperty, winrt::make<TabViewItemTemplateSettings>());
 
+    Loaded({ this, &TabViewItem::OnLoaded });
+
     RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), { this, &TabViewItem::OnIsSelectedPropertyChanged });
 }
 
@@ -61,33 +63,22 @@ void TabViewItem::OnApplyTemplate()
 
     if (tabView)
     {
-        if (SharedHelpers::IsThemeShadowAvailable())
-        {
-            if (internalTabView)
-            {
-                winrt::ThemeShadow shadow;
-                if (!SharedHelpers::Is21H1OrHigher())
-                {
-                    shadow.Receivers().Append(internalTabView->GetShadowReceiver());
-                }
-                m_shadow = shadow;
-
-                double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
-
-                const auto currentTranslation = Translation();
-                const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
-                Translation(translation);
-
-                UpdateShadow();
-            }
-        }
-
         m_tabDragStartingRevoker = tabView.TabDragStarting(winrt::auto_revoke, { this, &TabViewItem::OnTabDragStarting });
         m_tabDragCompletedRevoker = tabView.TabDragCompleted(winrt::auto_revoke, { this, &TabViewItem::OnTabDragCompleted });
     }
 
     UpdateCloseButton();
     UpdateWidthModeVisualState();
+}
+
+void TabViewItem::OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+{
+    if (const auto tabView = GetParentTabView())
+    {
+        const auto internalTabView = winrt::get_self<TabView>(tabView);
+        const auto index = internalTabView->IndexFromContainer(*this);
+        internalTabView->SetTabSeparatorVisibilityState(index);
+    }
 }
 
 void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
@@ -99,45 +90,23 @@ void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sen
 
     if (IsSelected())
     {
-        SetValue(winrt::Canvas::ZIndexProperty(),box_value(20));
         StartBringIntoView();
     }
-    else
-    {
-        SetValue(winrt::Canvas::ZIndexProperty(), box_value(0));
-    }
 
-    UpdateShadow();
     UpdateWidthModeVisualState();
 
     UpdateCloseButton();
 }
 
-void TabViewItem::UpdateShadow()
-{
-    if (SharedHelpers::IsThemeShadowAvailable())
-    {
-        if (IsSelected() && !m_isDragging)
-        {
-            Shadow(m_shadow.as<winrt::ThemeShadow>());
-        }
-        else
-        {
-            Shadow(nullptr);
-        }
-    }
-}
 
 void TabViewItem::OnTabDragStarting(const winrt::IInspectable& sender, const winrt::TabViewTabDragStartingEventArgs& args)
 {
     m_isDragging = true;
-    UpdateShadow();
 }
 
 void TabViewItem::OnTabDragCompleted(const winrt::IInspectable& sender, const winrt::TabViewTabDragCompletedEventArgs& args)
 {
     m_isDragging = false;
-    UpdateShadow();
 }
 
 winrt::AutomationPeer TabViewItem::OnCreateAutomationPeer()
@@ -178,25 +147,25 @@ void TabViewItem::UpdateCloseButton()
     {
         switch (m_closeButtonOverlayMode)
         {
-            case winrt::TabViewCloseButtonOverlayMode::OnPointerOver:
+        case winrt::TabViewCloseButtonOverlayMode::OnPointerOver:
+        {
+            // If we only want to show the button on hover, we also show it when we are selected, otherwise hide it
+            if (IsSelected() || m_isPointerOver)
             {
-                // If we only want to show the button on hover, we also show it when we are selected, otherwise hide it
-                if (IsSelected() || m_isPointerOver)
-                {
-                    winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible", false);
-                }
-                else
-                {
-                    winrt::VisualStateManager::GoToState(*this, L"CloseButtonCollapsed", false);
-                }
-                break;
-            }
-            default:
-            {
-                // Default, use "Auto"
                 winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible", false);
-                break;
             }
+            else
+            {
+                winrt::VisualStateManager::GoToState(*this, L"CloseButtonCollapsed", false);
+            }
+            break;
+        }
+        default:
+        {
+            // Default, use "Auto"
+            winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible", false);
+            break;
+        }
         }
     }
 }
@@ -255,7 +224,7 @@ void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChanged
                 toolTip.Placement(winrt::Controls::Primitives::PlacementMode::Mouse);
                 winrt::ToolTipService::SetToolTip(*this, toolTip);
                 return toolTip;
-            }());
+                }());
         }
     }
 

@@ -14,14 +14,6 @@
 #include "TabViewTabDragCompletedEventArgs.g.h"
 #include "DispatcherHelper.h"
 
-static constexpr double c_tabShadowDepth = 16.0;
-static constexpr wstring_view c_tabViewShadowDepthName{ L"TabViewShadowDepth"sv };
-
-class TabViewItemRevokers : public winrt::implements<TabViewItemRevokers, winrt::IInspectable>
-{
-public:
-    winrt::TabViewItem::Loaded_revoker loadedRevoker{};
-};
 
 class TabViewTabCloseRequestedEventArgs :
     public winrt::implementation::TabViewTabCloseRequestedEventArgsT<TabViewTabCloseRequestedEventArgs>
@@ -103,10 +95,9 @@ public:
     // From ListView
     winrt::DependencyObject ContainerFromItem(winrt::IInspectable const& item);
     winrt::DependencyObject ContainerFromIndex(int index);
+    int IndexFromContainer(winrt::DependencyObject const& container);
     winrt::IInspectable ItemFromContainer(winrt::DependencyObject const& container);
 
-
-    void UpdateBottomStrokes(int newIndex, int previousIndex = -1, bool updatePreviousAdjacentTabs = false);
     // Control
     void OnKeyDown(winrt::KeyRoutedEventArgs const& e);
 
@@ -122,9 +113,10 @@ public:
 
     void RequestCloseTab(winrt::TabViewItem const& item);
 
-    winrt::UIElement GetShadowReceiver() { return m_shadowReceiver.get(); }
-
     winrt::hstring GetTabCloseButtonTooltipText() { return m_tabCloseButtonTooltipText; }
+
+    void SetTabSeparatorVisibilityState(int index, bool isVisible=true);
+
 private:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnScrollViewerLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -153,7 +145,7 @@ private:
     void UpdateSelectedItem();
     void UpdateSelectedIndex();
 
-    void UpdateTabWidths(bool shouldUpdateWidths = true, bool fillAllAvailableSpace = true);
+    void UpdateTabWidths(bool shouldUpdateWidths=true, bool fillAllAvailableSpace=true);
 
     void UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
     void UpdateListViewItemContainerTransitions();
@@ -166,12 +158,8 @@ private:
     int GetItemCount();
 
     winrt::TabViewItem FindTabViewItemFromDragItem(const winrt::IInspectable& item);
-    winrt::IInspectable TabFromIndex(int index);
-
-    void SetTabViewItemAdjacentState(const int index, const winrt::hstring& state);
 
     bool m_updateTabWidthOnPointerLeave{ false };
-
 
     tracker_ref<winrt::ColumnDefinition> m_leftContentColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_tabColumn{ this };
@@ -187,8 +175,6 @@ private:
     tracker_ref<winrt::RepeatButton> m_scrollIncreaseButton{ this };
     tracker_ref<winrt::Button> m_addButton{ this };
     tracker_ref<winrt::ItemsPresenter> m_itemsPresenter{ this };
-
-    tracker_ref<winrt::Grid> m_shadowReceiver{ this };
 
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::ListView::PointerExited_revoker m_tabStripPointerExitedRevoker{};
@@ -218,6 +204,4 @@ private:
     winrt::hstring m_tabCloseButtonTooltipText{};
 
     winrt::Size previousAvailableSize{};
-
-    GlobalDependencyProperty s_tabViewItemRevokersProperty{ nullptr };
 };

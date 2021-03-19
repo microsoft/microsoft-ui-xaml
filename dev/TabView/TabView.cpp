@@ -28,17 +28,7 @@ TabView::TabView()
     auto items = winrt::make<Vector<winrt::IInspectable, MakeVectorParam<VectorFlag::Observable>()>>();
     SetValue(s_TabItemsProperty, items);
 
-    s_tabViewItemRevokersProperty =
-        InitializeDependencyProperty(
-            L"TabViewItemHandlers",
-            winrt::name_of<TabViewItemRevokers>(),
-            winrt::name_of<winrt::TabView>(),
-            true,
-            nullptr,
-            nullptr);
-
     SetDefaultStyleKey(this);
-
 
     Loaded({ this, &TabView::OnLoaded });
 
@@ -86,7 +76,7 @@ void TabView::OnApplyTemplate()
 
     m_tabContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"TabContentPresenter", controlProtected));
     m_rightContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"RightContentPresenter", controlProtected));
-
+    
     m_leftContentColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"LeftContentColumn", controlProtected));
     m_tabColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"TabColumn", controlProtected));
     m_addButtonColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"AddButtonColumn", controlProtected));
@@ -96,11 +86,6 @@ void TabView::OnApplyTemplate()
     {
         m_tabContainerGrid.set(containerGrid);
         m_tabStripPointerExitedRevoker = containerGrid.PointerExited(winrt::auto_revoke, { this,&TabView::OnTabStripPointerExited });
-    }
-
-    if (!SharedHelpers::Is21H1OrHigher())
-    {
-        m_shadowReceiver.set(GetTemplateChildT<winrt::Grid>(L"ShadowReceiver", controlProtected));
     }
 
     m_listView.set([this, controlProtected]() {
@@ -121,7 +106,7 @@ void TabView::OnApplyTemplate()
             m_listViewAllowDropPropertyChangedRevoker = RegisterPropertyChanged(listView, winrt::UIElement::AllowDropProperty(), { this, &TabView::OnListViewDraggingPropertyChanged });
         }
         return listView;
-        }());
+    }());
 
     m_addButton.set([this, controlProtected]() {
         auto addButton = GetTemplateChildT<winrt::Button>(L"AddButton", controlProtected);
@@ -145,29 +130,30 @@ void TabView::OnApplyTemplate()
             m_addButtonClickRevoker = addButton.Click(winrt::auto_revoke, { this, &TabView::OnAddButtonClick });
         }
         return addButton;
-        }());
+    }());
 
-    if (SharedHelpers::IsThemeShadowAvailable())
-    {
-        if (!SharedHelpers::Is21H1OrHigher())
-        {
-            if (auto shadowCaster = GetTemplateChildT<winrt::Grid>(L"ShadowCaster", controlProtected))
-            {
-                winrt::ThemeShadow shadow;
-                shadow.Receivers().Append(GetShadowReceiver());
-
-                double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
-
-                const auto currentTranslation = shadowCaster.Translation();
-                const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
-                shadowCaster.Translation(translation);
-
-                shadowCaster.Shadow(shadow);
-            }
-        }
-    }
     UpdateListViewItemContainerTransitions();
 }
+
+
+void TabView::SetTabSeparatorVisibilityState(int index, bool isVisible)
+{
+    if (const auto tvi = ContainerFromIndex(index).try_as<winrt::TabViewItem>())
+    {
+        const auto selectedIndex = SelectedIndex();
+        if (index == selectedIndex || index + 1 == selectedIndex)
+        {
+            bool f = winrt::VisualStateManager::GoToState(tvi, L"TabSeparatorHidden", false);
+            bool k = false;
+        }
+        else
+        {
+            bool a = winrt::VisualStateManager::GoToState(tvi, L"TabSeparatorVisible", false);
+            bool l = false;
+        }
+    }
+}
+
 
 void TabView::OnListViewDraggingPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
@@ -207,7 +193,7 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
                         const winrt::FindNextElementOptions options;
                         options.ExclusionRect(listViewBounds);
                         const auto next = winrt::FocusManager::FindNextElement(direction, options);
-                        if (const auto args2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                        if(const auto args2 = args.try_as<winrt::IGettingFocusEventArgs2>())
                         {
                             args2.TrySetNewFocusedElement(next);
                         }
@@ -215,9 +201,9 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
                         {
                             // Without TrySetNewFocusedElement, we cannot set focus while it is changing.
                             m_dispatcherHelper.RunAsync([next]()
-                                {
-                                    SetFocus(next, winrt::FocusState::Programmatic);
-                                });
+                            {
+                                SetFocus(next, winrt::FocusState::Programmatic);
+                            });
                         }
                         args.Handled(true);
                     }
@@ -232,55 +218,13 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
     }
 }
 
-void TabView::SetTabViewItemAdjacentState(const int index, const winrt::hstring& adjacentState)
-{
-    if (const auto tab = TabFromIndex(index).try_as<winrt::TabViewItem>())
-    {
-        bool visualStateChanged = winrt::VisualStateManager::GoToState(tab, adjacentState, false);
-        // If element was not yet loaded and added to the tree,
-        // GoToState will return false and visual state will not be changed.
-        // In order to set the visual state in this case, we attach a Loaded handler
-        // that will set the visual state and then will be removed.
-        if (!visualStateChanged)
-        {
-            auto tabViewItemRevokers = winrt::make_self<TabViewItemRevokers>();
-            tabViewItemRevokers->loadedRevoker = tab.Loaded(winrt::auto_revoke,
-                [tabViewItemRevokers, adjacentState](const winrt::IInspectable& sender, auto const& args)
-                {
-                    // What if something happens that changes position of this tab
-                    // and adjacent state passed to this function will be invalid?
-                    // Another option is to capture TabView and call UpdateBottomStrokes once again
-                    // It will not work for when we want to update selectedIndex +-2 objects to
-                    // NonAdjacent state, but, GoToState should not initially fail on them
-                    // because they're either present and rendered or they are not present.
-                    // Thoughts?
-                    winrt::VisualStateManager::GoToState(sender.as<winrt::TabViewItem>(), adjacentState, false);
-                    tabViewItemRevokers->loadedRevoker.revoke();
-                }
-            );
-            tab.SetValue(s_tabViewItemRevokersProperty, tabViewItemRevokers.as<winrt::IInspectable>());
-        }
-    }
-
-}
-
-void TabView::UpdateBottomStrokes(int newIndex, int previousIndex, bool updatePreviousAdjacentTabs)
-{
-    if (updatePreviousAdjacentTabs)
-    {
-        SetTabViewItemAdjacentState(previousIndex - 1, L"NotAdjacent");
-        SetTabViewItemAdjacentState(previousIndex + 1, L"NotAdjacent");
-    }
-
-    SetTabViewItemAdjacentState(newIndex - 1, L"AdjacentOnTheLeft");
-    SetTabViewItemAdjacentState(newIndex + 1, L"AdjacentOnTheRight");
-    SetTabViewItemAdjacentState(newIndex, L"NotAdjacent");
-}
-
 void TabView::OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateSelectedIndex();
-    UpdateBottomStrokes(SelectedIndex(), winrt::unbox_value<int>(args.OldValue()), true);
+    SetTabSeparatorVisibilityState(winrt::unbox_value<int>(args.OldValue()));
+    SetTabSeparatorVisibilityState(winrt::unbox_value<int>(args.OldValue()) - 1);
+    SetTabSeparatorVisibilityState(SelectedIndex() - 1);
+    SetTabSeparatorVisibilityState(SelectedIndex());
 }
 
 void TabView::OnSelectedItemPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -379,7 +323,6 @@ void TabView::UnhookEventsAndClearFields()
     m_addButtonColumn.set(nullptr);
     m_rightContentColumn.set(nullptr);
     m_tabContainerGrid.set(nullptr);
-    m_shadowReceiver.set(nullptr);
     m_listView.set(nullptr);
     m_addButton.set(nullptr);
     m_itemsPresenter.set(nullptr);
@@ -491,8 +434,6 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
         SelectedIndex(listView.SelectedIndex());
         SelectedItem(listView.SelectedItem());
 
-        UpdateBottomStrokes(SelectedIndex());
-
         // Find TabsItemsPresenter and listen for SizeChanged
         m_itemsPresenter.set([this, listView]() {
             auto itemsPresenter = SharedHelpers::FindInVisualTreeByName(listView, L"TabsItemsPresenter").as<winrt::ItemsPresenter>();
@@ -501,7 +442,7 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
                 m_itemsPresenterSizeChangedRevoker = itemsPresenter.SizeChanged(winrt::auto_revoke, { this, &TabView::OnItemsPresenterSizeChanged });
             }
             return itemsPresenter;
-            }());
+        }());
 
         auto scrollViewer = SharedHelpers::FindInVisualTreeByName(listView, L"ScrollViewer").as<winrt::FxScrollViewer>();
         m_scrollViewer.set(scrollViewer);
@@ -520,43 +461,14 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
     }
 }
 
-winrt::IInspectable TabView::TabFromIndex(int index)
-{
-    int tabItemsLength = static_cast<int>(TabItems().Size());
-    if (index >= 0 && index < tabItemsLength)
-    {
-        if (const auto tab = TabItems().GetAt(index).try_as<winrt::TabViewItem>())
-        {
-            return tab;
-        }
-        else if (const auto tab = ContainerFromIndex(index))
-        {
-            return tab;
-        }
-        else
-        {
-            // This is needed in case the required container
-            // was not generated. Calling UpdateLayout()
-            // will force underlying ItemsContainerGenerator
-            // generate the container for the item.
-            if (const auto listView = m_listView.get())
-            {
-                listView.UpdateLayout();
-                return ContainerFromIndex(index);
-            }
-        }
-    }
-    return nullptr;
-}
-
 void TabView::OnTabStripPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
 {
     if (m_updateTabWidthOnPointerLeave)
     {
         auto scopeGuard = gsl::finally([this]()
-            {
-                m_updateTabWidthOnPointerLeave = false;
-            });
+        {
+            m_updateTabWidthOnPointerLeave = false;
+        });
         UpdateTabWidths();
     }
 }
@@ -581,7 +493,7 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
                 m_scrollDecreaseClickRevoker = decreaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollDecreaseClick });
             }
             return decreaseButton;
-            }());
+        }());
 
         m_scrollIncreaseButton.set([this, scrollViewer]() {
             const auto increaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>();
@@ -599,7 +511,7 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
                 m_scrollIncreaseClickRevoker = increaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollIncreaseClick });
             }
             return increaseButton;
-            }());
+        }());
 
         m_scrollViewerViewChangedRevoker = scrollViewer.ViewChanged(winrt::auto_revoke, { this, &TabView::OnScrollViewerViewChanged });
     }
@@ -676,13 +588,8 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
         m_tabItemsChangedEventSource(*this, args);
 
         int numItems = static_cast<int>(TabItems().Size());
-        const auto itemIndex = static_cast<int32_t>(args.Index());
         const auto listViewInnerSelectedIndex = m_listView.get().SelectedIndex();
         auto selectedIndex = SelectedIndex();
-
-        // This is done in order to set SelectedIndex property to the correct value.
-        // It won't be updated automatically when Index of the selected item changes
-        // due to shifting of the selected tab due to reordering.
         if (selectedIndex != listViewInnerSelectedIndex && listViewInnerSelectedIndex != -1)
         {
             SelectedIndex(listViewInnerSelectedIndex);
@@ -691,16 +598,10 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
 
         if (args.CollectionChange() == winrt::CollectionChange::ItemRemoved)
         {
-            if (itemIndex - selectedIndex == 1 && listViewInnerSelectedIndex != -1)
-            {
-                UpdateBottomStrokes(selectedIndex);
-            }
-
             m_updateTabWidthOnPointerLeave = true;
             if (numItems > 0)
             {
-                // SelectedIndex might also already be -1
-                const auto selectedIndex = SelectedIndex();
+                // SelectedIndex might also already be -
                 if (selectedIndex == -1 || selectedIndex == static_cast<int32_t>(args.Index()))
                 {
                     // Find the closest tab to select instead.
@@ -729,6 +630,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
                         }
                     } while (index != startIndex);
                 }
+
             }
             // Last item removed, update sizes
             // The index of the last element is "Size() - 1", but in TabItems, it is already removed.
@@ -737,35 +639,17 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
                 m_updateTabWidthOnPointerLeave = true;
                 if (args.Index() == TabItems().Size())
                 {
-                    UpdateTabWidths(true, false);
+                    UpdateTabWidths(true,false);
                 }
             }
         }
         else
         {
-            if (args.CollectionChange() == winrt::CollectionChange::ItemInserted && listViewInnerSelectedIndex != -1)
-            {
-                // UpdateBottomStrokes repeats in both if statements
-                // I can't wrap my head around on how to write it better
-                // Thoughts?
-                if (itemIndex - selectedIndex == 1)
-                {
-                    // Set previously adjacent tab to non adjacent
-                    SetTabViewItemAdjacentState(selectedIndex + 2, L"NotAdjacent");
-                    UpdateBottomStrokes(SelectedIndex());
-                }
-                else if (itemIndex - selectedIndex == -1 || itemIndex - selectedIndex == 0)
-                {
-                    SetTabViewItemAdjacentState(selectedIndex - 2, L"NotAdjacent");
-                    UpdateBottomStrokes(SelectedIndex());
-                }
-            }
             UpdateTabWidths();
         }
     }
 
 }
-
 
 void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
 {
@@ -871,9 +755,9 @@ void TabView::UpdateTabContent()
                 // move focus later.
                 bool shouldMoveFocusToNewTab = false;
                 auto revoker = tabContentPresenter.LosingFocus(winrt::auto_revoke, [&shouldMoveFocusToNewTab](const winrt::IInspectable&, const winrt::LosingFocusEventArgs& args)
-                    {
-                        shouldMoveFocusToNewTab = true;
-                    });
+                {
+                    shouldMoveFocusToNewTab = true;
+                });
 
                 tabContentPresenter.Content(tvi.Content());
                 tabContentPresenter.ContentTemplate(tvi.ContentTemplate());
@@ -907,7 +791,7 @@ void TabView::RequestCloseTab(winrt::TabViewItem const& container)
     if (auto&& listView = m_listView.get())
     {
         auto args = winrt::make_self<TabViewTabCloseRequestedEventArgs>(listView.ItemFromContainer(container), container);
-
+            
         m_tabCloseRequestedEventSource(*this, *args);
 
         if (auto internalTabViewItem = winrt::get_self<TabViewItem>(container))
@@ -945,7 +829,7 @@ winrt::Size TabView::MeasureOverride(winrt::Size const& availableSize)
     return __super::MeasureOverride(availableSize);
 }
 
-void TabView::UpdateTabWidths(bool shouldUpdateWidths, bool fillAllAvailableSpace)
+void TabView::UpdateTabWidths(bool shouldUpdateWidths,bool fillAllAvailableSpace)
 {
     double tabWidth = std::numeric_limits<double>::quiet_NaN();
 
@@ -1103,20 +987,7 @@ void TabView::UpdateSelectedItem()
 {
     if (auto&& listView = m_listView.get())
     {
-        auto tvi = SelectedItem().try_as<winrt::TabViewItem>();
-        if (!tvi)
-        {
-            tvi = ContainerFromItem(SelectedItem()).try_as<winrt::TabViewItem>();
-        }
-
-        if (tvi)
-        {
-            listView.SelectedItem(tvi);
-
-            // Setting ListView.SelectedItem will not work here in all cases.
-            // The reason why that doesn't work but this does is unknown.
-            tvi.IsSelected(true);
-        }
+        listView.SelectedItem(SelectedItem());
     }
 }
 
@@ -1151,6 +1022,14 @@ winrt::DependencyObject TabView::ContainerFromIndex(int index)
     return nullptr;
 }
 
+int TabView::IndexFromContainer(winrt::DependencyObject const& container)
+{
+    if (auto&& listView = m_listView.get())
+    {
+        return listView.IndexFromContainer(container);
+    }
+    return -1;
+}
 winrt::IInspectable TabView::ItemFromContainer(winrt::DependencyObject const& container)
 {
     if (auto&& listView = m_listView.get())
