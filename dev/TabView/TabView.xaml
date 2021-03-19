@@ -14,6 +14,7 @@
     <Style x:Key="DefaultTabViewStyle" TargetType="local:TabView">
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Padding" Value="{ThemeResource TabViewHeaderPadding}" />
         <Setter Property="Background" Value="{ThemeResource TabViewBackground}" />
         <contract6Present:Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
 
@@ -46,6 +47,7 @@
                             <primitives:TabViewListView
                                 Grid.Column="1"
                                 x:Name="TabListView"
+                                Padding="{TemplateBinding Padding}"
                                 CanReorderItems="{TemplateBinding CanReorderTabs}"
                                 CanDragItems="{TemplateBinding CanDragTabs}"
                                 AllowDrop="{TemplateBinding AllowDropTabs}"
@@ -93,7 +95,6 @@
 
     <Style TargetType="primitives:TabViewListView">
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="Padding" Value="{ThemeResource  TabViewHeaderPadding}" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="TabNavigation" Value="Once" />
         <Setter Property="IsSwipeEnabled" Value="False" />
