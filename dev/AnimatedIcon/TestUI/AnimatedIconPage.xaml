@@ -656,6 +656,13 @@
                                 </controls:AnimatedIcon>
                             </StackPanel>
                         </Button>
+                        <StackPanel Background="Maroon">
+                            <controls:AnimatedIcon Height="100" Width="100" Foreground="Pink">
+                                <controls:AnimatedIcon.FallbackIconSource>
+                                    <controls:SymbolIconSource Symbol="AddFriend" Foreground="Purple"/>
+                                </controls:AnimatedIcon.FallbackIconSource>
+                            </controls:AnimatedIcon>
+                        </StackPanel>
                     </StackPanel>
                 </StackPanel>
             </ScrollViewer>
