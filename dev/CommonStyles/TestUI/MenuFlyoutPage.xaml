@@ -30,27 +30,25 @@
             </Button.Flyout>
         </Button>
 
+        <Button Content="Icons" Margin="0,12,0,12">
+            <Button.Flyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Text="Share">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="&#xE72D;"/>
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem Text="Copy" Icon="Copy"/>
+                    <MenuFlyoutItem Text="Delete" Icon="Delete"/>
+                    <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" Icon="Delete" />
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="Rename"/>
+                    <MenuFlyoutItem Text="Select"/>
+                </MenuFlyout>
+            </Button.Flyout>
+        </Button>
 
-
-            <Button Content="Icons" Margin="0,12,0,12">
-                <Button.Flyout>
-                    <MenuFlyout>
-                        <MenuFlyoutItem Text="Share">
-                            <MenuFlyoutItem.Icon>
-                                <FontIcon Glyph="&#xE72D;"/>
-                            </MenuFlyoutItem.Icon>
-                        </MenuFlyoutItem>
-                        <MenuFlyoutItem Text="Copy" Icon="Copy"/>
-                        <MenuFlyoutItem Text="Delete" Icon="Delete"/>
-                        <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" Icon="Delete" />
-                        <MenuFlyoutSeparator/>
-                        <MenuFlyoutItem Text="Rename"/>
-                        <MenuFlyoutItem Text="Select"/>
-                    </MenuFlyout>
-                </Button.Flyout>
-            </Button>
-            
-            <Button Content="Keyboard accelerators">
+        <Button Content="Keyboard accelerators">
             <Button.Flyout>
                 <MenuFlyout>
                     <MenuFlyoutItem Text="Share">
