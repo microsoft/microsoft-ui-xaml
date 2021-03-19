@@ -136,20 +136,18 @@ void TabView::OnApplyTemplate()
 }
 
 
-void TabView::SetTabSeparatorVisibilityState(int index, bool isVisible)
+void TabView::SetTabSeparatorVisibilityState(int index)
 {
     if (const auto tvi = ContainerFromIndex(index).try_as<winrt::TabViewItem>())
     {
         const auto selectedIndex = SelectedIndex();
         if (index == selectedIndex || index + 1 == selectedIndex)
         {
-            bool f = winrt::VisualStateManager::GoToState(tvi, L"TabSeparatorHidden", false);
-            bool k = false;
+            winrt::VisualStateManager::GoToState(tvi, L"TabSeparatorHidden", false);
         }
         else
         {
-            bool a = winrt::VisualStateManager::GoToState(tvi, L"TabSeparatorVisible", false);
-            bool l = false;
+            winrt::VisualStateManager::GoToState(tvi, L"TabSeparatorVisible", false);
         }
     }
 }
@@ -601,7 +599,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
             m_updateTabWidthOnPointerLeave = true;
             if (numItems > 0)
             {
-                // SelectedIndex might also already be -
+                // SelectedIndex might also already be -1
                 if (selectedIndex == -1 || selectedIndex == static_cast<int32_t>(args.Index()))
                 {
                     // Find the closest tab to select instead.

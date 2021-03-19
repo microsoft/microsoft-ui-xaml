@@ -13,7 +13,6 @@
 
     <Style x:Key="DefaultTabViewStyle" TargetType="local:TabView">
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="Padding" Value="{ThemeResource TabViewHeaderPadding}" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Background" Value="{ThemeResource TabViewBackground}" />
         <contract6Present:Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
@@ -59,20 +58,18 @@
                                 Visibility="{Binding IsAddTabButtonVisible, RelativeSource={RelativeSource TemplatedParent}}"
                                 Grid.Column="2"
                                 BorderBrush="{ThemeResource TabViewBorderColor}"
-                                Padding="3,0,0,3"
-                                VerticalAlignment="Bottom"
-                                >
+                                Padding="{ThemeResource TabViewItemAddButtonContainerPadding}"
+                                VerticalAlignment="Bottom">
                                 <Button
-
-                                x:Name="AddButton"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Content="&#xE710;"
-                                IsTextScaleFactorEnabled="False"
-                                Command="{TemplateBinding AddTabButtonCommand}"
-                                CommandParameter="{TemplateBinding AddTabButtonCommandParameter}"
-                                Style="{ThemeResource TabViewButtonStyle}"
-                                HighContrastAdjustment="None"/>
+                                    x:Name="AddButton"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Content="&#xE710;"
+                                    IsTextScaleFactorEnabled="False"
+                                    Command="{TemplateBinding AddTabButtonCommand}"
+                                    CommandParameter="{TemplateBinding AddTabButtonCommandParameter}"
+                                    Style="{ThemeResource TabViewButtonStyle}"
+                                    HighContrastAdjustment="None"/>
                             </Border>
 
                             <ContentPresenter
@@ -96,7 +93,7 @@
 
     <Style TargetType="primitives:TabViewListView">
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="Padding" Value="0,8,0,0" />
+        <Setter Property="Padding" Value="{ThemeResource  TabViewHeaderPadding}" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="TabNavigation" Value="Once" />
         <Setter Property="IsSwipeEnabled" Value="False" />
@@ -283,7 +280,7 @@
         <Setter Property="Background" Value="{ThemeResource TabViewButtonBackground}"/>
         <Setter Property="Foreground" Value="{ThemeResource TabViewButtonForeground}"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource TabViewItemButtonCornerRadius}"/>
-        <Setter Property="FontSize" Value="{ThemeResource TabViewItemAddButonFontSize}"/>
+        <Setter Property="FontSize" Value="{ThemeResource TabViewItemAddButtonFontSize}"/>
         <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
         <Setter Property="Width" Value="{ThemeResource TabViewItemAddButtonWidth}"/>
         <Setter Property="Height" Value="{ThemeResource TabViewItemAddButtonHeight}"/>

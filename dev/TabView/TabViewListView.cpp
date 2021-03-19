@@ -19,8 +19,6 @@ TabViewListView::TabViewListView()
     ContainerContentChanging({ this, &TabViewListView::OnContainerContentChanging });
 }
 
-// IItemsControlOverrides
-
 winrt::DependencyObject TabViewListView::GetContainerForItemOverride()
 {
     return winrt::make<TabViewItem>();

@@ -115,7 +115,7 @@ public:
 
     winrt::hstring GetTabCloseButtonTooltipText() { return m_tabCloseButtonTooltipText; }
 
-    void SetTabSeparatorVisibilityState(int index, bool isVisible=true);
+    void SetTabSeparatorVisibilityState(int index);
 
 private:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
