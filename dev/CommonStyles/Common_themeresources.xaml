@@ -47,6 +47,8 @@
     <!-- DateTimeFlyoutBorderPadding is defined since RS5. set it here to ensure it's always defined. -->
     <Thickness x:Key="DateTimeFlyoutBorderPadding">0</Thickness>
 
+    <x:Boolean x:Key="ThemeShadowIsUsingDropShadows">True</x:Boolean>
+
     <Style TargetType="LoopingSelector">
         <Setter Property="ShouldLoop" Value="True" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
