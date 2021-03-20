@@ -456,6 +456,7 @@
                                 <Popup x:Name="OverflowPopup">
                                     <Grid
                                         x:Name="OuterOverflowContentRoot"
+                                        RequestedTheme="{TemplateBinding ActualTheme}"
                                         Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}">
                                         <Grid.Clip>
                                             <RectangleGeometry x:Name="OuterOverflowContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OverflowContentClipRect}">

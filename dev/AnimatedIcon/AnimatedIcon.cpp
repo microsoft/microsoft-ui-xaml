@@ -27,6 +27,7 @@ AnimatedIcon::AnimatedIcon()
 void AnimatedIcon::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
+    OnSourcePropertyChanged(nullptr);
     auto const panel = winrt::VisualTreeHelper::GetChild(*this, 0).as<winrt::Panel>();
     m_rootPanel.set(panel);
     m_currentState = GetState(*this);
