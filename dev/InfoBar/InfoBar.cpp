@@ -169,7 +169,7 @@ void InfoBar::UpdateVisibility(bool notify, bool force)
                         ResourceAccessor::GetLocalizedStringResource(SR_InfoBarOpenedNotification),
                         Title().data(),
                         Message().data(),
-                        ResourceAccessor::GetLocalizedStringResource(GetSeverityLevelResourceName(Severity())));
+                        ResourceAccessor::GetLocalizedStringResource(GetSeverityLevelResourceName(Severity())).data());
 
                     winrt::get_self<InfoBarAutomationPeer>(peer)->RaiseOpenedEvent(Severity(), notificationString);
                 }
