@@ -75,6 +75,7 @@ private:
     void OnNextButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::GettingFocusEventArgs& args);
     void OnPipsAreaBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args);
+    void OnScrollViewerBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args);
 
     /* Pips Logic */
     void UpdatePipsItems(const int numberOfPages, int maxVisualIndicators);
@@ -93,6 +94,7 @@ private:
     winrt::ItemsRepeater::ElementPrepared_revoker m_pipsPagerElementPreparedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_pipsAreaGettingFocusRevoker{};
     winrt::ItemsRepeater::BringIntoViewRequested_revoker m_pipsAreaBringIntoViewRequestedRevoker{};
+    winrt::FxScrollViewer::BringIntoViewRequested_revoker m_scrollViewerBringIntoViewRequestedRevoker{};
     /* Items */
     winrt::IObservableVector<int> m_pipsPagerItems{};
 

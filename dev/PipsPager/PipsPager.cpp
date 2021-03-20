@@ -103,7 +103,15 @@ void PipsPager::OnApplyTemplate()
         }
     }(GetTemplateChildT<winrt::ItemsRepeater>(c_pipsPagerRepeaterName, *this));
 
-    m_pipsPagerScrollViewer.set(GetTemplateChildT<winrt::FxScrollViewer>(c_pipsPagerScrollViewerName, *this));
+    m_scrollViewerBringIntoViewRequestedRevoker.revoke();
+    [this](winrt::FxScrollViewer scrollViewer)
+    {
+        m_pipsPagerScrollViewer.set(scrollViewer);
+        if (scrollViewer && SharedHelpers::IsRS4OrHigher())
+        {
+            m_scrollViewerBringIntoViewRequestedRevoker = scrollViewer.BringIntoViewRequested(winrt::auto_revoke, { this, &PipsPager::OnScrollViewerBringIntoViewRequested });
+        }
+    }(GetTemplateChildT<winrt::FxScrollViewer>(c_pipsPagerScrollViewerName, *this));
 
     m_defaultPipSize = GetDesiredPipSize(NormalPipStyle());
     m_selectedPipSize = GetDesiredPipSize(SelectedPipStyle());
@@ -625,6 +633,11 @@ void PipsPager::OnPipsAreaBringIntoViewRequested(const IInspectable& sender, con
     {
         args.Handled(true);
     }
+}
+
+void PipsPager::OnScrollViewerBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args)
+{
+    args.Handled(true);
 }
 
 void PipsPager::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
