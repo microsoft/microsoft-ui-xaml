@@ -49,9 +49,8 @@
             <StaticResource x:Key="InkToolbarButtonSelectedBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="InkToolbarFlyoutItemBorderHoverThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderSelectedThemeBrush" Color="#FFFFFF" />
-            <StaticResource x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" ResourceKey="InkToolbarFlyoutItemBorderSelectedThemeBrush" />
-            <SolidColorBrush x:Key="InkToolbarAccentColorSelectedThemeBrush" Color="#003E92" />
-            <StaticResource x:Key="InkToolbarAccentColorThemeBrush" ResourceKey="InkToolbarAccentColorSelectedThemeBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" ResourceKey="InkToolbarFlyoutItemBorderSelectedThemeBrush" />            
+            <StaticResource x:Key="InkToolbarAccentColorThemeBrush" ResourceKey="AccentTextFillColorPrimaryBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <!--Background-->
@@ -100,9 +99,8 @@
             <StaticResource x:Key="InkToolbarButtonSelectedBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="InkToolbarFlyoutItemBorderHoverThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderSelectedThemeBrush" Color="#000000" />
-            <StaticResource x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" ResourceKey="InkToolbarFlyoutItemBorderSelectedThemeBrush" />
-            <SolidColorBrush x:Key="InkToolbarAccentColorSelectedThemeBrush" Color="#003E92" />
-            <StaticResource x:Key="InkToolbarAccentColorThemeBrush" ResourceKey="InkToolbarAccentColorSelectedThemeBrush" />
+            <StaticResource x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" ResourceKey="InkToolbarFlyoutItemBorderSelectedThemeBrush" />            
+            <StaticResource x:Key="InkToolbarAccentColorThemeBrush" ResourceKey="AccentTextFillColorPrimaryBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="InkToolbarFlyoutItemBackgroundThemeBrush" Color="{ThemeResource SystemColorWindowColor}" />
@@ -280,7 +278,7 @@
                         Background="{TemplateBinding Background}"
                         Width="{ThemeResource InkToolbarButtonWidth}"
                         Height="{ThemeResource InkToolbarButtonHeight}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
+                        CornerRadius="{TemplateBinding CornerRadius}" >
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -1370,7 +1368,7 @@
                             Text=""
                             TextAlignment="Center"
                             Grid.Column="1"
-                            Margin="{ThemeResource InkToolbarFlyoutItemIconMargin}"/>
+                            Margin="{ThemeResource InkToolbarFlyoutItemTextBlockMargin}"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
@@ -1398,7 +1396,7 @@
                             Text=""
                             TextAlignment="Center"
                             Grid.Column="1"
-                            Margin="{ThemeResource InkToolbarFlyoutItemIconMargin}"/>
+                            Margin="{ThemeResource InkToolbarFlyoutItemTextBlockMargin}"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
@@ -1426,7 +1424,7 @@
                             Text=""
                             TextAlignment="Center"
                             Grid.Column="1"
-                            Margin="{ThemeResource InkToolbarFlyoutItemIconMargin}"/>
+                            Margin="{ThemeResource InkToolbarFlyoutItemTextBlockMargin}"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
@@ -1454,7 +1452,7 @@
                             Text=""
                             TextAlignment="Center"
                             Grid.Column="1"
-                            Margin="{ThemeResource InkToolbarFlyoutItemIconMargin}"/>
+                            Margin="{ThemeResource InkToolbarFlyoutItemTextBlockMargin}"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
@@ -2152,7 +2150,7 @@
                             Text=""
                             TextAlignment="Center"
                             Grid.Column="1"
-                            Margin="{ThemeResource InkToolbarFlyoutItemIconMargin}"/>
+                            Margin="{ThemeResource InkToolbarFlyoutItemTextBlockMargin}"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
@@ -2179,7 +2177,7 @@
                             Text=""
                             TextAlignment="Center"
                             Grid.Column="1"
-                            Margin="{ThemeResource InkToolbarFlyoutItemIconMargin}"/>
+                            Margin="{ThemeResource InkToolbarFlyoutItemTextBlockMargin}"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
