@@ -168,6 +168,7 @@ namespace MU_X_XTI_NAMESPACE
 {
     [MUX_PUBLIC]
     [webhosthidden]
+    [Windows.UI.Xaml.Markup.FullXamlMetadataProvider]
     [default_interface]
     runtimeclass XamlControlsXamlMetaDataProvider
     // IXMP needs to be implemented by a public type in our assembly, but it doesn't need to be
