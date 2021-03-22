@@ -1,13 +1,13 @@
-ElementBackgroundGrid
+MonochromaticOverlayPresenter
 ===
 
 # Background
 
-The `ElementBackgroundGrid` API in this spec is a Xaml Grid that lets you "draw" its background by
+The `MonochromaticOverlayPresenter` API in this spec is a Xaml Framework Element that lets you "draw" its background by
 pointing at another element; the rendering of that other element becomes the background of
 the Grid.
 
-`ElementBackgroundGrid` element is similar to several precedents:
+`MonochromaticOverlayPresenter` element is similar to several precedents:
 * [SwapChainBackgroundPanel](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.SwapChainBackgroundPanel),
 which is a `Grid` that renders its background using a swap chain.
 * [CompositionMaskBrush](https://docs.microsoft.com/uwp/api/Windows.UI.Composition.CompositionMaskBrush),
@@ -15,58 +15,51 @@ which  is a brush that gets its content from another (source) brush.
 * WPF's [VisualBrush](https://docs.microsoft.com/dotnet/api/System.Windows.Media.VisualBrush),
 which uses an element's rendering to draw a brush.
 
-`ElementBackgroundGrid` is most similar to the WPF `VisualBrush`, the difference being that `ElementBackgroundGrid`
+`MonochromaticOverlayPresenter` is most similar to the WPF `VisualBrush`, the difference being that `MonochromaticOverlayPresenter`
 is an element rather than a Brush. So it can't for example be rendered as text foreground.
 
-This new `ElementBackgroundGrid` will be used in the rendering of the 
+This new `MonochromaticOverlayPresenter` will be used in the rendering of the 
 [DatePicker](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.DatePicker)
 control.
 
 # API Pages
 
-## ElementBackgroundGrid class
+## MonochromaticOverlayPresenter class
 
-A [Grid](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Grid)
+A [Framework Element](https://docs.microsoft.com/windows/winui/api/microsoft.ui.xaml.frameworkelement?view=winui-3.0-preview)
 whose background can be the rendering of another element, or using another element
 as a mask.
 
 ```csharp
-public class ElementBackgroundGrid : Grid
+public class MonochromaticOverlayPresenter : FrameworkElement
 {
     public UIElement SourceElement { get; set; }
     public Color ReplacementColor { get; set; }
 }
 ```
 
-Set the `SourceElement` property to indicate which element's rendering should be drawn
-as the background of the `ElementBackgroundGrid`. If the `Background` property is set, it
-is rendered on top of the `SourceElement's` rendering.
+Set the `SourceElement` property to indicate which element's rendering should be drawn as the background of the `MonochromaticOverlayPresenter`. If the `Background` property is set, the SourceElement's rendering is on top of it. (The source is z-ordered on top of the background.
 
-Only the source element's rendering applies to the `ElementBackgroundGrid`; the user
-cannot interact with it using the mouse, or move keyboard focus to it.
+Only the source element's rendering applies to the `MonochromaticOverlayPresenter`; the user
+cannot interact with it using the mouse, or move keyboard focus to it. However, `MonochromaticOverlayPresenter` will bring in system focus visuals, regardless of what the [UseSystemFocusVisuals](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Control.UseSystemFocusVisuals) property is set to. To avoid this, you should inset the margins to remove it.
 
-> Note: the element set as the `SourceElement` cannot be an ancestor or in the
-descendancy of the `ElementBackgroundGrid`.
-
-> Issue: are there other restrictions? Is there an underlying Comp page that this can point to?
-
-If the `ReplacementColor` property is set, the `SourceElement` is treated as a mask;
-every non-transparent pixel will be replaced by this color.
+> Note: the element set as the `SourceElement` cannot be an ancestor or in the descendancy of the `MonochromaticOverlayPresenter`. However the `SourceElement` must be in the same XAML tree as the `MonochromaticOverlayPresenter`.
 
 
-The image below shows another use of the `ElementBackgroundGrid` API, where it manipulates the colors of an element on screen where the contents of that element are moving. Here, the control is overlaid on a ScrollViewer that has a fixed position but moving content. 
+If the `ReplacementColor` property is set, the `SourceElement` is treated as a mask; every non-transparent pixel will be replaced by this color. The source pixel is replaced when the Alpha value of the `ReplacementColor` is non-zero. The RGB value of the `ReplacementColor` (not the Alpha value) will overwrite the RGB of the source. The default value for `ReplacementColor` is Transparent.
 
-### ElementBackgroundGrid examples
 
-The following example puts an `ElementBackgroundGrid` on top of (z-ordered above)
+### MonochromaticOverlayPresenter examples
+
+The following example puts an `MonochromaticOverlayPresenter` on top of (z-ordered above)
 some scrolling text, causing the center of the text to be highlighted, even as it's scrolling.
 Things to note:
-* The `ElementBackgroundGrid` is sourcing from the `TextBlock`, it's also z-ordered above
+* The `MonochromaticOverlayPresenter` is sourcing from the `TextBlock`, it's also z-ordered above
 the same `TextBlock`. If the `Background` and `SourceElement` properties weren't set,
 it would have no effect; it would render the `TextBlock` exactly on top of itself.
 * The 'Background` property is black, and the `ReplacementColor` is green, causing
 the overlay text to be displayed as green on black.
-* The `ElementBackgroundGrid` is positioned and given a height such that it's a black band
+* The `MonochromaticOverlayPresenter` is positioned and given a height such that it's a black band
 across the center of the scrolling text.
 
 
@@ -81,7 +74,7 @@ across the center of the scrolling text.
         </TextBlock>
     </ScrollViewer>
 
-    <ElementBackgroundGrid
+    <MonochromaticOverlayPresenter
         ReplacementColor="Green"
         Background="Black"
         TargetElement="{Binding ElementName=Target}"
@@ -93,14 +86,14 @@ across the center of the scrolling text.
 
 ![Example showing the ColorFilterOverlay control overlaid on moving content within a ScrollViewer, changing the foreground color and background color of words that pass through.](images/api-example.gif)
 
-The example below shows how the new `ElementBackgroundGrid` API can be used to partially highlight a TextBlock.
+The example below shows how the new `MonochromaticOverlayPresenter` API can be used to partially highlight a TextBlock.
 
 ```xml
  <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel x:Name="Panel" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Grid Margin="2,10,0,0">
                 <TextBlock x:Name="Target" Text="This string will be partially highlighted"/>
-                <ElementBackgroundGrid
+                <MonochromaticOverlayPresenter
                     ReplacementColor="Black"
                     TargetElement="{Binding ElementName=Target}"
                     Width="50"
@@ -114,7 +107,7 @@ The example below shows how the new `ElementBackgroundGrid` API can be used to p
 
 > Todo: add a reflection example (classic use of VisualBrush in WPF)
 
-### ElementBackgroundGrid theme resources
+### MonochromaticOverlayPresenter theme resources
 
 You can modify the default Style and ControlTemplate to give the control a unique appearance. 
 For more info, see the 
@@ -123,14 +116,14 @@ of the
 [Styling controls](https://docs.microsoft.com/en-us/windows/uwp/design/controls-and-patterns/xaml-styles)
 article.
 
-`ElementBackgroundGrid` defines the following new resource:
+`MonochromaticOverlayPresenter` defines the following new resource:
 
 ```xml
 <StaticResource x:Key="DatePickerFlyoutPresenterHighlightForegroundColor" ResourceKey="TextOnAccentAAFillColorPrimary" />
 ```
 
 
-## Other ElementBackgroundGrid members
+## Other MonochromaticOverlayPresenter members
 
 | Name | Description |
 | - | - |
@@ -141,14 +134,14 @@ article.
 # API Details
 
 ```csharp
-namespace Microsoft.UI.Xaml.Controls
+namespace Microsoft.UI.Xaml.Controls.Primitives
 {
 
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
-unsealed runtimeclass ElementBackgroundGrid : Windows.UI.Xaml.Controls.Grid
+unsealed runtimeclass MonochromaticOverlayPresenter : Windows.UI.Xaml.Controls.FrameworkElement
 {
-    ElementBackgroundGrid();
+    MonochromaticOverlayPresenter();
 
     Windows.UI.Xaml.UIElement SourceElement { get; set; };
     Windows.UI.Color ReplacementColor { get; set; };
@@ -182,7 +175,7 @@ Recently, [ListView was given design updates](https://github.com/microsoft/micro
 This spec will detail a number of changes to update the designs of DatePicker and TimePicker so that they are more 
 visually aligned with modern WinUI controls. At a high level, some key parts of these updated styles are: a rounded selection rectangle; rounded backplates on items, buttons, and scroll buttons on  hover; and new animations that are aligned with other controls. 
 
-These visual changes to DatePicker and TimePicker will in part be made possible by the new `ElementBackgroundGrid` API which is described above. This class provides the logic behind displaying the 'inverted' selection rectangle that spans across all three columns in DatePicker and TimePicker, and giving it the correct foreground color to have appropriate contrast over the accent colored background.
+These visual changes to DatePicker and TimePicker will in part be made possible by the new `MonochromaticOverlayPresenter` API which is described above. This class provides the logic behind displaying the 'inverted' selection rectangle that spans across all three columns in DatePicker and TimePicker, and giving it the correct foreground color to have appropriate contrast over the accent colored background.
 
 ### Visual Examples
 <!-- Use this section to provide a brief description of the feature.
