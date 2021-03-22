@@ -59,32 +59,40 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     Log.Comment("Comparing against " + dictionaryName.ToString());
                     var themeDictionary = resourceDictionaries.ThemeDictionaries[dictionaryName] as ResourceDictionary;
-                    bool haveSameNumberOfKeys = (defaultThemeDictionary.Count == themeDictionary.Count);
 
-                    
-                    foreach (var entry in defaultThemeDictionary)
-                    {
-                        if (!themeDictionary.ContainsKey(entry.Key))
-                        {
-                            Log.Comment(dictionaryName.ToString() + " does not contain Key " + entry.Key.ToString() + " contained in Default dictionary");
-                            dictionariesContainSameElements = false;
-                        }
-                    }
+                    bool allKeysInDefaultExistInDictionary = ResourceDictionariesContainSameKeys(defaultThemeDictionary, "Default", themeDictionary, dictionaryName.ToString());
+                    bool allKeysInDictionaryExistInDefault = ResourceDictionariesContainSameKeys(themeDictionary, dictionaryName.ToString(), defaultThemeDictionary, "Default");
 
-                    foreach (var entry in themeDictionary)
-                    {
-                        if (!defaultThemeDictionary.ContainsKey(entry.Key))
-                        {
-                            Log.Comment("Default dictionary does not contain Key " + entry.Key.ToString() + " contained in " + dictionaryName.ToString() + " dictionary");
-                            dictionariesContainSameElements = false;
-                        }
-                    }
+                    dictionariesContainSameElements &= (allKeysInDefaultExistInDictionary && allKeysInDictionaryExistInDefault);
                 }
 
                 Assert.AreEqual(0, resourceDictionaries.MergedDictionaries.Count, "MergedDictionaries is not empty");
             });
 
             Assert.IsTrue(dictionariesContainSameElements);
+        }
+
+        bool ResourceDictionariesContainSameKeys(ResourceDictionary expectedDictionary, string expectedDictionaryName, ResourceDictionary actualDictionary, string actualDictionaryName)
+        {
+            List<string> missingKeysInActualDictionary = new List<string>();
+            foreach (var entry in expectedDictionary)
+            {
+                if (!actualDictionary.ContainsKey(entry.Key))
+                {
+                    missingKeysInActualDictionary.Add(entry.Key.ToString());
+                }
+            }
+
+            if (missingKeysInActualDictionary.Count > 0)
+            {
+                Log.Comment("Keys found in " + expectedDictionaryName + " but not in " + actualDictionaryName);
+                foreach (var missingKey in missingKeysInActualDictionary)
+                {
+                    Log.Comment("* " + missingKey);
+                }
+            }
+
+            return (missingKeysInActualDictionary.Count == 0);
         }
 
         [TestMethod]
