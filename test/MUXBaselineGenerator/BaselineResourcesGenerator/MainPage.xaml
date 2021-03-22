@@ -1,0 +1,32 @@
+﻿<Page
+    x:Class="BaselineResourcesGenerator.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BaselineResourcesGenerator"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Button Content="Retrieve Baseline Resources" Name="RetrieveResources" Click="RetrieveResources_Click" Grid.Column="0" />
+            <Button Content="Copy" Name="Copy" Click="Copy_Click" Grid.Column="1" />
+        </Grid>
+
+        <TextBlock Name="BaselineTextBox" Grid.Row="1" />
+
+    </Grid>
+</Page>
