@@ -10,6 +10,7 @@
     <Import_RootNamespace>CommonStyles_APITests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)BaselineResources.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CommonStylesTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CalendarViewTests.cs" />
   </ItemGroup>
