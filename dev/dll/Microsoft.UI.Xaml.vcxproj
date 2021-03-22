@@ -578,6 +578,9 @@
     <Natvis Include="$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.natvis">
     </Natvis>
     -->
+    <Page Update="E:\Repos\WinUI\microsoft-ui-xaml\dev\CommonStyles\Deprecated_themeresources.xaml">
+      <FileType>Document</FileType>
+    </Page>
   </ItemGroup>
   <Import Project="$(CppTargetsFilePath)" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" />
