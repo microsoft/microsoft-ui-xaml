@@ -568,6 +568,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         
                         <FontIcon
@@ -596,6 +597,17 @@
                             Foreground="{TemplateBinding Foreground}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        <contract6Present:TextBlock x:Name="KeyboardAcceleratorTextBlock"
+                                Grid.Column="2"
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                Text="{TemplateBinding KeyboardAcceleratorTextOverride}"
+                                MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}"
+                                Margin="24,0,0,0"
+                                Foreground="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForeground}"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Visibility="Collapsed"
+                                AutomationProperties.AccessibilityView="Raw" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
