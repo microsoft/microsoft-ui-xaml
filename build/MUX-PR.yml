@@ -3,22 +3,22 @@ variables:
   minimumExpectedTestsExecutedCount: 3000  # Sanity check for minimum expected tests to be reported
   rerunPassesRequiredToAvoidFailure: 5
 jobs:
-- job: Setup
-  steps:
-    - task: powershell@2
-      name: checkPayload
-      displayName: 'Check if build is required for this PR'
-      inputs:
-        targetType: filePath
-        filePath: build\ShouldSkipPRBuild.ps1
+# - job: Setup
+#   steps:
+#     - task: powershell@2
+#       name: checkPayload
+#       displayName: 'Check if build is required for this PR'
+#       inputs:
+#         targetType: filePath
+#         filePath: build\ShouldSkipPRBuild.ps1
 
 - job: Build
-  dependsOn: Setup
+  # dependsOn: Setup
+  # ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
   condition: |
     and
     (
-      eq(variables['useBuildOutputFromBuildId'],''),
-      ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
+      eq(variables['useBuildOutputFromBuildId'],'')
     )
   pool:
     name: 'windevbuildagents'
