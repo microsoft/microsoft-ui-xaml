@@ -324,7 +324,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 elements = new PipsPagerElements();
                 Button getButtonSizesButton = elements.GetPipsPagerButtonSizesButton();
-                getButtonSizesButton.InvokeAndWait();
+                InputHelper.LeftClick(getButtonSizesButton);
+                Wait.ForIdle();
 
                 TextBlock horizontalOrientationPipsPagerButtonWidth = elements.GetHorizontalOrientationPipsPagerButtonWidthTextBlock();
                 TextBlock horizontalOrientationPipsPagerButtonHeight = elements.GetHorizontalOrientationPipsPagerButtonHeightTextBlock();
@@ -360,8 +361,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 InputHelper.LeftClick(getButtonSizesButton);
                 Wait.ForIdle();
-
-                getButtonSizesButton.InvokeAndWait();
 
                 Verify.AreEqual("20", horizontalOrientationPipsPagerButtonWidth.DocumentText);
                 Verify.AreEqual("12", horizontalOrientationPipsPagerButtonHeight.DocumentText);
