@@ -322,14 +322,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("PipsPager Tests"))
             {
-                Button getButtonSizesButton = FindElement.ByName<Button>("GetPipsPagersButtonSizes");
+                elements = new PipsPagerElements();
+                Button getButtonSizesButton = elements.GetPipsPagerButtonSizesButton();
                 getButtonSizesButton.InvokeAndWait();
 
-                TextBlock horizontalOrientationPipsPagerButtonWidth = FindElement.ByName<TextBlock>("HorizontalOrientationPipsPagerButtonWidth");
-                TextBlock horizontalOrientationPipsPagerButtonHeight = FindElement.ByName<TextBlock>("HorizontalOrientationPipsPagerButtonHeight");
+                TextBlock horizontalOrientationPipsPagerButtonWidth = elements.GetHorizontalOrientationPipsPagerButtonWidthTextBlock();
+                TextBlock horizontalOrientationPipsPagerButtonHeight = elements.GetHorizontalOrientationPipsPagerButtonHeightTextBlock();
 
-                TextBlock verticalOrientationPipsPagerButtonWidth = FindElement.ByName<TextBlock>("VerticalOrientationPipsPagerButtonWidth");
-                TextBlock verticalOrientationPipsPagerButtonHeight = FindElement.ByName<TextBlock>("VerticalOrientationPipsPagerButtonHeight");
+                TextBlock verticalOrientationPipsPagerButtonWidth = elements.GetVerticalOrientationPipsPagerButtonWidthTextBlock();
+                TextBlock verticalOrientationPipsPagerButtonHeight = elements.GetVerticalOrientationPipsPagerButtonHeightTextBlock();
 
                 Verify.AreEqual("12", horizontalOrientationPipsPagerButtonWidth.DocumentText);
                 Verify.AreEqual("20", horizontalOrientationPipsPagerButtonHeight.DocumentText);
@@ -344,15 +345,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("PipsPager Tests"))
             {
-                Button getButtonSizesButton = FindElement.ByName<Button>("GetPipsPagersButtonSizes");
+                elements = new PipsPagerElements();
+                Button getButtonSizesButton = elements.GetPipsPagerButtonSizesButton();
                 getButtonSizesButton.InvokeAndWait();
 
-                TextBlock horizontalOrientationPipsPagerButtonWidth = FindElement.ByName<TextBlock>("HorizontalOrientationPipsPagerButtonWidth");
-                TextBlock horizontalOrientationPipsPagerButtonHeight = FindElement.ByName<TextBlock>("HorizontalOrientationPipsPagerButtonHeight");
+                TextBlock horizontalOrientationPipsPagerButtonWidth = elements.GetHorizontalOrientationPipsPagerButtonWidthTextBlock();
+                TextBlock horizontalOrientationPipsPagerButtonHeight = elements.GetHorizontalOrientationPipsPagerButtonHeightTextBlock();
                 Verify.AreEqual("12", horizontalOrientationPipsPagerButtonWidth.DocumentText);
                 Verify.AreEqual("20", horizontalOrientationPipsPagerButtonHeight.DocumentText);
 
-                elements = new PipsPagerElements();
                 SetOrientation(Microsoft.Windows.Apps.Test.Automation.OrientationType.Vertical);
                 VerifyOrientationChanged(Microsoft.Windows.Apps.Test.Automation.OrientationType.Vertical);
 

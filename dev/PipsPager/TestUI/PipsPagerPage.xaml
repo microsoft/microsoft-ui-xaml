@@ -87,23 +87,23 @@
             <StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Horizontal Orientation PipsPager ButtonWidth:"/>
-                    <TextBlock x:Name="HorizontalOrientationPipsPagerButtonWidth" AutomationProperties.Name="HorizontalOrientationPipsPagerButtonWidth" Text="0" Margin="10,0,0,0"/>
+                    <TextBlock x:Name="HorizontalOrientationPipsPagerButtonWidthTextBlock" AutomationProperties.Name="HorizontalOrientationPipsPagerButtonWidthTextBlock" Text="0" Margin="10,0,0,0"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Horizontal Orientation PipsPager ButtonHeight:"/>
-                    <TextBlock x:Name="HorizontalOrientationPipsPagerButtonHeight" AutomationProperties.Name="HorizontalOrientationPipsPagerButtonHeight" Text="0" Margin="10,0,0,0"/>
+                    <TextBlock x:Name="HorizontalOrientationPipsPagerButtonHeightTextBlock" AutomationProperties.Name="HorizontalOrientationPipsPagerButtonHeightTextBlock" Text="0" Margin="10,0,0,0"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Vertical Orientation PipsPager ButtonWidth:"/>
-                    <TextBlock x:Name="VerticalOrientationPipsPagerButtonWidth" AutomationProperties.Name="VerticalOrientationPipsPagerButtonWidth" Text="0" Margin="10,0,0,0"/>
+                    <TextBlock x:Name="VerticalOrientationPipsPagerButtonWidthTextBlock" AutomationProperties.Name="VerticalOrientationPipsPagerButtonWidthTextBlock" Text="0" Margin="10,0,0,0"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Vertical Orientation PipsPager ButtonHeight:"/>
-                    <TextBlock x:Name="VerticalOrientationPipsPagerButtonHeight" AutomationProperties.Name="VerticalOrientationPipsPagerButtonHeight" Text="0" Margin="10,0,0,0"/>
+                    <TextBlock x:Name="VerticalOrientationPipsPagerButtonHeightTextBlock" AutomationProperties.Name="VerticalOrientationPipsPagerButtonHeightTextBlock" Text="0" Margin="10,0,0,0"/>
                 </StackPanel>
             </StackPanel>
-            <Button x:Name="GetPipsPagersButtonSizes"
-                    AutomationProperties.Name="GetPipsPagersButtonSizes"
+            <Button x:Name="GetPipsPagersButtonSizesButton"
+                    AutomationProperties.Name="GetPipsPagersButtonSizesButton"
                     Content="Get Sizes"
                     Click="OnGetPipsPagerButtonSizesClicked"
                     Height="50"

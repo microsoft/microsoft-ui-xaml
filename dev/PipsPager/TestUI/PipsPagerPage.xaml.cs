@@ -80,13 +80,13 @@ namespace MUXControlsTestApp
         {
             if (repeater.TryGetElement(1) is var horizontalOrientationButton && horizontalOrientationButton != null)
             {
-                HorizontalOrientationPipsPagerButtonWidth.Text = $"{ horizontalOrientationButton.ActualSize.X}";
-                HorizontalOrientationPipsPagerButtonHeight.Text = $"{horizontalOrientationButton.ActualSize.Y}";
+                HorizontalOrientationPipsPagerButtonWidthTextBlock.Text = $"{ horizontalOrientationButton.ActualSize.X}";
+                HorizontalOrientationPipsPagerButtonHeightTextBlock.Text = $"{horizontalOrientationButton.ActualSize.Y}";
             }
             if (verticalOrientationPipsPagerRepeater.TryGetElement(1) is var verticalOrientationButton && verticalOrientationButton != null)
             {
-                VerticalOrientationPipsPagerButtonWidth.Text = $"{verticalOrientationButton.ActualSize.X}";
-                VerticalOrientationPipsPagerButtonHeight.Text = $"{verticalOrientationButton.ActualSize.Y}";
+                VerticalOrientationPipsPagerButtonWidthTextBlock.Text = $"{verticalOrientationButton.ActualSize.X}";
+                VerticalOrientationPipsPagerButtonHeightTextBlock.Text = $"{verticalOrientationButton.ActualSize.Y}";
             }
         }
 
