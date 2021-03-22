@@ -31,7 +31,7 @@
                 <AppBarButton Icon="Add" Label="Add"/>
                 <AppBarButton Icon="Remove" Label="Remove" LabelPosition="Collapsed"/>
                 <AppBarSeparator/>
-                <AppBarButton Icon="Save" Label="Save"/>
+                <AppBarButton Icon="Save" Label="Save And Quit"/>
                 <AppBarToggleButton Icon="Add" Label="Toggle"/>
                 <CommandBar.SecondaryCommands>
                     <AppBarButton Icon="Add" Label="Add"/>
