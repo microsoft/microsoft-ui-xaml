@@ -19,6 +19,10 @@ using System.Collections.Generic;
 using XamlControlsResources = Microsoft.UI.Xaml.Controls.XamlControlsResources;
 using Windows.UI.Xaml.Markup;
 using System;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.VisualStudio.TestTools.UnitTesting.AppContainer;
+using Windows.AI.MachineLearning;
+using System.Runtime.InteropServices;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -34,6 +38,126 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class CommonStylesApiTests : ApiTestBase
     {
+        [TestMethod]
+        public void VerifyAllThemesContainSameResourceKeys()
+        {
+            bool dictionariesContainSameElements = true;
+            RunOnUIThread.Execute(() =>
+            {
+                var resourceDictionaries = new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version2 };
+                Log.Comment("ThemeDictionaries");
+
+                var defaultThemeDictionary = resourceDictionaries.ThemeDictionaries["Default"] as ResourceDictionary;
+
+                foreach (var dictionaryName in resourceDictionaries.ThemeDictionaries.Keys)
+                {
+                    // Skip the Default theme dictionary
+                    if (dictionaryName.ToString() == "Default")
+                    {
+                        continue;
+                    }
+
+                    Log.Comment("Comparing against " + dictionaryName.ToString());
+                    var themeDictionary = resourceDictionaries.ThemeDictionaries[dictionaryName] as ResourceDictionary;
+                    bool haveSameNumberOfKeys = (defaultThemeDictionary.Count == themeDictionary.Count);
+
+                    
+                    foreach (var entry in defaultThemeDictionary)
+                    {
+                        if (!themeDictionary.ContainsKey(entry.Key))
+                        {
+                            Log.Comment(dictionaryName.ToString() + " does not contain Key " + entry.Key.ToString() + " contained in Default dictionary");
+                            dictionariesContainSameElements = false;
+                        }
+                    }
+
+                    foreach (var entry in themeDictionary)
+                    {
+                        if (!defaultThemeDictionary.ContainsKey(entry.Key))
+                        {
+                            Log.Comment("Default dictionary does not contain Key " + entry.Key.ToString() + " contained in " + dictionaryName.ToString() + " dictionary");
+                            dictionariesContainSameElements = false;
+                        }
+                    }
+                }
+
+                Assert.AreEqual(0, resourceDictionaries.MergedDictionaries.Count, "MergedDictionaries is not empty");
+            });
+
+            Assert.IsTrue(dictionariesContainSameElements);
+        }
+
+        [TestMethod]
+        public void VerifyNoBaselineResourceWasRemoved()
+        {
+            var actualResourcesKeys = new HashSet<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var resourceDictionaries = new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version2 };
+
+                foreach (var dictionaryName in resourceDictionaries.ThemeDictionaries.Keys)
+                {
+                    var themeDictionary = resourceDictionaries.ThemeDictionaries[dictionaryName] as ResourceDictionary;
+
+                    foreach (var entry in themeDictionary)
+                    {
+                        string entryKey = entry.Key as string;
+                        if (!actualResourcesKeys.Contains(entryKey))
+                        {
+                            actualResourcesKeys.Add(entryKey);
+                        }
+                    }
+                }
+
+                foreach (var entry in resourceDictionaries)
+                {
+                    string entryKey = entry.Key as string;
+                    if (!actualResourcesKeys.Contains(entryKey))
+                    {
+                        actualResourcesKeys.Add(entryKey);
+                    }
+                }
+            });
+
+            bool allBaselineResourceKeysExist = true;
+            foreach (var baselineResourceKey in BaselineResources.BaselineResourcesList)
+            {
+                if (!actualResourcesKeys.Contains(baselineResourceKey))
+                {
+                    Log.Comment(baselineResourceKey + " was not found in the actual resource list");
+                    allBaselineResourceKeysExist = false;
+                }
+            }
+
+            Assert.IsTrue(allBaselineResourceKeysExist);
+        }
+
+        [TestMethod]
+        public void DumpThemeResources()
+        {
+            var rd = new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version2 };
+            Log.Comment("ThemeDictionaries");
+            foreach (var key in rd.ThemeDictionaries.Keys)
+            {
+                Log.Comment(key.ToString());
+                var themeDictionary = rd.ThemeDictionaries[key] as ResourceDictionary;
+                foreach (var entry in themeDictionary)
+                {
+                    Log.Comment(entry.ToString());
+                }
+            }
+
+            Assert.AreEqual(0, rd.MergedDictionaries.Count, "MergedDictionaries is not empty");
+
+
+            foreach (var entry in rd)
+            {
+                Log.Comment(entry.ToString());
+            }
+
+        }
+
         [TestMethod]
         public void VerifyUseCompactResourcesAPI()
         {
@@ -102,6 +226,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(new CornerRadius(6, 0, 0, 6), leftRadiusGrid.CornerRadius);
             });
         }
+
+
 
         //Task 30789390: Re-enable disabled tests
         //[TestMethod]
