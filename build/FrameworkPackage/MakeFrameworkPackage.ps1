@@ -288,21 +288,6 @@ $versionPropsFile =
 
 Set-Content -Value $versionPropsFile $fullOutputPath\MicrosoftUIXamlVersion.props
 
-
-$capabilitiesPropsFile = 
-@"
-<?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup>
-    <ProjectCapability Id="VersionGeneral" Include="WinUI" />
-    <ProjectCapability Id="VersionSpecific" Include="WinUI.$version" />
-  </ItemGroup>
-</Project>
-"@
-
-Set-Content -Value $capabilitiesPropsFile $fullOutputPath\MicrosoftUIXamlCapabilities.props
-
-
 # Also copy in some loose files 
 
 $PackageName = $BasePackageName

@@ -34,5 +34,8 @@
 
     <!-- This is here for C++ based projects, see http://nugetdocsbeta.azurewebsites.net/ndocs/guides/create-uwp-packages -->
     <file target="build\native\$ID$.targets" src="MUXControls-Nuget-Native.targets"/>
+
+    <file target="build" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml\Microsoft.UI.Xaml.Capabilities.props"/>
+    <file target="buildTransitive" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml\Microsoft.UI.Xaml.Capabilities.props"/>
   </files>
 </package>

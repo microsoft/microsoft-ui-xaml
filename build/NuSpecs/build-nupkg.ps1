@@ -71,6 +71,22 @@ if (!(Test-Path $OutputDir)) { mkdir $OutputDir }
 
 $nupkgtitle = "Microsoft.UI.Xaml"
 
+
+$capabilitiesPropsFile = 
+@"
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ProjectCapability Id="VersionGeneral" Include="WinUI" />
+    <ProjectCapability Id="VersionSpecific" Include="WinUI.$version" />
+  </ItemGroup>
+</Project>
+"@
+
+Write-Host "Writing Capabilities Props File = $BuildOutput\$BuildFlavor\$BuildArch\Microsoft.UI.Xaml\Microsoft.UI.Xaml.Capabilities.props"
+Set-Content -Value $capabilitiesPropsFile $BuildOutput\$BuildFlavor\$BuildArch\Microsoft.UI.Xaml\Microsoft.UI.Xaml.Capabilities.props
+
+
 function New-TemporaryDirectory {
     $parent = [System.IO.Path]::GetTempPath()
     $name = [System.IO.Path]::GetRandomFileName()

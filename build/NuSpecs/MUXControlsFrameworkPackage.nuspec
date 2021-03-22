@@ -30,9 +30,7 @@
 
     <file target="tools" src="VisualStudioToolsManifest.xml"/>
 
-    <file target="build" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\FrameworkPackage\MicrosoftUIXamlCapabilities.props"/>
     <file target="build" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\FrameworkPackage\MicrosoftUIXamlVersion.props"/>
-    <file target="buildTransitive" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\FrameworkPackage\MicrosoftUIXamlCapabilities.props"/>
     <file target="buildTransitive" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\FrameworkPackage\MicrosoftUIXamlVersion.props"/>
     <file target="build\Common.targets" src="MUXControls-Nuget-Common.targets"/>
     <file target="buildTransitive\Common.targets" src="MUXControls-Nuget-Common.targets"/>
