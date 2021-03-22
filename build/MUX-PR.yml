@@ -50,8 +50,8 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
   parameters:
     name: 'RunTestsInHelix'
+    # - Setup
     dependsOn:
-    - Setup
     - Build
     condition: |
       and
