@@ -674,7 +674,7 @@ void PipsPager::OnPipsAreaBringIntoViewRequested(const IInspectable& sender, con
     if (
         (Orientation() == winrt::Orientation::Vertical && isnan(args.VerticalAlignmentRatio())) ||
         (Orientation() == winrt::Orientation::Horizontal && isnan(args.HorizontalAlignmentRatio()))
-        )
+       )
     {
         args.Handled(true);
     }
