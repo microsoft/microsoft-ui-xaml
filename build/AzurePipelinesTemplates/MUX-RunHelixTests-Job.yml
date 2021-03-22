@@ -3,6 +3,7 @@ parameters:
   dependsOn: ''
   condition: ''
   testSuite: ''
+  testPayloadArtifactName: 'HelixPayload'
   # If a Pipeline runs this template more than once, this parameter should be unique per build flavor to differentiate the
   # the different test runs:
   helixType: 'test/devtest' 
@@ -94,10 +95,17 @@ jobs:
       filename: 'dir'
       arguments: '/s $(Build.SourcesDirectory)\HelixPayload'
 
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish HelixPayload'
+    inputs:
+      PathtoPublish: $(Build.SourcesDirectory)\HelixPayload
+      artifactName: ${{ parameters.testPayloadArtifactName }}
+
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
       condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
-      testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.Test.dll'
+      testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
+      testFilePattern: 'MUXControls.Test.dll'
       outputProjFileName: 'RunTestsInHelix-InteractionTests.proj'
       testSuite: '${{ parameters.testSuite }}'
       taefQuery: ${{ parameters.taefQuery }}
@@ -105,7 +113,8 @@ jobs:
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
       condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
-      testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\AppxPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx'
+      testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
+      testFilePattern: 'MUXControlsTestApp.appx'
       outputProjFileName: 'RunTestsInHelix-ApiTests.proj'
       testSuite: '${{ parameters.testSuite }}'
       taefQuery: ${{ parameters.taefQuery }}
@@ -113,7 +122,8 @@ jobs:
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
       condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
-      testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\AppxPackages\IXMPTestApp_Test\IXMPTestApp.appx'
+      testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
+      testFilePattern: 'IXMPTestApp.appx'
       outputProjFileName: 'RunTestsInHelix-IXMPTestAppTests.proj'
       testSuite: '${{ parameters.testSuite }}'
       taefQuery: ${{ parameters.taefQuery }}
@@ -121,7 +131,8 @@ jobs:
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
       condition: and(succeeded(),eq('${{ parameters.testSuite }}','NugetTestSuite'))
-      testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.ReleaseTest.dll'
+      testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
+      testFilePattern: 'MUXControls.ReleaseTest.dll'
       outputProjFileName: 'RunTestsInHelix-NugetTests.proj'
       testSuite: '${{ parameters.testSuite }}'
       taefQuery: ${{ parameters.taefQuery }}
@@ -132,25 +143,25 @@ jobs:
       PathtoPublish: $(Build.ArtifactStagingDirectory)
       artifactName: ${{ parameters.artifactName }}
       
-  - task: DotNetCoreCLI@2
-    displayName: 'Run tests in Helix (open queues)'
-    condition: eq(variables['System.CollectionUri'],'https://dev.azure.com/ms/')
-    env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    inputs:
-      command: custom
-      projects: build\Helix\RunTestsInHelix.proj
-      custom: msbuild
-      arguments: '$(helixCommonArgs) /p:IsExternal=true /p:Creator=WinUI /p:HelixTargetQueues=$(openHelixTargetQueues)'
+  # - task: DotNetCoreCLI@2
+  #   displayName: 'Run tests in Helix (open queues)'
+  #   condition: eq(variables['System.CollectionUri'],'https://dev.azure.com/ms/')
+  #   env:
+  #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+  #   inputs:
+  #     command: custom
+  #     projects: build\Helix\RunTestsInHelix.proj
+  #     custom: msbuild
+  #     arguments: '$(helixCommonArgs) /p:IsExternal=true /p:Creator=WinUI /p:HelixTargetQueues=$(openHelixTargetQueues)'
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Run tests in Helix (closed queues)'
-    condition: ne(variables['System.CollectionUri'],'https://dev.azure.com/ms/')
-    env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-      HelixAccessToken: $(HelixApiAccessToken)
-    inputs:
-      command: custom
-      projects: build\Helix\RunTestsInHelix.proj
-      custom: msbuild
-      arguments: '$(helixCommonArgs) /p:HelixTargetQueues=$(closedHelixTargetQueues)'
+  # - task: DotNetCoreCLI@2
+  #   displayName: 'Run tests in Helix (closed queues)'
+  #   condition: ne(variables['System.CollectionUri'],'https://dev.azure.com/ms/')
+  #   env:
+  #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+  #     HelixAccessToken: $(HelixApiAccessToken)
+  #   inputs:
+  #     command: custom
+  #     projects: build\Helix\RunTestsInHelix.proj
+  #     custom: msbuild
+  #     arguments: '$(helixCommonArgs) /p:HelixTargetQueues=$(closedHelixTargetQueues)'

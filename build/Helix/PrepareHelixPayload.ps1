@@ -18,6 +18,7 @@ If(test-path $payloadDir)
 New-Item -ItemType Directory -Force -Path $payloadDir
 
 # Copy files from nuget packages
+Copy-Item "$nugetPackagesDir\Microsoft.Internal.MUXTestInfra.Helix.0.0.1\scripts\test\*" $payloadDir
 Copy-Item "$nugetPackagesDir\microsoft.windows.apps.test.1.0.181203002\lib\netcoreapp2.1\*.dll" $payloadDir
 Copy-Item "$nugetPackagesDir\taef.redist.wlk.10.31.180822002\build\Binaries\$Platform\*" $payloadDir
 Copy-Item "$nugetPackagesDir\taef.redist.wlk.10.31.180822002\build\Binaries\$Platform\CoreClr\*" $payloadDir
@@ -62,12 +63,12 @@ Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\
 
 # Copy files from the repo
 New-Item -ItemType Directory -Force -Path "$payloadDir"
-Copy-Item "build\helix\ConvertWttLogToXUnit.ps1" "$payloadDir"
-Copy-Item "build\helix\OutputFailedTestQuery.ps1" "$payloadDir"
-Copy-Item "build\helix\OutputSubResultsJsonFiles.ps1" "$payloadDir"
-Copy-Item "build\helix\HelixTestHelpers.cs" "$payloadDir"
-Copy-Item "build\helix\runtests.cmd" $payloadDir
+# Copy-Item "build\helix\ConvertWttLogToXUnit.ps1" "$payloadDir"
+# Copy-Item "build\helix\OutputFailedTestQuery.ps1" "$payloadDir"
+# Copy-Item "build\helix\OutputSubResultsJsonFiles.ps1" "$payloadDir"
+# Copy-Item "build\helix\HelixTestHelpers.cs" "$payloadDir"
+# Copy-Item "build\helix\runtests.cmd" $payloadDir
 Copy-Item "build\helix\InstallTestAppDependencies.ps1" "$payloadDir"
-Copy-Item "build\Helix\EnsureMachineState.ps1" "$payloadDir"
+Copy-Item "build\Helix\EnsureMachineStateEx.ps1" "$payloadDir"
 Copy-Item "version.props" "$payloadDir"
-Copy-Item "build\Helix\CopyVisualTreeVerificationFiles.ps1" "$payloadDir"
+# Copy-Item "build\Helix\CopyVisualTreeVerificationFiles.ps1" "$payloadDir"
