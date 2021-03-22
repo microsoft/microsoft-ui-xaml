@@ -104,7 +104,7 @@ void PipsPager::OnApplyTemplate()
     }(GetTemplateChildT<winrt::ItemsRepeater>(c_pipsPagerRepeaterName, *this));
 
     m_scrollViewerBringIntoViewRequestedRevoker.revoke();
-    [this](winrt::FxScrollViewer scrollViewer)
+    [this](const winrt::FxScrollViewer scrollViewer)
     {
         m_pipsPagerScrollViewer.set(scrollViewer);
         if (scrollViewer && SharedHelpers::IsRS4OrHigher())
@@ -624,6 +624,10 @@ bool PipsPager::IsOutOfControlBounds(const winrt::Point& point)
         point.Y  > actualHeight - tolerance;
 }
 
+// In order to handle undesired scrolling when a user
+// tabs into the pipspager/focuses a pip using keyboard
+// we'll check for offsets and if they're NAN -
+// meaning it was not scroll initiated by us, we handle it.
 void PipsPager::OnPipsAreaBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args)
 {
     if (
@@ -635,6 +639,11 @@ void PipsPager::OnPipsAreaBringIntoViewRequested(const IInspectable& sender, con
     }
 }
 
+// Inner scrollviewer will bubble BringIntoView event to 
+// parent scrollviewers (if they exist) if the scrolling was
+// not complete (could not scroll to specified offset because
+// the beginning/end of the scrollable area was already reached).
+// To avoid that, we handle BringIntoViewRequested on inner scrollviewer.
 void PipsPager::OnScrollViewerBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args)
 {
     args.Handled(true);
