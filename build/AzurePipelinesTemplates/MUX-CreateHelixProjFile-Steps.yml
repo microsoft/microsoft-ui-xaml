@@ -13,4 +13,4 @@ steps:
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
-      arguments: -TestFilePattern '${{ parameters.testFilePath }}' -TestBinaryDirectoryPath '${{ parameters.testBinaryDirectoryPath }}' -OutputProjFile '$(Build.ArtifactStagingDirectory)\${{ parameters.outputProjFileName }}' -JobTestSuiteName '${{ parameters.testSuite }}' -TaefQuery "${{ parameters.taefQuery }}"
+      arguments: -TestFilePattern '${{ parameters.testFilePattern }}' -TestBinaryDirectoryPath '${{ parameters.testBinaryDirectoryPath }}' -OutputProjFile '$(Build.ArtifactStagingDirectory)\${{ parameters.outputProjFileName }}' -JobTestSuiteName '${{ parameters.testSuite }}' -TaefQuery "${{ parameters.taefQuery }}"
