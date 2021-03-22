@@ -14,12 +14,14 @@ jobs:
 
 - job: Build
   # dependsOn: Setup
-  # ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
+  # condition: |
+  #   and
+  #   (
+  #     eq(variables['useBuildOutputFromBuildId'],''),
+  #     ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
+  #   )
   condition: |
-    and
-    (
-      eq(variables['useBuildOutputFromBuildId'],'')
-    )
+    eq(variables['useBuildOutputFromBuildId'],'')
   pool:
     name: 'windevbuildagents'
   timeoutInMinutes: 120
