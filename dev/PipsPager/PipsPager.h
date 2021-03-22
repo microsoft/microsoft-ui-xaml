@@ -47,6 +47,8 @@ public:
         const wstring_view& disabledStateName);
     void OnOrientationChanged();
 
+    winrt::UIElement GetSelectedItem();
+
     /* Dependency property for pip buttons revokers */
     GlobalDependencyProperty s_pipButtonHandlersProperty;
 
@@ -66,7 +68,8 @@ private:
     void ScrollToCenterOfViewport(const winrt::UIElement sender, const int index);
     double CalculateScrollViewerSize(const double defaultPipSize, const double selectedPipSize, const int numberOfPages, int maxVisualIndicators);
     void UpdateSelectedPip(const int index);
-
+    void UpdatePipOrientation(const winrt::Control& pip);
+    void ApplyStyleToPipAndUpdateOrientation(const winrt::FrameworkElement& pip, const winrt::Style& style);
     /* Eventing */
     void RaiseSelectedIndexChanged();
 

@@ -96,8 +96,18 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <!-- PipsPager Resources -->
+
+    <!-- Deprecated Resources: might be removed later -->
     <x:Double x:Key="PipsPagerButtonWidth">20</x:Double>
     <x:Double x:Key="PipsPagerButtonHeight">12</x:Double>
+    <!-- Deprecated Resources: might be removed later -->
+
+    <x:Double x:Key="PipsPagerHorizontalOrientationButtonWidth">12</x:Double>
+    <x:Double x:Key="PipsPagerHorizontalOrientationButtonHeight">20</x:Double>
+
+    <x:Double x:Key="PipsPagerVerticalOrientationButtonWidth">20</x:Double>
+    <x:Double x:Key="PipsPagerVerticalOrientationButtonHeight">12</x:Double>
+
 
     <Thickness x:Key="PipsPagerButtonBorderThickness">1</Thickness>
     <Thickness x:Key="PipsPagerNavigationButtonBorderThickness">1</Thickness>
@@ -216,8 +226,6 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="FocusVisualMargin" Value="0" />
-        <Setter Property="Width" Value="{StaticResource PipsPagerButtonWidth}" />
-        <Setter Property="Height" Value="{StaticResource PipsPagerButtonHeight}" />
         <Setter Property="Content" Value="{StaticResource PipsPagerNormalGlyph}" />
         <Setter Property="FontSize" Value="{StaticResource PipsPagerNormalGlyphFontSize}" />
         <Setter Property="Template">
@@ -227,7 +235,9 @@
                         x:Name="RootGrid" 
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}">
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Width="{StaticResource PipsPagerHorizontalOrientationButtonWidth}"
+                        Height="{StaticResource PipsPagerHorizontalOrientationButtonHeight}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -277,6 +287,15 @@
                                     </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
+                            <VisualStateGroup x:Name="OrientationStates">
+                                <VisualState x:Name="HorizontalOrientation"/>
+                                <VisualState x:Name="VerticalOrientation">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Width" Value="{ThemeResource PipsPagerVerticalOrientationButtonWidth}"/>
+                                        <Setter Target="RootGrid.Height" Value="{ThemeResource PipsPagerVerticalOrientationButtonHeight}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup> 
                         </VisualStateManager.VisualStateGroups>
                         <FontIcon
                             x:Name="Content"

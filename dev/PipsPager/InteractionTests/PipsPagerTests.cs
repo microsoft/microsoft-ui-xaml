@@ -4,6 +4,7 @@
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using Common;
+using Microsoft.Windows.Apps.Test.Foundation.Controls;
 #if USING_TAEF
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -313,6 +314,52 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Left);
                 KeyboardHelper.PressKey(Key.Space);
                 VerifySelectedPageIndex(2);
+            }
+        }
+        [TestMethod]
+        [TestProperty("TestSuite", "F")]
+        public void PipSizeWithDifferentOrientationsTest()
+        {
+            using (var setup = new TestSetupHelper("PipsPager Tests"))
+            {
+                Button getButtonSizesButton = FindElement.ByName<Button>("GetPipsPagersButtonSizes");
+                getButtonSizesButton.InvokeAndWait();
+
+                TextBlock horizontalOrientationPipsPagerButtonWidth = FindElement.ByName<TextBlock>("HorizontalOrientationPipsPagerButtonWidth");
+                TextBlock horizontalOrientationPipsPagerButtonHeight = FindElement.ByName<TextBlock>("HorizontalOrientationPipsPagerButtonHeight");
+
+                TextBlock verticalOrientationPipsPagerButtonWidth = FindElement.ByName<TextBlock>("VerticalOrientationPipsPagerButtonWidth");
+                TextBlock verticalOrientationPipsPagerButtonHeight = FindElement.ByName<TextBlock>("VerticalOrientationPipsPagerButtonHeight");
+
+                Verify.AreEqual("12", horizontalOrientationPipsPagerButtonWidth.DocumentText);
+                Verify.AreEqual("20", horizontalOrientationPipsPagerButtonHeight.DocumentText);
+                Verify.AreEqual("20", verticalOrientationPipsPagerButtonWidth.DocumentText);
+                Verify.AreEqual("12", verticalOrientationPipsPagerButtonHeight.DocumentText);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "F")]
+        public void PipSizeAfterOrientationChangeTest()
+        {
+            using (var setup = new TestSetupHelper("PipsPager Tests"))
+            {
+                Button getButtonSizesButton = FindElement.ByName<Button>("GetPipsPagersButtonSizes");
+                getButtonSizesButton.InvokeAndWait();
+
+                TextBlock horizontalOrientationPipsPagerButtonWidth = FindElement.ByName<TextBlock>("HorizontalOrientationPipsPagerButtonWidth");
+                TextBlock horizontalOrientationPipsPagerButtonHeight = FindElement.ByName<TextBlock>("HorizontalOrientationPipsPagerButtonHeight");
+                Verify.AreEqual("12", horizontalOrientationPipsPagerButtonWidth.DocumentText);
+                Verify.AreEqual("20", horizontalOrientationPipsPagerButtonHeight.DocumentText);
+
+                elements = new PipsPagerElements();
+                SetOrientation(Microsoft.Windows.Apps.Test.Automation.OrientationType.Vertical);
+                VerifyOrientationChanged(Microsoft.Windows.Apps.Test.Automation.OrientationType.Vertical);
+
+                getButtonSizesButton.InvokeAndWait();
+
+                Verify.AreEqual("20", horizontalOrientationPipsPagerButtonWidth.DocumentText);
+                Verify.AreEqual("12", horizontalOrientationPipsPagerButtonHeight.DocumentText);
             }
         }
     }

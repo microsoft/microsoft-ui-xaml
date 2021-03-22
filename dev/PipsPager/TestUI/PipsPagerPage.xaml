@@ -9,10 +9,10 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d">
-    
+
     <Grid Background="Transparent">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="300"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -25,7 +25,7 @@
                             AutomationProperties.Name="TestPipsPager"
                             SelectedIndexChanged="OnSelectedIndexChanged"
                             HorizontalAlignment="Left"
-                            VerticalAlignment="Center"                        
+                            VerticalAlignment="Center"
                             Margin="0,0,100,0"/>
 
         <StackPanel Orientation="Vertical" Grid.Column="1" >
@@ -82,10 +82,47 @@
             <TextBlock x:Name="FocusedPageIndexTextBlock" Text="Current focused page index: "/>
             <TextBlock x:Name="CurrentOrientationTextBlock"/>
         </StackPanel>
+
+        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Horizontal Orientation PipsPager ButtonWidth:"/>
+                    <TextBlock x:Name="HorizontalOrientationPipsPagerButtonWidth" AutomationProperties.Name="HorizontalOrientationPipsPagerButtonWidth" Text="0" Margin="10,0,0,0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Horizontal Orientation PipsPager ButtonHeight:"/>
+                    <TextBlock x:Name="HorizontalOrientationPipsPagerButtonHeight" AutomationProperties.Name="HorizontalOrientationPipsPagerButtonHeight" Text="0" Margin="10,0,0,0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Vertical Orientation PipsPager ButtonWidth:"/>
+                    <TextBlock x:Name="VerticalOrientationPipsPagerButtonWidth" AutomationProperties.Name="VerticalOrientationPipsPagerButtonWidth" Text="0" Margin="10,0,0,0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Vertical Orientation PipsPager ButtonHeight:"/>
+                    <TextBlock x:Name="VerticalOrientationPipsPagerButtonHeight" AutomationProperties.Name="VerticalOrientationPipsPagerButtonHeight" Text="0" Margin="10,0,0,0"/>
+                </StackPanel>
+            </StackPanel>
+            <Button x:Name="GetPipsPagersButtonSizes"
+                    AutomationProperties.Name="GetPipsPagersButtonSizes"
+                    Content="Get Sizes"
+                    Click="OnGetPipsPagerButtonSizesClicked"
+                    Height="50"
+                    Width="150"
+                    HorizontalAlignment="Left"
+                    Margin="0,20,0,0"/>
+        </StackPanel> 
+        
+        <muxc:PipsPager x:Name="TestPipsPagerVerticalOrientation"
+                            AutomationProperties.Name="TestPipsPagerVerticalOrientation"
+                            Orientation="Vertical"
+                            HorizontalAlignment="Left"
+                            Margin="0,0,100,0"
+                            Grid.Row="1"/>
+        
         <Button x:Name="GoToExamplesPageButton"
                 Content="Open PipsPager Examples"
                 Grid.Row="1" Grid.Column="1"
-                Margin="0, 150, 0, 0"
+                Margin="0, 200, 0, 0"
                 Click="GoToExamplesPage"/>
     </Grid>
 </local:TestPage>

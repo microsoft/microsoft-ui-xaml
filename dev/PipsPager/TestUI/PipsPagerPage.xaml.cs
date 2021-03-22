@@ -20,6 +20,7 @@ namespace MUXControlsTestApp
         Button previousPageButton;
         Button nextPageButton;
         ItemsRepeater repeater;
+        ItemsRepeater verticalOrientationPipsPagerRepeater;
 
         public List<string> Pictures = new List<string>()
         {
@@ -38,13 +39,16 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
             this.Loaded += OnLoad;
         }
-
+        
         private void OnLoad(object sender, RoutedEventArgs args)
         {
             var rootPanel = VisualTreeHelper.GetChild(TestPipsPager, 0);
             previousPageButton = VisualTreeHelper.GetChild(rootPanel, 0) as Button;
             nextPageButton = VisualTreeHelper.GetChild(rootPanel, 2) as Button;
             repeater = rootPanel.FindVisualChildByType<ItemsRepeater>();
+            var rootPanelVerticalPipsPager = VisualTreeHelper.GetChild(TestPipsPagerVerticalOrientation, 0);
+            verticalOrientationPipsPagerRepeater = rootPanelVerticalPipsPager.FindVisualChildByType<ItemsRepeater>();
+
 
             PreviousPageButtonVisibilityComboBox.SelectionChanged += OnPreviousPageButtonVisibilityChanged;
             NextPageButtonVisibilityComboBox.SelectionChanged += OnNextPageButtonVisibilityChanged;
@@ -70,6 +74,20 @@ namespace MUXControlsTestApp
             CurrentNumberOfPagesTextBlock.Text = GetNumberOfPages();
             CurrentMaxVisiblePipsTextBlock.Text = $"Current max visual indicators: {TestPipsPager.MaxVisiblePips}";
             CurrentOrientationTextBlock.Text = GetCurrentOrientation();
+        }
+
+        private void OnGetPipsPagerButtonSizesClicked(object sender, RoutedEventArgs args)
+        {
+            if (repeater.TryGetElement(1) is var horizontalOrientationButton && horizontalOrientationButton != null)
+            {
+                HorizontalOrientationPipsPagerButtonWidth.Text = $"{ horizontalOrientationButton.ActualSize.X}";
+                HorizontalOrientationPipsPagerButtonHeight.Text = $"{horizontalOrientationButton.ActualSize.Y}";
+            }
+            if (verticalOrientationPipsPagerRepeater.TryGetElement(1) is var verticalOrientationButton && verticalOrientationButton != null)
+            {
+                VerticalOrientationPipsPagerButtonWidth.Text = $"{verticalOrientationButton.ActualSize.X}";
+                VerticalOrientationPipsPagerButtonHeight.Text = $"{verticalOrientationButton.ActualSize.Y}";
+            }
         }
 
         private void OnRepeaterGotFocus(object sender, RoutedEventArgs e)
