@@ -288,6 +288,7 @@ $versionPropsFile =
 
 Set-Content -Value $versionPropsFile $fullOutputPath\MicrosoftUIXamlVersion.props
 
+
 # Also copy in some loose files 
 
 $PackageName = $BasePackageName
