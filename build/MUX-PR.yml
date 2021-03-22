@@ -83,9 +83,9 @@ jobs:
 #         buildPlatform: 'x64'
 #         buildConfiguration: 'Release'
 
-# - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
-#   parameters:
-#     dependsOn: RunTestsInHelix
-#     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
-#     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
-#     checkJobAttempt: true
+- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+  parameters:
+    dependsOn: RunTestsInHelix
+    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+    checkJobAttempt: true

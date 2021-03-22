@@ -1,9 +1,11 @@
 parameters:
   dependsOn: ''
   rerunPassesRequiredToAvoidFailure: 5
-  minimumExpectedTestsExecutedCount: 3000
+  # minimumExpectedTestsExecutedCount: 3000
+  minimumExpectedTestsExecutedCount: 5
   checkJobAttempt: false
   pgoArtifact: ''
+  testSuite: 'DevTestSuite' # Can be: DevTestSuite, ScenarioTestSuite
 
 jobs:
 - job: ProcessTestResults
@@ -16,25 +18,36 @@ jobs:
     helixOutputFolder: $(Build.SourcesDirectory)\HelixOutput
 
   steps:
+
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: 'NuGet restore build/Helix/packages.config'
+    inputs:
+      restoreSolution: build/Helix/packages.config
+      feedsToUse: config
+      nugetConfigPath: nuget.config
+      restoreDirectory: packages
+
   - task: powershell@2
     displayName: 'UpdateUnreliableTests.ps1'
     condition: succeededOrFailed()
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      HelixAccessToken: $(HelixApiAccessToken)
     inputs:
       targetType: filePath
-      filePath: build\Helix\UpdateUnreliableTests.ps1
-      arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}'
+      filePath: build\Helix\packages\Microsoft.Internal.MUXTestInfra.Helix.0.0.1\scripts\pipeline\UpdateUnreliableTests.ps1 #todo - fix path
+      arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}' -HelixTypeJobFilter ${{ parameters.testSuite }}
 
   - task: powershell@2
     displayName: 'OutputTestResults.ps1'
     condition: succeededOrFailed()
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      HelixAccessToken: $(HelixApiAccessToken)
     inputs:
       targetType: filePath
-      filePath: build\Helix\OutputTestResults.ps1
-      arguments: -MinimumExpectedTestsExecutedCount '${{ parameters.minimumExpectedTestsExecutedCount }}' -CheckJobAttempt $${{ parameters.checkJobAttempt }}
+      filePath: build\Helix\packages\Microsoft.Internal.MUXTestInfra.Helix.0.0.1\scripts\pipeline\OutputTestResults.ps1
+      arguments: -MinimumExpectedTestsExecutedCount '${{ parameters.minimumExpectedTestsExecutedCount }}' -HelixTypeJobFilter ${{ parameters.testSuite }}
 
   - task: powershell@2
     displayName: 'ProcessHelixFiles.ps1'
@@ -44,8 +57,8 @@ jobs:
       HelixAccessToken: $(HelixApiAccessToken)
     inputs:
       targetType: filePath
-      filePath: build\Helix\ProcessHelixFiles.ps1
-      arguments: -OutputFolder '$(helixOutputFolder)'
+      filePath: build\Helix\packages\Microsoft.Internal.MUXTestInfra.Helix.0.0.1\scripts\pipeline\ProcessHelixFiles.ps1
+      arguments: -OutputFolder '$(helixOutputFolder)' -HelixTypeJobFilter ${{ parameters.testSuite }}
 
   - ${{if ne(parameters.pgoArtifact, '') }}:
     - script: move /y $(helixOutputFolder)\PGO $(Build.ArtifactStagingDirectory)
@@ -56,7 +69,7 @@ jobs:
     condition: succeededOrFailed()
     inputs:
       PathtoPublish: $(helixOutputFolder)
-      artifactName: drop
+      artifactName: helixTestOutput
 
   - ${{if ne(parameters.pgoArtifact, '') }}:
     - task: PublishBuildArtifacts@1

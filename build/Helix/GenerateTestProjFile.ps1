@@ -23,8 +23,10 @@ $pipelinesScriptsDir = Join-Path $packagesDir "Microsoft.Internal.MUXTestInfra.H
 
 
 
-$classificationQuery="@Classification='Integration'"
-$taefBaseQuery = "$classificationQuery"
+# $classificationQuery="@Classification='Integration'"
+# $taefBaseQuery = "$classificationQuery"
+
+$taefBaseQuery ="@Name='*ColorPicker*'"
 
 if($TaefQuery)
 {

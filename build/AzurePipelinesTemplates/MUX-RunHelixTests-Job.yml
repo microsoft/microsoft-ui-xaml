@@ -6,7 +6,7 @@ parameters:
   testPayloadArtifactName: 'HelixPayload'
   # If a Pipeline runs this template more than once, this parameter should be unique per build flavor to differentiate the
   # the different test runs:
-  helixType: 'test/devtest' 
+  helixType: 'DevTestSuite'  #todo - include build flavor?
   artifactName: 'drop'
   maxParallel: 4
   rerunPassesRequiredToAvoidFailure: 5
