@@ -163,22 +163,22 @@
   </data>
   <data name="InfoBarOpenedNotification" xml:space="preserve">
     <value>%1!s! %2!s! %3!s!</value>
-    <comment>The formatted string read by narrator when the InfoBar opens: "{Title} {Message}, {severity level}"</comment>
+    <comment>The formatted string read by narrator when the InfoBar opens: "{Severity level}, {Title} {Message}"</comment>
   </data>
   <data name="InfoBarSeverityErrorName" xml:space="preserve">
-    <value>severity error</value>
+    <value>Info message, severity error</value>
     <comment>Name used to announce severity error to users.</comment>
   </data>
   <data name="InfoBarSeverityInformationalName" xml:space="preserve">
-    <value>severity informational</value>
+    <value>Info message, severity informational</value>
     <comment>Name used to announce severity informational to users.</comment>
   </data>
   <data name="InfoBarSeveritySuccessName" xml:space="preserve">
-    <value>severity success</value>
+    <value>Info message, severity success</value>
     <comment>Name used to announce severity success to users.</comment>
   </data>
   <data name="InfoBarSeverityWarningName" xml:space="preserve">
-    <value>severity warning</value>
+    <value>Info message, severity warning</value>
     <comment>Name used to announce severity warning to users.</comment>
   </data>
 </root>
