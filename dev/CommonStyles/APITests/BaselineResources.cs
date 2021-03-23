@@ -1638,7 +1638,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 "CommandBarFlyoutAppBarButtonStyleBase",
 "AppBarToggleButtonRevealStyle",
 "AppBarButtonRevealStyle",
-"",
 "TopThicknessFilterConverter",
 "TopNavigationViewPaneCustomContentMinWidth",
 "TopNavigationViewOverflowMenuPadding",

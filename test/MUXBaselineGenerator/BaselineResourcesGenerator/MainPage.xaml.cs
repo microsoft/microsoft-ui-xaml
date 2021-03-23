@@ -70,8 +70,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             
             foreach (var resourceKey in resourceKeyList)
             {
-                string formattedResourceKey = Environment.NewLine + "\"" + resourceKey + "\",";
-                declaration.Append(formattedResourceKey);
+                if (!string.IsNullOrWhiteSpace(resourceKey))
+                {
+                    string formattedResourceKey = Environment.NewLine + "\"" + resourceKey + "\",";
+                    declaration.Append(formattedResourceKey);
+                }
             }
             
             declaration.Append(@"});");

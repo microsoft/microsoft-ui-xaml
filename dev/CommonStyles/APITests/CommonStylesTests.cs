@@ -128,14 +128,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 }
             });
 
+            Log.Comment("List of resource keys not found:");
+
             bool allBaselineResourceKeysExist = true;
             foreach (var baselineResourceKey in BaselineResources.BaselineResourcesList)
             {
                 if (!actualResourcesKeys.Contains(baselineResourceKey))
                 {
-                    Log.Comment(baselineResourceKey + " was not found in the actual resource list");
+                    Log.Comment("* " + baselineResourceKey);
                     allBaselineResourceKeysExist = false;
                 }
+            }
+
+            if (allBaselineResourceKeysExist)
+            {
+                Log.Comment("None");
             }
 
             Assert.IsTrue(allBaselineResourceKeysExist);

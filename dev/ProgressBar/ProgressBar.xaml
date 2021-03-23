@@ -6,7 +6,9 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
 
-    <Style TargetType="local:ProgressBar">
+    <Style TargetType="ProgressBar" BasedOn="{StaticResource DefaultProgressBarStyle}" />
+
+    <Style x:Key="DefaultProgressBarStyle" TargetType="local:ProgressBar">
         <Setter Property="Foreground" Value="{ThemeResource ProgressBarForeground}" />
         <Setter Property="Background" Value="{ThemeResource ProgressBarBackground}" />
         <Setter Property="BorderThickness" Value="{ThemeResource ProgressBarBorderThemeThickness}" />
