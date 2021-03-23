@@ -16,6 +16,7 @@ jobs:
   timeoutInMinutes: 120
   variables:
     helixOutputFolder: $(Build.SourcesDirectory)\HelixOutput
+    helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.MUXTestInfra.Helix.0.0.2\scripts\pipeline
 
   steps:
 
@@ -35,7 +36,7 @@ jobs:
       HelixAccessToken: $(HelixApiAccessToken)
     inputs:
       targetType: filePath
-      filePath: build\Helix\packages\Microsoft.Internal.MUXTestInfra.Helix.0.0.1\scripts\pipeline\UpdateUnreliableTests.ps1 #todo - fix path
+      filePath: $(helixScriptPath)\UpdateUnreliableTests.ps1 #todo - fix path
       arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}' -HelixTypeJobFilter ${{ parameters.testSuite }}
 
   - task: powershell@2
@@ -46,7 +47,7 @@ jobs:
       HelixAccessToken: $(HelixApiAccessToken)
     inputs:
       targetType: filePath
-      filePath: build\Helix\packages\Microsoft.Internal.MUXTestInfra.Helix.0.0.1\scripts\pipeline\OutputTestResults.ps1
+      filePath: $(helixScriptPath)\OutputTestResults.ps1
       arguments: -MinimumExpectedTestsExecutedCount '${{ parameters.minimumExpectedTestsExecutedCount }}' -HelixTypeJobFilter ${{ parameters.testSuite }}
 
   - task: powershell@2
@@ -57,7 +58,7 @@ jobs:
       HelixAccessToken: $(HelixApiAccessToken)
     inputs:
       targetType: filePath
-      filePath: build\Helix\packages\Microsoft.Internal.MUXTestInfra.Helix.0.0.1\scripts\pipeline\ProcessHelixFiles.ps1
+      filePath: $(helixScriptPath)\ProcessHelixFiles.ps1
       arguments: -OutputFolder '$(helixOutputFolder)' -HelixTypeJobFilter ${{ parameters.testSuite }}
 
   - ${{if ne(parameters.pgoArtifact, '') }}:

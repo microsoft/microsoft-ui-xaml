@@ -19,25 +19,25 @@ Param(
 # $packagesDir = Join-Path $repoDirectory "packages"
 
 $packagesDir = Join-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path) "packages"
-$pipelinesScriptsDir = Join-Path $packagesDir "Microsoft.Internal.MUXTestInfra.Helix.0.0.1\scripts\pipeline"
+$pipelinesScriptsDir = Join-Path $packagesDir "Microsoft.Internal.MUXTestInfra.Helix.0.0.2\scripts\pipeline"
 
 
 
 # $classificationQuery="@Classification='Integration'"
 # $taefBaseQuery = "$classificationQuery"
 
-$taefBaseQuery ="@Name='*ColorPicker*'"
+# $taefBaseQuery ="@Name='*ColorPicker*'"
 
-if($TaefQuery)
-{
-    $taefBaseQuery = "$taefBaseQuery AND $TaefQuery"
-}
-
+# if($TaefQuery)
+# {
+#     $taefBaseQuery = "$taefBaseQuery AND $TaefQuery"
+# }
 
 
 & $pipelinesScriptsDir\GenerateHelixWorkItemsCore.ps1 -TestFilePattern $TestFilePattern `
     -TestBinaryDirectoryPath $TestBinaryDirectoryPath `
     -OutputProjFile $OutputProjFile `
-    -taefBaseQuery $taefBaseQuery `
-    -testTimeout "00:31:00" `
-    -testnameprefix fo1
+    -TaefBaseQuery $TaefQuery `
+    -TestTimeout "00:30:00" `
+
+    # -testnameprefix fo1
