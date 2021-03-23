@@ -116,6 +116,14 @@
                                     </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
+                            <contract6Present:VisualStateGroup x:Name="KeyboardAcceleratorTextVisibility">
+                                <VisualState x:Name="KeyboardAcceleratorTextCollapsed" />
+                                <VisualState x:Name="KeyboardAcceleratorTextVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="KeyboardAcceleratorTextBlock.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </contract6Present:VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <Grid.ColumnDefinitions>
