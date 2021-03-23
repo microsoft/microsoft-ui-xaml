@@ -3,9 +3,7 @@ MonochromaticOverlayPresenter
 
 # Background
 
-The `MonochromaticOverlayPresenter` API in this spec is a Xaml Framework Element that lets you "draw" its background by
-pointing at another element; the rendering of that other element becomes the background of
-the Grid.
+The `MonochromaticOverlayPresenter` API is a Xaml Framework Element that renders the portion of another element at the same position (typically beneath it in the Z-order), while also applying a monochromatic colorization effect. This allows the element to appear to be an overlay on top of the other element.
 
 `MonochromaticOverlayPresenter` element is similar to several precedents:
 * [SwapChainBackgroundPanel](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.SwapChainBackgroundPanel),
@@ -27,8 +25,7 @@ control.
 ## MonochromaticOverlayPresenter class
 
 A [Framework Element](https://docs.microsoft.com/windows/winui/api/microsoft.ui.xaml.frameworkelement?view=winui-3.0-preview)
-whose background can be the rendering of another element, or using another element
-as a mask.
+which renders another element at the same position (typically beneath it in the Z-order), while also applying a monochromatic colorization effect.
 
 ```csharp
 public class MonochromaticOverlayPresenter : FrameworkElement
@@ -38,15 +35,17 @@ public class MonochromaticOverlayPresenter : FrameworkElement
 }
 ```
 
-Set the `SourceElement` property to indicate which element's rendering should be drawn as the background of the `MonochromaticOverlayPresenter`. If the `Background` property is set, the SourceElement's rendering is on top of it. (The source is z-ordered on top of the background.
+Set the `SourceElement` property to indicate which element should be rendered as the `MonochromaticOverlayPresenter`. The `SourceElement`'s rendering takes place on top of the `Background`, if a background is set.
+
+The portion of the `SourceElement` rendered inside the `MonochromaticOverlayPresenter` is the portion that would be rendered at the same location as the `MonochromaticOverlayPresenter`. The `SourceElement` is typically placed below the `MonochromaticOverlayPresenter` in the Z-order, giving the `MonochromaticOverlayPresenter` the appearance of an overlay.
 
 Only the source element's rendering applies to the `MonochromaticOverlayPresenter`; the user
-cannot interact with it using the mouse, or move keyboard focus to it. However, `MonochromaticOverlayPresenter` will bring in system focus visuals, regardless of what the [UseSystemFocusVisuals](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Control.UseSystemFocusVisuals) property is set to. To avoid this, you should inset the margins to remove it.
+cannot interact with it using the mouse, or move keyboard focus to it. However, `MonochromaticOverlayPresenter` will render system focus visuals, regardless of what the [UseSystemFocusVisuals](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Control.UseSystemFocusVisuals) property is set to. To avoid this, you should inset the margins to remove it.
 
 > Note: the element set as the `SourceElement` cannot be an ancestor or in the descendancy of the `MonochromaticOverlayPresenter`. However the `SourceElement` must be in the same XAML tree as the `MonochromaticOverlayPresenter`.
 
 
-If the `ReplacementColor` property is set, the `SourceElement` is treated as a mask; every non-transparent pixel will be replaced by this color. The source pixel is replaced when the Alpha value of the `ReplacementColor` is non-zero. The RGB value of the `ReplacementColor` (not the Alpha value) will overwrite the RGB of the source. The default value for `ReplacementColor` is Transparent.
+If the `ReplacementColor` property is set and has a nonzero Alpha value, then the `SourceElement` is treated as a mask: every non-transparent pixel will be replaced by this color. The RGB value of the `ReplacementColor` (not the Alpha value) will overwrite the RGB of the source. The default value for `ReplacementColor` is Transparent.
 
 
 ### MonochromaticOverlayPresenter examples
@@ -57,7 +56,7 @@ Things to note:
 * The `MonochromaticOverlayPresenter` is sourcing from the `TextBlock`, it's also z-ordered above
 the same `TextBlock`. If the `Background` and `SourceElement` properties weren't set,
 it would have no effect; it would render the `TextBlock` exactly on top of itself.
-* The 'Background` property is black, and the `ReplacementColor` is green, causing
+* The `Background` property is black, and the `ReplacementColor` is green, causing
 the overlay text to be displayed as green on black.
 * The `MonochromaticOverlayPresenter` is positioned and given a height such that it's a black band
 across the center of the scrolling text.
@@ -127,7 +126,7 @@ article.
 
 | Name | Description |
 | - | - |
-| SourceElement | Gets or sets the UIElement to apply the color effect to. |
+| SourceElement | Gets or sets the UIElement to render inside the `MonochromaticOverlayPresenter`. |
 | ReplacementColor | Gets or sets the Color to use instead of the non-transparent pixels of the SourceElement.
 
 
@@ -225,4 +224,3 @@ The following steps apply to both DatePicker and TimePicker, unless otherwise no
 10. Columns within an expanded Date/TimePicker can be focused upon. For the column focus, the black focus rectangle will need to be rounded.
 
 11. Animations: Date/TimePicker should have an opening/closing animation and use the same easing/timing as other controls.
-
