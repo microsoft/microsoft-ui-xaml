@@ -137,7 +137,7 @@
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackground}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundPointerOver}"/>
                                         <Setter Target="SecondaryButton.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushPointerOver}"/>
-                                        <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundSecondary}"/>
+                                        <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundPointerOver}"/>
                                         <Setter Target="DividerBackgroundGrid.Background" Value="Transparent"/>
                                     </VisualState.Setters>
                                 </VisualState>
