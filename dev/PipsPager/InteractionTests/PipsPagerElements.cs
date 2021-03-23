@@ -19,7 +19,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private UIObject PipsPager;
         private UIObject NextPageButton;
         private UIObject PreviousPageButton;
-        private Button RetrievePipsPagerButtonSizesButton;
+        private UIObject RetrievePipsPagerButtonSizesButton;
         private ComboBox PreviousPageButtonVisibilityComboBox;
         private ComboBox NextPageButtonVisibilityComboBox;
         private ComboBox NumberOfPagesComboBox;
@@ -134,7 +134,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return GetElement(ref VerticalOrientationPipsPagerButtonHeightTextBlock, "VerticalOrientationPipsPagerButtonHeightTextBlock");
         }
 
-        public Button GetPipsPagerButtonSizesButton()
+        public UIObject GetPipsPagerButtonSizesButton()
         {
             return GetElement(ref RetrievePipsPagerButtonSizesButton, "GetPipsPagersButtonSizesButton");
         }

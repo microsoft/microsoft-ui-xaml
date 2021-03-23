@@ -5,6 +5,7 @@ using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using Common;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
+using Microsoft.Windows.Apps.Test.Foundation;
 #if USING_TAEF
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -323,7 +324,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("PipsPager Tests"))
             {
                 elements = new PipsPagerElements();
-                Button getButtonSizesButton = elements.GetPipsPagerButtonSizesButton();
+                UIObject getButtonSizesButton = elements.GetPipsPagerButtonSizesButton();
                 InputHelper.LeftClick(getButtonSizesButton);
                 Wait.ForIdle();
 
@@ -347,7 +348,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("PipsPager Tests"))
             {
                 elements = new PipsPagerElements();
-                Button getButtonSizesButton = elements.GetPipsPagerButtonSizesButton();
+                UIObject getButtonSizesButton = elements.GetPipsPagerButtonSizesButton();
                 InputHelper.LeftClick(getButtonSizesButton);
                 Wait.ForIdle();
 
