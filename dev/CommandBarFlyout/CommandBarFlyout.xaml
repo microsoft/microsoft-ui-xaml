@@ -356,7 +356,7 @@
                                     contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" MinWidth="3"/>
                                     </Grid.ColumnDefinitions>
                                     <ItemsControl x:Name="PrimaryItemsControl"
                                         Height="40"
@@ -393,6 +393,7 @@
                                 <Popup x:Name="OverflowPopup">
                                     <Grid
                                         x:Name="OuterOverflowContentRoot"
+                                        RequestedTheme="{TemplateBinding ActualTheme}"
                                         Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}">
                                         <Grid.Clip>
                                             <RectangleGeometry x:Name="OuterOverflowContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OverflowContentClipRect}">

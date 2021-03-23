@@ -10,14 +10,14 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI;
 using System.Windows.Input;
 
-using ColorFilterOverlayControl = Microsoft.UI.Xaml.Controls.Primitives.ColorFilterOverlayControl;
+using MonochromaticOverlayPresenter = Microsoft.UI.Xaml.Controls.Primitives.MonochromaticOverlayPresenter;
 
 namespace MUXControlsTestApp
 {
-    [TopLevelTestPage(Name = "ColorFilterOverlayControl")]
-    public sealed partial class ColorFilterOverlayControlPage : TestPage
+    [TopLevelTestPage(Name = "MonochromaticOverlayPresenter")]
+    public sealed partial class MonochromaticOverlayPresenterPage : TestPage
     {
-        public ColorFilterOverlayControlPage()
+        public MonochromaticOverlayPresenterPage()
         {
             this.InitializeComponent();
         }

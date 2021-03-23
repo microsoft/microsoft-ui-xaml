@@ -4,24 +4,25 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
     <ItemsProjectGuid>{D03847C1-7EE7-4423-82FD-3CB31DAF98D1}</ItemsProjectGuid>
+    <ItemsProjectName>MonochromaticOverlayPresenter</ItemsProjectName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);ColorFilterOverlayControl_INCLUDED</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);MonochromaticOverlayPresenter_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)ColorFilterOverlayControl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MonochromaticOverlayPresenter.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ColorFilterOverlayControl.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ColorFilterOverlayControl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\MonochromaticOverlayPresenter.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MonochromaticOverlayPresenter.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="$(MSBuildThisFileDirectory)ColorFilterOverlayControl.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)MonochromaticOverlayPresenter.idl" />
   </ItemGroup>
 </Project>

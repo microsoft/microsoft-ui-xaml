@@ -7,17 +7,15 @@
     <SharedGUID>280C91F4-96B5-4BDE-9E02-E573E1DEF583</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>ColorFilterOverlayControl_TestUI</Import_RootNamespace>
+    <Import_RootNamespace>MonochromaticOverlayPresenter_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)ColorFilterOverlayControlPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)MonochromaticOverlayPresenterPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ColorFilterOverlayControlPage.xaml.cs">
-      <DependentUpon>ColorFilterOverlayControlPage.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)MonochromaticOverlayPresenterPage.xaml.cs" />
   </ItemGroup>
 </Project>

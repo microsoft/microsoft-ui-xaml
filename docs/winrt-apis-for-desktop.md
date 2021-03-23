@@ -68,3 +68,22 @@ This API is no longer supported in Desktop apps, and neither are any of its memb
 - [`CoreInputView.GetForCurrentView()`](https://docs.microsoft.com/uwp/api/windows.ui.viewmanagement.core.coreinputview.getforcurrentview?view=winrt-19041)
 
     This method is **still working and supported for Desktop apps**, even without [CoreWindow](https://docs.microsoft.com/uwp/api/windows.ui.core.corewindow?view=winrt-19041). It can be created on any thread, and if that thread has a foreground window, it will produce events.
+    
+## WebAuthenticationBroker
+- [WebAuthenticationBroker](https://docs.microsoft.com/uwp/api/Windows.Security.Authentication.Web.WebAuthenticationBroker)
+
+    No alternative - this functionality is not intended to be supported in Desktop apps. 
+    
+    See https://github.com/microsoft/ProjectReunion/issues/398
+    
+## UISettings
+- [UISettings](https://docs.microsoft.com/uwp/api/Windows.UI.ViewManagement.UISettings)
+
+  The [UISettings.ColorValuesChanged](https://docs.microsoft.com/uwp/api/Windows.UI.ViewManagement.UISettings.ColorValuesChanged) is not supported in Desktop apps.
+  
+## AccessibilitySettings
+- [AccessibilitySettings](https://docs.microsoft.com/uwp/api/Windows.UI.ViewManagement.AccessibilitySettings)
+
+    The [AccessibilitySettings.HighContrastChanged](https://docs.microsoft.com/uwp/api/Windows.UI.ViewManagement.AccessibilitySettings.HighContrastChanged)
+    is not supported in Desktop apps.
+   

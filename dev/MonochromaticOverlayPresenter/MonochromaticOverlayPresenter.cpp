@@ -3,7 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
-#include "ColorFilterOverlayControl.h"
+#include "MonochromaticOverlayPresenter.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
@@ -15,21 +15,21 @@ struct XamlCompBrush : winrt::Windows::UI::Xaml::Media::XamlCompositionBrushBase
     }
 };
 
-ColorFilterOverlayControl::ColorFilterOverlayControl()
+MonochromaticOverlayPresenter::MonochromaticOverlayPresenter()
 {
     SizeChanged([this](auto&&...) {
         InvalidateBrush();
         });
 }
 
-void ColorFilterOverlayControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void MonochromaticOverlayPresenter::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
 
     InvalidateBrush();
 }
 
-void ColorFilterOverlayControl::InvalidateBrush()
+void MonochromaticOverlayPresenter::InvalidateBrush()
 {
     // Delay brush updates until Tick to coalesce changes and avoid rebuilding the effect when we don't need to.
     if (!_needsBrushUpdate)
@@ -45,9 +45,9 @@ void ColorFilterOverlayControl::InvalidateBrush()
     }
 }
 
-void ColorFilterOverlayControl::UpdateBrush()
+void MonochromaticOverlayPresenter::UpdateBrush()
 {
-    if (auto targetElement = TargetElement())
+    if (auto targetElement = SourceElement())
     {
         auto const newColor = ReplacementColor();
         if (_replacementColor != newColor)

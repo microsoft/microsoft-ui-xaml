@@ -404,31 +404,31 @@
                                         Height="{ThemeResource TimePickerFlyoutPresenterHighlightHeight}"
                                         Margin="4,2,4,2"
                                         IsHitTestVisible="false"/>
-                                    <primitives:ColorFilterOverlayControl
+                                    <primitives:MonochromaticOverlayPresenter
                                         Canvas.ZIndex="10000"
                                         Grid.Column="0"
                                         Margin="3,0"
-                                        TargetElement="{Binding ElementName=FirstPickerHost, Mode=OneTime}"
+                                        SourceElement="{Binding ElementName=FirstPickerHost, Mode=OneTime}"
                                         ReplacementColor="{ThemeResource TimePickerFlyoutPresenterHighlightForegroundColor}"
                                         Height="{ThemeResource TimePickerFlyoutPresenterHighlightHeight}"
                                         Background="{ThemeResource TimePickerFlyoutPresenterHighlightFill}"
                                         CornerRadius="{TemplateBinding CornerRadius}"
                                        VerticalAlignment="Center" IsHitTestVisible="false"/>
-                                    <primitives:ColorFilterOverlayControl
+                                    <primitives:MonochromaticOverlayPresenter
                                         Canvas.ZIndex="10000"
                                         Grid.Column="2"
                                         Margin="3,0"
-                                        TargetElement="{Binding ElementName=SecondPickerHost}"
+                                        SourceElement="{Binding ElementName=SecondPickerHost}"
                                         ReplacementColor="{ThemeResource TimePickerFlyoutPresenterHighlightForegroundColor}"
                                         Height="{ThemeResource TimePickerFlyoutPresenterHighlightHeight}"
                                         Background="{ThemeResource TimePickerFlyoutPresenterHighlightFill}"
                                         CornerRadius="{TemplateBinding CornerRadius}"
                                         VerticalAlignment="Center" IsHitTestVisible="false"/>
-                                    <primitives:ColorFilterOverlayControl
+                                    <primitives:MonochromaticOverlayPresenter
                                         Canvas.ZIndex="10000"
                                         Grid.Column="4"
                                         Margin="3,0"
-                                        TargetElement="{Binding ElementName=ThirdPickerHost}"
+                                        SourceElement="{Binding ElementName=ThirdPickerHost}"
                                         ReplacementColor="{ThemeResource TimePickerFlyoutPresenterHighlightForegroundColor}"
                                         Height="{ThemeResource TimePickerFlyoutPresenterHighlightHeight}"
                                         Background="{ThemeResource TimePickerFlyoutPresenterHighlightFill}"

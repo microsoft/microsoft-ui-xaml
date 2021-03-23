@@ -6,22 +6,22 @@
 #include "pch.h"
 #include "common.h"
 
-#include "ColorFilterOverlayControl.g.h"
-#include "ColorFilterOverlayControl.properties.h"
+#include "MonochromaticOverlayPresenter.g.h"
+#include "MonochromaticOverlayPresenter.properties.h"
 
 #pragma warning(push)
 #pragma warning(disable: 6101)  // Returning uninitialized memory '<value>'.  A successful path through the function does not set the named _Out_ parameter.
 #include "microsoft.ui.private.composition.effects_impl.h"
 #pragma warning(pop)
 
-class ColorFilterOverlayControl :
-    public ReferenceTracker<ColorFilterOverlayControl, winrt::implementation::ColorFilterOverlayControlT>,
-    public ColorFilterOverlayControlProperties
+class MonochromaticOverlayPresenter :
+    public ReferenceTracker<MonochromaticOverlayPresenter, winrt::implementation::MonochromaticOverlayPresenterT>,
+    public MonochromaticOverlayPresenterProperties
 {
 
 public:
-    ColorFilterOverlayControl();
-    ~ColorFilterOverlayControl() {}
+    MonochromaticOverlayPresenter();
+    ~MonochromaticOverlayPresenter() {}
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
