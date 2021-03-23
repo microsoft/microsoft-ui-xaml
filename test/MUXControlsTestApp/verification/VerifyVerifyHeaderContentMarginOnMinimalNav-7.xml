@@ -13,7 +13,7 @@
     FocusVisualPrimaryThickness=2,2,2,2
     FocusVisualPrimaryBrush=#FF000000
     Visibility=Visible
-    RenderSize=314,34
+    RenderSize=316,34
   [Windows.UI.Xaml.Controls.ContentPresenter]
       Foreground=#E4000000
       Padding=0,0,0,0
@@ -27,7 +27,7 @@
       FocusVisualPrimaryThickness=2,2,2,2
       FocusVisualPrimaryBrush=#FF000000
       Visibility=Visible
-      RenderSize=314,34
+      RenderSize=316,34
     [Windows.UI.Xaml.Controls.TextBlock]
         Padding=0,0,0,0
         Foreground=#E4000000
