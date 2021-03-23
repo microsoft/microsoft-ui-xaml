@@ -37,8 +37,8 @@
             <Color x:Key="ControlSolidFillColorDefault">#454545</Color>
 
             <Color x:Key="SubtleFillColorTransparent">#00FFFFFF</Color>
-            <Color x:Key="SubtleFillColorSecondary">#0AFFFFFF</Color>
-            <Color x:Key="SubtleFillColorTertiary">#04FFFFFF</Color>
+            <Color x:Key="SubtleFillColorSecondary">#0FFFFFFF</Color>
+            <Color x:Key="SubtleFillColorTertiary">#0AFFFFFF</Color>
             <Color x:Key="SubtleFillColorDisabled">#00FFFFFF</Color>
 
             <Color x:Key="ControlAltFillColorTransparent">#00FFFFFF</Color>
@@ -54,8 +54,8 @@
             
             <Color x:Key="AccentAAFillColorDisabled">#28FFFFFF</Color>
 
-            <Color x:Key="ControlStrokeColorDefault">#14FFFFFF</Color>
-            <Color x:Key="ControlStrokeColorSecondary">#4C000000</Color>
+            <Color x:Key="ControlStrokeColorDefault">#12FFFFFF</Color>
+            <Color x:Key="ControlStrokeColorSecondary">#18FFFFFF</Color>
             <Color x:Key="ControlStrokeColorOnAccentDefault">#14FFFFFF</Color>
             <Color x:Key="ControlStrokeColorOnAccentSecondary">#23000000</Color>
             <Color x:Key="ControlStrokeColorOnAccentTertiary">#37000000</Color>
@@ -80,7 +80,7 @@
             <Color x:Key="CardBackgroundFillColorDefault">#0DFFFFFF</Color>
             <Color x:Key="CardBackgroundFillColorSecondary">#08FFFFFF</Color>
 
-            <Color x:Key="SmokeFillColorDefault">#4C000000</Color>
+            <Color x:Key="SmokeFillColorDefault">#332C2C2C</Color>
 
             <Color x:Key="LayerFillColorDefault">#09FFFFFF</Color>
             <Color x:Key="LayerFillColorAlt">#0DFFFFFF</Color>
@@ -92,7 +92,6 @@
             <Color x:Key="SolidBackgroundFillColorTertiary">#282828</Color>
             <Color x:Key="SolidBackgroundFillColorQuarternary">#2C2C2C</Color>
 
-            <Color x:Key="SystemFillColorAttention">#50C0FF</Color>
             <Color x:Key="SystemFillColorSuccess">#6CCB5F</Color>
             <Color x:Key="SystemFillColorCaution">#FCE100</Color>
             <Color x:Key="SystemFillColorCritical">#FF99A4</Color>
@@ -195,7 +194,7 @@
             <SolidColorBrush x:Key="SolidBackgroundFillColorTertiaryBrush" Color="{StaticResource SolidBackgroundFillColorTertiary}" />
             <SolidColorBrush x:Key="SolidBackgroundFillColorQuarternaryBrush" Color="{StaticResource SolidBackgroundFillColorQuarternary}" />
 
-            <SolidColorBrush x:Key="SystemFillColorAttentionBrush" Color="{StaticResource SystemFillColorAttention}" />
+            <SolidColorBrush x:Key="SystemFillColorAttentionBrush" Color="{ThemeResource SystemAccentColorLight2}" />
             <SolidColorBrush x:Key="SystemFillColorSuccessBrush" Color="{StaticResource SystemFillColorSuccess}" />
             <SolidColorBrush x:Key="SystemFillColorCautionBrush" Color="{StaticResource SystemFillColorCaution}" />
             <SolidColorBrush x:Key="SystemFillColorCriticalBrush" Color="{StaticResource SystemFillColorCritical}" />
@@ -208,9 +207,6 @@
             <!-- Elevation border brushes-->
 
             <LinearGradientBrush x:Key="ControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
-                <LinearGradientBrush.RelativeTransform>
-                    <ScaleTransform ScaleY="-1" CenterY="0.5"/>
-                </LinearGradientBrush.RelativeTransform>
                 <LinearGradientBrush.GradientStops>
                     <GradientStop Offset="0.33" Color="{StaticResource ControlStrokeColorSecondary}"/>
                     <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}"/>
@@ -219,8 +215,8 @@
 
             <LinearGradientBrush x:Key="CircleElevationBorderBrush" MappingMode="RelativeToBoundingBox" StartPoint="0,0" EndPoint="0,1">
                 <LinearGradientBrush.GradientStops>
-                    <GradientStop Offset="0.50" Color="{StaticResource ControlStrokeColorDefault}"/>
                     <GradientStop Offset="0.70" Color="{StaticResource ControlStrokeColorSecondary}"/>
+                    <GradientStop Offset="0.50" Color="{StaticResource ControlStrokeColorDefault}"/>
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
 
@@ -266,8 +262,8 @@
             <Color x:Key="ControlSolidFillColorDefault">#FFFFFF</Color>
 
             <Color x:Key="SubtleFillColorTransparent">#00FFFFFF</Color>
-            <Color x:Key="SubtleFillColorSecondary">#06000000</Color>
-            <Color x:Key="SubtleFillColorTertiary">#03000000</Color>
+            <Color x:Key="SubtleFillColorSecondary">#09000000</Color>
+            <Color x:Key="SubtleFillColorTertiary">#06000000</Color>
             <Color x:Key="SubtleFillColorDisabled">#00FFFFFF</Color>
 
             <Color x:Key="ControlAltFillColorTransparent">#00FFFFFF</Color>
@@ -309,7 +305,7 @@
             <Color x:Key="CardBackgroundFillColorDefault">#B3FFFFFF</Color>
             <Color x:Key="CardBackgroundFillColorSecondary">#80F6F6F6</Color>
 
-            <Color x:Key="SmokeFillColorDefault">#4D000000</Color>
+            <Color x:Key="SmokeFillColorDefault">#4DFFFFFF</Color>
 
             <Color x:Key="LayerFillColorDefault">#80FFFFFF</Color>
             <Color x:Key="LayerFillColorAlt">#FFFFFF</Color>
@@ -321,7 +317,6 @@
             <Color x:Key="SolidBackgroundFillColorTertiary">#F9F9F9</Color>
             <Color x:Key="SolidBackgroundFillColorQuarternary">#FFFFFF</Color>
 
-            <Color x:Key="SystemFillColorAttention">#0070CB</Color>
             <Color x:Key="SystemFillColorSuccess">#0F7B0F</Color>
             <Color x:Key="SystemFillColorCaution">#9D5D00</Color>
             <Color x:Key="SystemFillColorCritical">#C42B1C</Color>
@@ -424,7 +419,7 @@
             <SolidColorBrush x:Key="SolidBackgroundFillColorTertiaryBrush" Color="{StaticResource SolidBackgroundFillColorTertiary}" />
             <SolidColorBrush x:Key="SolidBackgroundFillColorQuarternaryBrush" Color="{StaticResource SolidBackgroundFillColorQuarternary}" />
 
-            <SolidColorBrush x:Key="SystemFillColorAttentionBrush" Color="{StaticResource SystemFillColorAttention}" />
+            <SolidColorBrush x:Key="SystemFillColorAttentionBrush" Color="{ThemeResource SystemAccentColor}" />
             <SolidColorBrush x:Key="SystemFillColorSuccessBrush" Color="{StaticResource SystemFillColorSuccess}" />
             <SolidColorBrush x:Key="SystemFillColorCautionBrush" Color="{StaticResource SystemFillColorCaution}" />
             <SolidColorBrush x:Key="SystemFillColorCriticalBrush" Color="{StaticResource SystemFillColorCritical}" />

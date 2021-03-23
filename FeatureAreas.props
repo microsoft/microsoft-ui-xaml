@@ -33,15 +33,6 @@
   <!-- Dependencies for AutoSuggestBox -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureAutoSuggestBoxEnabled) == 'true'">
   </PropertyGroup>
-  <!-- Dependencies for CalendarDatePicker -->
-  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureCalendarDatePickerEnabled) == 'true'">
-  </PropertyGroup>
-  <!-- Dependencies for CalendarView -->
-  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureCalendarViewEnabled) == 'true'">
-  </PropertyGroup>
-  <!-- Dependencies for CheckBox -->
-  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureCheckBoxEnabled) == 'true'">
-  </PropertyGroup>
   <!-- Dependencies for Collections -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureCollectionsEnabled) == 'true'">
   </PropertyGroup>
@@ -66,12 +57,6 @@
     <FeatureScrollerEnabled>productOnly</FeatureScrollerEnabled>
     <FeatureScrollViewerEnabled>productOnly</FeatureScrollViewerEnabled>
   </PropertyGroup>
-  <!-- Dependencies for ContentDialog -->
-  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureContentDialogEnabled) == 'true'">
-  </PropertyGroup>
-  <!-- Dependencies for DatePicker -->
-  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureDatePickerEnabled) == 'true'">
-  </PropertyGroup>
   <!-- Dependencies for DropDownButton -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureDropDownButtonEnabled) == 'true'">
     <!-- We need the MyControl type from SplitButton test -->
@@ -79,9 +64,6 @@
   </PropertyGroup>
   <!-- Dependencies for Effects -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureEffectsEnabled) == 'true'">
-  </PropertyGroup>
-  <!-- Dependencies for FlipView -->
-  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureFlipViewEnabled) == 'true'">
   </PropertyGroup>
   <!-- Dependencies for IconSource -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureIconSourceEnabled) == 'true'">
@@ -107,9 +89,6 @@
   <!-- Dependencies for MenuBar -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureMenuBarEnabled) == 'true'">
   </PropertyGroup>
-  <!-- Dependencies for MenuFlyout -->
-  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureMenuFlyoutEnabled) == 'true'">
-  </PropertyGroup>
   <!-- Dependencies for NavigationView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureNavigationViewEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
@@ -129,9 +108,6 @@
   </PropertyGroup>
   <!-- Dependencies for PersonPicture -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePersonPictureEnabled) == 'true'">
-  </PropertyGroup>
-  <!-- Dependencies for Pivot -->
-  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePivotEnabled) == 'true'">
   </PropertyGroup>
   <!-- Dependencies for PullToRefresh -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePullToRefreshEnabled) == 'true'">
@@ -158,9 +134,6 @@
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureResourceHelperEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
   </PropertyGroup>
-  <!-- Dependencies for ScrollBar -->
-  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureScrollBarEnabled) == 'true'">
-  </PropertyGroup>
   <!-- Dependencies for Scroller -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureScrollerEnabled) == 'true'">
     <FeatureScrollBarEnabled>productOnly</FeatureScrollBarEnabled>
@@ -170,9 +143,6 @@
   </PropertyGroup>
   <!-- Dependencies for ScrollViewer -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureScrollViewerEnabled) == 'true'">
-  </PropertyGroup>
-  <!-- Dependencies for Slider -->
-  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureSliderEnabled) == 'true'">
   </PropertyGroup>
   <!-- Dependencies for SplitButton -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureSplitButtonEnabled) == 'true'">
@@ -189,12 +159,6 @@
   </PropertyGroup>
   <!-- Dependencies for TeachingTip -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTeachingTipEnabled) == 'true'">
-  </PropertyGroup>
-  <!-- Dependencies for TimePicker -->
-  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTimePickerEnabled) == 'true'">
-  </PropertyGroup>
-  <!-- Dependencies for ToolTip -->
-  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureToolTipEnabled) == 'true'">
   </PropertyGroup>
   <!-- Dependencies for TreeView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTreeViewEnabled) == 'true'">
@@ -221,7 +185,7 @@
   <!-- Dependencies for ImageIcon -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureImageIconEnabled) == 'true'">
   </PropertyGroup>
-    <!-- Dependencies for AnimatedIcon -->
+  <!-- Dependencies for AnimatedIcon -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureAnimatedIconEnabled) == 'true'">
     <FeatureAnimatedVisualPlayerEnabled>productOnly</FeatureAnimatedVisualPlayerEnabled>
   </PropertyGroup>
@@ -229,48 +193,36 @@
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
     <FeatureAnimatedVisualPlayerEnabled>true</FeatureAnimatedVisualPlayerEnabled>
     <FeatureAutoSuggestBoxEnabled>true</FeatureAutoSuggestBoxEnabled>
-    <FeatureCalendarDatePickerEnabled>true</FeatureCalendarDatePickerEnabled>
-    <FeatureCalendarViewEnabled>true</FeatureCalendarViewEnabled>
-    <FeatureCheckBoxEnabled>true</FeatureCheckBoxEnabled>
     <FeatureCollectionsEnabled>true</FeatureCollectionsEnabled>
     <FeatureColorPickerEnabled>true</FeatureColorPickerEnabled>
     <FeatureComboBoxEnabled>true</FeatureComboBoxEnabled>
     <FeatureCommandBarFlyoutEnabled>true</FeatureCommandBarFlyoutEnabled>
     <FeatureCommonStylesEnabled>true</FeatureCommonStylesEnabled>
-    <FeatureContentDialogEnabled>true</FeatureContentDialogEnabled>
-    <FeatureDatePickerEnabled>true</FeatureDatePickerEnabled>
     <FeatureDropDownButtonEnabled>true</FeatureDropDownButtonEnabled>
     <FeatureEffectsEnabled>true</FeatureEffectsEnabled>
-    <FeatureFlipViewEnabled>true</FeatureFlipViewEnabled>
     <FeatureIconSourceEnabled>true</FeatureIconSourceEnabled>
     <FeatureInteractionsEnabled>true</FeatureInteractionsEnabled>
     <FeatureLayoutPanelEnabled>true</FeatureLayoutPanelEnabled>
     <FeatureLightsEnabled>true</FeatureLightsEnabled>
     <FeatureMaterialsEnabled>true</FeatureMaterialsEnabled>
     <FeatureMenuBarEnabled>true</FeatureMenuBarEnabled>
-    <FeatureMenuFlyoutEnabled>true</FeatureMenuFlyoutEnabled>
     <FeatureNavigationViewEnabled>true</FeatureNavigationViewEnabled>
     <FeatureNumberBoxEnabled>true</FeatureNumberBoxEnabled>
     <FeatureParallaxViewEnabled>true</FeatureParallaxViewEnabled>
     <FeaturePersonPictureEnabled>true</FeaturePersonPictureEnabled>
-    <FeaturePivotEnabled>true</FeaturePivotEnabled>
     <FeaturePullToRefreshEnabled>true</FeaturePullToRefreshEnabled>
     <FeatureRadioButtonsEnabled>true</FeatureRadioButtonsEnabled>
     <FeatureRadioMenuFlyoutItemEnabled>true</FeatureRadioMenuFlyoutItemEnabled>
     <FeatureRatingControlEnabled>true</FeatureRatingControlEnabled>
     <FeatureRepeaterEnabled>true</FeatureRepeaterEnabled>
     <FeatureResourceHelperEnabled>true</FeatureResourceHelperEnabled>
-    <FeatureScrollBarEnabled>true</FeatureScrollBarEnabled>
     <FeatureScrollPresenterEnabled>true</FeatureScrollPresenterEnabled>
     <FeatureScrollViewEnabled>true</FeatureScrollViewEnabled>
-    <FeatureSliderEnabled>true</FeatureSliderEnabled>
     <FeatureSplitButtonEnabled>true</FeatureSplitButtonEnabled>
     <FeatureSplitViewEnabled>true</FeatureSplitViewEnabled>
     <FeatureSwipeControlEnabled>true</FeatureSwipeControlEnabled>
     <FeatureTabViewEnabled>true</FeatureTabViewEnabled>
     <FeatureTeachingTipEnabled>true</FeatureTeachingTipEnabled>
-    <FeatureTimePickerEnabled>true</FeatureTimePickerEnabled>
-    <FeatureToolTipEnabled>true</FeatureToolTipEnabled>
     <FeatureTreeViewEnabled>true</FeatureTreeViewEnabled>
     <FeatureTwoPaneViewEnabled>true</FeatureTwoPaneViewEnabled>
     <FeatureCommonStylesEnabled>true</FeatureCommonStylesEnabled>
