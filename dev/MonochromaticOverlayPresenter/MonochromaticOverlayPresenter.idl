@@ -5,14 +5,14 @@
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
-unsealed runtimeclass ColorFilterOverlayControl : Windows.UI.Xaml.Controls.Grid
+unsealed runtimeclass MonochromaticOverlayPresenter : Windows.UI.Xaml.Controls.Grid
 {
-    ColorFilterOverlayControl();
+    MonochromaticOverlayPresenter();
 
-    Windows.UI.Xaml.UIElement TargetElement { get; set; };
+    Windows.UI.Xaml.UIElement SourceElement { get; set; };
     Windows.UI.Color ReplacementColor { get; set; };
 
-    static Windows.UI.Xaml.DependencyProperty TargetElementProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SourceElementProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ReplacementColorProperty{ get; };
 }
 

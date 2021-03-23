@@ -419,24 +419,24 @@
                                         VerticalAlignment="Center"
                                         Height="{ThemeResource DatePickerFlyoutPresenterHighlightHeight}"
                                         IsHitTestVisible="false"/>
-                                    <primitives:ColorFilterOverlayControl
+                                    <primitives:MonochromaticOverlayPresenter
                                         Canvas.ZIndex="10000"
                                         Grid.Column="{Binding ElementName=DayLoopingSelector,Path=(Grid.Column)}"
-                                        TargetElement="{Binding ElementName=DayLoopingSelector}"
+                                        SourceElement="{Binding ElementName=DayLoopingSelector}"
                                         ReplacementColor="{ThemeResource DatePickerFlyoutPresenterHighlightForegroundColor}"
                                         Height="{ThemeResource DatePickerFlyoutPresenterHighlightHeight}"
                                         VerticalAlignment="Center" IsHitTestVisible="false"/>
-                                    <primitives:ColorFilterOverlayControl
+                                    <primitives:MonochromaticOverlayPresenter
                                         Canvas.ZIndex="10000"
                                         Grid.Column="{Binding ElementName=MonthLoopingSelector,Path=(Grid.Column)}"
-                                        TargetElement="{Binding ElementName=MonthLoopingSelector}"
+                                        SourceElement="{Binding ElementName=MonthLoopingSelector}"
                                         ReplacementColor="{ThemeResource DatePickerFlyoutPresenterHighlightForegroundColor}"
                                         Height="{ThemeResource DatePickerFlyoutPresenterHighlightHeight}"
                                         VerticalAlignment="Center" IsHitTestVisible="false"/>
-                                    <primitives:ColorFilterOverlayControl
+                                    <primitives:MonochromaticOverlayPresenter
                                         Canvas.ZIndex="10000"
                                         Grid.Column="{Binding ElementName=YearLoopingSelector,Path=(Grid.Column)}"
-                                        TargetElement="{Binding ElementName=YearLoopingSelector}"
+                                        SourceElement="{Binding ElementName=YearLoopingSelector}"
                                         ReplacementColor="{ThemeResource DatePickerFlyoutPresenterHighlightForegroundColor}"
                                         Height="{ThemeResource DatePickerFlyoutPresenterHighlightHeight}"
                                         VerticalAlignment="Center" IsHitTestVisible="false"/>
