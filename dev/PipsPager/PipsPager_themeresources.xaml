@@ -15,11 +15,11 @@
             <StaticResource x:Key="PipsPagerSelectionIndicatorBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="PipsPagerSelectionIndicatorBorderBrushSelected" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="PipsPagerSelectionIndicatorBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
-            <StaticResource x:Key="PipsPagerSelectionIndicatorForeground" ResourceKey="ControlAAFillColorDefaultBrush" />
+            <StaticResource x:Key="PipsPagerSelectionIndicatorForeground" ResourceKey="ControlStrongFillColorDefaultBrush" />
             <StaticResource x:Key="PipsPagerSelectionIndicatorForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="PipsPagerSelectionIndicatorForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-            <StaticResource x:Key="PipsPagerSelectionIndicatorForegroundSelected" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="PipsPagerSelectionIndicatorForegroundDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="PipsPagerSelectionIndicatorForegroundSelected" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="PipsPagerSelectionIndicatorForegroundDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonBackground" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonBackgroundPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonBackgroundPressed" ResourceKey="ControlFillColorTransparentBrush" />
@@ -28,10 +28,10 @@
             <StaticResource x:Key="PipsPagerNavigationButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
-            <StaticResource x:Key="PipsPagerNavigationButtonForeground" ResourceKey="ControlAAFillColorDefaultBrush" />
+            <StaticResource x:Key="PipsPagerNavigationButtonForeground" ResourceKey="ControlStrongFillColorDefaultBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-            <StaticResource x:Key="PipsPagerNavigationButtonForegroundDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="PipsPagerNavigationButtonForegroundDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Dark">
@@ -45,11 +45,11 @@
             <StaticResource x:Key="PipsPagerSelectionIndicatorBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="PipsPagerSelectionIndicatorBorderBrushSelected" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="PipsPagerSelectionIndicatorBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
-            <StaticResource x:Key="PipsPagerSelectionIndicatorForeground" ResourceKey="ControlAAFillColorDefaultBrush" />
+            <StaticResource x:Key="PipsPagerSelectionIndicatorForeground" ResourceKey="ControlStrongFillColorDefaultBrush" />
             <StaticResource x:Key="PipsPagerSelectionIndicatorForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="PipsPagerSelectionIndicatorForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-            <StaticResource x:Key="PipsPagerSelectionIndicatorForegroundSelected" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="PipsPagerSelectionIndicatorForegroundDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="PipsPagerSelectionIndicatorForegroundSelected" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="PipsPagerSelectionIndicatorForegroundDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonBackground" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonBackgroundPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonBackgroundPressed" ResourceKey="ControlFillColorTransparentBrush" />
@@ -58,10 +58,10 @@
             <StaticResource x:Key="PipsPagerNavigationButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
-            <StaticResource x:Key="PipsPagerNavigationButtonForeground" ResourceKey="ControlAAFillColorDefaultBrush" />
+            <StaticResource x:Key="PipsPagerNavigationButtonForeground" ResourceKey="ControlStrongFillColorDefaultBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-            <StaticResource x:Key="PipsPagerNavigationButtonForegroundDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="PipsPagerNavigationButtonForegroundDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">

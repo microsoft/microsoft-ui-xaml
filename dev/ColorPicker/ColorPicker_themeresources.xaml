@@ -8,8 +8,8 @@
             <StaticResource x:Key="ColorPickerSliderThumbBackground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ColorPickerSliderThumbBackgroundPointerOver" ResourceKey="SystemControlHighlightChromeAltLowBrush" />
             <StaticResource x:Key="ColorPickerSliderThumbBackgroundPressed" ResourceKey="SurfaceStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ColorPickerSliderThumbBackgroundDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
-            <StaticResource x:Key="ColorPickerSliderTrackFillDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ColorPickerSliderThumbBackgroundDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
+            <StaticResource x:Key="ColorPickerSliderTrackFillDisabled" ResourceKey="AccentFillColorDisabledBrush" />
             <StaticResource x:Key="ColorPickerHeaderContentDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="ColorPickerBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
         </ResourceDictionary>
@@ -17,8 +17,8 @@
             <StaticResource x:Key="ColorPickerSliderThumbBackground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ColorPickerSliderThumbBackgroundPointerOver" ResourceKey="SystemControlHighlightChromeAltLowBrush" />
             <StaticResource x:Key="ColorPickerSliderThumbBackgroundPressed" ResourceKey="SurfaceStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ColorPickerSliderThumbBackgroundDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
-            <StaticResource x:Key="ColorPickerSliderTrackFillDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ColorPickerSliderThumbBackgroundDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
+            <StaticResource x:Key="ColorPickerSliderTrackFillDisabled" ResourceKey="AccentFillColorDisabledBrush" />
             <StaticResource x:Key="ColorPickerHeaderContentDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="ColorPickerBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
         </ResourceDictionary>
