@@ -74,15 +74,15 @@
 
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="SplitButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-            <StaticResource x:Key="SplitButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+            <StaticResource x:Key="SplitButtonBackgroundPointerOver" ResourceKey="SystemColorHighlightTextColor" />
             <StaticResource x:Key="SplitButtonBackgroundPressed" ResourceKey="SystemColorHighlightTextColor" />
             <StaticResource x:Key="SplitButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="SplitButtonBackgroundChecked" ResourceKey="SystemControlHighlightAccentBrush" />
             <StaticResource x:Key="SplitButtonBackgroundCheckedPointerOver" ResourceKey="SystemColorButtonTextColor" />
             <StaticResource x:Key="SplitButtonBackgroundCheckedPressed" ResourceKey="SystemColorButtonFaceColor" />
             <StaticResource x:Key="SplitButtonBackgroundCheckedDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-            <StaticResource x:Key="SplitButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="SplitButtonForegroundPointerOver" ResourceKey="SystemControlHighlightBaseHighBrush" />
+            <StaticResource x:Key="SplitButtonForeground" ResourceKey="SystemColorButtonTextColor" />
+            <StaticResource x:Key="SplitButtonForegroundPointerOver" ResourceKey="SystemColorHighlightColor" />
             <StaticResource x:Key="SplitButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
             <StaticResource x:Key="SplitButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="SplitButtonForegroundChecked" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
