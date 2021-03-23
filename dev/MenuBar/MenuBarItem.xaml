@@ -11,7 +11,7 @@
         <Setter Property="BorderThickness" Value="{ThemeResource MenuBarItemBorderThickness}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource MenuBarItemBorderBrush}"/>
         <Setter Property="Margin" Value="{ThemeResource MenuBarItemMargin}"/>
-        <Setter Property="contract7Present:CornerRadius" Value="{ThemeResource MenuBarItemCornerRadius}"/>
+        <Setter Property="contract7Present:CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
         <Setter Property="Title" Value="Item"/>
         <Setter Property="IsTabStop" Value="True"/>
         <Setter Property="ExitDisplayModeOnAccessKeyInvoked" Value="False"/>
@@ -23,7 +23,7 @@
                     <Grid x:Name="ContentRoot"
                           Background="{TemplateBinding Background}"
                           contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                          contract7NotPresent:CornerRadius="{ThemeResource MenuBarItemCornerRadius}">
+                          contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                         <Grid.Resources>
                             <!-- Stop the contained button from setting its background to anything but transparent -->
                             <!-- Can't do this because of : Bug 16889199: StaticResource tag in a ControlTemplate hits asserts in CHK build-->
@@ -74,38 +74,13 @@
 
                         <Button x:Name ="ContentButton"
                             Content="{TemplateBinding Title}"
-                            Style="{StaticResource MenuBarItemButtonStyle}"
-                            IsTabStop="False">
-                        </Button>
+                            Background="Transparent"
+                            BorderThickness="0"
+                            VerticalAlignment="Stretch"
+                            Padding="{StaticResource MenuBarItemButtonPadding}"
+                            IsTabStop="False"
+                            AutomationProperties.AccessibilityView="Raw"/>
                     </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style TargetType="Button" x:Key="MenuBarItemButtonStyle">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <ContentPresenter x:Name="ContentPresenter"
-                                    Background="Transparent"
-                                    BorderThickness="0"
-                                    Content="{TemplateBinding Content}"
-                                    Foreground="{ThemeResource MenuBarItemForeground}"
-                                    Padding="{StaticResource MenuBarItemButtonPadding}"
-                                    VerticalAlignment="Stretch"
-                                    AutomationProperties.AccessibilityView="Raw">
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal"/>
-                                <VisualState x:Name="Disabled">
-                                    <VisualState.Setters>
-                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource MenuBarItemForegroundDisabled}"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
-                    </ContentPresenter>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
