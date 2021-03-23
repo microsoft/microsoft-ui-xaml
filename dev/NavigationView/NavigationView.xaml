@@ -118,6 +118,19 @@
                                 </VisualState>
                             </VisualStateGroup>
 
+                            <VisualStateGroup x:Name="OverlayStateGroup">
+                                <VisualState x:Name="Overlay">
+                                    <VisualState.Setters>
+                                        <contract7Present:Setter Target="PaneContentGrid.CornerRadius" Value="{ThemeResource OverlayCornerRadius}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="NotOverlay">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootSplitView.PaneBackground" Value="{ThemeResource NavigationViewExpandedPaneBackground}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
                             <VisualStateGroup x:Name="TitleBarVisibilityGroup">
                                 <VisualState x:Name="TitleBarVisible" />
                                 <VisualState x:Name="TitleBarCollapsed">
@@ -431,7 +444,8 @@
                                         HorizontalAlignment="Left"
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}"
                                         BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
-                                        BorderThickness="0,0,1,0">
+                                        BorderThickness="0,0,1,0"
+                                        contract7Present:CornerRadius="0">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="0"/> <!-- above button margin + back button space -->

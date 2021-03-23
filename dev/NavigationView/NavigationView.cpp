@@ -1698,6 +1698,11 @@ void NavigationView::OnSplitViewPaneClosing(const winrt::DependencyObject& /*sen
                     winrt::VisualStateManager::GoToState(*this, L"ListSizeCompact", true /*useTransitions*/);
                     UpdatePaneToggleSize();
                 }
+
+                if (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay)
+                {
+                    winrt::VisualStateManager::GoToState(*this, L"NotOverlay", true /*useTransitions*/);
+                }
             }
         }
     }
@@ -1714,6 +1719,14 @@ void NavigationView::OnSplitViewPaneOpening(const winrt::DependencyObject& /*sen
     {
         // See UpdateIsClosedCompact 'RS3+ animation timing enhancement' for explanation:
         winrt::VisualStateManager::GoToState(*this, L"ListSizeFull", true /*useTransitions*/);
+
+        if (auto splitView = m_rootSplitView.get())
+        {
+            if (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay)
+            {
+                winrt::VisualStateManager::GoToState(*this, L"Overlay", true /*useTransitions*/);
+            }
+        }
     }
 
     m_paneOpeningEventSource(*this, nullptr);
