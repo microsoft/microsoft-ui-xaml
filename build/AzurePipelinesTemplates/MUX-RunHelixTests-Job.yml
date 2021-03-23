@@ -43,7 +43,6 @@ jobs:
     matrix: ${{ parameters.matrix }}
   variables:
     artifactsDir: $(Build.SourcesDirectory)\Artifacts
-    # taefPath: $(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\$(buildPlatform)
     helixCommonArgs: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixType=${{parameters.helixType}} /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory) /p:rerunPassesRequiredToAvoidFailure=${{parameters.rerunPassesRequiredToAvoidFailure}}'
 
       
@@ -107,7 +106,6 @@ jobs:
       testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
       testFilePattern: 'MUXControls.Test.dll'
       outputProjFileName: 'RunTestsInHelix-InteractionTests.proj'
-      testSuite: '${{ parameters.testSuite }}'
       taefQuery: ${{ parameters.taefQuery }}
 
   - template: MUX-CreateHelixProjFile-Steps.yml
@@ -116,7 +114,6 @@ jobs:
       testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
       testFilePattern: 'MUXControlsTestApp.appx'
       outputProjFileName: 'RunTestsInHelix-ApiTests.proj'
-      testSuite: '${{ parameters.testSuite }}'
       taefQuery: ${{ parameters.taefQuery }}
 
   - template: MUX-CreateHelixProjFile-Steps.yml
@@ -125,7 +122,6 @@ jobs:
       testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
       testFilePattern: 'IXMPTestApp.appx'
       outputProjFileName: 'RunTestsInHelix-IXMPTestAppTests.proj'
-      testSuite: '${{ parameters.testSuite }}'
       taefQuery: ${{ parameters.taefQuery }}
 
   - template: MUX-CreateHelixProjFile-Steps.yml
@@ -134,7 +130,6 @@ jobs:
       testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
       testFilePattern: 'MUXControls.ReleaseTest.dll'
       outputProjFileName: 'RunTestsInHelix-NugetTests.proj'
-      testSuite: '${{ parameters.testSuite }}'
       taefQuery: ${{ parameters.taefQuery }}
 
   - task: PublishBuildArtifacts@1

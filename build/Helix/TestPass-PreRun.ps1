@@ -1,5 +1,11 @@
 Write-Host "TestPass-PreRun.ps1"
 
+$Platform = $env:testbuildplatform
+if(!$Platform)
+{
+    $Platform = "x86"
+}
+
 function UninstallTestApps {
     Param([string[]]$appsToUninstall)
 
@@ -45,7 +51,7 @@ Write-Host "Uninstall MUX Framework package that may have been left over from pr
 [xml]$versionData = (Get-Content "version.props")
 $versionMajor = $versionData.GetElementsByTagName("MUXVersionMajor").'#text'
 $versionMinor = $versionData.GetElementsByTagName("MUXVersionMinor").'#text'
-UninstallApps("Microsoft.UI.Xaml.$versionMajor.$versionMinor")
+UninstallTestApps("Microsoft.UI.Xaml.$versionMajor.$versionMinor")
 
 
 .\InstallTestAppDependencies.ps1

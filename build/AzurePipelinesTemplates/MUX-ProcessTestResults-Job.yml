@@ -36,7 +36,7 @@ jobs:
       HelixAccessToken: $(HelixApiAccessToken)
     inputs:
       targetType: filePath
-      filePath: $(helixScriptPath)\UpdateUnreliableTests.ps1 #todo - fix path
+      filePath: $(helixScriptPath)\UpdateUnreliableTests.ps1
       arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}' -HelixTypeJobFilter ${{ parameters.testSuite }}
 
   - task: powershell@2
