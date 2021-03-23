@@ -291,11 +291,11 @@
                             VerticalContentAlignment="Stretch"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
-                            Padding="0,0,1,0"
+                            Padding="0,0,12,0"
                             IsTabStop="False"
                             AutomationProperties.AccessibilityView="Raw">
                             <Button.Content>
-                                <local:AnimatedIcon Height="12" Width="12" VerticalAlignment="Center" HorizontalAlignment="Center" AutomationProperties.AccessibilityView="Raw">
+                                <local:AnimatedIcon Height="12" Width="12" VerticalAlignment="Center" HorizontalAlignment="Right" AutomationProperties.AccessibilityView="Raw">
                                     <animatedvisuals:AnimatedChevronDownSmallVisualSource/>
                                     <local:AnimatedIcon.FallbackIconSource>
                                         <local:FontIconSource FontFamily="{ThemeResource SymbolThemeFontFamily}"
