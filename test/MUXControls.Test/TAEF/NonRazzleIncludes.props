@@ -2,8 +2,9 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
     <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
-    <PackageReference Include="TAEF.Redist.Wlk" Version="10.31.180822002" />
+    <PackageReference Include="TAEF.Redist.Wlk" Version="10.57.201103001" />
   </ItemGroup>
 </Project>

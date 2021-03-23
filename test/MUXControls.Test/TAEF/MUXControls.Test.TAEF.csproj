@@ -14,7 +14,7 @@
     <RuntimeIdentifiers>win-x86;win-x64;win-arm;win-arm64</RuntimeIdentifiers>
     <!-- The binaries we're building against are managed, so which platform's folder they come out of is immaterial.
          For simplicity's sake, we'll always get them from the x86 folder, but the CoreClr binaries are the same everywhere. -->
-    <TaefRootDirectory>$(NuGetPackageRoot)taef.redist.wlk\10.31.180822002\build\Binaries\x86\CoreClr\</TaefRootDirectory>
+    <TaefRootDirectory>$(NuGetPackageRoot)taef.redist.wlk\10.57.201103001\build\Binaries\x86\CoreClr\</TaefRootDirectory>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="TE.Managed">

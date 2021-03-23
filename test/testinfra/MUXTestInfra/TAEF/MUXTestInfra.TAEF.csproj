@@ -8,7 +8,7 @@
     <DefineConstants>$(DefineConstants);USING_TAEF</DefineConstants>
     <DefineConstants Condition="$(SolutionName) == 'MUXControlsInnerLoop'">$(DefineConstants);INNERLOOP_BUILD</DefineConstants>
 
-    <TaefRootDirectory>$(NuGetPackageRoot)taef.redist.wlk\10.31.180822002\build\Binaries\x86\CoreClr\</TaefRootDirectory>
+    <TaefRootDirectory>$(NuGetPackageRoot)taef.redist.wlk\10.57.201103001\build\Binaries\x86\CoreClr\</TaefRootDirectory>
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,7 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="TAEF.Redist.Wlk" Version="10.31.180822002" />
+    <PackageReference Include="TAEF.Redist.Wlk" Version="10.57.201103001" />
     <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
   </ItemGroup>
