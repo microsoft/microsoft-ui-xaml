@@ -142,6 +142,11 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)GridViewItem_themeresources_v1.xaml">
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)GridViewItem_themeresources_21h1.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>21H1</Version>

@@ -14,7 +14,7 @@
             <x:Double x:Key="ListViewItemReorderHintThemeOffset">10.0</x:Double>
             <x:Double x:Key="ListViewItemSelectedBorderThemeThickness">4</x:Double>
             <x:Double x:Key="ListViewItemMinWidth">88</x:Double>
-            <x:Double x:Key="ListViewItemMinHeight">38</x:Double>
+            <x:Double x:Key="ListViewItemMinHeight">40</x:Double>
             <Thickness x:Key="ListViewItemCompactSelectedBorderThemeThickness">4</Thickness>
             <StaticResource x:Key="ListViewItemBorderBackground" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="ListViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
@@ -92,7 +92,7 @@
             <x:Double x:Key="ListViewItemReorderHintThemeOffset">10.0</x:Double>
             <x:Double x:Key="ListViewItemSelectedBorderThemeThickness">4</x:Double>
             <x:Double x:Key="ListViewItemMinWidth">88</x:Double>
-            <x:Double x:Key="ListViewItemMinHeight">38</x:Double>
+            <x:Double x:Key="ListViewItemMinHeight">40</x:Double>
             <Thickness x:Key="ListViewItemCompactSelectedBorderThemeThickness">4</Thickness>
             <SolidColorBrush x:Key="ListViewItemBorderBackground" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="ListViewItemBackground" Color="{ThemeResource SystemColorWindowColor}" />
@@ -170,7 +170,7 @@
             <x:Double x:Key="ListViewItemReorderHintThemeOffset">10.0</x:Double>
             <x:Double x:Key="ListViewItemSelectedBorderThemeThickness">4</x:Double>
             <x:Double x:Key="ListViewItemMinWidth">88</x:Double>
-            <x:Double x:Key="ListViewItemMinHeight">38</x:Double>
+            <x:Double x:Key="ListViewItemMinHeight">40</x:Double>
             <Thickness x:Key="ListViewItemCompactSelectedBorderThemeThickness">4</Thickness>
             <StaticResource x:Key="ListViewItemBorderBackground" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="ListViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
@@ -249,7 +249,7 @@
         <Setter Property="Foreground" Value="{ThemeResource ListViewItemForeground}" />
         <Setter Property="TabNavigation" Value="Local" />
         <Setter Property="IsHoldingEnabled" Value="True" />
-        <Setter Property="Padding" Value="14,0,12,0" />
+        <Setter Property="Padding" Value="16,0,12,0" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="MinWidth" Value="{ThemeResource ListViewItemMinWidth}" />
