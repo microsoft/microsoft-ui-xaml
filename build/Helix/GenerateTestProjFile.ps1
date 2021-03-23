@@ -19,7 +19,7 @@ Param(
 # $packagesDir = Join-Path $repoDirectory "packages"
 
 $packagesDir = Join-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path) "packages"
-$pipelinesScriptsDir = Join-Path $packagesDir "Microsoft.Internal.MUXTestInfra.Helix.0.0.2.1\scripts\pipeline"
+$pipelinesScriptsDir = Join-Path $packagesDir "Microsoft.Internal.MUXTestInfra.Helix.0.0.2.2\scripts\pipeline"
 
 
 

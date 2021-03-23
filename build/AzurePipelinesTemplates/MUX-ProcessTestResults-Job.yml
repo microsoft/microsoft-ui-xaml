@@ -16,7 +16,7 @@ jobs:
   timeoutInMinutes: 120
   variables:
     helixOutputFolder: $(Build.SourcesDirectory)\HelixOutput
-    helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.MUXTestInfra.Helix.0.0.2.1\scripts\pipeline
+    helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.MUXTestInfra.Helix.0.0.2.2\scripts\pipeline
 
   steps:
 
