@@ -194,7 +194,7 @@
             <!-- Checkbox fill brushes -->
 
             <StaticResource x:Key="CheckBoxCheckBackgroundFillUnchecked" ResourceKey="SystemColorButtonFaceColor" />
-            <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPointerOver" ResourceKey="SystemColorHighlghtTextColor" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPointerOver" ResourceKey="SystemColorHighlightTextColor" />
             <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPressed" ResourceKey="SystemColorHighlightColorBrush" />
             <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedDisabled" ResourceKey="SystemColorWindowColorBrush" />
 
