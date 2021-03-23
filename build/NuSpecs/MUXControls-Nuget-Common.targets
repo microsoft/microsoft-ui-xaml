@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildThisFileDirectory)\Microsoft.UI.Xaml\Microsoft.UI.Xaml.Capabilities.props"/>
+  <Import Project="$(MSBuildThisFileDirectory)\Microsoft.UI.Xaml.Capabilities.props"/>
   <!-- Check TargetPlatformMinVersion during build to block unsupported configurations. -->
   <Target Name="MicrosoftUIXamlCheckTargetPlatformVersion" BeforeTargets="PrepareForBuild" 
       Condition="'$(TargetPlatformVersion)' != '' and '$(TargetPlatformMinVersion)' != '' and '$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'==''">
