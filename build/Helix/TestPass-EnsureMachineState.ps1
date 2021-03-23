@@ -1,4 +1,4 @@
-﻿Write-Host "EnsureMachineStateEx"
+﻿Write-Host "TestPass-EnsureMachineState.ps1"
 
 # Kill any running test processes
 $testProcessNames = @(

@@ -1,4 +1,4 @@
-Write-Host "testmachine-prerun-ex.ps1"
+Write-Host "TestPass-PreRun.ps1"
 
 function UninstallTestApps {
     Param([string[]]$appsToUninstall)

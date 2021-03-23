@@ -68,7 +68,6 @@ New-Item -ItemType Directory -Force -Path "$payloadDir"
 # Copy-Item "build\helix\OutputSubResultsJsonFiles.ps1" "$payloadDir"
 # Copy-Item "build\helix\HelixTestHelpers.cs" "$payloadDir"
 # Copy-Item "build\helix\runtests.cmd" $payloadDir
-Copy-Item "build\helix\InstallTestAppDependencies.ps1" "$payloadDir"
-Copy-Item "build\Helix\EnsureMachineStateEx.ps1" "$payloadDir"
+Copy-Item "build\helix\*.ps1" "$payloadDir"
 Copy-Item "version.props" "$payloadDir"
 # Copy-Item "build\Helix\CopyVisualTreeVerificationFiles.ps1" "$payloadDir"

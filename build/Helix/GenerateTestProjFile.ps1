@@ -26,18 +26,18 @@ $pipelinesScriptsDir = Join-Path $packagesDir "Microsoft.Internal.MUXTestInfra.H
 # $classificationQuery="@Classification='Integration'"
 # $taefBaseQuery = "$classificationQuery"
 
-# $taefBaseQuery ="@Name='*ColorPicker*'"
+$taefBaseQuery ="@Name='*ColorPicker*'"
 
-# if($TaefQuery)
-# {
-#     $taefBaseQuery = "$taefBaseQuery AND $TaefQuery"
-# }
+if($TaefQuery)
+{
+    $taefBaseQuery = "$taefBaseQuery AND $TaefQuery"
+}
 
 
-& $pipelinesScriptsDir\GenerateHelixWorkItemsCore.ps1 -TestFilePattern $TestFilePattern `
+& $pipelinesScriptsDir\GenerateHelixWorkItems.ps1 -TestFilePattern $TestFilePattern `
     -TestBinaryDirectoryPath $TestBinaryDirectoryPath `
     -OutputProjFile $OutputProjFile `
-    -TaefBaseQuery $TaefQuery `
+    -TaefBaseQuery $taefBaseQuery `
     -TestTimeout "00:30:00" `
 
     # -testnameprefix fo1
