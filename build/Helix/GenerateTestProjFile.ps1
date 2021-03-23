@@ -9,9 +9,6 @@ Param(
     [Parameter(Mandatory = $true)] 
     [string]$OutputProjFile,
 
-    [Parameter(Mandatory = $true)] 
-    [string]$JobTestSuiteName,
-
     [string]$TaefQuery
 )
 
