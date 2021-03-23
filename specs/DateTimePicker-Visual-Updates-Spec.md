@@ -60,7 +60,7 @@ it would have no effect; it would render the `TextBlock` exactly on top of itsel
 the overlay text to be displayed as green on black.
 * The `MonochromaticOverlayPresenter` is positioned and given a height such that it's a black band
 across the center of the scrolling text.
-
+* The `MonochromaticOverlayPresenter.IsHitTestVisible` property is set to False, so that input still goes to the ScrollViewer that is z-ordered behind it.
 
 ```xml
 <Grid Background="White" Width="150">
@@ -78,12 +78,13 @@ across the center of the scrolling text.
         Background="Black"
         TargetElement="{Binding ElementName=Target}"
         Height="30"
+        IsHitTestVisible="False"
         VerticalAlignment="Center"
         HorizontalAlignment="Stretch"/>
 </Grid>
 ```
 
-![Example showing the ColorFilterOverlay control overlaid on moving content within a ScrollViewer, changing the foreground color and background color of words that pass through.](images/api-example.gif)
+![Example showing the MonochromaticOverlayPresenter control overlaid on moving content within a ScrollViewer, changing the foreground color and background color of words that pass through.](images/api-example.gif)
 
 The example below shows how the new `MonochromaticOverlayPresenter` API can be used to partially highlight a TextBlock.
 
