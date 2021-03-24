@@ -139,7 +139,7 @@ jobs:
       
   - task: DotNetCoreCLI@2
     displayName: 'Run tests in Helix (open queues)'
-    condition: eq(variables['System.CollectionUri'],'https://dev.azure.com/ms/')
+    condition: and(succeeded(),eq(variables['System.CollectionUri'],'https://dev.azure.com/ms/'))
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
@@ -150,7 +150,7 @@ jobs:
 
   - task: DotNetCoreCLI@2
     displayName: 'Run tests in Helix (closed queues)'
-    condition: ne(variables['System.CollectionUri'],'https://dev.azure.com/ms/')
+    condition: and(succeeded(),ne(variables['System.CollectionUri'],'https://dev.azure.com/ms/'))
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
       HelixAccessToken: $(HelixApiAccessToken)

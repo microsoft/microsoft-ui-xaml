@@ -22,4 +22,4 @@ $pipelinesScriptsDir = Join-Path $packagesDir "Microsoft.Internal.MUXTestInfra.H
     -TestBinaryDirectoryPath $TestBinaryDirectoryPath `
     -OutputProjFile $OutputProjFile `
     -TaefBaseQuery $TaefQuery `
-    -TestTimeout "00:30:00" `
+    -TestTimeout "00:30:00" 
