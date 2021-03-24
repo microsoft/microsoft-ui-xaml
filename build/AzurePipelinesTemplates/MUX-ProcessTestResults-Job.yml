@@ -5,7 +5,6 @@ parameters:
   minimumExpectedTestsExecutedCount: 5
   checkJobAttempt: false
   pgoArtifact: ''
-  testSuite: 'DevTestSuite' # Can be: DevTestSuite, ScenarioTestSuite
 
 jobs:
 - job: ProcessTestResults
@@ -38,7 +37,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: $(helixScriptPath)\UpdateUnreliableTests.ps1
-      arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}' -HelixTypeJobFilter ${{ parameters.testSuite }}
+      arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}'
 
   - task: powershell@2
     displayName: 'OutputTestResults.ps1'
@@ -49,7 +48,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: $(helixScriptPath)\OutputTestResults.ps1
-      arguments: -MinimumExpectedTestsExecutedCount '${{ parameters.minimumExpectedTestsExecutedCount }}' -HelixTypeJobFilter ${{ parameters.testSuite }}
+      arguments: -MinimumExpectedTestsExecutedCount '${{ parameters.minimumExpectedTestsExecutedCount }}'
 
   - task: powershell@2
     displayName: 'ProcessHelixFiles.ps1'
@@ -60,7 +59,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: $(helixScriptPath)\ProcessHelixFiles.ps1
-      arguments: -OutputFolder '$(helixOutputFolder)' -HelixTypeJobFilter ${{ parameters.testSuite }}
+      arguments: -OutputFolder '$(helixOutputFolder)'
 
   - ${{if ne(parameters.pgoArtifact, '') }}:
     - script: move /y $(helixOutputFolder)\PGO $(Build.ArtifactStagingDirectory)

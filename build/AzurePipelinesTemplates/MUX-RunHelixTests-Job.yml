@@ -6,7 +6,6 @@ parameters:
   testPayloadArtifactName: 'HelixPayload'
   # If a Pipeline runs this template more than once, this parameter should be unique per build flavor to differentiate the
   # the different test runs:
-  helixType: 'DevTestSuite'  #todo - include build flavor?
   artifactName: 'drop'
   maxParallel: 4
   rerunPassesRequiredToAvoidFailure: 5
@@ -43,7 +42,7 @@ jobs:
     matrix: ${{ parameters.matrix }}
   variables:
     artifactsDir: $(Build.SourcesDirectory)\Artifacts
-    helixCommonArgs: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixType=${{parameters.helixType}} /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory) /p:rerunPassesRequiredToAvoidFailure=${{parameters.rerunPassesRequiredToAvoidFailure}}'
+    helixCommonArgs: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixType=${{parameters.testSuite}} /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory) /p:rerunPassesRequiredToAvoidFailure=${{parameters.rerunPassesRequiredToAvoidFailure}}'
 
       
   steps:

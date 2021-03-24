@@ -1,7 +1,11 @@
 [CmdLetBinding()]
 Param(
-    [string]$Platform,
-    [string]$Configuration,
+    [ValidateSet("x86", "x64")]
+    [string]$Platform = "x86",
+
+    [ValidateSet("Debug", "Release")]
+    [string]$Configuration= "Debug",
+
     [string]$ArtifactName='drop'
 )
 
@@ -19,15 +23,18 @@ If(test-path $payloadDir)
 New-Item -ItemType Directory -Force -Path $payloadDir
 
 
-$netCorePkgName = "runtime.win-$Platform.microsoft.netcore.app"
-
 [xml]$pkgVerData = (Get-Content "$PSScriptRoot\packages.config")
 $muxTestInfraHelixVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"Microsoft.Internal.MUXTestInfra.Helix`"]").version
 $mitaVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"microsoft.windows.apps.test`"]").version
-$taefVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"taef.redist.wlk`"]").version
+$taefVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"TAEF.Redist.Wlk`"]").version
 $muxcustomBuildTasksVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"MUXCustomBuildTasks`"]").version
-$netCoreAppVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"$netCorePkgName`"]").version
+$netCoreAppVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"runtime.win-$Platform.microsoft.netcore.app`"]").version
 
+Write-Host "muxTestInfraHelixVer = $muxTestInfraHelixVer"
+Write-Host "mitaVer = $mitaVer"
+Write-Host "taefVer = $taefVer"
+Write-Host "muxcustomBuildTasksVer = $muxcustomBuildTasksVer"
+Write-Host "netCoreAppVer = $netCoreAppVer"
 
 # Copy files from nuget packages
 Copy-Item "$nugetPackagesDir\Microsoft.Internal.MUXTestInfra.Helix.$muxTestInfraHelixVer\scripts\test\*" $payloadDir
