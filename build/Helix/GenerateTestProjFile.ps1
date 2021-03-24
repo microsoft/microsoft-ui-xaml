@@ -12,29 +12,14 @@ Param(
     [string]$TaefQuery
 )
 
-# $repoDirectory = Join-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path) "..\..\"
-# $packagesDir = Join-Path $repoDirectory "packages"
+[xml]$pkgVerData = (Get-Content "$PSScriptRoot\packages.config")
+$muxTestInfraHelixVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"Microsoft.Internal.MUXTestInfra.Helix`"]").version
 
 $packagesDir = Join-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path) "packages"
-$pipelinesScriptsDir = Join-Path $packagesDir "Microsoft.Internal.MUXTestInfra.Helix.0.0.2.2\scripts\pipeline"
-
-
-
-# $classificationQuery="@Classification='Integration'"
-# $taefBaseQuery = "$classificationQuery"
-
-$taefBaseQuery ="@Name='*ColorPicker*'"
-
-if($TaefQuery)
-{
-    $taefBaseQuery = "$taefBaseQuery AND $TaefQuery"
-}
-
+$pipelinesScriptsDir = Join-Path $packagesDir "Microsoft.Internal.MUXTestInfra.Helix.$muxTestInfraHelixVer\scripts\pipeline"
 
 & $pipelinesScriptsDir\GenerateHelixWorkItems.ps1 -TestFilePattern $TestFilePattern `
     -TestBinaryDirectoryPath $TestBinaryDirectoryPath `
     -OutputProjFile $OutputProjFile `
-    -TaefBaseQuery $taefBaseQuery `
+    -TaefBaseQuery $TaefQuery `
     -TestTimeout "00:30:00" `
-
-    # -testnameprefix fo1
