@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProjectGuid>{4407577E-9E11-46BB-9B38-CB3E8C54CC5F}</ProjectGuid>
+    <ProjectGuid>{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BaselineResourcesGenerator</RootNamespace>
-    <AssemblyName>BaselineResourcesGenerator</AssemblyName>
+    <RootNamespace>MUXBaselineResourcesGenerator</RootNamespace>
+    <AssemblyName>MUXBaselineResourcesGenerator</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.18362.0</TargetPlatformVersion>

@@ -12,14 +12,13 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
-namespace BaselineResourcesGenerator
+namespace MUXBaselineResourcesGenerator
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
@@ -67,7 +66,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private string FormatResourcesKeyList(List<string> resourceKeyList)
         {
             StringBuilder declaration = new StringBuilder(@"public static readonly IList<String> BaselineResourcesList = new ReadOnlyCollection<string>(new List<string>{");
-            
+
             foreach (var resourceKey in resourceKeyList)
             {
                 if (!string.IsNullOrWhiteSpace(resourceKey))
@@ -76,7 +75,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     declaration.Append(formattedResourceKey);
                 }
             }
-            
+
             declaration.Append(@"});");
 
             return declaration.ToString();
