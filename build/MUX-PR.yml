@@ -1,7 +1,6 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 variables:
-  # minimumExpectedTestsExecutedCount: 3000  # Sanity check for minimum expected tests to be reported
-  minimumExpectedTestsExecutedCount: 5  # Todo: Undo
+  minimumExpectedTestsExecutedCount: 3000  # Sanity check for minimum expected tests to be reported
   rerunPassesRequiredToAvoidFailure: 5
 jobs:
 - job: Setup
