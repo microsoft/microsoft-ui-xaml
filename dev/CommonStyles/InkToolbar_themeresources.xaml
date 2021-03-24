@@ -49,7 +49,7 @@
             <StaticResource x:Key="InkToolbarButtonSelectedBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="InkToolbarFlyoutItemBorderHoverThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
             <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderSelectedThemeBrush" Color="#FFFFFF" />
-            <StaticResource x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" ResourceKey="InkToolbarFlyoutItemBorderSelectedThemeBrush" />            
+            <StaticResource x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" ResourceKey="InkToolbarFlyoutItemBorderSelectedThemeBrush" />
             <StaticResource x:Key="InkToolbarAccentColorThemeBrush" ResourceKey="AccentTextFillColorPrimaryBrush" />
             <StaticResource x:Key="InkToolbarAccentHoverColorThemeBrush" ResourceKey="AccentTextFillColorSecondaryBrush" />
         </ResourceDictionary>
