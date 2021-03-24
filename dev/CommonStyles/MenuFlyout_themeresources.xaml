@@ -467,6 +467,9 @@
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <contract6Present:Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled}" />
+                                    </VisualState.Setters>
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot"
                                                 Storyboard.TargetProperty="Background">
@@ -516,7 +519,7 @@
                                                 Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Icon"
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="IconContent"
                                                 Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
