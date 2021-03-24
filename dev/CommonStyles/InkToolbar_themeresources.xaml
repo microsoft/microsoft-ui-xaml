@@ -161,7 +161,7 @@
     <x:Double x:Key="InkToolbarButtonWidth">40</x:Double>
     <x:Double x:Key="InkToolbarButtonHeight">40</x:Double>
     <x:Double x:Key="InkToolbarButtonContentSize">16</x:Double>
-    <Thickness x:Key="InkToolbarFlyoutPanelMargin">0,1,0,2</Thickness>
+    <Thickness x:Key="InkToolbarFlyoutPanelMargin">0,1,0,1</Thickness>
     <Thickness x:Key="InkToolbarFlyoutItemIconMargin">12,0,12,0</Thickness>
     <Thickness x:Key="InkToolbarFlyoutItemTextBlockMargin">0,0,12,0</Thickness>
 
@@ -1240,7 +1240,7 @@
         <Setter Property="MinWidth" Value="136" />
         <Setter Property="Height" Value="40" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-        <Setter Property="Margin" Value = "2,4,2,2" />
+        <!--<Setter Property="Margin" Value = "2,4,2,2" />-->
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -1331,7 +1331,7 @@
                             Background="Transparent"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             Control.IsTemplateFocusTarget="True"
-                            Margin ="2,1,2,1">
+                            Margin ="2,2,2,2">
                             <Grid>
                                 <Rectangle x:Name="CurrentSelectionIcon" Style="{StaticResource InkToolbarFlyoutItemSelectionAccentStyle}" />
                                 <ContentPresenter x:Name="Content"
@@ -2441,7 +2441,8 @@
                         Orientation="Horizontal"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}" />
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Margin="2,0,0,0"/>
 
                 </ControlTemplate>
             </Setter.Value>
