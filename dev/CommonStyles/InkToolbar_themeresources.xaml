@@ -281,7 +281,7 @@
                         Background="{TemplateBinding Background}"
                         Width="{ThemeResource InkToolbarButtonWidth}"
                         Height="{ThemeResource InkToolbarButtonHeight}"
-                        CornerRadius="{TemplateBinding CornerRadius}" >
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}" >
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -501,7 +501,7 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Grid.RowSpan="2" Grid.ColumnSpan="2"
                                 Margin="1,0"
-                                CornerRadius="{TemplateBinding CornerRadius}"/>
+                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
 
                         </Grid>
                         <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
@@ -531,7 +531,7 @@
                         Background="{TemplateBinding Background}"
                         Width="{ThemeResource InkToolbarButtonWidth}"
                         Height="{ThemeResource InkToolbarButtonHeight}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -750,7 +750,7 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Grid.RowSpan="2" Grid.ColumnSpan="2"
                                 Margin="1,0"
-                                CornerRadius="{TemplateBinding CornerRadius}"/>
+                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
 
                         </Grid>
                         <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
@@ -780,7 +780,7 @@
                         Background="{TemplateBinding Background}"
                         Width="{ThemeResource InkToolbarButtonWidth}"
                         Height="{ThemeResource InkToolbarButtonHeight}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -999,7 +999,7 @@
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Grid.RowSpan="2" Grid.ColumnSpan="2"
                             Margin="1,0"
-                            CornerRadius="{TemplateBinding CornerRadius}"/>
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
 
                         </Grid>
                         <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
@@ -1218,7 +1218,7 @@
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Grid.RowSpan="2" Grid.ColumnSpan="2"
                             Margin="1,0"
-                            CornerRadius="{TemplateBinding CornerRadius}"/>
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
                         <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                     </Grid>
