@@ -32,7 +32,7 @@ void SymbolIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::SymbolIconSource>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Symbol>::BoxValueIfNecessary(winrt::Symbol::Emoji),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnSymbolPropertyChanged));
     }
 }
 
@@ -40,6 +40,14 @@ void SymbolIconSourceProperties::ClearProperties()
 {
     s_SymbolProperty = nullptr;
     IconSource::ClearProperties();
+}
+
+void SymbolIconSourceProperties::OnSymbolPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::SymbolIconSource>();
+    winrt::get_self<SymbolIconSource>(owner)->OnPropertyChanged(args);
 }
 
 void SymbolIconSourceProperties::Symbol(winrt::Symbol const& value)

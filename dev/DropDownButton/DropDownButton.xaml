@@ -120,7 +120,6 @@
                                 <local:FontIconSource
                                     FontSize="8"
                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                    Foreground="{ThemeResource ButtonForegroundPressed}"
                                     Glyph="&#xE96E;"
                                     IsTextScaleFactorEnabled="False"/>
                             </local:AnimatedIcon.FallbackIconSource>

@@ -479,7 +479,8 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
         progressAnimation.SetReferenceParameter(L"_", m_progressPropertySet);
         visual.Properties().StartAnimation(s_progressPropertyName, progressAnimation);
     }
-    else
+    // If we were previously able to display primary content and now cannot, use the fallback icon.
+    else if (m_canDisplayPrimaryContent)
     {
         m_canDisplayPrimaryContent = false;
         SetRootPanelChildToFallbackIcon();
