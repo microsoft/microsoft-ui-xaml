@@ -457,7 +457,7 @@
                                         <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}"/>
                                         <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}"/>
                                         <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}"/>
-                                        <contract6Present:Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled}" />
+                                        <contract6Present:Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -466,6 +466,7 @@
                                         <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}"/>
                                         <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}"/>
                                         <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}"/>
+                                        <contract6Present:Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
@@ -473,18 +474,16 @@
                                         <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}"/>
                                         <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}"/>
                                         <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}"/>
+                                        <contract6Present:Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="CheckStates">
                                 <VisualState x:Name="Unchecked" />
                                 <VisualState x:Name="Checked">
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="CheckGlyph"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0" />
-                                    </Storyboard>
+                                    <VisualState.Setters>
+                                        <Setter Target="CheckGlyph.Opacity" Value="1" />
+                                    </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="UncheckedWithIcon">
                                     <VisualState.Setters>
@@ -496,13 +495,8 @@
                                     <VisualState.Setters>
                                         <Setter Target="TextBlock.Margin" Value="{ThemeResource MenuFlyoutItemPlaceholderThemeThickness}" />
                                         <Setter Target="IconRoot.Visibility" Value="Visible" />
+                                        <Setter Target="CheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="CheckGlyph"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0" />
-                                    </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="PaddingSizeStates">
@@ -605,6 +599,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutSubItemBackgroundPointerOver}"/>
                                         <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPointerOver}"/>
                                         <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource MenuFlyoutSubItemChevronPointerOver}"/>
+                                        <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPointerOver}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -613,6 +608,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutSubItemBackgroundPressed}"/>
                                         <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}"/>
                                         <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource MenuFlyoutSubItemChevronPressed}"/>
+                                        <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="SubMenuOpened">
@@ -620,6 +616,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutSubItemBackgroundSubMenuOpened}"/>
                                         <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundSubMenuOpened}"/>
                                         <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource MenuFlyoutSubItemChevronSubMenuOpened}"/>
+                                        <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundSubMenuOpened}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -628,6 +625,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutSubItemBackgroundDisabled}"/>
                                         <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}"/>
                                         <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource MenuFlyoutSubItemChevronDisabled}"/>
+                                        <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
