@@ -4,7 +4,6 @@ parameters:
   condition: ''
   testSuite: DevTestSuite
   helixType: test/devtest
-  # testPayloadArtifactName: 'HelixPayload'
   # If a Pipeline runs this template more than once, this parameter should be unique per build flavor to differentiate the
   # the different test runs:
   artifactName: 'drop'
@@ -93,12 +92,6 @@ jobs:
     inputs:
       filename: 'dir'
       arguments: '/s $(Build.SourcesDirectory)\HelixPayload'
-
-  # - task: PublishBuildArtifacts@1
-  #   displayName: 'Publish HelixPayload'
-  #   inputs:
-  #     PathtoPublish: $(Build.SourcesDirectory)\HelixPayload
-  #     artifactName: ${{ parameters.testPayloadArtifactName }}
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:

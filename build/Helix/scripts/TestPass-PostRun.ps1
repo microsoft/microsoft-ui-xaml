@@ -1,0 +1,1 @@
+.\CopyVisualTreeVerificationFiles.ps1

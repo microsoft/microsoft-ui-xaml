@@ -82,11 +82,5 @@ Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\
 
 # Copy files from the repo
 New-Item -ItemType Directory -Force -Path "$payloadDir"
-# Copy-Item "build\helix\ConvertWttLogToXUnit.ps1" "$payloadDir"
-# Copy-Item "build\helix\OutputFailedTestQuery.ps1" "$payloadDir"
-# Copy-Item "build\helix\OutputSubResultsJsonFiles.ps1" "$payloadDir"
-# Copy-Item "build\helix\HelixTestHelpers.cs" "$payloadDir"
-# Copy-Item "build\helix\runtests.cmd" $payloadDir
-Copy-Item "build\helix\*.ps1" "$payloadDir"
+Copy-Item "build\helix\scripts\*" "$payloadDir"
 Copy-Item "version.props" "$payloadDir"
-# Copy-Item "build\Helix\CopyVisualTreeVerificationFiles.ps1" "$payloadDir"
