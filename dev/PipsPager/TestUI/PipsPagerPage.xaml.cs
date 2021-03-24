@@ -78,15 +78,16 @@ namespace MUXControlsTestApp
 
         private void OnGetPipsPagerButtonSizesClicked(object sender, RoutedEventArgs args)
         {
-            if (repeater.TryGetElement(1) is var horizontalOrientationButton && horizontalOrientationButton != null)
+            //Button horizontalOrientationButton;
+            if (repeater.TryGetElement(0) as FrameworkElement is var horizontalOrientationPip && horizontalOrientationPip != null)
             {
-                HorizontalOrientationPipsPagerButtonWidthTextBlock.Text = $"{ horizontalOrientationButton.ActualSize.X}";
-                HorizontalOrientationPipsPagerButtonHeightTextBlock.Text = $"{horizontalOrientationButton.ActualSize.Y}";
+                HorizontalOrientationPipsPagerButtonWidthTextBlock.Text = $"{ horizontalOrientationPip.ActualWidth}";
+                HorizontalOrientationPipsPagerButtonHeightTextBlock.Text = $"{horizontalOrientationPip.ActualHeight}";
             }
-            if (verticalOrientationPipsPagerRepeater.TryGetElement(1) is var verticalOrientationButton && verticalOrientationButton != null)
+            if (verticalOrientationPipsPagerRepeater.TryGetElement(1) as FrameworkElement is var verticalOrientationPip && verticalOrientationPip != null)
             {
-                VerticalOrientationPipsPagerButtonWidthTextBlock.Text = $"{verticalOrientationButton.ActualSize.X}";
-                VerticalOrientationPipsPagerButtonHeightTextBlock.Text = $"{verticalOrientationButton.ActualSize.Y}";
+                VerticalOrientationPipsPagerButtonWidthTextBlock.Text = $"{verticalOrientationPip.ActualWidth}";
+                VerticalOrientationPipsPagerButtonHeightTextBlock.Text = $"{verticalOrientationPip.ActualHeight}";
             }
         }
 

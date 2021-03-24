@@ -140,19 +140,8 @@ winrt::Size PipsPager::GetDesiredPipSize(const winrt::Style& style) {
             }
         }
     }
-    double pipHeight;
-    double pipWidth;
-    if (Orientation() == winrt::Orientation::Horizontal)
-    {
-        pipHeight = unbox_value<double>(ResourceAccessor::ResourceLookup(*this, box_value(c_pipsPagerVerticalOrientationButtonHeightPropertyName)));
-        pipWidth = unbox_value<double>(ResourceAccessor::ResourceLookup(*this, box_value(c_pipsPagerVerticalOrientationButtonWidthPropertyName)));
-    }
-    else
-    {
-        pipHeight = unbox_value<double>(ResourceAccessor::ResourceLookup(*this, box_value(c_pipsPagerHorizontalOrientationButtonHeightPropertyName)));
-        pipWidth = unbox_value<double>(ResourceAccessor::ResourceLookup(*this, box_value(c_pipsPagerHorizontalOrientationButtonWidthPropertyName)));
-    }
-    return { static_cast<float>(pipWidth), static_cast<float>(pipHeight) };
+   
+    return { 0.0, 0.0 };
 }
 
 void PipsPager::OnKeyDown(const winrt::KeyRoutedEventArgs& args) {
@@ -275,11 +264,11 @@ void PipsPager::UpdateSelectedPip(const int index) {
         if (const auto repeater = m_pipsPagerRepeater.get())
         {
             repeater.UpdateLayout();
-            if (const auto pip = repeater.TryGetElement(m_lastSelectedPageIndex).try_as<winrt::Button>())
+            if (const auto pip = repeater.TryGetElement(m_lastSelectedPageIndex).try_as<winrt::FrameworkElement>())
             {
                 ApplyStyleToPipAndUpdateOrientation(pip, NormalPipStyle());
             }
-            if (const auto pip = repeater.GetOrCreateElement(index).try_as<winrt::Button>())
+            if (const auto pip = repeater.GetOrCreateElement(index).try_as<winrt::FrameworkElement>())
             {
                 ApplyStyleToPipAndUpdateOrientation(pip, SelectedPipStyle());
                 ScrollToCenterOfViewport(pip, index);
