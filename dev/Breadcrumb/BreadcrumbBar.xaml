@@ -11,9 +11,9 @@
         <Setter Property="Background" Value="{ThemeResource BreadcrumbBarBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource BreadcrumbBarBorderBrush}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="FontSize" Value="{ThemeResource BreadcrumbBarItemThemeFontSize}"/>
@@ -94,7 +94,8 @@
 
                                 <VisualState x:Name="LastItem">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_ChevronTextBlock.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PART_ItemButton.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PART_LastItemContentPresenter.Visibility" Value="Visible"/>
                                         <Setter Target="PART_SeparatorColumnDefinition.Width" Value="0px"/>
                                         <Setter Target="PART_ChevronColumnDefinition.Width" Value="0px" />
                                     </VisualState.Setters>
@@ -312,7 +313,7 @@
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         Text="&#xE712;"
                                         Visibility="Collapsed"
-                                        VerticalAlignment="Stretch"
+                                        VerticalAlignment="Bottom"
                                         IsTextScaleFactorEnabled="False"
                                         FontSize="{TemplateBinding FontSize}"
                                         AutomationProperties.AccessibilityView="Raw"
@@ -328,11 +329,26 @@
                                         IsTextScaleFactorEnabled="False"
                                         FontSize="12"
                                         AutomationProperties.AccessibilityView="Raw"
-                                        Padding="2,2,2,2"
+                                        Padding="{ThemeResource BreadcrumbBarChevronPadding}"
                                         Grid.Column="2"/>
                             </Grid>
                             
                         </Button>
+
+                        <ContentPresenter x:Name="PART_LastItemContentPresenter"
+                                          Visibility="Collapsed"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTransitions="{TemplateBinding ContentTransitions}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          FontFamily="{TemplateBinding FontFamily}"
+                                          FontSize="{TemplateBinding FontSize}"
+                                          FontWeight="{TemplateBinding FontWeight}"
+                                          Foreground="{ThemeResource BreadcrumbBarCurrentNormalForegroundBrush}"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          LineHeight="20"
+                                          AutomationProperties.AccessibilityView="Raw"/>
+
                         <ContentPresenter x:Name="PART_EllipsisDropDownItemContentPresenter"
                             x:DeferLoadStrategy="Lazy"
                             Visibility="Collapsed"
