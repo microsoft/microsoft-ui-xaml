@@ -179,7 +179,7 @@
             <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUnchecked" ResourceKey="SystemColorButtonTextColor" />
             <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
             <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedPressed" ResourceKey="SystemColorHighlightColorBrush" />
-            <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedDisabled" ResourceKey="SystemColorButtonFaceColor" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedDisabled" ResourceKey="SystemColorGrayTextColor" />
 
             <StaticResource x:Key="CheckBoxCheckBackgroundStrokeChecked" ResourceKey="SystemColorHighlightColorBrush" />
             <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver" ResourceKey="SystemColorButtonTextColor" />
@@ -853,4 +853,3 @@
     </Style>
 
 </ResourceDictionary>
-
