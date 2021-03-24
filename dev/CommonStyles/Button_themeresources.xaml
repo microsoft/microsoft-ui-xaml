@@ -70,7 +70,7 @@
             <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
             <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="ButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
-            <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
+            <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="SystemColorHighlightColor" />
             <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="SystemColorHighlightTextColor" />
             <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
             <Thickness x:Key="ButtonBorderThemeThickness">1</Thickness>
