@@ -70,6 +70,20 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
         }
     });
 
+    Closing({
+        [this](auto const&, auto const&)
+        {
+            if (auto owningFlyout = m_owningFlyout.get())
+            {
+                if (owningFlyout.AlwaysExpanded())
+                {
+                    // Don't close the secondary commands list when the flyout is AlwaysExpanded.
+                    IsOpen(true);
+                }
+            }
+        }
+    });
+
     Closed({
         [this](auto const&, auto const&)
         {

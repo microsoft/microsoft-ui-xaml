@@ -349,7 +349,9 @@
                                                 local:AnimatedIcon.State="Normal">
                                 <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
                                 <local:AnimatedIcon.FallbackIconSource>
-                                    <local:FontIconSource Glyph="&#xE700;" FontSize="16"/>
+                                    <local:FontIconSource
+                                        Glyph="&#xE700;"
+                                        FontSize="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FontSize }"/>
                                 </local:AnimatedIcon.FallbackIconSource>
                             </local:AnimatedIcon>
                         </Border>
