@@ -4,25 +4,23 @@ variables:
   minimumExpectedTestsExecutedCount: 5  # Todo: Undo
   rerunPassesRequiredToAvoidFailure: 5
 jobs:
-# - job: Setup
-#   steps:
-#     - task: powershell@2
-#       name: checkPayload
-#       displayName: 'Check if build is required for this PR'
-#       inputs:
-#         targetType: filePath
-#         filePath: build\ShouldSkipPRBuild.ps1
+- job: Setup
+  steps:
+    - task: powershell@2
+      name: checkPayload
+      displayName: 'Check if build is required for this PR'
+      inputs:
+        targetType: filePath
+        filePath: build\ShouldSkipPRBuild.ps1
 
 - job: Build
-  # dependsOn: Setup
-  # condition: |
-  #   and
-  #   (
-  #     eq(variables['useBuildOutputFromBuildId'],''),
-  #     ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
-  #   )
+  dependsOn: Setup
   condition: |
-    eq(variables['useBuildOutputFromBuildId'],'')
+    and
+    (
+      eq(variables['useBuildOutputFromBuildId'],''),
+      ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
+    )
   pool:
     name: 'windevbuildagents'
   timeoutInMinutes: 120
@@ -32,14 +30,14 @@ jobs:
       Debug_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Debug'
-      # Release_x86:
-      #   buildPlatform: 'x86'
-      #   buildConfiguration: 'Release'
-      #   PGOBuildMode: 'Optimize'
-      # Release_x64:
-      #   buildPlatform: 'x64'
-      #   buildConfiguration: 'Release'
-      #   PGOBuildMode: 'Optimize'
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+        PGOBuildMode: 'Optimize'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+        PGOBuildMode: 'Optimize'
   variables:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
@@ -51,8 +49,8 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
   parameters:
     name: 'RunTestsInHelix'
-    # - Setup
     dependsOn:
+    - Setup
     - Build
     condition: |
       and
@@ -63,26 +61,26 @@ jobs:
     testSuite: 'DevTestSuite'
     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
-# # Create Nuget Package
-# - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
-#   parameters:
-#     jobName: CreateNugetPackage
-#     dependsOn: Build
-#     primaryBuildArch: x64
-#     prereleaseVersionTag: pr
+# Create Nuget Package
+- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+  parameters:
+    jobName: CreateNugetPackage
+    dependsOn: Build
+    primaryBuildArch: x64
+    prereleaseVersionTag: pr
 
-# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-#   parameters:
-#     dependsOn: CreateNugetPackage
-#     useFrameworkPkg: false
-#     runTests: 'false'
-#     matrix:
-#       Debug_x64:
-#         buildPlatform: 'x64'
-#         buildConfiguration: 'Debug'
-#       Release_x64:
-#         buildPlatform: 'x64'
-#         buildConfiguration: 'Release'
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    dependsOn: CreateNugetPackage
+    useFrameworkPkg: false
+    runTests: 'false'
+    matrix:
+      Debug_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Debug'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:

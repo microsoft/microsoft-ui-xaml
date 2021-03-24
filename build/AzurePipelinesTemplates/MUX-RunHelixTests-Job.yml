@@ -3,7 +3,7 @@ parameters:
   dependsOn: ''
   condition: ''
   testSuite: ''
-  testPayloadArtifactName: 'HelixPayload'
+  # testPayloadArtifactName: 'HelixPayload'
   # If a Pipeline runs this template more than once, this parameter should be unique per build flavor to differentiate the
   # the different test runs:
   artifactName: 'drop'
@@ -19,16 +19,16 @@ parameters:
       # %3b is the escape code for ';' which is used as the delimiter
       openHelixTargetQueues: 'windows.10.amd64.clientrs2.open.xaml%3bwindows.10.amd64.clientrs5.open.xaml'
       closedHelixTargetQueues: 'windows.10.amd64.clientrs2.xaml%3bwindows.10.amd64.clientrs5.xaml'
-    # Release_x86:
-    #   buildPlatform: 'x86'
-    #   buildConfiguration: 'release'
-    #   openHelixTargetQueues: 'windows.10.amd64.client19h1.open.xaml%3bwindows.10.amd64.clientrs3.open.xaml'
-    #   closedHelixTargetQueues: 'windows.10.amd64.client19h1.xaml%3bwindows.10.amd64.clientrs3.xaml'
-    # Release_x64:
-    #   buildPlatform: 'x64'
-    #   buildConfiguration: 'release'
-    #   openHelixTargetQueues: 'windows.10.amd64.clientrs4.open.xaml'
-    #   closedHelixTargetQueues: 'windows.10.amd64.clientrs4.xaml'
+    Release_x86:
+      buildPlatform: 'x86'
+      buildConfiguration: 'release'
+      openHelixTargetQueues: 'windows.10.amd64.client19h1.open.xaml%3bwindows.10.amd64.clientrs3.open.xaml'
+      closedHelixTargetQueues: 'windows.10.amd64.client19h1.xaml%3bwindows.10.amd64.clientrs3.xaml'
+    Release_x64:
+      buildPlatform: 'x64'
+      buildConfiguration: 'release'
+      openHelixTargetQueues: 'windows.10.amd64.clientrs4.open.xaml'
+      closedHelixTargetQueues: 'windows.10.amd64.clientrs4.xaml'
 
 jobs:
 - job: ${{ parameters.name }}
@@ -93,11 +93,11 @@ jobs:
       filename: 'dir'
       arguments: '/s $(Build.SourcesDirectory)\HelixPayload'
 
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish HelixPayload'
-    inputs:
-      PathtoPublish: $(Build.SourcesDirectory)\HelixPayload
-      artifactName: ${{ parameters.testPayloadArtifactName }}
+  # - task: PublishBuildArtifacts@1
+  #   displayName: 'Publish HelixPayload'
+  #   inputs:
+  #     PathtoPublish: $(Build.SourcesDirectory)\HelixPayload
+  #     artifactName: ${{ parameters.testPayloadArtifactName }}
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
