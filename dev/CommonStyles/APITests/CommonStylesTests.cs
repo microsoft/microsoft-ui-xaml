@@ -20,9 +20,6 @@ using XamlControlsResources = Microsoft.UI.Xaml.Controls.XamlControlsResources;
 using Windows.UI.Xaml.Markup;
 using System;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting.AppContainer;
-using Windows.AI.MachineLearning;
-using System.Runtime.InteropServices;
 
 #if USING_TAEF
 using WEX.TestExecution;
