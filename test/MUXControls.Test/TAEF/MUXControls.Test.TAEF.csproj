@@ -7,11 +7,20 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
   </PropertyGroup>
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\..\SdkVersion.props" />
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v2.1</TargetFrameworkVersion>
+    <TargetFramework>net5.0-windows$(MuxSdkVersion)</TargetFramework>
+    <Platforms>x86;x64;arm;arm64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm;win-arm64</RuntimeIdentifiers>
+    <!-- Some platforms like ARM can be passed in as Platform="ARM" (upper case), which VS doesn't like in the case of RuntimeIdentifier.
+         We'll explicitly set RuntimeIdentifier values instead of passing in $(Platform) to avoid this. -->
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x86' or '$(Platform)' == 'Win32'">win-x86</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'arm'">win-arm</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'arm64'">win-arm64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>False</PublishSingleFile>
+    <PublishReadyToRun>True</PublishReadyToRun>
     <!-- The binaries we're building against are managed, so which platform's folder they come out of is immaterial.
          For simplicity's sake, we'll always get them from the x86 folder, but the CoreClr binaries are the same everywhere. -->
     <TaefRootDirectory>$(NuGetPackageRoot)taef.redist.wlk\10.57.201103001\build\Binaries\x86\CoreClr\</TaefRootDirectory>

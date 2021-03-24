@@ -40,7 +40,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 #endif
 
     [TestClass]
-    public class AcrylicBrushTests
+    public class AcrylicBrushTests : IDisposable
     {
         private const string AcrylicRectangleName = "Rectangle1";
         private const string TintOpacitySliderName = "TintOpacity";
@@ -48,6 +48,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private AutoResetEvent HideAndShowWindow_GotWindowHiddenEvent = new AutoResetEvent(false);
         private AutoResetEvent HideAndShowWindow_GotWindowVisibleEvent = new AutoResetEvent(false);
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            HideAndShowWindow_GotWindowHiddenEvent.Dispose();
+            HideAndShowWindow_GotWindowVisibleEvent.Dispose();
+        }
 
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
