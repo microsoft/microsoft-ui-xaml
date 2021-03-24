@@ -63,10 +63,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     dictionariesContainSameElements &= (allKeysInDefaultExistInDictionary && allKeysInDictionaryExistInDefault);
                 }
 
-                Assert.AreEqual(0, resourceDictionaries.MergedDictionaries.Count, "MergedDictionaries is not empty");
+                Verify.AreEqual(0, resourceDictionaries.MergedDictionaries.Count, "MergedDictionaries is not empty");
             });
 
-            Assert.IsTrue(dictionariesContainSameElements);
+            Verify.IsTrue(dictionariesContainSameElements);
         }
 
         bool ResourceDictionariesContainSameKeys(ResourceDictionary expectedDictionary, string expectedDictionaryName, ResourceDictionary actualDictionary, string actualDictionaryName)
@@ -142,7 +142,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("None");
             }
 
-            Assert.IsTrue(allBaselineResourceKeysExist);
+            Verify.IsTrue(allBaselineResourceKeysExist);
         }
 
         [TestMethod]
@@ -160,7 +160,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 }
             }
 
-            Assert.AreEqual(0, rd.MergedDictionaries.Count, "MergedDictionaries is not empty");
+            Verify.AreEqual(0, rd.MergedDictionaries.Count, "MergedDictionaries is not empty");
 
 
             foreach (var entry in rd)
