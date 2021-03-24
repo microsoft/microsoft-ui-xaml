@@ -7,6 +7,34 @@
 #include "NavigationView.h"
 #include "IndexPath.h"
 
+void NavigationViewItemBase::OnApplyTemplate()
+{
+    __super::OnApplyTemplate();
+
+    Loaded({ this, &NavigationViewItemBase::OnLoaded });
+}
+
+void NavigationViewItemBase::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+{
+    if (!m_navigationView.get())
+    {
+        m_navigationView = winrt::make_weak(
+            [this]()
+            {
+                auto parent = winrt::VisualTreeHelper::GetParent(*this);
+                while (parent)
+                {
+                    if (auto const parentAsNavigationView = parent.try_as<winrt::NavigationView>())
+                    {
+                        return parentAsNavigationView;
+                    }
+                    parent = winrt::VisualTreeHelper::GetParent(parent);
+                }
+                return static_cast<winrt::NavigationView>(nullptr);
+            }());
+    }
+}
+
 NavigationViewRepeaterPosition NavigationViewItemBase::Position() const
 {
     return m_position;
