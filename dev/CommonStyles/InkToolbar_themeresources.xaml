@@ -241,16 +241,6 @@
     <Style x:Key="InkToolbarPenConfigurationControlTextStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyTextBlockStyle}">
         <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
-    
-    <Style x:Key="InkToolbarSelectionAccentStyle" TargetType="Rectangle">
-        <Setter Property="Opacity" Value="0" />
-        <Setter Property="VerticalAlignment" Value="Bottom" />
-        <Setter Property="Height" Value="3" />
-        <Setter Property="Width" Value="16"/>
-        <Setter Property="Fill" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
-        <contract7Present:Setter Property="RadiusX" Value="1.5" />
-        <contract7Present:Setter Property="RadiusY" Value="8" />
-    </Style>
 
     <Style x:Key="InkToolbarFlyoutItemSelectionAccentStyle" TargetType="Rectangle">
         <Setter Property="Opacity" Value="0" />
@@ -326,7 +316,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -340,7 +329,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -354,7 +342,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -368,7 +355,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -407,7 +393,6 @@
                                 <VisualState x:Name="BottomDirection" />
                                 <VisualState x:Name="TopDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Bottom" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Top" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,2,0,0" />
@@ -416,10 +401,6 @@
                                 </VisualState>
                                 <VisualState x:Name="RightDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Right" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
@@ -428,10 +409,6 @@
                                 </VisualState>
                                 <VisualState x:Name="LeftDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
@@ -440,10 +417,6 @@
                                 </VisualState>
                                 <VisualState x:Name="RightDirectionRTL">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Right" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
@@ -452,10 +425,6 @@
                                 </VisualState>
                                 <VisualState x:Name="LeftDirectionRTL">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
@@ -504,7 +473,6 @@
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
 
                         </Grid>
-                        <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                     </Grid>
 
@@ -576,7 +544,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -590,7 +557,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -604,7 +570,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -618,7 +583,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -657,7 +621,6 @@
                                 <VisualState x:Name="BottomDirection" />
                                 <VisualState x:Name="TopDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Bottom" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Top" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,2,0,0" />
@@ -666,10 +629,6 @@
                                 </VisualState>
                                 <VisualState x:Name="RightDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Right" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
@@ -678,10 +637,6 @@
                                 </VisualState>
                                 <VisualState x:Name="LeftDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
@@ -690,10 +645,6 @@
                                 </VisualState>
                                 <VisualState x:Name="RightDirectionRTL">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Right" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
@@ -702,10 +653,6 @@
                                 </VisualState>
                                 <VisualState x:Name="LeftDirectionRTL">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
@@ -753,7 +700,6 @@
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
 
                         </Grid>
-                        <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                     </Grid>
 
@@ -825,7 +771,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -839,7 +784,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -853,7 +797,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -867,7 +810,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -906,7 +848,6 @@
                                 <VisualState x:Name="BottomDirection" />
                                 <VisualState x:Name="TopDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Bottom" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Top" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,2,0,0" />
@@ -915,10 +856,6 @@
                                 </VisualState>
                                 <VisualState x:Name="RightDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Right" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
@@ -927,10 +864,6 @@
                                 </VisualState>
                                 <VisualState x:Name="LeftDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
@@ -939,10 +872,6 @@
                                 </VisualState>
                                 <VisualState x:Name="RightDirectionRTL">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Right" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
@@ -951,10 +880,6 @@
                                 </VisualState>
                                 <VisualState x:Name="LeftDirectionRTL">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
@@ -1002,7 +927,6 @@
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
 
                         </Grid>
-                        <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                     </Grid>
 
@@ -1069,7 +993,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1083,7 +1006,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1097,7 +1019,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1111,7 +1032,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1146,7 +1066,6 @@
                                 <VisualState x:Name="BottomDirection" />
                                 <VisualState x:Name="TopDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Bottom" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Top" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,2,0,0" />
@@ -1155,10 +1074,6 @@
                                 </VisualState>
                                 <VisualState x:Name="RightDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Right" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
@@ -1167,10 +1082,6 @@
                                 </VisualState>
                                 <VisualState x:Name="LeftDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
@@ -1179,10 +1090,6 @@
                                 </VisualState>
                                 <VisualState x:Name="RightDirectionRTL">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Right" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
@@ -1191,10 +1098,6 @@
                                 </VisualState>
                                 <VisualState x:Name="LeftDirectionRTL">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
@@ -1219,7 +1122,6 @@
                             Grid.RowSpan="2" Grid.ColumnSpan="2"
                             Margin="1,0"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
-                        <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                     </Grid>
 
@@ -1517,7 +1419,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1531,7 +1432,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1545,7 +1445,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1559,7 +1458,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1598,7 +1496,6 @@
                                 <VisualState x:Name="BottomDirection" />
                                 <VisualState x:Name="TopDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Bottom" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Top" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,2,0,0" />
@@ -1607,10 +1504,6 @@
                                 </VisualState>
                                 <VisualState x:Name="RightDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Right" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
@@ -1619,10 +1512,6 @@
                                 </VisualState>
                                 <VisualState x:Name="LeftDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
@@ -1631,10 +1520,6 @@
                                 </VisualState>
                                 <VisualState x:Name="RightDirectionRTL">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Right" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
@@ -1643,10 +1528,6 @@
                                 </VisualState>
                                 <VisualState x:Name="LeftDirectionRTL">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
@@ -1687,7 +1568,6 @@
                                 CornerRadius="{TemplateBinding CornerRadius}"/>
 
                         </Grid>
-                        <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                     </Grid>
 
@@ -1746,12 +1626,6 @@
                                 <VisualState x:Name="Unchecked" />
                                 <VisualState x:Name="Indeterminate" />
 
-                                <VisualState x:Name="Checked">
-                                    <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
-                                    </VisualState.Setters>
-                                </VisualState>
-
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="FocusStates">
                                 <VisualState x:Name="Focused" />
@@ -1777,7 +1651,6 @@
                                 <VisualState x:Name="BottomDirection" />
                                 <VisualState x:Name="TopDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Bottom" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Top" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,2,0,0" />
@@ -1786,10 +1659,6 @@
                                 </VisualState>
                                 <VisualState x:Name="RightDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Right" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
@@ -1798,10 +1667,6 @@
                                 </VisualState>
                                 <VisualState x:Name="LeftDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
@@ -1810,10 +1675,6 @@
                                 </VisualState>
                                 <VisualState x:Name="RightDirectionRTL">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Right" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
@@ -1822,10 +1683,6 @@
                                 </VisualState>
                                 <VisualState x:Name="LeftDirectionRTL">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
@@ -1851,7 +1708,6 @@
                             Grid.ColumnSpan="2"
                             Margin="1,0"
                             CornerRadius="{TemplateBinding CornerRadius}"/>
-                        <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                     </Grid>
 
@@ -1911,7 +1767,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1925,7 +1780,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1939,7 +1793,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1953,7 +1806,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -2010,7 +1862,6 @@
                                 CornerRadius="{TemplateBinding CornerRadius}"/>
 
                         </Grid>
-                        <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                     </Grid>
 
@@ -2063,12 +1914,6 @@
                                 <VisualState x:Name="Unchecked" />
                                 <VisualState x:Name="Indeterminate" />
 
-                                <VisualState x:Name="Checked">
-                                    <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.Opacity" Value="1" />
-                                    </VisualState.Setters>
-                                </VisualState>
-
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="FocusStates">
                                 <VisualState x:Name="Focused" />
@@ -2079,31 +1924,6 @@
                             <VisualStateGroup x:Name="FlowDirectionStates">
                                 <VisualState x:Name="LeftToRight" />
                                 <VisualState x:Name="RightToLeft" />
-
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="ButtonFlyoutDirectionStates">
-                                <VisualState x:Name="BottomDirection" />
-                                <VisualState x:Name="TopDirection">
-                                    <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Bottom" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="RightDirection">
-                                    <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Right" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="LeftDirection">
-                                    <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
-                                    </VisualState.Setters>
-                                </VisualState>
 
                             </VisualStateGroup>
 
@@ -2120,7 +1940,6 @@
                             Grid.ColumnSpan="2"
                             Margin="1,0"
                             CornerRadius="{TemplateBinding CornerRadius}"/>
-                        <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                     </Grid>
 
@@ -2243,7 +2062,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -2257,7 +2075,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -2271,7 +2088,6 @@
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
                                         <Setter Target="Content.Opacity" Value="0" />
                                         <Setter Target="CheckedContent.Opacity" Value="1" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -2288,7 +2104,6 @@
                                         <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPointerOver}" />
                                         <Setter Target="CheckedContent.Foreground" Value="{ThemeResource InkToolbarButtonHoverForegroundThemeBrush}" />
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -2299,7 +2114,6 @@
                                         <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPointerOver}" />
                                         <Setter Target="CheckedContent.Foreground" Value="{ThemeResource InkToolbarButtonHoverForegroundThemeBrush}" />
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
-                                        <Setter Target="SelectionAccent.Opacity" Value="0" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -2334,7 +2148,6 @@
                                 <VisualState x:Name="BottomDirection" />
                                 <VisualState x:Name="TopDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Bottom" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Top" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,2,0,0" />
@@ -2343,10 +2156,6 @@
                                 </VisualState>
                                 <VisualState x:Name="RightDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Right" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
@@ -2355,10 +2164,6 @@
                                 </VisualState>
                                 <VisualState x:Name="LeftDirection">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
@@ -2367,10 +2172,6 @@
                                 </VisualState>
                                 <VisualState x:Name="RightDirectionRTL">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Right" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
@@ -2379,10 +2180,6 @@
                                 </VisualState>
                                 <VisualState x:Name="LeftDirectionRTL">
                                     <VisualState.Setters>
-                                        <Setter Target="SelectionAccent.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="SelectionAccent.VerticalAlignment" Value="Stretch" />
-                                        <Setter Target="SelectionAccent.Height" Value="auto" />
-                                        <Setter Target="SelectionAccent.Width" Value="2" />
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
@@ -2423,7 +2220,6 @@
                                 CornerRadius="{TemplateBinding CornerRadius}"/>
 
                         </Grid>
-                        <Rectangle x:Name="SelectionAccent" Style="{StaticResource InkToolbarSelectionAccentStyle}" />
 
                     </Grid>
 
