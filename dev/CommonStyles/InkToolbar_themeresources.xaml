@@ -1240,7 +1240,6 @@
         <Setter Property="MinWidth" Value="136" />
         <Setter Property="Height" Value="40" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-        <!--<Setter Property="Margin" Value = "2,4,2,2" />-->
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
