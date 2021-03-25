@@ -909,8 +909,8 @@
                                     </RectangleGeometry>
                                 </contract12NotPresent:Grid.Clip>
                                 <contract12NotPresent:CommandBarOverflowPresenter x:Name="SecondaryItemsControl"
-                                        Style="{TemplateBinding CommandBarOverflowPresenterStyle}"
-                                        IsTabStop="False">
+                                    Style="{TemplateBinding CommandBarOverflowPresenterStyle}"
+                                    IsTabStop="False">
                                     <CommandBarOverflowPresenter.RenderTransform>
                                         <TranslateTransform x:Name="OverflowContentTransform" />
                                     </CommandBarOverflowPresenter.RenderTransform>
