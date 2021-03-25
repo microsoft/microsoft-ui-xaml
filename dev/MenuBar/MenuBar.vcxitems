@@ -30,7 +30,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)MenuBarItemAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MenuBarItemFlyout.h" />
   </ItemGroup>
-  <ItemGroup >
+  <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)MenuBar.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -57,6 +57,16 @@
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)MenuBar_themeresources_v1.xaml">
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+      <Page Include="$(MSBuildThisFileDirectory)MenuBarItem_themeresources.xaml">
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MenuBarItem_themeresources_v1.xaml">
       <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>

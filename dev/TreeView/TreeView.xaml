@@ -17,40 +17,6 @@
 
     <Style TargetType="local:TreeView" BasedOn="{StaticResource DefaultTreeViewStyle}" />
 
-    <Style x:Key="DefaultTreeViewStyle" TargetType="local:TreeView">
-        <Setter Property="IsTabStop" Value="False" />
-        <Setter Property="CanDragItems" Value="True"/>
-        <Setter Property="CanReorderItems" Value="True"/>
-        <Setter Property="AllowDrop" Value="True"/>
-        <Setter Property="ItemContainerTransitions">
-            <Setter.Value>
-                <TransitionCollection>
-                    <ContentThemeTransition />
-                    <ReorderThemeTransition />
-                    <EntranceThemeTransition IsStaggeringEnabled="False" />
-                </TransitionCollection>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="local:TreeView">
-                    <local:TreeViewList
-                        x:Name="ListControl"
-                        Background="{TemplateBinding Background}"
-                        ItemTemplate="{TemplateBinding ItemTemplate}"
-                        ItemTemplateSelector="{TemplateBinding ItemTemplateSelector}"
-                        ItemContainerStyle="{TemplateBinding ItemContainerStyle}"
-                        ItemContainerStyleSelector="{TemplateBinding ItemContainerStyleSelector}"
-                        ItemContainerTransitions="{TemplateBinding ItemContainerTransitions}"
-                        CanDragItems="{TemplateBinding CanDragItems}"
-                        AllowDrop="{TemplateBinding AllowDrop}"
-                        CanReorderItems="{TemplateBinding CanReorderItems}">
-                    </local:TreeViewList>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-    
     <Style TargetType="local:TreeViewItem" BasedOn="{StaticResource MUX_TreeViewItemStyle}"/>
     
 </ResourceDictionary>
