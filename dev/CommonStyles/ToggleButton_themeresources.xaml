@@ -7,6 +7,7 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <Thickness x:Key="ToggleButtonBorderThemeThickness">1</Thickness>
+            <contract7Present:BackgroundSizing x:Key="ToggleButtonCheckedStateBackgroundSizing">OuterBorderEdge</contract7Present:BackgroundSizing>
             <StaticResource x:Key="ToggleButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
@@ -64,6 +65,8 @@
             <SolidColorBrush x:Key="ToggleButtonPressedForegroundThemeBrush" Color="#FF000000" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
+            <Thickness x:Key="ToggleButtonBorderThemeThickness">1</Thickness>
+            <contract7Present:BackgroundSizing x:Key="ToggleButtonCheckedStateBackgroundSizing">OuterBorderEdge</contract7Present:BackgroundSizing>
             <StaticResource x:Key="ToggleButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
@@ -100,7 +103,7 @@
             <StaticResource x:Key="ToggleButtonBorderBrushIndeterminatePointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="ToggleButtonBorderBrushIndeterminatePressed" ResourceKey="SystemControlHighlightTransparentBrush" />
             <StaticResource x:Key="ToggleButtonBorderBrushIndeterminateDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
-            <Thickness x:Key="ToggleButtonBorderThemeThickness">1</Thickness>
+           
             <SolidColorBrush x:Key="ToggleButtonBackgroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="ToggleButtonBorderThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="ToggleButtonCheckedBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
@@ -122,6 +125,7 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <Thickness x:Key="ToggleButtonBorderThemeThickness">1</Thickness>
+            <contract7Present:BackgroundSizing x:Key="ToggleButtonCheckedStateBackgroundSizing">OuterBorderEdge</contract7Present:BackgroundSizing>
             <StaticResource x:Key="ToggleButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
@@ -179,8 +183,6 @@
             <SolidColorBrush x:Key="ToggleButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-
-    <contract7Present:BackgroundSizing x:Key="ToggleButtonCheckedStateBackgroundSizing">OuterBorderEdge</contract7Present:BackgroundSizing>
 
     <Style TargetType="ToggleButton" BasedOn="{StaticResource DefaultToggleButtonStyle}" />
 
