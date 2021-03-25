@@ -32,6 +32,7 @@
             <FontIcon Glyph="&#xF0AF;" Margin="4,0,40,3" FontSize="14" VerticalAlignment="Center"/>
             <controls:ProgressBar
                 x:Name="TestProgressBar"
+                Style="{StaticResource DefaultProgressBarStyle}"
                 Width="400"
                 VerticalAlignment="Center"
                 AutomationProperties.Name="TestProgressBar"
