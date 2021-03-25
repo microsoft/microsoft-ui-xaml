@@ -8,9 +8,9 @@
     Margin=0,0,0,0
     Height=600
     FocusVisualSecondaryThickness=1,1,1,1
-    FocusVisualSecondaryBrush=#99FFFFFF
+    FocusVisualSecondaryBrush=#B3FFFFFF
     FocusVisualPrimaryThickness=2,2,2,2
-    FocusVisualPrimaryBrush=#FF000000
+    FocusVisualPrimaryBrush=#E4000000
     Visibility=Visible
     RenderSize=800,600
   [Windows.UI.Xaml.Controls.Grid]
@@ -22,9 +22,9 @@
       Name=RootGrid
       Margin=0,0,0,0
       FocusVisualSecondaryThickness=1,1,1,1
-      FocusVisualSecondaryBrush=#99FFFFFF
+      FocusVisualSecondaryBrush=#B3FFFFFF
       FocusVisualPrimaryThickness=2,2,2,2
-      FocusVisualPrimaryBrush=#FF000000
+      FocusVisualPrimaryBrush=#E4000000
       Visibility=Visible
       RenderSize=800,600
     [Windows.UI.Xaml.Controls.Grid]
@@ -36,11 +36,11 @@
         Name=PaneToggleButtonGrid
         Margin=0,0,0,8
         FocusVisualSecondaryThickness=1,1,1,1
-        FocusVisualSecondaryBrush=#99FFFFFF
+        FocusVisualSecondaryBrush=#B3FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2
-        FocusVisualPrimaryBrush=#FF000000
+        FocusVisualPrimaryBrush=#E4000000
         Visibility=Visible
-        RenderSize=40,46
+        RenderSize=46,46
       [Windows.UI.Xaml.Controls.Grid]
           Padding=0,0,0,0
           CornerRadius=0,0,0,0
@@ -51,11 +51,11 @@
           Margin=0,0,0,0
           Height=0
           FocusVisualSecondaryThickness=1,1,1,1
-          FocusVisualSecondaryBrush=#99FFFFFF
+          FocusVisualSecondaryBrush=#B3FFFFFF
           FocusVisualPrimaryThickness=2,2,2,2
-          FocusVisualPrimaryBrush=#FF000000
+          FocusVisualPrimaryBrush=#E4000000
           Visibility=Visible
-          RenderSize=40,0
+          RenderSize=46,0
       [Windows.UI.Xaml.Controls.Grid]
           Padding=0,0,0,0
           CornerRadius=0,0,0,0
@@ -65,41 +65,41 @@
           Name=ButtonHolderGrid
           Margin=0,4,0,4
           FocusVisualSecondaryThickness=1,1,1,1
-          FocusVisualSecondaryBrush=#99FFFFFF
+          FocusVisualSecondaryBrush=#B3FFFFFF
           FocusVisualPrimaryThickness=2,2,2,2
-          FocusVisualPrimaryBrush=#FF000000
+          FocusVisualPrimaryBrush=#E4000000
           Visibility=Visible
-          RenderSize=40,38
+          RenderSize=46,38
         [Windows.UI.Xaml.Controls.Button]
             Padding=8,4,8,4
             Foreground=#E4000000
             BorderThickness=1,1,1,1
             BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
             Background=#00FFFFFF
-            Width=32
+            Width=38
             Name=NavigationViewBackButton
             Margin=4,2,4,2
             Height=34
             FocusVisualSecondaryThickness=1,1,1,1
-            FocusVisualSecondaryBrush=#99FFFFFF
+            FocusVisualSecondaryBrush=#B3FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
-            FocusVisualPrimaryBrush=#FF000000
+            FocusVisualPrimaryBrush=#E4000000
             Visibility=Visible
-            RenderSize=32,34
+            RenderSize=38,34
           [Windows.UI.Xaml.Controls.Grid]
               Padding=0,0,0,0
-              CornerRadius=8,8,8,8
+              CornerRadius=4,4,4,4
               BorderThickness=0,0,0,0
               BorderBrush=[NULL]
               Background=#00FFFFFF
               Name=RootGrid
               Margin=0,0,0,0
               FocusVisualSecondaryThickness=1,1,1,1
-              FocusVisualSecondaryBrush=#99FFFFFF
+              FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
-              FocusVisualPrimaryBrush=#FF000000
+              FocusVisualPrimaryBrush=#E4000000
               Visibility=Visible
-              RenderSize=32,34
+              RenderSize=38,34
             [Microsoft.UI.Xaml.Controls.AnimatedIcon]
                 Foreground=#5C000000
                 Width=16
@@ -107,9 +107,9 @@
                 Margin=0,0,0,0
                 Height=16
                 FocusVisualSecondaryThickness=1,1,1,1
-                FocusVisualSecondaryBrush=#99FFFFFF
+                FocusVisualSecondaryBrush=#B3FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
-                FocusVisualPrimaryBrush=#FF000000
+                FocusVisualPrimaryBrush=#E4000000
                 Visibility=Visible
                 RenderSize=16,16
               [Windows.UI.Xaml.Controls.Grid]
@@ -120,27 +120,27 @@
                   Background=#00000000
                   Margin=0,0,0,0
                   FocusVisualSecondaryThickness=1,1,1,1
-                  FocusVisualSecondaryBrush=#99FFFFFF
+                  FocusVisualSecondaryBrush=#B3FFFFFF
                   FocusVisualPrimaryThickness=2,2,2,2
-                  FocusVisualPrimaryBrush=#FF000000
+                  FocusVisualPrimaryBrush=#E4000000
                   Visibility=Visible
                   RenderSize=16,16
                 [Windows.UI.Xaml.Shapes.Path]
                     StrokeThickness=1
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
-                    FocusVisualSecondaryBrush=#99FFFFFF
+                    FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
-                    FocusVisualPrimaryBrush=#FF000000
+                    FocusVisualPrimaryBrush=#E4000000
                     Visibility=Collapsed
                     RenderSize=0,0
                 [Windows.UI.Xaml.Controls.FontIcon]
                     Foreground=#5C000000
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
-                    FocusVisualSecondaryBrush=#99FFFFFF
+                    FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
-                    FocusVisualPrimaryBrush=#FF000000
+                    FocusVisualPrimaryBrush=#E4000000
                     Visibility=Visible
                     RenderSize=16,16
                   [Windows.UI.Xaml.Controls.Grid]
@@ -151,9 +151,9 @@
                       Background=#00000000
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
                       RenderSize=16,16
                     [Windows.UI.Xaml.Controls.TextBlock]
@@ -161,9 +161,9 @@
                         Foreground=#5C000000
                         Margin=0,0,0,0
                         FocusVisualSecondaryThickness=1,1,1,1
-                        FocusVisualSecondaryBrush=#99FFFFFF
+                        FocusVisualSecondaryBrush=#B3FFFFFF
                         FocusVisualPrimaryThickness=2,2,2,2
-                        FocusVisualPrimaryBrush=#FF000000
+                        FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
                         RenderSize=16,16
         [Windows.UI.Xaml.Controls.Button]
@@ -177,26 +177,26 @@
             Margin=4,2,4,2
             Height=34
             FocusVisualSecondaryThickness=1,1,1,1
-            FocusVisualSecondaryBrush=#99FFFFFF
+            FocusVisualSecondaryBrush=#B3FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
-            FocusVisualPrimaryBrush=#FF000000
+            FocusVisualPrimaryBrush=#E4000000
             Visibility=Collapsed
             RenderSize=0,0
         [Windows.UI.Xaml.Controls.Button]
             Padding=4,2,4,2
             Foreground=#E4000000
-            BorderThickness=1,1,1,1
+            BorderThickness=0,0,0,0
             BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
             Background=#00FFFFFF
-            Width=40
+            Width=46
             Name=TogglePaneButton
-            MinWidth=32
+            MinWidth=38
             MinHeight=34
             Margin=0,0,0,0
             FocusVisualSecondaryThickness=1,1,1,1
-            FocusVisualSecondaryBrush=#99FFFFFF
+            FocusVisualSecondaryBrush=#B3FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
-            FocusVisualPrimaryBrush=#FF000000
+            FocusVisualPrimaryBrush=#E4000000
             Visibility=Collapsed
             RenderSize=0,0
         [Windows.UI.Xaml.Controls.Grid]
@@ -208,9 +208,9 @@
             Name=PaneTitleHolder
             Margin=0,0,0,0
             FocusVisualSecondaryThickness=1,1,1,1
-            FocusVisualSecondaryBrush=#99FFFFFF
+            FocusVisualSecondaryBrush=#B3FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
-            FocusVisualPrimaryBrush=#FF000000
+            FocusVisualPrimaryBrush=#E4000000
             Visibility=Collapsed
             RenderSize=0,0
           [Windows.UI.Xaml.Controls.ContentControl]
@@ -222,9 +222,9 @@
               Name=PaneTitlePresenter
               Margin=8,4,0,0
               FocusVisualSecondaryThickness=1,1,1,1
-              FocusVisualSecondaryBrush=#99FFFFFF
+              FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
-              FocusVisualPrimaryBrush=#FF000000
+              FocusVisualPrimaryBrush=#E4000000
               Visibility=Visible
               RenderSize=0,0
     [Windows.UI.Xaml.Controls.Grid]
@@ -235,9 +235,9 @@
         Background=[NULL]
         Margin=0,0,0,0
         FocusVisualSecondaryThickness=1,1,1,1
-        FocusVisualSecondaryBrush=#99FFFFFF
+        FocusVisualSecondaryBrush=#B3FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2
-        FocusVisualPrimaryBrush=#FF000000
+        FocusVisualPrimaryBrush=#E4000000
         Visibility=Visible
         RenderSize=800,600
       [Windows.UI.Xaml.Controls.StackPanel]
@@ -249,11 +249,11 @@
           Name=TopNavArea
           Margin=0,0,0,0
           FocusVisualSecondaryThickness=1,1,1,1
-          FocusVisualSecondaryBrush=#99FFFFFF
+          FocusVisualSecondaryBrush=#B3FFFFFF
           FocusVisualPrimaryThickness=2,2,2,2
-          FocusVisualPrimaryBrush=#FF000000
+          FocusVisualPrimaryBrush=#E4000000
           Visibility=Visible
-          RenderSize=800,48
+          RenderSize=800,40
         [Windows.UI.Xaml.Controls.Grid]
             Padding=0,0,0,0
             CornerRadius=0,0,0,0
@@ -264,9 +264,9 @@
             Margin=0,0,0,0
             Height=0
             FocusVisualSecondaryThickness=1,1,1,1
-            FocusVisualSecondaryBrush=#99FFFFFF
+            FocusVisualSecondaryBrush=#B3FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
-            FocusVisualPrimaryBrush=#FF000000
+            FocusVisualPrimaryBrush=#E4000000
             Visibility=Visible
             RenderSize=800,0
         [Windows.UI.Xaml.Controls.Grid]
@@ -277,13 +277,13 @@
             Background=[NULL]
             Name=TopNavGrid
             Margin=0,0,0,0
-            Height=48
+            Height=40
             FocusVisualSecondaryThickness=1,1,1,1
-            FocusVisualSecondaryBrush=#99FFFFFF
+            FocusVisualSecondaryBrush=#B3FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
-            FocusVisualPrimaryBrush=#FF000000
+            FocusVisualPrimaryBrush=#E4000000
             Visibility=Visible
-            RenderSize=800,48
+            RenderSize=800,40
           [Windows.UI.Xaml.Controls.Grid]
               Padding=0,0,0,0
               CornerRadius=0,0,0,0
@@ -294,11 +294,11 @@
               Name=TopNavLeftPadding
               Margin=0,0,0,0
               FocusVisualSecondaryThickness=1,1,1,1
-              FocusVisualSecondaryBrush=#99FFFFFF
+              FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
-              FocusVisualPrimaryBrush=#FF000000
+              FocusVisualPrimaryBrush=#E4000000
               Visibility=Visible
-              RenderSize=0,47
+              RenderSize=0,39
           [Windows.UI.Xaml.Controls.ContentControl]
               Padding=0,0,0,0
               Foreground=#E4000000
@@ -308,11 +308,11 @@
               Name=PaneHeaderOnTopPane
               Margin=0,0,0,0
               FocusVisualSecondaryThickness=1,1,1,1
-              FocusVisualSecondaryBrush=#99FFFFFF
+              FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
-              FocusVisualPrimaryBrush=#FF000000
+              FocusVisualPrimaryBrush=#E4000000
               Visibility=Visible
-              RenderSize=0,47
+              RenderSize=0,39
             [Windows.UI.Xaml.Controls.ContentPresenter]
                 Foreground=#E4000000
                 Padding=0,0,0,0
@@ -322,11 +322,11 @@
                 Background=[NULL]
                 Margin=0,0,0,0
                 FocusVisualSecondaryThickness=1,1,1,1
-                FocusVisualSecondaryBrush=#99FFFFFF
+                FocusVisualSecondaryBrush=#B3FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
-                FocusVisualPrimaryBrush=#FF000000
+                FocusVisualPrimaryBrush=#E4000000
                 Visibility=Visible
-                RenderSize=0,47
+                RenderSize=0,39
           [Windows.UI.Xaml.Controls.ContentControl]
               Padding=0,0,0,0
               Foreground=#E4000000
@@ -336,11 +336,11 @@
               Name=PaneTitleOnTopPane
               Margin=0,0,0,0
               FocusVisualSecondaryThickness=1,1,1,1
-              FocusVisualSecondaryBrush=#99FFFFFF
+              FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
-              FocusVisualPrimaryBrush=#FF000000
+              FocusVisualPrimaryBrush=#E4000000
               Visibility=Visible
-              RenderSize=0,47
+              RenderSize=0,39
             [Windows.UI.Xaml.Controls.ContentPresenter]
                 Foreground=#E4000000
                 Padding=0,0,0,0
@@ -350,19 +350,19 @@
                 Background=[NULL]
                 Margin=0,0,0,0
                 FocusVisualSecondaryThickness=1,1,1,1
-                FocusVisualSecondaryBrush=#99FFFFFF
+                FocusVisualSecondaryBrush=#B3FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
-                FocusVisualPrimaryBrush=#FF000000
+                FocusVisualPrimaryBrush=#E4000000
                 Visibility=Visible
-                RenderSize=0,47
+                RenderSize=0,39
           [Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost]
               Margin=0,0,0,0
               FocusVisualSecondaryThickness=1,1,1,1
-              FocusVisualSecondaryBrush=#99FFFFFF
+              FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
-              FocusVisualPrimaryBrush=#FF000000
+              FocusVisualPrimaryBrush=#E4000000
               Visibility=Visible
-              RenderSize=156,47
+              RenderSize=164,39
             [Windows.UI.Xaml.Controls.ScrollViewer]
                 Padding=0,0,0,0
                 Foreground=#E4000000
@@ -371,11 +371,11 @@
                 Background=#00FFFFFF
                 Margin=0,0,0,0
                 FocusVisualSecondaryThickness=1,1,1,1
-                FocusVisualSecondaryBrush=#99FFFFFF
+                FocusVisualSecondaryBrush=#B3FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
-                FocusVisualPrimaryBrush=#FF000000
+                FocusVisualPrimaryBrush=#E4000000
                 Visibility=Visible
-                RenderSize=156,47
+                RenderSize=164,39
               [Windows.UI.Xaml.Controls.Border]
                   Padding=0,0,0,0
                   CornerRadius=0,0,0,0
@@ -385,11 +385,11 @@
                   Name=Root
                   Margin=0,0,0,0
                   FocusVisualSecondaryThickness=1,1,1,1
-                  FocusVisualSecondaryBrush=#99FFFFFF
+                  FocusVisualSecondaryBrush=#B3FFFFFF
                   FocusVisualPrimaryThickness=2,2,2,2
-                  FocusVisualPrimaryBrush=#FF000000
+                  FocusVisualPrimaryBrush=#E4000000
                   Visibility=Visible
-                  RenderSize=156,47
+                  RenderSize=164,39
                 [Windows.UI.Xaml.Controls.Grid]
                     Padding=0,0,0,0
                     CornerRadius=0,0,0,0
@@ -398,11 +398,11 @@
                     Background=#00FFFFFF
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
-                    FocusVisualSecondaryBrush=#99FFFFFF
+                    FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
-                    FocusVisualPrimaryBrush=#FF000000
+                    FocusVisualPrimaryBrush=#E4000000
                     Visibility=Visible
-                    RenderSize=156,47
+                    RenderSize=164,39
                   [Windows.UI.Xaml.Controls.ScrollContentPresenter]
                       Foreground=#E4000000
                       Padding=0,0,0,0
@@ -413,21 +413,21 @@
                       Name=ScrollContentPresenter
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
-                      RenderSize=156,47
+                      RenderSize=164,39
                     [Microsoft.UI.Xaml.Controls.ItemsRepeater]
                         Background=[NULL]
                         Name=TopNavMenuItemsHost
                         Margin=0,0,0,0
                         FocusVisualSecondaryThickness=1,1,1,1
-                        FocusVisualSecondaryBrush=#99FFFFFF
+                        FocusVisualSecondaryBrush=#B3FFFFFF
                         FocusVisualPrimaryThickness=2,2,2,2
-                        FocusVisualPrimaryBrush=#FF000000
+                        FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
-                        RenderSize=156,47
+                        RenderSize=164,39
                       [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                           Padding=0,0,0,0
                           Foreground=#E4000000
@@ -436,11 +436,11 @@
                           Background=#00FFFFFF
                           Margin=0,0,0,0
                           FocusVisualSecondaryThickness=1,1,1,1
-                          FocusVisualSecondaryBrush=#99FFFFFF
+                          FocusVisualSecondaryBrush=#B3FFFFFF
                           FocusVisualPrimaryThickness=2,2,2,2
-                          FocusVisualPrimaryBrush=#FF000000
+                          FocusVisualPrimaryBrush=#E4000000
                           Visibility=Visible
-                          RenderSize=85,47
+                          RenderSize=89,39
                         [Windows.UI.Xaml.Controls.Grid]
                             Padding=0,0,0,0
                             CornerRadius=0,0,0,0
@@ -450,11 +450,11 @@
                             Name=NVIRootGrid
                             Margin=0,0,0,0
                             FocusVisualSecondaryThickness=1,1,1,1
-                            FocusVisualSecondaryBrush=#99FFFFFF
+                            FocusVisualSecondaryBrush=#B3FFFFFF
                             FocusVisualPrimaryThickness=2,2,2,2
-                            FocusVisualPrimaryBrush=#FF000000
+                            FocusVisualPrimaryBrush=#E4000000
                             Visibility=Visible
-                            RenderSize=85,47
+                            RenderSize=89,39
                           [Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenter]
                               Padding=0,0,0,0
                               Foreground=#93000000
@@ -464,11 +464,11 @@
                               Name=NavigationViewItemPresenter
                               Margin=0,0,0,0
                               FocusVisualSecondaryThickness=1,1,1,1
-                              FocusVisualSecondaryBrush=#99FFFFFF
+                              FocusVisualSecondaryBrush=#B3FFFFFF
                               FocusVisualPrimaryThickness=2,2,2,2
-                              FocusVisualPrimaryBrush=#FF000000
+                              FocusVisualPrimaryBrush=#E4000000
                               Visibility=Visible
-                              RenderSize=85,47
+                              RenderSize=89,39
                             [Windows.UI.Xaml.Controls.Grid]
                                 Padding=0,0,0,0
                                 CornerRadius=0,0,0,0
@@ -478,19 +478,19 @@
                                 Name=LayoutRoot
                                 Margin=0,0,0,0
                                 FocusVisualSecondaryThickness=1,1,1,1
-                                FocusVisualSecondaryBrush=#99FFFFFF
+                                FocusVisualSecondaryBrush=#B3FFFFFF
                                 FocusVisualPrimaryThickness=2,2,2,2
-                                FocusVisualPrimaryBrush=#FF000000
+                                FocusVisualPrimaryBrush=#E4000000
                                 Visibility=Visible
-                                RenderSize=85,47
+                                RenderSize=89,39
                               [Windows.UI.Xaml.Shapes.Rectangle]
                                   StrokeThickness=1
                                   Name=PointerRectangle
                                   Margin=0,0,0,0
                                   FocusVisualSecondaryThickness=1,1,1,1
-                                  FocusVisualSecondaryBrush=#99FFFFFF
+                                  FocusVisualSecondaryBrush=#B3FFFFFF
                                   FocusVisualPrimaryThickness=2,2,2,2
-                                  FocusVisualPrimaryBrush=#FF000000
+                                  FocusVisualPrimaryBrush=#E4000000
                                   Visibility=Collapsed
                                   RenderSize=0,0
                               [Windows.UI.Xaml.Controls.Grid]
@@ -502,20 +502,20 @@
                                   Name=ContentGrid
                                   Margin=0,0,0,0
                                   FocusVisualSecondaryThickness=1,1,1,1
-                                  FocusVisualSecondaryBrush=#99FFFFFF
+                                  FocusVisualSecondaryBrush=#B3FFFFFF
                                   FocusVisualPrimaryThickness=2,2,2,2
-                                  FocusVisualPrimaryBrush=#FF000000
+                                  FocusVisualPrimaryBrush=#E4000000
                                   Visibility=Visible
-                                  RenderSize=85,47
+                                  RenderSize=89,39
                                 [Windows.UI.Xaml.Controls.Viewbox]
                                     Width=16
                                     Name=IconBox
-                                    Margin=12,0,0,0
+                                    Margin=16,0,0,0
                                     Height=16
                                     FocusVisualSecondaryThickness=1,1,1,1
-                                    FocusVisualSecondaryBrush=#99FFFFFF
+                                    FocusVisualSecondaryBrush=#B3FFFFFF
                                     FocusVisualPrimaryThickness=2,2,2,2
-                                    FocusVisualPrimaryBrush=#FF000000
+                                    FocusVisualPrimaryBrush=#E4000000
                                     Visibility=Visible
                                     RenderSize=16,16
                                   [Windows.UI.Xaml.Controls.Border]
@@ -526,9 +526,9 @@
                                       Background=[NULL]
                                       Margin=0,0,0,0
                                       FocusVisualSecondaryThickness=1,1,1,1
-                                      FocusVisualSecondaryBrush=#99FFFFFF
+                                      FocusVisualSecondaryBrush=#B3FFFFFF
                                       FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualPrimaryBrush=#FF000000
+                                      FocusVisualPrimaryBrush=#E4000000
                                       Visibility=Visible
                                       RenderSize=20,20
                                     [Windows.UI.Xaml.Controls.ContentPresenter]
@@ -541,18 +541,18 @@
                                         Name=Icon
                                         Margin=0,0,0,0
                                         FocusVisualSecondaryThickness=1,1,1,1
-                                        FocusVisualSecondaryBrush=#99FFFFFF
+                                        FocusVisualSecondaryBrush=#B3FFFFFF
                                         FocusVisualPrimaryThickness=2,2,2,2
-                                        FocusVisualPrimaryBrush=#FF000000
+                                        FocusVisualPrimaryBrush=#E4000000
                                         Visibility=Visible
                                         RenderSize=20,20
                                       [Windows.UI.Xaml.Controls.SymbolIcon]
                                           Foreground=#93000000
                                           Margin=0,0,0,0
                                           FocusVisualSecondaryThickness=1,1,1,1
-                                          FocusVisualSecondaryBrush=#99FFFFFF
+                                          FocusVisualSecondaryBrush=#B3FFFFFF
                                           FocusVisualPrimaryThickness=2,2,2,2
-                                          FocusVisualPrimaryBrush=#FF000000
+                                          FocusVisualPrimaryBrush=#E4000000
                                           Visibility=Visible
                                           RenderSize=20,20
                                         [Windows.UI.Xaml.Controls.Grid]
@@ -563,9 +563,9 @@
                                             Background=#00000000
                                             Margin=0,0,0,0
                                             FocusVisualSecondaryThickness=1,1,1,1
-                                            FocusVisualSecondaryBrush=#99FFFFFF
+                                            FocusVisualSecondaryBrush=#B3FFFFFF
                                             FocusVisualPrimaryThickness=2,2,2,2
-                                            FocusVisualPrimaryBrush=#FF000000
+                                            FocusVisualPrimaryBrush=#E4000000
                                             Visibility=Visible
                                             RenderSize=20,20
                                           [Windows.UI.Xaml.Controls.TextBlock]
@@ -573,9 +573,9 @@
                                               Foreground=#93000000
                                               Margin=0,0,0,0
                                               FocusVisualSecondaryThickness=1,1,1,1
-                                              FocusVisualSecondaryBrush=#99FFFFFF
+                                              FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualPrimaryThickness=2,2,2,2
-                                              FocusVisualPrimaryBrush=#FF000000
+                                              FocusVisualPrimaryBrush=#E4000000
                                               Visibility=Visible
                                               RenderSize=20,20
                                 [Windows.UI.Xaml.Controls.ContentPresenter]
@@ -588,9 +588,9 @@
                                     Name=ContentPresenter
                                     Margin=8,0,12,0
                                     FocusVisualSecondaryThickness=1,1,1,1
-                                    FocusVisualSecondaryBrush=#99FFFFFF
+                                    FocusVisualSecondaryBrush=#B3FFFFFF
                                     FocusVisualPrimaryThickness=2,2,2,2
-                                    FocusVisualPrimaryBrush=#FF000000
+                                    FocusVisualPrimaryBrush=#E4000000
                                     Visibility=Visible
                                     RenderSize=37,20
                                   [Windows.UI.Xaml.Controls.TextBlock]
@@ -598,9 +598,9 @@
                                       Foreground=#93000000
                                       Margin=0,0,0,0
                                       FocusVisualSecondaryThickness=1,1,1,1
-                                      FocusVisualSecondaryBrush=#99FFFFFF
+                                      FocusVisualSecondaryBrush=#B3FFFFFF
                                       FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualPrimaryBrush=#FF000000
+                                      FocusVisualPrimaryBrush=#E4000000
                                       Visibility=Visible
                                       RenderSize=37,20
                                 [Windows.UI.Xaml.Controls.Grid]
@@ -613,9 +613,9 @@
                                     Name=ExpandCollapseChevron
                                     Margin=-16,0,0,0
                                     FocusVisualSecondaryThickness=1,1,1,1
-                                    FocusVisualSecondaryBrush=#99FFFFFF
+                                    FocusVisualSecondaryBrush=#B3FFFFFF
                                     FocusVisualPrimaryThickness=2,2,2,2
-                                    FocusVisualPrimaryBrush=#FF000000
+                                    FocusVisualPrimaryBrush=#E4000000
                                     Visibility=Collapsed
                                     RenderSize=0,0
                                   [Microsoft.UI.Xaml.Controls.AnimatedIcon]
@@ -625,9 +625,9 @@
                                       Margin=0,0,0,0
                                       Height=12
                                       FocusVisualSecondaryThickness=1,1,1,1
-                                      FocusVisualSecondaryBrush=#99FFFFFF
+                                      FocusVisualSecondaryBrush=#B3FFFFFF
                                       FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualPrimaryBrush=#FF000000
+                                      FocusVisualPrimaryBrush=#E4000000
                                       Visibility=Visible
                                       RenderSize=0,0
                               [Windows.UI.Xaml.Controls.Grid]
@@ -639,9 +639,9 @@
                                   Name=SelectionIndicatorGrid
                                   Margin=16,0,16,4
                                   FocusVisualSecondaryThickness=1,1,1,1
-                                  FocusVisualSecondaryBrush=#99FFFFFF
+                                  FocusVisualSecondaryBrush=#B3FFFFFF
                                   FocusVisualPrimaryThickness=2,2,2,2
-                                  FocusVisualPrimaryBrush=#FF000000
+                                  FocusVisualPrimaryBrush=#E4000000
                                   Visibility=Visible
                                   RenderSize=16,3
                                 [Windows.UI.Xaml.Shapes.Rectangle]
@@ -651,9 +651,9 @@
                                     Margin=0,0,0,0
                                     Height=3
                                     FocusVisualSecondaryThickness=1,1,1,1
-                                    FocusVisualSecondaryBrush=#99FFFFFF
+                                    FocusVisualSecondaryBrush=#B3FFFFFF
                                     FocusVisualPrimaryThickness=2,2,2,2
-                                    FocusVisualPrimaryBrush=#FF000000
+                                    FocusVisualPrimaryBrush=#E4000000
                                     Visibility=Visible
                                     RenderSize=16,3
                           [Microsoft.UI.Xaml.Controls.ItemsRepeater]
@@ -661,9 +661,9 @@
                               Name=NavigationViewItemMenuItemsHost
                               Margin=0,0,0,0
                               FocusVisualSecondaryThickness=1,1,1,1
-                              FocusVisualSecondaryBrush=#99FFFFFF
+                              FocusVisualSecondaryBrush=#B3FFFFFF
                               FocusVisualPrimaryThickness=2,2,2,2
-                              FocusVisualPrimaryBrush=#FF000000
+                              FocusVisualPrimaryBrush=#E4000000
                               Visibility=Collapsed
                               RenderSize=0,0
                       [Microsoft.UI.Xaml.Controls.NavigationViewItem]
@@ -674,11 +674,11 @@
                           Background=#00FFFFFF
                           Margin=0,0,0,0
                           FocusVisualSecondaryThickness=1,1,1,1
-                          FocusVisualSecondaryBrush=#99FFFFFF
+                          FocusVisualSecondaryBrush=#B3FFFFFF
                           FocusVisualPrimaryThickness=2,2,2,2
-                          FocusVisualPrimaryBrush=#FF000000
+                          FocusVisualPrimaryBrush=#E4000000
                           Visibility=Visible
-                          RenderSize=71,47
+                          RenderSize=75,39
                         [Windows.UI.Xaml.Controls.Grid]
                             Padding=0,0,0,0
                             CornerRadius=0,0,0,0
@@ -688,11 +688,11 @@
                             Name=NVIRootGrid
                             Margin=0,0,0,0
                             FocusVisualSecondaryThickness=1,1,1,1
-                            FocusVisualSecondaryBrush=#99FFFFFF
+                            FocusVisualSecondaryBrush=#B3FFFFFF
                             FocusVisualPrimaryThickness=2,2,2,2
-                            FocusVisualPrimaryBrush=#FF000000
+                            FocusVisualPrimaryBrush=#E4000000
                             Visibility=Visible
-                            RenderSize=71,47
+                            RenderSize=75,39
                           [Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenter]
                               Padding=0,0,0,0
                               Foreground=#93000000
@@ -702,11 +702,11 @@
                               Name=NavigationViewItemPresenter
                               Margin=0,0,0,0
                               FocusVisualSecondaryThickness=1,1,1,1
-                              FocusVisualSecondaryBrush=#99FFFFFF
+                              FocusVisualSecondaryBrush=#B3FFFFFF
                               FocusVisualPrimaryThickness=2,2,2,2
-                              FocusVisualPrimaryBrush=#FF000000
+                              FocusVisualPrimaryBrush=#E4000000
                               Visibility=Visible
-                              RenderSize=71,47
+                              RenderSize=75,39
                             [Windows.UI.Xaml.Controls.Grid]
                                 Padding=0,0,0,0
                                 CornerRadius=0,0,0,0
@@ -716,19 +716,19 @@
                                 Name=LayoutRoot
                                 Margin=0,0,0,0
                                 FocusVisualSecondaryThickness=1,1,1,1
-                                FocusVisualSecondaryBrush=#99FFFFFF
+                                FocusVisualSecondaryBrush=#B3FFFFFF
                                 FocusVisualPrimaryThickness=2,2,2,2
-                                FocusVisualPrimaryBrush=#FF000000
+                                FocusVisualPrimaryBrush=#E4000000
                                 Visibility=Visible
-                                RenderSize=71,47
+                                RenderSize=75,39
                               [Windows.UI.Xaml.Shapes.Rectangle]
                                   StrokeThickness=1
                                   Name=PointerRectangle
                                   Margin=0,0,0,0
                                   FocusVisualSecondaryThickness=1,1,1,1
-                                  FocusVisualSecondaryBrush=#99FFFFFF
+                                  FocusVisualSecondaryBrush=#B3FFFFFF
                                   FocusVisualPrimaryThickness=2,2,2,2
-                                  FocusVisualPrimaryBrush=#FF000000
+                                  FocusVisualPrimaryBrush=#E4000000
                                   Visibility=Collapsed
                                   RenderSize=0,0
                               [Windows.UI.Xaml.Controls.Grid]
@@ -740,20 +740,20 @@
                                   Name=ContentGrid
                                   Margin=0,0,0,0
                                   FocusVisualSecondaryThickness=1,1,1,1
-                                  FocusVisualSecondaryBrush=#99FFFFFF
+                                  FocusVisualSecondaryBrush=#B3FFFFFF
                                   FocusVisualPrimaryThickness=2,2,2,2
-                                  FocusVisualPrimaryBrush=#FF000000
+                                  FocusVisualPrimaryBrush=#E4000000
                                   Visibility=Visible
-                                  RenderSize=71,47
+                                  RenderSize=75,39
                                 [Windows.UI.Xaml.Controls.Viewbox]
                                     Width=16
                                     Name=IconBox
-                                    Margin=12,0,0,0
+                                    Margin=16,0,0,0
                                     Height=16
                                     FocusVisualSecondaryThickness=1,1,1,1
-                                    FocusVisualSecondaryBrush=#99FFFFFF
+                                    FocusVisualSecondaryBrush=#B3FFFFFF
                                     FocusVisualPrimaryThickness=2,2,2,2
-                                    FocusVisualPrimaryBrush=#FF000000
+                                    FocusVisualPrimaryBrush=#E4000000
                                     Visibility=Visible
                                     RenderSize=16,16
                                   [Windows.UI.Xaml.Controls.Border]
@@ -764,9 +764,9 @@
                                       Background=[NULL]
                                       Margin=0,0,0,0
                                       FocusVisualSecondaryThickness=1,1,1,1
-                                      FocusVisualSecondaryBrush=#99FFFFFF
+                                      FocusVisualSecondaryBrush=#B3FFFFFF
                                       FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualPrimaryBrush=#FF000000
+                                      FocusVisualPrimaryBrush=#E4000000
                                       Visibility=Visible
                                       RenderSize=20,20
                                     [Windows.UI.Xaml.Controls.ContentPresenter]
@@ -779,18 +779,18 @@
                                         Name=Icon
                                         Margin=0,0,0,0
                                         FocusVisualSecondaryThickness=1,1,1,1
-                                        FocusVisualSecondaryBrush=#99FFFFFF
+                                        FocusVisualSecondaryBrush=#B3FFFFFF
                                         FocusVisualPrimaryThickness=2,2,2,2
-                                        FocusVisualPrimaryBrush=#FF000000
+                                        FocusVisualPrimaryBrush=#E4000000
                                         Visibility=Visible
                                         RenderSize=20,20
                                       [Windows.UI.Xaml.Controls.SymbolIcon]
                                           Foreground=#93000000
                                           Margin=0,0,0,0
                                           FocusVisualSecondaryThickness=1,1,1,1
-                                          FocusVisualSecondaryBrush=#99FFFFFF
+                                          FocusVisualSecondaryBrush=#B3FFFFFF
                                           FocusVisualPrimaryThickness=2,2,2,2
-                                          FocusVisualPrimaryBrush=#FF000000
+                                          FocusVisualPrimaryBrush=#E4000000
                                           Visibility=Visible
                                           RenderSize=20,20
                                         [Windows.UI.Xaml.Controls.Grid]
@@ -801,9 +801,9 @@
                                             Background=#00000000
                                             Margin=0,0,0,0
                                             FocusVisualSecondaryThickness=1,1,1,1
-                                            FocusVisualSecondaryBrush=#99FFFFFF
+                                            FocusVisualSecondaryBrush=#B3FFFFFF
                                             FocusVisualPrimaryThickness=2,2,2,2
-                                            FocusVisualPrimaryBrush=#FF000000
+                                            FocusVisualPrimaryBrush=#E4000000
                                             Visibility=Visible
                                             RenderSize=20,20
                                           [Windows.UI.Xaml.Controls.TextBlock]
@@ -811,9 +811,9 @@
                                               Foreground=#93000000
                                               Margin=0,0,0,0
                                               FocusVisualSecondaryThickness=1,1,1,1
-                                              FocusVisualSecondaryBrush=#99FFFFFF
+                                              FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualPrimaryThickness=2,2,2,2
-                                              FocusVisualPrimaryBrush=#FF000000
+                                              FocusVisualPrimaryBrush=#E4000000
                                               Visibility=Visible
                                               RenderSize=20,20
                                 [Windows.UI.Xaml.Controls.ContentPresenter]
@@ -826,9 +826,9 @@
                                     Name=ContentPresenter
                                     Margin=8,0,12,0
                                     FocusVisualSecondaryThickness=1,1,1,1
-                                    FocusVisualSecondaryBrush=#99FFFFFF
+                                    FocusVisualSecondaryBrush=#B3FFFFFF
                                     FocusVisualPrimaryThickness=2,2,2,2
-                                    FocusVisualPrimaryBrush=#FF000000
+                                    FocusVisualPrimaryBrush=#E4000000
                                     Visibility=Visible
                                     RenderSize=23,20
                                   [Windows.UI.Xaml.Controls.TextBlock]
@@ -836,9 +836,9 @@
                                       Foreground=#93000000
                                       Margin=0,0,0,0
                                       FocusVisualSecondaryThickness=1,1,1,1
-                                      FocusVisualSecondaryBrush=#99FFFFFF
+                                      FocusVisualSecondaryBrush=#B3FFFFFF
                                       FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualPrimaryBrush=#FF000000
+                                      FocusVisualPrimaryBrush=#E4000000
                                       Visibility=Visible
                                       RenderSize=23,20
                                 [Windows.UI.Xaml.Controls.Grid]
@@ -851,9 +851,9 @@
                                     Name=ExpandCollapseChevron
                                     Margin=-16,0,0,0
                                     FocusVisualSecondaryThickness=1,1,1,1
-                                    FocusVisualSecondaryBrush=#99FFFFFF
+                                    FocusVisualSecondaryBrush=#B3FFFFFF
                                     FocusVisualPrimaryThickness=2,2,2,2
-                                    FocusVisualPrimaryBrush=#FF000000
+                                    FocusVisualPrimaryBrush=#E4000000
                                     Visibility=Collapsed
                                     RenderSize=0,0
                                   [Microsoft.UI.Xaml.Controls.AnimatedIcon]
@@ -863,9 +863,9 @@
                                       Margin=0,0,0,0
                                       Height=12
                                       FocusVisualSecondaryThickness=1,1,1,1
-                                      FocusVisualSecondaryBrush=#99FFFFFF
+                                      FocusVisualSecondaryBrush=#B3FFFFFF
                                       FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualPrimaryBrush=#FF000000
+                                      FocusVisualPrimaryBrush=#E4000000
                                       Visibility=Visible
                                       RenderSize=0,0
                               [Windows.UI.Xaml.Controls.Grid]
@@ -877,9 +877,9 @@
                                   Name=SelectionIndicatorGrid
                                   Margin=16,0,16,4
                                   FocusVisualSecondaryThickness=1,1,1,1
-                                  FocusVisualSecondaryBrush=#99FFFFFF
+                                  FocusVisualSecondaryBrush=#B3FFFFFF
                                   FocusVisualPrimaryThickness=2,2,2,2
-                                  FocusVisualPrimaryBrush=#FF000000
+                                  FocusVisualPrimaryBrush=#E4000000
                                   Visibility=Visible
                                   RenderSize=16,3
                                 [Windows.UI.Xaml.Shapes.Rectangle]
@@ -889,9 +889,9 @@
                                     Margin=0,0,0,0
                                     Height=3
                                     FocusVisualSecondaryThickness=1,1,1,1
-                                    FocusVisualSecondaryBrush=#99FFFFFF
+                                    FocusVisualSecondaryBrush=#B3FFFFFF
                                     FocusVisualPrimaryThickness=2,2,2,2
-                                    FocusVisualPrimaryBrush=#FF000000
+                                    FocusVisualPrimaryBrush=#E4000000
                                     Visibility=Visible
                                     RenderSize=16,3
                           [Microsoft.UI.Xaml.Controls.ItemsRepeater]
@@ -899,9 +899,9 @@
                               Name=NavigationViewItemMenuItemsHost
                               Margin=0,0,0,0
                               FocusVisualSecondaryThickness=1,1,1,1
-                              FocusVisualSecondaryBrush=#99FFFFFF
+                              FocusVisualSecondaryBrush=#B3FFFFFF
                               FocusVisualPrimaryThickness=2,2,2,2
-                              FocusVisualPrimaryBrush=#FF000000
+                              FocusVisualPrimaryBrush=#E4000000
                               Visibility=Collapsed
                               RenderSize=0,0
                   [Windows.UI.Xaml.Controls.Grid]
@@ -912,11 +912,11 @@
                       Background=[NULL]
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
-                      RenderSize=156,47
+                      RenderSize=164,39
                   [Windows.UI.Xaml.Controls.Grid]
                       Padding=1,1,1,1
                       CornerRadius=0,0,0,0
@@ -925,9 +925,9 @@
                       Background=[NULL]
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Collapsed
                       RenderSize=0,0
                     [Windows.UI.Xaml.Controls.Primitives.ScrollBar]
@@ -941,9 +941,9 @@
                         MinHeight=12
                         Margin=0,0,0,0
                         FocusVisualSecondaryThickness=1,1,1,1
-                        FocusVisualSecondaryBrush=#99FFFFFF
+                        FocusVisualSecondaryBrush=#B3FFFFFF
                         FocusVisualPrimaryThickness=2,2,2,2
-                        FocusVisualPrimaryBrush=#FF000000
+                        FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
                         RenderSize=0,0
                   [Windows.UI.Xaml.Controls.Grid]
@@ -954,9 +954,9 @@
                       Background=[NULL]
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Collapsed
                       RenderSize=0,0
                     [Windows.UI.Xaml.Controls.Primitives.ScrollBar]
@@ -970,9 +970,9 @@
                         MinHeight=12
                         Margin=0,0,0,0
                         FocusVisualSecondaryThickness=1,1,1,1
-                        FocusVisualSecondaryBrush=#99FFFFFF
+                        FocusVisualSecondaryBrush=#B3FFFFFF
                         FocusVisualPrimaryThickness=2,2,2,2
-                        FocusVisualPrimaryBrush=#FF000000
+                        FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
                         RenderSize=0,0
                   [Windows.UI.Xaml.Controls.Border]
@@ -984,9 +984,9 @@
                       Name=ScrollBarSeparator
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Collapsed
                       RenderSize=0,0
           [Windows.UI.Xaml.Controls.Button]
@@ -1000,9 +1000,9 @@
               Margin=0,0,0,0
               Height=40
               FocusVisualSecondaryThickness=1,1,1,1
-              FocusVisualSecondaryBrush=#99FFFFFF
+              FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
-              FocusVisualPrimaryBrush=#FF000000
+              FocusVisualPrimaryBrush=#E4000000
               Visibility=Collapsed
               RenderSize=0,0
           [Windows.UI.Xaml.Controls.ContentControl]
@@ -1014,11 +1014,11 @@
               Name=PaneCustomContentOnTopPane
               Margin=0,0,0,0
               FocusVisualSecondaryThickness=1,1,1,1
-              FocusVisualSecondaryBrush=#99FFFFFF
+              FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
-              FocusVisualPrimaryBrush=#FF000000
+              FocusVisualPrimaryBrush=#E4000000
               Visibility=Visible
-              RenderSize=558,47
+              RenderSize=550,39
             [Windows.UI.Xaml.Controls.ContentPresenter]
                 Foreground=#E4000000
                 Padding=0,0,0,0
@@ -1028,11 +1028,11 @@
                 Background=[NULL]
                 Margin=0,0,0,0
                 FocusVisualSecondaryThickness=1,1,1,1
-                FocusVisualSecondaryBrush=#99FFFFFF
+                FocusVisualSecondaryBrush=#B3FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
-                FocusVisualPrimaryBrush=#FF000000
+                FocusVisualPrimaryBrush=#E4000000
                 Visibility=Visible
-                RenderSize=558,47
+                RenderSize=550,39
           [Windows.UI.Xaml.Controls.Grid]
               Padding=0,0,0,0
               CornerRadius=0,0,0,0
@@ -1041,11 +1041,11 @@
               Background=[NULL]
               Name=TopPaneAutoSuggestArea
               Margin=0,0,0,0
-              Height=48
+              Height=40
               FocusVisualSecondaryThickness=1,1,1,1
-              FocusVisualSecondaryBrush=#99FFFFFF
+              FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
-              FocusVisualPrimaryBrush=#FF000000
+              FocusVisualPrimaryBrush=#E4000000
               Visibility=Collapsed
               RenderSize=0,0
             [Windows.UI.Xaml.Controls.ContentControl]
@@ -1058,9 +1058,9 @@
                 MinWidth=48
                 Margin=12,0,12,0
                 FocusVisualSecondaryThickness=1,1,1,1
-                FocusVisualSecondaryBrush=#99FFFFFF
+                FocusVisualSecondaryBrush=#B3FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
-                FocusVisualPrimaryBrush=#FF000000
+                FocusVisualPrimaryBrush=#E4000000
                 Visibility=Visible
                 RenderSize=0,0
           [Windows.UI.Xaml.Controls.ContentControl]
@@ -1072,11 +1072,11 @@
               Name=PaneFooterOnTopPane
               Margin=0,0,0,0
               FocusVisualSecondaryThickness=1,1,1,1
-              FocusVisualSecondaryBrush=#99FFFFFF
+              FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
-              FocusVisualPrimaryBrush=#FF000000
+              FocusVisualPrimaryBrush=#E4000000
               Visibility=Visible
-              RenderSize=0,47
+              RenderSize=0,39
             [Windows.UI.Xaml.Controls.ContentPresenter]
                 Foreground=#E4000000
                 Padding=0,0,0,0
@@ -1086,21 +1086,21 @@
                 Background=[NULL]
                 Margin=0,0,0,0
                 FocusVisualSecondaryThickness=1,1,1,1
-                FocusVisualSecondaryBrush=#99FFFFFF
+                FocusVisualSecondaryBrush=#B3FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
-                FocusVisualPrimaryBrush=#FF000000
+                FocusVisualPrimaryBrush=#E4000000
                 Visibility=Visible
-                RenderSize=0,47
+                RenderSize=0,39
           [Microsoft.UI.Xaml.Controls.ItemsRepeater]
               Background=[NULL]
               Name=TopFooterMenuItemsHost
               Margin=0,0,0,0
               FocusVisualSecondaryThickness=1,1,1,1
-              FocusVisualSecondaryBrush=#99FFFFFF
+              FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
-              FocusVisualPrimaryBrush=#FF000000
+              FocusVisualPrimaryBrush=#E4000000
               Visibility=Visible
-              RenderSize=48,47
+              RenderSize=48,39
             [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                 Padding=0,0,0,0
                 Foreground=#E4000000
@@ -1110,11 +1110,11 @@
                 Name=SettingsItem
                 Margin=0,0,0,0
                 FocusVisualSecondaryThickness=1,1,1,1
-                FocusVisualSecondaryBrush=#99FFFFFF
+                FocusVisualSecondaryBrush=#B3FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
-                FocusVisualPrimaryBrush=#FF000000
+                FocusVisualPrimaryBrush=#E4000000
                 Visibility=Visible
-                RenderSize=48,47
+                RenderSize=48,39
               [Windows.UI.Xaml.Controls.Grid]
                   Padding=0,0,0,0
                   CornerRadius=0,0,0,0
@@ -1124,11 +1124,11 @@
                   Name=NVIRootGrid
                   Margin=0,0,0,0
                   FocusVisualSecondaryThickness=1,1,1,1
-                  FocusVisualSecondaryBrush=#99FFFFFF
+                  FocusVisualSecondaryBrush=#B3FFFFFF
                   FocusVisualPrimaryThickness=2,2,2,2
-                  FocusVisualPrimaryBrush=#FF000000
+                  FocusVisualPrimaryBrush=#E4000000
                   Visibility=Visible
-                  RenderSize=48,47
+                  RenderSize=48,39
                 [Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenter]
                     Padding=0,0,0,0
                     Foreground=#93000000
@@ -1138,11 +1138,11 @@
                     Name=NavigationViewItemPresenter
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
-                    FocusVisualSecondaryBrush=#99FFFFFF
+                    FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
-                    FocusVisualPrimaryBrush=#FF000000
+                    FocusVisualPrimaryBrush=#E4000000
                     Visibility=Visible
-                    RenderSize=48,47
+                    RenderSize=48,39
                   [Windows.UI.Xaml.Controls.Grid]
                       Padding=0,0,0,0
                       CornerRadius=0,0,0,0
@@ -1153,21 +1153,21 @@
                       MinWidth=48
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
-                      RenderSize=48,47
+                      RenderSize=48,39
                     [Windows.UI.Xaml.Shapes.Rectangle]
                         StrokeThickness=1
                         Name=PointerRectangle
                         Margin=0,0,0,0
                         FocusVisualSecondaryThickness=1,1,1,1
-                        FocusVisualSecondaryBrush=#99FFFFFF
+                        FocusVisualSecondaryBrush=#B3FFFFFF
                         FocusVisualPrimaryThickness=2,2,2,2
-                        FocusVisualPrimaryBrush=#FF000000
+                        FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
-                        RenderSize=48,47
+                        RenderSize=48,39
                     [Windows.UI.Xaml.Controls.Grid]
                         Padding=0,0,0,0
                         CornerRadius=0,0,0,0
@@ -1177,20 +1177,20 @@
                         Name=ContentGrid
                         Margin=0,0,0,0
                         FocusVisualSecondaryThickness=1,1,1,1
-                        FocusVisualSecondaryBrush=#99FFFFFF
+                        FocusVisualSecondaryBrush=#B3FFFFFF
                         FocusVisualPrimaryThickness=2,2,2,2
-                        FocusVisualPrimaryBrush=#FF000000
+                        FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
-                        RenderSize=48,47
+                        RenderSize=48,39
                       [Windows.UI.Xaml.Controls.Viewbox]
                           Width=16
                           Name=IconBox
-                          Margin=12,0,0,0
+                          Margin=16,0,0,0
                           Height=16
                           FocusVisualSecondaryThickness=1,1,1,1
-                          FocusVisualSecondaryBrush=#99FFFFFF
+                          FocusVisualSecondaryBrush=#B3FFFFFF
                           FocusVisualPrimaryThickness=2,2,2,2
-                          FocusVisualPrimaryBrush=#FF000000
+                          FocusVisualPrimaryBrush=#E4000000
                           Visibility=Visible
                           RenderSize=16,16
                         [Windows.UI.Xaml.Controls.Border]
@@ -1201,9 +1201,9 @@
                             Background=[NULL]
                             Margin=0,0,0,0
                             FocusVisualSecondaryThickness=1,1,1,1
-                            FocusVisualSecondaryBrush=#99FFFFFF
+                            FocusVisualSecondaryBrush=#B3FFFFFF
                             FocusVisualPrimaryThickness=2,2,2,2
-                            FocusVisualPrimaryBrush=#FF000000
+                            FocusVisualPrimaryBrush=#E4000000
                             Visibility=Visible
                             RenderSize=20,20
                           [Windows.UI.Xaml.Controls.ContentPresenter]
@@ -1216,18 +1216,18 @@
                               Name=Icon
                               Margin=0,0,0,0
                               FocusVisualSecondaryThickness=1,1,1,1
-                              FocusVisualSecondaryBrush=#99FFFFFF
+                              FocusVisualSecondaryBrush=#B3FFFFFF
                               FocusVisualPrimaryThickness=2,2,2,2
-                              FocusVisualPrimaryBrush=#FF000000
+                              FocusVisualPrimaryBrush=#E4000000
                               Visibility=Visible
                               RenderSize=20,20
                             [Microsoft.UI.Xaml.Controls.AnimatedIcon]
                                 Foreground=#93000000
                                 Margin=0,0,0,0
                                 FocusVisualSecondaryThickness=1,1,1,1
-                                FocusVisualSecondaryBrush=#99FFFFFF
+                                FocusVisualSecondaryBrush=#B3FFFFFF
                                 FocusVisualPrimaryThickness=2,2,2,2
-                                FocusVisualPrimaryBrush=#FF000000
+                                FocusVisualPrimaryBrush=#E4000000
                                 Visibility=Visible
                                 RenderSize=20,20
                               [Windows.UI.Xaml.Controls.Grid]
@@ -1238,27 +1238,27 @@
                                   Background=#00000000
                                   Margin=0,0,0,0
                                   FocusVisualSecondaryThickness=1,1,1,1
-                                  FocusVisualSecondaryBrush=#99FFFFFF
+                                  FocusVisualSecondaryBrush=#B3FFFFFF
                                   FocusVisualPrimaryThickness=2,2,2,2
-                                  FocusVisualPrimaryBrush=#FF000000
+                                  FocusVisualPrimaryBrush=#E4000000
                                   Visibility=Visible
                                   RenderSize=20,20
                                 [Windows.UI.Xaml.Shapes.Path]
                                     StrokeThickness=1
                                     Margin=0,0,0,0
                                     FocusVisualSecondaryThickness=1,1,1,1
-                                    FocusVisualSecondaryBrush=#99FFFFFF
+                                    FocusVisualSecondaryBrush=#B3FFFFFF
                                     FocusVisualPrimaryThickness=2,2,2,2
-                                    FocusVisualPrimaryBrush=#FF000000
+                                    FocusVisualPrimaryBrush=#E4000000
                                     Visibility=Collapsed
                                     RenderSize=0,0
                                 [Windows.UI.Xaml.Controls.SymbolIcon]
                                     Foreground=#93000000
                                     Margin=0,0,0,0
                                     FocusVisualSecondaryThickness=1,1,1,1
-                                    FocusVisualSecondaryBrush=#99FFFFFF
+                                    FocusVisualSecondaryBrush=#B3FFFFFF
                                     FocusVisualPrimaryThickness=2,2,2,2
-                                    FocusVisualPrimaryBrush=#FF000000
+                                    FocusVisualPrimaryBrush=#E4000000
                                     Visibility=Visible
                                     RenderSize=20,20
                                   [Windows.UI.Xaml.Controls.Grid]
@@ -1269,9 +1269,9 @@
                                       Background=#00000000
                                       Margin=0,0,0,0
                                       FocusVisualSecondaryThickness=1,1,1,1
-                                      FocusVisualSecondaryBrush=#99FFFFFF
+                                      FocusVisualSecondaryBrush=#B3FFFFFF
                                       FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualPrimaryBrush=#FF000000
+                                      FocusVisualPrimaryBrush=#E4000000
                                       Visibility=Visible
                                       RenderSize=20,20
                                     [Windows.UI.Xaml.Controls.TextBlock]
@@ -1279,9 +1279,9 @@
                                         Foreground=#93000000
                                         Margin=0,0,0,0
                                         FocusVisualSecondaryThickness=1,1,1,1
-                                        FocusVisualSecondaryBrush=#99FFFFFF
+                                        FocusVisualSecondaryBrush=#B3FFFFFF
                                         FocusVisualPrimaryThickness=2,2,2,2
-                                        FocusVisualPrimaryBrush=#FF000000
+                                        FocusVisualPrimaryBrush=#E4000000
                                         Visibility=Visible
                                         RenderSize=20,20
                       [Windows.UI.Xaml.Controls.ContentPresenter]
@@ -1294,9 +1294,9 @@
                           Name=ContentPresenter
                           Margin=8,0,12,0
                           FocusVisualSecondaryThickness=1,1,1,1
-                          FocusVisualSecondaryBrush=#99FFFFFF
+                          FocusVisualSecondaryBrush=#B3FFFFFF
                           FocusVisualPrimaryThickness=2,2,2,2
-                          FocusVisualPrimaryBrush=#FF000000
+                          FocusVisualPrimaryBrush=#E4000000
                           Visibility=Collapsed
                           RenderSize=0,0
                       [Windows.UI.Xaml.Controls.Grid]
@@ -1309,9 +1309,9 @@
                           Name=ExpandCollapseChevron
                           Margin=0,0,0,0
                           FocusVisualSecondaryThickness=1,1,1,1
-                          FocusVisualSecondaryBrush=#99FFFFFF
+                          FocusVisualSecondaryBrush=#B3FFFFFF
                           FocusVisualPrimaryThickness=2,2,2,2
-                          FocusVisualPrimaryBrush=#FF000000
+                          FocusVisualPrimaryBrush=#E4000000
                           Visibility=Collapsed
                           RenderSize=0,0
                         [Microsoft.UI.Xaml.Controls.AnimatedIcon]
@@ -1321,9 +1321,9 @@
                             Margin=0,0,0,0
                             Height=12
                             FocusVisualSecondaryThickness=1,1,1,1
-                            FocusVisualSecondaryBrush=#99FFFFFF
+                            FocusVisualSecondaryBrush=#B3FFFFFF
                             FocusVisualPrimaryThickness=2,2,2,2
-                            FocusVisualPrimaryBrush=#FF000000
+                            FocusVisualPrimaryBrush=#E4000000
                             Visibility=Visible
                             RenderSize=0,0
                     [Windows.UI.Xaml.Controls.Grid]
@@ -1335,9 +1335,9 @@
                         Name=SelectionIndicatorGrid
                         Margin=4,0,4,4
                         FocusVisualSecondaryThickness=1,1,1,1
-                        FocusVisualSecondaryBrush=#99FFFFFF
+                        FocusVisualSecondaryBrush=#B3FFFFFF
                         FocusVisualPrimaryThickness=2,2,2,2
-                        FocusVisualPrimaryBrush=#FF000000
+                        FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
                         RenderSize=16,3
                       [Windows.UI.Xaml.Shapes.Rectangle]
@@ -1347,9 +1347,9 @@
                           Margin=0,0,0,0
                           Height=3
                           FocusVisualSecondaryThickness=1,1,1,1
-                          FocusVisualSecondaryBrush=#99FFFFFF
+                          FocusVisualSecondaryBrush=#B3FFFFFF
                           FocusVisualPrimaryThickness=2,2,2,2
-                          FocusVisualPrimaryBrush=#FF000000
+                          FocusVisualPrimaryBrush=#E4000000
                           Visibility=Visible
                           RenderSize=16,3
                 [Microsoft.UI.Xaml.Controls.ItemsRepeater]
@@ -1357,9 +1357,9 @@
                     Name=NavigationViewItemMenuItemsHost
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
-                    FocusVisualSecondaryBrush=#99FFFFFF
+                    FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
-                    FocusVisualPrimaryBrush=#FF000000
+                    FocusVisualPrimaryBrush=#E4000000
                     Visibility=Collapsed
                     RenderSize=0,0
         [Windows.UI.Xaml.Controls.Border]
@@ -1371,9 +1371,9 @@
             Name=TopNavContentOverlayAreaGrid
             Margin=0,0,0,0
             FocusVisualSecondaryThickness=1,1,1,1
-            FocusVisualSecondaryBrush=#99FFFFFF
+            FocusVisualSecondaryBrush=#B3FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
-            FocusVisualPrimaryBrush=#FF000000
+            FocusVisualPrimaryBrush=#E4000000
             Visibility=Visible
             RenderSize=800,0
       [Windows.UI.Xaml.Controls.SplitView]
@@ -1385,11 +1385,11 @@
           Name=RootSplitView
           Margin=0,0,0,0
           FocusVisualSecondaryThickness=1,1,1,1
-          FocusVisualSecondaryBrush=#99FFFFFF
+          FocusVisualSecondaryBrush=#B3FFFFFF
           FocusVisualPrimaryThickness=2,2,2,2
-          FocusVisualPrimaryBrush=#FF000000
+          FocusVisualPrimaryBrush=#E4000000
           Visibility=Visible
-          RenderSize=800,552
+          RenderSize=800,560
         [Windows.UI.Xaml.Controls.Grid]
             Padding=0,0,0,0
             CornerRadius=0,0,0,0
@@ -1398,11 +1398,11 @@
             Background=[NULL]
             Margin=0,0,0,0
             FocusVisualSecondaryThickness=1,1,1,1
-            FocusVisualSecondaryBrush=#99FFFFFF
+            FocusVisualSecondaryBrush=#B3FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
-            FocusVisualPrimaryBrush=#FF000000
+            FocusVisualPrimaryBrush=#E4000000
             Visibility=Visible
-            RenderSize=800,552
+            RenderSize=800,560
           [Windows.UI.Xaml.Controls.Grid]
               Padding=0,0,0,0
               CornerRadius=0,0,0,0
@@ -1413,9 +1413,9 @@
               Name=PaneRoot
               Margin=0,0,0,0
               FocusVisualSecondaryThickness=1,1,1,1
-              FocusVisualSecondaryBrush=#99FFFFFF
+              FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
-              FocusVisualPrimaryBrush=#FF000000
+              FocusVisualPrimaryBrush=#E4000000
               Visibility=Collapsed
               RenderSize=0,0
             [Windows.UI.Xaml.Controls.Border]
@@ -1426,9 +1426,9 @@
                 Background=[NULL]
                 Margin=0,0,0,0
                 FocusVisualSecondaryThickness=1,1,1,1
-                FocusVisualSecondaryBrush=#99FFFFFF
+                FocusVisualSecondaryBrush=#B3FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
-                FocusVisualPrimaryBrush=#FF000000
+                FocusVisualPrimaryBrush=#E4000000
                 Visibility=Visible
                 RenderSize=0,0
               [Windows.UI.Xaml.Controls.Grid]
@@ -1440,9 +1440,9 @@
                   Name=PaneContentGrid
                   Margin=0,0,0,0
                   FocusVisualSecondaryThickness=1,1,1,1
-                  FocusVisualSecondaryBrush=#99FFFFFF
+                  FocusVisualSecondaryBrush=#B3FFFFFF
                   FocusVisualPrimaryThickness=2,2,2,2
-                  FocusVisualPrimaryBrush=#FF000000
+                  FocusVisualPrimaryBrush=#E4000000
                   Visibility=Collapsed
                   RenderSize=0,0
                 [Windows.UI.Xaml.Controls.Grid]
@@ -1455,9 +1455,9 @@
                     Margin=0,0,0,0
                     Height=0
                     FocusVisualSecondaryThickness=1,1,1,1
-                    FocusVisualSecondaryBrush=#99FFFFFF
+                    FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
-                    FocusVisualPrimaryBrush=#FF000000
+                    FocusVisualPrimaryBrush=#E4000000
                     Visibility=Visible
                     RenderSize=0,0
                 [Windows.UI.Xaml.Controls.Grid]
@@ -1468,9 +1468,9 @@
                     Background=[NULL]
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
-                    FocusVisualSecondaryBrush=#99FFFFFF
+                    FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
-                    FocusVisualPrimaryBrush=#FF000000
+                    FocusVisualPrimaryBrush=#E4000000
                     Visibility=Visible
                     RenderSize=0,0
                   [Windows.UI.Xaml.Controls.ContentControl]
@@ -1482,9 +1482,9 @@
                       Name=PaneHeaderContentBorder
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
                       RenderSize=0,0
                 [Windows.UI.Xaml.Controls.Grid]
@@ -1495,11 +1495,11 @@
                     Background=[NULL]
                     Name=AutoSuggestArea
                     Margin=0,0,0,0
-                    Height=48
+                    Height=40
                     FocusVisualSecondaryThickness=1,1,1,1
-                    FocusVisualSecondaryBrush=#99FFFFFF
+                    FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
-                    FocusVisualPrimaryBrush=#FF000000
+                    FocusVisualPrimaryBrush=#E4000000
                     Visibility=Collapsed
                     RenderSize=0,0
                   [Windows.UI.Xaml.Controls.ContentControl]
@@ -1511,25 +1511,25 @@
                       Name=PaneAutoSuggestBoxPresenter
                       Margin=10,0,16,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
                       RenderSize=0,0
                   [Windows.UI.Xaml.Controls.Button]
                       Padding=8,4,8,4
                       Foreground=#E4000000
-                      BorderThickness=1,1,1,1
+                      BorderThickness=0,0,0,0
                       BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
                       Background=#00FFFFFF
-                      Width=46
+                      Width=38
                       Name=PaneAutoSuggestButton
-                      MinHeight=40
+                      MinHeight=36
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Collapsed
                       RenderSize=0,0
                 [Windows.UI.Xaml.Controls.ContentControl]
@@ -1541,9 +1541,9 @@
                     Name=PaneCustomContentBorder
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
-                    FocusVisualSecondaryBrush=#99FFFFFF
+                    FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
-                    FocusVisualPrimaryBrush=#FF000000
+                    FocusVisualPrimaryBrush=#E4000000
                     Visibility=Visible
                     RenderSize=0,0
                 [Windows.UI.Xaml.Controls.Grid]
@@ -1555,17 +1555,17 @@
                     Name=ItemsContainerGrid
                     Margin=0,0,0,8
                     FocusVisualSecondaryThickness=1,1,1,1
-                    FocusVisualSecondaryBrush=#99FFFFFF
+                    FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
-                    FocusVisualPrimaryBrush=#FF000000
+                    FocusVisualPrimaryBrush=#E4000000
                     Visibility=Visible
                     RenderSize=0,0
                   [Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost]
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
                       RenderSize=0,0
                     [Windows.UI.Xaml.Controls.ScrollViewer]
@@ -1577,9 +1577,9 @@
                         Name=MenuItemsScrollViewer
                         Margin=0,0,0,0
                         FocusVisualSecondaryThickness=1,1,1,1
-                        FocusVisualSecondaryBrush=#99FFFFFF
+                        FocusVisualSecondaryBrush=#B3FFFFFF
                         FocusVisualPrimaryThickness=2,2,2,2
-                        FocusVisualPrimaryBrush=#FF000000
+                        FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
                         RenderSize=0,0
                   [Microsoft.UI.Xaml.Controls.NavigationViewItemSeparator]
@@ -1591,9 +1591,9 @@
                       Name=VisualItemsSeparator
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Collapsed
                       RenderSize=0,0
                   [Windows.UI.Xaml.Controls.ContentControl]
@@ -1605,17 +1605,17 @@
                       Name=FooterContentBorder
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
                       RenderSize=0,0
                   [Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost]
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
                       RenderSize=0,0
                     [Windows.UI.Xaml.Controls.ScrollViewer]
@@ -1627,9 +1627,9 @@
                         Name=FooterItemsScrollViewer
                         Margin=0,0,0,0
                         FocusVisualSecondaryThickness=1,1,1,1
-                        FocusVisualSecondaryBrush=#99FFFFFF
+                        FocusVisualSecondaryBrush=#B3FFFFFF
                         FocusVisualPrimaryThickness=2,2,2,2
-                        FocusVisualPrimaryBrush=#FF000000
+                        FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
                         RenderSize=0,0
           [Windows.UI.Xaml.Controls.Grid]
@@ -1641,11 +1641,11 @@
               Name=ContentRoot
               Margin=0,0,0,0
               FocusVisualSecondaryThickness=1,1,1,1
-              FocusVisualSecondaryBrush=#99FFFFFF
+              FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
-              FocusVisualPrimaryBrush=#FF000000
+              FocusVisualPrimaryBrush=#E4000000
               Visibility=Visible
-              RenderSize=800,552
+              RenderSize=800,560
             [Windows.UI.Xaml.Controls.Border]
                 Padding=0,0,0,0
                 CornerRadius=0,0,0,0
@@ -1654,11 +1654,11 @@
                 Background=[NULL]
                 Margin=0,0,0,0
                 FocusVisualSecondaryThickness=1,1,1,1
-                FocusVisualSecondaryBrush=#99FFFFFF
+                FocusVisualSecondaryBrush=#B3FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
-                FocusVisualPrimaryBrush=#FF000000
+                FocusVisualPrimaryBrush=#E4000000
                 Visibility=Visible
-                RenderSize=800,552
+                RenderSize=800,560
               [Windows.UI.Xaml.Controls.Grid]
                   Padding=0,0,0,0
                   CornerRadius=0,0,0,0
@@ -1668,11 +1668,11 @@
                   Name=ContentGrid
                   Margin=0,0,0,0
                   FocusVisualSecondaryThickness=1,1,1,1
-                  FocusVisualSecondaryBrush=#99FFFFFF
+                  FocusVisualSecondaryBrush=#B3FFFFFF
                   FocusVisualPrimaryThickness=2,2,2,2
-                  FocusVisualPrimaryBrush=#FF000000
+                  FocusVisualPrimaryBrush=#E4000000
                   Visibility=Visible
-                  RenderSize=800,552
+                  RenderSize=800,560
                 [Windows.UI.Xaml.Controls.Grid]
                     Padding=0,0,0,0
                     CornerRadius=0,0,0,0
@@ -1683,9 +1683,9 @@
                     Margin=0,0,0,0
                     Height=0
                     FocusVisualSecondaryThickness=1,1,1,1
-                    FocusVisualSecondaryBrush=#99FFFFFF
+                    FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
-                    FocusVisualPrimaryBrush=#FF000000
+                    FocusVisualPrimaryBrush=#E4000000
                     Visibility=Collapsed
                     RenderSize=0,0
                 [Windows.UI.Xaml.Controls.Grid]
@@ -1698,9 +1698,9 @@
                     Name=ContentLeftPadding
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
-                    FocusVisualSecondaryBrush=#99FFFFFF
+                    FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
-                    FocusVisualPrimaryBrush=#FF000000
+                    FocusVisualPrimaryBrush=#E4000000
                     Visibility=Visible
                     RenderSize=0,50
                 [Windows.UI.Xaml.Controls.ContentControl]
@@ -1713,9 +1713,9 @@
                     MinHeight=34
                     Margin=12,5,0,11
                     FocusVisualSecondaryThickness=1,1,1,1
-                    FocusVisualSecondaryBrush=#99FFFFFF
+                    FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
-                    FocusVisualPrimaryBrush=#FF000000
+                    FocusVisualPrimaryBrush=#E4000000
                     Visibility=Visible
                     RenderSize=788,34
                   [Windows.UI.Xaml.Controls.ContentPresenter]
@@ -1727,9 +1727,9 @@
                       Background=[NULL]
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
                       RenderSize=788,34
                 [Windows.UI.Xaml.Controls.ContentPresenter]
@@ -1741,19 +1741,19 @@
                     Background=[NULL]
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
-                    FocusVisualSecondaryBrush=#99FFFFFF
+                    FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
-                    FocusVisualPrimaryBrush=#FF000000
+                    FocusVisualPrimaryBrush=#E4000000
                     Visibility=Visible
-                    RenderSize=800,502
+                    RenderSize=800,510
                   [Windows.UI.Xaml.Controls.TextBlock]
                       Padding=0,0,0,0
                       Foreground=#E4000000
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
                       RenderSize=128,20
             [Windows.UI.Xaml.Shapes.Rectangle]
@@ -1761,9 +1761,9 @@
                 Name=LightDismissLayer
                 Margin=0,0,0,0
                 FocusVisualSecondaryThickness=1,1,1,1
-                FocusVisualSecondaryBrush=#99FFFFFF
+                FocusVisualSecondaryBrush=#B3FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
-                FocusVisualPrimaryBrush=#FF000000
+                FocusVisualPrimaryBrush=#E4000000
                 Visibility=Collapsed
                 RenderSize=0,0
       [Windows.UI.Xaml.Controls.Grid]
@@ -1776,8 +1776,8 @@
           Name=ShadowCaster
           Margin=0,0,0,0
           FocusVisualSecondaryThickness=1,1,1,1
-          FocusVisualSecondaryBrush=#99FFFFFF
+          FocusVisualSecondaryBrush=#B3FFFFFF
           FocusVisualPrimaryThickness=2,2,2,2
-          FocusVisualPrimaryBrush=#FF000000
+          FocusVisualPrimaryBrush=#E4000000
           Visibility=Visible
           RenderSize=120,600

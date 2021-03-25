@@ -85,7 +85,8 @@
 
     <x:Double x:Key="AppBarThemeMinHeight">64</x:Double>
     <x:Double x:Key="AppBarThemeCompactHeight">48</x:Double>
-    <Thickness x:Key="AppBarEllipsisButtonInnerBorderMargin">0,9,9,9</Thickness>
+    <Thickness x:Key="AppBarEllipsisButtonInnerBorderMargin">2,6,6,6</Thickness>
+    <x:Double x:Key="AppBarMoreButtonColumnMinWidth">6</x:Double>
     
     <Thickness x:Key="CommandBarOverflowPresenterMargin">0,4,0,4</Thickness>
 
@@ -94,7 +95,7 @@
     <Style x:Key="DefaultCommandBarStyle" TargetType="CommandBar">
         <Setter Property="Background" Value="{ThemeResource CommandBarBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource CommandBarForeground}" />
-        <Setter Property="Padding" Value="9,0,0,0" />
+        <Setter Property="Padding" Value="4,0,0,0" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
@@ -814,7 +815,7 @@
                               XYFocusKeyboardNavigation="Enabled">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" MinWidth="{StaticResource AppBarMoreButtonColumnMinWidth}"/>
                             </Grid.ColumnDefinitions>
                             <Grid.RenderTransform>
                                 <TranslateTransform x:Name="ContentTransform" />
