@@ -180,6 +180,9 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
+    <contract7Present:BackgroundSizing x:Key="ToggleButtonCheckedStateBackgroundSizing">OuterBorderEdge</contract7Present:BackgroundSizing>
+
+
     <Style TargetType="ToggleButton" BasedOn="{StaticResource DefaultToggleButtonStyle}" />
 
     <Style x:Key="DefaultToggleButtonStyle" TargetType="ToggleButton">
@@ -275,7 +278,7 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushChecked}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BackgroundSizing">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="OuterBorderEdge" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonCheckedStateBackgroundSizing}" />
                                         </contract7Present:ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -291,7 +294,7 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundCheckedPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BackgroundSizing">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="OuterBorderEdge" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonCheckedStateBackgroundSizing}" />
                                         </contract7Present:ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -307,7 +310,7 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushCheckedPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BackgroundSizing">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="OuterBorderEdge" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonCheckedStateBackgroundSizing}" />
                                         </contract7Present:ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
