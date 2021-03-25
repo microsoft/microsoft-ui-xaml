@@ -21,6 +21,7 @@ using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using Windows.UI.Xaml.Media;
 using Windows.Devices.Input;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests

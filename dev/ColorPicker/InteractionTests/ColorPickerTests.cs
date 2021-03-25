@@ -261,7 +261,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        public class ColorPickerTestSetupHelper : TestSetupHelper, IEventSink
+        public class ColorPickerTestSetupHelper : TestSetupHelper, IDisposable, IEventSink
         {
             private PropertyChangedEventSource redEventSource;
             private PropertyChangedEventSource greenEventSource;
@@ -335,11 +335,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
 
             public override void Dispose()
-            {
-                Dispose(true);
-            }
-
-            protected void Dispose(bool disposing)
             {
                 lock (lockObject)
                 {

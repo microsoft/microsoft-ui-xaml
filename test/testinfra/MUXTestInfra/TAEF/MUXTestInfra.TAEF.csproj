@@ -1,16 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\..\..\SdkVersion.props" />
-  
+
   <PropertyGroup>
-    <TargetFramework>net5.0-windows$(MuxSdkVersion)</TargetFramework>
-    <Platforms>x86;x64;arm;arm64</Platforms>
-    <RuntimeIdentifiers>win-x86;win-x64;win-arm;win-arm64</RuntimeIdentifiers>
-    <!-- Some platforms like ARM can be passed in as Platform="ARM" (upper case), which VS doesn't like in the case of RuntimeIdentifier.
-         We'll explicitly set RuntimeIdentifier values instead of passing in $(Platform) to avoid this. -->
-    <RuntimeIdentifier Condition="'$(Platform)' == 'x86' or '$(Platform)' == 'Win32'">win-x86</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="'$(Platform)' == 'arm'">win-arm</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="'$(Platform)' == 'arm64'">win-arm64</RuntimeIdentifier>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v2.1</TargetFrameworkVersion>
 
     <DefineConstants>$(DefineConstants);USING_TAEF</DefineConstants>
     <DefineConstants Condition="$(SolutionName) == 'MUXControlsInnerLoop'">$(DefineConstants);INNERLOOP_BUILD</DefineConstants>
@@ -30,6 +23,23 @@
     </Reference>
     <Reference Include="Wex.Logger.Interop">
       <HintPath>$(TaefRootDirectory)Wex.Logger.Interop.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Kits\Installed Roots@KitsRoot10)</UniversalCRTSdkDir>
+    <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(MSBuildProgramFiles32)\Windows Kits\10\</UniversalCRTSdkDir>
+    <TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>
+    <WindowsMetadataPath>$(UniversalCRTSdkDir)UnionMetadata\$(TargetPlatformVersion)</WindowsMetadataPath>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.0.4</Version>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <Reference Include="Windows.winmd">
+      <HintPath>$(WindowsMetadataPath)\windows.winmd</HintPath>
+      <IsWinMDFile>true</IsWinMDFile>
     </Reference>
   </ItemGroup>
 
