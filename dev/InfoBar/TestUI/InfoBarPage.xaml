@@ -64,6 +64,8 @@
                         <ComboBoxItem Content="None" />
                         <ComboBoxItem Content="Button" />
                         <ComboBoxItem Content="Hyperlink" />
+                        <ComboBoxItem Content="RightAlignedButton" />
+                        <ComboBoxItem Content="RightAlignedHyperlink" />
                     </ComboBox>
 
                     <Button Content="Set Foreground" Click="SetForegroundClick"/>
