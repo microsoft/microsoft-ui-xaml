@@ -105,16 +105,6 @@
       <SubType>Designer</SubType>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton.xaml">
-      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
-      <Version>RS1</Version>
-      <Type>DefaultStyle</Type>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_v1.xaml">
-      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
-      <Version>RS1</Version>
-      <Type>DefaultStyle</Type>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_rs1_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
