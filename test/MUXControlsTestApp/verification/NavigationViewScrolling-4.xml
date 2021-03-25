@@ -88,7 +88,7 @@
             RenderSize=38,34
           [Windows.UI.Xaml.Controls.Grid]
               Padding=0,0,0,0
-              CornerRadius=8,8,8,8
+              CornerRadius=4,4,4,4
               BorderThickness=0,0,0,0
               BorderBrush=[NULL]
               Background=#00FFFFFF
@@ -185,10 +185,10 @@
         [Windows.UI.Xaml.Controls.Button]
             Padding=4,2,4,2
             Foreground=#E4000000
-            BorderThickness=1,1,1,1
+            BorderThickness=0,0,0,0
             BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
             Background=#00FFFFFF
-            Width=40
+            Width=46
             Name=TogglePaneButton
             MinWidth=38
             MinHeight=34
@@ -198,7 +198,7 @@
             FocusVisualPrimaryThickness=2,2,2,2
             FocusVisualPrimaryBrush=#E4000000
             Visibility=Visible
-            RenderSize=40,38
+            RenderSize=46,38
           [Windows.UI.Xaml.Controls.Grid]
               Padding=0,0,0,0
               CornerRadius=8,8,8,8
@@ -398,7 +398,7 @@
             Background=[NULL]
             Name=TopNavGrid
             Margin=0,0,0,0
-            Height=48
+            Height=40
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#B3FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
@@ -507,7 +507,7 @@
               Background=[NULL]
               Name=TopPaneAutoSuggestArea
               Margin=0,0,0,0
-              Height=48
+              Height=40
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -599,7 +599,7 @@
               CornerRadius=0,0,0,0
               BorderThickness=0,0,0,0
               BorderBrush=[NULL]
-              Background=#FFF3F3F3
+              Background=#00FFFFFF
               Width=120
               Name=PaneRoot
               Margin=0,0,0,0
@@ -677,7 +677,7 @@
                       FocusVisualPrimaryThickness=2,2,2,2
                       FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
-                      RenderSize=73,44
+                      RenderSize=81,44
                     [Windows.UI.Xaml.Controls.ContentPresenter]
                         Foreground=#E4000000
                         Padding=0,0,0,0
@@ -691,7 +691,7 @@
                         FocusVisualPrimaryThickness=2,2,2,2
                         FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
-                        RenderSize=73,44
+                        RenderSize=81,44
                 [Windows.UI.Xaml.Controls.Grid]
                     Padding=0,0,0,0
                     CornerRadius=0,0,0,0
@@ -700,7 +700,7 @@
                     Background=[NULL]
                     Name=AutoSuggestArea
                     Margin=0,0,0,0
-                    Height=48
+                    Height=40
                     FocusVisualSecondaryThickness=1,1,1,1
                     FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
@@ -724,12 +724,12 @@
                   [Windows.UI.Xaml.Controls.Button]
                       Padding=8,4,8,4
                       Foreground=#E4000000
-                      BorderThickness=1,1,1,1
+                      BorderThickness=0,0,0,0
                       BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
                       Background=#00FFFFFF
-                      Width=46
+                      Width=38
                       Name=PaneAutoSuggestButton
-                      MinHeight=40
+                      MinHeight=36
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
                       FocusVisualSecondaryBrush=#B3FFFFFF
