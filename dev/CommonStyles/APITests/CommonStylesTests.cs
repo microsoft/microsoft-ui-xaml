@@ -20,6 +20,7 @@ using XamlControlsResources = Microsoft.UI.Xaml.Controls.XamlControlsResources;
 using Windows.UI.Xaml.Markup;
 using System;
 using Microsoft.UI.Xaml.Controls;
+using System.Text;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -66,7 +67,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(0, resourceDictionaries.MergedDictionaries.Count, "MergedDictionaries is not empty");
             });
 
-            Verify.IsTrue(dictionariesContainSameElements);
+            Verify.IsTrue(dictionariesContainSameElements, "Dictionaries don't contain the same keys");
         }
 
         bool ResourceDictionariesContainSameKeys(ResourceDictionary expectedDictionary, string expectedDictionaryName, ResourceDictionary actualDictionary, string actualDictionaryName)
@@ -125,34 +126,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 }
             });
 
-            Log.Comment("List of resource keys not found:");
+            StringBuilder missingKeysList = new StringBuilder();
 
             bool allBaselineResourceKeysExist = true;
             foreach (var baselineResourceKey in BaselineResources.BaselineResourcesList)
             {
                 if (!actualResourcesKeys.Contains(baselineResourceKey))
                 {
-                    Log.Comment("* " + baselineResourceKey);
+                    missingKeysList.Append(baselineResourceKey + ", ");
                     allBaselineResourceKeysExist = false;
                 }
             }
 
-            if (allBaselineResourceKeysExist)
-            {
-                Log.Comment("None");
-            }
-
-            Verify.IsTrue(allBaselineResourceKeysExist);
-        }
-
-        [TestMethod]
-        public void VerifyMergedDictionariesIsEmpty()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                var resourceDictionary = new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version2 };
-                Verify.AreEqual(0, resourceDictionary.MergedDictionaries.Count, "MergedDictionaries is not empty");
-            });
+            Verify.IsTrue(allBaselineResourceKeysExist, "List of missing resource keys: " + missingKeysList.ToString());
         }
 
         public void DumpThemeResources()
