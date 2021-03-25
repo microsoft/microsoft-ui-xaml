@@ -897,26 +897,30 @@
                                     <RowDefinition />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
-                                <Grid.Clip>
-                                    <RectangleGeometry Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentClipRect}">
-                                        <RectangleGeometry.Transform>
-                                            <TransformGroup>
-                                                <TranslateTransform x:Name="OverflowContentRootClipTransform" />
-                                            </TransformGroup>
-                                        </RectangleGeometry.Transform>
-                                    </RectangleGeometry>
-                                </Grid.Clip>
-                                <CommandBarOverflowPresenter x:Name="SecondaryItemsControl"
-                                    Style="{TemplateBinding CommandBarOverflowPresenterStyle}"
-                                    IsTabStop="False">
-                                    <CommandBarOverflowPresenter.RenderTransform>
-                                        <TranslateTransform x:Name="OverflowContentTransform" />
-                                    </CommandBarOverflowPresenter.RenderTransform>
-                                    <CommandBarOverflowPresenter.Resources>
-                                        <Style TargetType="AppBarButton" BasedOn="{StaticResource AppBarButtonOverflowStyle}" />
-                                        <Style TargetType="AppBarToggleButton" BasedOn="{StaticResource AppBarToggleButtonOverflowStyle}" />
-                                    </CommandBarOverflowPresenter.Resources>
-                                </CommandBarOverflowPresenter>
+                                <Grid x:Name="SecondaryItemsControlShadowWrapper"
+                                      contract7Present:CornerRadius="{ThemeResource OverlayCornerRadius}"
+                                      contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
+                                    <Grid.Clip>
+                                        <RectangleGeometry Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentClipRect}">
+                                            <RectangleGeometry.Transform>
+                                                <TransformGroup>
+                                                    <TranslateTransform x:Name="OverflowContentRootClipTransform" />
+                                                </TransformGroup>
+                                            </RectangleGeometry.Transform>
+                                        </RectangleGeometry>
+                                    </Grid.Clip>
+                                    <CommandBarOverflowPresenter x:Name="SecondaryItemsControl"
+                                        Style="{TemplateBinding CommandBarOverflowPresenterStyle}"
+                                        IsTabStop="False">
+                                        <CommandBarOverflowPresenter.RenderTransform>
+                                            <TranslateTransform x:Name="OverflowContentTransform" />
+                                        </CommandBarOverflowPresenter.RenderTransform>
+                                        <CommandBarOverflowPresenter.Resources>
+                                            <Style TargetType="AppBarButton" BasedOn="{StaticResource AppBarButtonOverflowStyle}" />
+                                            <Style TargetType="AppBarToggleButton" BasedOn="{StaticResource AppBarToggleButtonOverflowStyle}" />
+                                        </CommandBarOverflowPresenter.Resources>
+                                    </CommandBarOverflowPresenter>
+                                </Grid>
                                 <!-- In order to give us extra space in the windowed popup to translate things down,
                                      we add a rectangle to make the HWND taller than it otherwise would be. -->
                                 <Rectangle x:Name="WindowedPopupPadding" Grid.Row="1" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.ContentHeight}" />
