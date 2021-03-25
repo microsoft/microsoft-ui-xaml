@@ -177,7 +177,7 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border
+                            <Border x:Name="ScrollDecreaseButtonContainer"
                                 BorderThickness="{ThemeResource TabViewItemButtonContainerBorderThickness}"
                                 Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
                                 BorderBrush="{ThemeResource TabViewBorderColor}"
@@ -198,7 +198,7 @@
                                 Padding="1,0,0,0"
                                 contract4Present:TabFocusNavigation="Once" />
 
-                            <Border
+                            <Border x:Name="ScrollIncreaseButtonContainer"
                                 BorderThickness="{ThemeResource TabViewItemButtonContainerBorderThickness}"
                                 Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
                                 Grid.Column="2"
@@ -364,9 +364,7 @@
                     <Grid x:Name="LayoutRoot"
                             Padding="{TemplateBinding Padding}">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition x:Name="LeftColumn" Width="Auto"/>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition x:Name="RightColumn" Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <Grid.RenderTransform>
@@ -613,13 +611,11 @@
                         <Border x:Name="TabSeparator"
                             HorizontalAlignment="Right"
                             Width="1"
-                            Grid.Column="1"
                             BorderBrush="{ThemeResource TabViewItemSeparator}"
                             BorderThickness="1"
                             Margin="{ThemeResource TabViewItemSeparatorMargin}"/>
 
                         <Grid x:Name="TabContainer"
-                            Grid.Column="1"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"

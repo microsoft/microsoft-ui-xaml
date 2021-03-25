@@ -167,7 +167,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Scroll buttons should disappear");
                 // Leaving tabstrip with this so the tabs update their width
-                FindElement.ByName<Button>("IsClosableCheckBox").MovePointer(0,0);
+                FindElement.ByName<Button>("IsClosableCheckBox").MovePointer(0, 0);
                 Wait.ForIdle();
                 Verify.IsFalse(AreScrollButtonsVisible(), "Scroll buttons should disappear");
 
@@ -193,11 +193,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             FindElement.ByName<Button>("GetScrollButtonsVisible").InvokeAndWait();
             var scrollButtonsVisible = FindElement.ByName<TextBlock>("ScrollButtonsVisible").DocumentText;
-            if(scrollButtonsVisible == "True")
+            if (scrollButtonsVisible == "True")
             {
                 return true;
             }
-            else if(scrollButtonsVisible == "False")
+            else if (scrollButtonsVisible == "False")
             {
                 return false;
             }
@@ -382,7 +382,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(dropTab);
 
                 Log.Comment("Reordering tabs with drag-drop operation...");
-                InputHelper.DragToTarget(sourceTab, dropTab);
+                InputHelper.DragToTarget(sourceTab, dropTab, -5);
                 Wait.ForIdle();
                 ElementCache.Refresh();
                 Log.Comment("...reordering done. Expecting a TabView.TabItemsChanged event was raised with CollectionChange=ItemInserted and Index=1.");
@@ -494,7 +494,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void CloseButtonOverlayModeTests()
         {
-            using(var setup = new TestSetupHelper("TabView Tests"))
+            using (var setup = new TestSetupHelper("TabView Tests"))
             {
                 ComboBox closeButtonOverlayModeComboBox = FindElement.ByName<ComboBox>("CloseButtonOverlayModeCombobox");
                 closeButtonOverlayModeComboBox.SelectItemByName("OnPointerOver");
@@ -522,7 +522,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 closeUnselectedButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
                 Verify.IsNull(closeUnselectedButton);
                 Verify.IsNotNull(closeSelectedButton);
-               
+
                 // Verifiying "Auto" works correctly
                 closeButtonOverlayModeComboBox.SelectItemByName("Auto");
                 Wait.ForIdle();
@@ -532,7 +532,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(closeUnselectedButton);
                 Verify.IsNotNull(closeSelectedButton);
             }
-        } 
+        }
 
         [TestMethod]
         [TestProperty("Ignore", "True")] // #3956
@@ -719,9 +719,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 CloseTabAndVerifyWidth("Tab 3", 500, "False;False;");
 
-                CloseTabAndVerifyWidth("Tab 5", 401, "False;False;");
+                CloseTabAndVerifyWidth("Tab 5", 405, "False;False;");
 
-                CloseTabAndVerifyWidth("Tab 4", 401, "False;False;");
+                CloseTabAndVerifyWidth("Tab 4", 405, "False;False;");
 
                 Log.Comment("Leaving the pointer exited area");
                 var readTabViewWidthButton = new Button(FindElement.ByName("GetActualWidthButton"));

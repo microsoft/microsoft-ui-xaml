@@ -110,7 +110,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             }
             else
             {
-                Log.Comment("Left mouse button down on {0} at offset ({1}, {2}).", 
+                Log.Comment("Left mouse button down on {0} at offset ({1}, {2}).",
                     obj.GetIdentifier(), offsetX, offsetY);
             }
 
@@ -297,7 +297,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
 
         public static void Pan(UIObject obj, int distance, Direction direction, uint holdDuration = DefaultPanHoldDuration, float panAcceleration = DefaultPanAcceleration, uint dragDuration = DefaultDragDuration, bool waitForIdle = true)
         {
-            Log.Comment("Pan on {0} for {1} pixels in the {2} direction, after holding {3} ms.", 
+            Log.Comment("Pan on {0} for {1} pixels in the {2} direction, after holding {3} ms.",
                 obj.GetIdentifier(), distance, direction, holdDuration);
             Log.Comment("Clickable point of pan object is {0}", obj.GetClickablePoint());
             Log.Comment("Bounding rectangle of object is {0}", obj.BoundingRectangle);
@@ -310,8 +310,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             Log.Comment("Pan on {0}, starting at ({1}, {2}), for {3} pixels in the {4} direction, after holding {5} ms.",
                 obj.GetIdentifier(), start.X, start.Y, distance, direction, holdDuration);
             double directionRadians = DirectionToAngle(direction) * Math.PI / 180d;
-            Point end = new Point()
-            {
+            Point end = new Point() {
                 X = start.X + (int)Math.Round(distance * Math.Cos(directionRadians)),
                 Y = start.Y - (int)Math.Round(distance * Math.Sin(directionRadians))
             };
@@ -358,13 +357,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                 Wait.ForIdle();
             }
         }
-        
-        public static void DragToTarget(UIObject obj, UIObject obj2)
+
+        public static void DragToTarget(UIObject obj, UIObject obj2, int xOffset = 0, int yOffset = 0)
         {
             Point startPoint = obj.GetClickablePoint();
             Log.Comment("Start Point X:{0} Y:{1}", startPoint.X, startPoint.Y);
 
             Point end = obj2.GetClickablePoint();
+            end.X += xOffset;
+            end.Y += yOffset;
             Log.Comment("End Point X:{0} Y:{1}", end.X, end.Y);
 
             uint dragDuration = 2000;
@@ -400,8 +401,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
 
             Log.Comment("Start Point X:{0} Y:{1}", startPoint.X, startPoint.Y);
 
-            Point end = new Point()
-            {
+            Point end = new Point() {
                 X = startPoint.X + (int)Math.Round(distance * Math.Cos(directionRadians)),
                 Y = startPoint.Y - (int)Math.Round(distance * Math.Sin(directionRadians))
             };
@@ -614,7 +614,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                 waiter = colorPickerSlider.GetColorChangedWaiter();
             }
             #endif
-            
+
             return waiter;
         }
 
@@ -633,7 +633,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                 scrollItem.ScrollIntoView();
                 successfullyScrolled = true;
             }
-            
+
             if (!successfullyScrolled)
             {
                 Log.Comment("Using ScrollItem UIA pattern to scroll");

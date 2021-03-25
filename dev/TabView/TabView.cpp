@@ -902,7 +902,7 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths,bool fillAllAvailableSpace
                     // Size tab column to needed size
                     tabColumn.MaxWidth(availableWidth);
                     auto requiredWidth = tabWidth * TabItems().Size();
-                    if (requiredWidth >= availableWidth)
+                    if (requiredWidth > availableWidth - (padding.Left + padding.Right))
                     {
                         tabColumn.Width(winrt::GridLengthHelper::FromPixels(availableWidth));
                         if (auto&& listview = m_listView.get())
