@@ -13,10 +13,20 @@
     <muxc:NavigationView
         x:Name="NavView"
         AutomationProperties.Name="NavView"
-        PaneTitle="NavView PaneFooter Test">
+        PaneTitle="NavView PaneFooter Test"
+        PaneDisplayMode="Top"
+        IsSettingsVisible="False"
+        >
 
         <StackPanel>
             <Button x:Name="FlipOrientation" AutomationProperties.Name="FlipOrientationButton" Content="Flip Orientation" Margin="0,0,2,0" Click="FlipOrientation_Click"/>
+
+            <ComboBox x:Name="CompactPaneLength" Header="Compact Pane Length" SelectionChanged="CompactPaneLength_SelectionChanged"  Margin="5">
+                <ComboBoxItem Content="0" Tag="0"/>
+                <ComboBoxItem Content="40" Tag="40"/>
+                <ComboBoxItem Content="48" Tag="48"/>
+                <ComboBoxItem Content="96" Tag="96"/>
+            </ComboBox>
         </StackPanel>
 
         <muxc:NavigationView.AutoSuggestBox>

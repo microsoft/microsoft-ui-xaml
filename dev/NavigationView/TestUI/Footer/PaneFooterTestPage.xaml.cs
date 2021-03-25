@@ -1,4 +1,5 @@
-﻿using Windows.UI.Xaml;
+﻿using System;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
@@ -18,6 +19,12 @@ namespace MUXControlsTestApp
         private void FlipOrientation_Click(object sender, RoutedEventArgs e)
         {
             NavView.PaneDisplayMode = NavView.PaneDisplayMode == NavigationViewPaneDisplayMode.Top ? NavigationViewPaneDisplayMode.Auto : NavigationViewPaneDisplayMode.Top;
+        }
+
+        private void CompactPaneLength_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var tag = Convert.ToDouble(((sender as ComboBox).SelectedItem as ComboBoxItem).Tag);
+            NavView.CompactPaneLength = tag;
         }
     }
 }

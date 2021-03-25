@@ -228,8 +228,15 @@ Nullam egestas, orci sed molestie aliquet, diam ex euismod risus, ac dapibus qua
 
             <muxcontrols:NavigationView.PaneFooter>
                 <Grid Background="Plum">
-                    <Button x:Name="FooterButton" AutomationProperties.Name="FooterButton" Content="Footer Button" Margin="5"/>
+                    <StackPanel>
+                        <Button x:Name="FooterButton" AutomationProperties.Name="FooterButton" Content="Footer Button" Margin="5"/>
+                        <muxcontrols:NavigationViewItem x:Name="PaneFooterNavigationViewItem"
+                                                    AutomationProperties.Name="PaneFooterNavigationViewItem"
+                                                    Content="NVI"
+                                                    Icon="Accept"/>
+                    </StackPanel>
                 </Grid>
+
             </muxcontrols:NavigationView.PaneFooter>
         </muxcontrols:NavigationView>
     </Grid>
