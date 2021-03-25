@@ -1,19 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NumberBox.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NumberBox.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NumberBoxAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NumberBoxParser.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="$(MSBuildThisFileDirectory)NumberBox.idl" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)NumberBox_themeresources.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)NumberBox.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)NumberBox_v1.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)NumberBox_themeresources_v1.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)NumberBox.h" />
@@ -21,6 +15,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)NumberBoxParser.h" />
   </ItemGroup>
   <ItemGroup>
-    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
+    <Midl Include="$(MSBuildThisFileDirectory)NumberBox.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)NumberBox.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)NumberBox_v1.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)NumberBox_themeresources.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)NumberBox_themeresources_v1.xaml" />
   </ItemGroup>
 </Project>

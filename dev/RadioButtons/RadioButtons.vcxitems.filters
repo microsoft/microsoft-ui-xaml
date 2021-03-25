@@ -1,31 +1,31 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\RadioButtons.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtons.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ColumnMajorUniformToLargestGridLayout.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ColumnMajorUniformToLargestGridLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtonsElementFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\RadioButtons.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtons.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtonsTestHooks.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtons.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ColumnMajorUniformToLargestGridLayout.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ColumnMajorUniformToLargestGridLayout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtonsElementFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtons.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtonsTestHooks.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)RadioButton.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)RadioButtons.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)RadioButtons_themeresources.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)RadioButtons_v1.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)RadioButtons_themeresources_v1.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)RadioButton_v1.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)RadioButtons.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)RadioButtonsPrimitives.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)RadioButtonsTestHooks.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)RadioButtons.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)RadioButtons_v1.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)RadioButtons_themeresources.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)RadioButtons_themeresources_v1.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)RadioButton.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)RadioButton_v1.xaml" />
   </ItemGroup>
 </Project>
