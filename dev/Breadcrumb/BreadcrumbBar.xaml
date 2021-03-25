@@ -18,19 +18,21 @@
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="FontSize" Value="{ThemeResource BreadcrumbBarItemThemeFontSize}"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-        <Setter Property="FocusVisualMargin" Value="-3" />
+        <Setter Property="FocusVisualMargin" Value="1" />
         <Setter Property="IsTabStop" Value="True"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:BreadcrumbBarItem">
                     <Grid x:Name="PART_LayoutRoot"
-                          contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                          contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
+                          Margin="{StaticResource BreadcrumbBarItemDefaultMargin}"
+                          Padding="{StaticResource BreadcrumbBarItemDefaultPadding}"
+                          contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ItemTypeStates">
-                                <VisualState x:Name="Inline"/>
+                                <VisualState x:Name="Inline" />
+
                                 <VisualState x:Name="EllipsisDropDown">
                                     <VisualState.Setters>
                                         <Setter Target="PART_ItemButton.Visibility" Value="Collapsed"/>
@@ -98,6 +100,7 @@
                                         <Setter Target="PART_LastItemContentPresenter.Visibility" Value="Visible"/>
                                         <Setter Target="PART_SeparatorColumnDefinition.Width" Value="0px"/>
                                         <Setter Target="PART_ChevronColumnDefinition.Width" Value="0px" />
+                                        <Setter Target="PART_LayoutRoot.Margin" Value="{StaticResource BreadcrumbBarItemLastItemMargin}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -152,8 +155,8 @@
                                                                       VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
                                                                       IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
                                                                       IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
-                                                                      ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
                                                                       Content="{TemplateBinding Content}"
+                                                                      ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
                                                                       AutomationProperties.AccessibilityView="Raw" />
                                                         <Border x:Name="FlyoutPresenterBorder"
                                                                 BorderBrush="{TemplateBinding BorderBrush}"
@@ -356,8 +359,8 @@
                             ContentTemplate="{TemplateBinding ContentTemplate}"
                             ContentTransitions="{TemplateBinding ContentTransitions}"
                             HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>                       
+                            HorizontalContentAlignment="Stretch"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
