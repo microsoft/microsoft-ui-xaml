@@ -182,7 +182,6 @@
 
     <contract7Present:BackgroundSizing x:Key="ToggleButtonCheckedStateBackgroundSizing">OuterBorderEdge</contract7Present:BackgroundSizing>
 
-
     <Style TargetType="ToggleButton" BasedOn="{StaticResource DefaultToggleButtonStyle}" />
 
     <Style x:Key="DefaultToggleButtonStyle" TargetType="ToggleButton">
