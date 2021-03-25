@@ -146,28 +146,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyMergedDictionariesIsEmpty()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var resourceDictionary = new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version2 };
+                Verify.AreEqual(0, resourceDictionary.MergedDictionaries.Count, "MergedDictionaries is not empty");
+            });
+        }
+
         public void DumpThemeResources()
         {
-            var rd = new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version2 };
-            Log.Comment("ThemeDictionaries");
-            foreach (var key in rd.ThemeDictionaries.Keys)
+            RunOnUIThread.Execute(() =>
             {
-                Log.Comment(key.ToString());
-                var themeDictionary = rd.ThemeDictionaries[key] as ResourceDictionary;
-                foreach (var entry in themeDictionary)
+                var resourceDictionary = new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version2 };
+                
+                Log.Comment("ThemeDictionaries");
+                foreach (var key in resourceDictionary.ThemeDictionaries.Keys)
                 {
-                    Log.Comment(entry.ToString());
+                    Log.Comment("* " + key.ToString());
+
+                    var themeDictionary = resourceDictionary.ThemeDictionaries[key] as ResourceDictionary;
+                    foreach (var entry in themeDictionary)
+                    {
+                        Log.Comment("\t*" + entry.ToString());
+                    }
                 }
-            }
 
-            Verify.AreEqual(0, rd.MergedDictionaries.Count, "MergedDictionaries is not empty");
-
-
-            foreach (var entry in rd)
-            {
-                Log.Comment(entry.ToString());
-            }
-
+                Log.Comment("Entries in Resource Dictionary");
+                foreach (var entry in resourceDictionary)
+                {
+                    Log.Comment("* " + entry.ToString());
+                }
+            });
         }
 
         [TestMethod]
