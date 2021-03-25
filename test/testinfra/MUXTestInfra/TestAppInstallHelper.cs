@@ -172,12 +172,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         public static void EnableSideloadingApps()
         {
-            RegistryKey rk = Registry.LocalMachine.OpenSubKey(@"Software\Policies\Microsoft\Windows", true);
-            RegistryKey subkey = rk.OpenSubKey("AppX", true) ?? rk.CreateSubKey("AppX");
-            subkey.SetValue("AllowAllTrustedApps", 1, RegistryValueKind.DWord);
-            subkey.Flush();
-            subkey.Dispose();
-            Log.Comment("Sideloading is enabled");
+            RegistryKey registryKeyReadOnly = Registry.LocalMachine.OpenSubKey(@"Software\Policies\Microsoft\Windows", writable: false);
+            RegistryKey subkeyReadOnly = registryKeyReadOnly.OpenSubKey("AppX", writable: false);
+
+            if (subkeyReadOnly == null || (int)subkeyReadOnly.GetValue("AllowAllTrustedApps") != 1)
+            {
+                Log.Comment("Enabling sideloading...");
+                RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(@"Software\Policies\Microsoft\Windows", writable: true);
+                RegistryKey subkey = registryKey.OpenSubKey("AppX", writable: true) ?? registryKey.CreateSubKey("AppX");
+                subkey.SetValue("AllowAllTrustedApps", 1, RegistryValueKind.DWord);
+                subkey.Flush();
+                subkey.Dispose();
+            }
+
+            Log.Comment("Sideloading is enabled.");
         }
     }
 }
