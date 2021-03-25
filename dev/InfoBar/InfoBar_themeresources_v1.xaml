@@ -110,7 +110,7 @@
 
     <Symbol x:Key="InfoBarCloseButtonSymbol">Cancel</Symbol>
 
-    <Style TargetType="local:InfoBar">
+    <Style x:Key="DefaultInfoBarStyle" TargetType="local:InfoBar">
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="CloseButtonStyle" Value="{StaticResource InfoBarCloseButtonStyle}" />
         <Setter Property="Background" Value="Transparent" />
