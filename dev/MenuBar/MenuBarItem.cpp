@@ -327,7 +327,11 @@ void MenuBarItem::UpdateVisualStates()
 {
     if (auto button = m_button.get())
     {
-        if (button.IsPressed())
+        if (m_isFlyoutOpen)
+        {
+            winrt::VisualStateManager::GoToState(*this, L"Selected", false);
+        }
+        else if (button.IsPressed())
         {
             winrt::VisualStateManager::GoToState(*this, L"Pressed", false);
         }
@@ -337,14 +341,7 @@ void MenuBarItem::UpdateVisualStates()
         }
         else
         {
-            if (m_isFlyoutOpen)
-            {
-                winrt::VisualStateManager::GoToState(*this, L"Selected", false);
-            }
-            else
-            {
-                winrt::VisualStateManager::GoToState(*this, L"Normal", false);
-            }
+            winrt::VisualStateManager::GoToState(*this, L"Normal", false);
         }
     }
 }
