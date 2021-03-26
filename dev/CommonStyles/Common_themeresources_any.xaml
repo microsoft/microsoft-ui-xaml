@@ -62,6 +62,8 @@
             <Color x:Key="ControlOnImageFillColorDisabled">#1E1E1E</Color>
 
             <Color x:Key="AccentAAFillColorDisabled">#28FFFFFF</Color>
+            <!-- ^^^ Deprecated -->
+            <Color x:Key="AccentFillColorDisabled">#28FFFFFF</Color>
 
             <Color x:Key="ControlStrokeColorDefault">#12FFFFFF</Color>
             <Color x:Key="ControlStrokeColorSecondary">#18FFFFFF</Color>
@@ -182,7 +184,7 @@
             <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="{ThemeResource SystemAccentColorLight2}" />
             <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="{ThemeResource SystemAccentColorLight3}" />
             <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="{ThemeResource SystemAccentColorLight1}" />
-            <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="{StaticResource AccentAAFillColorDisabled}" />
+            <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="{StaticResource AccentFillColorDisabled}" />
 
             <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="{StaticResource ControlStrokeColorDefault}" />
             <SolidColorBrush x:Key="ControlStrokeColorSecondaryBrush" Color="{StaticResource ControlStrokeColorSecondary}" />
@@ -321,6 +323,8 @@
             <Color x:Key="ControlOnImageFillColorDisabled">#00FFFFFF</Color>
 
             <Color x:Key="AccentAAFillColorDisabled">#37000000</Color>
+            <!-- ^^^ Deprecated -->
+            <Color x:Key="AccentFillColorDisabled">#37000000</Color>
 
             <Color x:Key="ControlStrokeColorDefault">#0F000000</Color>
             <Color x:Key="ControlStrokeColorSecondary">#29000000</Color>
@@ -441,7 +445,7 @@
             <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="{ThemeResource SystemAccentColorDark1}" />
             <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="{ThemeResource SystemAccentColorDark2}" />
             <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="{ThemeResource SystemAccentColor}" />
-            <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="{StaticResource AccentAAFillColorDisabled}" />
+            <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="{StaticResource AccentFillColorDisabled}" />
 
             <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="{StaticResource ControlStrokeColorDefault}" />
             <SolidColorBrush x:Key="ControlStrokeColorSecondaryBrush" Color="{StaticResource ControlStrokeColorSecondary}" />
