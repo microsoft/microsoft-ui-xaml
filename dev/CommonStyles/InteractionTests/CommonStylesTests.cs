@@ -160,9 +160,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 var verticalSupport = FindElement.ByName("VerticalInkToolbar");
                 Verify.IsNotNull(verticalSupport, "Verify InkToolbar page doesn't crash for vertical support test");
-
-                DropDownButton flyoutButton = FindElement.ByName<DropDownButton>("InkToolbar");
-                Verify.IsNotNull(flyoutButton, "Verify InkToolbar page doesn't crash for opening flyout test");
             }
         }
     }
