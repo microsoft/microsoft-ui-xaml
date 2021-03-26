@@ -360,17 +360,7 @@
                                 </VisualState>
 
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="CheckStates">
-                                <VisualState x:Name="Unchecked" />
-                                <VisualState x:Name="Indeterminate" />
 
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="FocusStates">
-                                <VisualState x:Name="Focused" />
-                                <VisualState x:Name="Unfocused" />
-                                <VisualState x:Name="PointerFocused" />
-
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="GlyphVisualStates">
                                 <VisualState x:Name="ShowExtensionGlyph">
                                     <VisualState.Setters>
@@ -588,17 +578,7 @@
                                 </VisualState>
 
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="CheckStates">
-                                <VisualState x:Name="Unchecked" />
-                                <VisualState x:Name="Indeterminate" />
 
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="FocusStates">
-                                <VisualState x:Name="Focused" />
-                                <VisualState x:Name="Unfocused" />
-                                <VisualState x:Name="PointerFocused" />
-
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="GlyphVisualStates">
                                 <VisualState x:Name="ShowExtensionGlyph">
                                     <VisualState.Setters>
@@ -815,17 +795,7 @@
                                 </VisualState>
 
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="CheckStates">
-                                <VisualState x:Name="Unchecked" />
-                                <VisualState x:Name="Indeterminate" />
 
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="FocusStates">
-                                <VisualState x:Name="Focused" />
-                                <VisualState x:Name="Unfocused" />
-                                <VisualState x:Name="PointerFocused" />
-
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="GlyphVisualStates">
                                 <VisualState x:Name="ShowExtensionGlyph">
                                     <VisualState.Setters>
@@ -1037,17 +1007,7 @@
                                 </VisualState>
 
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="CheckStates">
-                                <VisualState x:Name="Unchecked" />
-                                <VisualState x:Name="Indeterminate" />
 
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="FocusStates">
-                                <VisualState x:Name="Focused" />
-                                <VisualState x:Name="Unfocused" />
-                                <VisualState x:Name="PointerFocused" />
-
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="GlyphVisualStates">
                                 <VisualState x:Name="ShowExtensionGlyph">
                                     <VisualState.Setters>
@@ -1461,17 +1421,7 @@
                                 </VisualState>
 
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="CheckStates">
-                                <VisualState x:Name="Unchecked" />
-                                <VisualState x:Name="Indeterminate" />
 
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="FocusStates">
-                                <VisualState x:Name="Focused" />
-                                <VisualState x:Name="Unfocused" />
-                                <VisualState x:Name="PointerFocused" />
-
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="GlyphVisualStates">
                                 <VisualState x:Name="ShowExtensionGlyph">
                                     <VisualState.Setters>
@@ -1620,17 +1570,7 @@
                                 </VisualState>
 
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="CheckStates">
-                                <VisualState x:Name="Unchecked" />
-                                <VisualState x:Name="Indeterminate" />
 
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="FocusStates">
-                                <VisualState x:Name="Focused" />
-                                <VisualState x:Name="Unfocused" />
-                                <VisualState x:Name="PointerFocused" />
-
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="GlyphVisualStates">
                                 <VisualState x:Name="ShowExtensionGlyph">
                                     <VisualState.Setters>
@@ -1808,17 +1748,7 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="CheckStates">
-                                <VisualState x:Name="Unchecked" />
-                                <VisualState x:Name="Indeterminate" />
 
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="FocusStates">
-                                <VisualState x:Name="Focused" />
-                                <VisualState x:Name="Unfocused" />
-                                <VisualState x:Name="PointerFocused" />
-
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="FlowDirectionStates">
                                 <VisualState x:Name="LeftToRight" />
                                 <VisualState x:Name="RightToLeft">
@@ -1908,17 +1838,7 @@
                                 </VisualState>
 
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="CheckStates">
-                                <VisualState x:Name="Unchecked" />
-                                <VisualState x:Name="Indeterminate" />
 
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="FocusStates">
-                                <VisualState x:Name="Focused" />
-                                <VisualState x:Name="Unfocused" />
-                                <VisualState x:Name="PointerFocused" />
-
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="FlowDirectionStates">
                                 <VisualState x:Name="LeftToRight" />
                                 <VisualState x:Name="RightToLeft" />
@@ -2090,11 +2010,6 @@
                                     </VisualState.Setters>
                                 </VisualState>
 
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="CheckStates">
-                                <VisualState x:Name="Unchecked" />
-                                <VisualState x:Name="Indeterminate" />
-
                                 <VisualState x:Name="CheckedPointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPointerOver}" />
@@ -2117,12 +2032,7 @@
                                 </VisualState>
 
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="FocusStates">
-                                <VisualState x:Name="Focused" />
-                                <VisualState x:Name="Unfocused" />
-                                <VisualState x:Name="PointerFocused" />
 
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="GlyphVisualStates">
                                 <VisualState x:Name="ShowExtensionGlyph">
                                     <VisualState.Setters>
