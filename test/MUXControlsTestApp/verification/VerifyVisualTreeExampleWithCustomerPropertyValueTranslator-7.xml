@@ -13,9 +13,9 @@
     Margin=MyValue0,0,0,0
     Height=MyValue400
     FocusVisualSecondaryThickness=MyValue1,1,1,1
-    FocusVisualSecondaryBrush=MyValue#99FFFFFF
+    FocusVisualSecondaryBrush=MyValue#B3FFFFFF
     FocusVisualPrimaryThickness=MyValue2,2,2,2
-    FocusVisualPrimaryBrush=MyValue#FF000000
+    FocusVisualPrimaryBrush=MyValue#E4000000
     Visibility=MyValueVisible
     RenderSize=MyValue400,400
   [Windows.UI.Xaml.Controls.TextBlock]
@@ -30,8 +30,8 @@
       Margin=MyValue0,0,0,0
       Height=MyValueNaN
       FocusVisualSecondaryThickness=MyValue1,1,1,1
-      FocusVisualSecondaryBrush=MyValue#99FFFFFF
+      FocusVisualSecondaryBrush=MyValue#B3FFFFFF
       FocusVisualPrimaryThickness=MyValue2,2,2,2
-      FocusVisualPrimaryBrush=MyValue#FF000000
+      FocusVisualPrimaryBrush=MyValue#E4000000
       Visibility=MyValueVisible
       RenderSize=MyValue400,400
