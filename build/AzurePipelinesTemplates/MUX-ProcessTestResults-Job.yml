@@ -16,9 +16,9 @@ jobs:
     helixOutputFolder: $(Build.SourcesDirectory)\HelixOutput
     muxTestInfraHelixVersion: 0.0.2.3
     helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.MUXTestInfra.Helix.$(muxTestInfraHelixVersion)\scripts\pipeline
-    - ${{if eq(parameters.pgoArtifact, '') }}:
+    ${{if eq(parameters.pgoArtifact, '') }}:
       processHelixFilesExtraArgs: ''
-    - ${{if ne(parameters.pgoArtifact, '') }}:
+    ${{if ne(parameters.pgoArtifact, '') }}:
       processHelixFilesExtraArgs: -ProcessAllJobs
 
   steps:
