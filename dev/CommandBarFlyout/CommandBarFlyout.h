@@ -13,6 +13,9 @@ public:
     CommandBarFlyout();
     ~CommandBarFlyout();
 
+    bool AlwaysExpanded() { return m_alwaysExpanded; }
+    void AlwaysExpanded(bool value) { m_alwaysExpanded = value; }
+
     winrt::IObservableVector<winrt::ICommandBarElement> PrimaryCommands();
     winrt::IObservableVector<winrt::ICommandBarElement> SecondaryCommands();
 
@@ -24,6 +27,8 @@ protected:
 
 private:
     void SetSecondaryCommandsToCloseWhenExecuted();
+
+    bool m_alwaysExpanded;
 
     winrt::IObservableVector<winrt::ICommandBarElement> m_primaryCommands{ nullptr };
     winrt::IObservableVector<winrt::ICommandBarElement> m_secondaryCommands{ nullptr };

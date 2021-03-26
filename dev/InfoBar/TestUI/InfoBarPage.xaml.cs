@@ -72,6 +72,21 @@ namespace MUXControlsTestApp
                 link.Content = "Informational link";
                 TestInfoBar.ActionButton = link;
             }
+            else if (ActionButtonComboBox.SelectedIndex == 3)
+            {
+                var button = new Button();
+                button.Content = "Action";
+                button.HorizontalAlignment = HorizontalAlignment.Right;
+                TestInfoBar.ActionButton = button;
+            }
+            else if (ActionButtonComboBox.SelectedIndex == 4)
+            {
+                var link = new HyperlinkButton();
+                link.NavigateUri = new Uri("http://www.microsoft.com/");
+                link.Content = "Informational link";
+                link.HorizontalAlignment = HorizontalAlignment.Right;
+                TestInfoBar.ActionButton = link;
+            }
         }
 
         private void IconComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
