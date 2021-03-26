@@ -1142,9 +1142,6 @@
                                     </VisualState.Setters>
                                 </VisualState>
 
-                                <VisualState x:Name="Unchecked" />
-                                <VisualState x:Name="Indeterminate" />
-
                                 <VisualState x:Name="Checked">
                                     <VisualState.Setters>
                                         <Setter Target="Border.Background" Value="{ThemeResource InkToolbarFlyoutItemSelectedBackgroundThemeBrush}" />
@@ -1174,12 +1171,6 @@
                                         <Setter Target="CurrentSelectionIcon.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
-
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="FocusStates">
-                                <VisualState x:Name="Focused" />
-                                <VisualState x:Name="Unfocused" />
-                                <VisualState x:Name="PointerFocused" />
 
                             </VisualStateGroup>
 
