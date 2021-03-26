@@ -1138,7 +1138,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="Border.Background" Value="{ThemeResource ButtonBackgroundDisabled}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
-                                        <Setter Target="CurrentSelectionIcon.Opacity" Value="1" />
+                                        <Setter Target="CurrentSelectionIcon.Opacity" Value="0" />
                                     </VisualState.Setters>
                                 </VisualState>
 
