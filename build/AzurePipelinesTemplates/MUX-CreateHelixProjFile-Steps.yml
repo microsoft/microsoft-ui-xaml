@@ -12,4 +12,4 @@ steps:
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
-      arguments: -TestFilePattern '${{ parameters.testFilePattern }}' -TestBinaryDirectoryPath '${{ parameters.testBinaryDirectoryPath }}' -OutputProjFile '$(Build.ArtifactStagingDirectory)\${{ parameters.outputProjFileName }}' -TaefQuery "${{ parameters.taefQuery }}"
+      arguments: -TestFilePattern '${{ parameters.testFilePattern }}' -TestBinaryDirectoryPath '${{ parameters.testBinaryDirectoryPath }}' -OutputProjFile '$(Build.ArtifactStagingDirectory)\${{ parameters.outputProjFileName }}' -TaefQuery "${{ parameters.taefQuery }}" -TestNamePrefix $(buildConfiguration).$(buildPlatform)

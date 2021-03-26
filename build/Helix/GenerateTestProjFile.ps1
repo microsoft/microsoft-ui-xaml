@@ -9,6 +9,8 @@ Param(
     [Parameter(Mandatory = $true)] 
     [string]$OutputProjFile,
 
+    [string]$TestNamePrefix,
+
     [string]$TaefQuery
 )
 
@@ -22,4 +24,5 @@ $pipelinesScriptsDir = Join-Path $packagesDir "Microsoft.Internal.MUXTestInfra.H
     -TestBinaryDirectoryPath $TestBinaryDirectoryPath `
     -OutputProjFile $OutputProjFile `
     -TaefBaseQuery $TaefQuery `
-    -TestTimeout "00:30:00" 
+    -TestTimeout "00:30:00" `
+    -TestNamePrefix $TestNamePrefix
