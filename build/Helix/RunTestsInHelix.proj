@@ -4,7 +4,7 @@
     <EnableXUnitReporter>true</EnableXUnitReporter>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
-    <HelixPreCommands>$(HelixPreCommands);set testbuildplatform=$(Platform);set rerunPassesRequiredToAvoidFailure=$(rerunPassesRequiredToAvoidFailure)</HelixPreCommands>
+    <HelixPreCommands>$(HelixPreCommands);set testnameprefix=$(Configuration).$(Platform);set testbuildplatform=$(Platform);set rerunPassesRequiredToAvoidFailure=$(rerunPassesRequiredToAvoidFailure)</HelixPreCommands>
   </PropertyGroup>
 
   <ItemGroup>

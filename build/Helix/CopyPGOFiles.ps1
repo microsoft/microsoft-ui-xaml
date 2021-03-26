@@ -19,6 +19,6 @@ foreach($pgcFile in $pgcFiles)
     {
         New-Item $fullPath -ItemType Directory
     }
-    Write-Host "Copy-Item $pgcFile.FullName $destination"
+    Write-Host "Copy $($pgcFile.FullName) to $destination"
     Copy-Item $pgcFile.FullName $destination
 }
