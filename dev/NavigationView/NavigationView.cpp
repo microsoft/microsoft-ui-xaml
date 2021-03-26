@@ -4758,14 +4758,6 @@ void NavigationView::SetDropShadow()
     {
         if (const auto shadowCaster = m_shadowCaster.get())
         {
-            const auto rootSplitView = m_rootSplitView.get();
-            const auto rootSplitViewActualWidth = rootSplitView.ActualWidth();
-
-            if (const auto shadowCasterEaseInStoryboard = m_shadowCasterEaseInStoryboard.get())
-            {
-                shadowCasterEaseInStoryboard.Begin();
-            }
-
             if (winrt::IUIElement10 shadowCaster_uiElement10 = shadowCaster)
             {
                 shadowCaster_uiElement10.Shadow(winrt::ThemeShadow{});
@@ -4776,27 +4768,14 @@ void NavigationView::SetDropShadow()
 
 void NavigationView::UnsetDropShadow()
 {
-    const auto shadowCaster = m_shadowCaster.get();
-
-    if (const auto shadowCasterEaseOutStoryboard = m_shadowCasterEaseOutStoryboard.get())
+    if (const auto shadowCaster = m_shadowCaster.get())
     {
-        shadowCasterEaseOutStoryboard.Begin();
-
-        m_shadowCasterEaseOutStoryboardRevoker =
-            shadowCasterEaseOutStoryboard.Completed(winrt::auto_revoke,
-            {
-                [this, shadowCaster](auto const&, auto const&) { ShadowCasterEaseOutStoryboard_Completed(shadowCaster); }
-            });
-    }
-}
-
-void NavigationView::ShadowCasterEaseOutStoryboard_Completed(const winrt::Grid& shadowCaster)
-{
-    if (winrt::IUIElement10 shadowCaster_uiElement10 = shadowCaster)
-    {
-        if (shadowCaster_uiElement10.Shadow())
+        if (winrt::IUIElement10 shadowCaster_uiElement10 = shadowCaster)
         {
-            shadowCaster_uiElement10.Shadow(nullptr);
+            if (shadowCaster_uiElement10.Shadow())
+            {
+                shadowCaster_uiElement10.Shadow(nullptr);
+            }
         }
     }
 }
