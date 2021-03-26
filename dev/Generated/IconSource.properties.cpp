@@ -31,13 +31,21 @@ void IconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::IconSource>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Brush>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnForegroundPropertyChanged));
     }
 }
 
 void IconSourceProperties::ClearProperties()
 {
     s_ForegroundProperty = nullptr;
+}
+
+void IconSourceProperties::OnForegroundPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::IconSource>();
+    winrt::get_self<IconSource>(owner)->OnPropertyChanged(args);
 }
 
 void IconSourceProperties::Foreground(winrt::Brush const& value)

@@ -92,7 +92,6 @@
             <Color x:Key="SolidBackgroundFillColorTertiary">#282828</Color>
             <Color x:Key="SolidBackgroundFillColorQuarternary">#2C2C2C</Color>
 
-            <Color x:Key="SystemFillColorAttention">#50C0FF</Color>
             <Color x:Key="SystemFillColorSuccess">#6CCB5F</Color>
             <Color x:Key="SystemFillColorCaution">#FCE100</Color>
             <Color x:Key="SystemFillColorCritical">#FF99A4</Color>
@@ -195,7 +194,7 @@
             <SolidColorBrush x:Key="SolidBackgroundFillColorTertiaryBrush" Color="{StaticResource SolidBackgroundFillColorTertiary}" />
             <SolidColorBrush x:Key="SolidBackgroundFillColorQuarternaryBrush" Color="{StaticResource SolidBackgroundFillColorQuarternary}" />
 
-            <SolidColorBrush x:Key="SystemFillColorAttentionBrush" Color="{StaticResource SystemFillColorAttention}" />
+            <SolidColorBrush x:Key="SystemFillColorAttentionBrush" Color="{ThemeResource SystemAccentColorLight2}" />
             <SolidColorBrush x:Key="SystemFillColorSuccessBrush" Color="{StaticResource SystemFillColorSuccess}" />
             <SolidColorBrush x:Key="SystemFillColorCautionBrush" Color="{StaticResource SystemFillColorCaution}" />
             <SolidColorBrush x:Key="SystemFillColorCriticalBrush" Color="{StaticResource SystemFillColorCritical}" />
@@ -318,7 +317,6 @@
             <Color x:Key="SolidBackgroundFillColorTertiary">#F9F9F9</Color>
             <Color x:Key="SolidBackgroundFillColorQuarternary">#FFFFFF</Color>
 
-            <Color x:Key="SystemFillColorAttention">#0070CB</Color>
             <Color x:Key="SystemFillColorSuccess">#0F7B0F</Color>
             <Color x:Key="SystemFillColorCaution">#9D5D00</Color>
             <Color x:Key="SystemFillColorCritical">#C42B1C</Color>
@@ -421,7 +419,7 @@
             <SolidColorBrush x:Key="SolidBackgroundFillColorTertiaryBrush" Color="{StaticResource SolidBackgroundFillColorTertiary}" />
             <SolidColorBrush x:Key="SolidBackgroundFillColorQuarternaryBrush" Color="{StaticResource SolidBackgroundFillColorQuarternary}" />
 
-            <SolidColorBrush x:Key="SystemFillColorAttentionBrush" Color="{StaticResource SystemFillColorAttention}" />
+            <SolidColorBrush x:Key="SystemFillColorAttentionBrush" Color="{ThemeResource SystemAccentColor}" />
             <SolidColorBrush x:Key="SystemFillColorSuccessBrush" Color="{StaticResource SystemFillColorSuccess}" />
             <SolidColorBrush x:Key="SystemFillColorCautionBrush" Color="{StaticResource SystemFillColorCaution}" />
             <SolidColorBrush x:Key="SystemFillColorCriticalBrush" Color="{StaticResource SystemFillColorCritical}" />

@@ -363,7 +363,7 @@
 
     <x:Double x:Key="CheckBoxBorderThickness">1</x:Double>
     <x:Double x:Key="CheckBoxSize">20</x:Double>
-    <x:Double x:Key="CheckBoxGlyphSize">16</x:Double>
+    <x:Double x:Key="CheckBoxGlyphSize">12</x:Double>
     <x:Double x:Key="CheckBoxHeight">32</x:Double>
     <x:Double x:Key="CheckBoxMinWidth">120</x:Double>
     <Thickness x:Key="CheckBoxPadding">8,5,0,0</Thickness>
@@ -419,12 +419,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillUnchecked}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Foreground">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}" />
-                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}" />
-                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="NormalOff"/>
@@ -448,12 +445,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillUncheckedPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Foreground">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedPointerOver}" />
-                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedPointerOver}" />
-                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="PointerOverOff"/>
@@ -477,12 +471,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillUncheckedPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Foreground">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedPressed}" />
-                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedPressed}" />
-                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="PressedOff"/>
@@ -506,12 +497,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillUncheckedDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Foreground">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedDisabled}" />
-                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedDisabled}" />
-                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <!-- DisabledVisual Should be handled by the control, not the animated icon. -->
@@ -536,16 +524,13 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillChecked}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundChecked}" />
-                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="DownLevelCheckGlyph"
+                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="CheckGlyph"
                                             Storyboard.TargetProperty="Opacity"
                                             To="1"
                                             Duration="0" />
-                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundChecked}" />
-                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="NormalOn"/>
@@ -569,16 +554,13 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillCheckedPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundCheckedPointerOver}" />
-                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="DownLevelCheckGlyph"
+                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="CheckGlyph"
                                             Storyboard.TargetProperty="Opacity"
                                             To="1"
                                             Duration="0" />
-                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundCheckedPointerOver}" />
-                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="PointerOverOn"/>
@@ -602,16 +584,13 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillCheckedPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundCheckedPressed}" />
-                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="DownLevelCheckGlyph"
+                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="CheckGlyph"
                                             Storyboard.TargetProperty="Opacity"
                                             To="1"
                                             Duration="0" />
-                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundCheckedPressed}" />
-                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="PressedOn"/>
@@ -635,16 +614,13 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillCheckedDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundCheckedDisabled}" />
-                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="DownLevelCheckGlyph"
+                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="CheckGlyph"
                                             Storyboard.TargetProperty="Opacity"
                                             To="1"
                                             Duration="0" />
-                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundCheckedDisabled}" />
-                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <!-- DisabledVisual Should be handled by the control, not the animated icon. -->
@@ -669,19 +645,16 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillIndeterminate}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundIndeterminate}" />
-                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Glyph">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Glyph">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource CheckBoxIndeterminateGlyph}" />
-                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="DownLevelCheckGlyph"
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="CheckGlyph"
                                             Storyboard.TargetProperty="Opacity"
                                             To="1"
                                             Duration="0" />
-                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundIndeterminate}" />
-                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="NormalIndeterminate"/>
@@ -705,19 +678,16 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillIndeterminatePointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundIndeterminatePointerOver}" />
-                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Glyph">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Glyph">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource CheckBoxIndeterminateGlyph}" />
-                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="DownLevelCheckGlyph"
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="CheckGlyph"
                                             Storyboard.TargetProperty="Opacity"
                                             To="1"
                                             Duration="0" />
-                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundIndeterminatePointerOver}" />
-                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="PointerOverIndeterminate"/>
@@ -741,19 +711,16 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillIndeterminatePressed}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundIndeterminatePressed}" />
-                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Glyph">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Glyph">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource CheckBoxIndeterminateGlyph}" />
-                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="DownLevelCheckGlyph"
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="CheckGlyph"
                                             Storyboard.TargetProperty="Opacity"
                                             To="1"
                                             Duration="0" />
-                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundIndeterminatePressed}" />
-                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="PressedIndeterminate"/>
@@ -777,19 +744,16 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillIndeterminateDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundIndeterminateDisabled}" />
-                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Glyph">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Glyph">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource CheckBoxIndeterminateGlyph}" />
-                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="DownLevelCheckGlyph"
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="CheckGlyph"
                                             Storyboard.TargetProperty="Opacity"
                                             To="1"
                                             Duration="0" />
-                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundIndeterminateDisabled}" />
-                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <!-- DisabledVisual Should be handled by the control, not the animated icon. -->
@@ -819,18 +783,18 @@
                                 contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                 contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                 contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"/>
-                            <contract7NotPresent:FontIcon
-                                x:Name="DownLevelCheckGlyph"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Glyph="{StaticResource CheckBoxCheckedGlyph}"
-                                FontSize="{StaticResource CheckBoxGlyphSize}"
-                                Foreground="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}"
-                                Opacity="0" />
                             <local:AnimatedIcon x:Name="CheckGlyph"
                                                 Foreground="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}"
                                                 Margin="4"
-                                                contract7NotPresent:Visibility="Collapsed">
+                                                contract7NotPresent:Opacity="0">
                                 <animatedvisuals:AnimatedAcceptVisualSource/>
+                                <local:AnimatedIcon.FallbackIconSource>
+                                    <local:FontIconSource
+                                        x:Name="DownLevelCheckGlyph"
+                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                        Glyph="{StaticResource CheckBoxCheckedGlyph}"
+                                        FontSize="{StaticResource CheckBoxGlyphSize}"/>
+                                </local:AnimatedIcon.FallbackIconSource>
                             </local:AnimatedIcon>
 
                         </Grid>

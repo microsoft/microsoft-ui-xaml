@@ -32,6 +32,9 @@ public:
     static void OnAnimatedIconStatePropertyChanged(
         const winrt::DependencyObject& sender,
         const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnAncestorAnimatedIconStatePropertyChanged(
+        const winrt::DependencyObject& sender,
+        const winrt::DependencyProperty& args);
     void OnStatePropertyChanged();
 
     static winrt::DependencyProperty AnimatedIconStateProperty() { return s_StateProperty; }
@@ -73,6 +76,7 @@ private:
     winrt::Composition::CompositionScopedBatch m_batch{ nullptr };
 
     ScopedBatchCompleted_revoker m_batchCompletedRevoker{ };
+    PropertyChanged_revoker m_ancestorStatePropertyChangedRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedRevoker{};
 
     winrt::AnimatedIconAnimationQueueBehavior m_queueBehavior{ winrt::AnimatedIconAnimationQueueBehavior::SpeedUpQueueOne };

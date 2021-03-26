@@ -153,12 +153,6 @@ unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.Dependenc
     static Windows.UI.Xaml.DependencyProperty SingleSelectionFollowsFocusProperty { get; };
     static Windows.UI.Xaml.DependencyProperty PaneToggleButtonWidthProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SmallerPaneToggleButtonWidthProperty{ get; };
-
-    [MUX_PREVIEW]
-    {
-        Double NegativeSplitViewWidthMinusCompactLength{ get; };
-        static Windows.UI.Xaml.DependencyProperty NegativeSplitViewWidthMinusCompactLengthProperty{ get; };
-    }
 }
 
 [MUX_PUBLIC]

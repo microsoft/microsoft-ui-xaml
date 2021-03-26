@@ -32,6 +32,7 @@ namespace MUXControlsTestApp
             {
                 IconMenuFlyoutItem.Icon = new SymbolIcon(Symbol.Calendar);
                 IconRadioMenuFlyoutItem.Icon = new SymbolIcon(Symbol.Calculator);
+                IconRadioMenuFlyoutItem2.Icon = new SymbolIcon(Symbol.Calculator);
             }
 
             if (ApiInformation.IsPropertyPresent("Windows.UI.Xaml.Controls.Grid", "ColumnSpacing"))
