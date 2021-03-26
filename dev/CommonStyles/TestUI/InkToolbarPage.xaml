@@ -10,12 +10,10 @@
             <InkCanvas x:Name="inkCanvas" Height="400"/>
         </StackPanel>
         <StackPanel>
-            <InkToolbar x:Name="verticalInkToolbar"
-                        TargetInkCanvas="{x:Bind verticalInkCanvas}"
+            <InkToolbar x:Name="VerticalInkToolbar"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Right"
-                        Orientation="Vertical" />
-            <InkCanvas x:Name="verticalInkCanvas" Height="400"/>
+                        Orientation="Vertical"/>
         </StackPanel>
     </Grid>
 </Page>
