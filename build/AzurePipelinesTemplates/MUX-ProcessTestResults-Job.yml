@@ -16,6 +16,10 @@ jobs:
     helixOutputFolder: $(Build.SourcesDirectory)\HelixOutput
     muxTestInfraHelixVersion: 0.0.2.3
     helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.MUXTestInfra.Helix.$(muxTestInfraHelixVersion)\scripts\pipeline
+    - ${{if eq(parameters.pgoArtifact, '') }}:
+      processHelixFilesExtraArgs: ''
+    - ${{if ne(parameters.pgoArtifact, '') }}:
+      processHelixFilesExtraArgs: -ProcessAllJobs
 
   steps:
 
@@ -58,11 +62,15 @@ jobs:
     inputs:
       targetType: filePath
       filePath: $(helixScriptPath)\ProcessHelixFiles.ps1
-      arguments: -OutputFolder '$(helixOutputFolder)'
+      arguments: -OutputFolder '$(helixOutputFolder)' $(processHelixFilesExtraArgs)
 
   - ${{if ne(parameters.pgoArtifact, '') }}:
-    - script: move /y $(helixOutputFolder)\PGO $(Build.ArtifactStagingDirectory)
-      displayName: 'Move pgc files to PGO artifact'
+    - task: powershell@2
+      displayName: CopyPGOFiles.ps1
+      inputs:
+        targetType: filePath
+        filePath: build\Helix\CopyPGOFiles.ps1
+        arguments: -SourceFolder '$(helixOutputFolder)' -OutputFolder '$(Build.ArtifactStagingDirectory)'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Helix files'

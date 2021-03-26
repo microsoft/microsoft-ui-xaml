@@ -55,3 +55,34 @@ UninstallTestApps("Microsoft.UI.Xaml.$versionMajor.$versionMinor")
 
 
 .\InstallTestAppDependencies.ps1
+
+
+
+# If we set the registry from a 32-bit process on a 64-bit machine, we will set the "virtualized" syswow registry. 
+# For crash dump collection we always want to set the "native" registry, so we make sure to invoke the native cmd.exe
+$nativeCmdPath = "$env:SystemRoot\system32\cmd.exe"
+if([Environment]::Is64BitOperatingSystem -and ![Environment]::Is64BitProcess)
+{
+    # The "sysnative" path is a 'magic' path that allows a 32-bit process to invoke the native 64-bit cmd.exe.
+    $nativeCmdPath = "$env:SystemRoot\sysnative\cmd.exe"
+}
+
+$dumpFolder = $env:HELIX_DUMP_FOLDER
+if(!$dumpFolder)
+{
+    $dumpFolder = "C:\dumps"
+}
+
+function Enable-CrashDumpsForProcesses {
+    Param([string[]]$namesOfProcessesForDumpCollection)
+
+    foreach($procName in $namesOfProcessesForDumpCollection )
+    {
+        Write-Host "Enabling local crash dumps for $procName"
+        & $nativeCmdPath /c reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\$procName" /v DumpFolder /t REG_EXPAND_SZ /d $dumpFolder /f
+        & $nativeCmdPath /c reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\$procName" /v DumpType /t REG_DWORD /d 2 /f
+        & $nativeCmdPath /c reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\$procName" /v DumpCount /t REG_DWORD /d 3 /f
+    }
+}
+
+Enable-CrashDumpsForProcesses @("MUXControlsTestApp.exe,IXMPTestApp.exe","NugetPackageTestApp.exe","NugetPackageTestAppCX.exe","AppThatUsesMUXIndirectly.exe")
