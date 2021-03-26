@@ -1701,7 +1701,7 @@ void NavigationView::OnSplitViewPaneClosing(const winrt::DependencyObject& /*sen
 
                 if (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay)
                 {
-                    winrt::VisualStateManager::GoToState(*this, L"NotOverlay", true /*useTransitions*/);
+                    winrt::VisualStateManager::GoToState(*this, L"PaneNotOverlay", true /*useTransitions*/);
                 }
             }
         }
@@ -1724,7 +1724,7 @@ void NavigationView::OnSplitViewPaneOpening(const winrt::DependencyObject& /*sen
         {
             if (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay)
             {
-                winrt::VisualStateManager::GoToState(*this, L"Overlay", true /*useTransitions*/);
+                winrt::VisualStateManager::GoToState(*this, L"PaneOverlay", true /*useTransitions*/);
             }
         }
     }
