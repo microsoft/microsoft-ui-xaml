@@ -16,6 +16,7 @@
     <Thickness x:Key="BreadcrumbBarItemDefaultMargin">0,3,0,4</Thickness>
     <Thickness x:Key="BreadcrumbBarItemLastItemMargin">0,3,1,4</Thickness>
 
+
     <ResourceDictionary.ThemeDictionaries>
 
         <ResourceDictionary x:Key="Default">
