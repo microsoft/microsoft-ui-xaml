@@ -305,7 +305,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Verify that the size of the MenuBar can be set.");
 
                 Verify.AreEqual(menuBar.BoundingRectangle.Height, 24);
-                Verify.AreEqual(menuBarItem.BoundingRectangle.Height, 24);
+                Verify.AreEqual(menuBarItem.BoundingRectangle.Height, 16);
             }
         }
 
