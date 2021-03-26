@@ -119,10 +119,16 @@
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="PaneOverlayGroup">
-                                <VisualState x:Name="PaneOverlay" />
+                                <VisualState x:Name="PaneOverlay">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootSplitView.CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+                                        <Setter Target="RootSplitView.BorderThickness" Value="0,0,1,0" />
+                                    </VisualState.Setters>
+                                </VisualState>
                                 <VisualState x:Name="PaneNotOverlay">
                                     <VisualState.Setters>
                                         <Setter Target="RootSplitView.PaneBackground" Value="{ThemeResource NavigationViewExpandedPaneBackground}" />
+                                        <Setter Target="PaneContentGrid.BorderThickness" Value="0,0,1,0" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -426,6 +432,8 @@
                             <SplitView
                                 x:Name="RootSplitView"
                                 Background="{TemplateBinding Background}"
+                                BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
+                                BorderThickness="0"
                                 CompactPaneLength="{TemplateBinding CompactPaneLength}"
                                 DisplayMode="Inline"
                                 IsPaneOpen="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsPaneOpen, Mode=TwoWay}"
@@ -437,10 +445,10 @@
                                 <SplitView.Pane>
                                     <Grid 
                                         x:Name="PaneContentGrid"
+                                        BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
+                                        BorderThickness="0"
                                         HorizontalAlignment="Left"
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}"
-                                        BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
-                                        BorderThickness="0,0,1,0"
                                         contract7Present:CornerRadius="0">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>

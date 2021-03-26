@@ -26,6 +26,8 @@
     <CornerRadius x:Key="SplitViewPaneRootCornerRadius">0</CornerRadius>
 
     <Style x:Key="DefaultSplitViewStyle" TargetType="SplitView">
+        <Setter Property="BorderBrush" Value="{ThemeResource SystemControlForegroundTransparentBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource SplitViewLeftBorderThemeThickness}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Stretch" />
         <Setter Property="OpenPaneLength" Value="{ThemeResource SplitViewOpenPaneThemeLength}" />
@@ -645,6 +647,8 @@
                         <!-- Pane Content Area -->
                         <Grid x:Name="PaneRoot"
                             Grid.ColumnSpan="2"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
                             HorizontalAlignment="Left"
                             Visibility="Collapsed"
                             Background="{TemplateBinding PaneBackground}"
