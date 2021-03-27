@@ -4,6 +4,7 @@
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -27,9 +28,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         private static HashSet<string> TestAppxInstalled = new HashSet<string>();
 
         /// <summary>
-        /// Installs the unit test app
+        /// Installs the unit test app from a package
         /// </summary>
-        public static void InstallTestAppIfNeeded(string deploymentDir, string packageName, string packageFamilyName, string appInstallerName)
+        public static void InstallTestAppFromPackageIfNeeded(string deploymentDir, string packageName, string packageFamilyName, string appInstallerName)
         {
             if (!TestAppxInstalled.Contains(packageFamilyName))
             {
@@ -143,7 +144,51 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 TestAppxInstalled.Add(packageFamilyName);
             }
         }
-        
+
+        /// <summary>
+        /// Installs the unit test app from a package
+        /// </summary>
+        public static void InstallTestAppFromDirectoryIfNeeded(string testAppDirectory, string packageFamilyName)
+        {
+            if (!TestAppxInstalled.Contains(packageFamilyName))
+            {
+                var installProjectPath = Path.Combine(testAppDirectory, "CreateAppxDirectory.msbuildproj");
+                var appxManifestPath = Path.Combine(testAppDirectory, "AppxManifest.xml");
+
+                if (File.Exists(installProjectPath) && File.Exists(appxManifestPath))
+                {
+                    // To install from a directory, there are two steps: first, we need to build the project that creates and populates the AppX directory,
+                    // and then second we need to use PowerShell to install the app via its AppX manifest from that directory.
+                    var msBuildProcess = new Process();
+                    msBuildProcess.StartInfo.UseShellExecute = false;
+                    msBuildProcess.StartInfo.FileName = @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe";
+                    msBuildProcess.StartInfo.Arguments = "\"msBuildInstallProject\"";
+                    msBuildProcess.Start();
+                    msBuildProcess.WaitForExit();
+
+                    var powershellProcess = new Process();
+                    powershellProcess.StartInfo.UseShellExecute = false;
+                    powershellProcess.StartInfo.FileName = Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), @"system32\windowspowershell\v1.0\powershell.exe");
+                    powershellProcess.StartInfo.Arguments = "-Register \"appxManifestPath\"";
+                    powershellProcess.Start();
+                    powershellProcess.WaitForExit();
+
+                    TestAppxInstalled.Add(packageFamilyName);
+                }
+                else
+                {
+                    if (!File.Exists(installProjectPath))
+                    {
+                        Log.Comment("MSBuild install project was not found at {0}.", installProjectPath);
+                    }
+                    else
+                    {
+                        Log.Comment("AppX manifest was not found at {0}.", appxManifestPath);
+                    }
+                }
+            }
+        }
+
         public static void InstallCert(string certFilePath)
         {
             Log.Comment("Installing cert: {0}", certFilePath);

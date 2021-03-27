@@ -13,6 +13,7 @@
     <Import_RootNamespace>MUXControls.Test</Import_RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
+    <AssemblyName>MUXControls.Test</AssemblyName>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProjectGuid>{83ABD4F6-10C9-433D-A4C4-486983FE13BE}</ProjectGuid>
@@ -24,29 +25,6 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <LangVersion>$(CSLangVersion)</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="$(BuildingWithBuildExe) != 'true'">
-    <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Kits\Installed Roots@KitsRoot10)</UniversalCRTSdkDir>
-    <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(MSBuildProgramFiles32)\Windows Kits\10\</UniversalCRTSdkDir>
-    <WindowsMetadataPath>$(UniversalCRTSdkDir)UnionMetadata\$(TargetPlatformVersion)</WindowsMetadataPath>
-    <AssemblyName>MUXControls.Test</AssemblyName>
-    <!-- We are using .NetCore because we are targetting CoreCLR but with Windows UAP support. It maps to netcore50 in the project.json file. 
-         If you don't need UAP support, for example you are just driving UI with Microsoft.Windows.Apps.Test, you should build with .NETPlatform,Version=5.4. This maps to dotnet54 in the project.json file.
-         We are using this setting since we are calling a WinRT API in one test case. 
-         These are the only two options that you should be using. -->
-    <!--<NuGetTargetMoniker>.NETCore,Version=v5.0</NuGetTargetMoniker>-->
-    <DependenciesPath>$(USERPROFILE)\.nuget\packages</DependenciesPath>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition="$(BuildingWithBuildExe) == 'true'">
-    <!-- CatGates requires that all test assemblies begin with "Windows.UI.Xaml.Tests",
-         so we'll add that to our assembly name in Windows builds to ensure that we get picked up. -->
-    <AssemblyName>Windows.UI.Xaml.Tests.MUXControls</AssemblyName>
-    <TargetDestination>NTTEST\WINDOWSTEST\dxaml\controls\test\MUXControls.Test</TargetDestination>
-    <TestCode>true</TestCode>
-    <TestNetVersion>v2.0</TestNetVersion>
-    <WindowsMetadataPath>$(ProjectSdkMetadataPath)</WindowsMetadataPath>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -133,12 +111,6 @@
   </PropertyGroup>
   <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Windows.winmd">
-      <HintPath>$(WindowsMetadataPath)\windows.winmd</HintPath>
-      <IsWinMDFile>true</IsWinMDFile>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)\TestAssembly.cs" />

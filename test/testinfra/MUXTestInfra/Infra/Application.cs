@@ -37,23 +37,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
     public class Application
     {
+        private readonly bool _installFromDirectory;
+        private readonly string _appWindowTitle;
+        private readonly bool _isUWPApp;
+
+        // Properties to set if _installFromDirectory = false
         private readonly string _packageName;
         private readonly string _packageFamilyName;
         private readonly string _appName;
-
-        private readonly string _appWindowTitle;
         private readonly string _appProcessName;
         private readonly string _appInstallerName;
-
-        private readonly bool _isUWPApp;
-
         private readonly string _certSerialNumber;
         private readonly string _baseAppxDir;
+
+        // Properties to set if _installFromDirectory = true
+        private readonly string _testAppProjectName;
 
         private readonly UICondition _windowCondition = null;
         private readonly UICondition _appFrameWindowCondition = null;
 
+        public Application(string packageFamilyName, string testAppMainWindowTitle, bool isUWPApp, string testAppProjectName)
+            : this(packageName: string.Empty, packageFamilyName, appName: string.Empty, testAppMainWindowTitle, testAppProcessName: string.Empty, testAppInstallerName: string.Empty, certSerialNumber: string.Empty, baseAppxDir: string.Empty, isUWPApp, testAppProjectName)
+        {
+            _installFromDirectory = true;
+        }
+
         public Application(string packageName, string packageFamilyName, string appName, string testAppMainWindowTitle, string testAppProcessName, string testAppInstallerName, string certSerialNumber, string baseAppxDir, bool isUWPApp = true)
+            : this(packageName, packageFamilyName, appName, testAppMainWindowTitle, testAppProcessName, testAppInstallerName, certSerialNumber, baseAppxDir, isUWPApp, testAppProjectName: string.Empty)
+        {
+            _installFromDirectory = false;
+        }
+
+        private Application(string packageName, string packageFamilyName, string appName, string testAppMainWindowTitle, string testAppProcessName, string testAppInstallerName, string certSerialNumber, string baseAppxDir, bool isUWPApp, string testAppProjectName)
         {
             _packageName = packageName;
             _packageFamilyName = packageFamilyName;
@@ -61,10 +76,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             _isUWPApp = isUWPApp;
             _certSerialNumber = certSerialNumber;
             _baseAppxDir = baseAppxDir;
-
             _appWindowTitle = testAppMainWindowTitle;
             _appProcessName = testAppProcessName;
             _appInstallerName = testAppInstallerName;
+            _testAppProjectName = testAppProjectName;
 
             if (_isUWPApp)
             {
@@ -191,7 +206,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             // When running from MUXControls repo we want to install the app.
             // When running in TestMD we also want to install the app.            
 #if USING_TAEF
-            TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFamilyName, _appInstallerName);
+            if (_installFromDirectory)
+            {
+                TestAppInstallHelper.InstallTestAppFromDirectoryIfNeeded(Path.Combine(deploymentDir, "..", _testAppProjectName), _packageFamilyName)
+            }
+            else
+            {
+                TestAppInstallHelper.InstallTestAppFromPackageIfNeeded(deploymentDir, _packageName, _packageFamilyName, _appInstallerName);
+            }
 #else
             InstallTestAppIfNeeded();
 #endif

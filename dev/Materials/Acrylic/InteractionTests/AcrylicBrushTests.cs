@@ -40,7 +40,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 #endif
 
     [TestClass]
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable
     public class AcrylicBrushTests
+#pragma warning restore CA1001 // Types that own disposable fields should be disposable
     {
         private const string AcrylicRectangleName = "Rectangle1";
         private const string TintOpacitySliderName = "TintOpacity";

@@ -482,5 +482,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             HiddenOnEdge,
             None
         }
+
+        public enum Visibility
+        {
+            Visible,
+            Collapsed
+        }
     }
 }

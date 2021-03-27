@@ -261,6 +261,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+#pragma warning disable CA1063 // Implement IDisposable Correctly
         public class ColorPickerTestSetupHelper : TestSetupHelper, IDisposable, IEventSink
         {
             private PropertyChangedEventSource redEventSource;
@@ -342,7 +343,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     if (redEventSource == null || greenEventSource == null || blueEventSource == null || alphaEventSource == null)
                     {
+#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
                         throw new Exception("Color change tracking was never started. Make sure to call StartTrackingColorChanges() on ColorPickerTestSetupHelper.");
+#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
                     }
                     
                     redEventSource.Stop();
@@ -1652,4 +1655,5 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Verify.AreEqual(expectedFocusedElement, currentlyFocusedElementTextBlock.DocumentText);
         }
     }
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 }

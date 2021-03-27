@@ -206,5 +206,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Twenty,
             Infinite
         }
+
+        public enum Visibility
+        {
+            Visible,
+            Collapsed
+        }
     }
 }

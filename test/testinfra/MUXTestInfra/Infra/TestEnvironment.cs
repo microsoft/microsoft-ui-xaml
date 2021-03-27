@@ -35,17 +35,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 {
     public class TestApplicationInfo
     {
+        public bool InstallFromDirectory { get; private set; }
+        public string TestAppMainWindowTitle { get; private set; }
+        public bool IsUwpApp { get; private set; }
+
+        // Properties to set if InstallFromDirectory = false
         public string TestAppPackageName { get; private set; }
         public string TestAppName { get; private set; }
         public string TestAppPackageFamilyName { get; private set; }
-
-        public string TestAppMainWindowTitle { get; private set; }
         public string ProcessName { get; private set; }
         public string InstallerName { get; private set; }
-        public bool IsUwpApp { get; private set; }
         public string CertSerialNumber { get; private set; }
-
         public string BaseAppxDir { get; private set; }
+
+        // Properties to set if InstallFromDirectory = true
+        public string TestAppProjectName { get; private set; }
+
+        public TestApplicationInfo(string testAppMainWindowTitle, bool isUwpApp, string testAppProjectName)
+        {
+            this.InstallFromDirectory = true;
+            this.TestAppMainWindowTitle = testAppMainWindowTitle;
+            this.IsUwpApp = isUwpApp;
+            this.TestAppProjectName = testAppProjectName;
+        }
 
         public TestApplicationInfo(string testAppPackageName, string testAppName, string testAppPackageFamilyName, string certSerialNumber, string baseAppxDir)
             : this(testAppPackageName, testAppName, testAppPackageFamilyName, testAppPackageName, testAppPackageName, testAppPackageName, certSerialNumber, baseAppxDir)
@@ -60,6 +72,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         public TestApplicationInfo(string testAppPackageName, string testAppName, string testAppPackageFamilyName, string testAppMainWindowTitle, string processName, string installerName, bool isUwpApp, string certSerialNumber, string baseAppxDir)
         {
+            this.InstallFromDirectory = false;
             this.TestAppPackageName = testAppPackageName;
             this.TestAppName = testAppName;
             this.TestAppPackageFamilyName = testAppPackageFamilyName;
@@ -90,12 +103,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
-#if USING_TAEF
-                string testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App";
-#else
-                string testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!App";
-#endif
-                return new TestApplicationInfo("MUXControlsTestApp", testAppName, "MUXControlsTestApp_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+                return new TestApplicationInfo("MUXControlsTestApp", isUwpApp: true, "MUXControlsTestApp.TAEF");
             }
         }
 
@@ -103,12 +111,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
-#if USING_TAEF
-                string testAppName = "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App";
-#else
-                string testAppName = "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe!App";
-#endif
-                return new TestApplicationInfo("MUXControlsTestApp", testAppName, "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe", "MUXControlsInnerLoopTestApp", "MUXControlsTestApp", "MUXControlsTestApp", MUXCertSerialNumber, MUXBaseAppxDir);
+                return new TestApplicationInfo("MUXControlsInnerLoopTestApp", isUwpApp: true, "MUXControlsTestApp.TAEF");
             }
         }
 
@@ -237,15 +240,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         private static Application CreateApplication(TestApplicationInfo info)
         {
-            return new Application(
-                info.TestAppPackageName,
-                info.TestAppPackageFamilyName,
-                info.TestAppName,
-                info.TestAppMainWindowTitle,
-                info.ProcessName,
-                info.InstallerName,
-                info.CertSerialNumber,
-                info.BaseAppxDir);
+            if (info.InstallFromDirectory)
+            {
+                return new Application(
+                    info.TestAppPackageFamilyName,
+                    info.TestAppMainWindowTitle,
+                    info.IsUwpApp,
+                    info.TestAppProjectName);
+            }
+            else
+            {
+                return new Application(
+                    info.TestAppPackageName,
+                    info.TestAppPackageFamilyName,
+                    info.TestAppName,
+                    info.TestAppMainWindowTitle,
+                    info.ProcessName,
+                    info.InstallerName,
+                    info.CertSerialNumber,
+                    info.BaseAppxDir);
+            }
         }
 
         public static void Initialize(TestContext testContext)
