@@ -22,7 +22,7 @@ jobs:
 
   - powershell: |
       & "$env:Build_SourcesDirectory\build\Localization\PrepLocFilesForUpload.ps1" `
-        -DestinationFilePath '${{ parameters.resourceStagingDirectory }}'
+        -DestinationFilePath '${{ variables.resourceStagingDirectory }}'
     displayName: 'PrepLocFilesForUpload.ps1'
 
   - task: TouchdownBuildTask@1
@@ -34,9 +34,9 @@ jobs:
       authType: 'OAuth'
       authId: 'e8416663-8a55-4cb6-9bba-12038b37a6ed'
       authKey: $(WinUILab-TouchdownLoc-Key)
-      relativePathRoot: ${{ parameters.resourceStagingDirectory }}
+      relativePathRoot: ${{ variables.resourceStagingDirectory }}
       resourceFilePath: '**/Resources.resw'
-      outputDirectoryRoot: ${{ parameters.resourceOutputDirectory }}
+      outputDirectoryRoot: ${{ variables.resourceOutputDirectory }}
       appendRelativeDir: true
       cultureMappingType: 'None'
 
