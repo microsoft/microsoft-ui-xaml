@@ -36,13 +36,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
     public class TestApplicationInfo
     {
         public bool InstallFromDirectory { get; private set; }
+        public string TestAppPackageFamilyName { get; private set; }
+        public string TestAppName { get; private set; }
         public string TestAppMainWindowTitle { get; private set; }
         public bool IsUwpApp { get; private set; }
 
         // Properties to set if InstallFromDirectory = false
         public string TestAppPackageName { get; private set; }
-        public string TestAppName { get; private set; }
-        public string TestAppPackageFamilyName { get; private set; }
         public string ProcessName { get; private set; }
         public string InstallerName { get; private set; }
         public string CertSerialNumber { get; private set; }
@@ -51,9 +51,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         // Properties to set if InstallFromDirectory = true
         public string TestAppProjectName { get; private set; }
 
-        public TestApplicationInfo(string testAppMainWindowTitle, bool isUwpApp, string testAppProjectName)
+        public TestApplicationInfo(string testAppPackageFamilyName, string testAppName, string testAppMainWindowTitle, bool isUwpApp, string testAppProjectName)
         {
             this.InstallFromDirectory = true;
+            this.TestAppPackageFamilyName = testAppPackageFamilyName;
+            this.TestAppName = testAppName;
             this.TestAppMainWindowTitle = testAppMainWindowTitle;
             this.IsUwpApp = isUwpApp;
             this.TestAppProjectName = testAppProjectName;
@@ -103,7 +105,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
-                return new TestApplicationInfo("MUXControlsTestApp", isUwpApp: true, "MUXControlsTestApp.TAEF");
+#if USING_TAEF
+                string testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App";
+#else
+                string testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!App";
+#endif
+                return new TestApplicationInfo("MUXControlsTestApp_8wekyb3d8bbwe", testAppName, "MUXControlsTestApp", isUwpApp: true, "MUXControlsTestApp.TAEF");
             }
         }
 
@@ -111,7 +118,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
-                return new TestApplicationInfo("MUXControlsInnerLoopTestApp", isUwpApp: true, "MUXControlsTestApp.TAEF");
+#if USING_TAEF
+                string testAppName = "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App";
+#else
+                string testAppName = "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe!App";
+#endif
+                return new TestApplicationInfo("MUXControlsInnerLoopTestApp_8wekyb3d8bbwe", testAppName, "MUXControlsInnerLoopTestApp", isUwpApp: true, "MUXControlsTestApp.TAEF");
             }
         }
 
@@ -244,6 +256,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             {
                 return new Application(
                     info.TestAppPackageFamilyName,
+                    info.TestAppName,
                     info.TestAppMainWindowTitle,
                     info.IsUwpApp,
                     info.TestAppProjectName);

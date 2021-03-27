@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" DefaultTargets="CreateAppxPackage" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    
+    <!-- The project name is the last directory in the directory structure containing this file.
+         Since $(MSBuildThisFileDirectory) contains a trailing slash, Path.GetFileName() will return null
+         if we call that on it directly, so we first call Path.GetDirectoryName() to remove the trailing slash,
+         then call Path.GetFileName() to get the directory name. -->
+    <ProjectName>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName($(MSBuildThisFileDirectory)))))</ProjectName>
+    <AppxRecipeFile>$(ProjectName).build.appxrecipe</AppxRecipeFile>
+  </PropertyGroup>
+  <Import Project="$(ProjectName).build.appxrecipe" />
+  <Target Name="CreateAppxPackage">
+    <Message Text="Making AppX directory at $(LayoutDir) from recipe file $(AppxRecipeFile)..." />
+    <MakeDir Directories="$(LayoutDir)" Condition="!Exists($(LayoutDir))" />
+    <Copy SourceFiles="@(AppXManifest);@(AppxPackagedFile)" DestinationFiles="$(LayoutDir)\%(PackagePath)" SkipUnchangedFiles="True" />
+  </Target>
+</Project>

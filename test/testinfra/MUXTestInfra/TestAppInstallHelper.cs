@@ -152,39 +152,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             if (!TestAppxInstalled.Contains(packageFamilyName))
             {
-                var installProjectPath = Path.Combine(testAppDirectory, "CreateAppxDirectory.msbuildproj");
-                var appxManifestPath = Path.Combine(testAppDirectory, "AppxManifest.xml");
+                var createAppxDirectoryScript = Path.Combine(testAppDirectory, "CreateAppxDirectory.ps1");
 
-                if (File.Exists(installProjectPath) && File.Exists(appxManifestPath))
+                if (File.Exists(createAppxDirectoryScript))
                 {
-                    // To install from a directory, there are two steps: first, we need to build the project that creates and populates the AppX directory,
-                    // and then second we need to use PowerShell to install the app via its AppX manifest from that directory.
-                    var msBuildProcess = new Process();
-                    msBuildProcess.StartInfo.UseShellExecute = false;
-                    msBuildProcess.StartInfo.FileName = @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe";
-                    msBuildProcess.StartInfo.Arguments = "\"msBuildInstallProject\"";
-                    msBuildProcess.Start();
-                    msBuildProcess.WaitForExit();
+                    // To install from a directory, we have a script that does two things: first, it runs an MSBuild script
+                    // that generates the AppX directory, and then second, it registers the AppX manifest placed in that directory.
+                    ProcessStartInfo powershellStartInfo = new ProcessStartInfo(
+                        Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), @"system32\windowspowershell\v1.0\powershell.exe"),
+                        "-NoLogo -NonInteractive -ExecutionPolicy Unrestricted -File \"" + createAppxDirectoryScript + "\"");
 
-                    var powershellProcess = new Process();
-                    powershellProcess.StartInfo.UseShellExecute = false;
-                    powershellProcess.StartInfo.FileName = Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), @"system32\windowspowershell\v1.0\powershell.exe");
-                    powershellProcess.StartInfo.Arguments = "-Register \"appxManifestPath\"";
-                    powershellProcess.Start();
+                    powershellStartInfo.UseShellExecute = false;
+                    powershellStartInfo.RedirectStandardOutput = true;
+
+                    Log.Comment("Registering test app...");
+
+                    Process powershellProcess = Process.Start(powershellStartInfo);
                     powershellProcess.WaitForExit();
+
+                    if (powershellProcess.ExitCode != 0)
+                    {
+                        Log.Error("Failed to register test app: {0}", powershellProcess.StandardOutput.ReadToEnd());
+                    }
 
                     TestAppxInstalled.Add(packageFamilyName);
                 }
                 else
                 {
-                    if (!File.Exists(installProjectPath))
-                    {
-                        Log.Comment("MSBuild install project was not found at {0}.", installProjectPath);
-                    }
-                    else
-                    {
-                        Log.Comment("AppX manifest was not found at {0}.", appxManifestPath);
-                    }
+                    Log.Comment("Create AppX directory script was not found at {0}.", createAppxDirectoryScript);
                 }
             }
         }

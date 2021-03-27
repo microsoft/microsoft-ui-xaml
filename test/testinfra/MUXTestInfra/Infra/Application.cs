@@ -39,12 +39,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
     {
         private readonly bool _installFromDirectory;
         private readonly string _appWindowTitle;
+        private readonly string _appName;
         private readonly bool _isUWPApp;
 
         // Properties to set if _installFromDirectory = false
         private readonly string _packageName;
         private readonly string _packageFamilyName;
-        private readonly string _appName;
         private readonly string _appProcessName;
         private readonly string _appInstallerName;
         private readonly string _certSerialNumber;
@@ -56,8 +56,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         private readonly UICondition _windowCondition = null;
         private readonly UICondition _appFrameWindowCondition = null;
 
-        public Application(string packageFamilyName, string testAppMainWindowTitle, bool isUWPApp, string testAppProjectName)
-            : this(packageName: string.Empty, packageFamilyName, appName: string.Empty, testAppMainWindowTitle, testAppProcessName: string.Empty, testAppInstallerName: string.Empty, certSerialNumber: string.Empty, baseAppxDir: string.Empty, isUWPApp, testAppProjectName)
+        public Application(string packageFamilyName, string appName, string testAppMainWindowTitle, bool isUWPApp, string testAppProjectName)
+            : this(packageName: string.Empty, packageFamilyName, appName, testAppMainWindowTitle, testAppProcessName: string.Empty, testAppInstallerName: string.Empty, certSerialNumber: string.Empty, baseAppxDir: string.Empty, isUWPApp, testAppProjectName)
         {
             _installFromDirectory = true;
         }
@@ -208,7 +208,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 #if USING_TAEF
             if (_installFromDirectory)
             {
-                TestAppInstallHelper.InstallTestAppFromDirectoryIfNeeded(Path.Combine(deploymentDir, "..", _testAppProjectName), _packageFamilyName)
+                TestAppInstallHelper.InstallTestAppFromDirectoryIfNeeded(Path.Combine(deploymentDir, "..", _testAppProjectName), _packageFamilyName);
             }
             else
             {
