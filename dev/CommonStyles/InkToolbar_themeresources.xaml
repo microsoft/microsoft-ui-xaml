@@ -167,8 +167,8 @@
 
     <Style x:Key="InkToolbarGlyphFontStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
-        <Setter Property="FontSize" Value="{ThemeResource InkToolbarButtonFontSize}" />
-        <Setter Property="LineHeight" Value="{ThemeResource InkToolbarButtonFontSize}" />
+        <Setter Property="FontSize" Value="{StaticResource InkToolbarButtonFontSize}" />
+        <Setter Property="LineHeight" Value="{StaticResource InkToolbarButtonFontSize}" />
         <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
         <Setter Property="TextLineBounds" Value="Tight" />
         <Setter Property="TextAlignment" Value="Center" />
@@ -179,8 +179,8 @@
 
     <Style x:Key="InkToolbarGlyphFillFontStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
-        <Setter Property="FontSize" Value="{ThemeResource InkToolbarButtonFontSize}" />
-        <Setter Property="LineHeight" Value="{ThemeResource InkToolbarButtonFontSize}" />
+        <Setter Property="FontSize" Value="{StaticResource InkToolbarButtonFontSize}" />
+        <Setter Property="LineHeight" Value="{StaticResource InkToolbarButtonFontSize}" />
         <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
         <Setter Property="TextLineBounds" Value="Tight" />
         <Setter Property="TextAlignment" Value="Center" />
@@ -201,10 +201,10 @@
     </Style>
 
     <Style x:Key="InkToolbarCommonButtonStyle" TargetType="ToggleButton">
-        <Setter Property="MinWidth" Value="{ThemeResource InkToolbarButtonWidth}" />
-        <Setter Property="MinHeight" Value="{ThemeResource InkToolbarButtonHeight}" />
-        <Setter Property="MaxWidth" Value="{ThemeResource InkToolbarButtonWidth}" />
-        <Setter Property="MaxHeight" Value="{ThemeResource InkToolbarButtonHeight}" />
+        <Setter Property="MinWidth" Value="{StaticResource InkToolbarButtonWidth}" />
+        <Setter Property="MinHeight" Value="{StaticResource InkToolbarButtonHeight}" />
+        <Setter Property="MaxWidth" Value="{StaticResource InkToolbarButtonWidth}" />
+        <Setter Property="MaxHeight" Value="{StaticResource InkToolbarButtonHeight}" />
         <Setter Property="BorderThickness" Value="{ThemeResource InkToolbarButtonBorderThemeThickness}" />
         <Setter Property="Background" Value="{ThemeResource InkToolbarButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource InkToolbarButtonForeground}" />
@@ -269,8 +269,8 @@
                 <ControlTemplate TargetType="InkToolbarBallpointPenButton">
                     <Grid x:Name="RootElement"
                         Background="{TemplateBinding Background}"
-                        Width="{ThemeResource InkToolbarButtonWidth}"
-                        Height="{ThemeResource InkToolbarButtonHeight}"
+                        Width="{StaticResource InkToolbarButtonWidth}"
+                        Height="{StaticResource InkToolbarButtonHeight}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}" >
 
                         <VisualStateManager.VisualStateGroups>
@@ -487,8 +487,8 @@
                 <ControlTemplate TargetType="InkToolbarHighlighterButton">
                     <Grid x:Name="RootElement"
                         Background="{TemplateBinding Background}"
-                        Width="{ThemeResource InkToolbarButtonWidth}"
-                        Height="{ThemeResource InkToolbarButtonHeight}"
+                        Width="{StaticResource InkToolbarButtonWidth}"
+                        Height="{StaticResource InkToolbarButtonHeight}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
@@ -704,8 +704,8 @@
                 <ControlTemplate TargetType="InkToolbarPencilButton">
                     <Grid x:Name="RootElement"
                         Background="{TemplateBinding Background}"
-                        Width="{ThemeResource InkToolbarButtonWidth}"
-                        Height="{ThemeResource InkToolbarButtonHeight}"
+                        Width="{StaticResource InkToolbarButtonWidth}"
+                        Height="{StaticResource InkToolbarButtonHeight}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
@@ -920,8 +920,8 @@
                 <ControlTemplate TargetType="InkToolbarCustomPenButton">
                     <Grid x:Name="RootElement"
                         Background="{TemplateBinding Background}"
-                        Width="{ThemeResource InkToolbarButtonWidth}"
-                        Height="{ThemeResource InkToolbarButtonHeight}">
+                        Width="{StaticResource InkToolbarButtonWidth}"
+                        Height="{StaticResource InkToolbarButtonHeight}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -1200,7 +1200,7 @@
 
     <!-- Some items are controlled by XAML private API, but still want to keep them here to give developers a refenrence-->
     <DataTemplate x:Key="InkToolbarEraserButtonFlyoutContentTemplate">
-        <StackPanel x:Name="InkToolbarEraserButtonFlyoutContent" Margin="{ThemeResource InkToolbarFlyoutPanelMargin}">
+        <StackPanel x:Name="InkToolbarEraserButtonFlyoutContent" Margin="{StaticResource InkToolbarFlyoutPanelMargin}">
             <InkToolbarFlyoutItem x:Name="StrokeEraser" Kind="RadioCheck" AutomationProperties.AutomationId="InkToolbarStrokeEraser"
                             Style="{StaticResource InkToolbarFlyoutItemStyle}">
                 <InkToolbarFlyoutItem.Content>
@@ -1216,13 +1216,13 @@
                             Grid.Column="0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Margin="{ThemeResource InkToolbarFlyoutItemIconMargin}"/>
+                            Margin="{StaticResource InkToolbarFlyoutItemIconMargin}"/>
                         <TextBlock x:Name="StrokeEraserName"
                             Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
                             Text=""
                             TextAlignment="Center"
                             Grid.Column="1"
-                            Margin="{ThemeResource InkToolbarFlyoutItemTextBlockMargin}"/>
+                            Margin="{StaticResource InkToolbarFlyoutItemTextBlockMargin}"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
@@ -1244,13 +1244,13 @@
                             Grid.Column="0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Margin="{ThemeResource InkToolbarFlyoutItemIconMargin}"/>
+                            Margin="{StaticResource InkToolbarFlyoutItemIconMargin}"/>
                         <TextBlock x:Name="SmallEraserName"
                             Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
                             Text=""
                             TextAlignment="Center"
                             Grid.Column="1"
-                            Margin="{ThemeResource InkToolbarFlyoutItemTextBlockMargin}"/>
+                            Margin="{StaticResource InkToolbarFlyoutItemTextBlockMargin}"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
@@ -1272,13 +1272,13 @@
                             Grid.Column="0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Margin="{ThemeResource InkToolbarFlyoutItemIconMargin}"/>
+                            Margin="{StaticResource InkToolbarFlyoutItemIconMargin}"/>
                         <TextBlock x:Name="LargeEraserName"
                             Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
                             Text=""
                             TextAlignment="Center"
                             Grid.Column="1"
-                            Margin="{ThemeResource InkToolbarFlyoutItemTextBlockMargin}"/>
+                            Margin="{StaticResource InkToolbarFlyoutItemTextBlockMargin}"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
@@ -1300,13 +1300,13 @@
                             Grid.Column="0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Margin="{ThemeResource InkToolbarFlyoutItemIconMargin}"/>
+                            Margin="{StaticResource InkToolbarFlyoutItemIconMargin}"/>
                         <TextBlock x:Name="ClearAllName"
                             Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
                             Text=""
                             TextAlignment="Center"
                             Grid.Column="1"
-                            Margin="{ThemeResource InkToolbarFlyoutItemTextBlockMargin}"/>
+                            Margin="{StaticResource InkToolbarFlyoutItemTextBlockMargin}"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
@@ -1321,8 +1321,8 @@
                 <ControlTemplate TargetType="InkToolbarEraserButton">
                     <Grid x:Name="RootElement"
                         Background="{TemplateBinding Background}"
-                        Width="{ThemeResource InkToolbarButtonWidth}"
-                        Height="{ThemeResource InkToolbarButtonHeight}"
+                        Width="{StaticResource InkToolbarButtonWidth}"
+                        Height="{StaticResource InkToolbarButtonHeight}"
                         CornerRadius="{TemplateBinding CornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
@@ -1526,8 +1526,8 @@
                 <ControlTemplate TargetType="InkToolbarCustomToolButton">
                     <Grid x:Name="RootElement"
                         Background="{TemplateBinding Background}"
-                        Width="{ThemeResource InkToolbarButtonWidth}"
-                        Height="{ThemeResource InkToolbarButtonHeight}">
+                        Width="{StaticResource InkToolbarButtonWidth}"
+                        Height="{StaticResource InkToolbarButtonHeight}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -1653,8 +1653,8 @@
                 <ControlTemplate TargetType="InkToolbarRulerButton">
                     <Grid x:Name="RootElement"
                         Background="{TemplateBinding Background}"
-                        Width="{ThemeResource InkToolbarButtonWidth}"
-                        Height="{ThemeResource InkToolbarButtonHeight}">
+                        Width="{StaticResource InkToolbarButtonWidth}"
+                        Height="{StaticResource InkToolbarButtonHeight}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -1796,8 +1796,8 @@
                 <ControlTemplate TargetType="InkToolbarCustomToggleButton">
                     <Grid x:Name="RootElement"
                         Background="{TemplateBinding Background}"
-                        Width="{ThemeResource InkToolbarButtonWidth}"
-                        Height="{ThemeResource InkToolbarButtonHeight}"
+                        Width="{StaticResource InkToolbarButtonWidth}"
+                        Height="{StaticResource InkToolbarButtonHeight}"
                         CornerRadius="{TemplateBinding CornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
@@ -1858,7 +1858,7 @@
     </Style>
 
     <DataTemplate x:Key="InkToolbarStencilButtonFlyoutContentTemplate">
-        <StackPanel x:Name="InkToolbarStencilButtonFlyoutContent" Margin="{ThemeResource InkToolbarFlyoutPanelMargin}">
+        <StackPanel x:Name="InkToolbarStencilButtonFlyoutContent" Margin="{StaticResource InkToolbarFlyoutPanelMargin}">
             <InkToolbarFlyoutItem x:Name="StencilRuler" Kind="RadioCheck"
                 AutomationProperties.AutomationId="InkToolbarStencilRuler"
                 Style="{StaticResource InkToolbarFlyoutItemStyle}">
@@ -1875,13 +1875,13 @@
                             Grid.Column="0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Margin="{ThemeResource InkToolbarFlyoutItemIconMargin}"/>
+                            Margin="{StaticResource InkToolbarFlyoutItemIconMargin}"/>
                         <TextBlock x:Name="RulerName"
                             Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
                             Text=""
                             TextAlignment="Center"
                             Grid.Column="1"
-                            Margin="{ThemeResource InkToolbarFlyoutItemTextBlockMargin}"/>
+                            Margin="{StaticResource InkToolbarFlyoutItemTextBlockMargin}"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
@@ -1902,13 +1902,13 @@
                             Grid.Column="0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Margin="{ThemeResource InkToolbarFlyoutItemIconMargin}"/>
+                            Margin="{StaticResource InkToolbarFlyoutItemIconMargin}"/>
                         <TextBlock x:Name="ProtractorName"
                             Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}"
                             Text=""
                             TextAlignment="Center"
                             Grid.Column="1"
-                            Margin="{ThemeResource InkToolbarFlyoutItemTextBlockMargin}"/>
+                            Margin="{StaticResource InkToolbarFlyoutItemTextBlockMargin}"/>
 
                     </Grid>
                 </InkToolbarFlyoutItem.Content>
@@ -1924,8 +1924,8 @@
                 <ControlTemplate TargetType="InkToolbarStencilButton">
                     <Grid x:Name="RootElement"
                         Background="{TemplateBinding Background}"
-                        Width="{ThemeResource InkToolbarButtonWidth}"
-                        Height="{ThemeResource InkToolbarButtonHeight}"
+                        Width="{StaticResource InkToolbarButtonWidth}"
+                        Height="{StaticResource InkToolbarButtonHeight}"
                         CornerRadius="{TemplateBinding CornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
