@@ -4,7 +4,7 @@ param(
 )
 
 Write-Host "Copying resource files to staging area to prep for upload." -ForegroundColor Green
-[xml]$locConfigXml = Get-Content Settings\LocConfig.xml
+[xml]$locConfigXml = Get-Content build\Localization\Settings\LocConfig.xml
 
 foreach ($file in $locConfigXml.Modules.Module.File)
 {
