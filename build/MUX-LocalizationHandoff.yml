@@ -1,6 +1,4 @@
 variables:
-  resourceStagingDirectory: '$(Build.ArtifactStagingDirectory)\LocStaging'
-  resourceOutputDirectory: '$(Build.ArtifactStagingDirectory)\LocOutput'
 - group: WinUITeamKeyVault-Secrets
 
 
@@ -9,7 +7,7 @@ jobs:
 - job: LocalizationHandoff
   pool:
     name: Package ES Standard Build
-  parameters:
+  variables:
     resourceStagingDirectory: '$(Build.ArtifactStagingDirectory)\LocStaging'
     resourceOutputDirectory: '$(Build.ArtifactStagingDirectory)\LocOutput'
 
