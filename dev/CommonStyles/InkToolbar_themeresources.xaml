@@ -160,15 +160,15 @@
 
     <x:Double x:Key="InkToolbarButtonWidth">36</x:Double>
     <x:Double x:Key="InkToolbarButtonHeight">36</x:Double>
-    <x:Double x:Key="InkToolbarButtonContentSize">16</x:Double>
+    <x:Double x:Key="InkToolbarButtonFontSize">16</x:Double>
     <Thickness x:Key="InkToolbarFlyoutPanelMargin">0,1,0,1</Thickness>
     <Thickness x:Key="InkToolbarFlyoutItemIconMargin">12,0,12,0</Thickness>
     <Thickness x:Key="InkToolbarFlyoutItemTextBlockMargin">0,0,12,0</Thickness>
 
     <Style x:Key="InkToolbarGlyphFontStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
-        <Setter Property="FontSize" Value="{ThemeResource InkToolbarButtonContentSize}" />
-        <Setter Property="LineHeight" Value="{ThemeResource InkToolbarButtonContentSize}" />
+        <Setter Property="FontSize" Value="{ThemeResource InkToolbarButtonFontSize}" />
+        <Setter Property="LineHeight" Value="{ThemeResource InkToolbarButtonFontSize}" />
         <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
         <Setter Property="TextLineBounds" Value="Tight" />
         <Setter Property="TextAlignment" Value="Center" />
@@ -179,8 +179,8 @@
 
     <Style x:Key="InkToolbarGlyphFillFontStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
-        <Setter Property="FontSize" Value="{ThemeResource InkToolbarButtonContentSize}" />
-        <Setter Property="LineHeight" Value="{ThemeResource InkToolbarButtonContentSize}" />
+        <Setter Property="FontSize" Value="{ThemeResource InkToolbarButtonFontSize}" />
+        <Setter Property="LineHeight" Value="{ThemeResource InkToolbarButtonFontSize}" />
         <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
         <Setter Property="TextLineBounds" Value="Tight" />
         <Setter Property="TextAlignment" Value="Center" />
