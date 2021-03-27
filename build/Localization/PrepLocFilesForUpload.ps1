@@ -9,7 +9,7 @@ Write-Host "Copying resource files to staging area to prep for upload." -Foregro
 foreach ($file in $locConfigXml.Modules.Module.File)
 {
     $destFileLocation = "$DestinationFilePath\$($file.location)"
-    $sourceLocation = "../../$($file.path)"
+    $sourceLocation = $file.path
     Write-Verbose "Dest: $destFileLocation Source: $sourceLocation"
 
     if (-not (Test-Path $destFileLocation)) { mkdir $destFileLocation }
