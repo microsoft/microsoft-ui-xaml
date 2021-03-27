@@ -52,6 +52,19 @@ namespace MUXControlsTestApp
           null
         );
 
+        public String FallbackGlyph
+        {
+            get { return (String)GetValue(FallbackGlyphProperty); }
+            set { SetValue(FallbackGlyphProperty, value); }
+        }
+
+        public static readonly DependencyProperty FallbackGlyphProperty = DependencyProperty.Register(
+          "FallbackGlyph",
+          typeof(String),
+          typeof(AnimatedIconHost),
+          null
+        );
+
         public AnimatedIconHost()
         {
             this.DefaultStyleKey = typeof(AnimatedIconHost);

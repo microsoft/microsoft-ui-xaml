@@ -26,12 +26,22 @@
                                             <Grid Margin="0,5,0,0">
                                                 <Grid.Resources>
                                                     <Style x:Key="SliderThumbStyle" TargetType="Thumb">
-                                                        <Setter Property="BorderThickness" Value="0"/>
+                                                        <Setter Property="BorderThickness" Value="1"/>
                                                         <Setter Property="Background" Value="{ThemeResource ColorPickerSliderThumbBackground}"/>
                                                         <Setter Property="Template">
                                                             <Setter.Value>
                                                                 <ControlTemplate TargetType="Thumb">
-                                                                    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{ThemeResource SliderThumbCornerRadius}" />
+                                                                    <Border BorderBrush="{ThemeResource SliderThumbBorderBrush}"
+                                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                                            Background="{ThemeResource SliderOuterThumbBackground}"
+                                                                            CornerRadius="{ThemeResource SliderThumbCornerRadius}">
+                                                                        <Ellipse
+                                                                            x:Name="SliderInnerThumb"
+                                                                            Fill="{TemplateBinding Background}"                                                  
+                                                                            Width="{ThemeResource ColorPickerSliderInnerThumbWidth}"
+                                                                            Height="{ThemeResource ColorPickerSliderInnerThumbHeight}">
+                                                                        </Ellipse>
+                                                                    </Border>
                                                                 </ControlTemplate>
                                                             </Setter.Value>
                                                         </Setter>
@@ -296,10 +306,10 @@
                             </Grid>
                             <Grid Margin="0,12,0,0" x:Name="ThirdDimensionSliderGrid">
                                 <Rectangle Height="11" VerticalAlignment="Center"
-                                           contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                           contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                           contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                           contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
+                                           contract7Present:RadiusX="{Binding Source={ThemeResource ColorPickerSliderCornerRadius}, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                           contract7Present:RadiusY="{Binding Source={ThemeResource ColorPickerSliderCornerRadius}, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                           contract7NotPresent:RadiusX="{Binding Source={ThemeResource ColorPickerSliderCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                           contract7NotPresent:RadiusY="{Binding Source={ThemeResource ColorPickerSliderCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
                                     <Rectangle.Fill>
                                         <LinearGradientBrush x:Name="ThirdDimensionSliderGradientBrush" />
                                     </Rectangle.Fill>
@@ -317,10 +327,10 @@
                                     </Rectangle.Fill>
                                 </Rectangle>
                                 <Rectangle x:Name="AlphaSliderBackgroundRectangle" Height="11" VerticalAlignment="Center"
-                                           contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                           contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                           contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                           contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
+                                           contract7Present:RadiusX="{Binding Source={ThemeResource ColorPickerSliderCornerRadius}, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                           contract7Present:RadiusY="{Binding Source={ThemeResource ColorPickerSliderCornerRadius}, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                           contract7NotPresent:RadiusX="{Binding Source={ThemeResource ColorPickerSliderCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                           contract7NotPresent:RadiusY="{Binding Source={ThemeResource ColorPickerSliderCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
                                     <Rectangle.Fill>
                                         <LinearGradientBrush x:Name="AlphaSliderGradientBrush" />
                                     </Rectangle.Fill>

@@ -125,10 +125,24 @@ CommandBarFlyout::CommandBarFlyout()
             // In that circumstance, we want to have the flyout be open from the start.
             winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this;
 
-            // If we don't have IFlyoutBase5 available, then we assume a standard show mode.
-            if (!thisAsFlyoutBase5 || thisAsFlyoutBase5.ShowMode() == winrt::FlyoutShowMode::Standard)
+            if (auto commandBar = m_commandBar.get())
             {
-                m_commandBar.get().IsOpen(true);
+                // If we don't have IFlyoutBase5 available, then we assume a standard show mode.
+                if (!thisAsFlyoutBase5 || thisAsFlyoutBase5.ShowMode() == winrt::FlyoutShowMode::Standard)
+                {
+                    commandBar.IsOpen(true);
+                }
+
+                // When CommandBarFlyout is in AlwaysOpen state, don't show the overflow button
+                if (AlwaysExpanded())
+                {
+                    commandBar.IsOpen(true);
+                    commandBar.OverflowButtonVisibility(winrt::Windows::UI::Xaml::Controls::CommandBarOverflowButtonVisibility::Collapsed);
+                }
+                else
+                {
+                    commandBar.OverflowButtonVisibility(winrt::Windows::UI::Xaml::Controls::CommandBarOverflowButtonVisibility::Auto);
+                }
             }
         }
     });

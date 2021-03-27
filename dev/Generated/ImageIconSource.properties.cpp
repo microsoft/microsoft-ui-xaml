@@ -32,7 +32,7 @@ void ImageIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::ImageIconSource>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ImageSource>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnImageSourcePropertyChanged));
     }
 }
 
@@ -40,6 +40,14 @@ void ImageIconSourceProperties::ClearProperties()
 {
     s_ImageSourceProperty = nullptr;
     IconSource::ClearProperties();
+}
+
+void ImageIconSourceProperties::OnImageSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ImageIconSource>();
+    winrt::get_self<ImageIconSource>(owner)->OnPropertyChanged(args);
 }
 
 void ImageIconSourceProperties::ImageSource(winrt::ImageSource const& value)
