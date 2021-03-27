@@ -94,13 +94,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyNoBaselineResourceWasRemoved()
+        public void VerifyNoBaselineResourceWereRemovedFromPreviousStableReleaseInV2Styles()
+        {
+            EnsureNoMissingThemeResources(
+                BaselineResources.BaselineResourcesList2dot5Stable,
+                new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version2 });
+        }
+
+        [TestMethod]
+        public void VerifyNoBaselineResourceWereRemovedFromPreviousStableReleaseInV1Styles()
+        {
+            EnsureNoMissingThemeResources(
+                BaselineResources.BaselineResourcesList2dot5Stable,
+                new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version1 });
+        }
+
+        private void EnsureNoMissingThemeResources(IList<string> baseline, XamlControlsResources dictionaryToVerify)
         {
             var actualResourcesKeys = new HashSet<string>();
 
             RunOnUIThread.Execute(() =>
             {
-                var resourceDictionaries = new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version2 };
+                var resourceDictionaries = dictionaryToVerify;
 
                 foreach (var dictionaryName in resourceDictionaries.ThemeDictionaries.Keys)
                 {
@@ -129,7 +144,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             StringBuilder missingKeysList = new StringBuilder();
 
             bool allBaselineResourceKeysExist = true;
-            foreach (var baselineResourceKey in BaselineResources.BaselineResourcesList)
+            foreach (var baselineResourceKey in baseline)
             {
                 if (!actualResourcesKeys.Contains(baselineResourceKey))
                 {
@@ -235,8 +250,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(new CornerRadius(6, 0, 0, 6), leftRadiusGrid.CornerRadius);
             });
         }
-
-
 
         //Task 30789390: Re-enable disabled tests
         //[TestMethod]
