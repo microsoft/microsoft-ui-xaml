@@ -3,7 +3,7 @@ param(
     [string]$LocalizedFilesLocation="$PSScriptRoot\..\..\BuildOutput\LocalizationDrop"
 )
 
-if (-not (Test-Path "$LocalizedFilesLocation\LocalizationDrop"))
+if (-not (Test-Path "$LocalizedFilesLocation"))
 {
     Write-Host "Could not find LocalizationDrop folder. Either specify using -LocalizedFilesLocation or place in the BuildOutput folder." -ForegroundColor Red
     Exit 1
@@ -13,7 +13,7 @@ Write-Host "Copying localized files back into the source tree" -ForegroundColor 
 [xml]$locConfigXml = Get-Content "$PSScriptRoot\Settings\LocConfig.xml"
 
 # Use ColorPicker as an example in order to extract the list of available languages
-$languages = get-childitem "$LocalizedFilesLocation\LocalizationDrop\ColorPicker" | Where-Object { $_.Name -match "-" } | % { $_.Name }
+$languages = get-childitem "$LocalizedFilesLocation\ColorPicker" | Where-Object { $_.Name -match "-" } | % { $_.Name }
 
 foreach ($language in $languages)
 {
@@ -27,7 +27,7 @@ foreach ($language in $languages)
 
         $destFileLocation = Split-Path -Parent $destFilePath
 
-        $sourceLocation = "$LocalizedFilesLocation\LocalizationDrop\$($file.location)\$language\$fileName"
+        $sourceLocation = "$LocalizedFilesLocation\$($file.location)\$language\$fileName"
         Write-Verbose "Dest: $destFileLocation Source: $sourceLocation"
 
         if (-not (Test-Path $destFileLocation)) { mkdir $destFileLocation }
