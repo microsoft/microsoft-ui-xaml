@@ -92,8 +92,6 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <!-- Adding the next couple keys to avoid test failures -->
-    <!-- Note that DefaultProgressBarStyle still points to WUXC.ProgressBar -->
-    <Style x:Key="DefaultProgressBarStyle" TargetType="ProgressBar" />
     <Style x:Key="DefaultSplitViewStyle" TargetType="SplitView" />
 
     <x:Double x:Key="PaneToggleButtonSize">40</x:Double>

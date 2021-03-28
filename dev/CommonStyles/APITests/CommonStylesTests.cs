@@ -68,6 +68,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             Verify.IsTrue(dictionariesContainSameElements, "Resource Keys you have added are missing in one of the theme dictionaries. This is trouble since we might end up crashing when trying to resolve the key in that Theme.");
+            if(!dictionariesContainSameElements)
+            {
+                Log.Error("Resource Keys you have added are missing in one of the theme dictionaries. This is trouble since we might end up crashing when trying to resolve the key in that Theme.");
+            }
         }
 
         [TestMethod]
@@ -146,7 +150,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Keys found in " + expectedDictionaryName + " but not in " + actualDictionaryName);
                 foreach (var missingKey in missingKeysInActualDictionary)
                 {
-                    Log.Comment("* " + missingKey);
+                    Log.Error("* " + missingKey);
                 }
             }
 
@@ -194,6 +198,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             Verify.IsTrue(allBaselineResourceKeysExist, "List of missing resource keys: " + missingKeysList.ToString());
+            if(!allBaselineResourceKeysExist)
+            {
+                Log.Error("List of missing resource keys: " + missingKeysList.ToString());
+            }
         }
 
         public void DumpThemeResources()
