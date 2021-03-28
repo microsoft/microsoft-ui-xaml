@@ -109,6 +109,7 @@
             <Color x:Key="SolidBackgroundFillColorTertiary">#282828</Color>
             <Color x:Key="SolidBackgroundFillColorQuarternary">#2C2C2C</Color>
 
+            <Color x:Key="SystemFillColorAttention">#50C0FF</Color> <!-- This color might be incorrect -->
             <Color x:Key="SystemFillColorSuccess">#6CCB5F</Color>
             <Color x:Key="SystemFillColorCaution">#FCE100</Color>
             <Color x:Key="SystemFillColorCritical">#FF99A4</Color>
@@ -370,6 +371,7 @@
             <Color x:Key="SolidBackgroundFillColorTertiary">#F9F9F9</Color>
             <Color x:Key="SolidBackgroundFillColorQuarternary">#FFFFFF</Color>
 
+            <Color x:Key="SystemFillColorAttention">#50C0FF</Color> <!-- This color might be incorrect -->
             <Color x:Key="SystemFillColorSuccess">#0F7B0F</Color>
             <Color x:Key="SystemFillColorCaution">#9D5D00</Color>
             <Color x:Key="SystemFillColorCritical">#C42B1C</Color>
@@ -753,6 +755,17 @@
             <Color x:Key="SystemFillColorCautionBackground">#433519</Color>
             <Color x:Key="SystemFillColorCriticalBackground">#442726</Color>
             <Color x:Key="SystemFillColorNeutralBackground">#08FFFFFF</Color>
+
+            <Color x:Key="TextOnAccentFillColorSelectedText">#FFFFFF</Color>
+            <Color x:Key="TextOnAccentFillColorPrimary">#000000</Color>
+            <Color x:Key="TextOnAccentFillColorSecondary">#80000000</Color>
+            <Color x:Key="TextOnAccentFillColorDisabled">#87FFFFFF</Color>
+            <Color x:Key="ControlStrongFillColorDefault">#8BFFFFFF</Color>
+            <Color x:Key="ControlStrongFillColorDisabled">#3FFFFFFF</Color>
+            <Color x:Key="AccentFillColorDisabled">#28FFFFFF</Color>
+            <Color x:Key="ControlStrokeColorForStrongFillWhenOnImage">#6B000000</Color>
+            <Color x:Key="ControlStrongStrokeColorDefault">#8BFFFFFF</Color>
+            <Color x:Key="ControlStrongStrokeColorDisabled">#28FFFFFF</Color>
        </ResourceDictionary>
 
     </ResourceDictionary.ThemeDictionaries>

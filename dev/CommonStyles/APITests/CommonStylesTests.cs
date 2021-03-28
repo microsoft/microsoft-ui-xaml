@@ -96,42 +96,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyNoBaselineResourceWereRemovedFromPreviousStableReleaseInV2Styles()
         {
-            EnsureNoMissingThemeResources(
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureNoMissingThemeResources(
                 BaselineResources.BaselineResourcesList2dot5Stable,
                 new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version2 });
+            });
         }
 
         [TestMethod]
         public void VerifyNoBaselineResourceWereRemovedFromPreviousStableReleaseInV1Styles()
         {
-            EnsureNoMissingThemeResources(
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureNoMissingThemeResources(
                 BaselineResources.BaselineResourcesList2dot5Stable,
                 new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version1 });
+            });
         }
 
         private void EnsureNoMissingThemeResources(IList<string> baseline, XamlControlsResources dictionaryToVerify)
         {
             var actualResourcesKeys = new HashSet<string>();
+            var resourceDictionaries = dictionaryToVerify;
 
-            RunOnUIThread.Execute(() =>
+            foreach (var dictionaryName in resourceDictionaries.ThemeDictionaries.Keys)
             {
-                var resourceDictionaries = dictionaryToVerify;
+                var themeDictionary = resourceDictionaries.ThemeDictionaries[dictionaryName] as ResourceDictionary;
 
-                foreach (var dictionaryName in resourceDictionaries.ThemeDictionaries.Keys)
-                {
-                    var themeDictionary = resourceDictionaries.ThemeDictionaries[dictionaryName] as ResourceDictionary;
-
-                    foreach (var entry in themeDictionary)
-                    {
-                        string entryKey = entry.Key as string;
-                        if (!actualResourcesKeys.Contains(entryKey))
-                        {
-                            actualResourcesKeys.Add(entryKey);
-                        }
-                    }
-                }
-
-                foreach (var entry in resourceDictionaries)
+                foreach (var entry in themeDictionary)
                 {
                     string entryKey = entry.Key as string;
                     if (!actualResourcesKeys.Contains(entryKey))
@@ -139,7 +132,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         actualResourcesKeys.Add(entryKey);
                     }
                 }
-            });
+            }
+
+            foreach (var entry in resourceDictionaries)
+            {
+                string entryKey = entry.Key as string;
+                if (!actualResourcesKeys.Contains(entryKey))
+                {
+                    actualResourcesKeys.Add(entryKey);
+                }
+            }
 
             StringBuilder missingKeysList = new StringBuilder();
 
@@ -161,7 +163,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var resourceDictionary = new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version2 };
-                
+
                 Log.Comment("ThemeDictionaries");
                 foreach (var key in resourceDictionary.ThemeDictionaries.Keys)
                 {
@@ -213,7 +215,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            RunOnUIThread.Execute(() => {
+            RunOnUIThread.Execute(() =>
+            {
                 var root = (StackPanel)XamlReader.Load(
                     @"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' 
                              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
@@ -277,7 +280,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 }
             }
 
-            if(failed)
+            if (failed)
             {
                 Verify.Fail("One or more visual tree verification failed, see details above");
             }
@@ -291,7 +294,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             CommandBar commandBar = null;
             UIElement overflowContent = null;
 
-            RunOnUIThread.Execute(() => {
+            RunOnUIThread.Execute(() =>
+            {
                 root = (StackPanel)XamlReader.Load(
                     @"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' 
                         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
@@ -362,7 +366,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                                 <AppBarToggleButton Icon='Dislike' Label='Dislike'/>
                             </StackPanel>
                        </Grid>";
-            VisualTreeTestHelper.VerifyVisualTree(xaml: xaml, 
+            VisualTreeTestHelper.VerifyVisualTree(xaml: xaml,
                 verificationFileNamePrefix: "VerifyVisualTreeForAppBarAndAppBarToggleButton");
         }
 
@@ -376,7 +380,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             var xaml = @"<Grid Width='400' Height='400' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
                        </Grid>";
-            VisualTreeTestHelper.VerifyVisualTree(xaml: xaml, 
+            VisualTreeTestHelper.VerifyVisualTree(xaml: xaml,
                 verificationFileNamePrefix: "VerifyVisualTreeExampleLoadAndVerifyForAllThemes",
                 theme: Theme.All);
         }

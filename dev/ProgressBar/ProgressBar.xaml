@@ -6,9 +6,9 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
 
-    <Style TargetType="ProgressBar" BasedOn="{StaticResource DefaultProgressBarStyle}" />
-
-    <Style x:Key="DefaultProgressBarStyle" TargetType="local:ProgressBar">
+    <!-- MUXC.ProgressBar -->
+    <!-- Note that we cannot name this with the key DefaultProgressBarStyle since that is already used for WUXC.ProgressBar-->
+    <Style TargetType="local:ProgressBar">
         <Setter Property="Foreground" Value="{ThemeResource ProgressBarForeground}" />
         <Setter Property="Background" Value="{ThemeResource ProgressBarBackground}" />
         <Setter Property="BorderThickness" Value="{ThemeResource ProgressBarBorderThemeThickness}" />
@@ -223,10 +223,10 @@
                             Padding="{TemplateBinding Padding}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             contract7NotPresent:CornerRadius="{StaticResource ProgressBarCornerRadius}">
-                            
+
                             <Border Clip="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ClipRect}">
                                 <Grid Height="{TemplateBinding MinHeight}">
-                                    
+
                                     <Rectangle
                                         x:Name="ProgressBarTrack"
                                         Fill="{TemplateBinding Background}"
@@ -239,10 +239,10 @@
                                             <CompositeTransform/>
                                         </Rectangle.RenderTransform>
                                     </Rectangle>
-                                    
+
                                     <Rectangle
                                         x:Name="DeterminateProgressBarIndicator"
-                                        Fill="{TemplateBinding Foreground}"         
+                                        Fill="{TemplateBinding Foreground}"
                                         HorizontalAlignment="Left"
                                         contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                         contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
@@ -252,7 +252,7 @@
 
                                     <Rectangle
                                         x:Name="IndeterminateProgressBarIndicator"
-                                        Fill="{TemplateBinding Foreground}"         
+                                        Fill="{TemplateBinding Foreground}"
                                         HorizontalAlignment="Left"
                                         Opacity="0"
                                         contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
@@ -266,7 +266,7 @@
 
                                     <Rectangle
                                         x:Name="IndeterminateProgressBarIndicator2"
-                                        Fill="{TemplateBinding Foreground}"         
+                                        Fill="{TemplateBinding Foreground}"
                                         HorizontalAlignment="Left"
                                         Opacity="0"
                                         contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"

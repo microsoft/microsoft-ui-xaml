@@ -37,6 +37,12 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
+	<Page Include="$(MSBuildThisFileDirectory)Deprecated_themeresources_any.xaml" >
+      <ControlsResourcesVersion>Any</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+	  <Priority>1</Priority>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Hyperlink_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>

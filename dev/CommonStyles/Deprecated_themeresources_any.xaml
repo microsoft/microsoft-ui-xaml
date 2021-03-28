@@ -8,115 +8,8 @@
     <!-- 2.5 controls should not depend on brushes on this file except for new controls like Expander -->
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="TopNavigationViewItemRevealBackgroundFocused" ResourceKey="SystemControlHighlightAccentBrush" />
-            <StaticResource x:Key="TopNavigationViewItemRevealIconForegroundFocused" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-            <StaticResource x:Key="TopNavigationViewItemRevealContentForegroundFocused" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-
-            <Thickness x:Key="ToolTipBorderThemePadding">8,5,8,7</Thickness>
             
-            <x:Double x:Key="ProgressBarIndicatorPauseOpacity">0.6</x:Double>
-            <x:Double x:Key="ProgressBarThemeMinHeight">4</x:Double>
-            <SolidColorBrush x:Key="ProgressBarBackgroundThemeBrush" Color="#59FFFFFF" />
-            <SolidColorBrush x:Key="ProgressBarBorderThemeBrush" Color="Transparent" />
-            <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="#FF5B2EC5" />
-            <SolidColorBrush x:Key="ProgressBarIndeterminateForegroundThemeBrush" Color="#FF8A57FF" />
-
-            <x:Double x:Key="MenuFlyoutSeparatorThemeHeight">1</x:Double>
-            <Thickness x:Key="MenuFlyoutItemCheckGlyphMargin">12,11,0,13</Thickness>
-
-            <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
-
-            <x:Double x:Key="ContentDialogButtonMinWidth">130</x:Double>
-            <x:Double x:Key="ContentDialogButtonMaxWidth">202</x:Double>
-            <x:Double x:Key="ContentDialogButtonMinHeight">32</x:Double>
-            <x:Double x:Key="ContentDialogButtonHeight">32</x:Double>
-            <x:Double x:Key="ContentDialogTitleMaxHeight">56</x:Double>
-            <Thickness x:Key="ContentDialogButton1HostMargin">0,0,4,0</Thickness>
-            <Thickness x:Key="ContentDialogButton2HostMargin">0,0,0,0</Thickness>
-            <Thickness x:Key="ContentDialogContentMargin">0,0,0,0</Thickness>
-            <Thickness x:Key="ContentDialogContentScrollViewerMargin">0,0,0,0</Thickness>
-            <StaticResource x:Key="ContentDialogLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
-            <SolidColorBrush x:Key="ContentDialogBackgroundThemeBrush" Color="LightGray" />
-            <SolidColorBrush x:Key="ContentDialogBorderThemeBrush" Color="{ThemeResource SystemAccentColor}" />
-            <SolidColorBrush x:Key="ContentDialogContentForegroundBrush" Color="Black" />
-            <SolidColorBrush x:Key="ContentDialogDimmingThemeBrush" Color="#99FFFFFF" />
-            <Thickness x:Key="ContentDialogCommandSpaceMargin">0,24,0,0</Thickness>
-
-            <x:Double x:Key="CheckBoxBorderThemeThickness">1</x:Double>
-            <x:Double x:Key="CheckBoxCheckedStrokeThickness">0</x:Double>
-
-            <Color x:Key="SystemControlErrorBackgroundColor">#33FFFFFF</Color>
-
-            <StaticResource x:Key="ExpanderBackground" ResourceKey="CardBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="ExpanderForeground" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="ExpanderForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="ExpanderForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="ExpanderBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ExpanderBorderPointerOverBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ExpanderBorderPressedBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ExpanderDropDownBackground" ResourceKey="CardBackgroundFillColorSecondaryBrush" />
-            <StaticResource x:Key="ExpanderDropDownBorderBrush" ResourceKey="ExpanderBorderBrush" />
-            <StaticResource x:Key="ExpanderDisabledForeground" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="ExpanderDisabledBorderBrush" ResourceKey="ExpanderBorderBrush" />
-            <Thickness x:Key="ExpanderBorderThickness">1</Thickness>
-            
-        </ResourceDictionary>
-        <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="TopNavigationViewItemRevealBackgroundFocused" ResourceKey="SystemControlHighlightAccentBrush" />
-            <StaticResource x:Key="TopNavigationViewItemRevealIconForegroundFocused" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-            <StaticResource x:Key="TopNavigationViewItemRevealContentForegroundFocused" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-
-            <Thickness x:Key="ToolTipBorderThemePadding">8,5,8,7</Thickness>
-
-            <x:Double x:Key="ProgressBarIndicatorPauseOpacity">0.6</x:Double>
-            <x:Double x:Key="ProgressBarThemeMinHeight">4</x:Double>
-            <SolidColorBrush x:Key="ProgressBarBackgroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="ProgressBarBorderThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
-            <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="ProgressBarIndeterminateForegroundThemeBrush" Color="#FF4617B4" />
-
-            <x:Double x:Key="MenuFlyoutSeparatorThemeHeight">1</x:Double>
-            <Thickness x:Key="MenuFlyoutItemCheckGlyphMargin">12,11,0,13</Thickness>
-
-            <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
-
-            <x:Double x:Key="ContentDialogButtonMinWidth">130</x:Double>
-            <x:Double x:Key="ContentDialogButtonMaxWidth">202</x:Double>
-            <x:Double x:Key="ContentDialogButtonMinHeight">32</x:Double>
-            <x:Double x:Key="ContentDialogButtonHeight">32</x:Double>
-            <x:Double x:Key="ContentDialogTitleMaxHeight">56</x:Double>
-            <Thickness x:Key="ContentDialogButton1HostMargin">0,0,4,0</Thickness>
-            <Thickness x:Key="ContentDialogButton2HostMargin">0,0,0,0</Thickness>
-            <Thickness x:Key="ContentDialogContentMargin">0,0,0,0</Thickness>
-            <Thickness x:Key="ContentDialogContentScrollViewerMargin">0,0,0,0</Thickness>
-            <StaticResource x:Key="ContentDialogLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
-            <SolidColorBrush x:Key="ContentDialogBackgroundThemeBrush" Color="LightGray" />
-            <SolidColorBrush x:Key="ContentDialogBorderThemeBrush" Color="{ThemeResource SystemAccentColor}" />
-            <SolidColorBrush x:Key="ContentDialogContentForegroundBrush" Color="Black" />
-            <SolidColorBrush x:Key="ContentDialogDimmingThemeBrush" Color="#99FFFFFF" />
-            <Thickness x:Key="ContentDialogCommandSpaceMargin">0,24,0,0</Thickness>
-
-            <x:Double x:Key="CheckBoxBorderThemeThickness">1</x:Double>
-            <x:Double x:Key="CheckBoxCheckedStrokeThickness">0</x:Double>
-
-            
-            <Color x:Key="SystemControlErrorBackgroundColor">#29C50500</Color>
-
-            <StaticResource x:Key="ExpanderBackground" ResourceKey="CardBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="ExpanderForeground" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="ExpanderForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="ExpanderForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="ExpanderBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ExpanderBorderPointerOverBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ExpanderBorderPressedBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ExpanderDropDownBackground" ResourceKey="CardBackgroundFillColorSecondaryBrush" />
-            <StaticResource x:Key="ExpanderDropDownBorderBrush" ResourceKey="ExpanderBorderBrush" />
-            <StaticResource x:Key="ExpanderDisabledForeground" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="ExpanderDisabledBorderBrush" ResourceKey="ExpanderBorderBrush" />
-            <Thickness x:Key="ExpanderBorderThickness">1</Thickness>
-        </ResourceDictionary>
-        <ResourceDictionary x:Key="HighContrast">
-            <!-- System high contrast colors -->
+            <!-- Duplication from HighContrast colors to match keys -->
             <SolidColorBrush x:Key="SystemColorWindowTextColorBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="SystemColorWindowColorBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="SystemColorButtonFaceColorBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
@@ -126,59 +19,75 @@
             <SolidColorBrush x:Key="SystemColorHotlightColorBrush" Color="{ThemeResource SystemColorHotlightColor}" />
             <SolidColorBrush x:Key="SystemColorGrayTextColorBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
 
-            <StaticResource x:Key="TopNavigationViewItemRevealBackgroundFocused" ResourceKey="SystemControlHighlightAccentBrush" />
-            <StaticResource x:Key="TopNavigationViewItemRevealIconForegroundFocused" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-            <StaticResource x:Key="TopNavigationViewItemRevealContentForegroundFocused" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
+            <local:AcrylicBrush
+                x:Key="SystemControlTransientBackgroundBrush"
+                TintColor="#2C2C2C"
+                TintOpacity="0.15"
+                FallbackColor="#2C2C2C"
+                BackgroundSource="HostBackdrop"/>
 
-            <Thickness x:Key="ToolTipBorderThemePadding">8,5,8,7</Thickness>
+            <x:Double x:Key="SplitViewOpenPaneThemeLength">320</x:Double>
+            <x:Double x:Key="SplitViewCompactPaneThemeLength">48</x:Double>
+            <Thickness x:Key="SplitViewLeftBorderThemeThickness">0,0,1,0</Thickness>
+            <Thickness x:Key="SplitViewRightBorderThemeThickness">1,0,0,0</Thickness>
+            <StaticResource x:Key="SplitViewLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
+            <x:String x:Key="SplitViewPaneAnimationOpenDuration">00:00:00.2</x:String>
+            <x:String x:Key="SplitViewPaneAnimationOpenPreDuration">00:00:00.19999</x:String>
+            <x:String x:Key="SplitViewPaneAnimationCloseDuration">00:00:00.1</x:String>
+
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
             
-            <x:Double x:Key="ProgressBarIndicatorPauseOpacity">1</x:Double>
-            <x:Double x:Key="ProgressBarThemeMinHeight">4</x:Double>
-            <SolidColorBrush x:Key="ProgressBarBackgroundThemeBrush" Color="#30000000" />
-            <SolidColorBrush x:Key="ProgressBarBorderThemeBrush" Color="Transparent" />
-            <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="#FF4617B4" />
-            <SolidColorBrush x:Key="ProgressBarIndeterminateForegroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <!-- Duplication from HighContrast colors to match keys -->
+            <SolidColorBrush x:Key="SystemColorWindowTextColorBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="SystemColorWindowColorBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="SystemColorButtonFaceColorBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="SystemColorButtonTextColorBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="SystemColorHighlightColorBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="SystemColorHighlightTextColorBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="SystemColorHotlightColorBrush" Color="{ThemeResource SystemColorHotlightColor}" />
+            <SolidColorBrush x:Key="SystemColorGrayTextColorBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
 
-            <x:Double x:Key="MenuFlyoutSeparatorThemeHeight">1</x:Double>
-            <Thickness x:Key="MenuFlyoutItemCheckGlyphMargin">12,11,0,13</Thickness>
+            <local:AcrylicBrush
+                x:Key="SystemControlTransientBackgroundBrush"
+                TintColor="#FCFCFC"
+                TintOpacity="0.0"
+                FallbackColor="#FCFCFC"
+                BackgroundSource="HostBackdrop"/>
 
-            <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
+            <x:Double x:Key="SplitViewOpenPaneThemeLength">320</x:Double>
+            <x:Double x:Key="SplitViewCompactPaneThemeLength">48</x:Double>
+            <Thickness x:Key="SplitViewLeftBorderThemeThickness">0,0,1,0</Thickness>
+            <Thickness x:Key="SplitViewRightBorderThemeThickness">1,0,0,0</Thickness>
+            <StaticResource x:Key="SplitViewLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
+            <x:String x:Key="SplitViewPaneAnimationOpenDuration">00:00:00.2</x:String>
+            <x:String x:Key="SplitViewPaneAnimationOpenPreDuration">00:00:00.19999</x:String>
+            <x:String x:Key="SplitViewPaneAnimationCloseDuration">00:00:00.1</x:String>
 
-            <x:Double x:Key="ContentDialogButtonMinWidth">130</x:Double>
-            <x:Double x:Key="ContentDialogButtonMaxWidth">202</x:Double>
-            <x:Double x:Key="ContentDialogButtonMinHeight">32</x:Double>
-            <x:Double x:Key="ContentDialogButtonHeight">32</x:Double>
-            <x:Double x:Key="ContentDialogTitleMaxHeight">56</x:Double>
-            <Thickness x:Key="ContentDialogButton1HostMargin">0,0,4,0</Thickness>
-            <Thickness x:Key="ContentDialogButton2HostMargin">0,0,0,0</Thickness>
-            <Thickness x:Key="ContentDialogContentMargin">0,0,0,0</Thickness>
-            <Thickness x:Key="ContentDialogContentScrollViewerMargin">0,0,0,0</Thickness>
-            <StaticResource x:Key="ContentDialogLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
-            <SolidColorBrush x:Key="ContentDialogBackgroundThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
-            <SolidColorBrush x:Key="ContentDialogBorderThemeBrush" Color="{ThemeResource SystemAccentColor}" />
-            <SolidColorBrush x:Key="ContentDialogContentForegroundBrush" Color="Black" />
-            <SolidColorBrush x:Key="ContentDialogDimmingThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <Thickness x:Key="ContentDialogCommandSpaceMargin">0,24,0,0</Thickness>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <!-- System high contrast colors -->
 
-            <x:Double x:Key="CheckBoxBorderThemeThickness">1</x:Double>
-            <x:Double x:Key="CheckBoxCheckedStrokeThickness">1</x:Double>
+            <SolidColorBrush x:Key="SystemColorWindowTextColorBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="SystemColorWindowColorBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="SystemColorButtonFaceColorBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="SystemColorButtonTextColorBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="SystemColorHighlightColorBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="SystemColorHighlightTextColorBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="SystemColorHotlightColorBrush" Color="{ThemeResource SystemColorHotlightColor}" />
+            <SolidColorBrush x:Key="SystemColorGrayTextColorBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
 
             <SolidColorBrush x:Key="SystemControlTransientBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
 
-            <Color x:Key="SystemControlErrorBackgroundColor">#29C50500</Color>
+            <x:Double x:Key="SplitViewOpenPaneThemeLength">320</x:Double>
+            <x:Double x:Key="SplitViewCompactPaneThemeLength">48</x:Double>
+            <Thickness x:Key="SplitViewLeftBorderThemeThickness">0,0,1,0</Thickness>
+            <Thickness x:Key="SplitViewRightBorderThemeThickness">1,0,0,0</Thickness>
+            <StaticResource x:Key="SplitViewLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
+            <x:String x:Key="SplitViewPaneAnimationOpenDuration">00:00:00.2</x:String>
+            <x:String x:Key="SplitViewPaneAnimationOpenPreDuration">00:00:00.19999</x:String>
+            <x:String x:Key="SplitViewPaneAnimationCloseDuration">00:00:00.1</x:String>
 
-            <StaticResource x:Key="ExpanderBackground" ResourceKey="SystemColorButtonFaceColorBrush" />
-            <StaticResource x:Key="ExpanderForeground" ResourceKey="SystemColorButtonTextColorBrush" />
-            <StaticResource x:Key="ExpanderForegroundPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
-            <StaticResource x:Key="ExpanderForegroundPressed" ResourceKey="SystemColorHighlightColorBrush" />
-            <StaticResource x:Key="ExpanderBorderBrush" ResourceKey="SystemColorButtonTextColorBrush" />
-            <StaticResource x:Key="ExpanderBorderPointerOverBrush" ResourceKey="SystemColorHighlightColorBrush" />
-            <StaticResource x:Key="ExpanderBorderPressedBrush" ResourceKey="SystemColorHighlightColorBrush" />
-            <StaticResource x:Key="ExpanderDropDownBackground" ResourceKey="SystemColorWindowColorBrush" />
-            <StaticResource x:Key="ExpanderDropDownBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
-            <StaticResource x:Key="ExpanderDisabledForeground" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="ExpanderDisabledBorderBrush" ResourceKey="TextFillColorDisabledBrush" />
-            <Thickness x:Key="ExpanderBorderThickness">2</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
