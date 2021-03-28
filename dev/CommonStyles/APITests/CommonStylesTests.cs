@@ -77,9 +77,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyNoResourceKeysWereRemovedFromPreviousStableReleaseInV2Styles()
         {
-            if(PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
+            if(PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
             {
-                Log.Comment("Skipping validation below RS4.");
+                // https://github.com/microsoft/microsoft-ui-xaml/issues/4674
+                Log.Comment("Skipping validation below RS5.");
                 return;
             }
 
@@ -94,9 +95,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyNoResourceKeysWereRemovedFromPreviousStableReleaseInV1Styles()
         {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
             {
-                Log.Comment("Skipping validation below RS4.");
+                // https://github.com/microsoft/microsoft-ui-xaml/issues/4674
+                Log.Comment("Skipping validation below RS5.");
                 return;
             }
 
@@ -111,9 +113,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyAllV1KeysExistInV2()
         {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
             {
-                Log.Comment("Skipping validation below RS4.");
+                // https://github.com/microsoft/microsoft-ui-xaml/issues/4674
+                Log.Comment("Skipping validation below RS5.");
                 return;
             }
 
