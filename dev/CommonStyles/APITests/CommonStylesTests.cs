@@ -77,6 +77,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyNoResourceKeysWereRemovedFromPreviousStableReleaseInV2Styles()
         {
+            if(PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
+            {
+                Log.Comment("Skipping validation below RS4.");
+                return;
+            }
+
             RunOnUIThread.Execute(() =>
             {
                 EnsureNoMissingThemeResources(
@@ -88,6 +94,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyNoResourceKeysWereRemovedFromPreviousStableReleaseInV1Styles()
         {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
+            {
+                Log.Comment("Skipping validation below RS4.");
+                return;
+            }
+
             RunOnUIThread.Execute(() =>
             {
                 EnsureNoMissingThemeResources(
@@ -99,6 +111,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyAllV1KeysExistInV2()
         {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
+            {
+                Log.Comment("Skipping validation below RS4.");
+                return;
+            }
+
             RunOnUIThread.Execute(() =>
             {
                 var v1 = new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version1 };
