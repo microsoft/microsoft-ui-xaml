@@ -6,8 +6,7 @@ service the localized files.
 Uploading english-only .resw files to Touchdown for localization:
 1. MUX-LocalizationHandoff is a scheduled pipeline that runs regularly. It will automatically upload the lastest english .resw files to Touchdown for localization.
 
-Checking-in localized .resw files:
-Right now the process requires some manual steps. The plan is to automate this in the future.
+Checking-in the localized .resw files requires some manual steps. The plan is to automate this in the future.
 1. When there are newly available localized strings, Touchdown notifies the team via email.
 2. Each run of MUX-LocalizationHandoff retrieves the latest localized files and publishes them as a build artifact under 'LocalizationDrop'
 3. Download & unzip this artifact (either from a pipeline run that happened after the reciept of the aforementioned email or from a manually scheduled pipeline run).
