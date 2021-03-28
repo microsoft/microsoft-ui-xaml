@@ -28,7 +28,6 @@ jobs:
   - task: TouchdownBuildTask@1
     displayName: 'Call Touchdown Build Service'
     inputs:
-      isPreview: true
       environment: 'PRODEXT'
       teamId: '104'
       authType: 'OAuth'
@@ -40,14 +39,14 @@ jobs:
       appendRelativeDir: true
       cultureMappingType: 'None'
 
-  # - task: PublishBuildArtifacts@1
-  #   displayName: 'Publish Artifacts - Localized Resources'
-  #   condition: always()
-  #   inputs:
-  #     PathtoPublish: ${{ parameters.resourceOutputDirectory }}
-  #     artifactName: 'LocalizationDrop'
-  #     parallel: true
-  #     parallelCount: 8
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifacts - Localized Resources'
+    condition: always()
+    inputs:
+      PathtoPublish: ${{ variables.resourceOutputDirectory }}
+      artifactName: 'LocalizationDrop'
+      parallel: true
+      parallelCount: 8
 
   # - powershell: |
   #     $changes = & git ls-files -m
