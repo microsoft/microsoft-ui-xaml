@@ -58,19 +58,79 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment("Comparing against " + dictionaryName.ToString());
                     var themeDictionary = resourceDictionaries.ThemeDictionaries[dictionaryName] as ResourceDictionary;
 
-                    bool allKeysInDefaultExistInDictionary = ResourceDictionariesContainSameKeys(defaultThemeDictionary, "Default", themeDictionary, dictionaryName.ToString());
-                    bool allKeysInDictionaryExistInDefault = ResourceDictionariesContainSameKeys(themeDictionary, dictionaryName.ToString(), defaultThemeDictionary, "Default");
+                    bool allKeysInDefaultExistInDictionary = AreKeysFromExpectedInActualDictionary(defaultThemeDictionary, "Default", themeDictionary, dictionaryName.ToString());
+                    bool allKeysInDictionaryExistInDefault = AreKeysFromExpectedInActualDictionary(themeDictionary, dictionaryName.ToString(), defaultThemeDictionary, "Default");
 
                     dictionariesContainSameElements &= (allKeysInDefaultExistInDictionary && allKeysInDictionaryExistInDefault);
                 }
 
-                Verify.AreEqual(0, resourceDictionaries.MergedDictionaries.Count, "MergedDictionaries is not empty");
+                Verify.AreEqual(0, resourceDictionaries.MergedDictionaries.Count, "MergedDictionaries is not empty, Verify if you really wanted to update the merged dictionary. If so, update the test");
             });
 
-            Verify.IsTrue(dictionariesContainSameElements, "Dictionaries don't contain the same keys");
+            Verify.IsTrue(dictionariesContainSameElements, "Resource Keys you have added are missing in one of the theme dictionaries. This is trouble since we might end up crashing when trying to resolve the key in that Theme.");
         }
 
-        bool ResourceDictionariesContainSameKeys(ResourceDictionary expectedDictionary, string expectedDictionaryName, ResourceDictionary actualDictionary, string actualDictionaryName)
+        [TestMethod]
+        public void VerifyNoResourceKeysWereRemovedFromPreviousStableReleaseInV2Styles()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureNoMissingThemeResources(
+                BaselineResources.BaselineResourcesList2dot5Stable,
+                new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version2 });
+            });
+        }
+
+        [TestMethod]
+        public void VerifyNoResourceKeysWereRemovedFromPreviousStableReleaseInV1Styles()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureNoMissingThemeResources(
+                BaselineResources.BaselineResourcesList2dot5Stable,
+                new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version1 });
+            });
+        }
+
+        [TestMethod]
+        public void VerifyAllV1KeysExistInV2()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var v1 = new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version1 };
+                var v2 = new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version2 };
+
+                Verify.IsTrue(AreKeysFromExpectedInActualDictionary(
+                                    (ResourceDictionary)v1.ThemeDictionaries["Default"],
+                                    "V1.ThemeDictionaries.Default",
+                                    (ResourceDictionary)v2.ThemeDictionaries["Default"],
+                                    "V2.ThemeDictionaries.Default"),
+                             "Resource Keys in V1 Default theme dictionary do not exist in V2 Default theme dictionary");
+
+                Verify.IsTrue(AreKeysFromExpectedInActualDictionary(
+                                   (ResourceDictionary)v1.ThemeDictionaries["Light"],
+                                   "V1.ThemeDictionaries.Light",
+                                   (ResourceDictionary)v2.ThemeDictionaries["Light"],
+                                   "V2.ThemeDictionaries.Light"),
+                            "Resource Keys in V1 Light theme dictionary do not exist in V2 Light theme dictionary");
+
+                Verify.IsTrue(AreKeysFromExpectedInActualDictionary(
+                                   (ResourceDictionary)v1.ThemeDictionaries["HighContrast"],
+                                   "V1.ThemeDictionaries.HighContrast",
+                                   (ResourceDictionary)v2.ThemeDictionaries["HighContrast"],
+                                   "V2.ThemeDictionaries.HighContrast"),
+                            "Resource Keys in V1 HighContrast theme dictionary do not exist in V2 HighContrast theme dictionary");
+
+                Verify.IsTrue(AreKeysFromExpectedInActualDictionary(
+                                 (ResourceDictionary)v1,
+                                 "V1.RootDictionary",
+                                 (ResourceDictionary)v2,
+                                 "V2.RootDictionary"),
+                          "Resource Keys in V1 root dictionary do not exist in V2 root dictionary");
+            });
+        }
+
+        private bool AreKeysFromExpectedInActualDictionary(ResourceDictionary expectedDictionary, string expectedDictionaryName, ResourceDictionary actualDictionary, string actualDictionaryName)
         {
             List<string> missingKeysInActualDictionary = new List<string>();
             foreach (var entry in expectedDictionary)
@@ -91,28 +151,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             return (missingKeysInActualDictionary.Count == 0);
-        }
-
-        [TestMethod]
-        public void VerifyNoBaselineResourceWereRemovedFromPreviousStableReleaseInV2Styles()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                EnsureNoMissingThemeResources(
-                BaselineResources.BaselineResourcesList2dot5Stable,
-                new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version2 });
-            });
-        }
-
-        [TestMethod]
-        public void VerifyNoBaselineResourceWereRemovedFromPreviousStableReleaseInV1Styles()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                EnsureNoMissingThemeResources(
-                BaselineResources.BaselineResourcesList2dot5Stable,
-                new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version1 });
-            });
         }
 
         private void EnsureNoMissingThemeResources(IList<string> baseline, XamlControlsResources dictionaryToVerify)
