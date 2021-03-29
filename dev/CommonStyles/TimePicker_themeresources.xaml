@@ -16,7 +16,6 @@
             <Thickness x:Key="TimePickerThirdHostThemeMargin">20,0,0,0</Thickness>
             <FontWeight x:Key="TimePickerHeaderThemeFontWeight">Normal</FontWeight>
             <StaticResource x:Key="TimePickerSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
-            <StaticResource x:Key="TimePickerSpacerFillFocused" ResourceKey="DividerStrokeColorFocusBrush" />
             <StaticResource x:Key="TimePickerSpacerFillDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
             <StaticResource x:Key="TimePickerHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="TimePickerHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
@@ -106,7 +105,6 @@
             <Thickness x:Key="TimePickerThirdHostThemeMargin">20,0,0,0</Thickness>
             <FontWeight x:Key="TimePickerHeaderThemeFontWeight">Normal</FontWeight>
             <StaticResource x:Key="TimePickerSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
-            <StaticResource x:Key="TimePickerSpacerFillFocused" ResourceKey="DividerStrokeColorFocusBrush" />
             <StaticResource x:Key="TimePickerSpacerFillDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
             <StaticResource x:Key="TimePickerHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="TimePickerHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />

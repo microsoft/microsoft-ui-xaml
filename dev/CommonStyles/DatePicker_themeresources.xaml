@@ -15,7 +15,6 @@
             <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,4</Thickness>
             <FontWeight x:Key="DatePickerHeaderThemeFontWeight">Normal</FontWeight>
             <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
-            <StaticResource x:Key="DatePickerSpacerFillFocused" ResourceKey="DividerStrokeColorFocusBrush" />
             <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
             
             <StaticResource x:Key="DatePickerHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
@@ -102,10 +101,10 @@
             <x:Double x:Key="DatePickerSpacingThemeWidth">20</x:Double>
             <x:Double x:Key="DatePickerSpacingThemeHeight">20</x:Double>
             <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,4</Thickness>
+            <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,4</Thickness>
             <FontWeight x:Key="DatePickerHeaderThemeFontWeight">Normal</FontWeight>
             
             <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
-            <StaticResource x:Key="DatePickerSpacerFillFocused" ResourceKey="DividerStrokeColorFocusBrush" />
             <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
             <StaticResource x:Key="DatePickerHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DatePickerHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
