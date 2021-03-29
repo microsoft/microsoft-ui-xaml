@@ -971,9 +971,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 TapOnColorSpectrum(0.5, 0.5);
                 VerifyElementIsFocused(ColorSpectrumAutomationId);
-
-                //TODO: Remove
-                Verify.IsNotNull(null);
             }
         }
 
