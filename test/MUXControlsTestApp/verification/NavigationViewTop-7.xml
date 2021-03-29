@@ -1336,7 +1336,7 @@
           Padding=0,0,0,0
           Foreground=#E4000000
           BorderThickness=0,0,0,0
-          BorderBrush=[NULL]
+          BorderBrush=#0F000000
           Background=[NULL]
           CornerRadius=0,0,0,0
           Name=RootSplitView
@@ -1364,8 +1364,8 @@
               Padding=0,0,0,0
               CornerRadius=0,0,0,0
               BorderThickness=0,0,0,0
-              BorderBrush=[NULL]
-              Background=Microsoft.UI.Xaml.Media.AcrylicBrush
+              BorderBrush=#0F000000
+              Background=#00FFFFFF
               Width=120
               Name=PaneRoot
               Margin=0,0,0,0
