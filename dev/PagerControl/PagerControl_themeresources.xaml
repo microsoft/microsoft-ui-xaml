@@ -7,7 +7,7 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="PagerControlSelectionIndicatorForeground" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="PagerControlSelectionIndicatorForeground" ResourceKey="AccentFillColorDefaultBrush" />
             <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
@@ -17,7 +17,7 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Dark">
-            <StaticResource x:Key="PagerControlSelectionIndicatorForeground" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="PagerControlSelectionIndicatorForeground" ResourceKey="AccentFillColorDefaultBrush" />
             <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush" />

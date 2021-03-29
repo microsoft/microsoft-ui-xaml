@@ -23,4 +23,12 @@ public:
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnShowAsMonochromePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnUriSourcePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 };

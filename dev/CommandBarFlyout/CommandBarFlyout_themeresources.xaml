@@ -17,19 +17,21 @@
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonForeground" ResourceKey="TextFillColorPrimaryBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundPressed" ResourceKey="TextFillColorTertiaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForeground" ResourceKey="TextFillColorSecondaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPressed" ResourceKey="TextFillColorTertiaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronForeground" ResourceKey="TextFillColorSecondaryBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundChecked" ResourceKey="AccentAAFillColorDefaultBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPressed" ResourceKey="AccentAAFillColorTertiaryBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedDisabled" ResourceKey="AccentAAFillColorDisabledBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundChecked" ResourceKey="TextOnAccentAAFillColorPrimaryBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentAAFillColorPrimaryBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundCheckedPressed" ResourceKey="TextOnAccentAAFillColorSecondaryBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentAAFillColorDisabledBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundChecked" ResourceKey="AccentFillColorDefaultBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedDisabled" ResourceKey="AccentFillColorDisabledBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundChecked" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundCheckedPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBorderBrush" ResourceKey="SubtleFillColorTransparentBrush"/>
                         
             <Thickness x:Key="CommandBarFlyoutBorderThemeThickness">1</Thickness>
@@ -46,19 +48,21 @@
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonForeground" ResourceKey="TextFillColorPrimaryBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundPressed" ResourceKey="TextFillColorTertiaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForeground" ResourceKey="TextFillColorSecondaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPressed" ResourceKey="TextFillColorTertiaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronForeground" ResourceKey="TextFillColorSecondaryBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundChecked" ResourceKey="AccentAAFillColorDefaultBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPressed" ResourceKey="AccentAAFillColorTertiaryBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedDisabled" ResourceKey="AccentAAFillColorDisabledBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundChecked" ResourceKey="TextOnAccentAAFillColorPrimaryBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentAAFillColorPrimaryBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundCheckedPressed" ResourceKey="TextOnAccentAAFillColorSecondaryBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentAAFillColorDisabledBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundChecked" ResourceKey="AccentFillColorDefaultBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedDisabled" ResourceKey="AccentFillColorDisabledBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundChecked" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundCheckedPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBorderBrush" ResourceKey="SubtleFillColorTransparentBrush"/>
             
             <Thickness x:Key="CommandBarFlyoutBorderThemeThickness">1</Thickness>
@@ -79,6 +83,8 @@
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPressed" ResourceKey="SystemControlForegroundBaseHighBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundChecked" ResourceKey="SystemControlHighlightAccentBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPointerOver" ResourceKey="SystemControlHighlightAccentBrush"/>
@@ -96,6 +102,9 @@
             <StaticResource x:Key="CommandBarFlyoutButtonBackground" ResourceKey="SystemColorButtonFaceColor" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
+
+    <Thickness x:Key="CommandBarFlyoutAppBarButtonInnerBorderMargin">2</Thickness>
+    <Thickness x:Key="CommandBarFlyoutAppBarEllipsisButtonInnerBorderMargin">2,2,6,2</Thickness>
 
     <Style x:Key="CommandBarFlyoutAppBarButtonStyleBase" TargetType="AppBarButton">
         <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackground}" />
@@ -116,12 +125,8 @@
                 <ControlTemplate TargetType="AppBarButton">
                     <Grid x:Name="Root"
                         MinWidth="{TemplateBinding MinWidth}"
-                        MaxWidth="{TemplateBinding MaxWidth}"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
+                        MaxWidth="{TemplateBinding MaxWidth}">
+                        
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ApplicationViewStates">
                                 <VisualState x:Name="FullSize" />
@@ -133,7 +138,7 @@
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
                                         <Setter Target="ContentRoot.Width" Value="NaN" />
                                         <Setter Target="ContentViewbox.Visibility" Value="Collapsed" />
-                                        <Setter Target="ContentViewbox.Margin" Value="15,0,12,0" />
+                                        <Setter Target="ContentViewbox.Margin" Value="12,0,12,0" />
                                         <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -143,7 +148,7 @@
                                         <Setter Target="ContentRoot.Width" Value="NaN" />
                                         <Setter Target="ContentViewbox.Visibility" Value="Collapsed" />
                                         <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
-                                        <Setter Target="OverflowTextLabel.Margin" Value="38,0,12,0" />
+                                        <Setter Target="OverflowTextLabel.Margin" Value="39,0,12,0" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowWithMenuIcons">
@@ -156,7 +161,7 @@
                                         <Setter Target="ContentViewbox.Height" Value="16" />
                                         <Setter Target="ContentViewbox.Margin" Value="12,0,12,0" />
                                         <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
-                                        <Setter Target="OverflowTextLabel.Margin" Value="38,0,12,0" />
+                                        <Setter Target="OverflowTextLabel.Margin" Value="39,0,12,0" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowWithToggleButtonsAndMenuIcons">
@@ -167,9 +172,9 @@
                                         <Setter Target="ContentViewbox.VerticalAlignment" Value="Center" />
                                         <Setter Target="ContentViewbox.Width" Value="16" />
                                         <Setter Target="ContentViewbox.Height" Value="16" />
-                                        <Setter Target="ContentViewbox.Margin" Value="15,0,12,0" />
+                                        <Setter Target="ContentViewbox.Margin" Value="39,0,12,0" />
                                         <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
-                                        <Setter Target="OverflowTextLabel.Margin" Value="53,0,12,0" />
+                                        <Setter Target="OverflowTextLabel.Margin" Value="67,0,12,0" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -177,35 +182,47 @@
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource SystemControlHighlightListLowBrush}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPointerOver}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource SystemControlHighlightListMediumBrush}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPressed}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPressed}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="Content.Foreground" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}" />
-                                        <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}" />
-                                        <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundDisabled}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
+                                        <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
+                                        <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowNormal" />
                                 <VisualState x:Name="OverflowPointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource SystemControlBackgroundListLowBrush}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPointerOver}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
+                                        <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
+                                        <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowPressed">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource SystemControlBackgroundListMediumBrush}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPressed}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPressed}" />
+                                        <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPressed}" />
+                                        <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPressed}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowSubMenuOpened">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource SystemControlHighlightListAccentLowBrush}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPointerOver}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
+                                        <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
+                                        <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -239,6 +256,21 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
+
+                        <Border x:Name="AppBarButtonInnerBorder"
+                            Margin="{StaticResource CommandBarFlyoutAppBarButtonInnerBorderMargin}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                            Control.IsTemplateFocusTarget="True">
+
+                            <contract7Present:Border.BackgroundTransition>
+                                <contract7Present:BrushTransition Duration="0:0:0.083" />
+                            </contract7Present:Border.BackgroundTransition>
+                        </Border>
+
                         <Grid x:Name="ContentRoot" Width="40">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -320,12 +352,8 @@
                 <ControlTemplate TargetType="AppBarToggleButton">
                     <Grid x:Name="Root"
                         MinWidth="{TemplateBinding MinWidth}"
-                        MaxWidth="{TemplateBinding MaxWidth}"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
+                        MaxWidth="{TemplateBinding MaxWidth}">
+                        
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ApplicationViewStates">
                                 <VisualState x:Name="FullSize" />
@@ -337,7 +365,6 @@
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
                                         <Setter Target="ContentRoot.Width" Value="NaN" />
                                         <Setter Target="ContentViewbox.Visibility" Value="Collapsed" />
-                                        <Setter Target="CheckedHighlightBackground.Visibility" Value="Collapsed" />
                                         <Setter Target="OverflowCheckGlyph.Visibility" Value="Visible" />
                                         <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
                                     </VisualState.Setters>
@@ -351,11 +378,10 @@
                                         <Setter Target="ContentViewbox.VerticalAlignment" Value="Center" />
                                         <Setter Target="ContentViewbox.MaxWidth" Value="16" />
                                         <Setter Target="ContentViewbox.MaxHeight" Value="16" />
-                                        <Setter Target="ContentViewbox.Margin" Value="15,0,12,0" />
-                                        <Setter Target="CheckedHighlightBackground.Visibility" Value="Collapsed" />
+                                        <Setter Target="ContentViewbox.Margin" Value="39,0,12,0" />
                                         <Setter Target="OverflowCheckGlyph.Visibility" Value="Visible" />
                                         <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
-                                        <Setter Target="OverflowTextLabel.Margin" Value="53,0,12,0" />
+                                        <Setter Target="OverflowTextLabel.Margin" Value="67,0,12,0" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -363,82 +389,91 @@
                                 <VisualState x:Name="Normal"/>
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource SystemControlHighlightListLowBrush}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPointerOver}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource SystemControlHighlightListMediumBrush}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPressed}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPressed}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="Content.Foreground" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}" />
-                                        <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}" />
-                                        <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}" />
-                                        <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundDisabled}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
+                                        <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
+                                        <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Checked">
                                     <VisualState.Setters>
-                                        <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
-                                        <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundChecked}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundChecked}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="CheckedPointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="CheckedHighlightBackground.Fill" Value="{ThemeResource SystemControlHighlightListAccentMediumBrush}" />
-                                        <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
-                                        <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundCheckedPointerOver}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundCheckedPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="CheckedPressed">
                                     <VisualState.Setters>
-                                        <Setter Target="CheckedHighlightBackground.Fill" Value="{ThemeResource SystemControlHighlightListAccentHighBrush}" />
-                                        <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
-                                        <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundCheckedPressed}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundCheckedPressed}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="CheckedDisabled">
                                     <VisualState.Setters>
-                                        <Setter Target="Content.Foreground" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}" />
-                                        <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}" />
-                                        <Setter Target="CheckedHighlightBackground.Fill" Value="{ThemeResource SystemControlHighlightListAccentLowBrush}" />
-                                        <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}" />
-                                        <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}" />
-                                        <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundDisabled}" />
+                                        <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
+                                        <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
+                                        <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowNormal" />
                                 <VisualState x:Name="OverflowPointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource SystemControlBackgroundListLowBrush}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPointerOver}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
+                                        <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
+                                        <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowPressed">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource SystemControlBackgroundListMediumBrush}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPressed}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPressed}" />
+                                        <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPressed}" />
+                                        <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPressed}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowChecked">
                                     <VisualState.Setters>
-                                        <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowCheckedPointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="CheckedHighlightBackground.Fill" Value="{ThemeResource SystemControlHighlightListAccentMediumBrush}" />
-                                        <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
+                                        <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPointerOver}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
+                                        <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
+                                        <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowCheckedPressed">
                                     <VisualState.Setters>
-                                        <Setter Target="CheckedHighlightBackground.Fill" Value="{ThemeResource SystemControlHighlightListAccentHighBrush}" />
-                                        <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
+                                        <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPressed}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPressed}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPressed}" />
+                                        <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPressed}" />
+                                        <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPressed}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -466,7 +501,21 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Rectangle x:Name="CheckedHighlightBackground" Fill="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundChecked}" Opacity="0" />
+
+                        <Border x:Name="AppBarButtonInnerBorder"
+                            Margin="{StaticResource CommandBarFlyoutAppBarButtonInnerBorderMargin}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                            Control.IsTemplateFocusTarget="True">
+
+                            <contract7Present:Border.BackgroundTransition>
+                                <contract7Present:BrushTransition Duration="0:0:0.083" />
+                            </contract7Present:Border.BackgroundTransition>
+                        </Border>
+                        
                         <Grid x:Name="ContentRoot" Width="40">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -474,12 +523,12 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock x:Name="OverflowCheckGlyph"
                                 Text="&#xE0E7;"
-                                Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"
+                                Foreground="{ThemeResource CommandBarFlyoutAppBarButtonForeground}"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="16"
+                                FontSize="12"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
-                                Margin="15,4,12,4"
+                                Margin="15,4,14,4"
                                 Opacity="0"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
@@ -501,7 +550,7 @@
                                 TextWrapping="NoWrap"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center"
-                                Margin="38,0,12,0"
+                                Margin="39,0,12,0"
                                 Padding="0,5,0,7"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
@@ -584,8 +633,7 @@
         <Setter Property="Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource CommandBarFlyoutAppBarButtonBorderBrush}" />
         <Setter Property="Padding" Value="0" />
-        <Setter Property="Margin" Value="0, 3, 3, 3"/>
-        <Setter Property="Width" Value="40" />
+        <Setter Property="Width" Value="44" />
         <Setter Property="Height" Value="40" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
@@ -642,12 +690,12 @@
                             BorderThickness="{TemplateBinding BorderThickness}"
                             ContentTransitions="{TemplateBinding ContentTransitions}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Margin="{StaticResource CommandBarFlyoutAppBarEllipsisButtonInnerBorderMargin}"
                             Padding="{TemplateBinding Padding}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             AutomationProperties.AccessibilityView="Raw"
-                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"/>
+                            contract7Present:CornerRadius="{ThemeResource ControlCornerRadius}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
