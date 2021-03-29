@@ -14,8 +14,8 @@ jobs:
   timeoutInMinutes: 120
   variables:
     helixOutputFolder: $(Build.SourcesDirectory)\HelixOutput
-    muxTestInfraHelixVersion: 0.0.2.3
-    helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.MUXTestInfra.Helix.$(muxTestInfraHelixVersion)\scripts\pipeline
+    winuiHelixVersion: 0.0.2.4
+    helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.WinUI.Helix.$(winuiHelixVersion)\scripts\pipeline
     ${{if eq(parameters.pgoArtifact, '') }}:
       processHelixFilesExtraArgs: ''
     ${{if ne(parameters.pgoArtifact, '') }}:

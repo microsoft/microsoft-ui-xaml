@@ -24,20 +24,20 @@ New-Item -ItemType Directory -Force -Path $payloadDir
 
 
 [xml]$pkgVerData = (Get-Content "$PSScriptRoot\packages.config")
-$muxTestInfraHelixVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"Microsoft.Internal.MUXTestInfra.Helix`"]").version
+$winuiHelixVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"Microsoft.Internal.WinUI.Helix`"]").version
 $mitaVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"microsoft.windows.apps.test`"]").version
 $taefVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"TAEF.Redist.Wlk`"]").version
 $muxcustomBuildTasksVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"MUXCustomBuildTasks`"]").version
 $netCoreAppVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"runtime.win-$Platform.microsoft.netcore.app`"]").version
 
-Write-Host "muxTestInfraHelixVer = $muxTestInfraHelixVer"
+Write-Host "winuiHelixVer = $winuiHelixVer"
 Write-Host "mitaVer = $mitaVer"
 Write-Host "taefVer = $taefVer"
 Write-Host "muxcustomBuildTasksVer = $muxcustomBuildTasksVer"
 Write-Host "netCoreAppVer = $netCoreAppVer"
 
 # Copy files from nuget packages
-Copy-Item "$nugetPackagesDir\Microsoft.Internal.MUXTestInfra.Helix.$muxTestInfraHelixVer\scripts\test\*" $payloadDir
+Copy-Item "$nugetPackagesDir\Microsoft.Internal.WinUI.Helix.$winuiHelixVer\scripts\test\*" $payloadDir
 Copy-Item "$nugetPackagesDir\microsoft.windows.apps.test.$mitaVer\lib\netcoreapp2.1\*.dll" $payloadDir
 Copy-Item "$nugetPackagesDir\taef.redist.wlk.$taefVer\build\Binaries\$Platform\*" $payloadDir
 Copy-Item "$nugetPackagesDir\taef.redist.wlk.$taefVer\build\Binaries\$Platform\CoreClr\*" $payloadDir
