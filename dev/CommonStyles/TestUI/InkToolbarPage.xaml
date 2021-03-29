@@ -6,7 +6,9 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     <Grid>
         <StackPanel>
-            <InkToolbar TargetInkCanvas="{x:Bind inkCanvas}"/>
+            <InkToolbar x:Name="InkToolbar" TargetInkCanvas="{x:Bind inkCanvas}">
+                <InkToolbarBallpointPenButton x:Name="InkToolbarBallpointPenButton" AutomationProperties.Name="InkToolbarBallpointPenButton"/>
+            </InkToolbar>
             <InkCanvas x:Name="inkCanvas" Height="400"/>
         </StackPanel>
         <StackPanel>

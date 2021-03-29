@@ -158,8 +158,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var textBlock = FindElement.ByName("InkToolbar");
                 Verify.IsNotNull(textBlock, "Verify InkToolbar page doesn't crash");
 
-                var verticalSupport = FindElement.ByName("VerticalInkToolbar");
-                Verify.IsNotNull(verticalSupport, "Verify InkToolbar page doesn't crash for vertical support test");
+                var verticalInkToolbar = FindElement.ById("VerticalInkToolbar");
+                Verify.IsNotNull(textBlock, "Verify verticalInkToolbar doesn't crash");
+
+                Log.Comment("Click on " + "InkToolbarBallpointPenButton");
+                var radioButton = new RadioButton(FindElement.ById("InkToolbarBallpointPenButton"));
+                radioButton.Select();
+                Wait.ForIdle();
             }
         }
     }
