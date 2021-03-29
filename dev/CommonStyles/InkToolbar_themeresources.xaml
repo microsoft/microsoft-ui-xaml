@@ -1323,7 +1323,7 @@
                         Background="{TemplateBinding Background}"
                         Width="{StaticResource InkToolbarButtonWidth}"
                         Height="{StaticResource InkToolbarButtonHeight}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -1504,7 +1504,7 @@
                                 Grid.RowSpan="2"
                                 Grid.ColumnSpan="2"
                                 Margin="1,0"
-                                CornerRadius="{TemplateBinding CornerRadius}"/>
+                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
 
                         </Grid>
 
@@ -1636,7 +1636,7 @@
                             Grid.RowSpan="2"
                             Grid.ColumnSpan="2"
                             Margin="1,0"
-                            CornerRadius="{TemplateBinding CornerRadius}"/>
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
 
                     </Grid>
 
@@ -1778,7 +1778,7 @@
                                 Grid.RowSpan="2"
                                 Grid.ColumnSpan="2"
                                 Margin="1,0"
-                                CornerRadius="{TemplateBinding CornerRadius}"/>
+                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
 
                         </Grid>
 
@@ -1798,7 +1798,7 @@
                         Background="{TemplateBinding Background}"
                         Width="{StaticResource InkToolbarButtonWidth}"
                         Height="{StaticResource InkToolbarButtonHeight}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -1848,7 +1848,7 @@
                             Grid.RowSpan="2"
                             Grid.ColumnSpan="2"
                             Margin="1,0"
-                            CornerRadius="{TemplateBinding CornerRadius}"/>
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
 
                     </Grid>
 
@@ -1926,7 +1926,7 @@
                         Background="{TemplateBinding Background}"
                         Width="{StaticResource InkToolbarButtonWidth}"
                         Height="{StaticResource InkToolbarButtonHeight}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -2116,7 +2116,7 @@
                                 Grid.RowSpan="2"
                                 Grid.ColumnSpan="2"
                                 Margin="1,0"
-                                CornerRadius="{TemplateBinding CornerRadius}"/>
+                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
 
                         </Grid>
 
