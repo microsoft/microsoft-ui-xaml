@@ -85,6 +85,7 @@ namespace MUXControlsTestApp
                 var button = new Button();
                 button.Content = "Action";
                 button.HorizontalAlignment = HorizontalAlignment.Right;
+                button.Click += ActionButton_Click;
                 _actionButton = TestInfoBar.ActionButton = button;
             }
             else if (ActionButtonComboBox.SelectedIndex == 4)
@@ -92,8 +93,8 @@ namespace MUXControlsTestApp
                 var link = new HyperlinkButton();
                 link.NavigateUri = new Uri("http://www.microsoft.com/");
                 link.Content = "Informational link";
-               
                 link.HorizontalAlignment = HorizontalAlignment.Right;
+                link.Click += ActionButton_Click;
                 _actionButton = TestInfoBar.ActionButton = link;
             }
 
