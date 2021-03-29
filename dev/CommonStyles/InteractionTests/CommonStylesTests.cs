@@ -52,6 +52,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             RunDensityTests("ToggleSwitchDensityTest");
         }
 
+        [TestMethod]
         public void DatePickerDensityTest()
         {
             RunDensityTests("DatePickerDensityTest");
