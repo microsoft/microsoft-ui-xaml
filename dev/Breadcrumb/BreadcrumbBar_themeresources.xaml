@@ -5,7 +5,6 @@
 
     <x:String x:Key="BreadcrumbBarChevronLeftToRight">&#xE76C;</x:String>
     <x:String x:Key="BreadcrumbBarChevronRightToLeft">&#xE76B;</x:String>
-    <Thickness x:Key="BreadcrumbBarChevronPadding">2,0,2,0</Thickness>
 
     <x:Double x:Key="BreadcrumbBarEllipsisFlyoutThemeMinHeight">40</x:Double>
     <Thickness x:Key="BreadcrumbBarEllipsisDropDownItemMargin">5,3,5,3</Thickness>
@@ -15,7 +14,6 @@
     <Thickness x:Key="BreadcrumbBarItemDefaultPadding">4,0,3,0</Thickness>
     <Thickness x:Key="BreadcrumbBarItemDefaultMargin">0,3,0,4</Thickness>
     <Thickness x:Key="BreadcrumbBarItemLastItemMargin">0,3,1,4</Thickness>
-
 
     <ResourceDictionary.ThemeDictionaries>
 

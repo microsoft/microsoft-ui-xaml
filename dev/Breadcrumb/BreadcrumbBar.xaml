@@ -333,7 +333,7 @@
                                         IsTextScaleFactorEnabled="False"
                                         FontSize="12"
                                         AutomationProperties.AccessibilityView="Raw"
-                                        Padding="{ThemeResource BreadcrumbBarChevronPadding}"
+                                        Padding="2,0,0,0"
                                         Grid.Column="2"/>
                             </Grid>
                             
