@@ -212,7 +212,7 @@
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="Padding" Value="2,2,2,2" />
-        <Setter Property="Margin" Value="2,4,2,4" />
+        <Setter Property="Margin" Value="2,2,2,2" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
     </Style>
 
@@ -2072,7 +2072,7 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        Margin="2,0,0,0"/>
+                        Margin="2,2,2,2"/>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
