@@ -177,7 +177,7 @@
             <StaticResource x:Key="ListViewItemRevealBackgroundSelected" ResourceKey="SystemControlHighlightAccent3RevealBackgroundBrush" />
             <StaticResource x:Key="ListViewItemRevealBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightAccent2RevealBackgroundBrush" />
             <StaticResource x:Key="ListViewItemRevealBackgroundSelectedPressed" ResourceKey="SystemControlHighlightAccent3RevealAccent2BackgroundBrush" />
-            <StaticResource x:Key="ListViewItemRevealPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemRevealPlaceholderBackground" ResourceKey="ControlStrongFillColorDisabledBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.GridViewItem -->
             <StaticResource x:Key="GridViewItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="GridViewItemRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
@@ -185,7 +185,7 @@
             <StaticResource x:Key="GridViewItemRevealBackgroundSelected" ResourceKey="SystemControlHighlightAccentRevealBackgroundBrush" />
             <StaticResource x:Key="GridViewItemRevealBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightAccent2RevealBackgroundBrush" />
             <StaticResource x:Key="GridViewItemRevealBackgroundSelectedPressed" ResourceKey="SystemControlHighlightAccent3RevealAccent2BackgroundBrush" />
-            <StaticResource x:Key="GridViewItemRevealPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="GridViewItemRevealPlaceholderBackground" ResourceKey="ControlStrongFillColorDisabledBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.ComboBoxItem -->
             <StaticResource x:Key="ComboBoxItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealListLowBackgroundBrush" />
@@ -381,7 +381,7 @@
             <StaticResource x:Key="ListViewItemRevealBackgroundSelected" ResourceKey="SystemControlHighlightAccent3RevealBackgroundBrush" />
             <StaticResource x:Key="ListViewItemRevealBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightAccent2RevealBackgroundBrush" />
             <StaticResource x:Key="ListViewItemRevealBackgroundSelectedPressed" ResourceKey="SystemControlHighlightAccent3RevealAccent2BackgroundBrush" />
-            <StaticResource x:Key="ListViewItemRevealPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemRevealPlaceholderBackground" ResourceKey="ControlStrongFillColorDisabledBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.GridViewItem -->
             <StaticResource x:Key="GridViewItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="GridViewItemRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
@@ -389,7 +389,7 @@
             <StaticResource x:Key="GridViewItemRevealBackgroundSelected" ResourceKey="SystemControlHighlightAccentRevealBackgroundBrush" />
             <StaticResource x:Key="GridViewItemRevealBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightAccent2RevealBackgroundBrush" />
             <StaticResource x:Key="GridViewItemRevealBackgroundSelectedPressed" ResourceKey="SystemControlHighlightAccent3RevealAccent2BackgroundBrush" />
-            <StaticResource x:Key="GridViewItemRevealPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="GridViewItemRevealPlaceholderBackground" ResourceKey="ControlStrongFillColorDisabledBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.ComboBoxItem -->
             <StaticResource x:Key="ComboBoxItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealListLowBackgroundBrush" />

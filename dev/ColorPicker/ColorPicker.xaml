@@ -20,6 +20,7 @@
                     <Grid Background="{TemplateBinding Background}">
                         <Grid.Resources>
                             <Style x:Key="ColorPickerSliderStyle" TargetType="primitives:ColorPickerSlider">
+                                <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}"/>
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Slider">
@@ -90,7 +91,12 @@
                                                     </VisualStateGroup>
                                                 </VisualStateManager.VisualStateGroups>
                                                 <ContentPresenter x:Name="HeaderContentPresenter" ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Foreground="{ThemeResource SliderHeaderForeground}" FontWeight="{ThemeResource SliderHeaderThemeFontWeight}" Margin="{ThemeResource SliderHeaderThemeMargin}" TextWrapping="Wrap" Visibility="Collapsed" x:DeferLoadStrategy="Lazy"/>
-                                                <Grid x:Name="SliderContainer" Background="Transparent" Control.IsTemplateFocusTarget="True" Grid.Row="1">
+                                                <Grid x:Name="SliderContainer"
+                                                      Background="Transparent"
+                                                      Control.IsTemplateFocusTarget="True"
+                                                      Grid.Row="1"
+                                                      contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                                      contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}">
                                                     <Grid x:Name="HorizontalTemplate" MinHeight="44">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="Auto"/>
