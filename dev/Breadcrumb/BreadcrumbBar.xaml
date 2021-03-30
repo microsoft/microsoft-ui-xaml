@@ -25,6 +25,8 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:BreadcrumbBarItem">
                     <Grid x:Name="PART_LayoutRoot"
+                          Margin="{StaticResource BreadcrumbBarItemDefaultMargin}"
+                          Padding="{StaticResource BreadcrumbBarItemDefaultPadding}"
                           contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                           contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
 
