@@ -361,15 +361,6 @@
 
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="GlyphVisualStates">
-                                <VisualState x:Name="ShowExtensionGlyph">
-                                    <VisualState.Setters>
-                                        <Setter Target="ExtensionGlyph.Opacity" Value="0" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="HideExtensionGlyph" />
-
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="FlowDirectionStates">
                                 <VisualState x:Name="LeftToRight" />
                                 <VisualState x:Name="RightToLeft">
@@ -579,15 +570,6 @@
 
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="GlyphVisualStates">
-                                <VisualState x:Name="ShowExtensionGlyph">
-                                    <VisualState.Setters>
-                                        <Setter Target="ExtensionGlyph.Opacity" Value="0" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="HideExtensionGlyph" />
-
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="FlowDirectionStates">
                                 <VisualState x:Name="LeftToRight" />
                                 <VisualState x:Name="RightToLeft">
@@ -796,15 +778,6 @@
 
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="GlyphVisualStates">
-                                <VisualState x:Name="ShowExtensionGlyph">
-                                    <VisualState.Setters>
-                                        <Setter Target="ExtensionGlyph.Opacity" Value="0" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="HideExtensionGlyph" />
-
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="FlowDirectionStates">
                                 <VisualState x:Name="LeftToRight" />
                                 <VisualState x:Name="RightToLeft">
@@ -1008,15 +981,6 @@
 
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="GlyphVisualStates">
-                                <VisualState x:Name="ShowExtensionGlyph">
-                                    <VisualState.Setters>
-                                        <Setter Target="ExtensionGlyph.Opacity" Value="0" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="HideExtensionGlyph" />
-
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="FlowDirectionStates">
                                 <VisualState x:Name="LeftToRight" />
                                 <VisualState x:Name="RightToLeft" />
@@ -1413,15 +1377,6 @@
 
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="GlyphVisualStates">
-                                <VisualState x:Name="ShowExtensionGlyph">
-                                    <VisualState.Setters>
-                                        <Setter Target="ExtensionGlyph.Opacity" Value="0" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="HideExtensionGlyph" />
-
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="FlowDirectionStates">
                                 <VisualState x:Name="LeftToRight" />
                                 <VisualState x:Name="RightToLeft">
@@ -1562,15 +1517,6 @@
 
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="GlyphVisualStates">
-                                <VisualState x:Name="ShowExtensionGlyph">
-                                    <VisualState.Setters>
-                                        <Setter Target="ExtensionGlyph.Opacity" Value="0" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="HideExtensionGlyph" />
-
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="FlowDirectionStates">
                                 <VisualState x:Name="LeftToRight" />
                                 <VisualState x:Name="RightToLeft" />
@@ -2024,16 +1970,6 @@
 
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="GlyphVisualStates">
-                                <VisualState x:Name="ShowExtensionGlyph">
-                                    <VisualState.Setters>
-                                        <Setter Target="ExtensionGlyph.Opacity" Value="1" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <!--Without commenting this one, glyph is getting invisible when pressing the button-->
-                                <!--<VisualState x:Name="HideExtensionGlyph" />-->
-
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="FlowDirectionStates">
                                 <VisualState x:Name="LeftToRight" />
                                 <VisualState x:Name="RightToLeft">
