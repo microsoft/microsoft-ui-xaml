@@ -61,6 +61,7 @@
                             <Style x:Key="CommandBarStyle" TargetType="CommandBar" BasedOn="{StaticResource DefaultCommandBarStyle}">
                                 <Setter Property="Height" Value="{ThemeResource MTCMediaButtonHeight}" />
                                 <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="DefaultLabelPosition" Value="Collapsed"/>
                             </Style>
                             <!-- Style for Error Message text -->
                             <Style x:Key="MediaTextBlockStyle" TargetType="TextBlock">
