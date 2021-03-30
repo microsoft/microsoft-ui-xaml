@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -17,6 +17,8 @@ static constexpr auto c_TitleTextBlockVisibleStateName = L"ShowTitleTextBlock"sv
 static constexpr auto c_TitleTextBlockCollapsedStateName = L"CollapseTitleTextBlock"sv;
 static constexpr auto c_SubtitleTextBlockVisibleStateName = L"ShowSubtitleTextBlock"sv;
 static constexpr auto c_SubtitleTextBlockCollapsedStateName = L"CollapseSubtitleTextBlock"sv;
+
+static constexpr auto c_OverlayCornerRadiusName = L"OverlayCornerRadius"sv;
 
 TeachingTip::TeachingTip()
 {
@@ -956,7 +958,7 @@ void TeachingTip::OnIconSourceChanged()
     auto const templateSettings = winrt::get_self<::TeachingTipTemplateSettings>(TemplateSettings());
     if (auto const source = IconSource())
     {
-        templateSettings->IconElement(source.CreateIconElement());
+        templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
         winrt::VisualStateManager::GoToState(*this, L"Icon"sv, false);
     }
     else
@@ -2237,6 +2239,22 @@ float TeachingTip::MinimumTipEdgeToTailCenter()
         }
     }
     return 0;
+}
+
+winrt::CornerRadius TeachingTip::GetTeachingTipCornerRadius()
+{
+    if (SharedHelpers::IsRS5OrHigher())
+    {
+        return CornerRadius();
+    }
+    else if (auto const contentRootGrid = m_contentRootGrid.get())
+    {
+        return contentRootGrid.CornerRadius();
+    }
+    else
+    {
+        return unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*this, box_value(c_OverlayCornerRadiusName)));
+    }
 }
 
 ////////////////

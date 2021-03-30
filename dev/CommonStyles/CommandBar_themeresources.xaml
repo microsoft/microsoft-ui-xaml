@@ -5,6 +5,8 @@
   xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
   xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
   xmlns:contract8Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,8)"
+  xmlns:contract12Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,12)"
+  xmlns:contract12NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,12)"  
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
@@ -85,7 +87,8 @@
 
     <x:Double x:Key="AppBarThemeMinHeight">64</x:Double>
     <x:Double x:Key="AppBarThemeCompactHeight">48</x:Double>
-    <Thickness x:Key="AppBarEllipsisButtonInnerBorderMargin">0,9,9,9</Thickness>
+    <Thickness x:Key="AppBarEllipsisButtonInnerBorderMargin">2,6,6,6</Thickness>
+    <x:Double x:Key="AppBarMoreButtonColumnMinWidth">6</x:Double>
     
     <Thickness x:Key="CommandBarOverflowPresenterMargin">0,4,0,4</Thickness>
 
@@ -94,7 +97,7 @@
     <Style x:Key="DefaultCommandBarStyle" TargetType="CommandBar">
         <Setter Property="Background" Value="{ThemeResource CommandBarBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource CommandBarForeground}" />
-        <Setter Property="Padding" Value="9,0,0,0" />
+        <Setter Property="Padding" Value="4,0,0,0" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
@@ -814,7 +817,7 @@
                               XYFocusKeyboardNavigation="Enabled">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" MinWidth="{StaticResource AppBarMoreButtonColumnMinWidth}"/>
                             </Grid.ColumnDefinitions>
                             <Grid.RenderTransform>
                                 <TranslateTransform x:Name="ContentTransform" />
@@ -896,7 +899,7 @@
                                     <RowDefinition />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
-                                <Grid.Clip>
+                                <contract12NotPresent:Grid.Clip>
                                     <RectangleGeometry Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentClipRect}">
                                         <RectangleGeometry.Transform>
                                             <TransformGroup>
@@ -904,8 +907,8 @@
                                             </TransformGroup>
                                         </RectangleGeometry.Transform>
                                     </RectangleGeometry>
-                                </Grid.Clip>
-                                <CommandBarOverflowPresenter x:Name="SecondaryItemsControl"
+                                </contract12NotPresent:Grid.Clip>
+                                <contract12NotPresent:CommandBarOverflowPresenter x:Name="SecondaryItemsControl"
                                     Style="{TemplateBinding CommandBarOverflowPresenterStyle}"
                                     IsTabStop="False">
                                     <CommandBarOverflowPresenter.RenderTransform>
@@ -915,7 +918,32 @@
                                         <Style TargetType="AppBarButton" BasedOn="{StaticResource AppBarButtonOverflowStyle}" />
                                         <Style TargetType="AppBarToggleButton" BasedOn="{StaticResource AppBarToggleButtonOverflowStyle}" />
                                     </CommandBarOverflowPresenter.Resources>
-                                </CommandBarOverflowPresenter>
+                                </contract12NotPresent:CommandBarOverflowPresenter>
+                                <!--For 21H1 and up, we'll need to wrap the clip and presenter in a Grid which will host the Drop Shadow.-->
+                                <contract12Present:Grid x:Name="SecondaryItemsControlShadowWrapper"
+                                      contract7Present:CornerRadius="{ThemeResource OverlayCornerRadius}"
+                                      contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
+                                    <Grid.Clip>
+                                        <RectangleGeometry Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentClipRect}">
+                                            <RectangleGeometry.Transform>
+                                                <TransformGroup>
+                                                    <TranslateTransform x:Name="OverflowContentRootClipTransform" />
+                                                </TransformGroup>
+                                            </RectangleGeometry.Transform>
+                                        </RectangleGeometry>
+                                    </Grid.Clip>
+                                    <CommandBarOverflowPresenter x:Name="SecondaryItemsControl"
+                                        Style="{TemplateBinding CommandBarOverflowPresenterStyle}"
+                                        IsTabStop="False">
+                                        <CommandBarOverflowPresenter.RenderTransform>
+                                            <TranslateTransform x:Name="OverflowContentTransform" />
+                                        </CommandBarOverflowPresenter.RenderTransform>
+                                        <CommandBarOverflowPresenter.Resources>
+                                            <Style TargetType="AppBarButton" BasedOn="{StaticResource AppBarButtonOverflowStyle}" />
+                                            <Style TargetType="AppBarToggleButton" BasedOn="{StaticResource AppBarToggleButtonOverflowStyle}" />
+                                        </CommandBarOverflowPresenter.Resources>
+                                    </CommandBarOverflowPresenter>
+                                </contract12Present:Grid>
                                 <!-- In order to give us extra space in the windowed popup to translate things down,
                                      we add a rectangle to make the HWND taller than it otherwise would be. -->
                                 <Rectangle x:Name="WindowedPopupPadding" Grid.Row="1" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.ContentHeight}" />

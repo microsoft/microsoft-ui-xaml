@@ -27,6 +27,7 @@ AnimatedIcon::AnimatedIcon()
 void AnimatedIcon::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
+    OnSourcePropertyChanged(nullptr);
     auto const panel = winrt::VisualTreeHelper::GetChild(*this, 0).as<winrt::Panel>();
     m_rootPanel.set(panel);
     m_currentState = GetState(*this);
@@ -59,17 +60,35 @@ void AnimatedIcon::OnApplyTemplate()
 
 void AnimatedIcon::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
-    // AnimatedIcon might get added to a UI which has already set the State property on the parent.
+    // AnimatedIcon might get added to a UI which has already set the State property on an ancestor.
     // If this is the case and the animated icon being added doesn't have its own state property
-    // We copy the parent value when we load.
+    // We copy the ancestor value when we load. Additionally we attach to our ancestor's property
+    // changed event for AnimatedIcon.State to copy the value to AnimatedIcon.
     auto const property = winrt::AnimatedIcon::StateProperty();
-    auto const stateValue = GetValue(property);
-    if (unbox_value<winrt::hstring>(stateValue).empty())
+
+    auto const [ancestorWithState, stateValue] = [this, property]()
     {
-        if (auto const parent = winrt::VisualTreeHelper::GetParent(*this))
+        auto parent = winrt::VisualTreeHelper::GetParent(*this);
+        while (parent)
         {
-            SetValue(property, parent.GetValue(property));
+            auto const stateValue = parent.GetValue(property);
+            if (!unbox_value<winrt::hstring>(stateValue).empty())
+            {
+                return std::make_tuple(parent, stateValue);
+            }
+            parent = winrt::VisualTreeHelper::GetParent(parent);
         }
+        return std::make_tuple(static_cast<winrt::DependencyObject>(nullptr), winrt::box_value(winrt::hstring{}));
+    }();
+
+    if (unbox_value<winrt::hstring>(GetValue(property)).empty())
+    {
+        SetValue(property, stateValue);
+    }
+
+    if (ancestorWithState)
+    {
+        m_ancestorStatePropertyChangedRevoker = RegisterPropertyChanged(ancestorWithState, property, { this, &AnimatedIcon::OnAncestorAnimatedIconStatePropertyChanged });
     }
 }
 
@@ -161,13 +180,13 @@ void AnimatedIcon::OnAnimatedIconStatePropertyChanged(
     {
         senderAsAnimatedIcon->OnStatePropertyChanged();
     }
-    else if (winrt::VisualTreeHelper::GetChildrenCount(sender) > 0)
-    {
-        if (auto const childAsAnimatedIcon = winrt::VisualTreeHelper::GetChild(sender, 0).try_as<winrt::AnimatedIcon>())
-        {
-            childAsAnimatedIcon.SetValue(AnimatedIconProperties::s_StateProperty, args.NewValue());
-        }
-    }
+}
+
+void AnimatedIcon::OnAncestorAnimatedIconStatePropertyChanged(
+    const winrt::DependencyObject& sender,
+    const winrt::DependencyProperty& args)
+{
+    SetValue(AnimatedIconProperties::s_StateProperty, sender.GetValue(args));
 }
 
 // When we receive a state change it might be erroneous. This is because these state changes often come from Animated Icon's parent control's
@@ -460,7 +479,8 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
         progressAnimation.SetReferenceParameter(L"_", m_progressPropertySet);
         visual.Properties().StartAnimation(s_progressPropertyName, progressAnimation);
     }
-    else
+    // If we were previously able to display primary content and now cannot, use the fallback icon.
+    else if (m_canDisplayPrimaryContent)
     {
         m_canDisplayPrimaryContent = false;
         SetRootPanelChildToFallbackIcon();

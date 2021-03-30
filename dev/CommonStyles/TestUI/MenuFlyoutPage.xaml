@@ -30,24 +30,42 @@
             </Button.Flyout>
         </Button>
 
-            <Button Content="Icons" Margin="0,12,0,12">
-                <Button.Flyout>
-                    <MenuFlyout>
-                        <MenuFlyoutItem Text="Share">
-                            <MenuFlyoutItem.Icon>
-                                <FontIcon Glyph="&#xE72D;"/>
-                            </MenuFlyoutItem.Icon>
-                        </MenuFlyoutItem>
-                        <MenuFlyoutItem Text="Copy" Icon="Copy"/>
-                        <MenuFlyoutItem Text="Delete" Icon="Delete"/>
+        <Button Content="Icons" Margin="0,12,0,12">
+            <Button.Flyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Text="Share">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="&#xE72D;"/>
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem Text="Copy" Icon="Copy"/>
+                    <MenuFlyoutItem Text="Delete" Icon="Delete"/>
+                        <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" Icon="Delete"/>
+                        <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" Icon="Delete">
+                            <ToggleMenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="S" Modifiers="Control"/>
+                            </ToggleMenuFlyoutItem.KeyboardAccelerators>
+                        </ToggleMenuFlyoutItem>
+                        <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" AccessKey="A" />
                         <MenuFlyoutSeparator/>
+                        <muxc:RadioMenuFlyoutItem Text="Radio And Has Icon" Icon="Delete"/>
+                        <muxc:RadioMenuFlyoutItem Text="Radio with icon and accelerator" Icon="Delete">
+                            <muxc:RadioMenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="S" Modifiers="Control"/>
+                            </muxc:RadioMenuFlyoutItem.KeyboardAccelerators>
+                        </muxc:RadioMenuFlyoutItem>
+                        <muxc:RadioMenuFlyoutItem Text="Radio with accelerator">
+                            <muxc:RadioMenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="S" Modifiers="Control"/>
+                            </muxc:RadioMenuFlyoutItem.KeyboardAccelerators>
+                        </muxc:RadioMenuFlyoutItem>
                         <MenuFlyoutItem Text="Rename"/>
-                        <MenuFlyoutItem Text="Select"/>
-                    </MenuFlyout>
-                </Button.Flyout>
-            </Button>
-            
-            <Button Content="Keyboard accelerators">
+                    <MenuFlyoutItem Text="Select"/>
+                </MenuFlyout>
+            </Button.Flyout>
+        </Button>
+
+        <Button Content="Keyboard accelerators">
             <Button.Flyout>
                 <MenuFlyout>
                     <MenuFlyoutItem Text="Share">

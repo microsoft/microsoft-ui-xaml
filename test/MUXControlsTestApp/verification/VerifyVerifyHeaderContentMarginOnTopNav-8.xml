@@ -9,9 +9,9 @@
     MinHeight=34
     Margin=12,5,0,11
     FocusVisualSecondaryThickness=1,1,1,1
-    FocusVisualSecondaryBrush=#99FFFFFF
+    FocusVisualSecondaryBrush=#B3FFFFFF
     FocusVisualPrimaryThickness=2,2,2,2
-    FocusVisualPrimaryBrush=#FF000000
+    FocusVisualPrimaryBrush=#E4000000
     Visibility=Visible
     RenderSize=388,34
   [Windows.UI.Xaml.Controls.ContentPresenter]
@@ -23,9 +23,9 @@
       Background=[NULL]
       Margin=0,0,0,0
       FocusVisualSecondaryThickness=1,1,1,1
-      FocusVisualSecondaryBrush=#99FFFFFF
+      FocusVisualSecondaryBrush=#B3FFFFFF
       FocusVisualPrimaryThickness=2,2,2,2
-      FocusVisualPrimaryBrush=#FF000000
+      FocusVisualPrimaryBrush=#E4000000
       Visibility=Visible
       RenderSize=388,34
     [Windows.UI.Xaml.Controls.TextBlock]
@@ -33,8 +33,8 @@
         Foreground=#E4000000
         Margin=0,0,0,0
         FocusVisualSecondaryThickness=1,1,1,1
-        FocusVisualSecondaryBrush=#99FFFFFF
+        FocusVisualSecondaryBrush=#B3FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2
-        FocusVisualPrimaryBrush=#FF000000
+        FocusVisualPrimaryBrush=#E4000000
         Visibility=Visible
         RenderSize=87,32

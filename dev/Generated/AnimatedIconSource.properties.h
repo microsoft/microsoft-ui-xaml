@@ -23,4 +23,12 @@ public:
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnFallbackIconSourcePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnSourcePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 };
