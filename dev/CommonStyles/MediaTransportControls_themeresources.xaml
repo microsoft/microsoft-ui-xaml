@@ -10,7 +10,7 @@
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
             <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="ControlOnImageFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
+            <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="ControlStrongFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFillTimeElapsedText" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="MediaTransportControlsFillMediaText" ResourceKey="TextFillColorPrimaryBrush" />
         </ResourceDictionary>
@@ -26,7 +26,7 @@
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
             <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="ControlOnImageFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
+            <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="ControlStrongFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFillTimeElapsedText" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="MediaTransportControlsFillMediaText" ResourceKey="TextFillColorPrimaryBrush" />
         </ResourceDictionary>

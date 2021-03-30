@@ -18,6 +18,8 @@ static constexpr auto c_TitleTextBlockCollapsedStateName = L"CollapseTitleTextBl
 static constexpr auto c_SubtitleTextBlockVisibleStateName = L"ShowSubtitleTextBlock"sv;
 static constexpr auto c_SubtitleTextBlockCollapsedStateName = L"CollapseSubtitleTextBlock"sv;
 
+static constexpr auto c_OverlayCornerRadiusName = L"OverlayCornerRadius"sv;
+
 TeachingTip::TeachingTip()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TeachingTip);
@@ -2237,6 +2239,22 @@ float TeachingTip::MinimumTipEdgeToTailCenter()
         }
     }
     return 0;
+}
+
+winrt::CornerRadius TeachingTip::GetTeachingTipCornerRadius()
+{
+    if (SharedHelpers::IsRS5OrHigher())
+    {
+        return CornerRadius();
+    }
+    else if (auto const contentRootGrid = m_contentRootGrid.get())
+    {
+        return contentRootGrid.CornerRadius();
+    }
+    else
+    {
+        return unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*this, box_value(c_OverlayCornerRadiusName)));
+    }
 }
 
 ////////////////
