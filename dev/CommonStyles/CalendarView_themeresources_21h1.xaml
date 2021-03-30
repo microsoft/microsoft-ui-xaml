@@ -91,6 +91,8 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+
     <Style TargetType="CalendarViewDayItem">
         <Setter Property="MinWidth" Value="40" />
         <Setter Property="MinHeight" Value="40" />
@@ -98,7 +100,6 @@
         <Setter Property="Padding" Value="0, 0, 0, 4" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="-2" />
-        <contract7Present:Setter Property="CornerRadius" Value="5" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CalendarViewDayItem" />
@@ -106,16 +107,16 @@
         </Setter>
     </Style>
 
-    <Style TargetType="CalendarView" BasedOn="{StaticResource CalendarViewRevealStyle}" />
+    <Style TargetType="CalendarView" BasedOn="{StaticResource CalendarViewDefaultStyle}" />
 
-    <Style x:Key="CalendarViewRevealStyle" TargetType="CalendarView">
+    <Style x:Key="CalendarViewDefaultStyle" TargetType="CalendarView">
         <Setter Property="FocusBorderBrush" Value="{ThemeResource CalendarViewFocusBorderBrush}" />
         <Setter Property="SelectedHoverBorderBrush" Value="{ThemeResource CalendarViewSelectedHoverBorderBrush}" />
         <Setter Property="SelectedPressedBorderBrush" Value="{ThemeResource CalendarViewSelectedPressedBorderBrush}" />
         <Setter Property="SelectedBorderBrush" Value="{ThemeResource CalendarViewSelectedBorderBrush}" />
         <Setter Property="HoverBorderBrush" Value="{ThemeResource CalendarViewHoverBorderBrush}" />
         <Setter Property="PressedBorderBrush" Value="{ThemeResource CalendarViewPressedBorderBrush}" />
-        <Setter Property="CalendarItemBorderBrush" Value="{ThemeResource  CalendarViewCalendarItemRevealBorderBrush}" />
+        <Setter Property="CalendarItemBorderBrush" Value="{ThemeResource CalendarViewCalendarItemRevealBorderBrush}" />
         <Setter Property="TodayForeground" Value="{ThemeResource CalendarViewTodayForeground}" />
         <Setter Property="BlackoutForeground" Value="{ThemeResource CalendarViewBlackoutForeground}" />
         <Setter Property="SelectedForeground" Value="{ThemeResource CalendarViewSelectedForeground}" />

@@ -42,5 +42,12 @@ namespace MUXControlsTestApp
                 PageCalendar.SelectionMode = selectionMode;
             }
         }
+
+        //private void cmbNumberOfWeeksInView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        //{
+        //    CalendarControl6.NumberOfWeeksInView = cmbNumberOfWeeksInView.SelectedIndex + 1;
+
+        //    //CalendarControl6.MinDate = new DateTimeOffset()
+        //}
     }
 }

@@ -8,17 +8,65 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     mc:Ignorable="d">
-
+    <!--<local:TestPage.Resources>
+        <Style x:Key="RoundedCalendarViewDayItemStyle" TargetType="CalendarViewDayItem">
+            <Setter Property="MinWidth" Value="40" />
+            <Setter Property="MinHeight" Value="40" />
+            <Setter Property="Margin" Value="1" />
+            <Setter Property="Padding" Value="0, 0, 0, 4" />
+            <Setter Property="UseSystemFocusVisuals" Value="True" />
+            <Setter Property="FocusVisualMargin" Value="-2" />
+            <contract7Present:Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CalendarViewDayItem" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </local:TestPage.Resources>-->
+    
     <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12" Orientation="Horizontal">
-        <CalendarView
-            x:Name="PageCalendar"
-            SelectionMode="Single" 
-            VerticalAlignment="Top"
-            CalendarIdentifier="{x:Bind calendarIdentifier.SelectedValue, Mode=OneWay}"
-            IsGroupLabelVisible="{x:Bind isGroupLabelVisible.IsChecked.Value, Mode=OneWay}"
-            IsOutOfScopeEnabled="{x:Bind isOutOfScopeEnabled.IsChecked.Value, Mode=OneWay}" />
+        <StackPanel Orientation="Horizontal">
+            <CalendarView
+                x:Name="PageCalendar"
+                SelectionMode="Single" 
+                VerticalAlignment="Top"
+                CalendarIdentifier="{x:Bind calendarIdentifier.SelectedValue, Mode=OneWay}"
+                IsGroupLabelVisible="{x:Bind isGroupLabelVisible.IsChecked.Value, Mode=OneWay}"
+                IsOutOfScopeEnabled="{x:Bind isOutOfScopeEnabled.IsChecked.Value, Mode=OneWay}" />
 
+            <!--CalendarView
+                x:Name="CalendarControl2"
+                Margin="20"
+                VerticalAlignment="Top"
+                DayItemFontSize="15"
+                MonthYearItemFontSize="15"
+                SelectionMode="None"
+                NumberOfWeeksInView="2"/>
+
+            <StackPanel>
+                <CalendarView
+                    x:Name="CalendarControl6"
+                    Margin="20"
+                    VerticalAlignment="Top"
+                    DayItemFontSize="15"
+                    MonthYearItemFontSize="15"
+                    SelectionMode="None"
+                    NumberOfWeeksInView="6"/>
+                <ComboBox x:Name="cmbNumberOfWeeksInView" Margin="10"
+                          SelectionChanged="cmbNumberOfWeeksInView_SelectionChanged">
+                    <ComboBoxItem>1</ComboBoxItem>
+                    <ComboBoxItem>2</ComboBoxItem>
+                    <ComboBoxItem>3</ComboBoxItem>
+                    <ComboBoxItem>4</ComboBoxItem>
+                    <ComboBoxItem>5</ComboBoxItem>
+                    <ComboBoxItem>6</ComboBoxItem>
+                </ComboBox>
+            </StackPanel-->
+        </StackPanel>
+        
         <StackPanel Margin="20,0,0,0" VerticalAlignment="Top" Padding="8"
                     BorderThickness="1" BorderBrush="{ThemeResource SystemChromeDisabledLowColor}">
             <TextBlock Text="Options"  Style="{ThemeResource StandardGroupHeader}"/>
@@ -37,5 +85,56 @@
 
             <ComboBox x:Name="calendarIdentifier" Margin="0,10,0,0" Header="CalendarIdentifier" Width="220" />
         </StackPanel>
+
+        <StackPanel>
+            <CalendarView
+                x:Name="cv1"
+                Margin="2"
+                Visibility="Collapsed"
+                VerticalAlignment="Top"
+                DayItemFontSize="30"
+                MonthYearItemFontSize="30"
+                SelectionMode="Multiple"/>
+            
+            <Grid>
+                <Grid.Resources>
+                    <Style x:Key="RoundedCalendarViewDayItemStyle" TargetType="CalendarViewDayItem">
+                        <Setter Property="MinWidth" Value="40" />
+                        <Setter Property="MinHeight" Value="40" />
+                        <Setter Property="Margin" Value="1" />
+                        <Setter Property="Padding" Value="0, 0, 0, 4" />
+                        <Setter Property="UseSystemFocusVisuals" Value="True" />
+                        <Setter Property="FocusVisualMargin" Value="-2" />
+                        <Setter Property="CornerRadius" Value="6" />
+                        <!--<contract7Present:Setter Property="CornerRadius" Value="6" />-->
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="CalendarViewDayItem" />
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Grid.Resources>
+                
+                <CalendarView
+                    x:Name="cv2"
+                    Margin="2"
+                    Visibility="Collapsed"
+                    VerticalAlignment="Top"
+                    DayItemFontSize="30"
+                    MonthYearItemFontSize="30"
+                    SelectionMode="Multiple"
+                    CalendarViewDayItemStyle="{StaticResource RoundedCalendarViewDayItemStyle}"/>
+            </Grid>
+        </StackPanel>
+
+        <CalendarView
+            x:Name="cv3"
+            Visibility="Collapsed"
+            Width="800"
+            Height="800"
+            Background="Aqua"
+            Margin="2"
+            VerticalAlignment="Top"
+            SelectionMode="Multiple"/>
     </StackPanel>
 </local:TestPage>
