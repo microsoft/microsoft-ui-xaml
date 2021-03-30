@@ -214,8 +214,7 @@
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="ManipulationMode" Value="System,TranslateX" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-        <!--<Setter Property="FocusVisualMargin" Value="-7,-3,-7,-3" />-->
-        <Setter Property="FocusVisualMargin" Value="1"/>
+        <Setter Property="FocusVisualMargin" Value="-7,-3,-7,-3" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleSwitch">
@@ -575,6 +574,8 @@
                                 Grid.RowSpan="3"
                                 Grid.ColumnSpan="3"
                                 Margin="0,5"
+                                CornerRadius="4"
+                                Control.IsTemplateFocusTarget="True"
                                 Background="{ThemeResource ToggleSwitchContainerBackground}" />
                             <ContentPresenter x:Name="OffContentPresenter"
                                 Grid.RowSpan="3"
@@ -598,26 +599,15 @@
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                 AutomationProperties.AccessibilityView="Raw" />
-                            <Border
+                            <Rectangle x:Name="OuterBorder"
                                 Grid.Row="1"
                                 Height="20"
                                 Width="40"
-                                CornerRadius="10"
-                                Control.IsTemplateFocusTarget="True"
-                                BorderBrush="Transparent"
-                                BorderThickness="1"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center">
-                                <Rectangle x:Name="OuterBorder"
-                                    Grid.Row="1"
-                                    Height="20"
-                                    Width="40"
-                                    RadiusX="10"
-                                    RadiusY="10"
-                                    Fill="{ThemeResource ToggleSwitchFillOff}"
-                                    Stroke="{ThemeResource ToggleSwitchStrokeOff}"
-                                    StrokeThickness="{ThemeResource ToggleSwitchOuterBorderStrokeThickness}" />
-                            </Border>
+                                RadiusX="10"
+                                RadiusY="10"
+                                Fill="{ThemeResource ToggleSwitchFillOff}"
+                                Stroke="{ThemeResource ToggleSwitchStrokeOff}"
+                                StrokeThickness="{ThemeResource ToggleSwitchOuterBorderStrokeThickness}" />
                             <Rectangle x:Name="SwitchKnobBounds"
                                 Grid.Row="1"
                                 Height="20"
