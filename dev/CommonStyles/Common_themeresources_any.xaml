@@ -91,8 +91,6 @@
             <Color x:Key="SolidBackgroundFillColorTertiary">#282828</Color>
             <Color x:Key="SolidBackgroundFillColorQuarternary">#2C2C2C</Color>
 
-            <Color x:Key="SystemFillColorAttention">#50C0FF</Color>
-            <!-- This color might be incorrect -->
             <Color x:Key="SystemFillColorSuccess">#6CCB5F</Color>
             <Color x:Key="SystemFillColorCaution">#FCE100</Color>
             <Color x:Key="SystemFillColorCritical">#FF99A4</Color>
@@ -330,8 +328,6 @@
             <Color x:Key="SolidBackgroundFillColorTertiary">#F9F9F9</Color>
             <Color x:Key="SolidBackgroundFillColorQuarternary">#FFFFFF</Color>
 
-            <Color x:Key="SystemFillColorAttention">#50C0FF</Color>
-            <!-- This color might be incorrect -->
             <Color x:Key="SystemFillColorSuccess">#0F7B0F</Color>
             <Color x:Key="SystemFillColorCaution">#9D5D00</Color>
             <Color x:Key="SystemFillColorCritical">#C42B1C</Color>
@@ -654,7 +650,6 @@
             <Color x:Key="SolidBackgroundFillColorSecondary">#FF0000</Color>
             <Color x:Key="SolidBackgroundFillColorTertiary">#FF0000</Color>
             <Color x:Key="SolidBackgroundFillColorQuarternary">#FF0000</Color>
-            <Color x:Key="SystemFillColorAttention">#FF0000</Color>
             <Color x:Key="SystemFillColorSuccess">#FF0000</Color>
             <Color x:Key="SystemFillColorCaution">#FF0000</Color>
             <Color x:Key="SystemFillColorCritical">#FF0000</Color>
