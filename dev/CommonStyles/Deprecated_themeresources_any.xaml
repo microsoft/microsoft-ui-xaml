@@ -1,6 +1,6 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
@@ -9,17 +9,6 @@
     <!-- 2.5 controls should not depend on brushes on this file except for new controls like Expander -->
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            
-            <!-- Duplication from HighContrast colors to match keys -->
-            <SolidColorBrush x:Key="SystemColorWindowTextColorBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="SystemColorWindowColorBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="SystemColorButtonFaceColorBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="SystemColorButtonTextColorBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
-            <SolidColorBrush x:Key="SystemColorHighlightColorBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="SystemColorHighlightTextColorBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
-            <SolidColorBrush x:Key="SystemColorHotlightColorBrush" Color="{ThemeResource SystemColorHotlightColor}" />
-            <SolidColorBrush x:Key="SystemColorGrayTextColorBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
-
             <local:AcrylicBrush
                 x:Key="SystemControlTransientBackgroundBrush"
                 TintColor="#2C2C2C"
@@ -38,20 +27,32 @@
 
             <contract7NotPresent:Color x:Key="SystemErrorTextColor">#FFF000</contract7NotPresent:Color>
             <contract7NotPresent:SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="{ThemeResource SystemErrorTextColor}"/>
-            
+
+            <Color x:Key="TextOnAccentFillColorDefault">#FFFFFF</Color>
+            <Color x:Key="TextOnAccentAAFillColorPrimary">#000000</Color>
+            <Color x:Key="TextOnAccentAAFillColorSecondary">#80000000</Color>
+            <Color x:Key="TextOnAccentAAFillColorDisabled">#87FFFFFF</Color>
+            <Color x:Key="ControlAAFillColorDefault">#8BFFFFFF</Color>
+            <Color x:Key="ControlAAFillColorDisabled">#3FFFFFFF</Color>
+            <Color x:Key="AccentAAFillColorDisabled">#28FFFFFF</Color>
+            <Color x:Key="ControlStrokeColorForAAFillOnImage">#6B000000</Color>
+            <Color x:Key="ControlAAStrokeColorDefault">#8BFFFFFF</Color>
+            <Color x:Key="ControlAAStrokeColorDisabled">#28FFFFFF</Color>
+            <SolidColorBrush x:Key="TextOnAccentFillColorDefaultBrush" Color="{StaticResource TextOnAccentFillColorDefault}" />
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorPrimaryBrush" Color="{StaticResource TextOnAccentAAFillColorPrimary}" />
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorSecondaryBrush" Color="{StaticResource TextOnAccentAAFillColorSecondary}" />
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorDisabledBrush" Color="{StaticResource TextOnAccentAAFillColorDisabled}" />
+            <SolidColorBrush x:Key="ControlAAFillColorDefaultBrush" Color="{StaticResource ControlAAFillColorDefault}" />
+            <SolidColorBrush x:Key="ControlAAFillColorDisabledBrush" Color="{StaticResource ControlAAFillColorDisabled}" />
+            <SolidColorBrush x:Key="AccentAAFillColorDefaultBrush" Color="{ThemeResource SystemAccentColorLight2}" />
+            <SolidColorBrush x:Key="AccentAAFillColorSecondaryBrush" Color="{ThemeResource SystemAccentColorLight3}" />
+            <SolidColorBrush x:Key="AccentAAFillColorTertiaryBrush" Color="{ThemeResource SystemAccentColorLight1}" />
+            <SolidColorBrush x:Key="AccentAAFillColorDisabledBrush" Color="{StaticResource AccentAAFillColorDisabled}" />
+            <SolidColorBrush x:Key="ControlStrokeColorForAAFillOnImageBrush" Color="{StaticResource ControlStrokeColorForAAFillOnImage}" />
+            <SolidColorBrush x:Key="ControlAAStrokeColorDefaultBrush" Color="{StaticResource ControlAAStrokeColorDefault}" />
+            <SolidColorBrush x:Key="ControlAAStrokeColorDisabledBrush" Color="{StaticResource ControlAAStrokeColorDisabled}" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            
-            <!-- Duplication from HighContrast colors to match keys -->
-            <SolidColorBrush x:Key="SystemColorWindowTextColorBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="SystemColorWindowColorBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="SystemColorButtonFaceColorBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="SystemColorButtonTextColorBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
-            <SolidColorBrush x:Key="SystemColorHighlightColorBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="SystemColorHighlightTextColorBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
-            <SolidColorBrush x:Key="SystemColorHotlightColorBrush" Color="{ThemeResource SystemColorHotlightColor}" />
-            <SolidColorBrush x:Key="SystemColorGrayTextColorBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
-
             <local:AcrylicBrush
                 x:Key="SystemControlTransientBackgroundBrush"
                 TintColor="#FCFCFC"
@@ -72,19 +73,31 @@
             <contract7NotPresent:Color x:Key="SystemErrorTextColor">#C50500</contract7NotPresent:Color>
             <contract7NotPresent:SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="{ThemeResource SystemErrorTextColor}"/>
 
+            <Color x:Key="TextOnAccentFillColorDefault">#FFFFFF</Color>
+            <Color x:Key="TextOnAccentAAFillColorPrimary">#FFFFFF</Color>
+            <Color x:Key="TextOnAccentAAFillColorSecondary">#B3FFFFFF</Color>
+            <Color x:Key="TextOnAccentAAFillColorDisabled">#FFFFFF</Color>
+            <Color x:Key="ControlAAFillColorDefault">#72000000</Color>
+            <Color x:Key="ControlAAFillColorDisabled">#51000000</Color>
+            <Color x:Key="AccentAAFillColorDisabled">#37000000</Color>
+            <Color x:Key="ControlStrokeColorForAAFillOnImage">#59FFFFFF</Color>
+            <Color x:Key="ControlAAStrokeColorDefault">#72000000</Color>
+            <Color x:Key="ControlAAStrokeColorDisabled">#37000000</Color>
+            <SolidColorBrush x:Key="TextOnAccentFillColorDefaultBrush" Color="{StaticResource TextOnAccentFillColorDefault}" />
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorPrimaryBrush" Color="{StaticResource TextOnAccentAAFillColorPrimary}" />
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorSecondaryBrush" Color="{StaticResource TextOnAccentAAFillColorSecondary}" />
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorDisabledBrush" Color="{StaticResource TextOnAccentAAFillColorDisabled}" />
+            <SolidColorBrush x:Key="ControlAAFillColorDefaultBrush" Color="{StaticResource ControlAAFillColorDefault}" />
+            <SolidColorBrush x:Key="ControlAAFillColorDisabledBrush" Color="{StaticResource ControlAAFillColorDisabled}" />
+            <SolidColorBrush x:Key="AccentAAFillColorDefaultBrush" Color="{ThemeResource SystemAccentColorDark1}" />
+            <SolidColorBrush x:Key="AccentAAFillColorSecondaryBrush" Color="{ThemeResource SystemAccentColorDark2}" />
+            <SolidColorBrush x:Key="AccentAAFillColorTertiaryBrush" Color="{ThemeResource SystemAccentColor}" />
+            <SolidColorBrush x:Key="AccentAAFillColorDisabledBrush" Color="{StaticResource AccentAAFillColorDisabled}" />
+            <SolidColorBrush x:Key="ControlStrokeColorForAAFillOnImageBrush" Color="{StaticResource ControlStrokeColorForAAFillOnImage}" />
+            <SolidColorBrush x:Key="ControlAAStrokeColorDefaultBrush" Color="{StaticResource ControlAAStrokeColorDefault}" />
+            <SolidColorBrush x:Key="ControlAAStrokeColorDisabledBrush" Color="{StaticResource ControlAAStrokeColorDisabled}" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <!-- System high contrast colors -->
-
-            <SolidColorBrush x:Key="SystemColorWindowTextColorBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="SystemColorWindowColorBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="SystemColorButtonFaceColorBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="SystemColorButtonTextColorBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
-            <SolidColorBrush x:Key="SystemColorHighlightColorBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="SystemColorHighlightTextColorBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
-            <SolidColorBrush x:Key="SystemColorHotlightColorBrush" Color="{ThemeResource SystemColorHotlightColor}" />
-            <SolidColorBrush x:Key="SystemColorGrayTextColorBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
-
             <SolidColorBrush x:Key="SystemControlTransientBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
 
             <x:Double x:Key="SplitViewOpenPaneThemeLength">320</x:Double>
@@ -99,6 +112,29 @@
             <contract7NotPresent:Color x:Key="SystemErrorTextColor">#FFF000</contract7NotPresent:Color>
             <contract7NotPresent:SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="{ThemeResource SystemErrorTextColor}"/>
 
+            <Color x:Key="TextOnAccentFillColorDefault">#FFFFFF</Color>
+            <Color x:Key="TextOnAccentAAFillColorPrimary">#000000</Color>
+            <Color x:Key="TextOnAccentAAFillColorSecondary">#80000000</Color>
+            <Color x:Key="TextOnAccentAAFillColorDisabled">#87FFFFFF</Color>
+            <Color x:Key="ControlAAFillColorDefault">#8BFFFFFF</Color>
+            <Color x:Key="ControlAAFillColorDisabled">#3FFFFFFF</Color>
+            <Color x:Key="AccentAAFillColorDisabled">#28FFFFFF</Color>
+            <Color x:Key="ControlStrokeColorForAAFillOnImage">#6B000000</Color>
+            <Color x:Key="ControlAAStrokeColorDefault">#8BFFFFFF</Color>
+            <Color x:Key="ControlAAStrokeColorDisabled">#28FFFFFF</Color>
+            <SolidColorBrush x:Key="TextOnAccentFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorPrimaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorSecondaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorDisabledBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
+            <SolidColorBrush x:Key="ControlAAFillColorDefaultBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="ControlAAFillColorDisabledBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="AccentAAFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="AccentAAFillColorSecondaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="AccentAAFillColorTertiaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="AccentAAFillColorDisabledBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="ControlStrokeColorForAAFillOnImageBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="ControlAAStrokeColorDefaultBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="ControlAAStrokeColorDisabledBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -106,7 +142,7 @@
     <Style x:Key="DefaultSplitViewStyle" TargetType="SplitView" />
 
     <x:Double x:Key="PaneToggleButtonSize">40</x:Double>
-    
+
     <Thickness x:Key="MenuFlyoutScrollerMargin">0,4,0,4</Thickness>
 
     <x:Double x:Key="InfoBarActionButtonMinWidth">96</x:Double>
@@ -127,12 +163,12 @@
     <Thickness x:Key="ExpanderHeaderPadding">16,0,0,0</Thickness>
     <Thickness x:Key="ExpanderDropdownDownBorderThickness">1,0,1,1</Thickness>
     <Thickness x:Key="ExpanderDropdownUpBorderThickness">1,1,1,0</Thickness>
-    
+
     <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="MUX_NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="primitives:NavigationViewItemPresenter">
-                    <Grid 
+                    <Grid
                         x:Name="LayoutRoot"
                         Background="{TemplateBinding Background}"
                         Control.IsTemplateFocusTarget="True">
@@ -176,8 +212,8 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Rectangle 
-                            x:Name="PointerRectangle" 
+                        <Rectangle
+                            x:Name="PointerRectangle"
                             Fill="Transparent"
                             Visibility="Collapsed" />
                         <Grid x:Name="ContentGrid">
@@ -185,15 +221,15 @@
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <Viewbox 
+                            <Viewbox
                                 x:Name="IconBox"
                                 Height="16"
                                 Width="16"
                                 Margin="16,0,0,0"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Center">
-                                <ContentPresenter 
-                                    x:Name="Icon" 
+                                <ContentPresenter
+                                    x:Name="Icon"
                                     Content="{TemplateBinding Icon}"
                                     Foreground="{ThemeResource DefaultTextForegroundThemeBrush}" />
                             </Viewbox>
@@ -209,7 +245,7 @@
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"/>
                         </Grid>
-                        <Grid 
+                        <Grid
                             x:Name="SelectionIndicatorGrid"
                             Margin="16,0,16,4"
                             VerticalAlignment="Bottom">
@@ -286,7 +322,7 @@
                                 Opacity="0.0"/>
                         </Grid>
 
-                        <Grid 
+                        <Grid
                             x:Name="ContentGrid"
                             MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"
                             HorizontalAlignment="Left">
@@ -295,16 +331,16 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <Viewbox 
-                                x:Name="IconBox"                                
+                            <Viewbox
+                                x:Name="IconBox"
                                 Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
-                                <ContentPresenter 
-                                    x:Name="Icon" 
+                                <ContentPresenter
+                                    x:Name="Icon"
                                     Foreground="{TemplateBinding Foreground}"
                                     Content="{TemplateBinding Icon}" />
                             </Viewbox>
 
-                            <ContentPresenter 
+                            <ContentPresenter
                                 x:Name="ContentPresenter"
                                 Grid.Column="1"
                                 Foreground="{TemplateBinding Foreground}"
