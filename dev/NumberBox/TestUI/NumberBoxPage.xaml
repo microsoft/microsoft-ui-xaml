@@ -161,6 +161,16 @@
                     <controls:NumberBox x:Name="HeaderTemplateTestingNumberBox"/>
                 </StackPanel>
 
+                <!-- FontSize propagation -->
+                <controls:NumberBox Header="Header text" FontSize="50"/>
+
+                <StackPanel Orientation="Horizontal" Height="50">
+                    <controls:NumberBox PlaceholderText="Number"/>
+                    <TextBox PlaceholderText="Text"/>
+                    <AutoSuggestBox PlaceholderText="Auto"/>
+                    <RichEditBox PlaceholderText="Rich"/>
+                </StackPanel>
+              
                 <!-- Property propagation -->
                 <StackPanel Orientation="Horizontal">
                     <TextBox Header="Header text" FontSize="14" Foreground="{ThemeResource SystemAccentColor}"

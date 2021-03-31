@@ -224,7 +224,11 @@ void NavigationViewItem::UpdateNavigationViewItemToolTip()
     {
         if (ShouldEnableToolTip())
         {
-            winrt::ToolTipService::SetToolTip(*this, m_suggestedToolTipContent.get());
+            // Don't SetToolTip with the same parameter because it close/re-open the ToolTip
+            if (toolTipContent != m_suggestedToolTipContent.get())
+            {
+                winrt::ToolTipService::SetToolTip(*this, m_suggestedToolTipContent.get());
+            }
         }
         else
         {

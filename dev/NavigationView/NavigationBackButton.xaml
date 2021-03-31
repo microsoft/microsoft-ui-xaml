@@ -19,14 +19,14 @@
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="Content" Value="&#xE72B;" />
         <Setter Property="Margin"  Value="4,2" />
-        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Grid x:Name="RootGrid"
                         Background="{TemplateBinding Background}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -83,9 +83,9 @@
                             <animatedvisuals:AnimatedBackVisualSource/>
                             <local:AnimatedIcon.FallbackIconSource>
                                 <local:FontIconSource
-                                    FontSize="16"
-                                    FontFamily="{TemplateBinding FontFamily}"
-                                    Glyph="&#xE72B;"
+                                    FontSize="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FontSize}"
+                                    FontFamily="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FontFamily}"
+                                    Glyph="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content}"
                                     MirroredWhenRightToLeft="True"/>
                             </local:AnimatedIcon.FallbackIconSource>
                         </local:AnimatedIcon>
@@ -99,5 +99,4 @@
         <Setter Property="Height" Value="32" />
         <Setter Property="Width" Value="32" />
     </Style>
-    
 </ResourceDictionary>
