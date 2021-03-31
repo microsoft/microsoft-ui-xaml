@@ -51,7 +51,6 @@
         
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="TimePickerSpacerFill" ResourceKey="SystemControlForegroundBaseLowBrush" />
-            <StaticResource x:Key="TimePickerSpacerFillFocused" ResourceKey="SystemControlForegroundBaseLowBrush" />
             <StaticResource x:Key="TimePickerSpacerFillDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
             
             <StaticResource x:Key="TimePickerHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -61,7 +60,6 @@
             <StaticResource x:Key="TimePickerButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="TimePickerButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
             <StaticResource x:Key="TimePickerButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrushFocused" ResourceKey="AccentControlElevationBorderBrush" />
 
             <StaticResource x:Key="TimePickerButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="TimePickerButtonForegroundDefault" ResourceKey="SystemControlBackgroundBaseLowBrush" />
