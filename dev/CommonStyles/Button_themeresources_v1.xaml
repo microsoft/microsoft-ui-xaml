@@ -56,16 +56,16 @@
             <StaticResource x:Key="AccentButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
             <StaticResource x:Key="AccentButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
             <StaticResource x:Key="ButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-            <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="SystemColorHighlightTextColor" />
-            <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="SystemColorHighlightTextColor" />
+            <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="SystemColorHighlightTextColorBrush" />
             <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-            <StaticResource x:Key="ButtonForeground" ResourceKey="SystemColorButtonTextColor" />
+            <StaticResource x:Key="ButtonForeground" ResourceKey="SystemColorButtonTextColorBrush" />
             <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="SystemControlHighlightBaseHighBrush" />
             <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
             <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="ButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
             <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
-            <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="SystemColorHighlightTextColor" />
+            <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="SystemColorHighlightTextColorBrush" />
             <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
             <Thickness x:Key="ButtonBorderThemeThickness">1</Thickness>
             <SolidColorBrush x:Key="ButtonBackgroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
