@@ -5,7 +5,8 @@
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:contract4Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,4)"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
-    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
+    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:contract13Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,13)">
     
     <!-- This is the same as the template in CommandBarFlyout_themeresources.xaml, except its animations have been removed.
          Any changes to the style in the above file should also be made here. -->
@@ -246,7 +247,7 @@
 
     <!-- This is the same as the template in CommandBarFlyoutOS_themeresources.xaml, except its animations have been removed.
          Any changes to the style in the above file should also be made here. -->
-    <contract7Present:Style TargetType="CommandBarFlyoutCommandBar" BasedOn="{StaticResource DefaultCommandBarFlyoutCommandBarOSStyle}">
+    <contract13Present:Style TargetType="CommandBarFlyoutCommandBar" BasedOn="{StaticResource DefaultCommandBarFlyoutCommandBarOSStyle}">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CommandBarFlyoutCommandBar">
@@ -465,5 +466,5 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-    </contract7Present:Style>
+    </contract13Present:Style>
 </ResourceDictionary>
