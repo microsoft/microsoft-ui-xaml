@@ -18,8 +18,8 @@
             <Thickness x:Key="TextControlThemePadding">10,5,6,6</Thickness>
             <SolidColorBrush x:Key="ApplicationPageBackgroundThemeBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
             <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="SystemControlFocusVisualPrimaryBrush" ResourceKey="FocusStrokeColorOuter"/>
-            <StaticResource x:Key="SystemControlFocusVisualSecondaryBrush" ResourceKey="FocusStrokeColorInner"/>
+            <StaticResource x:Key="SystemControlFocusVisualPrimaryBrush" ResourceKey="FocusStrokeColorOuterBrush"/>
+            <StaticResource x:Key="SystemControlFocusVisualSecondaryBrush" ResourceKey="FocusStrokeColorInnerBrush"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -32,8 +32,8 @@
             <Thickness x:Key="TextControlThemePadding">10,5,6,6</Thickness>
             <SolidColorBrush x:Key="ApplicationPageBackgroundThemeBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
             <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="SystemControlFocusVisualPrimaryBrush" ResourceKey="FocusStrokeColorOuter"/>
-            <StaticResource x:Key="SystemControlFocusVisualSecondaryBrush" ResourceKey="FocusStrokeColorInner"/>
+            <StaticResource x:Key="SystemControlFocusVisualPrimaryBrush" ResourceKey="FocusStrokeColorOuterBrush"/>
+            <StaticResource x:Key="SystemControlFocusVisualSecondaryBrush" ResourceKey="FocusStrokeColorInnerBrush"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -46,8 +46,8 @@
             <Thickness x:Key="TextControlThemePadding">10,5,6,6</Thickness>
             <SolidColorBrush x:Key="ApplicationPageBackgroundThemeBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="SystemControlFocusVisualPrimaryBrush" ResourceKey="FocusStrokeColorOuter"/>
-            <StaticResource x:Key="SystemControlFocusVisualSecondaryBrush" ResourceKey="FocusStrokeColorInner"/>
+            <StaticResource x:Key="SystemControlFocusVisualPrimaryBrush" ResourceKey="FocusStrokeColorOuterBrush"/>
+            <StaticResource x:Key="SystemControlFocusVisualSecondaryBrush" ResourceKey="FocusStrokeColorInnerBrush"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
