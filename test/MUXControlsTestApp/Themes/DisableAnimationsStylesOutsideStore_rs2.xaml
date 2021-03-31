@@ -233,6 +233,12 @@
                                                 BorderBrush="{TemplateBinding BorderBrush}"
                                                 BorderThickness="{ThemeResource CommandBarFlyoutBorderThemeThickness}"
                                                 IsTabStop="False">
+                                                <CommandBarOverflowPresenter.ItemContainerStyle>
+                                                    <Style TargetType="FrameworkElement">
+                                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                                        <Setter Property="Width" Value="NaN" />
+                                                    </Style>
+                                                </CommandBarOverflowPresenter.ItemContainerStyle>
                                             </CommandBarOverflowPresenter>
                                         </Grid>
                                     </Grid>
