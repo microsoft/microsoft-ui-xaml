@@ -60,7 +60,7 @@
             <StaticResource x:Key="InkToolbarButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="InkToolbarButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
             <StaticResource x:Key="InkToolbarButtonSelectedBackground" ResourceKey="SubtleFillColorSecondaryBrush" />
-            <StaticResource x:Key="InkToolbarSeelctedButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="InkToolbarButtonSelectedBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="InkToolbarButtonSelectedBackgroundPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="InkToolbarButtonSelectedBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
             <StaticResource x:Key="InkToolbarButtonPressedBackgroundThemeBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
@@ -133,7 +133,7 @@
             <StaticResource x:Key="InkToolbarButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealListLowBackgroundBrush" />
             <StaticResource x:Key="InkToolbarButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="InkToolbarButtonSelectedBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="InkToolbarSeelctedButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="InkToolbarButtonSelectedBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="InkToolbarButtonSelectedBackgroundPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="InkToolbarButtonSelectedBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
             <!-- Foreground -->
