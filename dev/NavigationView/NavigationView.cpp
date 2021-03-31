@@ -1720,7 +1720,7 @@ void NavigationView::OnSplitViewPaneOpening(const winrt::DependencyObject& /*sen
         // See UpdateIsClosedCompact 'RS3+ animation timing enhancement' for explanation:
         winrt::VisualStateManager::GoToState(*this, L"ListSizeFull", true /*useTransitions*/);
 
-        if (auto splitView = m_rootSplitView.get())
+        if (const auto splitView = m_rootSplitView.get())
         {
             if (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay)
             {
