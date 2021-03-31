@@ -52,6 +52,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             RunDensityTests("ToggleSwitchDensityTest");
         }
 
+        [TestMethod]
         public void DatePickerDensityTest()
         {
             RunDensityTests("DatePickerDensityTest");
@@ -157,6 +158,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 var textBlock = FindElement.ByName("InkToolbar");
                 Verify.IsNotNull(textBlock, "Verify InkToolbar page doesn't crash");
+
+                var verticalInkToolbar = FindElement.ById("VerticalInkToolbar");
+                Verify.IsNotNull(textBlock, "Verify verticalInkToolbar doesn't crash");
+
+                Log.Comment("Click on " + "InkToolbarBallpointPenButton");
+                var radioButton = new RadioButton(FindElement.ById("InkToolbarBallpointPenButton"));
+                radioButton.Select();
+                Wait.ForIdle();
             }
         }
     }

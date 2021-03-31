@@ -7,11 +7,11 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <StaticResource x:Key="RatingControlUnselectedForeground" ResourceKey="TextFillColorSecondaryBrush"/>
-            <StaticResource x:Key="RatingControlSelectedForeground" ResourceKey="AccentAAFillColorDefaultBrush"/>
+            <StaticResource x:Key="RatingControlSelectedForeground" ResourceKey="AccentFillColorDefaultBrush"/>
             <StaticResource x:Key="RatingControlPlaceholderForeground" ResourceKey="TextFillColorPrimaryBrush"/>
             <StaticResource x:Key="RatingControlPointerOverPlaceholderForeground" ResourceKey="ControlAltFillColorTertiaryBrush"/>
             <StaticResource x:Key="RatingControlPointerOverUnselectedForeground" ResourceKey="ControlAltFillColorTertiaryBrush"/>
-            <StaticResource x:Key="RatingControlPointerOverSelectedForeground" ResourceKey="AccentAAFillColorDefaultBrush"/>
+            <StaticResource x:Key="RatingControlPointerOverSelectedForeground" ResourceKey="AccentFillColorDefaultBrush"/>
             <StaticResource x:Key="RatingControlDisabledSelectedForeground" ResourceKey="TextFillColorDisabledBrush"/>
             <!-- If this Foreground property is removed/renamed, please update ThemeResourcesTests::VerifyOverrides: -->
             <StaticResource x:Key="RatingControlCaptionForeground" ResourceKey="TextFillColorSecondaryBrush"/>
@@ -19,11 +19,11 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="RatingControlUnselectedForeground" ResourceKey="TextFillColorSecondaryBrush"/>
-            <StaticResource x:Key="RatingControlSelectedForeground" ResourceKey="AccentAAFillColorDefaultBrush"/>
+            <StaticResource x:Key="RatingControlSelectedForeground" ResourceKey="AccentFillColorDefaultBrush"/>
             <StaticResource x:Key="RatingControlPlaceholderForeground" ResourceKey="TextFillColorPrimaryBrush"/>
             <StaticResource x:Key="RatingControlPointerOverPlaceholderForeground" ResourceKey="ControlAltFillColorTertiaryBrush"/>
             <StaticResource x:Key="RatingControlPointerOverUnselectedForeground" ResourceKey="ControlAltFillColorTertiaryBrush"/>
-            <StaticResource x:Key="RatingControlPointerOverSelectedForeground" ResourceKey="AccentAAFillColorDefaultBrush"/>
+            <StaticResource x:Key="RatingControlPointerOverSelectedForeground" ResourceKey="AccentFillColorDefaultBrush"/>
             <StaticResource x:Key="RatingControlDisabledSelectedForeground" ResourceKey="TextFillColorDisabledBrush"/>
             <StaticResource x:Key="RatingControlCaptionForeground" ResourceKey="TextFillColorSecondaryBrush"/>
             <local:RatingItemFontInfo x:Key="MUX_RatingControlDefaultFontInfo" Glyph="&#xE735;" UnsetGlyph="&#xE734;"/>
