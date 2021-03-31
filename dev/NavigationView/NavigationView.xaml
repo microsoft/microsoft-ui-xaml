@@ -122,11 +122,7 @@
                                         </Storyboard>
                                     </VisualTransition>
                                 </VisualStateGroup.Transitions>
-                                <VisualState x:Name="PaneOverlay">
-                                    <VisualState.Setters>
-                                        
-                                    </VisualState.Setters>
-                                </VisualState>
+                                <VisualState x:Name="PaneOverlay" />
                                 <VisualState x:Name="PaneNotOverlay">
                                     <VisualState.Setters>
                                         <Setter Target="RootSplitView.CornerRadius" Value="0" />
