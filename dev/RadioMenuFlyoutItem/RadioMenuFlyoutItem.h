@@ -51,6 +51,8 @@ public:
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
+    static void OnContainsRadioMenuFlyoutItemsPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
+
 private:
     void OnInternalIsCheckedChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
@@ -59,4 +61,7 @@ private:
     bool m_isSafeUncheck{ false };
 
     PropertyChanged_revoker m_InternalIsCheckedChangedRevoker{};
+
+    //static winrt::IMap<winrt::hstring, winrt::hstring> s_selectionMap;
+    static winrt::IObservableMap<winrt::hstring, winrt::hstring> s_selectionMap;
 };

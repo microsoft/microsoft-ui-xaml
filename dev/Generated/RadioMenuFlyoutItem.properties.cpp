@@ -13,6 +13,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "RadioMenuFlyoutItem.g.cpp"
 
+GlobalDependencyProperty RadioMenuFlyoutItemProperties::s_ContainsRadioMenuFlyoutItemsProperty{ nullptr };
 GlobalDependencyProperty RadioMenuFlyoutItemProperties::s_GroupNameProperty{ nullptr };
 GlobalDependencyProperty RadioMenuFlyoutItemProperties::s_IsCheckedProperty{ nullptr };
 
@@ -23,6 +24,17 @@ RadioMenuFlyoutItemProperties::RadioMenuFlyoutItemProperties()
 
 void RadioMenuFlyoutItemProperties::EnsureProperties()
 {
+    if (!s_ContainsRadioMenuFlyoutItemsProperty)
+    {
+        s_ContainsRadioMenuFlyoutItemsProperty =
+            InitializeDependencyProperty(
+                L"ContainsRadioMenuFlyoutItems",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::RadioMenuFlyoutItem>(),
+                true /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                &RadioMenuFlyoutItem::OnContainsRadioMenuFlyoutItemsPropertyChanged);
+    }
     if (!s_GroupNameProperty)
     {
         s_GroupNameProperty =
@@ -49,6 +61,7 @@ void RadioMenuFlyoutItemProperties::EnsureProperties()
 
 void RadioMenuFlyoutItemProperties::ClearProperties()
 {
+    s_ContainsRadioMenuFlyoutItemsProperty = nullptr;
     s_GroupNameProperty = nullptr;
     s_IsCheckedProperty = nullptr;
 }
@@ -67,6 +80,17 @@ void RadioMenuFlyoutItemProperties::OnIsCheckedPropertyChanged(
 {
     auto owner = sender.as<winrt::RadioMenuFlyoutItem>();
     winrt::get_self<RadioMenuFlyoutItem>(owner)->OnPropertyChanged(args);
+}
+
+
+void RadioMenuFlyoutItemProperties::SetContainsRadioMenuFlyoutItems(winrt::DependencyObject const& target, bool value)
+{
+    target.SetValue(s_ContainsRadioMenuFlyoutItemsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool RadioMenuFlyoutItemProperties::GetContainsRadioMenuFlyoutItems(winrt::DependencyObject const& target)
+{
+    return ValueHelper<bool>::CastOrUnbox(target.GetValue(s_ContainsRadioMenuFlyoutItemsProperty));
 }
 
 void RadioMenuFlyoutItemProperties::GroupName(winrt::hstring const& value)

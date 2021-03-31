@@ -14,6 +14,12 @@ unsealed runtimeclass RadioMenuFlyoutItem : Windows.UI.Xaml.Controls.MenuFlyoutI
 
     static Windows.UI.Xaml.DependencyProperty IsCheckedProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty GroupNameProperty{ get; };
+
+    [MUX_DEFAULT_VALUE("false")]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnContainsRadioMenuFlyoutItemsPropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty ContainsRadioMenuFlyoutItemsProperty{ get; };
+    static void SetContainsRadioMenuFlyoutItems(Windows.UI.Xaml.DependencyObject object, Boolean value);
+    static Boolean GetContainsRadioMenuFlyoutItems(Windows.UI.Xaml.DependencyObject object);
 }
 
 }

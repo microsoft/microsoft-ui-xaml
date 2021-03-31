@@ -7,11 +7,26 @@
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
+winrt::IObservableMap<winrt::hstring, winrt::hstring> RadioMenuFlyoutItem::s_selectionMap = nullptr;
+
 RadioMenuFlyoutItem::RadioMenuFlyoutItem()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_RadioMenuFlyoutItem);
 
     m_InternalIsCheckedChangedRevoker = RegisterPropertyChanged(*this, winrt::ToggleMenuFlyoutItem::IsCheckedProperty(), { this, &RadioMenuFlyoutItem::OnInternalIsCheckedChanged });
+
+    // ### probably not here -- make an ensure method or something
+    if (!s_selectionMap)
+    {
+        //single_threaded_map
+        s_selectionMap = winrt::single_threaded_observable_map<winrt::hstring, winrt::hstring>();
+        // ### or this? winrt::make<HashMap<winrt::hstring, winrt::DataTemplate>>());
+
+        // ### so like... if I can observe it, is that better? I don't really need a different type of object then, do I?
+        //s_selectionMap.MapChanged();
+
+        //winrt::Windows::Foundation::Collections::IObservableMap
+    }
 
     SetDefaultStyleKey(this);
 }
@@ -75,6 +90,38 @@ void RadioMenuFlyoutItem::UpdateSiblings()
                 }
             }
         }
+    }
+}
+
+//-----------------------------
+
+//### this should probably actually be the GroupName string or something like that.
+void RadioMenuFlyoutItem::OnContainsRadioMenuFlyoutItemsPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    OutputDebugString(L"I see this property!\n");
+
+    if (auto const& subMenu = sender.try_as<winrt::MenuFlyoutSubItem>())
+    {
+        subMenu.Loaded(
+        {
+            [subMenu](winrt::IInspectable const& sender, auto const&)
+            {
+                OutputDebugString(L"Loaded now!\n");
+
+                bool isAnyItemChecked = false;
+                for (auto const& item : subMenu.Items())
+                {
+                    // ### and check the group name?
+                    if (auto const& radioItem = item.try_as<winrt::RadioMenuFlyoutItem>())
+                    {
+                        OutputDebugString(radioItem.IsChecked() ? L"Item is checked\n" : L"Item is unchecked\n");
+                        isAnyItemChecked = isAnyItemChecked || radioItem.IsChecked();
+                    }
+                }
+                OutputDebugString(isAnyItemChecked ? L"I should be checked\n" : L"I should be unchecked\n");
+                winrt::VisualStateManager::GoToState(subMenu, isAnyItemChecked ? L"Checked" : L"Unchecked", false);
+            }
+        });
 
     }
 }
