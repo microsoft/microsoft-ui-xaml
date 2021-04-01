@@ -3,7 +3,10 @@ MonochromaticOverlayPresenter
 
 # Background
 
-The `MonochromaticOverlayPresenter` API is a Xaml Framework Element that renders the portion of another element at the same position (typically beneath it in the Z-order), while also applying a monochromatic colorization effect. This allows the element to appear to be an overlay on top of the other element.
+The `MonochromaticOverlayPresenter` API is a Xaml Framework Element that renders the portion of
+another element at the same position (typically beneath it in the Z-order), while also applying a
+monochromatic colorization effect. This allows the element to appear to be an overlay on top of the
+other element.
 
 `MonochromaticOverlayPresenter` element is similar to several precedents:
 * [SwapChainBackgroundPanel](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.SwapChainBackgroundPanel),
@@ -13,7 +16,8 @@ which  is a brush that gets its content from another (source) brush.
 * WPF's [VisualBrush](https://docs.microsoft.com/dotnet/api/System.Windows.Media.VisualBrush),
 which uses an element's rendering to draw a brush.
 
-`MonochromaticOverlayPresenter` is most similar to the WPF `VisualBrush`, the difference being that `MonochromaticOverlayPresenter`
+`MonochromaticOverlayPresenter` is most similar to the WPF `VisualBrush`, 
+the difference being that `MonochromaticOverlayPresenter`
 is an element rather than a Brush. So it can't for example be rendered as text foreground.
 
 This new `MonochromaticOverlayPresenter` will be used in the rendering of the 
@@ -25,7 +29,8 @@ control.
 ## MonochromaticOverlayPresenter class
 
 A [Framework Element](https://docs.microsoft.com/windows/winui/api/microsoft.ui.xaml.frameworkelement?view=winui-3.0-preview)
-which renders another element at the same position (typically beneath it in the Z-order), while also applying a monochromatic colorization effect.
+which renders another element at the same position (typically beneath it in the Z-order),
+while also applying a monochromatic colorization effect.
 
 ```csharp
 public class MonochromaticOverlayPresenter : FrameworkElement
@@ -35,17 +40,30 @@ public class MonochromaticOverlayPresenter : FrameworkElement
 }
 ```
 
-Set the `SourceElement` property to indicate which element should be rendered as the `MonochromaticOverlayPresenter`. The `SourceElement`'s rendering takes place on top of the `Background`, if a background is set.
+Set the `SourceElement` property to indicate which element should be rendered as the
+`MonochromaticOverlayPresenter`. The `SourceElement`'s rendering takes place on top of the
+`Background`, if a background is set.
 
-The portion of the `SourceElement` rendered inside the `MonochromaticOverlayPresenter` is the portion that would be rendered at the same location as the `MonochromaticOverlayPresenter`. The `SourceElement` is typically placed below the `MonochromaticOverlayPresenter` in the Z-order, giving the `MonochromaticOverlayPresenter` the appearance of an overlay.
+The portion of the `SourceElement` rendered inside the `MonochromaticOverlayPresenter` is the portion
+that would be rendered at the same location as the `MonochromaticOverlayPresenter`. 
+The `SourceElement` is typically placed below the `MonochromaticOverlayPresenter` in the Z-order,
+giving the `MonochromaticOverlayPresenter` the appearance of an overlay.
 
 Only the source element's rendering applies to the `MonochromaticOverlayPresenter`; the user
-cannot interact with it using the mouse, or move keyboard focus to it. However, `MonochromaticOverlayPresenter` will render system focus visuals, regardless of what the [UseSystemFocusVisuals](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Control.UseSystemFocusVisuals) property is set to. To avoid this, you should inset the margins to remove it.
+cannot interact with it using the mouse, or move keyboard focus to it. However,
+`MonochromaticOverlayPresenter` will render system focus visuals, regardless of what the
+[UseSystemFocusVisuals](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Control.UseSystemFocusVisuals) 
+property is set to. To avoid this, you should inset the margins to remove it.
 
-> Note: the element set as the `SourceElement` cannot be an ancestor or in the descendancy of the `MonochromaticOverlayPresenter`. However the `SourceElement` must be in the same XAML tree as the `MonochromaticOverlayPresenter`.
+> Note: the element set as the `SourceElement` cannot be an ancestor or in the descendancy of 
+the `MonochromaticOverlayPresenter`. However the `SourceElement` must be in the same XAML tree as 
+the `MonochromaticOverlayPresenter`.
 
 
-If the `ReplacementColor` property is set and has a nonzero Alpha value, then the `SourceElement` is treated as a mask: every non-transparent pixel will be replaced by this color. The RGB value of the `ReplacementColor` (not the Alpha value) will overwrite the RGB of the source. The default value for `ReplacementColor` is Transparent.
+If the `ReplacementColor` property is set and has a nonzero Alpha value, then the `SourceElement` 
+is treated as a mask: every non-transparent pixel will be replaced by this color. The RGB value 
+of the `ReplacementColor` (not the Alpha value) will overwrite the RGB of the source. 
+The default value for `ReplacementColor` is Transparent.
 
 
 ### MonochromaticOverlayPresenter examples
@@ -64,7 +82,7 @@ across the center of the scrolling text.
 
 ```xml
 <Grid Background="White" Width="150">
-    <ScrollViewer x:Name="Target" Height="300">
+    <ScrollViewer x:Name="Source" Height="300">
         <TextBlock
             Foreground="Black"
             FontSize="30"
@@ -76,7 +94,7 @@ across the center of the scrolling text.
     <MonochromaticOverlayPresenter
         ReplacementColor="Green"
         Background="Black"
-        TargetElement="{Binding ElementName=Target}"
+        SourceElement="{x:Bind Source}"
         Height="30"
         IsHitTestVisible="False"
         VerticalAlignment="Center"
@@ -92,10 +110,10 @@ The example below shows how the new `MonochromaticOverlayPresenter` API can be u
  <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel x:Name="Panel" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Grid Margin="2,10,0,0">
-                <TextBlock x:Name="Target" Text="This string will be partially highlighted"/>
+                <TextBlock x:Name="Source" Text="This string will be partially highlighted"/>
                 <MonochromaticOverlayPresenter
                     ReplacementColor="Black"
-                    TargetElement="{Binding ElementName=Target}"
+                    SourceElement="{x:Bind Source}"
                     Width="50"
                     VerticalAlignment="Stretch"
                     HorizontalAlignment="Center"
