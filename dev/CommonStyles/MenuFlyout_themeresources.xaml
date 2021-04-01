@@ -243,14 +243,14 @@
 
     <x:Double x:Key="MenuFlyoutSeparatorHeight">1</x:Double>
     <Thickness x:Key="MenuFlyoutPresenterThemePadding">0,2,0,2</Thickness>
-    <x:Double x:Key="MenuFlyoutThemeMinHeight">40</x:Double>
+    <x:Double x:Key="MenuFlyoutThemeMinHeight">32</x:Double>
     <Thickness x:Key="MenuFlyoutItemChevronMargin">24,0,0,0</Thickness>
     <Thickness x:Key="MenuFlyoutItemPlaceholderThemeThickness">28,0,0,0</Thickness>
     <Thickness x:Key="MenuFlyoutSeparatorThemePadding">-4,2,-4,2</Thickness>
     <Thickness x:Key="MenuFlyoutItemDoublePlaceholderThemeThickness">56,0,0,0</Thickness>
     <Thickness x:Key="MenuFlyoutItemMargin">4,2,4,2</Thickness>
-    <Thickness x:Key="MenuFlyoutItemThemePadding">11,11,11,12</Thickness>
-    <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,7,11,9</Thickness>
+    <Thickness x:Key="MenuFlyoutItemThemePadding">11,7,11,8</Thickness>
+    <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,3,11,5</Thickness>
 
     <!-- Default styles -->
     <Style TargetType="MenuFlyoutPresenter" BasedOn="{StaticResource DefaultMenuFlyoutPresenterStyle}" />
@@ -326,6 +326,18 @@
                         Margin="{StaticResource MenuFlyoutItemMargin}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
                         <VisualStateManager.VisualStateGroups>
+
+                            <VisualStateGroup x:Name="InputModeStates">
+                                <VisualState x:Name="InputModeDefault" />
+                                <VisualState x:Name="TouchInputMode">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Red" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="GameControllerInputMode"/>
+                            </VisualStateGroup>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="PointerOver">
@@ -375,9 +387,18 @@
                                 </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="PaddingSizeStates">
-                                <VisualState x:Name="DefaultPadding" />
+                                <VisualState x:Name="DefaultPadding">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Green" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
                                 <VisualState x:Name="NarrowPadding">
                                     <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Black" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="Padding">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource MenuFlyoutItemThemePaddingNarrow}" />
                                         </ObjectAnimationUsingKeyFrames>
