@@ -1826,7 +1826,7 @@
               [Windows.UI.Xaml.Controls.Grid]
                   Padding=0,0,0,0
                   CornerRadius=0,0,0,0
-                  BorderThickness=0,0,0,0
+                  BorderThickness=0,0,1,0
                   BorderBrush=#0F000000
                   Background=[NULL]
                   Name=PaneContentGrid

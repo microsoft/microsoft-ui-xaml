@@ -916,7 +916,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 // NavigationViewCompactPaneLength is 40 or 48 in different release. This test case doesn't need an exactly number of width, so just choose 48 as the boundary
                 // PaneHeader share the same row with ToggleButton, so it's width is not the same with other buttons
                 var widthCompactBoundary = 48;
-                var widthOpenPaneLength = 320;
+                var widthOpenPaneLength = 319; // 320 - 1px for the right border
 
                 Button paneHeaderButton = new Button(FindElement.ById("PaneHeader"));
                 Log.Comment("PaneHeader size actual width is " + paneHeaderButton.BoundingRectangle.Width);
