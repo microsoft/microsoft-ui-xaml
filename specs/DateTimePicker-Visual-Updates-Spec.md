@@ -4,33 +4,30 @@ MonochromaticOverlayPresenter
 # Background
 
 The `MonochromaticOverlayPresenter` API is a Xaml Framework Element that renders the portion of
-another element at the same position (typically beneath it in the Z-order), while also applying a
-monochromatic colorization effect. This allows the element to appear to be an overlay on top of the
-other element.
+another element at the same position (the portion of that element that it overlays),
+while also applying a monochromatic colorization effect.
+This allows the element to appear to be an overlay on top of the other element.
 
 `MonochromaticOverlayPresenter` element is similar to several precedents:
-* [SwapChainBackgroundPanel](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.SwapChainBackgroundPanel),
-which is a `Grid` that renders its background using a swap chain.
 * [CompositionMaskBrush](https://docs.microsoft.com/uwp/api/Windows.UI.Composition.CompositionMaskBrush),
 which  is a brush that gets its content from another (source) brush.
 * WPF's [VisualBrush](https://docs.microsoft.com/dotnet/api/System.Windows.Media.VisualBrush),
 which uses an element's rendering to draw a brush.
 
-`MonochromaticOverlayPresenter` is most similar to the WPF `VisualBrush`, 
-the difference being that `MonochromaticOverlayPresenter`
-is an element rather than a Brush. So it can't for example be rendered as text foreground.
+A key difference in this new type is that it only renders the portion of the source
+element which it intersects with in location.
 
 This new `MonochromaticOverlayPresenter` will be used in the rendering of the 
 [DatePicker](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.DatePicker)
-control.
+control (see more info in the Appendix).
 
 # API Pages
 
 ## MonochromaticOverlayPresenter class
 
 A [Framework Element](https://docs.microsoft.com/windows/winui/api/microsoft.ui.xaml.frameworkelement?view=winui-3.0-preview)
-which renders another element at the same position (typically beneath it in the Z-order),
-while also applying a monochromatic colorization effect.
+which renders another element at the same position (beneath it in the Z-order),
+while also optionally applying a monochromatic colorization effect.
 
 ```csharp
 public class MonochromaticOverlayPresenter : FrameworkElement
@@ -40,14 +37,11 @@ public class MonochromaticOverlayPresenter : FrameworkElement
 }
 ```
 
-Set the `SourceElement` property to indicate which element should be rendered as the
-`MonochromaticOverlayPresenter`. The `SourceElement`'s rendering takes place on top of the
-`Background`, if a background is set.
+Set the `SourceElement` property to indicate which element's rendering should be re-rendered
+by the `MonochromaticOverlayPresenter`.
 
-The portion of the `SourceElement` rendered inside the `MonochromaticOverlayPresenter` is the portion
-that would be rendered at the same location as the `MonochromaticOverlayPresenter`. 
-The `SourceElement` is typically placed below the `MonochromaticOverlayPresenter` in the Z-order,
-giving the `MonochromaticOverlayPresenter` the appearance of an overlay.
+The `MonochromaticOverlayPresenter` must overlap the source element; only the intersection
+of the two elements will be rendered by the overlay.
 
 Only the source element's rendering applies to the `MonochromaticOverlayPresenter`; the user
 cannot interact with it using the mouse, or move keyboard focus to it. However,
@@ -55,30 +49,32 @@ cannot interact with it using the mouse, or move keyboard focus to it. However,
 [UseSystemFocusVisuals](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Control.UseSystemFocusVisuals) 
 property is set to. To avoid this, you should inset the margins to remove it.
 
+To allow pointer events to get to the source element, set the overlay's
+[UIElement.IsHitTestVisible](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.UIElement.IsHitTestVisible)
+property to false.
+
 > Note: the element set as the `SourceElement` cannot be an ancestor or in the descendancy of 
 the `MonochromaticOverlayPresenter`. However the `SourceElement` must be in the same XAML tree as 
 the `MonochromaticOverlayPresenter`.
 
-
 If the `ReplacementColor` property is set and has a nonzero Alpha value, then the `SourceElement` 
 is treated as a mask: every non-transparent pixel will be replaced by this color. The RGB value 
-of the `ReplacementColor` (not the Alpha value) will overwrite the RGB of the source. 
-The default value for `ReplacementColor` is Transparent.
-
+of the `ReplacementColor` (not the Alpha value) will override the RGB of the source. 
+The default value for `ReplacementColor` is
+[Colors.Transparent](https://docs.microsoft.com/uwp/api/Windows.UI.Colors.Transparent).
 
 ### MonochromaticOverlayPresenter examples
 
-The following example puts an `MonochromaticOverlayPresenter` on top of (z-ordered above)
+The following example puts a `MonochromaticOverlayPresenter` on top of (z-ordered above)
 some scrolling text, causing the center of the text to be highlighted, even as it's scrolling.
 Things to note:
 * The `MonochromaticOverlayPresenter` is sourcing from the `TextBlock`, it's also z-ordered above
 the same `TextBlock`. If the `Background` and `SourceElement` properties weren't set,
 it would have no effect; it would render the `TextBlock` exactly on top of itself.
-* The `Background` property is black, and the `ReplacementColor` is green, causing
-the overlay text to be displayed as green on black.
 * The `MonochromaticOverlayPresenter` is positioned and given a height such that it's a black band
 across the center of the scrolling text.
-* The `MonochromaticOverlayPresenter.IsHitTestVisible` property is set to False, so that input still goes to the ScrollViewer that is z-ordered behind it.
+* The `MonochromaticOverlayPresenter.IsHitTestVisible` property is set to False, so that input
+still goes to the ScrollViewer that is z-ordered behind it.
 
 ```xml
 <Grid Background="White" Width="150">
@@ -93,7 +89,6 @@ across the center of the scrolling text.
 
     <MonochromaticOverlayPresenter
         ReplacementColor="Green"
-        Background="Black"
         SourceElement="{x:Bind Source}"
         Height="30"
         IsHitTestVisible="False"
@@ -140,14 +135,12 @@ article.
 <StaticResource x:Key="DatePickerFlyoutPresenterHighlightForegroundColor" ResourceKey="TextOnAccentAAFillColorPrimary" />
 ```
 
-
 ## Other MonochromaticOverlayPresenter members
 
 | Name | Description |
 | - | - |
 | SourceElement | Gets or sets the UIElement to render inside the `MonochromaticOverlayPresenter`. |
 | ReplacementColor | Gets or sets the Color to use instead of the non-transparent pixels of the SourceElement.
-
 
 # API Details
 
@@ -170,7 +163,6 @@ unsealed runtimeclass MonochromaticOverlayPresenter : Windows.UI.Xaml.Controls.F
 
 }
 ```
-
 
 # Appendix
 <!-- Anything else that you want to write down for posterity, but 
