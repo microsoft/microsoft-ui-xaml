@@ -241,6 +241,18 @@ winrt::Control CommandBarFlyout::CreatePresenter()
 {
     auto commandBar = winrt::make_self<CommandBarFlyoutCommandBar>();
 
+    m_commandBarOpenedRevoker = commandBar->Opened(winrt::auto_revoke, {
+        [this](auto const&, auto const&)
+        {
+            if (winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this)
+            {
+                // If we open the CommandBar, then we should no longer be in a transient show mode -
+                // we now know that the user wants to interact with us.
+                thisAsFlyoutBase5.ShowMode(winrt::FlyoutShowMode::Standard);
+            }
+        }
+        });
+
     SharedHelpers::CopyVector(m_primaryCommands, commandBar->PrimaryCommands());
     SharedHelpers::CopyVector(m_secondaryCommands, commandBar->SecondaryCommands());
 
@@ -260,7 +272,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
 
     if (SharedHelpers::Is21H1OrHigher())
     {
-        presenter.Name(L"FadeInDropShadowTarget");
+        presenter.Name(L"DropShadowFadeInTarget");
     }
 
     m_presenter.set(presenter);
@@ -290,28 +302,16 @@ winrt::Control CommandBarFlyout::CreatePresenter()
         }
     }
 
-    m_commandBarOpenedRevoker = commandBar->Opened(winrt::auto_revoke, {
-    [this](auto const&, auto const&)
-    {
-        if (winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this)
-        {
-            // If we open the CommandBar, then we should no longer be in a transient show mode -
-            // we now know that the user wants to interact with us.
-            thisAsFlyoutBase5.ShowMode(winrt::FlyoutShowMode::Standard);
-        }
-    }
-    });
-
     m_commandBarOpeningRevoker = commandBar->Opening(winrt::auto_revoke, {
     [this](auto const&, auto const&)
     {
-        if (SharedHelpers::Is21H1OrHigher())
+        if (winrt::IControl7 presenterControl7 = m_presenter.get())
         {
-            // If the CommandBar is opened, set the presenter's corner radius to 0 so that
-            // CommandBarFlyout corner radius changes show through.
-            if (m_presenter)
+            if (SharedHelpers::Is21H1OrHigher())
             {
-                if (winrt::IControl7 presenterControl7 = m_presenter.get())
+                // If the CommandBar is opened, set the presenter's corner radius to 0 so that
+                // CommandBarFlyout corner radius changes show through.
+                if (m_presenter && m_secondaryCommands.Size() > 0)
                 {
                     presenterControl7.CornerRadius({ 0 });
                 }
