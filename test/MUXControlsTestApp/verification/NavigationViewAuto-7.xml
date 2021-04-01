@@ -2380,7 +2380,7 @@
                   CornerRadius=0,0,0,0
                   BorderThickness=0,0,0,0
                   BorderBrush=[NULL]
-                  Background=[NULL]
+                  Background=#FFF3F3F3
                   Name=ContentGrid
                   Margin=0,0,0,0
                   FocusVisualSecondaryThickness=1,1,1,1
