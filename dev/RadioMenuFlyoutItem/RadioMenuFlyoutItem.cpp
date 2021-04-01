@@ -7,7 +7,7 @@
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
-winrt::IObservableMap<winrt::hstring, winrt::hstring> RadioMenuFlyoutItem::s_selectionMap = nullptr;
+winrt::IMap<winrt::hstring, winrt::RadioMenuFlyoutItem> RadioMenuFlyoutItem::s_selectionMap = nullptr;
 
 RadioMenuFlyoutItem::RadioMenuFlyoutItem()
 {
@@ -18,14 +18,8 @@ RadioMenuFlyoutItem::RadioMenuFlyoutItem()
     // ### probably not here -- make an ensure method or something
     if (!s_selectionMap)
     {
-        //single_threaded_map
-        s_selectionMap = winrt::single_threaded_observable_map<winrt::hstring, winrt::hstring>();
-        // ### or this? winrt::make<HashMap<winrt::hstring, winrt::DataTemplate>>());
-
-        // ### so like... if I can observe it, is that better? I don't really need a different type of object then, do I?
-        //s_selectionMap.MapChanged();
-
-        //winrt::Windows::Foundation::Collections::IObservableMap
+        //single_threaded_map single_threaded_observable_map
+        s_selectionMap = winrt::single_threaded_map<winrt::hstring, winrt::RadioMenuFlyoutItem>();
     }
 
     SetDefaultStyleKey(this);
@@ -42,6 +36,7 @@ void RadioMenuFlyoutItem::OnPropertyChanged(const winrt::DependencyPropertyChang
             m_isSafeUncheck = true;
             InternalIsChecked(IsChecked());
             m_isSafeUncheck = false;
+            // ### do I need this for some reason??
             UpdateSiblings();
         }
     }
@@ -73,8 +68,20 @@ void RadioMenuFlyoutItem::UpdateSiblings()
 {
     if (IsChecked())
     {
+        const auto groupName = GroupName();
+
+        if (s_selectionMap.HasKey(groupName))
+        {
+            if (const auto previousCheckedItem = s_selectionMap.Lookup(groupName))
+            {
+                previousCheckedItem.IsChecked(false);
+            }
+        }
+        s_selectionMap.Insert(groupName, *this);
+
+
         // Since this item is checked, uncheck all siblings
-        if (auto parent = winrt::VisualTreeHelper::GetParent(*this))
+        /*if (auto parent = winrt::VisualTreeHelper::GetParent(*this))
         {
             const int childrenCount = winrt::VisualTreeHelper::GetChildrenCount(parent);
             for (int i = 0; i < childrenCount; i++)
@@ -89,7 +96,7 @@ void RadioMenuFlyoutItem::UpdateSiblings()
                     }
                 }
             }
-        }
+        }*/
     }
 }
 

@@ -63,5 +63,5 @@ private:
     PropertyChanged_revoker m_InternalIsCheckedChangedRevoker{};
 
     //static winrt::IMap<winrt::hstring, winrt::hstring> s_selectionMap;
-    static winrt::IObservableMap<winrt::hstring, winrt::hstring> s_selectionMap;
+    static winrt::IMap<winrt::hstring, winrt::RadioMenuFlyoutItem> s_selectionMap;
 };
