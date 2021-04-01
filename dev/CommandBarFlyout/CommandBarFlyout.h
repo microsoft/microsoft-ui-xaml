@@ -39,10 +39,15 @@ private:
     winrt::event_token m_secondaryCommandsVectorChangedToken{};
 
     winrt::CommandBar::Opened_revoker m_commandBarOpenedRevoker{};
+    winrt::CommandBar::Opening_revoker m_commandBarOpeningRevoker{};
+    winrt::CommandBar::Closing_revoker m_commandBarClosingRevoker{};
+    winrt::CommandBar::Closed_revoker m_commandBarClosedRevoker{};
 
     std::map<int, winrt::ButtonBase::Click_revoker> m_secondaryButtonClickRevokerByIndexMap;
     std::map<int, winrt::ToggleButton::Checked_revoker> m_secondaryToggleButtonCheckedRevokerByIndexMap;
     std::map<int, winrt::ToggleButton::Unchecked_revoker> m_secondaryToggleButtonUncheckedRevokerByIndexMap;
+
+    tracker_ref<winrt::Control> m_presenter{ this };
 
     bool m_isClosingAfterCloseAnimation{ false };
 }; 

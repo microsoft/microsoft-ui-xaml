@@ -156,6 +156,15 @@ CommandBarFlyout::CommandBarFlyout()
                 {
                     commandBar->PlayOpenAnimation();
                 }
+                if (SharedHelpers::Is21H1OrHigher())
+                {
+                    if (m_presenter)
+                    {
+                        winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
+                        m_presenter.get().Shadow(shadow);
+                    }
+                }
+
             }
         }
     });
@@ -165,6 +174,14 @@ CommandBarFlyout::CommandBarFlyout()
         {
             if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
             {
+                if (SharedHelpers::Is21H1OrHigher())
+                {
+                    if (m_presenter)
+                    {
+                        m_presenter.get().Shadow(nullptr);
+                    }
+                }
+
                 if (!m_isClosingAfterCloseAnimation && commandBar->HasCloseAnimation())
                 {
                     args.Cancel(true);
@@ -224,18 +241,6 @@ winrt::Control CommandBarFlyout::CreatePresenter()
 {
     auto commandBar = winrt::make_self<CommandBarFlyoutCommandBar>();
 
-    m_commandBarOpenedRevoker = commandBar->Opened(winrt::auto_revoke, {
-        [this](auto const&, auto const&)
-        {
-            if (winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this)
-            {
-                // If we open the CommandBar, then we should no longer be in a transient show mode -
-                // we now know that the user wants to interact with us.
-                thisAsFlyoutBase5.ShowMode(winrt::FlyoutShowMode::Standard);
-            }
-        }
-    });
-
     SharedHelpers::CopyVector(m_primaryCommands, commandBar->PrimaryCommands());
     SharedHelpers::CopyVector(m_secondaryCommands, commandBar->SecondaryCommands());
 
@@ -252,25 +257,85 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     presenter.BorderThickness(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Padding(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Content(*commandBar);
-    // Clear the default CornerRaius(4) on FlyoutPresenter, CommandBarFlyout will do its own handling.
-    if (winrt::IControl7 presenterControl7 = presenter)
+
+    if (SharedHelpers::Is21H1OrHigher())
     {
-        presenterControl7.CornerRadius({ 0 });
+        presenter.Name(L"FadeInDropShadowTarget");
     }
 
-    if (!SharedHelpers::Is21H1OrHigher())
+    m_presenter.set(presenter);
+
+    // This logic applies to projected shadows, which are the default on < 21H1.
+    // When on 21H1 or higher, drop shadows are the default and need to be applied higher up
+    // in the tree to avoid being clipped away.  The default shadow works great for this.
+    // For < 21H1, we will provide our own shadow, not the one that FlyoutPresenter has by default.
+    // We need to specifically target the CommandBar for the shadow, not the default node far
+    // above that.
+    if (winrt::IFlyoutPresenter2 presenter2 = presenter)
     {
-        // This logic applies to projected shadows, which are the default on < 21H1.
-        // When on 21H1 or higher, drop shadows are the default and need to be applied higher up
-        // in the tree to avoid being clipped away.  The default shadow works great for this.
-        // For < 21H1, we will provide our own shadow, not the one that FlyoutPresenter has by default.
-        // We need to specifically target the CommandBar for the shadow, not the default node far
-        // above that.
-        if (winrt::IFlyoutPresenter2 presenter2 = presenter)
+        presenter2.IsDefaultShadowEnabled(false);
+    }
+
+    // The CornerRadius on the presenter should be 4 only when the CommandBarFlyout's overflow isn't
+    // open. When it is open, we'll set it to 0 so that CBF's corner radius changes show through.
+    if (winrt::IControl7 presenterControl7 = presenter)
+    {
+        if (SharedHelpers::Is21H1OrHigher())
         {
-            presenter2.IsDefaultShadowEnabled(false);
+            presenterControl7.CornerRadius({ 4 });
+        }
+        else
+        {
+            presenterControl7.CornerRadius({ 0 });
         }
     }
+
+    m_commandBarOpenedRevoker = commandBar->Opened(winrt::auto_revoke, {
+    [this](auto const&, auto const&)
+    {
+        if (winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this)
+        {
+            // If we open the CommandBar, then we should no longer be in a transient show mode -
+            // we now know that the user wants to interact with us.
+            thisAsFlyoutBase5.ShowMode(winrt::FlyoutShowMode::Standard);
+        }
+    }
+    });
+
+    m_commandBarOpeningRevoker = commandBar->Opening(winrt::auto_revoke, {
+    [this](auto const&, auto const&)
+    {
+        if (SharedHelpers::Is21H1OrHigher())
+        {
+            // If the CommandBar is opened, set the presenter's corner radius to 0 so that
+            // CommandBarFlyout corner radius changes show through.
+            if (m_presenter)
+            {
+                if (winrt::IControl7 presenterControl7 = m_presenter.get())
+                {
+                    presenterControl7.CornerRadius({ 0 });
+                }
+            }
+        }
+    }
+    });
+
+    m_commandBarClosedRevoker = commandBar->Closed(winrt::auto_revoke, {
+    [this](auto const&, auto const&)
+    {
+        if (SharedHelpers::Is21H1OrHigher())
+        {
+            // If the CommandBar is closed, set the presenter's corner radius to 4.
+            if (m_presenter)
+            {
+                if (winrt::IControl7 presenterControl7 = m_presenter.get())
+                {
+                    presenterControl7.CornerRadius({ 4 });
+                }
+            }
+        }
+    }
+    });
 
     commandBar->SetOwningFlyout(*this);
 

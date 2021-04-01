@@ -63,6 +63,9 @@ private:
     void AddShadow();
     void UpdateShadow();
 
+    void AddSecondaryShadow();
+    void ClearSecondaryShadow();
+
     tracker_ref<winrt::FrameworkElement> m_primaryItemsRoot{ this };
     tracker_ref<winrt::FrameworkElement> m_secondaryItemsRoot{ this };
     tracker_ref<winrt::ButtonBase> m_moreButton{ this };

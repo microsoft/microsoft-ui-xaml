@@ -73,13 +73,9 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
     Closing({
         [this](auto const&, auto const&)
         {
-            if (auto owningFlyout = m_owningFlyout.get())
+            if (SharedHelpers::Is21H1OrHigher())
             {
-                if (owningFlyout.AlwaysExpanded())
-                {
-                    // Don't close the secondary commands list when the flyout is AlwaysExpanded.
-                    IsOpen(true);
-                }
+                ClearSecondaryShadow();
             }
         }
     });
@@ -90,6 +86,15 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
             m_secondaryItemsRootSized = false;
+
+            if (auto owningFlyout = m_owningFlyout.get())
+            {
+                if (owningFlyout.AlwaysExpanded())
+                {
+                    // Don't close the secondary commands list when the flyout is AlwaysExpanded.
+                    IsOpen(true);
+                }
+            }
 
             if (!SharedHelpers::IsRS3OrHigher() && PrimaryCommands().Size() > 0)
             {
@@ -1113,6 +1118,19 @@ void CommandBarFlyoutCommandBar::UpdateShadow()
     {
         ClearShadow();
     }
+
+    // When we're >21H1, we'll have to manage the DropShadow on the secondary commands directly.
+    if (SharedHelpers::Is21H1OrHigher())
+    {
+        if (SecondaryCommands().Size() > 0 && IsOpen())
+        {
+            AddSecondaryShadow();
+        }
+        else if (SecondaryCommands().Size() == 0)
+        {
+            ClearSecondaryShadow();
+        }
+    }
 }
 
 void CommandBarFlyoutCommandBar::AddShadow()
@@ -1158,6 +1176,41 @@ void CommandBarFlyoutCommandBar::ClearShadow()
                 //Undo the elevation
                 const auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 0.0f };
                 grid.Translation(translation);
+            }
+        }
+    }
+}
+
+void CommandBarFlyoutCommandBar::AddSecondaryShadow()
+{
+    if (SharedHelpers::Is21H1OrHigher())
+    {
+        winrt::IControlProtected thisAsControlProtected = *this;
+        auto grid = GetTemplateChildT<winrt::Grid>(L"OuterOverflowContentRoot", thisAsControlProtected);
+
+        if (winrt::IUIElement10 grid_uiElement10 = grid)
+        {
+            if (!grid_uiElement10.Shadow())
+            {
+                winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
+                grid_uiElement10.Shadow(shadow);
+            }
+        }
+    }
+}
+
+void CommandBarFlyoutCommandBar::ClearSecondaryShadow()
+{
+    if (SharedHelpers::Is21H1OrHigher())
+    {
+        winrt::IControlProtected thisAsControlProtected = *this;
+        auto grid = GetTemplateChildT<winrt::Grid>(L"OuterOverflowContentRoot", thisAsControlProtected);
+
+        if (winrt::IUIElement10 grid_uiElement10 = grid)
+        {
+            if (grid_uiElement10.Shadow())
+            {
+                grid_uiElement10.Shadow(nullptr);
             }
         }
     }
