@@ -560,8 +560,14 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
         {
             if (shouldExpandUp)
             {
-                m_expandedUpWithPrimary = true;
-                ClearSecondaryShadow();
+                if (SharedHelpers::Is21H1OrHigher())
+                {
+                    // When the overflow is on top of the primary commands, it ends up casting its shadow over the top of the
+                    // primary. If this is the case, don't show the overflow shadow. The bulk of the shadow comes from the bottom
+                    // of the primary anyway.
+                    m_expandedUpWithPrimary = true;
+                    ClearSecondaryShadow();
+                }
                 winrt::VisualStateManager::GoToState(*this, L"ExpandedUpWithPrimaryCommands", useTransitions);
             }
             else

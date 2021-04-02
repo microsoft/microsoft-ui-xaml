@@ -42,7 +42,6 @@ private:
 
     winrt::CommandBar::Opened_revoker m_commandBarOpenedRevoker{};
     winrt::CommandBar::Opening_revoker m_commandBarOpeningRevoker{};
-    winrt::CommandBar::Closing_revoker m_commandBarClosingRevoker{};
     winrt::CommandBar::Closed_revoker m_commandBarClosedRevoker{};
 
     std::map<int, winrt::ButtonBase::Click_revoker> m_secondaryButtonClickRevokerByIndexMap;

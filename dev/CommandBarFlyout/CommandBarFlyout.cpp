@@ -241,7 +241,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
                 thisAsFlyoutBase5.ShowMode(winrt::FlyoutShowMode::Standard);
             }
         }
-        });
+    });
 
     SharedHelpers::CopyVector(m_primaryCommands, commandBar->PrimaryCommands());
     SharedHelpers::CopyVector(m_secondaryCommands, commandBar->SecondaryCommands());
@@ -301,12 +301,9 @@ winrt::Control CommandBarFlyout::CreatePresenter()
             {
                 // If the CommandBar is opened, set the presenter's corner radius to 0 so that
                 // CommandBarFlyout corner radius changes show through.
-                if (m_presenter && m_secondaryCommands.Size() > 0)
+                if (m_secondaryCommands.Size() > 0)
                 {
-                    if (m_secondaryCommands.Size() > 0)
-                    {
-                        presenterControl7.CornerRadius({ 0 });
-                    }
+                    presenterControl7.CornerRadius({ 0 });
                 }
             }
         }
