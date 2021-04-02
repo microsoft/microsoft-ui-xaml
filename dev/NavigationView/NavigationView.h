@@ -332,6 +332,7 @@ private:
 
     void SetDropShadow();
     void UnsetDropShadow();
+    void ShadowCasterEaseOutStoryboard_Completed(const winrt::Grid& shadowCaster);
 
     com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
 

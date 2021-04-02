@@ -108,7 +108,7 @@
                                         </Storyboard>
                                     </VisualTransition>
                                     <VisualTransition From="PaneOverlay" To="PaneNotOverlay">
-                                        <Storyboard>
+                                        <Storyboard x:Name="ShadowCasterEaseOutStoryboard">
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
                                                 <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
                                                 <SplineDoubleKeyFrame KeyTime="0:0:0.12" KeySpline="0.1,0.9 0.2,1.0" Value="{Binding ElementName=RootSplitView, Path=TemplateSettings.NegativeOpenPaneLengthMinusCompactLength}" />
@@ -614,7 +614,6 @@
                                 x:Name="ShadowCaster"
                                 Grid.RowSpan="2"
                                 Width="{TemplateBinding OpenPaneLength}"
-                                Opacity="1"
                                 HorizontalAlignment="Left">
                                 <Grid.RenderTransform>
                                     <CompositeTransform x:Name="ShadowCasterTransform" />

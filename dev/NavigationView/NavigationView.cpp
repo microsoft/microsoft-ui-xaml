@@ -95,6 +95,7 @@ static constexpr int c_mainMenuBlockIndex = 0;
 static constexpr int c_footerMenuBlockIndex = 1;
 
 static constexpr auto c_shadowCaster = L"ShadowCaster"sv;
+static constexpr auto c_shadowCasterEaseOutStoryboard = L"ShadowCasterEaseOutStoryboard"sv;
 
 constexpr int s_itemNotFound{ -1 };
 
@@ -168,6 +169,8 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_topNavRepeaterOverflowView.set(nullptr);
 
     m_topNavOverflowItemsCollectionChangedRevoker.revoke();
+
+    m_shadowCasterEaseOutStoryboardRevoker.revoke();
 
     if (isFromDestructor)
     {
@@ -680,6 +683,7 @@ void NavigationView::OnApplyTemplate()
     if (SharedHelpers::Is21H1OrHigher())
     {
         m_shadowCaster.set(GetTemplateChildT<winrt::Grid>(c_shadowCaster, controlProtected));
+        m_shadowCasterEaseOutStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterEaseOutStoryboard, controlProtected));
     }
     else
     {
@@ -4759,14 +4763,27 @@ void NavigationView::SetDropShadow()
 
 void NavigationView::UnsetDropShadow()
 {
-    if (const auto shadowCaster = m_shadowCaster.get())
+    const auto shadowCaster = m_shadowCaster.get();
+
+    if (const auto shadowCasterEaseOutStoryboard = m_shadowCasterEaseOutStoryboard.get())
     {
-        if (winrt::IUIElement10 shadowCaster_uiElement10 = shadowCaster)
+        shadowCasterEaseOutStoryboard.Begin();
+
+        m_shadowCasterEaseOutStoryboardRevoker =
+            shadowCasterEaseOutStoryboard.Completed(winrt::auto_revoke,
+                {
+                    [this, shadowCaster](auto const&, auto const&) { ShadowCasterEaseOutStoryboard_Completed(shadowCaster); }
+                });
+    }
+}
+
+void NavigationView::ShadowCasterEaseOutStoryboard_Completed(const winrt::Grid& shadowCaster)
+{
+    if (winrt::IUIElement10 shadowCaster_uiElement10 = shadowCaster)
+    {
+        if (shadowCaster_uiElement10.Shadow())
         {
-            if (shadowCaster_uiElement10.Shadow())
-            {
-                shadowCaster_uiElement10.Shadow(nullptr);
-            }
+            shadowCaster_uiElement10.Shadow(nullptr);
         }
     }
 }
