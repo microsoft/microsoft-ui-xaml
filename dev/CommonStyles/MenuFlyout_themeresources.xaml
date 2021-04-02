@@ -742,7 +742,7 @@
     <Style TargetType="MenuFlyoutItem" x:Key="MenuFlyoutItemRevealStyle">
         <Setter Property="Background" Value="{ThemeResource MenuFlyoutItemRevealBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource MenuFlyoutItemRevealBorderBrush}" />
-        <Setter Property="BorderThickness" Value="10" />
+        <Setter Property="BorderThickness" Value="{ThemeResource MenuFlyoutItemRevealBorderThickness}" />
         <Setter Property="Foreground" Value="{ThemeResource MenuFlyoutItemForeground}" />
         <Setter Property="Padding" Value="{StaticResource MenuFlyoutItemThemePadding}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
