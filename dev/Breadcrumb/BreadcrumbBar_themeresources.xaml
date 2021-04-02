@@ -14,9 +14,12 @@
             <Thickness x:Key="BreadcrumbBarEllipsisDropDownItemPadding">11,7,11,9</Thickness>
             <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterThemePadding">0,2</Thickness>
 
-            <Thickness x:Key="BreadcrumbBarItemDefaultPadding">4,0,3,0</Thickness>
-            <Thickness x:Key="BreadcrumbBarItemDefaultMargin">0,3,0,4</Thickness>
-            <Thickness x:Key="BreadcrumbBarItemLastItemMargin">0,3,1,4</Thickness>
+            <Thickness x:Key="BreadcrumbBarItemDefaultPadding">0</Thickness>
+            <Thickness x:Key="BreadcrumbBarItemDefaultMargin">0</Thickness>
+            <Thickness x:Key="BreadcrumbBarItemLastItemMargin">0</Thickness>
+            <Thickness x:Key="BreadcrumbBarChevronPadding">2,0</Thickness>
+
+            <FontWeight x:Key="BreadcrumbBarItemFontWeight">Normal</FontWeight>
             
             <StaticResource x:Key="BreadcrumbBarNormalForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="BreadcrumbBarHoverForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
@@ -58,9 +61,12 @@
             <Thickness x:Key="BreadcrumbBarEllipsisDropDownItemPadding">11,7,11,9</Thickness>
             <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterThemePadding">0,2</Thickness>
 
-            <Thickness x:Key="BreadcrumbBarItemDefaultPadding">4,0,3,0</Thickness>
-            <Thickness x:Key="BreadcrumbBarItemDefaultMargin">0,3,0,4</Thickness>
-            <Thickness x:Key="BreadcrumbBarItemLastItemMargin">0,3,1,4</Thickness>
+            <Thickness x:Key="BreadcrumbBarItemDefaultPadding">0</Thickness>
+            <Thickness x:Key="BreadcrumbBarItemDefaultMargin">0</Thickness>
+            <Thickness x:Key="BreadcrumbBarItemLastItemMargin">0</Thickness>
+            <Thickness x:Key="BreadcrumbBarChevronPadding">2,0</Thickness>
+
+            <FontWeight x:Key="BreadcrumbBarItemFontWeight">Normal</FontWeight>
 
             <StaticResource x:Key="BreadcrumbBarNormalForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="BreadcrumbBarHoverForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
@@ -103,9 +109,12 @@
             <Thickness x:Key="BreadcrumbBarEllipsisDropDownItemPadding">11,7,11,9</Thickness>
             <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterThemePadding">0,2</Thickness>
 
-            <Thickness x:Key="BreadcrumbBarItemDefaultPadding">4,0,3,0</Thickness>
-            <Thickness x:Key="BreadcrumbBarItemDefaultMargin">0,3,0,4</Thickness>
-            <Thickness x:Key="BreadcrumbBarItemLastItemMargin">0,3,1,4</Thickness>
+            <Thickness x:Key="BreadcrumbBarItemDefaultPadding">0</Thickness>
+            <Thickness x:Key="BreadcrumbBarItemDefaultMargin">0</Thickness>
+            <Thickness x:Key="BreadcrumbBarItemLastItemMargin">0</Thickness>
+            <Thickness x:Key="BreadcrumbBarChevronPadding">2,0</Thickness>
+
+            <FontWeight x:Key="BreadcrumbBarItemFontWeight">Normal</FontWeight>
 
             <StaticResource x:Key="BreadcrumbBarNormalForegroundBrush" ResourceKey="SystemColorHighlightColor" />
             <StaticResource x:Key="BreadcrumbBarHoverForegroundBrush" ResourceKey="SystemColorButtonTextColor" />

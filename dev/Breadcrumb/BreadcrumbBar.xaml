@@ -15,7 +15,7 @@
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontWeight" Value="{ThemeResource BreadcrumbBarItemFontWeight}" />
         <Setter Property="FontSize" Value="{ThemeResource BreadcrumbBarItemThemeFontSize}"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="FocusVisualMargin" Value="1" />
@@ -24,9 +24,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:BreadcrumbBarItem">
-                    <Grid x:Name="PART_LayoutRoot"
-                          contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                          contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
+                    <Grid x:Name="PART_LayoutRoot">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ItemTypeStates">
@@ -102,7 +100,6 @@
                                         <Setter Target="PART_ChevronColumnDefinition.Width" Value="0px" />
                                         <Setter Target="PART_ItemButton.(Control.IsTemplateFocusTarget)" Value="False" />
                                         <Setter Target="PART_LastItemContentPresenter.(Control.IsTemplateFocusTarget)" Value="True" />
-                                        <Setter Target="PART_LayoutRoot.Margin" Value="{StaticResource BreadcrumbBarItemLastItemMargin}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -186,9 +183,10 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            Padding="{TemplateBinding Padding}"
                             Grid.Column="0"
                             Control.IsTemplateFocusTarget="True"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            FocusVisualMargin="-3"
                             IsTabStop="False">
                             <Button.Style>
                                 <Style TargetType="Button">
@@ -201,7 +199,6 @@
                                     <Setter Property="FontWeight" Value="Normal" />
                                     <Setter Property="FontSize" Value="{ThemeResource BreadcrumbBarItemThemeFontSize}" />
                                     <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-                                    <Setter Property="FocusVisualMargin" Value="-3" />
                                     <Setter Property="Padding" Value="0,0,0,0" />
                                     <Setter Property="Template">
                                         <Setter.Value>
@@ -322,14 +319,15 @@
 
                                 <TextBlock x:Name="PART_EllipsisTextBlock"
                                         AutomationProperties.Name="BreadcrumbBarEllipsisTextBlock"
+                                        Grid.Column="0"
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                        FontSize="{TemplateBinding FontSize}"
                                         Text="&#xE712;"
+                                        Padding="3"
                                         Visibility="Collapsed"
                                         VerticalAlignment="Stretch"
                                         IsTextScaleFactorEnabled="False"
-                                        FontSize="{TemplateBinding FontSize}"
-                                        AutomationProperties.AccessibilityView="Raw"
-                                        Grid.Column="0"/>
+                                        AutomationProperties.AccessibilityView="Raw" />
                             </Grid>
                             
                         </Button>
@@ -346,6 +344,9 @@
                                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                           LineHeight="20"
+                                          FocusVisualMargin="-3"
+                                          contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                          contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                                           AutomationProperties.AccessibilityView="Raw"
                                           Grid.Column="0"/>
 
@@ -357,6 +358,7 @@
                             ContentTransitions="{TemplateBinding ContentTransitions}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             HorizontalContentAlignment="Stretch"
+                            FontWeight="Normal"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                             Grid.Column="0"/>
 
@@ -370,7 +372,7 @@
                                         IsTextScaleFactorEnabled="False"
                                         FontSize="12"
                                         AutomationProperties.AccessibilityView="Raw"
-                                        Padding="2,0,0,0"
+                                        Padding="{ThemeResource BreadcrumbBarChevronPadding}"
                                         Grid.Column="1"/>
                     </Grid>
                 </ControlTemplate>
