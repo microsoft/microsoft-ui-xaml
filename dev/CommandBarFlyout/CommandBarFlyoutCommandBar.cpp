@@ -560,6 +560,8 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
         {
             if (shouldExpandUp)
             {
+                m_expandedUpWithPrimary = true;
+                ClearSecondaryShadow();
                 winrt::VisualStateManager::GoToState(*this, L"ExpandedUpWithPrimaryCommands", useTransitions);
             }
             else
@@ -1185,16 +1187,23 @@ void CommandBarFlyoutCommandBar::AddSecondaryShadow()
 {
     if (SharedHelpers::Is21H1OrHigher())
     {
-        winrt::IControlProtected thisAsControlProtected = *this;
-        auto grid = GetTemplateChildT<winrt::Grid>(L"OuterOverflowContentRoot", thisAsControlProtected);
-
-        if (winrt::IUIElement10 grid_uiElement10 = grid)
+        if (!m_expandedUpWithPrimary)
         {
-            if (!grid_uiElement10.Shadow())
+            winrt::IControlProtected thisAsControlProtected = *this;
+            auto grid = GetTemplateChildT<winrt::Grid>(L"OuterOverflowContentRoot", thisAsControlProtected);
+
+            if (winrt::IUIElement10 grid_uiElement10 = grid)
             {
-                winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
-                grid_uiElement10.Shadow(shadow);
+                if (!grid_uiElement10.Shadow())
+                {
+                    winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
+                    grid_uiElement10.Shadow(shadow);
+                }
             }
+        }
+        else
+        {
+            m_expandedUpWithPrimary = false;
         }
     }
 }

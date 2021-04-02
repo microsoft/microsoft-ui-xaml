@@ -27,6 +27,8 @@ protected:
 
 private:
     void SetSecondaryCommandsToCloseWhenExecuted();
+    void AddDropShadow();
+    void RemoveDropShadow();
 
     bool m_alwaysExpanded;
 

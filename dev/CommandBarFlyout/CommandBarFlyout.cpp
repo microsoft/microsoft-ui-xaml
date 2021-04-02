@@ -144,6 +144,11 @@ CommandBarFlyout::CommandBarFlyout()
                     commandBar.OverflowButtonVisibility(winrt::Windows::UI::Xaml::Controls::CommandBarOverflowButtonVisibility::Auto);
                 }
             }
+
+            if (m_primaryCommands.Size() > 0)
+            {
+                AddDropShadow();
+            }
         }
     });
 
@@ -156,15 +161,6 @@ CommandBarFlyout::CommandBarFlyout()
                 {
                     commandBar->PlayOpenAnimation();
                 }
-                if (SharedHelpers::Is21H1OrHigher())
-                {
-                    if (m_presenter)
-                    {
-                        winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
-                        m_presenter.get().Shadow(shadow);
-                    }
-                }
-
             }
         }
     });
@@ -174,13 +170,7 @@ CommandBarFlyout::CommandBarFlyout()
         {
             if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
             {
-                if (SharedHelpers::Is21H1OrHigher())
-                {
-                    if (m_presenter)
-                    {
-                        m_presenter.get().Shadow(nullptr);
-                    }
-                }
+                RemoveDropShadow();
 
                 if (!m_isClosingAfterCloseAnimation && commandBar->HasCloseAnimation())
                 {
@@ -313,7 +303,10 @@ winrt::Control CommandBarFlyout::CreatePresenter()
                 // CommandBarFlyout corner radius changes show through.
                 if (m_presenter && m_secondaryCommands.Size() > 0)
                 {
-                    presenterControl7.CornerRadius({ 0 });
+                    if (m_secondaryCommands.Size() > 0)
+                    {
+                        presenterControl7.CornerRadius({ 0 });
+                    }
                 }
             }
         }
@@ -365,6 +358,29 @@ void CommandBarFlyout::SetSecondaryCommandsToCloseWhenExecuted()
         {
             m_secondaryToggleButtonCheckedRevokerByIndexMap[i] = toggleButton.Checked(winrt::auto_revoke, closeFlyoutFunc);
             m_secondaryToggleButtonUncheckedRevokerByIndexMap[i] = toggleButton.Unchecked(winrt::auto_revoke, closeFlyoutFunc);
+        }
+    }
+}
+
+void CommandBarFlyout::AddDropShadow()
+{
+    if (SharedHelpers::Is21H1OrHigher())
+    {
+        if (m_presenter)
+        {
+            winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
+            m_presenter.get().Shadow(shadow);
+        }
+    }
+}
+
+void CommandBarFlyout::RemoveDropShadow()
+{
+    if (SharedHelpers::Is21H1OrHigher())
+    {
+        if (m_presenter)
+        {
+            m_presenter.get().Shadow(nullptr);
         }
     }
 }

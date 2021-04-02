@@ -89,4 +89,6 @@ private:
     winrt::Storyboard::Completed_revoker m_closingStoryboardCompletedCallbackRevoker{};
 
     bool m_secondaryItemsRootSized{ false };
+
+    bool m_expandedUpWithPrimary{ false };
 };
