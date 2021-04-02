@@ -94,7 +94,7 @@
                             <VisualStateGroup x:Name="PaneOverlayGroup">
                                 <VisualStateGroup.Transitions>
                                     <VisualTransition From="PaneNotOverlay" To="PaneOverlay">
-                                        <Storyboard x:Name="ShadowCasterEaseInStoryboard">
+                                        <Storyboard>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
                                                 <DiscreteDoubleKeyFrame KeyTime="0" Value="{Binding ElementName=RootSplitView, Path=TemplateSettings.NegativeOpenPaneLengthMinusCompactLength}" />
                                                 <SplineDoubleKeyFrame KeyTime="0:0:0.35" KeySpline="0.1,0.9 0.2,1.0" Value="0" />
@@ -108,7 +108,7 @@
                                         </Storyboard>
                                     </VisualTransition>
                                     <VisualTransition From="PaneOverlay" To="PaneNotOverlay">
-                                        <Storyboard x:Name="ShadowCasterEaseOutStoryboard">
+                                        <Storyboard>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
                                                 <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
                                                 <SplineDoubleKeyFrame KeyTime="0:0:0.12" KeySpline="0.1,0.9 0.2,1.0" Value="{Binding ElementName=RootSplitView, Path=TemplateSettings.NegativeOpenPaneLengthMinusCompactLength}" />

@@ -94,11 +94,7 @@ static constexpr float c_paneElevationTranslationZ = 32;
 static constexpr int c_mainMenuBlockIndex = 0;
 static constexpr int c_footerMenuBlockIndex = 1;
 
-// Shadows specific items
 static constexpr auto c_shadowCaster = L"ShadowCaster"sv;
-static constexpr auto c_shadowCasterEaseInStoryboard = L"ShadowCasterEaseInStoryboard"sv;
-static constexpr auto c_shadowCasterSmallPaneEaseInStoryboard = L"ShadowCasterSmallPaneEaseInStoryboard"sv;
-static constexpr auto c_shadowCasterEaseOutStoryboard = L"ShadowCasterEaseOutStoryboard"sv;
 
 constexpr int s_itemNotFound{ -1 };
 
@@ -172,8 +168,6 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_topNavRepeaterOverflowView.set(nullptr);
 
     m_topNavOverflowItemsCollectionChangedRevoker.revoke();
-
-    m_shadowCasterEaseOutStoryboardRevoker.revoke();
 
     if (isFromDestructor)
     {
@@ -686,9 +680,6 @@ void NavigationView::OnApplyTemplate()
     if (SharedHelpers::Is21H1OrHigher())
     {
         m_shadowCaster.set(GetTemplateChildT<winrt::Grid>(c_shadowCaster, controlProtected));
-        m_shadowCasterEaseInStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterEaseInStoryboard, controlProtected));
-        m_shadowCasterSmallPaneEaseInStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterSmallPaneEaseInStoryboard, controlProtected));
-        m_shadowCasterEaseOutStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterEaseOutStoryboard, controlProtected));
     }
     else
     {
