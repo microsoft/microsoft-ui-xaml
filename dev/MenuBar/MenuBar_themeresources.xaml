@@ -6,6 +6,8 @@
     xmlns:media="using:Microsoft.UI.Xaml.Media">
 
     <x:Double x:Key="MenuBarHeight">40</x:Double>
+    <Thickness x:Key="MenuBarItemButtonPadding">10,4,10,4</Thickness>
+    <Thickness x:Key="MenuBarItemMargin">4,4,4,4</Thickness>
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">

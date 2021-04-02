@@ -10,7 +10,7 @@
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
             <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="ControlOnImageFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
+            <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="ControlStrongFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFillTimeElapsedText" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="MediaTransportControlsFillMediaText" ResourceKey="TextFillColorPrimaryBrush" />
         </ResourceDictionary>
@@ -26,7 +26,7 @@
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
             <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="ControlOnImageFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
+            <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="ControlStrongFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFillTimeElapsedText" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="MediaTransportControlsFillMediaText" ResourceKey="TextFillColorPrimaryBrush" />
         </ResourceDictionary>
@@ -58,9 +58,10 @@
                                 <Setter Property="AllowFocusOnInteraction" Value="True" />
                             </Style>
                             <!-- New CommandBar Style -->
-                            <Style x:Key="CommandBarStyle" TargetType="CommandBar">
+                            <Style x:Key="CommandBarStyle" TargetType="CommandBar" BasedOn="{StaticResource DefaultCommandBarStyle}">
                                 <Setter Property="Height" Value="{ThemeResource MTCMediaButtonHeight}" />
                                 <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="DefaultLabelPosition" Value="Collapsed"/>
                             </Style>
                             <!-- Style for Error Message text -->
                             <Style x:Key="MediaTextBlockStyle" TargetType="TextBlock">
@@ -72,7 +73,7 @@
                                 <Setter Property="IsTextScaleFactorEnabled" Value="False" />
                             </Style>
                             <!-- Style for Position slider used in Media Transport Controls -->
-                            <Style x:Key="MediaSliderStyle" TargetType="Slider">
+                            <Style x:Key="MediaSliderStyle" TargetType="Slider" BasedOn="{StaticResource DefaultSliderStyle}">
                                 <Setter Property="Background" Value="{ThemeResource SliderTrackFill}" />
                                 <Setter Property="BorderThickness" Value="{ThemeResource SliderBorderThemeThickness}" />
                                 <Setter Property="Foreground" Value="{ThemeResource SliderTrackValueFill}" />
@@ -108,7 +109,7 @@
                                                         <Setter Property="Background" Value="Transparent" />
                                                         <Setter Property="BorderBrush" Value="Transparent" />
                                                         <Setter Property="BorderThickness" Value="1" />
-                                                    </Style>
+                                                    </Style>         
                                                 </Grid.Resources>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
@@ -325,12 +326,12 @@
                                 </Setter>
                             </Style>
                             <!-- Style for Volume Flyout used in Media Transport Controls -->
-                            <Style x:Key="FlyoutStyle" TargetType="FlyoutPresenter">
+                            <Style x:Key="FlyoutStyle" TargetType="FlyoutPresenter" BasedOn="{StaticResource DefaultFlyoutPresenterStyle}">
                                 <Setter Property="Background" Value="{ThemeResource MediaTransportControlsFlyoutBackground}" />
                                 <Setter Property="Padding" Value="0" />
                                 <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
                             </Style>
-                            <Style x:Key="MediaControlAppBarButtonStyle" TargetType="AppBarButton" >
+                            <Style x:Key="MediaControlAppBarButtonStyle" TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}">
                                 <Setter Property="Background" Value="{ThemeResource AppBarButtonBackground}" />
                                 <Setter Property="Foreground" Value="{ThemeResource AppBarButtonForeground}" />
                                 <Setter Property="BorderBrush" Value="{ThemeResource AppBarButtonBorderBrush}" />
