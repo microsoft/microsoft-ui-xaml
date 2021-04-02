@@ -374,6 +374,8 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+                            <!-- Narrow padding is only applied when flyout was invoked with pen, mouse or keyboard. -->
+                            <!-- Default padding is applied for all other cases including touch. -->
                             <VisualStateGroup x:Name="PaddingSizeStates">
                                 <VisualState x:Name="DefaultPadding" />
                                 <VisualState x:Name="NarrowPadding">
