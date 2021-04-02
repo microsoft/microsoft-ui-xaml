@@ -3,6 +3,7 @@
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
+  xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
   xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
   xmlns:contract6NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,6)">
     <ResourceDictionary.ThemeDictionaries>
@@ -23,26 +24,26 @@
             <StaticResource x:Key="ToggleSwitchFillOffPointerOver" ResourceKey="ControlAltFillColorTertiary" />
             <StaticResource x:Key="ToggleSwitchFillOffPressed" ResourceKey="ControlAltFillColorQuarternary" />
             <StaticResource x:Key="ToggleSwitchFillOffDisabled" ResourceKey="ControlAltFillColorDisabled" />
-            <StaticResource x:Key="ToggleSwitchStrokeOff" ResourceKey="ControlAAStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ToggleSwitchStrokeOffPointerOver" ResourceKey="ControlAAStrokeColorDefault" />
-            <StaticResource x:Key="ToggleSwitchStrokeOffPressed" ResourceKey="ControlAAStrokeColorDefault" />
-            <StaticResource x:Key="ToggleSwitchStrokeOffDisabled" ResourceKey="ControlAAStrokeColorDisabled" />
-            <StaticResource x:Key="ToggleSwitchFillOn" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ToggleSwitchFillOnPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="ToggleSwitchFillOnPressed" ResourceKey="AccentAAFillColorTertiaryBrush" />
-            <StaticResource x:Key="ToggleSwitchFillOnDisabled" ResourceKey="AccentAAFillColorDisabled" />
-            <StaticResource x:Key="ToggleSwitchStrokeOn" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ToggleSwitchStrokeOnPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="ToggleSwitchStrokeOnPressed" ResourceKey="AccentAAFillColorTertiaryBrush" />
-            <StaticResource x:Key="ToggleSwitchStrokeOnDisabled" ResourceKey="AccentAAFillColorDisabled" />
+            <StaticResource x:Key="ToggleSwitchStrokeOff" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ToggleSwitchStrokeOffPointerOver" ResourceKey="ControlStrongStrokeColorDefault" />
+            <StaticResource x:Key="ToggleSwitchStrokeOffPressed" ResourceKey="ControlStrongStrokeColorDefault" />
+            <StaticResource x:Key="ToggleSwitchStrokeOffDisabled" ResourceKey="ControlStrongStrokeColorDisabled" />
+            <StaticResource x:Key="ToggleSwitchFillOn" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="ToggleSwitchFillOnPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="ToggleSwitchFillOnPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+            <StaticResource x:Key="ToggleSwitchFillOnDisabled" ResourceKey="AccentFillColorDisabled" />
+            <StaticResource x:Key="ToggleSwitchStrokeOn" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="ToggleSwitchStrokeOnPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="ToggleSwitchStrokeOnPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+            <StaticResource x:Key="ToggleSwitchStrokeOnDisabled" ResourceKey="AccentFillColorDisabled" />
             <StaticResource x:Key="ToggleSwitchKnobFillOff" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOffPointerOver" ResourceKey="TextFillColorSecondary" />
             <StaticResource x:Key="ToggleSwitchKnobFillOffPressed" ResourceKey="TextFillColorSecondary" />
             <StaticResource x:Key="ToggleSwitchKnobFillOffDisabled" ResourceKey="TextFillColorDisabled" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOn" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOnPointerOver" ResourceKey="TextOnAccentAAFillColorPrimary" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOnPressed" ResourceKey="TextOnAccentAAFillColorPrimary" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOnDisabled" ResourceKey="TextOnAccentAAFillColorDisabled" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOn" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOnPointerOver" ResourceKey="TextOnAccentFillColorPrimary" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOnPressed" ResourceKey="TextOnAccentFillColorPrimary" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOnDisabled" ResourceKey="TextOnAccentFillColorDisabled" />
             <StaticResource x:Key="ToggleSwitchKnobStrokeOn" ResourceKey="CircleElevationBorderBrush" />
 
             <!-- Legacy Brushes -->
@@ -148,26 +149,26 @@
             <StaticResource x:Key="ToggleSwitchFillOffPointerOver" ResourceKey="ControlAltFillColorTertiary" />
             <StaticResource x:Key="ToggleSwitchFillOffPressed" ResourceKey="ControlAltFillColorQuarternary" />
             <StaticResource x:Key="ToggleSwitchFillOffDisabled" ResourceKey="ControlAltFillColorDisabled" />
-            <StaticResource x:Key="ToggleSwitchStrokeOff" ResourceKey="ControlAAStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ToggleSwitchStrokeOffPointerOver" ResourceKey="ControlAAStrokeColorDefault" />
-            <StaticResource x:Key="ToggleSwitchStrokeOffPressed" ResourceKey="ControlAAStrokeColorDefault" />
-            <StaticResource x:Key="ToggleSwitchStrokeOffDisabled" ResourceKey="ControlAAStrokeColorDisabled" />
-            <StaticResource x:Key="ToggleSwitchFillOn" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ToggleSwitchFillOnPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="ToggleSwitchFillOnPressed" ResourceKey="AccentAAFillColorTertiaryBrush" />
-            <StaticResource x:Key="ToggleSwitchFillOnDisabled" ResourceKey="AccentAAFillColorDisabled" />
-            <StaticResource x:Key="ToggleSwitchStrokeOn" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ToggleSwitchStrokeOnPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="ToggleSwitchStrokeOnPressed" ResourceKey="AccentAAFillColorTertiaryBrush" />
-            <StaticResource x:Key="ToggleSwitchStrokeOnDisabled" ResourceKey="AccentAAFillColorDisabled" />
+            <StaticResource x:Key="ToggleSwitchStrokeOff" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ToggleSwitchStrokeOffPointerOver" ResourceKey="ControlStrongStrokeColorDefault" />
+            <StaticResource x:Key="ToggleSwitchStrokeOffPressed" ResourceKey="ControlStrongStrokeColorDefault" />
+            <StaticResource x:Key="ToggleSwitchStrokeOffDisabled" ResourceKey="ControlStrongStrokeColorDisabled" />
+            <StaticResource x:Key="ToggleSwitchFillOn" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="ToggleSwitchFillOnPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="ToggleSwitchFillOnPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+            <StaticResource x:Key="ToggleSwitchFillOnDisabled" ResourceKey="AccentFillColorDisabled" />
+            <StaticResource x:Key="ToggleSwitchStrokeOn" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="ToggleSwitchStrokeOnPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="ToggleSwitchStrokeOnPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+            <StaticResource x:Key="ToggleSwitchStrokeOnDisabled" ResourceKey="AccentFillColorDisabled" />
             <StaticResource x:Key="ToggleSwitchKnobFillOff" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOffPointerOver" ResourceKey="TextFillColorSecondary" />
             <StaticResource x:Key="ToggleSwitchKnobFillOffPressed" ResourceKey="TextFillColorSecondary" />
             <StaticResource x:Key="ToggleSwitchKnobFillOffDisabled" ResourceKey="TextFillColorDisabled" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOn" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOnPointerOver" ResourceKey="TextOnAccentAAFillColorPrimary" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOnPressed" ResourceKey="TextOnAccentAAFillColorPrimary" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOnDisabled" ResourceKey="TextOnAccentAAFillColorDisabled" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOn" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOnPointerOver" ResourceKey="TextOnAccentFillColorPrimary" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOnPressed" ResourceKey="TextOnAccentFillColorPrimary" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOnDisabled" ResourceKey="TextOnAccentFillColorDisabled" />
             <StaticResource x:Key="ToggleSwitchKnobStrokeOn" ResourceKey="CircleElevationBorderBrush" />
 
             <!-- Legacy Brushes -->
@@ -215,6 +216,7 @@
         <Setter Property="ManipulationMode" Value="System,TranslateX" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="FocusVisualMargin" Value="-7,-3,-7,-3" />
+        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleSwitch">
@@ -574,6 +576,8 @@
                                 Grid.RowSpan="3"
                                 Grid.ColumnSpan="3"
                                 Margin="0,5"
+                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}"
                                 Control.IsTemplateFocusTarget="True"
                                 Background="{ThemeResource ToggleSwitchContainerBackground}" />
                             <ContentPresenter x:Name="OffContentPresenter"

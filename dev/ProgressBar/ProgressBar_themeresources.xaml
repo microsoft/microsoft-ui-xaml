@@ -7,8 +7,8 @@
         <ResourceDictionary x:Key="Default">
             <Thickness x:Key="ProgressBarBorderThemeThickness">0</Thickness>
 
-            <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ProgressBarBackground" ResourceKey="ControlAAStrokeColorDefault" />
+            <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="ProgressBarBackground" ResourceKey="ControlStrongStrokeColorDefault" />
             <StaticResource x:Key="ProgressBarBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="ProgressBarPausedForegroundColor" ResourceKey="SystemFillColorCaution" />
             <StaticResource x:Key="ProgressBarErrorForegroundColor" ResourceKey="SystemFillColorCritical" />
@@ -27,8 +27,8 @@
         <ResourceDictionary x:Key="Light">
             <Thickness x:Key="ProgressBarBorderThemeThickness">0</Thickness>
 
-            <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ProgressBarBackground" ResourceKey="ControlAAStrokeColorDefault" />
+            <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="ProgressBarBackground" ResourceKey="ControlStrongStrokeColorDefault" />
             <StaticResource x:Key="ProgressBarBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="ProgressBarPausedForegroundColor" ResourceKey="SystemFillColorCaution" />
             <StaticResource x:Key="ProgressBarErrorForegroundColor" ResourceKey="SystemFillColorCritical" />
@@ -38,6 +38,6 @@
     <x:Double x:Key="ProgressBarMinHeight">3</x:Double>
     <x:Double x:Key="ProgressBarTrackHeight">1</x:Double>
     <CornerRadius x:Key="ProgressBarCornerRadius">1.5</CornerRadius>
-    <CornerRadius x:Key="ProgressBarTrackCornerRadius">0.5</CornerRadius>
+    <CornerRadius x:Key="ProgressBarTrackCornerRadius">0.5</CornerRadius>    
 
 </ResourceDictionary>

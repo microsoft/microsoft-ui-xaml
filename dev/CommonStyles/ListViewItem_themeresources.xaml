@@ -37,10 +37,10 @@
             <StaticResource x:Key="ListViewItemCheckBrush" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemCheckBoxBrush" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemDragBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="ListViewItemDragForeground" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
-            <StaticResource x:Key="ListViewItemPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
-            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBorder" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />   
-            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBackground" ResourceKey="AccentAAFillColorDefaultBrush" />        
+            <StaticResource x:Key="ListViewItemDragForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemPlaceholderBackground" ResourceKey="ControlStrongFillColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBorder" ResourceKey="TextOnAccentFillColorPrimaryBrush" />   
+            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBackground" ResourceKey="AccentFillColorDefaultBrush" />        
             <x:Boolean x:Key="ListViewItemSelectionCheckMarkVisualEnabled">True</x:Boolean>
             <ListViewItemPresenterCheckMode x:Key="ListViewItemCheckMode">Inline</ListViewItemPresenterCheckMode>
             <SolidColorBrush x:Key="ListViewItemCheckHintThemeBrush" Color="#FFFFFFFF" />
@@ -130,7 +130,7 @@
             <StaticResource x:Key="ListViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="ListViewItemBackgroundSelected" ResourceKey="SubtleFillColorSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundSelectedPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundSelectedPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ListViewItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
@@ -145,10 +145,10 @@
             <StaticResource x:Key="ListViewItemCheckBrush" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemCheckBoxBrush" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemDragBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="ListViewItemDragForeground" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
-            <StaticResource x:Key="ListViewItemPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
-            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBorder" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" /> 
-            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBackground" ResourceKey="AccentAAFillColorDefaultBrush" />  
+            <StaticResource x:Key="ListViewItemDragForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemPlaceholderBackground" ResourceKey="ControlStrongFillColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBorder" ResourceKey="TextOnAccentFillColorPrimaryBrush" /> 
+            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBackground" ResourceKey="AccentFillColorDefaultBrush" />  
             <x:Boolean x:Key="ListViewItemSelectionCheckMarkVisualEnabled">True</x:Boolean>
             <ListViewItemPresenterCheckMode x:Key="ListViewItemCheckMode">Inline</ListViewItemPresenterCheckMode>
             <SolidColorBrush x:Key="ListViewItemCheckHintThemeBrush" Color="#FF4617B4" />
