@@ -300,9 +300,44 @@ winrt::Control CommandBarFlyout::CreatePresenter()
         {
             if (m_presenter)
             {
-                if (winrt::IControl7 presenterControl7 = m_presenter.get())
+                if (m_secondaryCommands.Size() > 0)
                 {
-                    presenterControl7.CornerRadius({ 0 });
+                    if (winrt::IControl7 presenterControl7 = m_presenter.get())
+                    {
+                        presenterControl7.CornerRadius({ 0 });
+                    }
+                }
+            }
+
+            // During the SecondaryCommands's animations, drop shadows need to disappear.
+            // However, performing a Remove during Closing/Opening and a Add during Closed/Opened
+            // doesn't line up perfectly with the end of the animations. So, if there are animations
+            // we'll remove the shadow in the Closing and Opening events, but we'll put back the shadow
+            // inside of CommandBarFlyoutCommandBar's Storyboard Completed event handlers.
+            if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
+            {
+                if (commandBar->HasSecondaryOpenCloseAnimations())
+                {
+                    if (!AlwaysExpanded() && m_secondaryCommands.Size() > 0)
+                    {
+                        RemoveDropShadow();
+                    }
+                }
+            }
+        }
+    }
+    });
+
+    m_commandBarClosingRevoker = commandBar->Closing(winrt::auto_revoke, {
+    [this](auto const&, auto const&)
+    {
+        if (SharedHelpers::Is21H1OrHigher())
+        {
+            if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
+            {
+                if (commandBar->HasSecondaryOpenCloseAnimations())
+                {
+                    RemoveDropShadow();
                 }
             }
         }

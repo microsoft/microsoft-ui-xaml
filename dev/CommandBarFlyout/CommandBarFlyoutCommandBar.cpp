@@ -87,15 +87,6 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 
             m_secondaryItemsRootSized = false;
 
-            if (auto owningFlyout = m_owningFlyout.get())
-            {
-                if (owningFlyout.AlwaysExpanded())
-                {
-                    // Don't close the secondary commands list when the flyout is AlwaysExpanded.
-                    IsOpen(true);
-                }
-            }
-
             if (!SharedHelpers::IsRS3OrHigher() && PrimaryCommands().Size() > 0)
             {
                 // Before RS3, ensure the focus goes to a primary command when
@@ -163,6 +154,11 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
         {
             moreButton.IsTabStop(false);
         }
+    }
+
+    if (SharedHelpers::Is21H1OrHigher() && m_owningFlyout)
+    {
+        AttachEventsToSecondaryStoryboards();
     }
 
     AttachEventHandlers();
@@ -360,6 +356,10 @@ void CommandBarFlyoutCommandBar::DetachEventHandlers()
     m_openingStoryboardCompletedRevoker.revoke();
     m_closingStoryboardCompletedRevoker.revoke();
     m_closingStoryboardCompletedCallbackRevoker.revoke();
+    m_expandedUpToCollapsedStoryboardRevoker.revoke();
+    m_expandedDownToCollapsedStoryboardRevoker.revoke();
+    m_collapsedToExpandedUpStoryboardRevoker.revoke();
+    m_collapsedToExpandedDownStoryboardRevoker.revoke();
 }
 
 bool CommandBarFlyoutCommandBar::HasOpenAnimation()
@@ -562,10 +562,10 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
             {
                 if (SharedHelpers::Is21H1OrHigher())
                 {
-                    // When the overflow is on top of the primary commands, it ends up casting its shadow over the top of the
-                    // primary. If this is the case, don't show the overflow shadow. The bulk of the shadow comes from the bottom
+                    // When the secondary is on top of the primary commands, it ends up casting its shadow over the top of the
+                    // primary. If this is the case, don't show the secondary shadow. The bulk of the shadow comes from the bottom
                     // of the primary anyway.
-                    m_expandedUpWithPrimary = true;
+                    m_skipAddSecondaryShadow = true;
                     ClearSecondaryShadow();
                 }
                 winrt::VisualStateManager::GoToState(*this, L"ExpandedUpWithPrimaryCommands", useTransitions);
@@ -1130,7 +1130,7 @@ void CommandBarFlyoutCommandBar::UpdateShadow()
     // When we're >21H1, we'll have to manage the DropShadow on the secondary commands directly.
     if (SharedHelpers::Is21H1OrHigher())
     {
-        if (SecondaryCommands().Size() > 0 && IsOpen())
+        if (SecondaryCommands().Size() > 0)
         {
             AddSecondaryShadow();
         }
@@ -1193,7 +1193,7 @@ void CommandBarFlyoutCommandBar::AddSecondaryShadow()
 {
     if (SharedHelpers::Is21H1OrHigher())
     {
-        if (!m_expandedUpWithPrimary)
+        if (!m_skipAddSecondaryShadow)
         {
             winrt::IControlProtected thisAsControlProtected = *this;
             auto grid = GetTemplateChildT<winrt::Grid>(L"OuterOverflowContentRoot", thisAsControlProtected);
@@ -1209,7 +1209,7 @@ void CommandBarFlyoutCommandBar::AddSecondaryShadow()
         }
         else
         {
-            m_expandedUpWithPrimary = false;
+            m_skipAddSecondaryShadow = false;
         }
     }
 }
@@ -1229,4 +1229,75 @@ void CommandBarFlyoutCommandBar::ClearSecondaryShadow()
             }
         }
     }
+}
+
+bool CommandBarFlyoutCommandBar::HasSecondaryOpenCloseAnimations()
+{
+    return static_cast<bool>(m_expandedDownToCollapsedStoryboard || m_expandedUpToCollapsedStoryboard || m_collapsedToExpandedUpStoryboard || m_collapsedToExpandedDownStoryboard);
+}
+
+void CommandBarFlyoutCommandBar::AttachEventsToSecondaryStoryboards()
+{
+    winrt::IControlProtected thisAsControlProtected = *this;
+
+    m_expandedDownToCollapsedStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"ExpandedDownToCollapsed", thisAsControlProtected));
+    if (m_expandedDownToCollapsedStoryboard)
+    {
+        m_expandedDownToCollapsedStoryboardRevoker = m_expandedDownToCollapsedStoryboard.get().Completed(winrt::auto_revoke,
+            {
+                [this](auto const&, auto const&)
+                {
+                    if (auto owningFlyout = m_owningFlyout.get())
+                    {
+                        owningFlyout.AddDropShadow();
+                    }
+                }
+            });
+    }
+
+    m_expandedUpToCollapsedStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"ExpandedUpToCollapsed", thisAsControlProtected));
+    if (m_expandedUpToCollapsedStoryboard)
+    {
+        m_expandedUpToCollapsedStoryboardRevoker = m_expandedUpToCollapsedStoryboard.get().Completed(winrt::auto_revoke,
+            {
+                [this](auto const&, auto const&)
+                {
+                    if (auto owningFlyout = m_owningFlyout.get())
+                    {
+                        owningFlyout.AddDropShadow();
+                    }
+                }
+            });
+    }
+
+    m_collapsedToExpandedUpStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"CollapsedToExpandedUp", thisAsControlProtected));
+    if (m_collapsedToExpandedUpStoryboard)
+    {
+        m_collapsedToExpandedUpStoryboardRevoker = m_collapsedToExpandedUpStoryboard.get().Completed(winrt::auto_revoke,
+            {
+                [this](auto const&, auto const&)
+                {
+                    if (auto owningFlyout = m_owningFlyout.get())
+                    {
+                        owningFlyout.AddDropShadow();
+                    }
+                }
+            });
+    }
+
+    m_collapsedToExpandedDownStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"CollapsedToExpandedDown", thisAsControlProtected));
+    if (m_collapsedToExpandedDownStoryboard)
+    {
+        m_collapsedToExpandedDownStoryboardRevoker = m_collapsedToExpandedDownStoryboard.get().Completed(winrt::auto_revoke,
+            {
+                [this](auto const&, auto const&)
+                {
+                    if (auto owningFlyout = m_owningFlyout.get())
+                    {
+                        owningFlyout.AddDropShadow();
+                    }
+                }
+            });
+    }
+
 }

@@ -22,6 +22,7 @@ public:
     bool HasOpenAnimation();
     void PlayOpenAnimation();
     bool HasCloseAnimation();
+    bool HasSecondaryOpenCloseAnimations();
     void PlayCloseAnimation(std::function<void()> onCompleteFunc);
 
     void ClearShadow();
@@ -90,5 +91,16 @@ private:
 
     bool m_secondaryItemsRootSized{ false };
 
-    bool m_expandedUpWithPrimary{ false };
+    bool m_skipAddSecondaryShadow{ false };
+    void AttachEventsToSecondaryStoryboards();
+
+    tracker_ref<winrt::Storyboard> m_expandedUpToCollapsedStoryboard{ this };
+    tracker_ref<winrt::Storyboard> m_expandedDownToCollapsedStoryboard{ this };
+    tracker_ref<winrt::Storyboard> m_collapsedToExpandedUpStoryboard{ this };
+    tracker_ref<winrt::Storyboard> m_collapsedToExpandedDownStoryboard{ this };
+
+    winrt::Storyboard::Completed_revoker m_expandedUpToCollapsedStoryboardRevoker{};
+    winrt::Storyboard::Completed_revoker m_expandedDownToCollapsedStoryboardRevoker{};
+    winrt::Storyboard::Completed_revoker m_collapsedToExpandedUpStoryboardRevoker{};
+    winrt::Storyboard::Completed_revoker m_collapsedToExpandedDownStoryboardRevoker{};
 };

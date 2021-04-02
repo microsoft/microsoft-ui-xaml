@@ -797,7 +797,7 @@
                             <VisualStateGroup x:Name="ExpansionStates">
                                 <VisualStateGroup.Transitions>
                                     <VisualTransition From="Collapsed" To="ExpandedUp" GeneratedDuration="{StaticResource ControlNormalAnimationDuration}">
-                                        <Storyboard>
+                                        <Storyboard x:Name="CollapsedToExpandedUp">
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Width">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}" />
                                             </ObjectAnimationUsingKeyFrames>
@@ -838,7 +838,7 @@
                                         </Storyboard>
                                     </VisualTransition>
                                     <VisualTransition From="ExpandedUp" To="Collapsed" GeneratedDuration="{StaticResource ControlFastAnimationDuration}">
-                                        <Storyboard FillBehavior="Stop">
+                                        <Storyboard x:Name="ExpandedUpToCollapsed" FillBehavior="Stop">
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Width">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}" />
                                             </ObjectAnimationUsingKeyFrames>
@@ -868,7 +868,7 @@
                                         </Storyboard>
                                     </VisualTransition>
                                     <VisualTransition From="Collapsed" To="ExpandedDown" GeneratedDuration="{StaticResource ControlNormalAnimationDuration}">
-                                        <Storyboard>
+                                        <Storyboard x:Name="CollapsedToExpandedDown">
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Width">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}" />
                                             </ObjectAnimationUsingKeyFrames>
@@ -906,7 +906,7 @@
                                         </Storyboard>
                                     </VisualTransition>
                                     <VisualTransition From="ExpandedDown" To="Collapsed" GeneratedDuration="{StaticResource ControlFastAnimationDuration}">
-                                        <Storyboard FillBehavior="Stop">
+                                        <Storyboard x:Name="ExpandedDownToCollapsed" FillBehavior="Stop">
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Width">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}" />
                                             </ObjectAnimationUsingKeyFrames>

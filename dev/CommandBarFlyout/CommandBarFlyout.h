@@ -22,13 +22,14 @@ public:
     // IFlyoutOverrides overrides
     winrt::Control CreatePresenter();
 
+    void AddDropShadow();
+    void RemoveDropShadow();
+
 protected:
     tracker_ref<winrt::CommandBarFlyoutCommandBar> m_commandBar{ this };
 
 private:
     void SetSecondaryCommandsToCloseWhenExecuted();
-    void AddDropShadow();
-    void RemoveDropShadow();
 
     bool m_alwaysExpanded;
 
@@ -43,6 +44,7 @@ private:
     winrt::CommandBar::Opened_revoker m_commandBarOpenedRevoker{};
     winrt::CommandBar::Opening_revoker m_commandBarOpeningRevoker{};
     winrt::CommandBar::Closed_revoker m_commandBarClosedRevoker{};
+    winrt::CommandBar::Closing_revoker m_commandBarClosingRevoker{};
 
     std::map<int, winrt::ButtonBase::Click_revoker> m_secondaryButtonClickRevokerByIndexMap;
     std::map<int, winrt::ToggleButton::Checked_revoker> m_secondaryToggleButtonCheckedRevokerByIndexMap;
