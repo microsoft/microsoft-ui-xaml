@@ -1130,13 +1130,19 @@ void CommandBarFlyoutCommandBar::UpdateShadow()
     // When we're >21H1, we'll have to manage the DropShadow on the secondary commands directly.
     if (SharedHelpers::Is21H1OrHigher())
     {
-        if (SecondaryCommands().Size() > 0)
+        if (m_secondaryItemsRoot && m_secondaryItemsRootSized)
         {
-            AddSecondaryShadow();
-        }
-        else if (SecondaryCommands().Size() == 0)
-        {
-            ClearSecondaryShadow();
+            m_secondaryItemsRoot.get().Measure({ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() });
+            const auto overflowPopupSize = m_secondaryItemsRoot.get().DesiredSize();
+
+            if (overflowPopupSize.Height > 0 && IsOpen())
+            {
+                AddSecondaryShadow();
+            }
+            else
+            {
+                ClearSecondaryShadow();
+            }
         }
     }
 }
