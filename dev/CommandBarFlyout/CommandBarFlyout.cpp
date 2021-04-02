@@ -260,28 +260,17 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     presenter.Padding(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Content(*commandBar);
 
-    if (SharedHelpers::Is21H1OrHigher())
-    {
-        presenter.Name(L"DropShadowFadeInTarget");
-    }
-
-    m_presenter.set(presenter);
-
-    // This logic applies to projected shadows, which are the default on < 21H1.
-    // When on 21H1 or higher, drop shadows are the default and need to be applied higher up
-    // in the tree to avoid being clipped away.  The default shadow works great for this.
-    // For < 21H1, we will provide our own shadow, not the one that FlyoutPresenter has by default.
-    // We need to specifically target the CommandBar for the shadow, not the default node far
-    // above that.
+    // Disable the default shadow, as we'll be providing our own shadow.
     if (winrt::IFlyoutPresenter2 presenter2 = presenter)
     {
         presenter2.IsDefaultShadowEnabled(false);
     }
 
-    // The CornerRadius on the presenter should be 4 only when the CommandBarFlyout's overflow isn't
-    // open. When it is open, we'll set it to 0 so that CBF's corner radius changes show through.
     if (winrt::IControl7 presenterControl7 = presenter)
     {
+        // When >21H1, we'll need to manage the presenter's CornerRadius when the overflow is opened/
+        // closed. In order for drop shadows to render correctly, the element with the shadow needs to have
+        // the correct corner radius as well. Otherwise the shadow will render with sharp corners.
         if (SharedHelpers::Is21H1OrHigher())
         {
             presenterControl7.CornerRadius({ 4 });
@@ -292,16 +281,26 @@ winrt::Control CommandBarFlyout::CreatePresenter()
         }
     }
 
+    // Since DropShadows don't play well with the entrance animation for the presenter,
+    // we'll need to fade it in. This name helps us locate the element to set the flag.
+    // We didn't want to apply this name to all FlyoutPresenters, which is why it's done
+    // in code behind here.
+    if (SharedHelpers::Is21H1OrHigher())
+    {
+        presenter.Name(L"DropShadowFadeInTarget");
+    }
+
+    m_presenter.set(presenter);
     m_commandBarOpeningRevoker = commandBar->Opening(winrt::auto_revoke, {
     [this](auto const&, auto const&)
     {
-        if (winrt::IControl7 presenterControl7 = m_presenter.get())
+        // When >21H1, if the CommandBar is opening, set the presenter's corner
+        // radius to 0 to let the CommandBar's corner radius show through.
+        if (SharedHelpers::Is21H1OrHigher())
         {
-            if (SharedHelpers::Is21H1OrHigher())
+            if (m_presenter)
             {
-                // If the CommandBar is opened, set the presenter's corner radius to 0 so that
-                // CommandBarFlyout corner radius changes show through.
-                if (m_secondaryCommands.Size() > 0)
+                if (winrt::IControl7 presenterControl7 = m_presenter.get())
                 {
                     presenterControl7.CornerRadius({ 0 });
                 }
@@ -313,9 +312,9 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     m_commandBarClosedRevoker = commandBar->Closed(winrt::auto_revoke, {
     [this](auto const&, auto const&)
     {
+        // When >21H1, if the CommandBar is closed, set the presenter's corner radius to 4.
         if (SharedHelpers::Is21H1OrHigher())
         {
-            // If the CommandBar is closed, set the presenter's corner radius to 4.
             if (m_presenter)
             {
                 if (winrt::IControl7 presenterControl7 = m_presenter.get())
