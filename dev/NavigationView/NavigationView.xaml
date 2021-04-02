@@ -552,7 +552,7 @@
                                 </SplitView.Pane>
 
                                 <SplitView.Content>
-                                    <Grid x:Name="ContentGrid">
+                                    <Grid x:Name="ContentGrid" Background="{ThemeResource NavigationViewContentBackground}">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
