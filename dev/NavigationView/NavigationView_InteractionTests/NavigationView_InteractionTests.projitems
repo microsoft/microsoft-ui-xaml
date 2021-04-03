@@ -15,7 +15,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)PaneBehaviorTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewTestsBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CommonTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewXamlIslandsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SelectionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TopModeTests.cs" />
   </ItemGroup>

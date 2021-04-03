@@ -46,19 +46,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         private readonly string _appInstallerName;
 
         private readonly bool _isUWPApp;
+        private readonly bool _isPackaged;
 
         private readonly string _certSerialNumber;
         private readonly string _baseAppxDir;
+        private readonly string _unpackagedExePath;
 
         private readonly UICondition _windowCondition = null;
         private readonly UICondition _appFrameWindowCondition = null;
 
-        public Application(string packageName, string packageFamilyName, string appName, string testAppMainWindowTitle, string testAppProcessName, string testAppInstallerName, string certSerialNumber, string baseAppxDir, bool isUWPApp = true)
+        public Application(string packageName, string packageFamilyName, string appName, string testAppMainWindowTitle, string testAppProcessName, string testAppInstallerName, string certSerialNumber, string baseAppxDir, bool isUWPApp = true, string unpackagedExePath = "", bool isPackaged = true)
         {
             _packageName = packageName;
             _packageFamilyName = packageFamilyName;
             _appName = appName;
             _isUWPApp = isUWPApp;
+            _isPackaged = isPackaged;
+            _unpackagedExePath = unpackagedExePath;
             _certSerialNumber = certSerialNumber;
             _baseAppxDir = baseAppxDir;
 
@@ -66,7 +70,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             _appProcessName = testAppProcessName;
             _appInstallerName = testAppInstallerName;
 
-            if (_isUWPApp)
+            if (_isUWPApp && _isPackaged)
             {
                 _windowCondition = UICondition.Create("@ClassName='Windows.UI.Core.CoreWindow' AND @Name={0}", _appWindowTitle);
                 _appFrameWindowCondition = UICondition.Create("@ClassName='ApplicationFrameWindow' AND @Name={0}", _appWindowTitle);
@@ -104,9 +108,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             if (doLaunch && !didFindWindow)
             {
                 CoreWindow = Launch(deploymentDir);
-                if (CoreWindow.Parent.Matches(_appFrameWindowCondition))
+
+                foreach (UIObject obj in CoreWindow.Ancestors)
                 {
-                    ApplicationFrameWindow = CoreWindow.Parent;
+                    if (obj.Matches(_appFrameWindowCondition))
+                    {
+                        ApplicationFrameWindow = CoreWindow.Parent;
+                        break;
+                    }
                 }
             }
             else if (didFindWindow)
@@ -188,13 +197,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             UIObject coreWindow = null;
 
-            // When running from MUXControls repo we want to install the app.
-            // When running in TestMD we also want to install the app.            
+            if (_isPackaged)
+            {
+                // When running from MUXControls repo we want to install the app.
+                // When running in TestMD we also want to install the app.            
 #if USING_TAEF
-            TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFamilyName, _appInstallerName);
+                TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFamilyName, _appInstallerName);
 #else
-            InstallTestAppIfNeeded();
+                InstallTestAppIfNeeded();
 #endif
+            }
 
             Log.Comment("Launching app {0}", _appName);
 
@@ -240,7 +252,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 try
                 {
                     Log.Comment("Attempting launch, try #{0}...", retries);
-                    coreWindow = _isUWPApp ? LaunchUWPApp() : LaunchNonUWPApp(_packageName);
+                    if (_isPackaged)
+                    {
+                        coreWindow = _isUWPApp ? LaunchUWPApp() : LaunchNonUWPApp(_packageName);
+                    }
+                    else
+                    {
+                        using (AppLaunchWaiter launchWaiter = new AppLaunchWaiter(_windowCondition))
+                        {
+                            string unpackagedExeFullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), _unpackagedExePath);
+
+                            Process.Start(unpackagedExeFullPath);
+
+                            launchWaiter.Wait();
+                            coreWindow = launchWaiter.Source;
+                        }
+                    }
                     Log.Comment("Launch successful!");
                     break;
                 }

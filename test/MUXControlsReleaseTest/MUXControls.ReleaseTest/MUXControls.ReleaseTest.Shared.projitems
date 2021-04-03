@@ -118,10 +118,12 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AppThatUsesMUXIndirectlyTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PGOManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\NugetTestsCX.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\NugetTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\ReleaseTestEnvironment.cs" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)\Properties\MuxControls.ReleaseTest.rd.xml">
+    <Compile Include="$(MSBuildThisFileDirectory)NugetTestsCX.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NugetTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReleaseTestEnvironment.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)XamlIslandsUnpackagedTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)XamlIslandsTests.cs" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Properties\MuxControls.ReleaseTest.rd.xml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

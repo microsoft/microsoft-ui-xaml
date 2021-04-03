@@ -41,6 +41,25 @@ function Copy-If-Exists
     }
 }
 
+function Copy-Recursively-If-Exists
+{
+    Param($source, $destinationDir)
+
+    if (Test-Path $source)
+    {
+        Write-Host "Copy from '$source' to '$destinationDir'"
+        if (-not (Test-Path $destinationDir))
+        {
+            $ignore = New-Item -ItemType Directory $destinationDir
+        }
+        Copy-Item -Recurse -Force $source $destinationDir
+    }
+    else
+    {
+        Write-Host "'$source' does not exist."
+    }
+}
+
 # Copy files from the 'drop' artifact dir
 Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXControls.Test.dll" $payloadDir
 Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXTestInfra.TAEF.dll" $payloadDir
@@ -59,6 +78,9 @@ Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\NugetPackageTestApp_Test\Dependencies\$Platform\*" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\*" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\Dependencies\$Platform\*" $payloadDir
+Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\WpfApp_Test\*" $payloadDir
+Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\WpfApp_Test\Dependencies\$Platform\*" $payloadDir
+Copy-Recursively-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\UnpackagedApps\WpfApp\" $payloadDir
 
 # Copy files from the repo
 New-Item -ItemType Directory -Force -Path "$payloadDir"
