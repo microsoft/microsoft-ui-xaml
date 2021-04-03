@@ -69,5 +69,3 @@
     <RunPowershellScript Path="$(MSBuildProjectDirectory)\..\..\tools\ExtractPackageDependencies_ReleaseTest.ps1" Parameters="-sourceFile $(OutDir)\WpfApp.Package.build.appxrecipe -platform $(PlatformName) -outputFile $(AppxPackageTestDir)\$(AppxPackageName).dependencies.txt" FilesWritten="$(AppxPackageTestDir)\$(AppxPackageName).dependencies.txt" />
   </Target>
 </Project>
-
-

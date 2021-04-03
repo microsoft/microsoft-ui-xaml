@@ -162,6 +162,3 @@
     <Exec Command="$(MSBuildThisFileDirectory)..\..\..\tools\NugetWrapper.cmd pack $(MSBuildThisFileDirectory)\RuntimeComponentThatUsesMUX.nuspec -properties &quot;BUILDOUTPUT=$(MSBuildThisFileDirectory)..\..\..\BuildOutput;BUILDFLAVOR=$(Configuration);BUILDARCH=$(BuildArchitecture)&quot; -OutputDirectory $(MSBuildThisFileDirectory)..\..\..\localpackages" />
   </Target>
 </Project>
-
-
-
