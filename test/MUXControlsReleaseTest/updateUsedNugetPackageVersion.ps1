@@ -29,7 +29,7 @@ Get-ChildItem $scriptDirectory -r -File |
 
     if ($contents -ne $newContents) {
       Write-Host "Updating version in $path"
-      $newContents | Set-Content $path -Encoding UTF8
+      [System.IO.File]::WriteAllText($path, $newContents, [System.Text.Encoding]::UTF8)
       $numFilesReplaced += 1
     }
   }

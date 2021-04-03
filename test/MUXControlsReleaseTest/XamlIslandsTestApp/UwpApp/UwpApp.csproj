@@ -164,7 +164,7 @@
       <Version>6.1.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.6.0-ci.210402002</Version>
+      <Version>2.1.190606001</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="..\..\..\TestAppUtils\TestAppUtils.projitems" Label="Shared" />
