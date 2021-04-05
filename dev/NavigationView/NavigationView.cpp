@@ -886,7 +886,6 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReset,
     {
         if (const auto repeater = m_leftNavFooterMenuRepeater.get())
         {
-            auto actHeight1 = repeater.ActualHeight();
             UpdateItemsRepeaterItemsSource(m_leftNavFooterMenuRepeater.get(), m_selectionModelSource.GetAt(1));
 
             // Footer items changed and we need to recalculate the layout.
@@ -894,7 +893,6 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReset,
             repeater.InvalidateMeasure();
             repeater.UpdateLayout();
 
-            auto actHeight2 = repeater.ActualHeight();
             // Footer items changed, so let's update the pane layout.
             UpdatePaneLayout();
         }
@@ -1488,12 +1486,16 @@ void NavigationView::UpdatePaneLayout()
                 // 20px is the padding between the two item lists
                 if (const auto &paneFooter = m_leftNavFooterContentBorder.get())
                 {
-                    auto const mHeight = paneContentRow.ActualHeight();
-                    return paneContentRow.ActualHeight() - 8 - paneFooter.ActualHeight();
+                    // TODO: This number (29) should be equal to the margin that NavView takes (top and bottom)
+                    // In order to do calculations right we need to do the following: only deduct
+                    // the top + bottom margin instead of 29 here and later on
+                    // if the Separator line is visible - deduct the separator line height.
+                    return paneContentRow.ActualHeight() - 29 - paneFooter.ActualHeight();
                 }
                 else
                 {
-                    return paneContentRow.ActualHeight() - 8;
+                    // TODO: Same as above
+                    return paneContentRow.ActualHeight() - 29;
                 }
             }
             return 0.0;
@@ -1513,7 +1515,6 @@ void NavigationView::UpdatePaneLayout()
                         // We know the actual height of footer items, so use that to determine how to split pane.
                         if (const auto& menuItems = m_leftNavRepeater.get())
                         {
-                            const auto repeaterHeight = footerItemsRepeater.Height();
                             const auto footersActualHeight = footerItemsRepeater.ActualHeight();
                             const auto menuItemsActualHeight = menuItems.ActualHeight();
                             if (totalAvailableHeight > menuItemsActualHeight + footersActualHeight)

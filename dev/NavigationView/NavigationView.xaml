@@ -71,7 +71,13 @@
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="TogglePaneGroup">
-                                <VisualState x:Name="TogglePaneButtonVisible" />
+                                <VisualState x:Name="TogglePaneButtonVisible">
+                                    <VisualState.Setters>
+                                        <!-- Might not need this setter when all the margins/paddings will be adequately set. -->
+                                        <!-- This MinHeight setter is only here to ensure that AutoSuggestBox doesn't draw over ToggelButton. -->
+                                        <Setter Target="PaneContentGridToggleButtonRow.MinHeight" Value="{StaticResource NavigationViewPaneHeaderRowMinHeight}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
                                 <VisualState x:Name="TogglePaneButtonCollapsed" />
                             </VisualStateGroup>
 
@@ -433,10 +439,8 @@
                                         BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
                                         BorderThickness="0,0,1,0">
                                         <Grid.RowDefinitions>
-                                            <!--<RowDefinition Height="Auto"/>-->
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="0"/> <!-- above button margin + back button space -->
-                                            <!--<RowDefinition x:Name="PaneContentGridToggleButtonRow" Height="Auto" MinHeight="{StaticResource NavigationViewPaneHeaderRowMinHeight}"/> -->
                                             <RowDefinition x:Name="PaneContentGridToggleButtonRow" Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
@@ -451,7 +455,6 @@
                                             <Grid.RowDefinitions>
                                                 <RowDefinition x:Name="PaneHeaderContentBorderRow"/>
                                             </Grid.RowDefinitions>
-<!--> <-->
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition x:Name="PaneHeaderCloseButtonColumn"/>
                                                 <ColumnDefinition x:Name="PaneHeaderToggleButtonColumn"/>
@@ -508,14 +511,12 @@
                                         <!-- "Non header" content -->
                                         <Grid x:Name="ItemsContainerGrid" Grid.Row="6" Margin="0,0,0,8">
                                             <Grid.RowDefinitions>
-                                                <!--<RowDefinition Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/>--> <!-- MenuItems -->
-                                                <RowDefinition Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/>
-                                                <!--<RowDefinition Height="*" MinHeight="21" /> -->
-                                                <RowDefinition Height="*"/>
-                                                <!-- Fill spacing -->
+                                                <RowDefinition Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/> <!-- MenuItems -->
+                                                <RowDefinition Height="*"/> <!-- Fill spacing -->
                                                 <RowDefinition Height="Auto" /> <!-- PaneFooter -->
-                                                <!-- <RowDefinition Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/> --> <!-- FooterItems -->
-                                                <RowDefinition Height="Auto"/>
+                                                <!-- Do we need to set minHeight for footerItems when we actally have them? -->
+                                                <!-- I've tested all the possible scenarious and coudln't find when we actually would need it. Any ideas?-->
+                                                <RowDefinition Height="Auto"/> <!-- FooterItems -->
                                             </Grid.RowDefinitions>
 
                                             <!-- MenuItems -->
@@ -535,9 +536,8 @@
 
                                           
                                                 <local:NavigationViewItemSeparator x:Name="VisualItemsSeparator"
-                                                 VerticalAlignment="Center"
-                                                Grid.Row="1"
-                                                Visibility="Collapsed" HorizontalAlignment="Stretch"/>
+                                                    VerticalAlignment="Center" Grid.Row="1"
+                                                    Visibility="Collapsed" HorizontalAlignment="Stretch"/>
 
 
                                             <!-- PaneFooter -->
