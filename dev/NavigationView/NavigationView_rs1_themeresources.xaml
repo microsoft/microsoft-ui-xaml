@@ -249,7 +249,7 @@
     <Thickness x:Key="NavigationViewToggleBorderThickness">0</Thickness>
     <Thickness x:Key="NavigationViewItemBorderThickness">1</Thickness>
     <Thickness x:Key="NavigationViewItemOnLeftIconBoxMargin">11,0,11,0</Thickness>
-    <Thickness x:Key="NavigationViewItemInnerHeaderMargin">12,0</Thickness>
+    <Thickness x:Key="NavigationViewItemInnerHeaderMargin">16,0</Thickness>
     <Thickness x:Key="NavigationViewMinimalHeaderMargin">8,5,0,0</Thickness>
     <Thickness x:Key="NavigationViewHeaderMargin">12,5,0,11</Thickness>
     <Thickness x:Key="NavigationViewPaneTitlePresenterMargin">8,4,0,0</Thickness>
