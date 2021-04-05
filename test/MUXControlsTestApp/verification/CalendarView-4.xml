@@ -5,7 +5,7 @@
     CalendarItemBorderBrush=Microsoft.UI.Xaml.Media.RevealBorderBrush
     HoverBorderBrush=#0F000000
     PressedBorderBrush=#0F000000
-    SelectedHoverBorderBrush=#FF004275
+    SelectedHoverBorderBrush=#FF005A9E
     SelectedBorderBrush=#FF005A9E
     Padding=0,0,0,0
     Foreground=#E4000000
