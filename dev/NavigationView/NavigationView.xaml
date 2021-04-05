@@ -534,10 +534,9 @@
                                                 </ScrollViewer>
                                             </local:ItemsRepeaterScrollHost>
 
-                                          
-                                                <local:NavigationViewItemSeparator x:Name="VisualItemsSeparator"
-                                                    VerticalAlignment="Center" Grid.Row="1"
-                                                    Visibility="Collapsed" HorizontalAlignment="Stretch"/>
+                                            <local:NavigationViewItemSeparator x:Name="VisualItemsSeparator"
+                                                Grid.Row="1" VerticalAlignment="Center"
+                                                Visibility="Collapsed" HorizontalAlignment="Stretch"/>
 
 
                                             <!-- PaneFooter -->
@@ -550,7 +549,7 @@
                                             <!-- FooterItems -->
                                             <local:ItemsRepeaterScrollHost Grid.Row="3">
                                                 <ScrollViewer x:Name="FooterItemsScrollViewer"
-                                                              VerticalScrollBarVisibility="Auto"
+                                                        VerticalScrollBarVisibility="Auto"
                                                         contract7Present:VerticalAnchorRatio="1">
                                                     <local:ItemsRepeater
                                                         x:Name="FooterMenuItemsHost"
