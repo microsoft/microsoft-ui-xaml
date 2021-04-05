@@ -1483,23 +1483,19 @@ void NavigationView::UpdatePaneLayout()
         const auto totalAvailableHeight = [this]() {
             if (const auto &paneContentRow = m_itemsContainerRow.get())
             {
-                // 20px is the padding between the two item lists
                 if (const auto &paneFooter = m_leftNavFooterContentBorder.get())
                 {
-                    // TODO: This number (29) should be equal to the margin that NavView takes (top and bottom)
-                    // In order to do calculations right we need to do the following: only deduct
-                    // the top + bottom margin instead of 29 here and later on
-                    // if the Separator line is visible - deduct the separator line height.
-                    return paneContentRow.ActualHeight() - 29 - paneFooter.ActualHeight();
+                    return paneContentRow.ActualHeight() - 8 - paneFooter.ActualHeight();
                 }
                 else
                 {
                     // TODO: Same as above
-                    return paneContentRow.ActualHeight() - 29;
+                    return paneContentRow.ActualHeight() - 8;
                 }
             }
             return 0.0;
         }();
+
 
         // Only continue if we have a positive amount of space to manage.
         if (totalAvailableHeight > 0)
@@ -1517,6 +1513,7 @@ void NavigationView::UpdatePaneLayout()
                         {
                             const auto footersActualHeight = footerItemsRepeater.ActualHeight();
                             const auto menuItemsActualHeight = menuItems.ActualHeight();
+                            const auto separatorLineHeight = GetItemSeparatorHeight();
                             if (totalAvailableHeight > menuItemsActualHeight + footersActualHeight)
                             {
                                 // We have enough space for two so let everyone get as much as they need.
@@ -1531,40 +1528,58 @@ void NavigationView::UpdatePaneLayout()
                             {
                                 // Footer items exceed over the half, so let's limit them.
                                 footerItemsScrollViewer.MaxHeight(totalAvailableHeight - menuItemsActualHeight);
+                                double separatorLineActualHeight = 0.0;
                                 if (const auto& separator = m_visualItemsSeparator.get())
                                 {
                                     if (footersActualHeight > 0)
                                     {
                                         separator.Visibility(winrt::Visibility::Visible);
+                                        separatorLineActualHeight = separatorLineHeight;
+                                    }
+                                    else
+                                    {
+                                        separator.Visibility(winrt::Visibility::Collapsed);
                                     }
                                 }
-                                return menuItemsActualHeight;
+                                return menuItemsActualHeight - separatorLineActualHeight;
                             }
                             else if (footersActualHeight <= totalAvailableHeightHalf)
                             {
                                 // Menu items exceed over the half, so let's limit them.
                                 footerItemsScrollViewer.MaxHeight(footersActualHeight);
+                                double separatorLineActualHeight = 0.0;
                                 if (const auto& separator = m_visualItemsSeparator.get())
                                 {
                                     if (footersActualHeight > 0)
                                     {
                                         separator.Visibility(winrt::Visibility::Visible);
+                                        separatorLineActualHeight = separatorLineHeight;
+                                    }
+                                    else
+                                    {
+                                        separator.Visibility(winrt::Visibility::Collapsed);
                                     }
                                 }
-                                return totalAvailableHeight - footersActualHeight;
+                                return totalAvailableHeight - footersActualHeight - separatorLineActualHeight;
                             }
                             else
                             {
                                 // Both are more than half the height, so split evenly.
                                 footerItemsScrollViewer.MaxHeight(totalAvailableHeightHalf);
+                                double separatorLineActualHeight = 0.0;
                                 if (const auto& separator = m_visualItemsSeparator.get())
                                 {
                                     if (footersActualHeight > 0)
                                     {
                                         separator.Visibility(winrt::Visibility::Visible);
+                                        separatorLineActualHeight = separatorLineHeight;
+                                    }
+                                    else
+                                    {
+                                        separator.Visibility(winrt::Visibility::Collapsed);
                                     }
                                 }
-                                return totalAvailableHeightHalf;
+                                return totalAvailableHeightHalf - separatorLineActualHeight;
                             }
                         }
                         else
@@ -3790,6 +3805,22 @@ double NavigationView::GetPaneToggleButtonWidth()
 double NavigationView::GetPaneToggleButtonHeight()
 {
     return unbox_value<double>(SharedHelpers::FindInApplicationResources(L"PaneToggleButtonHeight", box_value(c_paneToggleButtonHeight)));
+}
+
+double NavigationView::GetItemSeparatorHeight()
+{
+    double itemSeparatorHeight = unbox_value<double>(ResourceAccessor::ResourceLookup(*this, box_value(L"NavigationViewItemSeparatorHeight")));
+    winrt::Thickness separatorMargin;
+    if (m_isClosedCompact)
+    {
+        separatorMargin = unbox_value<winrt::Thickness>(ResourceAccessor::ResourceLookup(*this, box_value(L"NavigationViewCompactItemSeparatorMargin")));
+    }
+    else
+    {
+        separatorMargin = unbox_value<winrt::Thickness>(ResourceAccessor::ResourceLookup(*this, box_value(L"NavigationViewItemSeparatorMargin")));
+    }
+    return itemSeparatorHeight + separatorMargin.Top + separatorMargin.Bottom;
+
 }
 
 void NavigationView::UpdateTopNavigationWidthCache()
