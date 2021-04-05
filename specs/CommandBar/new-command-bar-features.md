@@ -30,7 +30,7 @@ and [AppBarSeparator](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.c
 When you use an AppBarButton in a `CommandBar` or `CommandBarFlyout`, all of the interactions and styles needed to conform with
 the parent control are provided automatically - height, width, the background color when hovered/pressed, the font size, etc. 
 
-```c#
+```xml
 <CommandBar>
     <AppBarButton Label="Click" />
 </CommandBar>
@@ -43,7 +43,7 @@ This allows for objects of different types (such as `SplitButton` or `DropdownBu
 `CommandBar` or `CommandBarFlyout`, but it does not provide the proper styling to make these objects conform.
 Visually, they won't blend in with the AppBarButton objects being displayed in the `CommandBar[Flyout]` without serious styling work.
 
-```c#
+```xml
 <CommandBar>
     <AppBarElementContainer>
         <SplitButton Content="Click" />
@@ -58,7 +58,7 @@ Visually, they won't blend in with the AppBarButton objects being displayed in t
 via the `AppBarButton.Flyout` property. See a simple example of this below:
 
 
-```xaml
+```xml
 <AppBarButton Label="Sort by" Icon="...">
     <AppBarButton.Flyout>
         <MenuFlyout>
@@ -80,7 +80,7 @@ creating a  cascading or nested MenuFlyout. See an example of this below.
 In order to create this cascading/nested menu today, you can use a class called
 [MenuFlyoutSubItem](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.menuflyoutsubitem?view=winrt-19041) as an item in the menu. 
 
-```xaml
+```xml
 <MenuFlyout>
     <MenuFlyoutItem>Sort by artist name</MenuFlyoutItem>
     <MenuFlyoutItem>Sort by album name</MenuFlyoutItem>
@@ -104,8 +104,8 @@ You also have the option of using
 which has a [GroupName](https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.radiomenuflyoutitem.groupname?view=winui-2.5#Microsoft_UI_Xaml_Controls_RadioMenuFlyoutItem_GroupName) 
 property. Items with the same GroupName will be a part of the same selection model - only one of the items in a Group can be "selected" and display the selection indicator at a time:
 
-```xaml
-<AppBarButton>View
+```xml
+<AppBarButton>
     <AppBarButton.Flyout>
         <MenuFlyout>
             <MenuFlyoutItem>Open</MenuFlyoutItem>
@@ -123,9 +123,7 @@ property. Items with the same GroupName will be a part of the same selection mod
 
 ![Image of a menu flyout with radio items](images/radiomenuflyoutitems.png)
 
-The issue arises when you want to combine these two concepts. It would be useful to have `RadioMenuFlyoutItems` have 
-their own child items that participate in the same Group as their parent.
-This would allow for cleaner UIs by decreasing the size of `MenuFlyouts` that have a long list of `RadioMenuFlyoutItems`. 
+The issue arises when you want to combine these two concepts. It would be useful to have child items of type `RadioMenuFlyoutItem` that participate in the same selection group as their parent. This would allow for cleaner UIs by decreasing the size of `MenuFlyouts` that have a long list of `RadioMenuFlyoutItems`. 
 See an example below:
 
 ![Nested radio menu flyout example](images/commandbar2.png)
@@ -183,21 +181,17 @@ For example:
 </CommandBarFlyout>
 ```
 
-### Feature #2. `RadioMenuFlyoutSubItem`
+### Feature #2. Enable MenuFlyoutSubItem to properly support RadioMenuFlyoutItems as children. 
 
-`RadioMenuFlyoutSubItem` is a new class that represents a "parent" `RadioMenuFlyout` item. 
-It is very similar to the [MenuFlyoutSubItem](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.menuflyoutsubitem?view=winrt-19041) class.
+When using [RadioMenuFlyoutItem](https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.radiomenuflyoutitem?view=winui-2.5) type objects as children of [MenuFlyoutSubItem](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.menuflyoutsubitem?view=winrt-19041), you'll want to make sure that `MenuFlyoutSubItem` displays the selection indicator (usually a dot) if one of its children is selected. 
 
-Generally, child items of a `RadioMenuFlyoutSubItem` should be of type 
-[RadioMenuFlyoutItem](https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.radiomenuflyoutitem?view=winui-2.5). If a child item is selected, the parent item will show as selected. 
-All child items should have the same GroupName as at least one sibling of the parent. 
+The `RadioMenuFlyoutSubItemStyle` can be applied to a `MenuFlyoutSubItem`. Applying this style ensures that the `MenuFlyoutSubItem` will visually indicate if one of its children are selected. To do this, it works with a new attached property that's defined by `RadioMenuFlyoutItem`, called `ContainsRadioMenuFlyoutItems`.
 
-The parent (`RadioMenuFlyoutSubItem`) cannot be selected. Thus it does not have `GroupName` or `IsChecked` properties.
-It can only achieve selection (and show the selection indicator) if it is bubbled up from one of its child items.
-Therefore, only one item out of the child items and other top-level RadioMenuFlyout items in the same Group can be selected at a time. 
+The parent (`MenuFlyoutSubItem`) cannot be selected. It can only achieve selection (and show the selection indicator) if it is bubbled up from one of its child items. Therefore, only one item out of the child items and parent-level RadioMenuFlyout items can be selected at a time.
 
 If a child item becomes selected, the selection indicator will bubble up to its parent when its `MenuFlyout` is closed.
 If a child is selected and the `MenuFlyout` is open, both the parent and child will show the selection indicator (similar to a hierarchical `NavigationView`).
+
 
 These are the three main visual states for this new API, using the same Xaml Controls Gallery sample that was previously shown:
 
@@ -225,15 +219,14 @@ For example:
     <AppBarButton Icon="Go" Label="Sort by">
         <AppBarButton.Flyout>
             <MenuFlyout>
-                <RadioMenuFlyoutItem Text="Name" GroupName="SortOption"/>
-                <RadioMenuFlyoutItem Text="Date" GroupName="SortOption" 
-                                     IsChecked="True"/>
-                <RadioMenuFlyoutItem Text="Size" GroupName="SortOption"/>
-                <RadioMenuFlyoutSubItem Text="Other">
-                    <RadioMenuFlyoutItem Text="Album name" GroupName="SortOption"/>
-                    <RadioMenuFlyoutItem Text="Artist name" GroupName="SortOption"/>
-                    <RadioMenuFlyoutItem Text="Genre" GroupName="SortOption"/>
-                </RadioMenuFlyoutSubItem>
+                <RadioMenuFlyoutItem Text="Name" GroupName="SortGroup"/>
+                <RadioMenuFlyoutItem Text="Date" GroupName="SortGroup"/>
+                <RadioMenuFlyoutItem Text="Size" GroupName="SortGroup"/>
+                <MenuFlyoutSubItem Text="Other" Style="{StaticResource RadioMenuFlyoutSubItemStyle}">
+                    <RadioMenuFlyoutItem GroupName="SortGroup" Text="Album Name"/>
+                    <RadioMenuFlyoutItem GroupName="SortGroup" Text="Artist Name"/>
+                    <RadioMenuFlyoutItem GroupName="SortGroup" Text="Genre"/>
+                </MenuFlyoutSubItem>
             </MenuFlyout>
         </AppBarButton.Flyout>
     </AppBarButton>
@@ -242,7 +235,13 @@ For example:
     <AppBarButton Icon="Play" Label="Play" />
     <AppBarButton Icon="Forward" Label="Forward" />
 
+    <CommandBar.SecondaryCommands>
+        <AppBarButton Label="Like" />
+        <AppBarButton Label="Dislike" />
+    </CommandBar.SecondaryCommands>
+
 </CommandBar>
+
 ```
 
 
@@ -266,7 +265,7 @@ When an item in the primary commands list is invoked, the CommandBarFlyout shoul
 
 For example:
 
-```xaml
+```xml
 <CommandBarFlyout x:Key="Flyout1" AlwaysExpanded='true'>
     <AppBarButton Label="Share" Icon="Share" Click="OnElementClicked" />
     <AppBarButton Label="Save" Icon="Save" Click="OnElementClicked" />
@@ -281,17 +280,12 @@ For example:
 
 ## Notable New APIs
 
-_Spec note: the members of `RadioMenuFlyoutSubItem` match those of
-[MenuFlyoutSubItem](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.MenuFlyoutSubItem)_
-
 
 | Name | Description |
 |:--|:--|
 | `CommandBarFlyout.AlwaysExpanded` Property | Gets or sets a value that indicates whether or not the CommandBarFlyout should always stay in its Expanded state and block the user from entering the Collapsed state. Defaults to false. |
-| `RadioMenuFlyoutSubItem` Class  | Represents a radio menu item that displays a sub-menu of other radio menu items in a MenuFlyout control.   |
-| `RadioMenuFlyoutSubItem.Items` Property | Gets the collection used to generate the content of the sub-menu.  |
-| `RadioMenuFlyoutSubItem.Icon` Property | Gets or sets the graphic content of the radio menu flyout subitem (parent item). |
-| `RadioMenuFlyoutSubItem.Text` Property | Gets or sets the text content of a RadioMenuFlyoutSubItem.  |
+| `RadioMenuFlyoutItem.ContainsRadioMenuFlyoutItemsProperty` Dependency Property  | Represents whether the MenuFlyoutSubItem has RadioMenuFlyoutItems as children, and the checked state of these children.   |
+
 
 ## New ThemeResources
 
@@ -299,26 +293,9 @@ _Spec note: the members of `RadioMenuFlyoutSubItem` match those of
 <Style x:Key="SplitButtonCommandBarFlyoutStyle" TargetType="SplitButton"></Style>`
 
 <Style x:Key="SplitButtonCommandBarStyle" TargetType="SplitButton"></Style>
+
+<Style x:Key="RadioMenuFlyoutSubItemStyle" TargetType="MenuFlyoutSubItem"></Style>
 ```
-
-The following properties are copied over from `MenuFlyoutSubItem`. These should be implemented for `RadioMenuFlyoutSubItem` as well, using the existing `MenuFlyoutSubItem` theme resources as values.
-
-| Property            | Value | 
-|---------------------------------------------|---------------------------------------------------|
-| RadioMenuFlyoutSubItemBackground | Background color of entire control bounds at rest                         |
-| RadioMenuFlyoutSubItemBackgroundPointerOver | Background color on hover                         |
-| RadioMenuFlyoutSubItemBackgroundPressed     | Background color when pressed                     |
-| RadioMenuFlyoutSubItemBackgroundDisabled    | Background color when disabled                    |
-| RadioMenuFlyoutSubItemForeground            | Text color at rest                                |
-| RadioMenuFlyoutSubItemForegroundPointerOver | Text color on hover                               |
-| RadioMenuFlyoutSubItemForegroundPressed     | Text color when pressed                           |
-| RadioMenuFlyoutSubItemForegroundDisabled    | Text color when disabled                          |
-| RadioMenuFlyoutSubItemChevron               | Chevron color at rest                             |
-| RadioMenuFlyoutSubItemChevronPointerOver    | Chevron color on hover                            |
-| RadioMenuFlyoutSubItemChevronPressed        | Chevron color when pressed                        |
-| RadioMenuFlyoutSubItemChevronDisabled       | Chevron color when disabled                       |
-| RadioMenuFlyoutSubItemChevronSubMenuOpened  | Chevron color when opened                         |
-
 
 # API Details
 
@@ -335,16 +312,20 @@ unsealed runtimeclass CommandBarFlyout : Windows.UI.Xaml.Controls.Primitives.Fly
 ```
 
 ```csharp
-unsealed runtimeclass RadioMenuFlyoutSubItem : Microsoft.UI.Xaml.Controls.MenuFlyoutItemBase
+unsealed runtimeclass RadioMenuFlyoutItem : Windows.UI.Xaml.Controls.MenuFlyoutItem
 {
-    RadioMenuFlyoutSubItem();
+    // Existing members elided 
+    // ...
 
-    IList<MenuFlyoutItemBase> Items { get; }
-    IconElement Icon { get; set; }
-    string Text { get; set; }
+    [MUX_DEFAULT_VALUE("false")]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnContainsRadioMenuFlyoutItemsPropertyChanged")]
 
-    static Windows.UI.Xaml.DependencyProperty ItemsProperty { get; }
-    static Windows.UI.Xaml.DependencyProperty IconProperty { get; }
-    static Windows.UI.Xaml.DependencyProperty TextProperty { get; }
+    static Windows.UI.Xaml.DependencyProperty ContainsRadioMenuFlyoutItemsProperty { get; };
+    static void SetContainsRadioMenuFlyoutItems(Windows.UI.Xaml.DependencyObject object,  Boolean value);
+    static Boolean GetContainsRadioMenuFlyoutItems(Windows.UI.Xaml.DependencyObject object);
 }
+
 ```
+# Remarks
+### More on the RadioMenuFlyoutItem implementation:
+When a `MenuFlyoutSubItem` applies `RadioMenuFlyoutSubItemStyle`, the style sets the `ContainsRadioMenuFlyoutItems` property to true. This property change is attached to the `MenuFlyoutSubItem`’s [Loaded event](https://docs.microsoft.com/windows/winui/api/microsoft.ui.xaml.frameworkelement.loaded?view=winui-3.0), which fires every time the item is shown (i.e. the parent menu opens). In this event, a check is performed to see if any of the child items are of type `RadioMenuFlyoutItem`, and if they are currently in a checked state. Based on the child items checked/unchecked state, the `MenuFlyoutSubItem` (parent item) applies the “checked” or “unchecked” visual state – i.e. the parent item shows the dot indicator if one of its children are currently selected.  
