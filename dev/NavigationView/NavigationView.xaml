@@ -433,9 +433,11 @@
                                         BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
                                         BorderThickness="0,0,1,0">
                                         <Grid.RowDefinitions>
+                                            <!--<RowDefinition Height="Auto"/>-->
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="0"/> <!-- above button margin + back button space -->
-                                            <RowDefinition x:Name="PaneContentGridToggleButtonRow" Height="Auto" MinHeight="{StaticResource NavigationViewPaneHeaderRowMinHeight}"/>
+                                            <!--<RowDefinition x:Name="PaneContentGridToggleButtonRow" Height="Auto" MinHeight="{StaticResource NavigationViewPaneHeaderRowMinHeight}"/> -->
+                                            <RowDefinition x:Name="PaneContentGridToggleButtonRow" Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="8"/> <!-- above list margin -->
@@ -449,7 +451,7 @@
                                             <Grid.RowDefinitions>
                                                 <RowDefinition x:Name="PaneHeaderContentBorderRow"/>
                                             </Grid.RowDefinitions>
-
+<!--> <-->
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition x:Name="PaneHeaderCloseButtonColumn"/>
                                                 <ColumnDefinition x:Name="PaneHeaderToggleButtonColumn"/>
@@ -506,10 +508,14 @@
                                         <!-- "Non header" content -->
                                         <Grid x:Name="ItemsContainerGrid" Grid.Row="6" Margin="0,0,0,8">
                                             <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/> <!-- MenuItems -->
-                                                <RowDefinition Height="*" MinHeight="21"/> <!-- Fill spacing -->
+                                                <!--<RowDefinition Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/>--> <!-- MenuItems -->
+                                                <RowDefinition Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/>
+                                                <!--<RowDefinition Height="*" MinHeight="21" /> -->
+                                                <RowDefinition Height="*"/>
+                                                <!-- Fill spacing -->
                                                 <RowDefinition Height="Auto" /> <!-- PaneFooter -->
-                                                <RowDefinition Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/> <!-- FooterItems -->
+                                                <!-- <RowDefinition Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/> --> <!-- FooterItems -->
+                                                <RowDefinition Height="Auto"/>
                                             </Grid.RowDefinitions>
 
                                             <!-- MenuItems -->
@@ -527,9 +533,12 @@
                                                 </ScrollViewer>
                                             </local:ItemsRepeaterScrollHost>
 
-                                            <local:NavigationViewItemSeparator x:Name="VisualItemsSeparator"
-                                                Grid.Row="1" VerticalAlignment="Center"
+                                          
+                                                <local:NavigationViewItemSeparator x:Name="VisualItemsSeparator"
+                                                 VerticalAlignment="Center"
+                                                Grid.Row="1"
                                                 Visibility="Collapsed" HorizontalAlignment="Stretch"/>
+
 
                                             <!-- PaneFooter -->
                                             <ContentControl x:Name="FooterContentBorder"
@@ -541,6 +550,7 @@
                                             <!-- FooterItems -->
                                             <local:ItemsRepeaterScrollHost Grid.Row="3">
                                                 <ScrollViewer x:Name="FooterItemsScrollViewer"
+                                                              VerticalScrollBarVisibility="Auto"
                                                         contract7Present:VerticalAnchorRatio="1">
                                                     <local:ItemsRepeater
                                                         x:Name="FooterMenuItemsHost"

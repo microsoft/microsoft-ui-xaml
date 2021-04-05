@@ -886,6 +886,7 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReset,
     {
         if (const auto repeater = m_leftNavFooterMenuRepeater.get())
         {
+            auto actHeight1 = repeater.ActualHeight();
             UpdateItemsRepeaterItemsSource(m_leftNavFooterMenuRepeater.get(), m_selectionModelSource.GetAt(1));
 
             // Footer items changed and we need to recalculate the layout.
@@ -893,6 +894,7 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReset,
             repeater.InvalidateMeasure();
             repeater.UpdateLayout();
 
+            auto actHeight2 = repeater.ActualHeight();
             // Footer items changed, so let's update the pane layout.
             UpdatePaneLayout();
         }
@@ -1486,11 +1488,12 @@ void NavigationView::UpdatePaneLayout()
                 // 20px is the padding between the two item lists
                 if (const auto &paneFooter = m_leftNavFooterContentBorder.get())
                 {
-                    return paneContentRow.ActualHeight() - 29 - paneFooter.ActualHeight();
+                    auto const mHeight = paneContentRow.ActualHeight();
+                    return paneContentRow.ActualHeight() - 8 - paneFooter.ActualHeight();
                 }
                 else
                 {
-                    return paneContentRow.ActualHeight() - 29;
+                    return paneContentRow.ActualHeight() - 8;
                 }
             }
             return 0.0;
@@ -1510,6 +1513,7 @@ void NavigationView::UpdatePaneLayout()
                         // We know the actual height of footer items, so use that to determine how to split pane.
                         if (const auto& menuItems = m_leftNavRepeater.get())
                         {
+                            const auto repeaterHeight = footerItemsRepeater.Height();
                             const auto footersActualHeight = footerItemsRepeater.ActualHeight();
                             const auto menuItemsActualHeight = menuItems.ActualHeight();
                             if (totalAvailableHeight > menuItemsActualHeight + footersActualHeight)
@@ -1528,7 +1532,10 @@ void NavigationView::UpdatePaneLayout()
                                 footerItemsScrollViewer.MaxHeight(totalAvailableHeight - menuItemsActualHeight);
                                 if (const auto& separator = m_visualItemsSeparator.get())
                                 {
-                                    separator.Visibility(winrt::Visibility::Visible);
+                                    if (footersActualHeight > 0)
+                                    {
+                                        separator.Visibility(winrt::Visibility::Visible);
+                                    }
                                 }
                                 return menuItemsActualHeight;
                             }
@@ -1538,7 +1545,10 @@ void NavigationView::UpdatePaneLayout()
                                 footerItemsScrollViewer.MaxHeight(footersActualHeight);
                                 if (const auto& separator = m_visualItemsSeparator.get())
                                 {
-                                    separator.Visibility(winrt::Visibility::Visible);
+                                    if (footersActualHeight > 0)
+                                    {
+                                        separator.Visibility(winrt::Visibility::Visible);
+                                    }
                                 }
                                 return totalAvailableHeight - footersActualHeight;
                             }
@@ -1548,7 +1558,10 @@ void NavigationView::UpdatePaneLayout()
                                 footerItemsScrollViewer.MaxHeight(totalAvailableHeightHalf);
                                 if (const auto& separator = m_visualItemsSeparator.get())
                                 {
-                                    separator.Visibility(winrt::Visibility::Visible);
+                                    if (footersActualHeight > 0)
+                                    {
+                                        separator.Visibility(winrt::Visibility::Visible);
+                                    }
                                 }
                                 return totalAvailableHeightHalf;
                             }
@@ -3935,6 +3948,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         {
             m_autoSuggestBoxSuggestionChosenRevoker = newAutoSuggestBox.SuggestionChosen(winrt::auto_revoke, {this, &NavigationView::OnAutoSuggestBoxSuggestionChosen });
         }
+        UpdateVisualState();
     }
     else if (property == s_SelectionFollowsFocusProperty)
     {
