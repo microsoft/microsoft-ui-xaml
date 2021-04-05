@@ -63,11 +63,17 @@ com_ptr<PipsPager> PipsPagerAutomationPeer::GetImpl()
     return impl;
 }
 
-winrt::com_array<winrt::IInspectable> PipsPagerAutomationPeer::GetSelection()
+winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProviderSimple> PipsPagerAutomationPeer::GetSelection()
 {
     if (const auto pager = GetImpl())
     {
-        return { winrt::box_value(pager->SelectedPageIndex()) };
+        if (auto pip = pager->GetSelectedItem())
+        {
+            if (auto peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(pip))
+            {
+                return { ProviderFromPeer(peer) };
+            }
+        }
     }
     return {};
 }

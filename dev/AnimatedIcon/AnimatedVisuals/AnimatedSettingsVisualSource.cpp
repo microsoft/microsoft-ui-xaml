@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedSettingsVisualSource.json
 //       
 //       Input file:
-//           AnimatedSettingsVisualSource.json (31178 bytes created 12:28-08:00 Feb 8 2021)
+//           AnimatedSettingsVisualSource.json (28755 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -52,6 +52,14 @@
 #include <d2d1_1.h>
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
+#ifdef BUILD_WINDOWS
+namespace ABI
+{
+#include <Windows.Graphics.Effects.Interop.h>
+}
+#else
+#include <Windows.Graphics.Effects.Interop.h>
+#endif
 #include <winrt/Windows.Graphics.Effects.h>
 
 using namespace winrt::Microsoft::UI::Xaml::Controls;
@@ -70,7 +78,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
-    ::Windows::Graphics::IGeometrySource2DInterop>
+    ::ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
     winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 
@@ -100,7 +108,7 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
         IClosable>
 {
     winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
-    static constexpr int64_t c_durationTicks{ 12500000L };
+    static constexpr int64_t c_durationTicks{ 20000000L };
     Compositor const _c{ nullptr };
     ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
     CompositionPropertySet const _themeProperties{ nullptr };
@@ -109,6 +117,7 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
     ContainerVisual _root{ nullptr };
     CubicBezierEasingFunction _cubicBezierEasingFunction_0{ nullptr };
     CubicBezierEasingFunction _cubicBezierEasingFunction_1{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_2{ nullptr };
     ExpressionAnimation _rootProgress{ nullptr };
     InsetClip _insetClip_0{ nullptr };
     StepEasingFunction _holdThenStepEasingFunction{ nullptr };
@@ -158,46 +167,46 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
     // PreComp layer: Controls - 04 - Settings - 06 - PressedToPointerOver
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_0()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.933333337F, true);
+        const auto result = CreateBooleanKeyFrameAnimation(0.666666687F, true);
         return result;
     }
 
     // PreComp layer: Controls - 04 - Settings - 05 - PressedToNormal
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_1()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.400000006F, true);
-        result.InsertKeyFrame(0.933333337F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.333333343F, true);
+        result.InsertKeyFrame(0.666666687F, false);
         return result;
     }
 
     // PreComp layer: Controls - 04 - Settings - 04 - PointerOverToPressed
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_2()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.333333343F, true);
-        result.InsertKeyFrame(0.400000006F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.25F, true);
+        result.InsertKeyFrame(0.333333343F, false);
         return result;
     }
 
     // PreComp layer: Controls - 04 - Settings - 03 - PointerOverToNormal
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_3()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.200000003F, true);
-        result.InsertKeyFrame(0.333333343F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.166666672F, true);
+        result.InsertKeyFrame(0.25F, false);
         return result;
     }
 
     // PreComp layer: Controls - 04 - Settings - 02 - NormalToPressed
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_4()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.13333334F, true);
-        result.InsertKeyFrame(0.200000003F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.0833333358F, true);
+        result.InsertKeyFrame(0.166666672F, false);
         return result;
     }
 
     // PreComp layer: Controls - 04 - Settings - 01 - NormalToPointerOver
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_5()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.13333334F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.0833333358F, false);
         return result;
     }
 
@@ -389,7 +398,7 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
         result.Offset({ -31.8590012F, -9.23899841F });
         result.Scale({ 3.0F, 3.0F });
         result.FillBrush(ThemeColor_Foreground());
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_m20_to_m10(), RootProgress());
+        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_m20_to_350(), RootProgress());
         return result;
     }
 
@@ -403,7 +412,7 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
         result.Offset({ -31.8590012F, -9.23899841F });
         result.Scale({ 3.0F, 3.0F });
         result.FillBrush(_themeColor_Foreground);
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_m15_to_180(), _rootProgress);
+        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_m20_to_360(), _rootProgress);
         return result;
     }
 
@@ -576,12 +585,17 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
 
     CubicBezierEasingFunction CubicBezierEasingFunction_0()
     {
-        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
+        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_1()
     {
-        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.550000012F, 0.0F }, { 0.75F, 1.0F });
+        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.75F, 1.0F });
+    }
+
+    CubicBezierEasingFunction CubicBezierEasingFunction_2()
+    {
+        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.449999988F, 1.0F });
     }
 
     ExpressionAnimation RootProgress()
@@ -604,7 +618,7 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
     ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_m10()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.119999997F, -10.0F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.075000003F, -10.0F, _cubicBezierEasingFunction_2);
         return result;
     }
 
@@ -615,8 +629,8 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
     ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_m20()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.13333334F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.186666667F, -20.0F, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.0833333358F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.158333331F, -20.0F, _cubicBezierEasingFunction_1);
         return result;
     }
 
@@ -627,8 +641,8 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
     ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_m10_to_0()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, -10.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.200000003F, -10.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.319999993F, 0.0F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.166666672F, -10.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.24166666F, 0.0F, CubicBezierEasingFunction_2());
         return result;
     }
 
@@ -639,20 +653,8 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
     ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_m10_to_m20()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, -10.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.333333343F, -10.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.386666656F, -20.0F, CubicBezierEasingFunction_1());
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 04 - Settings - 05 - PressedToNormal
-    // - Transforms for Controls - 04 - Settings - 05 - PressedToNormal Scale(1,1,0)
-    // ShapeGroup: Group 1
-    // Rotation
-    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_m15_to_180()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, -15.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.400000006F, -15.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.920000017F, 180.0F, _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F }));
+        result.InsertKeyFrame(0.25F, -10.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.324999988F, -20.0F, CubicBezierEasingFunction_1());
         return result;
     }
 
@@ -660,11 +662,23 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
     // - Transforms for Controls - 04 - Settings - 06 - PressedToPointerOver Scale(1,1,0)
     // ShapeGroup: Group 1
     // Rotation
-    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_m20_to_m10()
+    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_m20_to_350()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, -20.0F, StepThenHoldEasingFunction());
-        result.InsertKeyFrame(0.933333337F, -20.0F, HoldThenStepEasingFunction());
-        result.InsertKeyFrame(0.986666679F, -10.0F, CubicBezierEasingFunction_0());
+        result.InsertKeyFrame(0.666666687F, -20.0F, HoldThenStepEasingFunction());
+        result.InsertKeyFrame(0.991666675F, 350.0F, CubicBezierEasingFunction_0());
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 04 - Settings - 05 - PressedToNormal
+    // - Transforms for Controls - 04 - Settings - 05 - PressedToNormal Scale(1,1,0)
+    // ShapeGroup: Group 1
+    // Rotation
+    ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_m20_to_360()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, -20.0F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.333333343F, -20.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.658333361F, 360.0F, _cubicBezierEasingFunction_0);
         return result;
     }
 
@@ -680,7 +694,7 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
     }
 
     // PreComp layer: Controls - 04 - Settings - 05 - PressedToNormal
-    // Shape tree root for layer: Layer 3
+    // Shape tree root for layer: Layer 2
     ShapeVisual ShapeVisual_1()
     {
         const auto result = _c.CreateShapeVisual();
@@ -850,7 +864,7 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedSettingsVisualSour
 
 double AnimatedSettingsVisualSource::FrameCount()
 {
-    return 75.0;
+    return 120.0;
 }
 
 double AnimatedSettingsVisualSource::Framerate()
@@ -860,12 +874,12 @@ double AnimatedSettingsVisualSource::Framerate()
 
 TimeSpan AnimatedSettingsVisualSource::Duration()
 {
-    return TimeSpan{ 12500000L };
+    return TimeSpan{ 20000000L };
 }
 
 double AnimatedSettingsVisualSource::FrameToProgress(double frameNumber)
 {
-    return frameNumber / 75.0;
+    return frameNumber / 120.0;
 }
 
 winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedSettingsVisualSource::Markers()
@@ -874,17 +888,17 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedSetti
         std::map<winrt::hstring, double>
         {
             { L"NormalToPointerOver_Start", 0.0 },
-            { L"NormalToPointerOver_End", 0.120666666666667 },
-            { L"NormalToPressed_Start", 0.134 },
-            { L"NormalToPressed_End", 0.187333333333333 },
-            { L"PointerOverToNormal_Start", 0.200666666666667 },
-            { L"PointerOverToNormal_End", 0.320666666666667 },
-            { L"PointerOverToPressed_Start", 0.334 },
-            { L"PointerOverToPressed_End", 0.387333333333333 },
-            { L"PressedToNormal_Start", 0.400666666666667 },
-            { L"PressedToNormal_End", 0.920666666666667 },
-            { L"PressedToPointerOver_Start", 0.934 },
-            { L"PressedToPointerOver_End", 0.987333333333333 },
+            { L"NormalToPointerOver_End", 0.0754166666666667 },
+            { L"NormalToPressed_Start", 0.08375 },
+            { L"NormalToPressed_End", 0.15875 },
+            { L"PointerOverToNormal_Start", 0.167083333333333 },
+            { L"PointerOverToNormal_End", 0.242083333333333 },
+            { L"PointerOverToPressed_Start", 0.250416666666667 },
+            { L"PointerOverToPressed_End", 0.325416666666667 },
+            { L"PressedToNormal_Start", 0.33375 },
+            { L"PressedToNormal_End", 0.65875 },
+            { L"PressedToPointerOver_Start", 0.667083333333333 },
+            { L"PressedToPointerOver_End", 0.992083333333333 },
         }
     ).GetView();
 }

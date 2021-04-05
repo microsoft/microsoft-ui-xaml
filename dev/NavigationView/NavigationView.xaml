@@ -18,6 +18,33 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:NavigationView">
                     <Grid x:Name="RootGrid">
+                        <Grid.Resources>
+                            <Storyboard x:Name="ShadowCasterEaseInStoryboard">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
+                                    <DiscreteDoubleKeyFrame KeyTime="0" Value="{Binding ElementName=RootSplitView, Path=TemplateSettings.NegativeOpenPaneLengthMinusCompactLength}" />
+                                    <SplineDoubleKeyFrame KeyTime="0:0:0.35" KeySpline="0.1,0.9 0.2,1.0" Value="0" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.35" Value="1" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="HorizontalAlignment">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="Left"/>
+                                </ObjectAnimationUsingKeyFrames>
+                            </Storyboard>
+                            <Storyboard x:Name="ShadowCasterEaseOutStoryboard">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
+                                    <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
+                                    <SplineDoubleKeyFrame KeyTime="0:0:0.12" KeySpline="0.1,0.9 0.2,1.0" Value="{Binding ElementName=RootSplitView, Path=TemplateSettings.NegativeOpenPaneLengthMinusCompactLength}" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.12" Value="0" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="HorizontalAlignment">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="Left"/>
+                                </ObjectAnimationUsingKeyFrames>
+                                </Storyboard>
+                        </Grid.Resources>
+                        
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="DisplayModeGroup">
                                 <VisualState x:Name="Compact" />
@@ -82,6 +109,7 @@
                                 <VisualState x:Name="ListSizeCompact">
                                     <VisualState.Setters>
                                         <Setter Target="PaneContentGrid.Width" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CompactPaneLength}"/>
+                                        <Setter Target="ShadowCaster.Width" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CompactPaneLength}" />
                                         <Setter Target="PaneTitleTextBlock.Visibility" Value="Collapsed" />
                                         <Setter Target="PaneHeaderContentBorder.Visibility" Value="Collapsed" />
                                         <Setter Target="PaneCustomContentBorder.HorizontalAlignment" Value="Left"/>
@@ -125,6 +153,7 @@
                                         <!-- write it here and interfere. But these values work together to hide -->
                                         <!-- the left pane. -->
                                         <Setter Target="RootSplitView.CompactPaneLength" Value="0" />
+                                        <Setter Target="ShadowCaster.Width" Value="0" />
                                         <Setter Target="PaneToggleButtonGrid.Visibility" Value="Collapsed" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -187,16 +216,18 @@
                                     HorizontalAlignment="Center"
                                     Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneToggleButtonVisibility}"
                                     VerticalAlignment="Top"
-                                    MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SmallerPaneToggleButtonWidth}">
+                                    MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SmallerPaneToggleButtonWidth}"
+                                    FocusVisualMargin="0">
                                     <TextBlock
-                                        x:Name="PaneTitleTextBlock" 
+                                        x:Name="PaneTitleTextBlock"
                                         Grid.Column="0"
                                         Text="{TemplateBinding PaneTitle}"
                                         HorizontalAlignment="Left"
                                         VerticalAlignment="Center"
                                         Style="{StaticResource NavigationViewItemHeaderTextStyle}"/>
-                                </Button>
-                                <Grid
+                                    </Button>
+
+                                    <Grid
                                     x:Name="PaneTitleHolder"
                                     Visibility="Collapsed">
                                     <ContentControl
@@ -406,7 +437,7 @@
                                 OpenPaneLength="{TemplateBinding OpenPaneLength}"
                                 PaneBackground="{ThemeResource NavigationViewDefaultPaneBackground}"
                                 Grid.Row="1">
-
+                                
                                 <SplitView.Pane>
                                     <Grid 
                                         x:Name="PaneContentGrid"
@@ -463,7 +494,19 @@
                                                 x:Name="PaneAutoSuggestButton"
                                                 Visibility="Collapsed"
                                                 Style="{ThemeResource NavigationViewPaneSearchButtonStyle}"
-                                                Width="{TemplateBinding CompactPaneLength}"/>
+                                                Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SmallerPaneToggleButtonWidth}">
+                                                <Button.Resources>
+                                                    <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="NavigationViewItemBackgroundPointerOver" />
+                                                    <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="NavigationViewItemBackgroundPressed" />
+                                                    <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="NavigationViewItemBackgroundDisabled" />
+                                                    <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="NavigationViewItemForegroundPointerOver" />
+                                                    <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="NavigationViewItemForegroundPressed" />
+                                                    <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="NavigationViewItemForegroundDisabled" />
+                                                    <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="NavigationViewItemBorderBrushPointerOver" />
+                                                    <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="NavigationViewItemBorderBrushPressed" />
+                                                    <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="NavigationViewItemBorderBrushDisabled" />
+                                                </Button.Resources>
+                                            </Button>
                                         </Grid>
 
                                         <ContentControl
@@ -522,7 +565,7 @@
                                 </SplitView.Pane>
 
                                 <SplitView.Content>
-                                    <Grid x:Name="ContentGrid">
+                                    <Grid x:Name="ContentGrid" Background="{ThemeResource NavigationViewContentBackground}">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
@@ -560,7 +603,18 @@
                                     </Grid>
                                 </SplitView.Content>
                             </SplitView>
-                            
+
+                            <Grid
+                                x:Name="ShadowCaster"
+                                Grid.RowSpan="2"
+                                Width="{TemplateBinding OpenPaneLength}"
+                                Opacity="0"
+                                HorizontalAlignment="Left">
+                                <Grid.RenderTransform>
+                                    <CompositeTransform x:Name="ShadowCasterTransform" />
+                                </Grid.RenderTransform>
+                            </Grid>
+
                         </Grid>
                     </Grid>
                 </ControlTemplate>

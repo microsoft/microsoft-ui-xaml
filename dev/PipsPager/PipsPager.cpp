@@ -35,11 +35,18 @@ constexpr auto c_nextPageButtonName = L"NextPageButton"sv;
 constexpr auto c_pipsPagerRepeaterName = L"PipsPagerItemsRepeater"sv;
 constexpr auto c_pipsPagerScrollViewerName = L"PipsPagerScrollViewer"sv;
 
-constexpr auto c_pipsPagerButtonWidthPropertyName = L"PipsPagerButtonWidth"sv;
-constexpr auto c_pipsPagerButtonHeightPropertyName = L"PipsPagerButtonHeight"sv;
+constexpr auto c_pipsPagerVerticalOrientationButtonWidthPropertyName = L"PipsPagerVerticalOrientationButtonWidth"sv;
+constexpr auto c_pipsPagerVerticalOrientationButtonHeightPropertyName = L"PipsPagerVerticalOrientationButtonHeight"sv;
+
+constexpr auto c_pipsPagerHorizontalOrientationButtonWidthPropertyName = L"PipsPagerHorizontalOrientationButtonWidth"sv;
+constexpr auto c_pipsPagerHorizontalOrientationButtonHeightPropertyName = L"PipsPagerHorizontalOrientationButtonHeight"sv;
 
 constexpr auto c_pipsPagerHorizontalOrientationVisualState = L"HorizontalOrientationView"sv;
 constexpr auto c_pipsPagerVerticalOrientationVisualState = L"VerticalOrientationView"sv;
+
+constexpr auto c_pipsPagerButtonVerticalOrientationVisualState = L"VerticalOrientation"sv;
+constexpr auto c_pipsPagerButtonHorizontalOrientationVisualState = L"HorizontalOrientation"sv;
+
 
 PipsPager::PipsPager()
 {
@@ -67,6 +74,7 @@ void PipsPager::OnApplyTemplate()
     m_previousPageButtonClickRevoker.revoke();
     [this](const winrt::Button button)
     {
+        m_previousPageButton.set(button);
         if (button)
         {
             winrt::AutomationProperties::SetName(button, ResourceAccessor::GetLocalizedStringResource(SR_PipsPagerPreviousPageButtonText));
@@ -77,6 +85,7 @@ void PipsPager::OnApplyTemplate()
     m_nextPageButtonClickRevoker.revoke();
     [this](const winrt::Button button)
     {
+        m_nextPageButton.set(button);
         if (button)
         {
             winrt::AutomationProperties::SetName(button, ResourceAccessor::GetLocalizedStringResource(SR_PipsPagerNextPageButtonText));
@@ -101,7 +110,15 @@ void PipsPager::OnApplyTemplate()
         }
     }(GetTemplateChildT<winrt::ItemsRepeater>(c_pipsPagerRepeaterName, *this));
 
-    m_pipsPagerScrollViewer.set(GetTemplateChildT<winrt::FxScrollViewer>(c_pipsPagerScrollViewerName, *this));
+    m_scrollViewerBringIntoViewRequestedRevoker.revoke();
+    [this](const winrt::FxScrollViewer scrollViewer)
+    {
+        m_pipsPagerScrollViewer.set(scrollViewer);
+        if (scrollViewer && SharedHelpers::IsRS4OrHigher())
+        {
+            m_scrollViewerBringIntoViewRequestedRevoker = scrollViewer.BringIntoViewRequested(winrt::auto_revoke, { this, &PipsPager::OnScrollViewerBringIntoViewRequested });
+        }
+    }(GetTemplateChildT<winrt::FxScrollViewer>(c_pipsPagerScrollViewerName, *this));
 
     m_defaultPipSize = GetDesiredPipSize(NormalPipStyle());
     m_selectedPipSize = GetDesiredPipSize(SelectedPipStyle());
@@ -114,7 +131,7 @@ void PipsPager::OnApplyTemplate()
 
 void PipsPager::RaiseSelectedIndexChanged()
 {
-    const auto args = winrt::make_self<PipsPagerSelectedIndexChangedEventArgs>(m_lastSelectedPageIndex, SelectedPageIndex());
+    const auto args = winrt::make_self<PipsPagerSelectedIndexChangedEventArgs>();
     m_selectedIndexChangedEventSource(*this, *args);
 }
 
@@ -125,16 +142,14 @@ winrt::Size PipsPager::GetDesiredPipSize(const winrt::Style& style) {
         {
             if (auto const element = itemTemplate.LoadContent().try_as<winrt::FrameworkElement>())
             {
-                element.Style(style);
+                ApplyStyleToPipAndUpdateOrientation(element, style);
                 element.Measure({ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() });
                 return element.DesiredSize();
             }
         }
     }
-    /* Extract default sizes and return in case the code above fails */
-    auto pipHeight = unbox_value<double>(ResourceAccessor::ResourceLookup(*this, box_value(c_pipsPagerButtonHeightPropertyName)));
-    auto pipWidth = unbox_value<double>(ResourceAccessor::ResourceLookup(*this, box_value(c_pipsPagerButtonWidthPropertyName)));
-    return { static_cast<float>(pipWidth), static_cast<float>(pipHeight) };
+   
+    return { 0.0, 0.0 };
 }
 
 void PipsPager::OnKeyDown(const winrt::KeyRoutedEventArgs& args) {
@@ -165,47 +180,6 @@ void PipsPager::OnKeyDown(const winrt::KeyRoutedEventArgs& args) {
     __super::OnKeyDown(args);
 }
 
-void PipsPager::OnPointerEntered(const winrt::PointerRoutedEventArgs& args) {
-    __super::OnPointerEntered(args);
-    m_isPointerOver = true;
-    UpdateNavigationButtonVisualStates();
-}
-void PipsPager::OnPointerExited(const winrt::PointerRoutedEventArgs& args) {
-    // We can get a spurious Exited and then Entered if the button
-    // that is being clicked on hides itself. In order to avoid switching
-    // visual states in this case, we check if the pointer is over the
-    // control bounds when we get the exited event.
-    if (IsOutOfControlBounds(args.GetCurrentPoint(*this).Position()))
-    {
-        m_isPointerOver = false;
-        UpdateNavigationButtonVisualStates();
-    }
-    else
-    {
-        args.Handled(true);
-    }
-    __super::OnPointerExited(args);
-}
-
-void PipsPager::OnPointerCanceled(const winrt::PointerRoutedEventArgs& args)
-{
-    __super::OnPointerCanceled(args);
-    m_isPointerOver = false;
-    UpdateNavigationButtonVisualStates();
-}
-
-bool PipsPager::IsOutOfControlBounds(const winrt::Point& point) {
-    // This is a conservative check. It is okay to say we are
-    // out of the bounds when close to the edge to account for rounding.
-    const auto tolerance = 1.0;
-    const auto actualWidth = ActualWidth();
-    const auto actualHeight = ActualHeight();
-    return point.X < tolerance ||
-        point.X > actualWidth - tolerance ||
-        point.Y < tolerance ||
-        point.Y  > actualHeight - tolerance;
-}
-
 void PipsPager::UpdateIndividualNavigationButtonVisualState(
     const bool hiddenOnEdgeCondition,
     const ButtonVisibility visibility,
@@ -217,7 +191,7 @@ void PipsPager::UpdateIndividualNavigationButtonVisualState(
     const auto ifGenerallyVisible = !hiddenOnEdgeCondition && NumberOfPages() != 0 && MaxVisiblePips() > 0;
     if (visibility != ButtonVisibility::Collapsed)
     {
-        if ((visibility == ButtonVisibility::Visible || m_isPointerOver) && ifGenerallyVisible)
+        if ((visibility == ButtonVisibility::Visible || m_isPointerOver || m_isFocused) && ifGenerallyVisible)
         {
             winrt::VisualStateManager::GoToState(*this, visibleStateName, false);
             winrt::VisualStateManager::GoToState(*this, enabledStateName, false);
@@ -298,14 +272,14 @@ void PipsPager::UpdateSelectedPip(const int index) {
         if (const auto repeater = m_pipsPagerRepeater.get())
         {
             repeater.UpdateLayout();
-            if (const auto element = repeater.TryGetElement(m_lastSelectedPageIndex).try_as<winrt::Button>())
+            if (const auto pip = repeater.TryGetElement(m_lastSelectedPageIndex).try_as<winrt::FrameworkElement>())
             {
-                element.Style(NormalPipStyle());
+                ApplyStyleToPipAndUpdateOrientation(pip, NormalPipStyle());
             }
-            if (const auto element = repeater.GetOrCreateElement(index).try_as<winrt::Button>())
+            if (const auto pip = repeater.GetOrCreateElement(index).try_as<winrt::FrameworkElement>())
             {
-                element.Style(SelectedPipStyle());
-                ScrollToCenterOfViewport(element, index);
+                ApplyStyleToPipAndUpdateOrientation(pip, SelectedPipStyle());
+                ScrollToCenterOfViewport(pip, index);
             }
         }
     }
@@ -387,21 +361,18 @@ void PipsPager::UpdatePipsItems(const int numberOfPages, int maxVisualIndicators
 
 void PipsPager::OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)
 {
-    if (auto const element = args.Element())
+    if (auto const element = args.Element().try_as<winrt::FrameworkElement>())
     {
-        if (const auto pip = element.try_as<winrt::Button>())
+        auto const index = args.Index();
+        auto const style = index == SelectedPageIndex() ? SelectedPipStyle() : NormalPipStyle();
+        ApplyStyleToPipAndUpdateOrientation(element, style);
+
+        winrt::AutomationProperties::SetName(element, ResourceAccessor::GetLocalizedStringResource(SR_PipsPagerPageText) + L" " + winrt::to_hstring(index + 1));
+        winrt::AutomationProperties::SetPositionInSet(element, index + 1);
+        winrt::AutomationProperties::SetSizeOfSet(element, NumberOfPages());
+
+        if (const auto pip = element.try_as<winrt::ButtonBase>())
         {
-            auto const index = args.Index();
-            if (index != SelectedPageIndex())
-            {
-                pip.Style(NormalPipStyle());
-            }
-
-            // Narrator says: Page 5, Button 5 of 30. Is it expected behavior?
-            winrt::AutomationProperties::SetName(pip, ResourceAccessor::GetLocalizedStringResource(SR_PipsPagerPageText) + L" " + winrt::to_hstring(index + 1));
-            winrt::AutomationProperties::SetPositionInSet(pip, index + 1);
-            winrt::AutomationProperties::SetSizeOfSet(pip, NumberOfPages());
-
             auto pciRevokers = winrt::make_self<PipsPagerViewItemRevokers>();
             pciRevokers->clickRevoker = pip.Click(winrt::auto_revoke,
                 [this, index](auto const& sender, auto const& args)
@@ -499,9 +470,49 @@ void PipsPager::OnOrientationChanged()
     {
         winrt::VisualStateManager::GoToState(*this, c_pipsPagerVerticalOrientationVisualState, false);
     }
+    if (const auto repeater = m_pipsPagerRepeater.get())
+    {
+        if (const auto itemsSourceView = repeater.ItemsSourceView())
+        {
+            const auto itemCount = itemsSourceView.Count();
+            for (int i = 0; i < itemCount; i++)
+            {
+                if (const auto pip = repeater.TryGetElement(i).try_as<winrt::Control>())
+                {
+                    UpdatePipOrientation(pip);
+                }
+            }
+        }
+    }
+    m_defaultPipSize = GetDesiredPipSize(NormalPipStyle());
+    m_selectedPipSize = GetDesiredPipSize(SelectedPipStyle());
     SetScrollViewerMaxSize();
-    UpdateSelectedPip(SelectedPageIndex());
+    if (const auto selectedPip = GetSelectedItem())
+    {
+        ScrollToCenterOfViewport(selectedPip, SelectedPageIndex());
+    }
+}
 
+void PipsPager::ApplyStyleToPipAndUpdateOrientation(const winrt::FrameworkElement& pip, const winrt::Style& style)
+{
+    pip.Style(style);
+    if (const auto control = pip.try_as<winrt::Control>())
+    {
+        control.ApplyTemplate();
+        UpdatePipOrientation(control);
+    }
+}
+
+void PipsPager::UpdatePipOrientation(const winrt::Control& pip)
+{
+    if (Orientation() == winrt::Orientation::Horizontal)
+    {
+        winrt::VisualStateManager::GoToState(pip, c_pipsPagerButtonHorizontalOrientationVisualState, false);
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(pip, c_pipsPagerButtonVerticalOrientationVisualState, false);
+    }
 }
 
 void PipsPager::OnNavigationButtonVisibilityChanged(const ButtonVisibility visibility, const wstring_view& collapsedStateName, const wstring_view& disabledStateName) {
@@ -526,6 +537,45 @@ void PipsPager::OnNextButtonClicked(const IInspectable& sender, const winrt::Rou
 {
     // In this method, SelectedPageIndex is always less than maximum.
     SelectedPageIndex(SelectedPageIndex() + 1);
+}
+
+
+void PipsPager::OnGotFocus(const winrt::RoutedEventArgs& args)
+{
+    if (const auto btn = args.OriginalSource().try_as<winrt::Button>())
+    {
+        // If the element inside the Pager is already keyboard focused
+        // and the user will use the mouse to focus on something else
+        // the LostFocus will not be triggered on keyboard focused element
+        // while GotFocus will be triggered on the new mouse focused element.
+        // We account for this scenario and update m_isFocused in case
+        // user will use mouse while being in keyboard focus.
+        if (btn.FocusState() != winrt::FocusState::Pointer)
+        {
+            m_isFocused = true;
+            UpdateNavigationButtonVisualStates();
+        }
+        else
+        {
+            m_isFocused = false;
+        }
+    }
+}
+
+// In order to avoid switching visibility of the navigation buttons while moving focus inside the Pager,
+// we'll check if the next focused element is inside the Pager.
+void PipsPager::LosingFocus(const IInspectable& sender, const winrt::LosingFocusEventArgs& args)
+{
+    if (const auto repeater = m_pipsPagerRepeater.get())
+    {
+        if (const auto nextFocusElement = args.NewFocusedElement().try_as<winrt::UIElement>())
+        {
+            m_ifNextFocusElementInside = repeater.GetElementIndex(nextFocusElement) != -1
+                || nextFocusElement == m_previousPageButton.get()
+                || nextFocusElement == m_nextPageButton.get();
+
+        }
+    }
 }
 
 void PipsPager::OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::GettingFocusEventArgs& args)
@@ -563,6 +613,63 @@ void PipsPager::OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::
     }
 }
 
+void PipsPager::OnLostFocus(const winrt::RoutedEventArgs& args)
+{
+    if (!m_ifNextFocusElementInside)
+    {
+        m_isFocused = false;
+        UpdateNavigationButtonVisualStates();
+    }
+}
+
+void PipsPager::OnPointerEntered(const winrt::PointerRoutedEventArgs& args)
+{
+    __super::OnPointerEntered(args);
+    m_isPointerOver = true;
+    UpdateNavigationButtonVisualStates();
+}
+void PipsPager::OnPointerExited(const winrt::PointerRoutedEventArgs& args)
+{
+    // We can get a spurious Exited and then Entered if the button
+    // that is being clicked on hides itself. In order to avoid switching
+    // visual states in this case, we check if the pointer is over the
+    // control bounds when we get the exited event.
+    if (IsOutOfControlBounds(args.GetCurrentPoint(*this).Position()))
+    {
+        m_isPointerOver = false;
+        UpdateNavigationButtonVisualStates();
+    }
+    else
+    {
+        args.Handled(true);
+    }
+    __super::OnPointerExited(args);
+}
+
+void PipsPager::OnPointerCanceled(const winrt::PointerRoutedEventArgs& args)
+{
+    __super::OnPointerCanceled(args);
+    m_isPointerOver = false;
+    UpdateNavigationButtonVisualStates();
+}
+
+bool PipsPager::IsOutOfControlBounds(const winrt::Point& point)
+{
+    // This is a conservative check. It is okay to say we are
+    // out of the bounds when close to the edge to account for rounding.
+    const auto tolerance = 1.0;
+    const auto actualWidth = ActualWidth();
+    const auto actualHeight = ActualHeight();
+    return point.X < tolerance ||
+        point.X > actualWidth - tolerance ||
+        point.Y < tolerance ||
+        point.Y  > actualHeight - tolerance;
+}
+
+// In order to handle undesired scrolling when a user
+// tabs into the pipspager/focuses a pip using keyboard
+// we'll check for offsets and if they're NAN -
+// meaning it was not scroll initiated by us, we handle it.
 void PipsPager::OnPipsAreaBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args)
 {
     if (
@@ -572,6 +679,16 @@ void PipsPager::OnPipsAreaBringIntoViewRequested(const IInspectable& sender, con
     {
         args.Handled(true);
     }
+}
+
+// Inner scrollviewer will bubble BringIntoView event to 
+// parent scrollviewers (if they exist) if the scrolling was
+// not complete (could not scroll to specified offset because
+// the beginning/end of the scrollable area was already reached).
+// To avoid that, we handle BringIntoViewRequested on inner scrollviewer.
+void PipsPager::OnScrollViewerBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args)
+{
+    args.Handled(true);
 }
 
 void PipsPager::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -615,6 +732,14 @@ void PipsPager::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArg
             OnOrientationChanged();
         }
     }
+}
+
+winrt::UIElement PipsPager::GetSelectedItem() {
+    if (auto const repeater = m_pipsPagerRepeater.get())
+    {
+        return repeater.TryGetElement(SelectedPageIndex());
+    }
+    return nullptr;
 }
 
 winrt::AutomationPeer PipsPager::OnCreateAutomationPeer()
