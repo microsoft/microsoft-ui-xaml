@@ -5,6 +5,6 @@
     xmlns:xaml="using:Microsoft.Toolkit.Win32.UI.XamlHost"
     xmlns:local="using:UwpApp">
     <xaml:XamlApplication.Resources>
-        <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+        <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" ControlsResourcesVersion="Version2" />
     </xaml:XamlApplication.Resources>
 </xaml:XamlApplication>
