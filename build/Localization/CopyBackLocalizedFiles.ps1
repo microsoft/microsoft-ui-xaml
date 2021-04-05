@@ -11,8 +11,10 @@ if (-not (Test-Path "$LocalizedFilesLocation"))
 
 Write-Host "Copying localized files back into the source tree" -ForegroundColor Green
 
+$controlsPath = Convert-Path "$PSScriptRoot\..\..\dev\"
+
 # Retrieve all the english resource files in the repo
-$englishResourceFiles = Get-ChildItem -Path "$PSScriptRoot\..\..\dev" -Include "Resources.resw" -Recurse | Where-Object {$_.Directory -Match "en-us"}
+$englishResourceFiles = Get-ChildItem -Path $controlsPath -Include "Resources.resw" -Recurse | Where-Object {$_.Directory -Match "en-us"}
 
 # Use ColorPicker as an example in order to extract the list of available languages
 $languages = get-childitem "$LocalizedFilesLocation\ColorPicker" | Where-Object { $_.Name -match "-" } | % { $_.Name }
@@ -23,7 +25,10 @@ foreach ($language in $languages)
     foreach ($file in $englishResourceFiles)
     {
         $destFilePath = $file.FullName -ireplace "en-us",$language
-        $controlName = $file.FullName | Split-Path | Split-Path | Split-Path | Split-Path -Leaf
+
+        # Extract control name (directory name under ..\dev\)
+        $endPath = $file.FullName.substring($controlsPath.Length)
+        $controlName = ($endPath -split '\\')[0]
 
         $fileName = Split-Path -Leaf $destFilePath
 

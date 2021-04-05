@@ -5,12 +5,16 @@ param(
 
 Write-Host "Copying resource files to staging area to prep for upload." -ForegroundColor Green
 
+$controlsPath = Convert-Path "$PSScriptRoot\..\..\dev\"
+
 # Retrieve all the english resource files in the repo
-$englishResourceFiles = Get-ChildItem -Path "$PSScriptRoot\..\..\dev" -Include "Resources.resw" -Recurse | Where-Object {$_.Directory -Match "en-us"}
+$englishResourceFiles = Get-ChildItem -Path $controlsPath -Include "Resources.resw" -Recurse | Where-Object {$_.Directory -Match "en-us"}
 
 foreach ($file in $englishResourceFiles)
 {
-    $controlName = $file.FullName | Split-Path | Split-Path | Split-Path | Split-Path -Leaf
+    # Extract control name (directory name under ..\dev\)
+    $endPath = $file.FullName.substring($controlsPath.Length)
+    $controlName = ($endPath -split '\\')[0]
 
     $destFileLocation = "$DestinationFilePath\$controlName"
     $sourceLocation = $file.FullName
