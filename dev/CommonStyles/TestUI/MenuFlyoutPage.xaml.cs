@@ -5,7 +5,7 @@ using Windows.Foundation.Metadata;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-
+using SplitButtonTestApi = Microsoft.UI.Private.Controls.SplitButtonTestApi;
 namespace MUXControlsTestApp
 {
 
@@ -15,6 +15,12 @@ namespace MUXControlsTestApp
         public MenuFlyoutPage()
         {
             this.InitializeComponent();
+        }
+
+        private void TestMenuFlyoutItemClick(object sender, object e)
+        {
+            TestMenuFlyoutItemHeightTextBlock.Text = $"{TestMenuFlyoutItem.ActualHeight}";
+            TestMenuFlyoutItemWidthTextBlock.Text = $"{TestMenuFlyoutItem.ActualWidth}";
         }
     }
 }
