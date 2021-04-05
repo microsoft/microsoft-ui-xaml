@@ -587,7 +587,10 @@
                                 </SplitView.Pane>
 
                                 <SplitView.Content>
-                                    <Grid x:Name="ContentGrid" Background="{ThemeResource NavigationViewContentBackground}">
+                                    <Grid
+                                        x:Name="ContentGrid"
+                                        Background="{ThemeResource NavigationViewContentBackground}"
+                                        Margin="{ThemeResource NavigationViewContentMargin}">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
@@ -621,7 +624,8 @@
                                             AutomationProperties.LandmarkType="Main"
                                             Grid.Row="2"
                                             Grid.ColumnSpan="2"
-                                            Content="{TemplateBinding Content}"/>
+                                            Content="{TemplateBinding Content}"
+                                            Margin="-3"/>
                                     </Grid>
                                 </SplitView.Content>
                             </SplitView>

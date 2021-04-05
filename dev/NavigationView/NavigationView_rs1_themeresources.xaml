@@ -251,7 +251,8 @@
     <Thickness x:Key="NavigationViewItemOnLeftIconBoxMargin">11,0,11,0</Thickness>
     <Thickness x:Key="NavigationViewItemInnerHeaderMargin">16,0</Thickness>
     <Thickness x:Key="NavigationViewMinimalHeaderMargin">8,5,0,0</Thickness>
-    <Thickness x:Key="NavigationViewHeaderMargin">12,5,0,11</Thickness>
+    <Thickness x:Key="NavigationViewHeaderMargin">8,44,0,11</Thickness>
+    <Thickness x:Key="NavigationViewContentMargin">48,0,0,0</Thickness>
     <Thickness x:Key="NavigationViewPaneTitlePresenterMargin">8,4,0,0</Thickness>
     <Thickness x:Key="NavigationViewItemMargin">0</Thickness>
     <Thickness x:Key="TopNavigationViewItemMargin">0</Thickness>
@@ -1356,8 +1357,8 @@
 
     <!-- based on TitleTextBlockStyle -->
     <Style x:Key="NavigationViewTitleHeaderContentControlTextStyle" TargetType="ContentControl">
-        <Setter Property="FontWeight" Value="SemiLight" />
-        <Setter Property="FontSize" Value="24" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="28" />
         <Setter Property="FontFamily" Value="XamlAutoFontFamily" />
         <Setter Property="Margin" Value="{ThemeResource NavigationViewHeaderMargin}"/>
         <Setter Property="VerticalAlignment" Value="Stretch"/>
