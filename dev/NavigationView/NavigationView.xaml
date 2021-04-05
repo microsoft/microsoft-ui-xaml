@@ -813,7 +813,7 @@
                                     <VisualTransition From="HeaderTextVisible" To="HeaderTextCollapsed">
                                         <Storyboard>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="InnerHeaderGrid" Storyboard.TargetProperty="Height">
-                                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="20" />
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="0" />
                                             </ObjectAnimationUsingKeyFrames>
 
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HeaderText" Storyboard.TargetProperty="Visibility">
@@ -835,7 +835,7 @@
                                 <VisualState x:Name="HeaderTextCollapsed">
                                     <VisualState.Setters>
                                         <Setter Target="HeaderText.Visibility" Value="Collapsed" />
-                                        <Setter Target="InnerHeaderGrid.Height" Value="20"/>
+                                        <Setter Target="InnerHeaderGrid.Height" Value="0"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
