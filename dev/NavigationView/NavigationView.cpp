@@ -1694,10 +1694,8 @@ void NavigationView::OnSplitViewPaneClosing(const winrt::DependencyObject& /*sen
                     UpdatePaneToggleSize();
                 }
 
-                if (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay)
-                {
-                    winrt::VisualStateManager::GoToState(*this, L"PaneNotOverlay", true /*useTransitions*/);
-                }
+                
+                winrt::VisualStateManager::GoToState(*this, L"PaneNotOverlay", true /*useTransitions*/);
             }
         }
     }
