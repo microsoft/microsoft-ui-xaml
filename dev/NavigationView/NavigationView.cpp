@@ -1496,7 +1496,6 @@ void NavigationView::UpdatePaneLayout()
             return 0.0;
         }();
 
-
         // Only continue if we have a positive amount of space to manage.
         if (totalAvailableHeight > 0)
         {
