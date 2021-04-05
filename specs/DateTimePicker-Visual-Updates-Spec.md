@@ -47,7 +47,7 @@ Only the source element's rendering applies to the `MonochromaticOverlayPresente
 cannot interact with it using the mouse, or move keyboard focus to it. However,
 `MonochromaticOverlayPresenter` will render system focus visuals, regardless of what the
 [UseSystemFocusVisuals](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Control.UseSystemFocusVisuals) 
-property is set to. To avoid this, you should inset the margins to remove it.
+property is set to. 
 
 To allow pointer events to get to the source element, set the overlay's
 [UIElement.IsHitTestVisible](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.UIElement.IsHitTestVisible)
