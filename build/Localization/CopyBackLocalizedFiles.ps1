@@ -37,6 +37,12 @@ foreach ($language in $languages)
         $sourceLocation = "$LocalizedFilesLocation\$controlName\$language\$fileName"
         Write-Verbose "Dest: $destFileLocation Source: $sourceLocation"
 
+        if (-not (Test-Path $sourceLocation)) 
+        { 
+            Write-Host "File does not exist: $sourceLocation " -ForegroundColor Red
+            continue
+        }
+
         if (-not (Test-Path $destFileLocation)) { mkdir $destFileLocation }
         $output = Copy-Item $sourceLocation $destFileLocation
     }
