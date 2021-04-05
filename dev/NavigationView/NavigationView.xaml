@@ -93,7 +93,7 @@
 
                             <VisualStateGroup x:Name="PaneOverlayGroup">
                                 <VisualStateGroup.Transitions>
-                                    <VisualTransition From="PaneNotOverlay" To="PaneOverlay">
+                                    <VisualTransition From="PaneNotOverlaying" To="PaneOverlaying">
                                         <Storyboard>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
                                                 <DiscreteDoubleKeyFrame KeyTime="0" Value="{Binding ElementName=RootSplitView, Path=TemplateSettings.NegativeOpenPaneLengthMinusCompactLength}" />
@@ -107,7 +107,7 @@
                                             </ObjectAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualTransition>
-                                    <VisualTransition From="PaneOverlay" To="PaneNotOverlay">
+                                    <VisualTransition From="PaneOverlaying" To="PaneNotOverlaying">
                                         <Storyboard x:Name="ShadowCasterEaseOutStoryboard">
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
                                                 <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
@@ -122,8 +122,8 @@
                                         </Storyboard>
                                     </VisualTransition>
                                 </VisualStateGroup.Transitions>
-                                <VisualState x:Name="PaneOverlay" />
-                                <VisualState x:Name="PaneNotOverlay">
+                                <VisualState x:Name="PaneOverlaying" />
+                                <VisualState x:Name="PaneNotOverlaying">
                                     <VisualState.Setters>
                                         <Setter Target="RootSplitView.CornerRadius" Value="0" />
                                         <Setter Target="RootSplitView.BorderThickness" Value="0" />
