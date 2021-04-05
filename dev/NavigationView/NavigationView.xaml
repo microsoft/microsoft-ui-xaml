@@ -71,7 +71,13 @@
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="TogglePaneGroup">
-                                <VisualState x:Name="TogglePaneButtonVisible" />
+                                <VisualState x:Name="TogglePaneButtonVisible">
+                                    <VisualState.Setters>
+                                        <!-- Might not need this setter when all the margins/paddings will be adequately set. -->
+                                        <!-- This MinHeight setter is only here to ensure that AutoSuggestBox doesn't draw over ToggelButton. -->
+                                        <Setter Target="PaneContentGridToggleButtonRow.MinHeight" Value="{StaticResource NavigationViewPaneHeaderRowMinHeight}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
                                 <VisualState x:Name="TogglePaneButtonCollapsed" />
                             </VisualStateGroup>
 
@@ -448,7 +454,7 @@
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="0"/> <!-- above button margin + back button space -->
-                                            <RowDefinition x:Name="PaneContentGridToggleButtonRow" Height="Auto" MinHeight="{StaticResource NavigationViewPaneHeaderRowMinHeight}"/>
+                                            <RowDefinition x:Name="PaneContentGridToggleButtonRow" Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="8"/> <!-- above list margin -->
@@ -554,7 +560,8 @@
                                             <!-- FooterItems -->
                                             <local:ItemsRepeaterScrollHost Grid.Row="3">
                                                 <ScrollViewer x:Name="FooterItemsScrollViewer"
-                                                        contract7Present:VerticalAnchorRatio="1">
+                                                    VerticalScrollBarVisibility="Auto"
+                                                    contract7Present:VerticalAnchorRatio="1">
                                                     <local:ItemsRepeater
                                                         x:Name="FooterMenuItemsHost"
                                                         AutomationProperties.AccessibilityView = "Content"/>
