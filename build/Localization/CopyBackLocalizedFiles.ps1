@@ -10,7 +10,9 @@ if (-not (Test-Path "$LocalizedFilesLocation"))
 }
 
 Write-Host "Copying localized files back into the source tree" -ForegroundColor Green
-[xml]$locConfigXml = Get-Content "$PSScriptRoot\Settings\LocConfig.xml"
+
+# Retrieve all the english resource files in the repo
+$englishResourceFiles = Get-ChildItem -Path "$PSScriptRoot\..\..\dev" -Include "Resources.resw" -Recurse | Where-Object {$_.Directory -Match "en-us"}
 
 # Use ColorPicker as an example in order to extract the list of available languages
 $languages = get-childitem "$LocalizedFilesLocation\ColorPicker" | Where-Object { $_.Name -match "-" } | % { $_.Name }
@@ -18,16 +20,16 @@ $languages = get-childitem "$LocalizedFilesLocation\ColorPicker" | Where-Object 
 foreach ($language in $languages)
 {
     Write-Verbose "Current language: $language"
-    foreach ($file in $locConfigXml.Modules.Module.File)
+    foreach ($file in $englishResourceFiles)
     {
-        $destFilePath = $file.path -ireplace "en-us",$language
-        $destFilePath = "$PSScriptRoot\..\..\$destFilePath"
+        $destFilePath = $file.FullName -ireplace "en-us",$language
+        $controlName = $file.FullName | Split-Path | Split-Path | Split-Path | Split-Path -Leaf
 
         $fileName = Split-Path -Leaf $destFilePath
 
         $destFileLocation = Split-Path -Parent $destFilePath
 
-        $sourceLocation = "$LocalizedFilesLocation\$($file.location)\$language\$fileName"
+        $sourceLocation = "$LocalizedFilesLocation\$controlName\$language\$fileName"
         Write-Verbose "Dest: $destFileLocation Source: $sourceLocation"
 
         if (-not (Test-Path $destFileLocation)) { mkdir $destFileLocation }

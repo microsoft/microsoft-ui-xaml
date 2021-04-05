@@ -4,12 +4,16 @@ param(
 )
 
 Write-Host "Copying resource files to staging area to prep for upload." -ForegroundColor Green
-[xml]$locConfigXml = Get-Content "$PSScriptRoot\Settings\LocConfig.xml"
 
-foreach ($file in $locConfigXml.Modules.Module.File)
+# Retrieve all the english resource files in the repo
+$englishResourceFiles = Get-ChildItem -Path "$PSScriptRoot\..\..\dev" -Include "Resources.resw" -Recurse | Where-Object {$_.Directory -Match "en-us"}
+
+foreach ($file in $englishResourceFiles)
 {
-    $destFileLocation = "$DestinationFilePath\$($file.location)"
-    $sourceLocation = "$PSScriptRoot\..\..\$($file.path)"
+    $controlName = $file.FullName | Split-Path | Split-Path | Split-Path | Split-Path -Leaf
+
+    $destFileLocation = "$DestinationFilePath\$controlName"
+    $sourceLocation = $file.FullName
     Write-Verbose "Dest: $destFileLocation Source: $sourceLocation"
 
     if (-not (Test-Path $destFileLocation)) { mkdir $destFileLocation }

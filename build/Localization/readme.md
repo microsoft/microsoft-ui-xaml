@@ -14,12 +14,4 @@ Checking-in the localized .resw files requires some manual steps. The plan is to
 5. Check-in the changes to master
 
 ## If you're doing this for a new control
-Add a new section to [..\build\Localization\Settings\LocConfig.xml](..\build\Localization\Settings\LocConfig.xml) for your control.
-
-```
-    <File
-      location="MyWidgetControl"
-      path="dev\MyWidgetControl\Strings\en-us\Resources.resw"/>
-```
-
-Make sure that your Resources.resw file is located in Strings\en-us because the localization process will create sibling directories for all other languages.
+Make sure that your Resources.resw file is located in [ControlName]\Strings\en-us because the localization process will create sibling directories for all other languages.
