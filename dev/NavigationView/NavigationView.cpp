@@ -94,10 +94,7 @@ static constexpr float c_paneElevationTranslationZ = 32;
 static constexpr int c_mainMenuBlockIndex = 0;
 static constexpr int c_footerMenuBlockIndex = 1;
 
-// Shadows specific items
 static constexpr auto c_shadowCaster = L"ShadowCaster"sv;
-static constexpr auto c_shadowCasterEaseInStoryboard = L"ShadowCasterEaseInStoryboard"sv;
-static constexpr auto c_shadowCasterSmallPaneEaseInStoryboard = L"ShadowCasterSmallPaneEaseInStoryboard"sv;
 static constexpr auto c_shadowCasterEaseOutStoryboard = L"ShadowCasterEaseOutStoryboard"sv;
 
 constexpr int s_itemNotFound{ -1 };
@@ -686,8 +683,6 @@ void NavigationView::OnApplyTemplate()
     if (SharedHelpers::Is21H1OrHigher())
     {
         m_shadowCaster.set(GetTemplateChildT<winrt::Grid>(c_shadowCaster, controlProtected));
-        m_shadowCasterEaseInStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterEaseInStoryboard, controlProtected));
-        m_shadowCasterSmallPaneEaseInStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterSmallPaneEaseInStoryboard, controlProtected));
         m_shadowCasterEaseOutStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterEaseOutStoryboard, controlProtected));
     }
     else
@@ -1698,6 +1693,8 @@ void NavigationView::OnSplitViewPaneClosing(const winrt::DependencyObject& /*sen
                     winrt::VisualStateManager::GoToState(*this, L"ListSizeCompact", true /*useTransitions*/);
                     UpdatePaneToggleSize();
                 }
+
+                winrt::VisualStateManager::GoToState(*this, L"PaneNotOverlaying", true /*useTransitions*/);
             }
         }
     }
@@ -1714,6 +1711,14 @@ void NavigationView::OnSplitViewPaneOpening(const winrt::DependencyObject& /*sen
     {
         // See UpdateIsClosedCompact 'RS3+ animation timing enhancement' for explanation:
         winrt::VisualStateManager::GoToState(*this, L"ListSizeFull", true /*useTransitions*/);
+
+        if (const auto splitView = m_rootSplitView.get())
+        {
+            if (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay)
+            {
+                winrt::VisualStateManager::GoToState(*this, L"PaneOverlaying", true /*useTransitions*/);
+            }
+        }
     }
 
     m_paneOpeningEventSource(*this, nullptr);
@@ -4745,14 +4750,6 @@ void NavigationView::SetDropShadow()
     {
         if (const auto shadowCaster = m_shadowCaster.get())
         {
-            const auto rootSplitView = m_rootSplitView.get();
-            const auto rootSplitViewActualWidth = rootSplitView.ActualWidth();
-
-            if (const auto shadowCasterEaseInStoryboard = m_shadowCasterEaseInStoryboard.get())
-            {
-                shadowCasterEaseInStoryboard.Begin();
-            }
-
             if (winrt::IUIElement10 shadowCaster_uiElement10 = shadowCaster)
             {
                 shadowCaster_uiElement10.Shadow(winrt::ThemeShadow{});
@@ -4771,9 +4768,9 @@ void NavigationView::UnsetDropShadow()
 
         m_shadowCasterEaseOutStoryboardRevoker =
             shadowCasterEaseOutStoryboard.Completed(winrt::auto_revoke,
-            {
-                [this, shadowCaster](auto const&, auto const&) { ShadowCasterEaseOutStoryboard_Completed(shadowCaster); }
-            });
+                {
+                    [this, shadowCaster](auto const&, auto const&) { ShadowCasterEaseOutStoryboard_Completed(shadowCaster); }
+                });
     }
 }
 

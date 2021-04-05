@@ -18,36 +18,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:NavigationView">
                     <Grid x:Name="RootGrid">
-                        <Grid.Resources>
-                            <Storyboard x:Name="ShadowCasterEaseInStoryboard">
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
-                                    <DiscreteDoubleKeyFrame KeyTime="0" Value="{Binding ElementName=RootSplitView, Path=TemplateSettings.NegativeOpenPaneLengthMinusCompactLength}" />
-                                    <SplineDoubleKeyFrame KeyTime="0:0:0.35" KeySpline="0.1,0.9 0.2,1.0" Value="0" />
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Opacity">
-                                    <LinearDoubleKeyFrame KeyTime="0:0:0.35" Value="1" />
-                                </DoubleAnimationUsingKeyFrames>
-                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="HorizontalAlignment">
-                                    <DiscreteObjectKeyFrame KeyTime="0" Value="Left"/>
-                                </ObjectAnimationUsingKeyFrames>
-                            </Storyboard>
-                            <Storyboard x:Name="ShadowCasterEaseOutStoryboard">
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
-                                    <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
-                                    <SplineDoubleKeyFrame KeyTime="0:0:0.12" KeySpline="0.1,0.9 0.2,1.0" Value="{Binding ElementName=RootSplitView, Path=TemplateSettings.NegativeOpenPaneLengthMinusCompactLength}" />
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Opacity">
-                                    <LinearDoubleKeyFrame KeyTime="0:0:0.12" Value="0" />
-                                </DoubleAnimationUsingKeyFrames>
-                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="HorizontalAlignment">
-                                    <DiscreteObjectKeyFrame KeyTime="0" Value="Left"/>
-                                </ObjectAnimationUsingKeyFrames>
-                                </Storyboard>
-                        </Grid.Resources>
-                        
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="DisplayModeGroup">
-                                <VisualState x:Name="Compact" />
+                                <VisualState x:Name="Compact"/>
 
                                 <VisualState x:Name="Expanded">
                                     <VisualState.Setters>
@@ -114,6 +87,49 @@
                                         <Setter Target="PaneHeaderContentBorder.Visibility" Value="Collapsed" />
                                         <Setter Target="PaneCustomContentBorder.HorizontalAlignment" Value="Left"/>
                                         <Setter Target="FooterContentBorder.HorizontalAlignment" Value="Left"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="PaneOverlayGroup">
+                                <VisualStateGroup.Transitions>
+                                    <VisualTransition From="PaneNotOverlaying" To="PaneOverlaying">
+                                        <Storyboard>
+                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
+                                                <DiscreteDoubleKeyFrame KeyTime="0" Value="{Binding ElementName=RootSplitView, Path=TemplateSettings.NegativeOpenPaneLengthMinusCompactLength}" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.35" KeySpline="0.1,0.9 0.2,1.0" Value="0" />
+                                            </DoubleAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Opacity">
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.35" Value="1" />
+                                            </DoubleAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="HorizontalAlignment">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Left"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualTransition>
+                                    <VisualTransition From="PaneOverlaying" To="PaneNotOverlaying">
+                                        <Storyboard x:Name="ShadowCasterEaseOutStoryboard">
+                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
+                                                <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.12" KeySpline="0.1,0.9 0.2,1.0" Value="{Binding ElementName=RootSplitView, Path=TemplateSettings.NegativeOpenPaneLengthMinusCompactLength}" />
+                                            </DoubleAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Opacity">
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.12" Value="0" />
+                                            </DoubleAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="HorizontalAlignment">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Left"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualTransition>
+                                </VisualStateGroup.Transitions>
+                                <VisualState x:Name="PaneOverlaying" />
+                                <VisualState x:Name="PaneNotOverlaying">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootSplitView.CornerRadius" Value="0" />
+                                        <Setter Target="RootSplitView.BorderThickness" Value="0" />
+                                        <Setter Target="PaneContentGrid.BorderThickness" Value="0,0,1,0" />
+                                        <Setter Target="ShadowCaster.Opacity" Value="0" />
+                                        <Setter Target="RootSplitView.PaneBackground" Value="{ThemeResource NavigationViewExpandedPaneBackground}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -417,21 +433,24 @@
                             <SplitView
                                 x:Name="RootSplitView"
                                 Background="{TemplateBinding Background}"
+                                BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
+                                BorderThickness="0"
                                 CompactPaneLength="{TemplateBinding CompactPaneLength}"
                                 DisplayMode="Inline"
                                 IsPaneOpen="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsPaneOpen, Mode=TwoWay}"
                                 IsTabStop="False"
                                 OpenPaneLength="{TemplateBinding OpenPaneLength}"
                                 PaneBackground="{ThemeResource NavigationViewDefaultPaneBackground}"
-                                Grid.Row="1">
+                                Grid.Row="1"
+                                contract7Present:CornerRadius="{ThemeResource OverlayCornerRadius}">
                                 
                                 <SplitView.Pane>
                                     <Grid 
                                         x:Name="PaneContentGrid"
-                                        HorizontalAlignment="Left"
-                                        Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}"
                                         BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
-                                        BorderThickness="0,0,1,0">
+                                        BorderThickness="0,0,1,0"
+                                        HorizontalAlignment="Left"
+                                        Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="0"/> <!-- above button margin + back button space -->
@@ -595,7 +614,6 @@
                                 x:Name="ShadowCaster"
                                 Grid.RowSpan="2"
                                 Width="{TemplateBinding OpenPaneLength}"
-                                Opacity="0"
                                 HorizontalAlignment="Left">
                                 <Grid.RenderTransform>
                                     <CompositeTransform x:Name="ShadowCasterTransform" />
