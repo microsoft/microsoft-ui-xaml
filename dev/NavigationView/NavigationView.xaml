@@ -129,6 +129,19 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="PaneSeperatorStates">
+                                <VisualState x:Name="SeparatorVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="VisualItemsSeparator.Visibility" Value="Visible"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="SeparatorCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="VisualItemsSeparator.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <!-- Button grid -->
@@ -466,7 +479,7 @@
                                                 <RowDefinition x:Name="MenuItemsRow" Height="Auto"/> <!-- MenuItems -->
                                                 <RowDefinition Height="*" MinHeight="21"/> <!-- Fill spacing -->
                                                 <RowDefinition Height="Auto" /> <!-- PaneFooter -->
-                                                <RowDefinition x:Name="FooterItemsRow" Height="Auto"/> <!-- FooterItems -->
+                                                <RowDefinition Height="Auto"/> <!-- FooterItems -->
                                             </Grid.RowDefinitions>
 
                                             <!-- MenuItems -->

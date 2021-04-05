@@ -71,7 +71,6 @@ static constexpr auto c_leftNavPaneCustomContentBorder = L"PaneCustomContentBord
 
 static constexpr auto c_itemsContainer = L"ItemsContainerGrid"sv;
 static constexpr auto c_itemsContainerRow = L"ItemsContainerRow"sv;
-static constexpr auto c_visualItemsSeparator = L"VisualItemsSeparator"sv;
 static constexpr auto c_menuItemsScrollViewer = L"MenuItemsScrollViewer"sv;
 static constexpr auto c_footerItemsScrollViewer = L"FooterItemsScrollViewer"sv;
 
@@ -82,6 +81,9 @@ static constexpr auto c_paneFooterOnTopPane = L"PaneFooterOnTopPane"sv;
 static constexpr auto c_paneHeaderCloseButtonColumn = L"PaneHeaderCloseButtonColumn"sv;
 static constexpr auto c_paneHeaderToggleButtonColumn = L"PaneHeaderToggleButtonColumn"sv;
 static constexpr auto c_paneHeaderContentBorderRow = L"PaneHeaderContentBorderRow"sv;
+
+static constexpr auto c_separatorVisibleStateName = L"SeparatorVisible";
+static constexpr auto c_separatorCollapsedStateName = L"SeparatorCollapsed";
 
 static constexpr int c_backButtonHeight = 40;
 static constexpr int c_backButtonWidth = 40;
@@ -649,7 +651,6 @@ void NavigationView::OnApplyTemplate()
     m_itemsContainerRow.set(GetTemplateChildT<winrt::RowDefinition>(c_itemsContainerRow, controlProtected));
     m_menuItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_menuItemsScrollViewer, controlProtected));
     m_footerItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_footerItemsScrollViewer, controlProtected));
-    m_visualItemsSeparator.set(GetTemplateChildT<winrt::FrameworkElement>(c_visualItemsSeparator, controlProtected));
 
     m_itemsContainerSizeChangedRevoker.revoke();
     if (const auto itemsContainerRow = GetTemplateChildT<winrt::FrameworkElement>(c_itemsContainer, controlProtected))
@@ -1504,58 +1505,41 @@ void NavigationView::UpdatePaneLayout()
                             if (m_footerItemsSource.Count() == 0 && !IsSettingsVisible())
                             {
                                 footerItemsScrollViewer.MaxHeight(0);
-                                if (const auto& separator = m_visualItemsSeparator.get())
-                                {
-                                    separator.Visibility(winrt::Visibility::Collapsed);
-                                }
+                                winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
                                 return totalAvailableHeight;
                             }
                             else if (m_menuItemsSource.Count() == 0)
                             {
                                 footerItemsScrollViewer.MaxHeight(totalAvailableHeight);
-                                if (const auto& separator = m_visualItemsSeparator.get())
-                                {
-                                    separator.Visibility(winrt::Visibility::Collapsed);
-                                }
+                                winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
                                 return 0.0;
-                            }else if (totalAvailableHeight > menuItemsActualHeight + footersActualHeight)
+                            }
+                            else if (totalAvailableHeight > menuItemsActualHeight + footersActualHeight)
                             {
                                 // We have enough space for two so let everyone get as much as they need.
                                 footerItemsScrollViewer.MaxHeight(footersActualHeight);
-                                if (const auto &separator = m_visualItemsSeparator.get())
-                                {
-                                    separator.Visibility(winrt::Visibility::Collapsed);
-                                }
+                                winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
                                 return totalAvailableHeight - footersActualHeight;
                             }
                             else if (menuItemsActualHeight <= totalAvailableHeightHalf)
                             {
                                 // Footer items exceed over the half, so let's limit them.
                                 footerItemsScrollViewer.MaxHeight(totalAvailableHeight - menuItemsActualHeight);
-                                if (const auto& separator = m_visualItemsSeparator.get())
-                                {
-                                    separator.Visibility(winrt::Visibility::Visible);
-                                }
+                                winrt::VisualStateManager::GoToState(*this, c_separatorVisibleStateName,false);
                                 return menuItemsActualHeight;
                             }
                             else if (footersActualHeight <= totalAvailableHeightHalf)
                             {
                                 // Menu items exceed over the half, so let's limit them.
                                 footerItemsScrollViewer.MaxHeight(footersActualHeight);
-                                if (const auto& separator = m_visualItemsSeparator.get())
-                                {
-                                    separator.Visibility(winrt::Visibility::Visible);
-                                }
+                                winrt::VisualStateManager::GoToState(*this, c_separatorVisibleStateName, false);
                                 return totalAvailableHeight - footersActualHeight;
                             }
                             else
                             {
                                 // Both are more than half the height, so split evenly.
                                 footerItemsScrollViewer.MaxHeight(totalAvailableHeightHalf);
-                                if (const auto& separator = m_visualItemsSeparator.get())
-                                {
-                                    separator.Visibility(winrt::Visibility::Visible);
-                                }
+                                winrt::VisualStateManager::GoToState(*this, c_separatorVisibleStateName, false);
                                 return totalAvailableHeightHalf;
                             }
                         }

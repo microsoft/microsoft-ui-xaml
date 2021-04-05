@@ -11,7 +11,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <!-- Set max-height to speed up "filling" of menu/footer items to test behavior -->
-    <muxc:NavigationView x:Name="RootNavigationView" MaxHeight="500">
+    <muxc:NavigationView x:Name="RootNavigationView" MaxHeight="500" IsPaneOpen="True" PaneDisplayMode="Left">
 
         <StackPanel>
             <muxc:RadioButtons SelectionChanged="TestCaseSelectionChanged" SelectedIndex="2">
