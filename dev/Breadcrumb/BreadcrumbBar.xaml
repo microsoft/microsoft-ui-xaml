@@ -180,6 +180,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
+                            IsTabStop="False"
                             Padding="{TemplateBinding Padding}"
                             AutomationProperties.AccessibilityView="Raw">
                             <Button.Style>

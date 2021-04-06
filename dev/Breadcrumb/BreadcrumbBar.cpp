@@ -233,8 +233,6 @@ void BreadcrumbBar::OnElementPreparedEvent(const winrt::ItemsRepeater&, const wi
             const uint32_t itemIndex = args.Index();
             itemImpl->SetIndex(itemIndex);
 
-            winrt::AutomationProperties::SetLocalizedControlType(args.Element(), L"breadcrumbbaritem");
-
             // The first element is always the ellipsis item
             if (itemIndex == 0)
             {
