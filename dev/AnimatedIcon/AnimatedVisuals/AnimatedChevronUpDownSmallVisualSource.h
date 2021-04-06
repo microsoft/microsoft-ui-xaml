@@ -10,7 +10,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedChevronUpDownSmallVisualSource.json
 //       
 //       Input file:
-//           AnimatedChevronUpDownSmallVisualSource.json (30476 bytes created 11:16-08:00 Mar 5 2021)
+//           AnimatedChevronUpDownSmallVisualSource.json (25255 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -71,9 +71,8 @@
 // |________________|____________|_______|_________________|
 // | Foreground     | Foreground | Color | #FF000000 Black |
 // ---------------------------------------------------------
-
 class AnimatedChevronUpDownSmallVisualSource
-    : public winrt::implementation::AnimatedChevronUpDownSmallVisualSourceT<AnimatedChevronUpDownSmallVisualSource>
+    : public  winrt::implementation::AnimatedChevronUpDownSmallVisualSourceT<AnimatedChevronUpDownSmallVisualSource>
 {
     winrt::Windows::UI::Composition::CompositionPropertySet _themeProperties{ nullptr };
     winrt::Windows::UI::Color _themeForeground{ 0xFF, 0x00, 0x00, 0x00 };

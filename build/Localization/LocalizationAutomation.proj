@@ -46,7 +46,7 @@
   </Target>
   <!-- Run localization build by interacting with the Touchdown Build service -->
   <Target Name="LocalizeBuild" DependsOnTargets="CheckForLocalizeBuild">
-    <Exec Command="set LocRoot=$(LocRoot) &amp; &quot;$(TdBuildClientPath)\TdBuildClient.exe&quot; /c:&quot;$(LocConfigFile)&quot; /auth:&quot;oAuth&quot; /clientid:&quot;e8416663-8a55-4cb6-9bba-12038b37a6ed&quot; /appkey:&quot;$(MAPPED_LOC_KEY)&quot; /o:&quot;$(LocOutput)&quot;" />
+    <Exec Command="set LocRoot=$(LocRoot) &amp; &quot;$(TdBuildClientPath)\TdBuildClient.exe&quot; /c:&quot;$(LocConfigFile)&quot; /auth:&quot;oAuth&quot; /clientid:&quot;e8416663-8a55-4cb6-9bba-12038b37a6ed&quot; /appkey:&quot;$(MAPPED_LOC_KEY)&quot; /o:&quot;$(LocOutput)&quot; /skipvstsdrop"  />
   </Target>
   <!-- Check-in localized resource files resulted from Touchdown build -->
   <Target Name="CheckinLocFiles">

@@ -1759,10 +1759,6 @@ void NavigationView::UpdatePaneButtonsWidths()
 
     const auto newButtonWidths = [this]()
     {
-        if (DisplayMode() == winrt::NavigationViewDisplayMode::Minimal)
-        {
-            return static_cast<double>(c_paneToggleButtonWidth);
-        }
         return CompactPaneLength();
     }();
  
@@ -4752,25 +4748,9 @@ void NavigationView::SetDropShadow()
             const auto rootSplitView = m_rootSplitView.get();
             const auto rootSplitViewActualWidth = rootSplitView.ActualWidth();
 
-            // If the screen real estate is too small, the left pane of SplitView ends up being smaller than OpenPaneLength and takes the width of RootSplitView.
-            // This requires a different storyboard animation than default.
-            if (rootSplitViewActualWidth < rootSplitView.OpenPaneLength())
+            if (const auto shadowCasterEaseInStoryboard = m_shadowCasterEaseInStoryboard.get())
             {
-                // Since the width of the NavigationView pane is now different than OpenPaneLength, we need to update its TranslateX animation value to a reflect that.
-                const auto negativeSplitViewWidthMinusCompactLength = (rootSplitViewActualWidth - rootSplitView.CompactPaneLength()) * -1;
-                GetTemplateSettings()->NegativeSplitViewWidthMinusCompactLength(negativeSplitViewWidthMinusCompactLength);
-
-                if (const auto shadowCasterSmallPaneEaseInStoryboard = m_shadowCasterSmallPaneEaseInStoryboard.get())
-                {
-                    shadowCasterSmallPaneEaseInStoryboard.Begin();
-                }
-            }
-            else
-            {
-                if (const auto shadowCasterEaseInStoryboard = m_shadowCasterEaseInStoryboard.get())
-                {
-                    shadowCasterEaseInStoryboard.Begin();
-                }
+                shadowCasterEaseInStoryboard.Begin();
             }
 
             if (winrt::IUIElement10 shadowCaster_uiElement10 = shadowCaster)
