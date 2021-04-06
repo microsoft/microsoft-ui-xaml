@@ -239,8 +239,6 @@ void BreadcrumbBar::OnElementPreparedEvent(const winrt::ItemsRepeater&, const wi
                 itemImpl->SetPropertiesForEllipsisItem();
                 m_ellipsisBreadcrumbBarItem.set(item);
                 UpdateEllipsisBreadcrumbBarItemDropDownItemTemplate();
-
-                winrt::AutomationProperties::SetName(item, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameEllipsisBreadcrumbBarItem));
             }
             else
             {
@@ -257,8 +255,6 @@ void BreadcrumbBar::OnElementPreparedEvent(const winrt::ItemsRepeater&, const wi
                         // Any other element just resets the visual properties
                         itemImpl->ResetVisualProperties();
                     }
-
-                    winrt::AutomationProperties::SetName(item, s_breadcrumbItemAutomationName + winrt::to_hstring(itemIndex));
                 }
             }
         }
