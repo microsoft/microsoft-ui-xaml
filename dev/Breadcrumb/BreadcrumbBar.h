@@ -99,4 +99,5 @@ private:
 
     // Automation Names
     static constexpr std::wstring_view s_breadcrumbItemAutomationName{ L"BreadcrumbBarItem"sv };
+    static constexpr std::wstring_view s_ellipsisBreadcrumbItemAutomationName{ L"More"sv };
 };

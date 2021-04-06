@@ -340,18 +340,18 @@
                         </Button>
 
                         <ContentPresenter x:Name="PART_LastItemContentPresenter"
-                                          Visibility="Collapsed"
-                                          Content="{TemplateBinding Content}"
-                                          ContentTransitions="{TemplateBinding ContentTransitions}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                                          FontFamily="{TemplateBinding FontFamily}"
-                                          FontSize="{TemplateBinding FontSize}"
-                                          FontWeight="{TemplateBinding FontWeight}"
-                                          Foreground="{ThemeResource BreadcrumbBarCurrentNormalForegroundBrush}"
-                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                          LineHeight="20"
-                                          AutomationProperties.AccessibilityView="Raw"/>
+                            Visibility="Collapsed"
+                            Content="{TemplateBinding Content}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            FontFamily="{TemplateBinding FontFamily}"
+                            FontSize="{TemplateBinding FontSize}"
+                            FontWeight="{TemplateBinding FontWeight}"
+                            Foreground="{ThemeResource BreadcrumbBarCurrentNormalForegroundBrush}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            LineHeight="20"
+                            AutomationProperties.AccessibilityView="Raw"/>
 
                         <ContentPresenter x:Name="PART_EllipsisDropDownItemContentPresenter"
                             x:DeferLoadStrategy="Lazy"
@@ -361,7 +361,8 @@
                             ContentTransitions="{TemplateBinding ContentTransitions}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             HorizontalContentAlignment="Stretch"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            AutomationProperties.AccessibilityView="Raw"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
