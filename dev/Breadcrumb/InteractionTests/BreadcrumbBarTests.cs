@@ -82,10 +82,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        public bool SupportsTextSelection => throw new NotImplementedException();
-
-        public TextPatternRange DocumentRange => throw new NotImplementedException();
-
         private IInvoke _invokePattern;
         private static IFactory<BreadcrumbBarItem> _factory = null;
 
