@@ -240,8 +240,7 @@ void BreadcrumbBar::OnElementPreparedEvent(const winrt::ItemsRepeater&, const wi
                 m_ellipsisBreadcrumbBarItem.set(item);
                 UpdateEllipsisBreadcrumbBarItemDropDownItemTemplate();
 
-                winrt::AutomationProperties::SetName(args.Element(), s_ellipsisBreadcrumbItemAutomationName);
-                
+                winrt::AutomationProperties::SetName(item, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameEllipsisBreadcrumbBarItem));
             }
             else
             {
