@@ -661,9 +661,10 @@ void NavigationView::OnApplyTemplate()
     m_footerItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_footerItemsScrollViewer, controlProtected));
 
     m_itemsContainerSizeChangedRevoker.revoke();
-    if (const auto itemsContainerRow = GetTemplateChildT<winrt::FrameworkElement>(c_itemsContainer, controlProtected))
+    if (const auto itemsContainer = GetTemplateChildT<winrt::FrameworkElement>(c_itemsContainer, controlProtected))
     {
-        m_itemsContainerSizeChangedRevoker = itemsContainerRow.SizeChanged(winrt::auto_revoke,{ this,&NavigationView::OnItemsContainerSizeChanged });
+        m_itemsContainer.set(itemsContainer);
+        m_itemsContainerSizeChangedRevoker = itemsContainer.SizeChanged(winrt::auto_revoke, { this,&NavigationView::OnItemsContainerSizeChanged });
     }
 
     if (SharedHelpers::IsRS2OrHigher())
@@ -1484,20 +1485,28 @@ void NavigationView::UpdatePaneLayout()
         const auto totalAvailableHeight = [this]() {
             if (const auto &paneContentRow = m_itemsContainerRow.get())
             {
+                const double bottomMargin = [this]() {
+                    if (const auto itemsContainer = m_itemsContainer.get())
+                    {
+                        return itemsContainer.Margin().Bottom;
+                    }
+                    return 0.0;
+                }();
+
                 // We have 9px margin at the bottom, that's why we subtract 9 everywhere
                 if (m_menuItemsSource && m_footerItemsSource && m_menuItemsSource.Count() * m_footerItemsSource.Count() == 0 && !IsSettingsVisible())
                 {
                     // Either of these collections has no items, let it take all of the available space then.
-                    return paneContentRow.ActualHeight() - 9;
+                    return paneContentRow.ActualHeight() - bottomMargin;
                 }
                 else if (const auto &paneFooter = m_leftNavFooterContentBorder.get())
                 {
                     // 20px is the padding between the two item lists
-                    return paneContentRow.ActualHeight() - 29 - paneFooter.ActualHeight();
+                    return paneContentRow.ActualHeight() - bottomMargin - 20 - paneFooter.ActualHeight();
                 }
                 else
                 {
-                    return paneContentRow.ActualHeight() - 29;
+                    return paneContentRow.ActualHeight() - bottomMargin - 20;
                 }
             }
             return 0.0;
@@ -1522,7 +1531,6 @@ void NavigationView::UpdatePaneLayout()
 
                             if (m_footerItemsSource.Count() == 0 && !IsSettingsVisible())
                             {
-                                footerItemsScrollViewer.MaxHeight(0);
                                 winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
                                 return totalAvailableHeight;
                             }

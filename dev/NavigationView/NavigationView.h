@@ -391,6 +391,7 @@ private:
     tracker_ref<winrt::ColumnDefinition> m_paneHeaderCloseButtonColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_paneHeaderToggleButtonColumn{ this };
     tracker_ref<winrt::RowDefinition> m_paneHeaderContentBorderRow{ this };
+    tracker_ref<winrt::FrameworkElement> m_itemsContainer{ this };
 
     tracker_ref<winrt::NavigationViewItem> m_lastItemExpandedIntoFlyout{ this };
 
