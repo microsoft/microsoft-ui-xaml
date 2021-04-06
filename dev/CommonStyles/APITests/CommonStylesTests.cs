@@ -386,7 +386,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     </StackPanel>";
 
             VisualTreeTestHelper.VerifyVisualTree(xaml: xaml,
-                verificationFileNamePrefix: "VerifyVisualTreeForAppBarAndAppBarToggleButton");
+                verificationFileNamePrefix: "VerifyVisualTreeForCommandBarCornerRadius");
         }
 
         [TestMethod]
