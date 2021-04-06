@@ -12,20 +12,13 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="1" HorizontalAlignment="Center">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="MenuFlyoutItem height: "/>
-                <TextBlock x:Name="TestMenuFlyoutItemHeightTextBlock" AutomationProperties.Name="TestMenuFlyoutItemHeightTextBlock" Text="0" Margin="5, 0, 0, 0"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
-                <TextBlock Text="MenuFlyoutItem width: "/>
-                <TextBlock x:Name="TestMenuFlyoutItemWidthTextBlock" AutomationProperties.Name="TestMenuFlyoutItemWidthTextBlock" Text="0" Margin="5, 0, 0, 0"/>
-            </StackPanel>
-        </StackPanel>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-        <StackPanel>
+        <StackPanel Grid.RowSpan="2">
             <Button Content="Short Text MenuFlyout" x:Name="TestMenuFlyoutButton" AutomationProperties.Name="TestMenuFlyoutButton" Margin="0,0,0,12">
                 <Button.Flyout>
                     <MenuFlyout>
@@ -119,5 +112,22 @@
                 </Button.Flyout>
             </Button>
         </StackPanel>
+
+        <Grid Grid.Column="1" Margin="20,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="MenuFlyoutItem height: "/>
+            <TextBlock x:Name="TestMenuFlyoutItemHeightTextBlock" AutomationProperties.Name="TestMenuFlyoutItemHeightTextBlock" Text="0" Grid.Column="1" Margin="5, 0, 0, 0"/>
+
+            <TextBlock Text="MenuFlyoutItem width: " Grid.Row="1"/>
+            <TextBlock x:Name="TestMenuFlyoutItemWidthTextBlock" AutomationProperties.Name="TestMenuFlyoutItemWidthTextBlock" Text="0" Grid.Row="1" Grid.Column="1" Margin="5, 0, 0, 0"/>
+        </Grid>
     </Grid>
 </local:TestPage>
