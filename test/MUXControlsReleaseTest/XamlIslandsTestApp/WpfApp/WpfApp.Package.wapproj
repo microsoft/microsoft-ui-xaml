@@ -90,9 +90,11 @@
   <Target Name="RemoveUWPAppPayload" AfterTargets="_ValidateAppxPackage" BeforeTargets="_GenerateAppxPackageFile">
     <PropertyGroup>
       <UWPNugetRepo>$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\NuGet\Repository', 'UWPNugetPackages', null, RegistryView.Registry32, RegistryView.Default))</UWPNugetRepo>
+      <UWPAppOutDir>$([System.IO.Path]::GetFullPath('$(OutDir)..\UwpApp'))\</UWPAppOutDir>
     </PropertyGroup>
     <ItemGroup>
       <UWPAppPayload Include="$(UWPNugetRepo)\runtime.win10-$(Platform).microsoft.netcore.universalwindowsplatform\**\System.Runtime.dll" />
+      <UWPAppPayload Include="$(UWPAppOutDir)ilc\clrcompression.dll" />
       <AppxPackagePayload Remove="@(UWPAppPayload)" />
     </ItemGroup>
   </Target>
