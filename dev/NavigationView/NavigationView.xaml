@@ -415,7 +415,7 @@
                                         <ContentControl
                                             x:Name="TopPaneAutoSuggestBoxPresenter"
                                             Margin="{ThemeResource TopNavigationViewAutoSuggestBoxMargin}"
-                                            MinWidth="48"
+                                            MinWidth="216"
                                             IsTabStop="False"
                                             HorizontalContentAlignment="Stretch"
                                             VerticalContentAlignment="Center"/>

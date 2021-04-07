@@ -1325,10 +1325,12 @@ void NavigationView::CreateAndHookEventsToSettings()
     if (!IsTopNavigationView())
     {
         settingsItem.Content(box_value(localizedSettingsName));
+        //settingsItem.Style(nullptr);
     }
     else
     {
         settingsItem.Content(nullptr);
+        //settingsItem.Style(unbox_value<winrt::Style>(ResourceAccessor::ResourceLookup(*this, box_value(L"MUX_NavigationViewSettingsItemStyleWhenOnTopPane"))));
     }
 
     // hook up SettingsItem
