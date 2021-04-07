@@ -540,7 +540,7 @@
                                         <!-- "Non header" content -->
                                         <Grid x:Name="ItemsContainerGrid" Grid.Row="6" Margin="0,0,0,8">
                                             <Grid.RowDefinitions>
-                                                <RowDefinition x:Name="MenuItemsRow" Height="Auto"/> <!-- MenuItems -->
+                                                <RowDefinition Height="Auto"/> <!-- MenuItems -->
                                                 <RowDefinition Height="*"/> <!-- Fill spacing -->
                                                 <RowDefinition Height="Auto" /> <!-- PaneFooter -->
                                                 <RowDefinition Height="Auto"/> <!-- FooterItems -->
