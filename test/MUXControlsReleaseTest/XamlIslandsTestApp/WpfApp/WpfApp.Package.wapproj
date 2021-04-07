@@ -91,7 +91,8 @@
       <UwpNuGetPackagesDir>$([System.IO.Path]::GetFullPath('$(ExtensionSdkDir)\..\..\..\UWPNuGetPackages'))\</UwpNuGetPackagesDir>
     </PropertyGroup>
     <ItemGroup>
-      <AppxPackagePayload Remove="$(UwpNuGetPackagesDir)runtime.win10-$(Platform).microsoft.netcore.universalwindowsplatform\6.2.12\runtimes\win10-$(Platform)\lib\uap10.0.15138\System.Runtime.dll" />
+      <UWPAppPayload Include="$(UwpNuGetPackagesDir)runtime.win10-$(Platform).microsoft.netcore.universalwindowsplatform\**\System.Runtime.dll" />
+      <AppxPackagePayload Remove="@(UWPAppPayload)" />
     </ItemGroup>
   </Target>
   <Target Name="AfterBuild" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
