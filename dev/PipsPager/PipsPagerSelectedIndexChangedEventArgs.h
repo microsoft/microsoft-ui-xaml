@@ -7,15 +7,4 @@
 
 class PipsPagerSelectedIndexChangedEventArgs :
     public winrt::implementation::PipsPagerSelectedIndexChangedEventArgsT<PipsPagerSelectedIndexChangedEventArgs>
-{
-public:
-    PipsPagerSelectedIndexChangedEventArgs(const int previousIndex, const int newIndex) :
-        m_previousPageIndex(previousIndex), m_newPageIndex(newIndex) {};
-
-    int NewPageIndex() { return m_newPageIndex; };
-    int PreviousPageIndex() { return m_previousPageIndex; };
-
-private:
-    int m_newPageIndex = -1;
-    int m_previousPageIndex = -1;
-};
+{};

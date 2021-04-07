@@ -165,6 +165,10 @@ private:
     float MinimumTipEdgeToTailEdgeMargin();
     float MinimumTipEdgeToTailCenter();
 
+    winrt::CornerRadius GetTeachingTipCornerRadius();
+    float TopLeftCornerRadius() { return static_cast<float>(GetTeachingTipCornerRadius().TopLeft); }
+    float TopRightCornerRadius() { return static_cast<float>(GetTeachingTipCornerRadius().TopRight); }
+
     tracker_ref<winrt::Border> m_container{ this };
 
     tracker_ref<winrt::Popup> m_popup{ this };
@@ -251,18 +255,18 @@ private:
     }
 
     // These values are shifted by one because this is the 1px highlight that sits adjacent to the tip border.
-    inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (TailShortSideLength() - 1.0f), 0, 3, 0 }; }
-    inline winrt::Thickness BottomRightPlacementTopRightHighlightMargin(double width, double height) { return { MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0, 3, 0 }; }
-    inline winrt::Thickness BottomLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0, 3, 0 }; }
+    inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (TailShortSideLength() - 1.0f), 0, (TopRightCornerRadius() - 1.0f), 0 }; }
+    inline winrt::Thickness BottomRightPlacementTopRightHighlightMargin(double width, double height) { return { MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0, (TopRightCornerRadius() - 1.0f), 0 }; }
+    inline winrt::Thickness BottomLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0, (TopRightCornerRadius() - 1.0f), 0 }; }
     static inline winrt::Thickness constexpr OtherPlacementTopRightHighlightMargin(double width, double height) { return { 0, 0, 0, 0 }; }
 
-    inline winrt::Thickness BottomPlacementTopLeftHighlightMargin(double width, double height) { return { 3, 0, (width / 2) + (TailShortSideLength() - 1.0f), 0 }; }
-    inline winrt::Thickness BottomRightPlacementTopLeftHighlightMargin(double width, double height) { return { 3, 0, width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0 }; }
-    inline winrt::Thickness BottomLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 3, 0, MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0 }; }
-    static inline winrt::Thickness constexpr TopEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 3, 1, 3, 0 }; }
+    inline winrt::Thickness BottomPlacementTopLeftHighlightMargin(double width, double height) { return { (TopLeftCornerRadius() - 1.0f), 0, (width / 2) + (TailShortSideLength() - 1.0f), 0 }; }
+    inline winrt::Thickness BottomRightPlacementTopLeftHighlightMargin(double width, double height) { return { (TopLeftCornerRadius() - 1.0f), 0, width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0 }; }
+    inline winrt::Thickness BottomLeftPlacementTopLeftHighlightMargin(double width, double height) { return { (TopLeftCornerRadius() - 1.0f), 0, MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0 }; }
+    inline winrt::Thickness TopEdgePlacementTopLeftHighlightMargin(double width, double height) { return { (TopLeftCornerRadius() - 1.0f), 1, (TopRightCornerRadius() - 1.0f), 0 }; }
     // Shifted by one since the tail edge's border is not accounted for automatically.
-    static inline winrt::Thickness constexpr LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 3, 1, 2, 0 }; }
-    static inline winrt::Thickness constexpr RightEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 2, 1, 3, 0 }; }
+    inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { (TopLeftCornerRadius() - 1.0f), 1, (TopRightCornerRadius() - 2.0f), 0 }; }
+    inline winrt::Thickness RightEdgePlacementTopLeftHighlightMargin(double width, double height) { return { (TopLeftCornerRadius() - 2.0f), 1, (TopRightCornerRadius() - 1.0f), 0 }; }
 
     static inline double constexpr UntargetedTipFarPlacementOffset(float farWindowCoordinateInCoreWindowSpace, double tipSize, double offset) { return farWindowCoordinateInCoreWindowSpace - (tipSize + s_untargetedTipWindowEdgeMargin + offset); }
     static inline double constexpr UntargetedTipCenterPlacementOffset(float nearWindowCoordinateInCoreWindowSpace, float farWindowCoordinateInCoreWindowSpace, double tipSize, double nearOffset, double farOffset) { return ((nearWindowCoordinateInCoreWindowSpace + farWindowCoordinateInCoreWindowSpace) / 2)  - (tipSize / 2) + nearOffset - farOffset; }

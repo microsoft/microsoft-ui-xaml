@@ -47,6 +47,8 @@ public:
         const wstring_view& disabledStateName);
     void OnOrientationChanged();
 
+    winrt::UIElement GetSelectedItem();
+
     /* Dependency property for pip buttons revokers */
     GlobalDependencyProperty s_pipButtonHandlersProperty;
 
@@ -66,7 +68,8 @@ private:
     void ScrollToCenterOfViewport(const winrt::UIElement sender, const int index);
     double CalculateScrollViewerSize(const double defaultPipSize, const double selectedPipSize, const int numberOfPages, int maxVisualIndicators);
     void UpdateSelectedPip(const int index);
-
+    void UpdatePipOrientation(const winrt::Control& pip);
+    void ApplyStyleToPipAndUpdateOrientation(const winrt::FrameworkElement& pip, const winrt::Style& style);
     /* Eventing */
     void RaiseSelectedIndexChanged();
 
@@ -75,6 +78,7 @@ private:
     void OnNextButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::GettingFocusEventArgs& args);
     void OnPipsAreaBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args);
+    void OnScrollViewerBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args);
 
     /* Pips Logic */
     void UpdatePipsItems(const int numberOfPages, int maxVisualIndicators);
@@ -93,6 +97,7 @@ private:
     winrt::ItemsRepeater::ElementPrepared_revoker m_pipsPagerElementPreparedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_pipsAreaGettingFocusRevoker{};
     winrt::ItemsRepeater::BringIntoViewRequested_revoker m_pipsAreaBringIntoViewRequestedRevoker{};
+    winrt::FxScrollViewer::BringIntoViewRequested_revoker m_scrollViewerBringIntoViewRequestedRevoker{};
     /* Items */
     winrt::IObservableVector<int> m_pipsPagerItems{};
 
