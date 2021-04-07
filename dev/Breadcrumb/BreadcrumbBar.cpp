@@ -278,7 +278,6 @@ void BreadcrumbBar::OnElementIndexChangedEvent(const winrt::ItemsRepeater& sende
         }
 
         FocusElementAt(newIndex);
-        winrt::AutomationProperties::SetName(args.Element(), s_breadcrumbItemAutomationName + winrt::to_hstring(newIndex));
     }
 }
 
@@ -288,8 +287,6 @@ void BreadcrumbBar::OnElementClearingEvent(const winrt::ItemsRepeater&, const wi
     {
         const auto& itemImpl = winrt::get_self<BreadcrumbBarItem>(item);
         itemImpl->ResetVisualProperties();
-
-        winrt::AutomationProperties::SetName(item, winrt::hstring());
     }
 }
 
