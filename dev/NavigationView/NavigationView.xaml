@@ -71,6 +71,7 @@
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="TogglePaneGroup">
+                                <VisualState x:Name="TogglePaneButtonCollapsed" />
                                 <VisualState x:Name="TogglePaneButtonVisible">
                                     <VisualState.Setters>
                                         <!-- Might not need this setter when all the margins/paddings will be adequately set. -->
@@ -78,7 +79,6 @@
                                         <Setter Target="PaneContentGridToggleButtonRow.MinHeight" Value="{StaticResource NavigationViewPaneHeaderRowMinHeight}"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="TogglePaneButtonCollapsed" />
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="HeaderGroup">
@@ -165,15 +165,11 @@
                                 </VisualState>
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="PaneSeperatorStates">
+                            <VisualStateGroup x:Name="PaneSeparatorStates">
+                                <VisualState x:Name="SeparatorCollapsed"/>
                                 <VisualState x:Name="SeparatorVisible">
                                     <VisualState.Setters>
                                         <Setter Target="VisualItemsSeparator.Visibility" Value="Visible"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="SeparatorCollapsed">
-                                    <VisualState.Setters>
-                                        <Setter Target="VisualItemsSeparator.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
