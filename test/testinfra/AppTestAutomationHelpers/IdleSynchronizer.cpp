@@ -219,6 +219,7 @@ namespace winrt::AppTestAutomationHelpers::implementation
             winrt::Windows::Foundation::IAsyncAction action = m_coreDispatcher.RunIdleAsync(winrt::Windows::UI::Core::IdleDispatchedHandler([&](winrt::Windows::UI::Core::IdleDispatchedHandlerArgs args)
                 {
                     isDispatcherIdle = args.IsDispatcherIdle();
+                    shouldContinueEvent.Set();
                 }));
 
             action.Completed([&](auto& /*asyncInfo*/, auto& /*asyncStatus*/)

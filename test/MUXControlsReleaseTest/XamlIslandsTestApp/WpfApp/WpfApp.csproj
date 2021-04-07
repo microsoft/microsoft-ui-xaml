@@ -11,6 +11,12 @@
     <RuntimeIdentifiers>win10-x86;win10-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(PublishProfile)' == ''">
+    <RuntimeIdentifier>win10-$(Platform)</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>False</PublishSingleFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Toolkit.Wpf.UI.XamlHost" Version="6.1.2" />
   </ItemGroup>
@@ -19,4 +25,32 @@
     <ProjectReference Include="..\UwpApp\UwpApp.csproj" />
   </ItemGroup>
 
+  <!-- To avoid needing to install anything when running this app unpackaged, we'll bundle the dependency DLLs
+       that we need in the exe folder. These are all of the desktop C++ runtime implementation DLLs from Visual Studio. -->
+  <Target Name="BinplaceDependencyDlls" AfterTargets="AfterBuild" Condition="'$(PublishProfile)' == ''">
+    <GetInstalledSDKLocations
+           SDKDirectoryRoots="$(SDKReferenceDirectoryRoot)"
+           SDKExtensionDirectoryRoots="$(SDKExtensionDirectoryRoot)"
+           SDKRegistryRoot="$(SDKReferenceRegistryRoot)"
+           TargetPlatformVersion="$(MuxSdkVersion)"
+           TargetPlatformIdentifier="$(TargetPlatformIdentifier)">
+      <Output TaskParameter="InstalledSDKs" ItemName="InstalledSDKLocations"/>
+    </GetInstalledSDKLocations>
+    <PropertyGroup>
+      <VCLibsPlatform Condition="'$(Configuration)' == 'Debug'">Debug</VCLibsPlatform>
+      <VCLibsPlatform Condition="'$(Configuration)' == 'Release'">Retail</VCLibsPlatform>
+      <VCLibsDebug Condition="'$(Configuration)' == 'Debug'">.Debug</VCLibsDebug>
+      <VCLibsDebug Condition="'$(Configuration)' == 'Release'"></VCLibsDebug>
+      <UcrtBaseDLocation Condition="'%(InstalledSDKLocations.SDKName)' == 'Microsoft.UniversalCRT.Debug, Version=10.0.18362.0'">@(InstalledSDKLocations)Redist\Debug\$(Platform)\</UcrtBaseDLocation>
+      <VCLibsDesktopLocation Condition="'%(InstalledSDKLocations.SDKName)' == 'Microsoft.VCLibs.Desktop, Version=14.0'">@(InstalledSDKLocations)AppX\$(VCLibsPlatform)\$(Platform)\</VCLibsDesktopLocation>
+    </PropertyGroup>
+    <Unzip SourceFiles="$(VCLibsDesktopLocation)Microsoft.VCLibs.$(Platform)$(VCLibsDebug).14.00.Desktop.appx" DestinationFolder="$(TEMP)\VCLibsDesktop" />
+    <ItemGroup>
+      <VCLibsDlls Include="$(TEMP)\VCLibsDesktop\msvcp140*.dll" />
+      <VCLibsDlls Include="$(TEMP)\VCLibsDesktop\vcruntime140*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(VCLibsDlls)" DestinationFiles="@(VCLibsDlls -> '$(OutDir)%(Filename)%(Extension)')" SkipUnchangedFiles="True" />
+    <RemoveDir Directories="$(TEMP)\VCLibsDesktop" />
+    <Copy SourceFiles="$(UcrtBaseDLocation)ucrtbased.dll" DestinationFiles="$(OutDir)ucrtbased.dll" Condition="'$(Configuration)' == 'Debug'" SkipUnchangedFiles="True" />
+  </Target>
 </Project>

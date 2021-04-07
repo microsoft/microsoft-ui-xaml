@@ -49,28 +49,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         public string BaseAppxDir { get; private set; }
         public string UnpackagedExePath { get; private set; }
 
-        public TestApplicationInfo(string testAppMainWindowTitle, string unpackagedExePath)
-            : this(testAppPackageName: string.Empty, testAppName: string.Empty, testAppPackageFamilyName: string.Empty, testAppMainWindowTitle, processName: string.Empty, installerName: string.Empty, certSerialNumber: string.Empty, baseAppxDir: string.Empty)
+        public TestApplicationInfo(string testAppName, string testAppMainWindowTitle, string unpackagedExePath)
+            : this(testAppPackageName: string.Empty, testAppName: string.Empty, testAppPackageFamilyName: string.Empty, testAppMainWindowTitle, processName: string.Empty, installerName: string.Empty, isUwpApp: false, certSerialNumber: string.Empty, baseAppxDir: string.Empty, isPackaged: false, unpackagedExePath)
         {
-            IsPackaged = false;
-            UnpackagedExePath = unpackagedExePath;
         }
 
         public TestApplicationInfo(string testAppPackageName, string testAppName, string testAppPackageFamilyName, string certSerialNumber, string baseAppxDir)
             : this(testAppPackageName, testAppName, testAppPackageFamilyName, testAppPackageName, testAppPackageName, testAppPackageName, certSerialNumber, baseAppxDir)
         {
-            IsPackaged = true;
-            UnpackagedExePath = string.Empty;
         }
 
         public TestApplicationInfo(string testAppPackageName, string testAppName, string testAppPackageFamilyName, string testAppMainWindowTitle, string processName, string installerName, string certSerialNumber, string baseAppxDir)
             : this(testAppPackageName, testAppName, testAppPackageFamilyName, testAppMainWindowTitle, processName, installerName, isUwpApp: true, certSerialNumber, baseAppxDir)
         {
-            IsPackaged = true;
-            UnpackagedExePath = string.Empty;
         }
 
+
         public TestApplicationInfo(string testAppPackageName, string testAppName, string testAppPackageFamilyName, string testAppMainWindowTitle, string processName, string installerName, bool isUwpApp, string certSerialNumber, string baseAppxDir)
+            : this(testAppPackageName, testAppName, testAppPackageFamilyName, testAppMainWindowTitle, processName, installerName, isUwpApp, certSerialNumber, baseAppxDir, isPackaged: true, unpackagedExePath: string.Empty)
+        {
+        }
+
+        public TestApplicationInfo(string testAppPackageName, string testAppName, string testAppPackageFamilyName, string testAppMainWindowTitle, string processName, string installerName, bool isUwpApp, string certSerialNumber, string baseAppxDir, bool isPackaged, string unpackagedExePath)
         {
             this.TestAppPackageName = testAppPackageName;
             this.TestAppName = testAppName;
@@ -84,6 +84,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             this.CertSerialNumber = certSerialNumber;
             this.BaseAppxDir = baseAppxDir;
+
+            this.IsPackaged = isPackaged;
+            this.UnpackagedExePath = unpackagedExePath;
         }
 
         private const string MUXCertSerialNumber = "fd1d6927f4521242f00b20c9df66ea4f97175ee2";
@@ -160,7 +163,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
-                return new TestApplicationInfo("WpfApp", @"WpfApp\WpfApp.exe");
+                return new TestApplicationInfo("WpfApp_8wekyb3d8bbwe", "WpfApp", @"WpfApp\WpfApp.exe");
             }
         }
     }
@@ -266,7 +269,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 info.InstallerName,
                 info.CertSerialNumber,
                 info.BaseAppxDir,
-                info.IsUwpApp, 
+                info.IsUwpApp,
                 info.UnpackagedExePath,
                 info.IsPackaged);
         }

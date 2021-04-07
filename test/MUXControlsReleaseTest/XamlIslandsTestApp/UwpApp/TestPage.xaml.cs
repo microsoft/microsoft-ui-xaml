@@ -21,5 +21,11 @@ namespace UwpApp
         {
             this.InitializeComponent();
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Button button = (Button)sender;
+            button.Content = "Clicked!";
+        }
     }
 }

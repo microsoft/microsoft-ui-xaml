@@ -65,7 +65,36 @@
       <Version>1.0.67</Version>
     </PackageReference>
   </ItemGroup>
-  <Target Name="AfterBuild">
+  <!-- For reasons that are unclear, _RemoveExtraPriFiles fails to remove an instance of AppTestAutomationHelpers.pri,
+       which causes an duplicate item issue during MakePri.exe.  We'll remove it explicitly to avoid that. -->
+  <Target Name="RemoveAnotherExtraPriFile" AfterTargets="_RemoveExtraPriFiles" BeforeTargets="_GenerateProjectPriConfigurationFiles">
+    <PropertyGroup>
+      <WpfAppOutDir>$([System.IO.Path]::GetFullPath('$(OutDir)..\WpfApp'))\</WpfAppOutDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_PriFile Remove="@(_PriFile)" Condition="'%(Identity)' == '$(WpfAppOutDir)AppTestAutomationHelpers.pri'" />
+    </ItemGroup>
+  </Target>
+  <!-- The packaging step also "helpfully" puts DLLs and WinMDs with the same name in the root directory,
+       instead of the app directory. We need to fix that. -->
+  <Target Name="PlaceEverythingInAppDirectory" AfterTargets="_ValidateAppxPackage" BeforeTargets="_GenerateAppxPackageFile">
+    <ItemGroup>
+      <AppxPackagePayloadToCopy Include="@(AppxPackagePayload)" Condition="'%(TargetPath)' == '%(Filename)%(Extension)' and ('%(Extension)' == '.dll' or '%(Extension)' == '.winmd')" />
+      <AppxPackagePayload Include="@(AppxPackagePayloadToCopy)">
+        <TargetPath>$(AppxPackageName)\%(Filename)%(Extension)</TargetPath>
+      </AppxPackagePayload>
+    </ItemGroup>
+  </Target>
+  <!-- We also need to remove the UWP app payload that conflicts with the desktop DLLs. -->
+  <Target Name="RemoveUWPAppPayload" AfterTargets="_ValidateAppxPackage" BeforeTargets="_GenerateAppxPackageFile">
+    <PropertyGroup>
+      <UwpNuGetPackagesDir>$([System.IO.Path]::GetFullPath('$(ExtensionSdkDir)\..\..\..\UWPNuGetPackages'))\</UwpNuGetPackagesDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <AppxPackagePayload Remove="$(UwpNuGetPackagesDir)runtime.win10-$(Platform).microsoft.netcore.universalwindowsplatform\6.2.12\runtimes\win10-$(Platform)\lib\uap10.0.15138\System.Runtime.dll" />
+    </ItemGroup>
+  </Target>
+  <Target Name="AfterBuild" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
     <RunPowershellScript Path="$(MSBuildProjectDirectory)\..\..\tools\ExtractPackageDependencies_ReleaseTest.ps1" Parameters="-sourceFile $(OutDir)\WpfApp.Package.build.appxrecipe -platform $(PlatformName) -outputFile $(AppxPackageTestDir)\$(AppxPackageName).dependencies.txt" FilesWritten="$(AppxPackageTestDir)\$(AppxPackageName).dependencies.txt" />
   </Target>
 </Project>

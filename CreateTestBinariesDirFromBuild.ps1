@@ -191,7 +191,7 @@ else
     }
 
 
-    & .\build\CopyFilesToStagingDir.ps1 -BuildOutputDir "$PSScriptRoot\BuildOutput\" -PublishDir $artifactsDropDir -Platform $Platform -Configuration $Flavor -PublishApps
+    & .\build\CopyFilesToStagingDir.ps1 -BuildOutputDir "$PSScriptRoot\BuildOutput\" -PublishDir $artifactsDropDir -Platform $Platform -Configuration $Flavor -PublishAppxFiles
     & .\Tools\NugetWrapper.cmd restore build\Helix\packages.config -PackagesDirectory build\Helix\packages
     & .\build\Helix\PrepareHelixPayload.ps1 -Platform $Platform -Configuration $Flavor
 

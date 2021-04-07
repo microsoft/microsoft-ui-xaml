@@ -55,7 +55,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         private readonly UICondition _windowCondition = null;
         private readonly UICondition _appFrameWindowCondition = null;
 
-        public Application(string packageName, string packageFamilyName, string appName, string testAppMainWindowTitle, string testAppProcessName, string testAppInstallerName, string certSerialNumber, string baseAppxDir, bool isUWPApp = true, string unpackagedExePath = "", bool isPackaged = true)
+        public Application(string packageName, string packageFamilyName, string appName, string testAppMainWindowTitle, string testAppProcessName, string testAppInstallerName, string certSerialNumber, string baseAppxDir, bool isUWPApp, string unpackagedExePath, bool isPackaged)
         {
             _packageName = packageName;
             _packageFamilyName = packageFamilyName;

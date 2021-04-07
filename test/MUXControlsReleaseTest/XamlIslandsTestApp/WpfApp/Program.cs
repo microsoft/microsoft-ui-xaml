@@ -9,9 +9,10 @@ namespace WpfApp
         [System.STAThreadAttribute()]
         public static void Main()
         {
+            UwpApp.App uwpApp = new UwpApp.App(); // Needed for the native application object it creates.
             App app = new App();
-            app.InitializeComponent();
             app.Run();
+            GC.SuppressFinalize(uwpApp);
         }
     }
 }

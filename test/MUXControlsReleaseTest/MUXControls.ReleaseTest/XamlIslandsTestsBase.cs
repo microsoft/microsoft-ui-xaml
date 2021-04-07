@@ -22,22 +22,25 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
 namespace MUXControls.ReleaseTest
 {
-    [TestClass]
-    public class XamlIslandsUnpackagedTests : XamlIslandsTestsBase
+    // We test XAML islands in two circumstances: a packaged app and an unpackaged app.
+    // The apps are the exact same other than the way that they're packaged, so any tests
+    // for app functionality should go here, which is then shared by the two test classes
+    // for the two different test app variants.
+    public class XamlIslandsTestsBase
     {
-        [ClassInitialize]
-        [TestProperty("RunAs", "User")]
-        [TestProperty("Classification", "Integration")]
-        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        public static void ClassInitialize(TestContext testContext)
+        [TestMethod]
+        public void XamlIslandCanaryTest()
         {
-            TestEnvironment.Initialize(testContext, TestApplicationInfo.XamlIslandsTestAppUnpackaged); 
-        }
+            if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5))
+            {
+                // UIA in Xaml islands is only available in 19H1
+                return;
+            }
 
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            TestEnvironment.AssemblyCleanupWorker(TestApplicationInfo.XamlIslandsTestAppUnpackaged);
+            var testButton = new Button(FindElement.ById("TestButton"));
+            Verify.IsNotNull(testButton);
+            testButton.InvokeAndWait();
+            Verify.AreEqual(testButton.Name, "Clicked!");
         }
     }
 }

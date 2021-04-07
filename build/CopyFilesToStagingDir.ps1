@@ -4,7 +4,7 @@ Param(
     [string]$PublishDir,
     [string]$Platform,
     [string]$Configuration,
-    [switch]$PublishApps=$false
+    [switch]$PublishAppxFiles=$false
 )
 
 $FullBuildOutput = "$($BuildOutputDir)\$($Configuration)\$($Platform)"
@@ -48,7 +48,7 @@ PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\vcruntime140.dll $F
 
 PublishFile -IfExists $FullBuildOutput\FrameworkPackage\*.* $FullPublishDir\FrameworkPackage
 
-if ($PublishApps)
+if ($PublishAppxFiles)
 {
     $AppxPackagesDir = "$FullPublishDir\AppxPackages"
 
@@ -60,11 +60,11 @@ if ($PublishApps)
     PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\AppPackages\NugetPackageTestAppCX_Test\ $AppxPackagesDir
     PublishFile -IfExists $FullBuildOutput\AppThatUsesMUXIndirectly\AppPackages\AppThatUsesMUXIndirectly_Test\ $AppxPackagesDir
     PublishFile -IfExists $FullBuildOutput\WpfApp.Package\AppPackages\WpfApp_Test\ $AppxPackagesDir
-    
-    $UnpackagedAppsDir = "$FullPublishDir\UnpackagedApps"
-    
-    PublishFile -IfExists $FullBuildOutput\WpfApp\ $UnpackagedAppsDir
 }
+
+$UnpackagedAppsDir = "$FullPublishDir\UnpackagedApps"
+
+PublishFile -IfExists $FullBuildOutput\WpfApp\ $UnpackagedAppsDir
 
 # Publish pdbs:
 $symbolsOutputDir = "$($FullPublishDir)\Symbols\"

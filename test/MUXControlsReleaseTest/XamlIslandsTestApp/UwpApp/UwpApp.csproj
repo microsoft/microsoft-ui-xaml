@@ -12,7 +12,7 @@
     <AssemblyName>UwpApp</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.18362.0</TargetPlatformVersion>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">$(MuxSdkVersion)</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
@@ -159,6 +159,10 @@
     <PackageReference Include="Microsoft.UI.Xaml">
       <Version>2.1.190606001</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Needed for ucrtbased.dll when running a debug build. -->
+    <SDKReference Include="Microsoft.UniversalCRT.Debug, Version=$(TargetPlatformVersion)" Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>
   <Import Project="..\..\..\TestAppUtils\TestAppUtils.projitems" Label="Shared" />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

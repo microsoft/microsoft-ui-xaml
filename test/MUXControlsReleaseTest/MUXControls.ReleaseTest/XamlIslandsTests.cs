@@ -23,7 +23,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 namespace MUXControls.ReleaseTest
 {
     [TestClass]
-    public class XamlIslandsTests
+    public class XamlIslandsTests : XamlIslandsTestsBase
     {
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
@@ -38,20 +38,6 @@ namespace MUXControls.ReleaseTest
         public void TestCleanup()
         {
             TestEnvironment.AssemblyCleanupWorker(TestApplicationInfo.XamlIslandsTestApp);
-        }
-
-        [TestMethod]
-        public void XamlIslandCanaryTest()
-        {
-            if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5))
-            {
-                // UIA in Xaml islands is only available in 19H1
-                return;
-            }
-
-            var testButton = new Button(FindElement.ById("TestButton"));
-            Verify.IsNotNull(testButton);
-            testButton.Click();
         }
     }
 }

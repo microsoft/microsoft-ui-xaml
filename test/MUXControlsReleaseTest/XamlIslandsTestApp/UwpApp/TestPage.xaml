@@ -9,6 +9,6 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <Button Content="Test" AutomationProperties.AutomationId="TestButton" />
+        <Button Content="Test" AutomationProperties.AutomationId="TestButton" Click="Button_Click" />
     </Grid>
 </Page>
