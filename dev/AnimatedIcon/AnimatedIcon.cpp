@@ -495,8 +495,7 @@ bool AnimatedIcon::ConstructAndInsertVisual()
 
         return true;
     }
-    // If we were previously able to display primary content and now cannot, use the fallback icon.
-    else if (m_canDisplayPrimaryContent)
+    else
     {
         m_canDisplayPrimaryContent = false;
         return false;
