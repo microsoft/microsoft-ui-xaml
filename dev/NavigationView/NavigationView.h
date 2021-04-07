@@ -359,8 +359,6 @@ private:
     tracker_ref<winrt::Grid> m_topNavGrid{ this };
     tracker_ref<winrt::Border> m_topNavContentOverlayAreaGrid{ this };
     tracker_ref<winrt::Grid> m_shadowCaster{ this };
-    tracker_ref<winrt::Storyboard> m_shadowCasterEaseInStoryboard{ this };
-    tracker_ref<winrt::Storyboard> m_shadowCasterSmallPaneEaseInStoryboard{ this };
     tracker_ref<winrt::Storyboard> m_shadowCasterEaseOutStoryboard{ this };
 
     // Indicator animations

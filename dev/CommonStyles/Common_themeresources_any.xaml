@@ -147,11 +147,12 @@
             <SolidColorBrush x:Key="ControlOnImageFillColorSecondaryBrush" Color="{StaticResource ControlOnImageFillColorSecondary}" />
             <SolidColorBrush x:Key="ControlOnImageFillColorTertiaryBrush" Color="{StaticResource ControlOnImageFillColorTertiary}" />
             <SolidColorBrush x:Key="ControlOnImageFillColorDisabledBrush" Color="{StaticResource ControlOnImageFillColorDisabled}" />
+            
             <SolidColorBrush x:Key="AccentFillColorSelectedTextBackgroundBrush" Color="{ThemeResource SystemAccentColor}" />
 
             <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="{ThemeResource SystemAccentColorLight2}" />
-            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="{ThemeResource SystemAccentColorLight3}" />
-            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="{ThemeResource SystemAccentColorLight1}" />
+            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="{ThemeResource SystemAccentColorLight2}" Opacity="0.9" />
+            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="{ThemeResource SystemAccentColorLight2}" Opacity="0.8" />
             <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="{StaticResource AccentFillColorDisabled}" />
 
             <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="{StaticResource ControlStrokeColorDefault}" />
@@ -384,11 +385,12 @@
             <SolidColorBrush x:Key="ControlOnImageFillColorSecondaryBrush" Color="{StaticResource ControlOnImageFillColorSecondary}" />
             <SolidColorBrush x:Key="ControlOnImageFillColorTertiaryBrush" Color="{StaticResource ControlOnImageFillColorTertiary}" />
             <SolidColorBrush x:Key="ControlOnImageFillColorDisabledBrush" Color="{StaticResource ControlOnImageFillColorDisabled}" />
+            
             <SolidColorBrush x:Key="AccentFillColorSelectedTextBackgroundBrush" Color="{ThemeResource SystemAccentColor}" />
 
             <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="{ThemeResource SystemAccentColorDark1}" />
-            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="{ThemeResource SystemAccentColorDark2}" />
-            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="{ThemeResource SystemAccentColor}" />
+            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="{ThemeResource SystemAccentColorDark1}" Opacity="0.9" />
+            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="{ThemeResource SystemAccentColorDark1}" Opacity="0.8" />
             <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="{StaticResource AccentFillColorDisabled}" />
 
             <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="{StaticResource ControlStrokeColorDefault}" />
@@ -526,6 +528,7 @@
             <SolidColorBrush x:Key="ControlOnImageFillColorSecondaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="ControlOnImageFillColorTertiaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="ControlOnImageFillColorDisabledBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            
             <SolidColorBrush x:Key="AccentFillColorSelectedTextBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
 
             <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}" />
