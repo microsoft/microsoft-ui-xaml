@@ -53,7 +53,6 @@ private:
     winrt::InfoBarCloseReason m_lastCloseReason{ winrt::InfoBarCloseReason::Programmatic };
 
     winrt::Button::Click_revoker m_closeButtonClickRevoker{};
-    tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::FrameworkElement> m_standardIconTextBlock{ this };
 
     bool m_applyTemplateCalled{ false };

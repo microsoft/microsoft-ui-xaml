@@ -45,10 +45,9 @@ void InfoBar::OnApplyTemplate()
         // Do localization for the close button
         if (winrt::AutomationProperties::GetName(closeButton).empty())
         {
-            const auto closeButtonName = ResourceAccessor::GetLocalizedStringResource(GetCloseButtonResourceName(Severity()));
+            const auto closeButtonName = ResourceAccessor::GetLocalizedStringResource(SR_InfoBarCloseButtonName);
             winrt::AutomationProperties::SetName(closeButton, closeButtonName);
         }
-        m_closeButton.set(closeButton);
         // Setup the tooltip for the close button
         auto tooltip = winrt::ToolTip();
         const auto closeButtonTooltipText = ResourceAccessor::GetLocalizedStringResource(SR_InfoBarCloseButtonTooltip);
@@ -167,7 +166,7 @@ void InfoBar::UpdateVisibility(bool notify, bool force)
                 {
                     auto const notificationString = StringUtil::FormatString(
                         ResourceAccessor::GetLocalizedStringResource(SR_InfoBarOpenedNotification),
-                        ResourceAccessor::GetLocalizedStringResource(GetSeverityLevelResourceName(Severity())).data(),
+                        ResourceAccessor::GetLocalizedStringResource(GetIconSeverityLevelResourceName(Severity())).data(),
                         Title().data(),
                         Message().data());
 
@@ -212,13 +211,6 @@ void InfoBar::UpdateSeverity()
             break;
     };
 
-    // Do localization for the close button
-    if (const auto closeButton = m_closeButton.get())
-    {
-        const auto closeButtonName = ResourceAccessor::GetLocalizedStringResource(GetCloseButtonResourceName(Severity()));
-        winrt::AutomationProperties::SetName(closeButton, closeButtonName);
-    }
-
     if (const auto iconTextblock = m_standardIconTextBlock.get())
     {
         winrt::AutomationProperties::SetName(iconTextblock, ResourceAccessor::GetLocalizedStringResource(GetIconSeverityLevelResourceName(Severity())));
@@ -259,17 +251,6 @@ void InfoBar::UpdateForeground()
 {
     // If Foreground is set, then change Title and Message Foreground to match.
     winrt::VisualStateManager::GoToState(*this, ReadLocalValue(winrt::Control::ForegroundProperty()) == winrt::DependencyProperty::UnsetValue() ? L"ForegroundNotSet" : L"ForegroundSet", false);
-}
-
-const winrt::hstring InfoBar::GetCloseButtonResourceName(winrt::InfoBarSeverity severity)
-{
-    switch (severity)
-    {
-    case winrt::InfoBarSeverity::Success: return SR_InfoBarCloseButtonNameSeveritySuccess;
-    case winrt::InfoBarSeverity::Warning: return SR_InfoBarCloseButtonNameSeverityWarning;
-    case winrt::InfoBarSeverity::Error: return SR_InfoBarCloseButtonNameSeverityError;
-    };
-    return SR_InfoBarCloseButtonNameSeverityInformational;
 }
 
 const winrt::hstring InfoBar::GetSeverityLevelResourceName(winrt::InfoBarSeverity severity)
