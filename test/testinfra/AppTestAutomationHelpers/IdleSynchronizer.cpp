@@ -211,23 +211,23 @@ namespace winrt::AppTestAutomationHelpers::implementation
 
     void IdleSynchronizer::WaitForIdleDispatcher()
     {
-        bool isDispatcherIdle = false;
-        Event shouldContinueEvent;
+        std::shared_ptr<bool> isDispatcherIdle = std::make_shared<bool>();
+        std::shared_ptr<Event> shouldContinueEvent = std::make_shared<Event>();
 
         while (!isDispatcherIdle)
         {
-            winrt::Windows::Foundation::IAsyncAction action = m_coreDispatcher.RunIdleAsync(winrt::Windows::UI::Core::IdleDispatchedHandler([&](winrt::Windows::UI::Core::IdleDispatchedHandlerArgs args)
+            winrt::Windows::Foundation::IAsyncAction action = m_coreDispatcher.RunIdleAsync(winrt::Windows::UI::Core::IdleDispatchedHandler([isDispatcherIdle, shouldContinueEvent](winrt::Windows::UI::Core::IdleDispatchedHandlerArgs args)
                 {
-                    isDispatcherIdle = args.IsDispatcherIdle();
-                    shouldContinueEvent.Set();
+                    *isDispatcherIdle = args.IsDispatcherIdle();
+                    shouldContinueEvent->Set();
                 }));
 
-            action.Completed([&](auto& /*asyncInfo*/, auto& /*asyncStatus*/)
+            action.Completed([shouldContinueEvent](auto& /*asyncInfo*/, auto& /*asyncStatus*/)
                 {
-                    shouldContinueEvent.Set();
+                    shouldContinueEvent->Set();
                 });
 
-            shouldContinueEvent.WaitFor(10000);
+            shouldContinueEvent->WaitFor(10000);
         }
     }
 
