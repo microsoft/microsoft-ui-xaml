@@ -85,13 +85,14 @@
       </AppxPackagePayload>
     </ItemGroup>
   </Target>
-  <!-- We also need to remove the UWP app payload that conflicts with the desktop DLLs. -->
+  <!-- We also need to remove the UWP app payload that conflicts with the desktop DLLs.
+       This comes from the UWP app, and we have no use for it in WPF. -->
   <Target Name="RemoveUWPAppPayload" AfterTargets="_ValidateAppxPackage" BeforeTargets="_GenerateAppxPackageFile">
     <PropertyGroup>
-      <UwpNuGetPackagesDir>$([System.IO.Path]::GetFullPath('$(ExtensionSdkDir)\..\..\..\UWPNuGetPackages'))\</UwpNuGetPackagesDir>
+      <UWPNugetRepo>$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\NuGet\Repository', 'UWPNugetPackages', null, RegistryView.Registry32, RegistryView.Default))</UWPNugetRepo>
     </PropertyGroup>
     <ItemGroup>
-      <UWPAppPayload Include="$(UwpNuGetPackagesDir)runtime.win10-$(Platform).microsoft.netcore.universalwindowsplatform\**\System.Runtime.dll" />
+      <UWPAppPayload Include="$(UWPNugetRepo)\runtime.win10-$(Platform).microsoft.netcore.universalwindowsplatform\**\System.Runtime.dll" />
       <AppxPackagePayload Remove="@(UWPAppPayload)" />
     </ItemGroup>
   </Target>
