@@ -1485,29 +1485,34 @@ void NavigationView::UpdatePaneLayout()
         const auto totalAvailableHeight = [this]() {
             if (const auto &paneContentRow = m_itemsContainerRow.get())
             {
-                const double bottomMargin = [this]() {
+                const double itemsContainerMargin = [this]() {
                     if (const auto itemsContainer = m_itemsContainer.get())
                     {
-                        return itemsContainer.Margin().Bottom;
+                        auto const margin = itemsContainer.Margin();
+                        return margin.Top + margin.Bottom;
                     }
                     return 0.0;
                 }();
+                auto availableHeight = paneContentRow.ActualHeight() - itemsContainerMargin;
 
-                // We have 9px margin at the bottom, that's why we subtract 9 everywhere
-                if (m_menuItemsSource && m_footerItemsSource && m_menuItemsSource.Count() * m_footerItemsSource.Count() == 0 && !IsSettingsVisible())
+                if (PaneFooter())
                 {
-                    // Either of these collections has no items, let it take all of the available space then.
-                    return paneContentRow.ActualHeight() - bottomMargin;
+                    availableHeight -= 21;
+                    if (const auto& paneFooter = m_leftNavFooterContentBorder.get())
+                    {
+                        availableHeight -= paneFooter.ActualHeight();
+                    }
                 }
-                else if (const auto &paneFooter = m_leftNavFooterContentBorder.get())
+                else if (IsSettingsVisible())
                 {
-                    // 20px is the padding between the two item lists
-                    return paneContentRow.ActualHeight() - bottomMargin - 20 - paneFooter.ActualHeight();
+                    availableHeight -= 21;
                 }
-                else
+                else if (m_footerItemsSource && m_menuItemsSource && m_footerItemsSource.Count() * m_menuItemsSource.Count() > 0)
                 {
-                    return paneContentRow.ActualHeight() - bottomMargin - 20;
+                    availableHeight -= 21;
                 }
+
+                return availableHeight;
             }
             return 0.0;
         }();
@@ -3986,6 +3991,10 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         property == s_MenuItemTemplateSelectorProperty)
     {
         SyncItemTemplates();
+    }
+    else if (property == s_PaneFooterProperty)
+    {
+        UpdatePaneLayout();
     }
 }
 

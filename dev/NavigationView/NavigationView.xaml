@@ -526,7 +526,7 @@
                                         <Grid x:Name="ItemsContainerGrid" Grid.Row="6" Margin="0,0,0,8">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition x:Name="MenuItemsRow" Height="Auto"/> <!-- MenuItems -->
-                                                <RowDefinition Height="*" MinHeight="21"/> <!-- Fill spacing -->
+                                                <RowDefinition Height="*"/> <!-- Fill spacing -->
                                                 <RowDefinition Height="Auto" /> <!-- PaneFooter -->
                                                 <RowDefinition Height="Auto"/> <!-- FooterItems -->
                                             </Grid.RowDefinitions>
