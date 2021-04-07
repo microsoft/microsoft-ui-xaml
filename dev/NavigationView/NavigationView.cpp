@@ -1488,13 +1488,14 @@ void NavigationView::UpdatePaneLayout()
                 const double itemsContainerMargin = [this]() {
                     if (const auto itemsContainer = m_itemsContainer.get())
                     {
-                        auto const margin = itemsContainer.Margin();
+                        const auto margin = itemsContainer.Margin();
                         return margin.Top + margin.Bottom;
                     }
                     return 0.0;
                 }();
                 auto availableHeight = paneContentRow.ActualHeight() - itemsContainerMargin;
 
+                // The -21 below is to account for the separator height that we need to subtract.
                 if (PaneFooter())
                 {
                     availableHeight -= 21;
