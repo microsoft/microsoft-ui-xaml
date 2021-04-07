@@ -802,9 +802,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private Button GetDropDownItemByName(string dropDownItemName)
         {
-            var popupRoot = FindElement.ByName("EllipsisFlyout");
+            var ellipsisFlyout = FindElement.ByName("EllipsisFlyout");
             
-            foreach (var child in popupRoot.Children)
+            foreach (var child in ellipsisFlyout.Children)
             {
                 if (child.Name == dropDownItemName)
                 {
@@ -812,9 +812,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
 
-            var dropDownItem = FindElement.ByName<Button>(dropDownItemName);
-            Verify.IsNotNull(dropDownItem, dropDownItemName + " not found");
-            return dropDownItem;
+            Verify.Fail(dropDownItemName + " not found");
+            return null;
         }
 
         private void VerifyDropDownItemContainsText(Button dropDownItem, string expectedEllipsisItemText)
