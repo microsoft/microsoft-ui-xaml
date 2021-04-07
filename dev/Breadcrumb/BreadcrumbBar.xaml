@@ -7,19 +7,19 @@
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <Style x:Key="DefaultBreadcrumbBarItemStyle" TargetType="local:BreadcrumbBarItem">
-        <Setter Property="Foreground" Value="{ThemeResource BreadcrumbBarForegroundBrush}" />
         <Setter Property="Background" Value="{ThemeResource BreadcrumbBarBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource BreadcrumbBarBorderBrush}" />
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-        <Setter Property="FontWeight" Value="{ThemeResource BreadcrumbBarItemFontWeight}" />
-        <Setter Property="FontSize" Value="{ThemeResource BreadcrumbBarItemThemeFontSize}"/>
-        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="FocusVisualMargin" Value="1" />
+        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontSize" Value="{ThemeResource BreadcrumbBarItemThemeFontSize}"/>
+        <Setter Property="FontWeight" Value="{ThemeResource BreadcrumbBarItemFontWeight}" />
+        <Setter Property="Foreground" Value="{ThemeResource BreadcrumbBarForegroundBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="IsTabStop" Value="True"/>
+        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -181,15 +181,17 @@
                         
                         <Button x:Name="PART_ItemButton"
                             x:DeferLoadStrategy="Lazy"
+                            Grid.Column="0"
                             AutomationProperties.Name="BreadcrumbBarItemButton"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            Grid.Column="0"
                             Control.IsTemplateFocusTarget="True"
-                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            IsTabStop="False"
                             FocusVisualMargin="-3"
-                            IsTabStop="False">
+                            Padding="{TemplateBinding Padding}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            AutomationProperties.AccessibilityView="Raw">
                             <Button.Style>
                                 <Style TargetType="Button">
                                     <Setter Property="Foreground" Value="{ThemeResource BreadcrumbBarNormalForegroundBrush}" />
@@ -359,7 +361,8 @@
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             HorizontalContentAlignment="Stretch"
                             FontWeight="Normal"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            AutomationProperties.AccessibilityView="Raw"/>
 
                         <!-- TextBlock that contains the chevron icon -->
                         <TextBlock x:Name="PART_ChevronTextBlock"
@@ -372,7 +375,7 @@
                             Foreground="{ThemeResource BreadcrumbBarNormalForegroundBrush}"
                             Text="&#xE76C;"
                             Padding="{ThemeResource BreadcrumbBarChevronPadding}"
-                            VerticalAlignment="Center"                            
+                            VerticalAlignment="Center"
                             AutomationProperties.AccessibilityView="Raw"/>
                     </Grid>
                 </ControlTemplate>
