@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
+#include "CommandBarFlyout.h"
 #include "CommandBarFlyoutCommandBar.h"
 #include "CommandBarFlyoutCommandBarTemplateSettings.h"
 #include "TypeLogging.h"
@@ -73,9 +74,13 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
     Closing({
         [this](auto const&, auto const&)
         {
-            if (SharedHelpers::Is21H1OrHigher())
+            if (auto owningFlyout = m_owningFlyout.get())
             {
-                ClearSecondaryShadow();
+                if (owningFlyout.AlwaysExpanded())
+                {
+                    // Don't close the secondary commands list when the flyout is AlwaysExpanded.
+                    IsOpen(true);
+                }
             }
         }
     });
@@ -369,12 +374,62 @@ bool CommandBarFlyoutCommandBar::HasOpenAnimation()
 
 void CommandBarFlyoutCommandBar::PlayOpenAnimation()
 {
-    if (auto openingStoryboard = m_openingStoryboard.get())
+    if (SharedHelpers::IsAnimationsEnabled())
     {
-        if (openingStoryboard.GetCurrentState() != winrt::ClockState::Active)
+        if (auto openingStoryboard = m_openingStoryboard.get())
         {
-            openingStoryboard.Begin();
+            if (openingStoryboard.GetCurrentState() != winrt::ClockState::Active)
+            {
+                openingStoryboard.Begin();
+            }
         }
+    }
+    else
+    {
+        GoToOpenPosition();
+    }
+}
+
+void CommandBarFlyoutCommandBar::GoToOpenPosition()
+{
+    auto transform = [this]()
+    {
+        if (auto transform = m_outerContentRootClipTransform.get())
+        {
+            return transform;
+        }
+        else
+        {
+            winrt::IControlProtected thisAsControlProtected = *this;
+            auto outerTransform = GetTemplateChildT<winrt::TranslateTransform>(L"OuterContentRootClipTransform", thisAsControlProtected);
+            m_outerContentRootClipTransform.set(outerTransform);
+            return outerTransform;
+        }
+    }();
+
+    if (transform)
+    {
+        transform.X(FlyoutTemplateSettings().OpenAnimationEndPosition());
+    }
+
+    auto overflowTransform = [this]()
+    {
+        if (auto overflowTransform = m_outerOverflowContentRootClipTransform.get())
+        {
+            return overflowTransform;
+        }
+        else
+        {
+            winrt::IControlProtected thisAsControlProtected = *this;
+            auto outerOverflowTransform = GetTemplateChildT<winrt::TranslateTransform>(L"OuterOverflowContentRootClipTransform", thisAsControlProtected);
+            m_outerContentRootClipTransform.set(outerOverflowTransform);
+            return outerOverflowTransform;
+        }
+    }();
+
+    if (overflowTransform)
+    {
+        overflowTransform.X(FlyoutTemplateSettings().OpenAnimationEndPosition());
     }
 }
 
@@ -386,25 +441,73 @@ bool CommandBarFlyoutCommandBar::HasCloseAnimation()
 void CommandBarFlyoutCommandBar::PlayCloseAnimation(
     std::function<void()> onCompleteFunc)
 {
-    if (auto closingStoryboard = m_closingStoryboard.get())
+    if (SharedHelpers::IsAnimationsEnabled())
     {
-        if (closingStoryboard.GetCurrentState() != winrt::ClockState::Active)
+        if (auto closingStoryboard = m_closingStoryboard.get())
         {
-            m_closingStoryboardCompletedCallbackRevoker = closingStoryboard.Completed(winrt::auto_revoke,
+            if (closingStoryboard.GetCurrentState() != winrt::ClockState::Active)
             {
-                [this, onCompleteFunc](auto const&, auto const&)
-                {
-                    onCompleteFunc();
-                }
-            });
+                m_closingStoryboardCompletedCallbackRevoker = closingStoryboard.Completed(winrt::auto_revoke,
+                    {
+                        [this, onCompleteFunc](auto const&, auto const&)
+                        {
+                            onCompleteFunc();
+                        }
+                    });
 
-            UpdateTemplateSettings();
-            closingStoryboard.Begin();
+                UpdateTemplateSettings();
+                closingStoryboard.Begin();
+            }
         }
     }
     else
     {
+        UpdateTemplateSettings();
+        GoToClosedPosition();
         onCompleteFunc();
+    }
+}
+
+void CommandBarFlyoutCommandBar::GoToClosedPosition()
+{
+    auto transform = [this]()
+    {
+        if (auto transform = m_outerContentRootClipTransform.get())
+        {
+            return transform;
+        }
+        else
+        {
+            winrt::IControlProtected thisAsControlProtected = *this;
+            auto outerTransform = GetTemplateChildT<winrt::TranslateTransform>(L"OuterContentRootClipTransform", thisAsControlProtected);
+            m_outerContentRootClipTransform.set(outerTransform);
+            return outerTransform;
+        }
+    }();
+
+    if (transform)
+    {
+        transform.X(FlyoutTemplateSettings().OpenAnimationStartPosition());
+    }
+
+    auto overflowTransform = [this]()
+    {
+        if (auto overflowTransform = m_outerOverflowContentRootClipTransform.get())
+        {
+            return overflowTransform;
+        }
+        else
+        {
+            winrt::IControlProtected thisAsControlProtected = *this;
+            auto outerOverflowTransform = GetTemplateChildT<winrt::TranslateTransform>(L"OuterOverflowContentRootClipTransform", thisAsControlProtected);
+            m_outerContentRootClipTransform.set(outerOverflowTransform);
+            return outerOverflowTransform;
+        }
+    }();
+
+    if (overflowTransform)
+    {
+        overflowTransform.X(FlyoutTemplateSettings().OpenAnimationStartPosition());
     }
 }
 
@@ -547,10 +650,12 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
 
         if (shouldExpandUp)
         {
+            m_isExpandedUp = true;
             winrt::VisualStateManager::GoToState(*this, L"ExpandedUp", useTransitions);
         }
         else
         {
+            m_isExpandedUp = false;
             winrt::VisualStateManager::GoToState(*this, L"ExpandedDown", useTransitions);
         }
 
@@ -560,14 +665,6 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
         {
             if (shouldExpandUp)
             {
-                if (SharedHelpers::Is21H1OrHigher())
-                {
-                    // When the secondary is on top of the primary commands, it ends up casting its shadow over the top of the
-                    // primary. If this is the case, don't show the secondary shadow. The bulk of the shadow comes from the bottom
-                    // of the primary anyway.
-                    m_skipAddSecondaryShadow = true;
-                    ClearSecondaryShadow();
-                }
                 winrt::VisualStateManager::GoToState(*this, L"ExpandedUpWithPrimaryCommands", useTransitions);
             }
             else
@@ -1126,25 +1223,6 @@ void CommandBarFlyoutCommandBar::UpdateShadow()
     {
         ClearShadow();
     }
-
-    // When we're >21H1, we'll have to manage the DropShadow on the secondary commands directly.
-    if (SharedHelpers::Is21H1OrHigher())
-    {
-        if (m_secondaryItemsRoot && m_secondaryItemsRootSized)
-        {
-            m_secondaryItemsRoot.get().Measure({ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() });
-            const auto overflowPopupSize = m_secondaryItemsRoot.get().DesiredSize();
-
-            if (overflowPopupSize.Height > 0 && IsOpen())
-            {
-                AddSecondaryShadow();
-            }
-            else
-            {
-                ClearSecondaryShadow();
-            }
-        }
-    }
 }
 
 void CommandBarFlyoutCommandBar::AddShadow()
@@ -1195,51 +1273,14 @@ void CommandBarFlyoutCommandBar::ClearShadow()
     }
 }
 
-void CommandBarFlyoutCommandBar::AddSecondaryShadow()
+bool CommandBarFlyoutCommandBar::IsExpandedUp()
 {
-    if (SharedHelpers::Is21H1OrHigher())
-    {
-        if (!m_skipAddSecondaryShadow)
-        {
-            winrt::IControlProtected thisAsControlProtected = *this;
-            auto grid = GetTemplateChildT<winrt::Grid>(L"OuterOverflowContentRoot", thisAsControlProtected);
-
-            if (winrt::IUIElement10 grid_uiElement10 = grid)
-            {
-                if (!grid_uiElement10.Shadow())
-                {
-                    winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
-                    grid_uiElement10.Shadow(shadow);
-                }
-            }
-        }
-        else
-        {
-            m_skipAddSecondaryShadow = false;
-        }
-    }
-}
-
-void CommandBarFlyoutCommandBar::ClearSecondaryShadow()
-{
-    if (SharedHelpers::Is21H1OrHigher())
-    {
-        winrt::IControlProtected thisAsControlProtected = *this;
-        auto grid = GetTemplateChildT<winrt::Grid>(L"OuterOverflowContentRoot", thisAsControlProtected);
-
-        if (winrt::IUIElement10 grid_uiElement10 = grid)
-        {
-            if (grid_uiElement10.Shadow())
-            {
-                grid_uiElement10.Shadow(nullptr);
-            }
-        }
-    }
+    return m_isExpandedUp;
 }
 
 bool CommandBarFlyoutCommandBar::HasSecondaryOpenCloseAnimations()
 {
-    return static_cast<bool>(m_expandedDownToCollapsedStoryboard || m_expandedUpToCollapsedStoryboard || m_collapsedToExpandedUpStoryboard || m_collapsedToExpandedDownStoryboard);
+    return SharedHelpers::IsAnimationsEnabled() && static_cast<bool>(m_expandedDownToCollapsedStoryboard || m_expandedUpToCollapsedStoryboard || m_collapsedToExpandedUpStoryboard || m_collapsedToExpandedDownStoryboard);
 }
 
 void CommandBarFlyoutCommandBar::AttachEventsToSecondaryStoryboards()
@@ -1255,7 +1296,10 @@ void CommandBarFlyoutCommandBar::AttachEventsToSecondaryStoryboards()
                 {
                     if (auto owningFlyout = m_owningFlyout.get())
                     {
-                        owningFlyout.AddDropShadow();
+                        if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+                        {
+                            actualFlyout->AddDropShadow();
+                        }
                     }
                 }
             });
@@ -1270,7 +1314,10 @@ void CommandBarFlyoutCommandBar::AttachEventsToSecondaryStoryboards()
                 {
                     if (auto owningFlyout = m_owningFlyout.get())
                     {
-                        owningFlyout.AddDropShadow();
+                        if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+                        {
+                            actualFlyout->AddDropShadow();
+                        }
                     }
                 }
             });
@@ -1285,7 +1332,10 @@ void CommandBarFlyoutCommandBar::AttachEventsToSecondaryStoryboards()
                 {
                     if (auto owningFlyout = m_owningFlyout.get())
                     {
-                        owningFlyout.AddDropShadow();
+                        if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+                        {
+                            actualFlyout->AddDropShadow();
+                        }
                     }
                 }
             });
@@ -1300,7 +1350,10 @@ void CommandBarFlyoutCommandBar::AttachEventsToSecondaryStoryboards()
                 {
                     if (auto owningFlyout = m_owningFlyout.get())
                     {
-                        owningFlyout.AddDropShadow();
+                        if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+                        {
+                            actualFlyout->AddDropShadow();
+                        }
                     }
                 }
             });

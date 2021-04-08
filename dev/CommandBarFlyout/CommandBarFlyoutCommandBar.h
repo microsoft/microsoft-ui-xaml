@@ -25,6 +25,10 @@ public:
     bool HasSecondaryOpenCloseAnimations();
     void PlayCloseAnimation(std::function<void()> onCompleteFunc);
 
+    bool IsExpandedUp();
+    void GoToOpenPosition();
+    void GoToClosedPosition();
+
     void ClearShadow();
 
     // IControlOverrides / IControlOverridesHelper
@@ -64,9 +68,6 @@ private:
     void AddShadow();
     void UpdateShadow();
 
-    void AddSecondaryShadow();
-    void ClearSecondaryShadow();
-
     tracker_ref<winrt::FrameworkElement> m_primaryItemsRoot{ this };
     tracker_ref<winrt::FrameworkElement> m_secondaryItemsRoot{ this };
     tracker_ref<winrt::ButtonBase> m_moreButton{ this };
@@ -91,7 +92,7 @@ private:
 
     bool m_secondaryItemsRootSized{ false };
 
-    bool m_skipAddSecondaryShadow{ false };
+    bool m_isExpandedUp{ false };
     void AttachEventsToSecondaryStoryboards();
 
     tracker_ref<winrt::Storyboard> m_expandedUpToCollapsedStoryboard{ this };
@@ -103,4 +104,7 @@ private:
     winrt::Storyboard::Completed_revoker m_expandedDownToCollapsedStoryboardRevoker{};
     winrt::Storyboard::Completed_revoker m_collapsedToExpandedUpStoryboardRevoker{};
     winrt::Storyboard::Completed_revoker m_collapsedToExpandedDownStoryboardRevoker{};
+
+    tracker_ref<winrt::TranslateTransform> m_outerContentRootClipTransform{ this };
+    tracker_ref<winrt::TranslateTransform> m_outerOverflowContentRootClipTransform{ this };
 };

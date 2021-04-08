@@ -7,7 +7,8 @@
     xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
     xmlns:contract6NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,6)"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
-    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
+    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:contract12Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 12)">
     
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
@@ -107,6 +108,7 @@
 
     <Thickness x:Key="CommandBarFlyoutAppBarButtonInnerBorderMargin">2</Thickness>
     <Thickness x:Key="CommandBarFlyoutAppBarEllipsisButtonInnerBorderMargin">2,2,6,2</Thickness>
+    <contract12Present:ThemeShadow x:Key="OverflowShadow"/>
 
     <Style x:Key="CommandBarFlyoutAppBarButtonStyleBase" TargetType="AppBarButton">
         <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackground}" />
@@ -1119,6 +1121,7 @@
                                         <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                         <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                         <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
+                                        <contract12Present:Setter Target="OuterOverflowContentRoot.Shadow" Value="{StaticResource OverflowShadow}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ExpandedUpWithoutPrimaryCommands">
@@ -1131,6 +1134,7 @@
                                         <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
                                         <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
                                         <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
+                                        <contract12Present:Setter Target="OuterOverflowContentRoot.Shadow" Value="{StaticResource OverflowShadow}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ExpandedDownWithoutPrimaryCommands">
@@ -1143,6 +1147,7 @@
                                         <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
                                         <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
                                         <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
+                                        <contract12Present:Setter Target="OuterOverflowContentRoot.Shadow" Value="{StaticResource OverflowShadow}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>

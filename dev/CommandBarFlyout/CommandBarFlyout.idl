@@ -13,9 +13,6 @@ unsealed runtimeclass CommandBarFlyout : Windows.UI.Xaml.Controls.Primitives.Fly
         Boolean AlwaysExpanded{ get; set; };
     }
 
-    void AddDropShadow();
-    void RemoveDropShadow();
-
     Windows.Foundation.Collections.IObservableVector<Windows.UI.Xaml.Controls.ICommandBarElement> PrimaryCommands { get; };
     Windows.Foundation.Collections.IObservableVector<Windows.UI.Xaml.Controls.ICommandBarElement> SecondaryCommands { get; };
 };
