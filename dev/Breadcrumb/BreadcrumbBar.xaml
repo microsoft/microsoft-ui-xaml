@@ -38,8 +38,8 @@
                                         <Setter Target="PART_ChevronTextBlock.Visibility" Value="Collapsed"/>
                                         <Setter Target="PART_ContentColumn.Width" Value="*"/>
                                         <Setter Target="PART_EllipsisDropDownItemContentPresenter.Visibility" Value="Visible"/>
-                                        <Setter Target="PART_LayoutRoot.Padding" Value="{StaticResource BreadcrumbBarEllipsisDropDownItemPadding}"/>
-                                        <Setter Target="PART_LayoutRoot.Margin" Value="{StaticResource BreadcrumbBarEllipsisDropDownItemMargin}"/>
+                                        <Setter Target="PART_LayoutRoot.Padding" Value="11,7,11,9"/>
+                                        <Setter Target="PART_LayoutRoot.Margin" Value="5,3"/>
                                         <Setter Target="PART_LayoutRoot.FocusVisualMargin" Value="-3" />
                                         <Setter Target="PART_ItemButton.(Control.IsTemplateFocusTarget)" Value="False" />
                                         <Setter Target="PART_LayoutRoot.(Control.IsTemplateFocusTarget)" Value="True" />
@@ -133,7 +133,7 @@
                                         <Setter Property="Background" Value="{ThemeResource BreadcrumbBarEllipsisFlyoutPresenterBackground}" />
                                         <Setter Property="BorderBrush" Value="{ThemeResource BreadcrumbBarEllipsisFlyoutPresenterBorderBrush}" />
                                         <Setter Property="BorderThickness" Value="{ThemeResource BreadcrumbBarEllipsisFlyoutPresenterBorderThemeThickness}" />
-                                        <Setter Property="Padding" Value="{StaticResource BreadcrumbBarEllipsisFlyoutPresenterThemePadding}" />
+                                        <Setter Property="Padding" Value="0,2" />
                                         <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
                                         <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
                                         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
@@ -141,7 +141,7 @@
                                         <Setter Property="ScrollViewer.IsVerticalRailEnabled" Value="False" />
                                         <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
                                         <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}" />
-                                        <Setter Property="MinHeight" Value="{StaticResource BreadcrumbBarEllipsisFlyoutThemeMinHeight}" />
+                                        <Setter Property="MinHeight" Value="40" />
                                         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
 
                                         <Setter Property="Template">
