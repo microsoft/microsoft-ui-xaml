@@ -92,6 +92,7 @@ static constexpr int c_paneToggleButtonWidth = 40;
 static constexpr int c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Behavior = 56;
 static constexpr int c_backButtonRowDefinition = 1;
 static constexpr float c_paneElevationTranslationZ = 32;
+static constexpr int c_paneItemsSeparatorHeight = 21;
 
 static constexpr int c_mainMenuBlockIndex = 0;
 static constexpr int c_footerMenuBlockIndex = 1;
@@ -1493,7 +1494,7 @@ void NavigationView::UpdatePaneLayout()
                 // The -21 below is to account for the separator height that we need to subtract.
                 if (PaneFooter())
                 {
-                    availableHeight -= 21;
+                    availableHeight -= c_paneItemsSeparatorHeight;
                     if (const auto& paneFooter = m_leftNavFooterContentBorder.get())
                     {
                         availableHeight -= paneFooter.ActualHeight();
@@ -1501,11 +1502,11 @@ void NavigationView::UpdatePaneLayout()
                 }
                 else if (IsSettingsVisible())
                 {
-                    availableHeight -= 21;
+                    availableHeight -= c_paneItemsSeparatorHeight;
                 }
                 else if (m_footerItemsSource && m_menuItemsSource && m_footerItemsSource.Count() * m_menuItemsSource.Count() > 0)
                 {
-                    availableHeight -= 21;
+                    availableHeight -= c_paneItemsSeparatorHeight;
                 }
 
                 return availableHeight;
