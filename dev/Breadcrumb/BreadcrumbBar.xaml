@@ -40,6 +40,9 @@
                                         <Setter Target="PART_EllipsisDropDownItemContentPresenter.Visibility" Value="Visible"/>
                                         <Setter Target="PART_LayoutRoot.Padding" Value="{StaticResource BreadcrumbBarEllipsisDropDownItemPadding}"/>
                                         <Setter Target="PART_LayoutRoot.Margin" Value="{StaticResource BreadcrumbBarEllipsisDropDownItemMargin}"/>
+                                        <Setter Target="PART_LayoutRoot.FocusVisualMargin" Value="-3" />
+                                        <Setter Target="PART_ItemButton.(Control.IsTemplateFocusTarget)" Value="False" />
+                                        <Setter Target="PART_LayoutRoot.(Control.IsTemplateFocusTarget)" Value="True" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
