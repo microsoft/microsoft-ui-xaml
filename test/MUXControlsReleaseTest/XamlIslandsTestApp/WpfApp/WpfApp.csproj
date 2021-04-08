@@ -42,15 +42,29 @@
       <VCLibsDebug Condition="'$(Configuration)' == 'Debug'">.Debug</VCLibsDebug>
       <VCLibsDebug Condition="'$(Configuration)' == 'Release'"></VCLibsDebug>
       <UcrtBaseDLocation Condition="'%(InstalledSDKLocations.SDKName)' == 'Microsoft.UniversalCRT.Debug, Version=10.0.18362.0'">@(InstalledSDKLocations)Redist\Debug\$(Platform)\</UcrtBaseDLocation>
+      <VCLibsLocation Condition="'%(InstalledSDKLocations.SDKName)' == 'Microsoft.VCLibs, Version=14.0'">@(InstalledSDKLocations)AppX\$(VCLibsPlatform)\$(Platform)\</VCLibsLocation>
       <VCLibsDesktopLocation Condition="'%(InstalledSDKLocations.SDKName)' == 'Microsoft.VCLibs.Desktop, Version=14.0'">@(InstalledSDKLocations)AppX\$(VCLibsPlatform)\$(Platform)\</VCLibsDesktopLocation>
+      <VCLibsTempDir>$(TEMP)\VCLibs\</VCLibsTempDir>
+      <VCLibsDesktopTempDir>$(TEMP)\VCLibsDesktop\</VCLibsDesktopTempDir>
     </PropertyGroup>
-    <Unzip SourceFiles="$(VCLibsDesktopLocation)Microsoft.VCLibs.$(Platform)$(VCLibsDebug).14.00.Desktop.appx" DestinationFolder="$(TEMP)\VCLibsDesktop" />
+    <Unzip SourceFiles="$(VCLibsLocation)Microsoft.VCLibs.$(Platform)$(VCLibsDebug).14.00.appx" DestinationFolder="$(VCLibsTempDir)" />
+    <Unzip SourceFiles="$(VCLibsDesktopLocation)Microsoft.VCLibs.$(Platform)$(VCLibsDebug).14.00.Desktop.appx" DestinationFolder="$(VCLibsDesktopTempDir)" />
     <ItemGroup>
-      <VCLibsDlls Include="$(TEMP)\VCLibsDesktop\msvcp140*.dll" />
-      <VCLibsDlls Include="$(TEMP)\VCLibsDesktop\vcruntime140*.dll" />
+      <VCLibsDlls Include="$(VCLibsTempDir)msvcp140_app.dll" />
+      <VCLibsDlls Include="$(VCLibsTempDir)vcruntime140_app.dll" />
+      <VCLibsDesktopDlls Include="$(VCLibsDesktopTempDir)msvcp140.dll" />
+      <VCLibsDesktopDlls Include="$(VCLibsDesktopTempDir)vcruntime140.dll" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+      <VCLibsDlls Include="$(VCLibsTempDir)msvcp140d_app.dll" />
+      <VCLibsDlls Include="$(VCLibsTempDir)vcruntime140d_app.dll" />
+      <VCLibsDesktopDlls Include="$(VCLibsDesktopTempDir)msvcp140d.dll" />
+      <VCLibsDesktopDlls Include="$(VCLibsDesktopTempDir)vcruntime140d.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(VCLibsDlls)" DestinationFiles="@(VCLibsDlls -> '$(OutDir)%(Filename)%(Extension)')" SkipUnchangedFiles="True" />
-    <RemoveDir Directories="$(TEMP)\VCLibsDesktop" />
+    <RemoveDir Directories="$(VCLibsTempDir)" />
+    <Copy SourceFiles="@(VCLibsDesktopDlls)" DestinationFiles="@(VCLibsDesktopDlls -> '$(OutDir)%(Filename)%(Extension)')" SkipUnchangedFiles="True" />
+    <RemoveDir Directories="$(VCLibsDesktopTempDir)" />
     <Copy SourceFiles="$(UcrtBaseDLocation)ucrtbased.dll" DestinationFiles="$(OutDir)ucrtbased.dll" Condition="'$(Configuration)' == 'Debug'" SkipUnchangedFiles="True" />
   </Target>
 </Project>
