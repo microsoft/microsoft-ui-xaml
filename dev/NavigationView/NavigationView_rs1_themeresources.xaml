@@ -16,6 +16,7 @@
             <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
             <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+            <StaticResource x:Key="NavigationViewContentBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
 
             <StaticResource x:Key="NavigationViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="NavigationViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
@@ -88,6 +89,7 @@
             <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
             <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+            <StaticResource x:Key="NavigationViewContentBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
 
             <StaticResource x:Key="NavigationViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="NavigationViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
@@ -160,6 +162,7 @@
             <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemChromeMediumColor" />
             <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SystemColorWindowColor" />
             <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
+            <StaticResource x:Key="NavigationViewContentBackground" ResourceKey="SystemChromeMediumColor" />
 
             <StaticResource x:Key="NavigationViewItemBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="NavigationViewItemBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />

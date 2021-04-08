@@ -13,6 +13,7 @@
             <StaticResource x:Key="MenuFlyoutItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutItemBackgroundBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
@@ -22,15 +23,16 @@
             <StaticResource x:Key="MenuFlyoutSubItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemBackgroundSubMenuOpened" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemBackgroundBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundSubMenuOpened" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemChevron" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemChevronPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemChevronPressed" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemChevronSubMenuOpened" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemChevron" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemChevronPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemChevronPressed" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemChevronSubMenuOpened" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemChevronDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForeground" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
@@ -40,6 +42,9 @@
             <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
 
+            <Thickness x:Key="MenuFlyoutItemBorderThickness">0</Thickness>
+            <Thickness x:Key="MenuFlyoutSubItemBorderThickness">0</Thickness>
+            
             <!-- Legacy resources -->
             <Thickness x:Key="MenuFlyoutItemRevealBorderThickness">1</Thickness>
             <Thickness x:Key="ToggleMenuFlyoutItemRevealBorderThickness">1</Thickness>
@@ -91,6 +96,7 @@
             <StaticResource x:Key="MenuFlyoutItemBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
             <StaticResource x:Key="MenuFlyoutItemBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
             <StaticResource x:Key="MenuFlyoutItemBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutItemBackgroundBrush" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutItemForeground" ResourceKey="SystemColorWindowTextColorBrush" />
             <StaticResource x:Key="MenuFlyoutItemForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="MenuFlyoutItemForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
@@ -100,6 +106,7 @@
             <StaticResource x:Key="MenuFlyoutSubItemBackgroundPressed" ResourceKey="SystemControlHighlightListAccentHighBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightListLowBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemBackgroundBrush" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForeground" ResourceKey="SystemColorWindowTextColorBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
@@ -117,6 +124,9 @@
             <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="SystemColorWindowColorBrush" />
             <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
             <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">2</Thickness>
+
+            <Thickness x:Key="MenuFlyoutItemBorderThickness">0</Thickness>
+            <Thickness x:Key="MenuFlyoutSubItemBorderThickness">0</Thickness>
             
             <!-- Legacy resources -->
             <Thickness x:Key="MenuFlyoutItemRevealBorderThickness">1</Thickness>
@@ -169,6 +179,7 @@
             <StaticResource x:Key="MenuFlyoutItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutItemBackgroundBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
@@ -178,15 +189,16 @@
             <StaticResource x:Key="MenuFlyoutSubItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemBackgroundSubMenuOpened" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemBackgroundBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundSubMenuOpened" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemChevron" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemChevronPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemChevronPressed" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemChevronSubMenuOpened" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemChevron" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemChevronPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemChevronPressed" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemChevronSubMenuOpened" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemChevronDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForeground" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
@@ -195,6 +207,10 @@
             <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
+
+            <Thickness x:Key="MenuFlyoutItemBorderThickness">0</Thickness>
+            <Thickness x:Key="MenuFlyoutSubItemBorderThickness">0</Thickness>
+            
             <!-- Legacy resources -->
             <Thickness x:Key="MenuFlyoutItemRevealBorderThickness">1</Thickness>
             <Thickness x:Key="ToggleMenuFlyoutItemRevealBorderThickness">1</Thickness>
@@ -243,14 +259,14 @@
 
     <x:Double x:Key="MenuFlyoutSeparatorHeight">1</x:Double>
     <Thickness x:Key="MenuFlyoutPresenterThemePadding">0,2,0,2</Thickness>
-    <x:Double x:Key="MenuFlyoutThemeMinHeight">40</x:Double>
+    <x:Double x:Key="MenuFlyoutThemeMinHeight">32</x:Double>
     <Thickness x:Key="MenuFlyoutItemChevronMargin">24,0,0,0</Thickness>
     <Thickness x:Key="MenuFlyoutItemPlaceholderThemeThickness">28,0,0,0</Thickness>
-    <Thickness x:Key="MenuFlyoutSeparatorThemePadding">-4,2,-4,2</Thickness>
+    <Thickness x:Key="MenuFlyoutSeparatorThemePadding">-4,1,-4,1</Thickness>
     <Thickness x:Key="MenuFlyoutItemDoublePlaceholderThemeThickness">56,0,0,0</Thickness>
     <Thickness x:Key="MenuFlyoutItemMargin">4,2,4,2</Thickness>
-    <Thickness x:Key="MenuFlyoutItemThemePadding">11,11,11,12</Thickness>
-    <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,7,11,9</Thickness>
+    <Thickness x:Key="MenuFlyoutItemThemePadding">11,8,11,9</Thickness>
+    <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,4,11,5</Thickness>
 
     <!-- Default styles -->
     <Style TargetType="MenuFlyoutPresenter" BasedOn="{StaticResource DefaultMenuFlyoutPresenterStyle}" />
@@ -306,6 +322,8 @@
 
     <Style TargetType="MenuFlyoutItem" x:Key="DefaultMenuFlyoutItemStyle">
         <Setter Property="Background" Value="{ThemeResource MenuFlyoutItemBackground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource MenuFlyoutItemBackgroundBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource MenuFlyoutItemBorderThickness}"/>
         <Setter Property="Foreground" Value="{ThemeResource MenuFlyoutItemForeground}" />
         <Setter Property="Padding" Value="{StaticResource MenuFlyoutItemThemePadding}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
@@ -374,6 +392,8 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+                            <!-- Narrow padding is only applied when flyout was invoked with pen, mouse or keyboard. -->
+                            <!-- Default padding is applied for all other cases including touch. -->
                             <VisualStateGroup x:Name="PaddingSizeStates">
                                 <VisualState x:Name="DefaultPadding" />
                                 <VisualState x:Name="NarrowPadding">
@@ -431,6 +451,8 @@
 
     <Style TargetType="ToggleMenuFlyoutItem" x:Key="DefaultToggleMenuFlyoutItemStyle">
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{ThemeResource MenuFlyoutItemBackgroundBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource MenuFlyoutItemBorderThickness}"/>
         <Setter Property="Foreground" Value="{ThemeResource MenuFlyoutItemForeground}" />
         <Setter Property="Padding" Value="{StaticResource MenuFlyoutItemThemePadding}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
@@ -571,6 +593,8 @@
 
     <Style TargetType="MenuFlyoutSubItem" x:Key="DefaultMenuFlyoutSubItemStyle">
         <Setter Property="Background" Value="{ThemeResource MenuFlyoutSubItemBackground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource MenuFlyoutSubItemBackgroundBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource MenuFlyoutSubItemBorderThickness}"/>
         <Setter Property="Foreground" Value="{ThemeResource MenuFlyoutSubItemForeground}" />
         <Setter Property="Padding" Value="{StaticResource MenuFlyoutItemThemePadding}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />

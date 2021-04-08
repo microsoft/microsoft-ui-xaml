@@ -19,6 +19,7 @@ using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using System;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -52,6 +53,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             RunDensityTests("ToggleSwitchDensityTest");
         }
 
+        [TestMethod]
         public void DatePickerDensityTest()
         {
             RunDensityTests("DatePickerDensityTest");
@@ -157,6 +159,64 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 var textBlock = FindElement.ByName("InkToolbar");
                 Verify.IsNotNull(textBlock, "Verify InkToolbar page doesn't crash");
+
+                var verticalInkToolbar = FindElement.ById("VerticalInkToolbar");
+                Verify.IsNotNull(textBlock, "Verify verticalInkToolbar doesn't crash");
+
+                Log.Comment("Click on " + "InkToolbarBallpointPenButton");
+                var radioButton = new RadioButton(FindElement.ById("InkToolbarBallpointPenButton"));
+                radioButton.Select();
+                Wait.ForIdle();
+            }
+        }
+
+        [TestMethod]
+        public void MenuFlyoutItemSizeTest()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            {
+                Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("MenuFlyout Tests"))
+            {
+                Log.Comment("Mouse click on Button to verify MenuFlyoutItem size.");
+
+                var testMenuFlyoutButton = FindElement.ByName("TestMenuFlyoutButton");
+                Verify.IsNotNull(testMenuFlyoutButton, "Verifying that we found a UIElement called TestMenuFlyoutButton");
+
+                InputHelper.LeftClick(testMenuFlyoutButton);
+                Wait.ForIdle();
+
+                var testMenuFlyoutItem = FindElement.ByName("TestMenuFlyoutItem");
+                Verify.IsNotNull(testMenuFlyoutItem, "Verifying that we found a UIElement called TestMenuFlyoutItem");
+
+                InputHelper.LeftClick(testMenuFlyoutItem);
+                Wait.ForIdle();
+
+                var testMenuFlyoutItemHeightTextBlock = FindElement.ByName<TextBlock>("TestMenuFlyoutItemHeightTextBlock");
+                var testMenuFlyoutItemWidthTextBlock = FindElement.ByName<TextBlock>("TestMenuFlyoutItemWidthTextBlock");
+                
+                Verify.IsNotNull(testMenuFlyoutItemHeightTextBlock, "Verifying that we found a UIElement called TestMenuFlyoutItemHeightTextBlock");
+                Verify.IsNotNull(testMenuFlyoutItemWidthTextBlock, "Verifying that we found a UIElement called TestMenuFlyoutItemWidthTextBlock");
+
+                var width = Convert.ToDouble(testMenuFlyoutItemWidthTextBlock.GetText());
+
+                Verify.AreEqual("32", testMenuFlyoutItemHeightTextBlock.GetText(), "Comparing height of MenuFlyoutItem after Flyout was opened with mouse");
+                Verify.IsGreaterThan(width, 0.0, "Comparing height of MenuFlyoutItem after Flyout was opened with mouse");
+                Verify.IsLessThan(width, 200.0, "Comparing height of MenuFlyoutItem after Flyout was opened with mouse");
+
+                InputHelper.LeftClick(testMenuFlyoutItemHeightTextBlock);
+                Wait.ForIdle();
+                InputHelper.Tap(testMenuFlyoutButton);
+                Wait.ForIdle();
+                InputHelper.Tap(testMenuFlyoutItem);
+                Wait.ForIdle();
+
+                width = Convert.ToDouble(testMenuFlyoutItemWidthTextBlock.GetText());
+                Verify.AreEqual("40", testMenuFlyoutItemHeightTextBlock.GetText(), "Comparing height of MenuFlyoutItem after Flyout was opened with touch");
+                Verify.IsGreaterThan(width, 200.0, "Comparing width of MenuFlyoutItem after Flyout was opened with touch");
             }
         }
     }

@@ -571,7 +571,7 @@
           Padding=0,0,0,0
           Foreground=#E4000000
           BorderThickness=0,0,0,0
-          BorderBrush=[NULL]
+          BorderBrush=#0F000000
           Background=[NULL]
           Name=RootSplitView
           Margin=0,0,0,0
@@ -598,7 +598,7 @@
               Padding=0,0,0,0
               CornerRadius=0,0,0,0
               BorderThickness=0,0,0,0
-              BorderBrush=[NULL]
+              BorderBrush=#0F000000
               Background=Microsoft.UI.Xaml.Media.AcrylicBrush
               Width=120
               Name=PaneRoot
@@ -2388,7 +2388,7 @@
                   CornerRadius=0,0,0,0
                   BorderThickness=0,0,0,0
                   BorderBrush=[NULL]
-                  Background=[NULL]
+                  Background=#FFF3F3F3
                   Name=ContentGrid
                   Margin=0,0,0,0
                   FocusVisualSecondaryThickness=1,1,1,1
