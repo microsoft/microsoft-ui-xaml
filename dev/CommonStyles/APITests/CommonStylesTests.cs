@@ -354,6 +354,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyVisualTreeForCommandBarCornerRadius()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            {
+                return;
+            }
+
+            var xaml =
+                @"<StackPanel Width='400' Height='400' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' 
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
+                        <CommandBar Background='Green' CornerRadius='10,10,10,10' IsOpen='True'>
+                        <AppBarToggleButton Icon='Shuffle' Label='Shuffle'  />
+                        <AppBarToggleButton Icon='RepeatAll' Label='Repeat' />
+                        <AppBarSeparator Margin='20,10,20,0' Foreground='Yellow'/>
+        
+                        <CommandBar.Content>
+                            <TextBlock Text='Now playing...' Margin='12,14'/>
+                        </CommandBar.Content>
+                        </CommandBar>
+
+                        <CommandBar Background='Green' CornerRadius='5,10,5,10' IsOpen='False'>
+                        <AppBarToggleButton Icon='Shuffle' Label='Shuffle'  />
+                        <AppBarToggleButton Icon='RepeatAll' Label='Repeat' />
+                        <AppBarSeparator Margin='20,10,20,0' Foreground='Yellow'/>
+
+                        <CommandBar.Content>
+                            <TextBlock Text='Now playing...' Margin='12,14'/>
+                        </CommandBar.Content>
+                        </CommandBar>
+                    </StackPanel>";
+
+            VisualTreeTestHelper.VerifyVisualTree(xaml: xaml,
+                verificationFileNamePrefix: "VerifyVisualTreeForCommandBarCornerRadius");
+        }
+
+        [TestMethod]
         [TestProperty("Ignore", "True")] // Disabled due to #2210: Unreliable test: CommonStylesApiTests.VerifyVisualTreeForCommandBarOverflowMenu
         public void VerifyVisualTreeForCommandBarOverflowMenu()
         {
