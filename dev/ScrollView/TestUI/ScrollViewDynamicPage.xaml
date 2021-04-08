@@ -80,6 +80,7 @@
 
         <ScrollViewer 
             x:Name="wuxScrollViewer"
+            Style="{ThemeResource DefaultScrollViewerStyle}"
             Width="300" Height="400"
             Grid.Row="2" Margin="1"
             Background="SkyBlue" VerticalAlignment="Top">
@@ -89,6 +90,7 @@
         <Grid x:Name="grdScrollViewProperties" Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Margin="4,0,4,0"
               Background="{ThemeResource SystemListLowColor}" Padding="6">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>

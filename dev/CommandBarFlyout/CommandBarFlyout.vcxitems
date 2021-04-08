@@ -41,6 +41,17 @@
       <Type>DefaultStyle</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)CommandBarFlyoutOS_themeresources.xaml">
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>21H1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)CommandBarFlyoutOS_themeresources_v1.xaml">
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
+      <Version>21H1</Version>
+      <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)CommandBarFlyout_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS2</Version>

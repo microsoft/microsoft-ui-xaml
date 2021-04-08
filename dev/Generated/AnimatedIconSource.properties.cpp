@@ -33,7 +33,7 @@ void AnimatedIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::AnimatedIconSource>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IconSource>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnFallbackIconSourcePropertyChanged));
     }
     if (!s_SourceProperty)
     {
@@ -44,7 +44,7 @@ void AnimatedIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::AnimatedIconSource>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IAnimatedVisualSource2>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnSourcePropertyChanged));
     }
 }
 
@@ -53,6 +53,22 @@ void AnimatedIconSourceProperties::ClearProperties()
     s_FallbackIconSourceProperty = nullptr;
     s_SourceProperty = nullptr;
     IconSource::ClearProperties();
+}
+
+void AnimatedIconSourceProperties::OnFallbackIconSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::AnimatedIconSource>();
+    winrt::get_self<AnimatedIconSource>(owner)->OnPropertyChanged(args);
+}
+
+void AnimatedIconSourceProperties::OnSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::AnimatedIconSource>();
+    winrt::get_self<AnimatedIconSource>(owner)->OnPropertyChanged(args);
 }
 
 void AnimatedIconSourceProperties::FallbackIconSource(winrt::IconSource const& value)

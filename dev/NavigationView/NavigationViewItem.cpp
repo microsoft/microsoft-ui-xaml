@@ -212,11 +212,6 @@ void NavigationViewItem::UpdateIsClosedCompact()
             && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline);
 
         UpdateVisualState(true /*useTransitions*/);
-
-        if (const auto presenter = GetPresenter())
-        {
-            presenter->UpdateClosedCompactVisualState(IsTopLevelItem(), m_isClosedCompact);
-        }
     }
 }
 
@@ -229,7 +224,11 @@ void NavigationViewItem::UpdateNavigationViewItemToolTip()
     {
         if (ShouldEnableToolTip())
         {
-            winrt::ToolTipService::SetToolTip(*this, m_suggestedToolTipContent.get());
+            // Don't SetToolTip with the same parameter because it close/re-open the ToolTip
+            if (toolTipContent != m_suggestedToolTipContent.get())
+            {
+                winrt::ToolTipService::SetToolTip(*this, m_suggestedToolTipContent.get());
+            }
         }
         else
         {
@@ -316,6 +315,14 @@ void NavigationViewItem::UpdateVisualStateForIconAndContent(bool showIcon, bool 
     {
         auto stateName = showIcon ? (showContent ? L"IconOnLeft" : L"IconOnly") : L"ContentOnly";
         winrt::VisualStateManager::GoToState(presenter, stateName, false /*useTransitions*/);
+    }
+}
+
+void NavigationViewItem::UpdateVisualStateForClosedCompact()
+{
+    if (const auto presenter = GetPresenter())
+    {
+        presenter->UpdateClosedCompactVisualState(IsTopLevelItem(), m_isClosedCompact);
     }
 }
 
@@ -482,6 +489,8 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
             // Backward Compatibility with RS4-, new implementation prefer IconOnLeft/IconOnly/ContentOnly
             winrt::VisualStateManager::GoToState(presenter, shouldShowIcon ? L"IconVisible" : L"IconCollapsed", useTransitions);
         }
+
+        UpdateVisualStateForClosedCompact();
     } 
    
     UpdateVisualStateForToolTip();
