@@ -704,6 +704,7 @@
                                         <ContentPresenter 
                                             x:Name="Icon" 
                                             Content="{TemplateBinding Icon}"
+                                            Foreground="{TemplateBinding Foreground}"
                                             local:AnimatedIcon.State="Normal"/>
                                     </Viewbox>
                                 </Border>
@@ -715,6 +716,7 @@
                                     ContentTransitions="{TemplateBinding ContentTransitions}"
                                     ContentTemplate="{TemplateBinding ContentTemplate}"
                                     Content="{TemplateBinding Content}"
+                                    Foreground="{TemplateBinding Foreground}"
                                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                     ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
