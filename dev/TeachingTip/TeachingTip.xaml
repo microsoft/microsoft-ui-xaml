@@ -618,17 +618,7 @@
                                             </StackPanel>
                                         </ScrollViewer>
                                         <Button x:Name="AlternateCloseButton"
-                                                Width="{StaticResource TeachingTipAlternateCloseButtonSize}"
-                                                Height="{StaticResource TeachingTipAlternateCloseButtonSize}"
-                                                Background="Transparent"
-                                                VerticalAlignment="Top"
-                                                HorizontalAlignment="Right"
-                                                BorderThickness="{ThemeResource TeachingTipAlternateCloseButtonBorderThickness}">
-                                            <Viewbox Width="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}"
-                                                     Height="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}">
-                                                <SymbolIcon Symbol="Cancel"/>
-                                            </Viewbox>
-                                        </Button>
+                                                        Style="{ThemeResource AlternateCloseButtonStyle}"/>
                                     </Grid>
                                 </Grid>
                                 <Grid x:Name="TopHighlightLeft"
@@ -656,4 +646,10 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+
+
+
+
+    
 </ResourceDictionary>
