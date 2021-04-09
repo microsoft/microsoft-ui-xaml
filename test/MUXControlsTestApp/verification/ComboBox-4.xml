@@ -84,7 +84,7 @@
         RenderSize=20,20
       [Windows.UI.Xaml.Controls.TextBlock]
           Padding=0,0,0,0
-          Foreground=#93000000
+          Foreground=#9E000000
           Name=PlaceholderTextBlock
           Margin=0,0,0,0
           FocusVisualSecondaryThickness=1,1,1,1
@@ -94,7 +94,7 @@
           Visibility=Visible
           RenderSize=20,20
     [Windows.UI.Xaml.Controls.FontIcon]
-        Foreground=#93000000
+        Foreground=#9E000000
         Name=DropDownGlyph
         MinHeight=32
         Margin=0,0,14,0
@@ -119,7 +119,7 @@
           RenderSize=12,32
         [Windows.UI.Xaml.Controls.TextBlock]
             Padding=0,0,0,0
-            Foreground=#93000000
+            Foreground=#9E000000
             Margin=0,0,0,0
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#B3FFFFFF
