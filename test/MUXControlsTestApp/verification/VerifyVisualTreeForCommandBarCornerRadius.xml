@@ -336,7 +336,7 @@
                           RenderSize=0,0
                       [Windows.UI.Xaml.Controls.TextBlock]
                           Padding=0,0,0,0
-                          Foreground=#93000000
+                          Foreground=#9E000000
                           Name=KeyboardAcceleratorTextLabel
                           Margin=24,0,12,0
                           FocusVisualSecondaryThickness=1,1,1,1
@@ -510,7 +510,7 @@
                           RenderSize=0,0
                       [Windows.UI.Xaml.Controls.TextBlock]
                           Padding=0,0,0,0
-                          Foreground=#93000000
+                          Foreground=#9E000000
                           Name=KeyboardAcceleratorTextLabel
                           Margin=24,0,12,0
                           FocusVisualSecondaryThickness=1,1,1,1
@@ -996,7 +996,7 @@
                           RenderSize=0,0
                       [Windows.UI.Xaml.Controls.TextBlock]
                           Padding=0,0,0,0
-                          Foreground=#93000000
+                          Foreground=#9E000000
                           Name=KeyboardAcceleratorTextLabel
                           Margin=24,0,12,0
                           FocusVisualSecondaryThickness=1,1,1,1
@@ -1170,7 +1170,7 @@
                           RenderSize=0,0
                       [Windows.UI.Xaml.Controls.TextBlock]
                           Padding=0,0,0,0
-                          Foreground=#93000000
+                          Foreground=#9E000000
                           Name=KeyboardAcceleratorTextLabel
                           Margin=24,0,12,0
                           FocusVisualSecondaryThickness=1,1,1,1
