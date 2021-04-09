@@ -255,14 +255,18 @@ winrt::Control CommandBarFlyout::CreatePresenter()
         presenter2.IsDefaultShadowEnabled(false);
     }
 
-    // When >21H1, we'll need to manage the presenter's CornerRadius when the overflow is opened/
-    // closed. In order for drop shadows to render correctly, the element with the shadow needs to have
-    // the correct corner radius as well. Otherwise the shadow will render with sharp corners.
-    if (SharedHelpers::Is21H1OrHigher())
+    if (winrt::IControl7 presenterControl7 = presenter)
     {
-        if (winrt::IControl7 presenterControl7 = presenter)
+        // When >21H1, we'll need to manage the presenter's CornerRadius when the overflow is opened/
+        // closed. In order for drop shadows to render correctly, the element with the shadow needs to have
+        // the correct corner radius as well. Otherwise the shadow will render with sharp corners.
+        if (SharedHelpers::Is21H1OrHigher())
         {
             presenterControl7.CornerRadius({ 4 });
+        }
+        else
+        {
+            presenterControl7.CornerRadius({ 0 });
         }
     }
 
