@@ -1716,8 +1716,6 @@ void NavigationView::OnSplitViewPaneClosing(const winrt::DependencyObject& /*sen
                     winrt::VisualStateManager::GoToState(*this, L"ListSizeCompact", true /*useTransitions*/);
                     UpdatePaneToggleSize();
                 }
-
-                winrt::VisualStateManager::GoToState(*this, L"PaneNotOverlaying", true /*useTransitions*/);
             }
         }
     }
@@ -1734,14 +1732,6 @@ void NavigationView::OnSplitViewPaneOpening(const winrt::DependencyObject& /*sen
     {
         // See UpdateIsClosedCompact 'RS3+ animation timing enhancement' for explanation:
         winrt::VisualStateManager::GoToState(*this, L"ListSizeFull", true /*useTransitions*/);
-
-        if (const auto splitView = m_rootSplitView.get())
-        {
-            if (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay)
-            {
-                winrt::VisualStateManager::GoToState(*this, L"PaneOverlaying", true /*useTransitions*/);
-            }
-        }
     }
 
     m_paneOpeningEventSource(*this, nullptr);
@@ -4090,6 +4080,8 @@ void NavigationView::OnIsPaneOpenChanged()
     UpdatePaneTabFocusNavigation();
     UpdateSettingsItemToolTip();
     UpdatePaneTitleFrameworkElementParents();
+    UpdatePaneOverlayGroup();
+    UpdatePaneButtonsWidths();
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
@@ -4120,8 +4112,6 @@ void NavigationView::OnIsPaneOpenChanged()
             }
         }   
     }
-
-    UpdatePaneButtonsWidths();
 }
 
 void NavigationView::UpdatePaneToggleButtonVisibility()
@@ -4856,6 +4846,21 @@ void NavigationView::UpdatePaneShadow()
             shadowReceiver.Width(OpenPaneLength() - shadowReceiverMargin.Right);
         }
         shadowReceiver.Margin(shadowReceiverMargin);
+    }
+}
+
+void NavigationView::UpdatePaneOverlayGroup()
+{
+    if (const auto splitView = m_rootSplitView.get())
+    {
+        if (IsPaneOpen() && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay))
+        {
+            winrt::VisualStateManager::GoToState(*this, L"PaneOverlaying", true /*useTransitions*/);
+        }
+        else
+        {
+            winrt::VisualStateManager::GoToState(*this, L"PaneNotOverlaying", true /*useTransitions*/);
+        }
     }
 }
 

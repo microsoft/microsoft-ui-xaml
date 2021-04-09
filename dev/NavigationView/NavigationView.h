@@ -168,6 +168,7 @@ private:
     void UpdateVisualStateForOverflowButton();
     void UpdateLeftNavigationOnlyVisualState(bool useTransitions);
     void UpdatePaneShadow();
+    void UpdatePaneOverlayGroup();
     void UpdateNavigationViewItemsFactory();
     void SyncItemTemplates();
     bool IsRootGridOfFlyout(const winrt::DependencyObject& element);
