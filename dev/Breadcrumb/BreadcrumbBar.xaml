@@ -39,7 +39,7 @@
                                         <Setter Target="PART_ContentColumn.Width" Value="*"/>
                                         <Setter Target="PART_EllipsisDropDownItemContentPresenter.Visibility" Value="Visible"/>
                                         <Setter Target="PART_LayoutRoot.Padding" Value="11,7,11,9"/>
-                                        <Setter Target="PART_LayoutRoot.Margin" Value="5,4"/>
+                                        <Setter Target="PART_LayoutRoot.Margin" Value="5,3"/>
                                         <Setter Target="PART_LayoutRoot.FocusVisualMargin" Value="-3" />
                                         <Setter Target="PART_ItemButton.(Control.IsTemplateFocusTarget)" Value="False" />
                                         <Setter Target="PART_LayoutRoot.(Control.IsTemplateFocusTarget)" Value="True" />
@@ -192,7 +192,7 @@
                             Control.IsTemplateFocusTarget="True"
                             IsTabStop="False"
                             FocusVisualMargin="-3"
-                            Padding="{TemplateBinding Padding}"
+                            Padding="1,3"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             AutomationProperties.AccessibilityView="Raw">
                             <Button.Style>
@@ -348,6 +348,7 @@
                             Foreground="{ThemeResource BreadcrumbBarCurrentNormalForegroundBrush}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             LineHeight="20"
+                            Padding="1,3"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
