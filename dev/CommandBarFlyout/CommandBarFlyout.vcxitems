@@ -63,6 +63,12 @@
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)CommandBarFlyout_19h1_themeresources.xaml">
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>19H1</Version>
+      <Type>DefaultStyle</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)CommandBarFlyout.idl" />
