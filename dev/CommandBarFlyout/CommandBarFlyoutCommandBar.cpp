@@ -78,6 +78,22 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
             {
                 if (owningFlyout.AlwaysExpanded())
                 {
+
+                    // The below IsOpen(true) call ends up setting the visual state to one of the open ones, making
+                    // the shadow stay visible as it's closing. Remove the shadow manually in this specific scenario.
+                    if (SharedHelpers::Is21H1OrHigher())
+                    {
+                        winrt::IControlProtected thisAsControlProtected = *this;
+                        auto grid = GetTemplateChildT<winrt::Grid>(L"OuterOverflowContentRoot", thisAsControlProtected);
+                        if (winrt::IUIElement10 grid_uiElement10 = grid)
+                        {
+                            if (grid_uiElement10.Shadow())
+                            {
+                                grid_uiElement10.Shadow(nullptr);
+                            }
+                        }
+                    }
+
                     // Don't close the secondary commands list when the flyout is AlwaysExpanded.
                     IsOpen(true);
                 }
