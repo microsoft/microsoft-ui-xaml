@@ -226,9 +226,9 @@
     <Thickness x:Key="NavigationViewAutoSuggestBoxMargin">15,0</Thickness>
     <Thickness x:Key="TopNavigationViewAutoSuggestBoxMargin">4,0</Thickness>
     <x:Double x:Key="PaneToggleButtonHeight">36</x:Double>
-    <x:Double x:Key="PaneToggleButtonWidth">38</x:Double>
-    <x:Double x:Key="NavigationViewCompactPaneLength">46</x:Double>
-    <x:Double x:Key="NavigationViewIconBoxWidth">38</x:Double>
+    <x:Double x:Key="PaneToggleButtonWidth">40</x:Double>
+    <x:Double x:Key="NavigationViewCompactPaneLength">48</x:Double>
+    <x:Double x:Key="NavigationViewIconBoxWidth">40</x:Double>
     <x:Double x:Key="NavigationViewTopPaneHeight">48</x:Double>
     <x:Double x:Key="NavigationViewAutoSuggestAreaHeight">40</x:Double>
     <x:Double x:Key="TopNavigationViewPaneCustomContentMinWidth">48</x:Double>
