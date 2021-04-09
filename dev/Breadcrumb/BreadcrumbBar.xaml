@@ -39,7 +39,7 @@
                                         <Setter Target="PART_ContentColumn.Width" Value="*"/>
                                         <Setter Target="PART_EllipsisDropDownItemContentPresenter.Visibility" Value="Visible"/>
                                         <Setter Target="PART_LayoutRoot.Padding" Value="11,7,11,9"/>
-                                        <Setter Target="PART_LayoutRoot.Margin" Value="5,3"/>
+                                        <Setter Target="PART_LayoutRoot.Margin" Value="5,4"/>
                                         <Setter Target="PART_LayoutRoot.FocusVisualMargin" Value="-3" />
                                         <Setter Target="PART_ItemButton.(Control.IsTemplateFocusTarget)" Value="False" />
                                         <Setter Target="PART_LayoutRoot.(Control.IsTemplateFocusTarget)" Value="True" />
@@ -374,7 +374,7 @@
                             HorizontalAlignment="Center"
                             IsTextScaleFactorEnabled="False"       
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                            FontSize="12"
+                            FontSize="{ThemeResource BreadcrumbBarChevronFontSize}"
                             Foreground="{ThemeResource BreadcrumbBarNormalForegroundBrush}"
                             Text="&#xE76C;"
                             Padding="{ThemeResource BreadcrumbBarChevronPadding}"

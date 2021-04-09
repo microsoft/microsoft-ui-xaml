@@ -6,8 +6,8 @@
     <ResourceDictionary.ThemeDictionaries>
 
         <ResourceDictionary x:Key="Default">
-            <x:String x:Key="BreadcrumbBarChevronLeftToRight">&#xE76C;</x:String>
-            <x:String x:Key="BreadcrumbBarChevronRightToLeft">&#xE76B;</x:String>
+            <x:String x:Key="BreadcrumbBarChevronLeftToRight">&#xE974;</x:String>
+            <x:String x:Key="BreadcrumbBarChevronRightToLeft">&#xE973;</x:String>
 
             <Thickness x:Key="BreadcrumbBarChevronPadding">2,0</Thickness>
 
@@ -42,11 +42,12 @@
             <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderThemeThickness">1</Thickness>
 
             <StaticResource x:Key="BreadcrumbBarItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
+            <x:Double x:Key="BreadcrumbBarChevronFontSize">12</x:Double>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
-            <x:String x:Key="BreadcrumbBarChevronLeftToRight">&#xE76C;</x:String>
-            <x:String x:Key="BreadcrumbBarChevronRightToLeft">&#xE76B;</x:String>
+            <x:String x:Key="BreadcrumbBarChevronLeftToRight">&#xE974;</x:String>
+            <x:String x:Key="BreadcrumbBarChevronRightToLeft">&#xE973;</x:String>
 
             <Thickness x:Key="BreadcrumbBarChevronPadding">2,0</Thickness>
 
@@ -82,11 +83,12 @@
             <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderThemeThickness">1</Thickness>
 
             <StaticResource x:Key="BreadcrumbBarItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
+            <x:Double x:Key="BreadcrumbBarChevronFontSize">12</x:Double>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <x:String x:Key="BreadcrumbBarChevronLeftToRight">&#xE76C;</x:String>
-            <x:String x:Key="BreadcrumbBarChevronRightToLeft">&#xE76B;</x:String>
+            <x:String x:Key="BreadcrumbBarChevronLeftToRight">&#xE974;</x:String>
+            <x:String x:Key="BreadcrumbBarChevronRightToLeft">&#xE973;</x:String>
 
             <Thickness x:Key="BreadcrumbBarChevronPadding">2,0</Thickness>
 
@@ -121,6 +123,7 @@
             <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderThemeThickness">2</Thickness>
 
             <StaticResource x:Key="BreadcrumbBarItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
+            <x:Double x:Key="BreadcrumbBarChevronFontSize">12</x:Double>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>
