@@ -617,8 +617,7 @@
                                                 </Grid>
                                             </StackPanel>
                                         </ScrollViewer>
-                                        <Button x:Name="AlternateCloseButton"
-                                                        Style="{ThemeResource AlternateCloseButtonStyle}"/>
+                                        <Button x:Name="AlternateCloseButton" Style="{ThemeResource AlternateCloseButtonStyle}"/>
                                     </Grid>
                                 </Grid>
                                 <Grid x:Name="TopHighlightLeft"
