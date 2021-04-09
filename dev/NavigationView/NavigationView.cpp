@@ -1325,12 +1325,10 @@ void NavigationView::CreateAndHookEventsToSettings()
     if (!IsTopNavigationView())
     {
         settingsItem.Content(box_value(localizedSettingsName));
-        //settingsItem.Style(nullptr);
     }
     else
     {
         settingsItem.Content(nullptr);
-        //settingsItem.Style(unbox_value<winrt::Style>(ResourceAccessor::ResourceLookup(*this, box_value(L"MUX_NavigationViewSettingsItemStyleWhenOnTopPane"))));
     }
 
     // hook up SettingsItem
@@ -4458,15 +4456,6 @@ void NavigationView::UpdateBackAndCloseButtonsVisibility()
     {
         // Account for the CloseButton's width in the PaneHeader's placement.
         paneHeaderCloseButtonColumn.Width(winrt::GridLengthHelper::FromValueAndType(paneHeaderPaddingForCloseButton, winrt::GridUnitType::Pixel));
-    }
-
-    if (auto paneTitleHolderFrameworkElement = m_paneTitleHolderFrameworkElement.get())
-    {
-        if (paneHeaderContentBorderRowMinHeight == 0.00 && paneTitleHolderFrameworkElement.Visibility() == winrt::Visibility::Visible)
-        {
-            // Handling the case where the PaneTottleButton is collapsed and the PaneTitle's height needs to push the rest of the NavigationView's UI down.
-            paneHeaderContentBorderRowMinHeight = paneTitleHolderFrameworkElement.ActualHeight();
-        }
     }
 
     if (auto paneHeaderContentBorderRow = m_paneHeaderContentBorderRow.get())

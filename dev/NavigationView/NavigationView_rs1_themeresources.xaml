@@ -225,11 +225,12 @@
 
     <Thickness x:Key="NavigationViewAutoSuggestBoxMargin">15,0</Thickness>
     <Thickness x:Key="TopNavigationViewAutoSuggestBoxMargin">4,0</Thickness>
-    <x:Double x:Key="PaneToggleButtonHeight">34</x:Double>
+    <x:Double x:Key="PaneToggleButtonHeight">36</x:Double>
     <x:Double x:Key="PaneToggleButtonWidth">38</x:Double>
     <x:Double x:Key="NavigationViewCompactPaneLength">46</x:Double>
     <x:Double x:Key="NavigationViewIconBoxWidth">38</x:Double>
     <x:Double x:Key="NavigationViewTopPaneHeight">48</x:Double>
+    <x:Double x:Key="NavigationViewAutoSuggestAreaHeight">40</x:Double>
     <x:Double x:Key="TopNavigationViewPaneCustomContentMinWidth">48</x:Double>
     <x:Double x:Key="TopNavigationViewOverflowButtonWidth">40</x:Double>
     <x:Double x:Key="TopNavigationViewOverflowButtonHeight">40</x:Double>
@@ -237,7 +238,7 @@
     <x:Double x:Key="TopNavigationViewSettingsButtonHeight">40</x:Double>
 
     <x:Double x:Key="NavigationViewItemOnLeftMinHeight">36</x:Double>
-    <x:Double x:Key="NavigationViewPaneHeaderRowMinHeight">44</x:Double>
+    <x:Double x:Key="NavigationViewPaneHeaderRowMinHeight">40</x:Double>
 
     <x:Double x:Key="NavigationViewItemSeparatorHeight">1</x:Double>
     <x:Double x:Key="TopNavigationViewItemSeparatorWidth">1</x:Double>

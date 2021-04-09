@@ -18,7 +18,7 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="Content" Value="&#xE72B;" />
-        <Setter Property="Margin"  Value="4,0,4,2" />
+        <Setter Property="Margin"  Value="4,2" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>

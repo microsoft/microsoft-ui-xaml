@@ -206,7 +206,7 @@
                             <Grid x:Name="TogglePaneTopPadding"
                                   Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPadding}"/>
 
-                            <Grid x:Name="ButtonHolderGrid" Margin="0,4" Grid.Row="1">
+                            <Grid x:Name="ButtonHolderGrid" Grid.Row="1" Margin="0,4">
                                 <Button
                                     x:Name="NavigationViewBackButton"
                                     Style="{StaticResource NavigationBackButtonNormalStyle}"
@@ -464,6 +464,7 @@
                                         x:Name="PaneContentGrid"
                                         BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
                                         HorizontalAlignment="Left"
+                                        Margin="0,4"
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
@@ -471,7 +472,7 @@
                                             <RowDefinition x:Name="PaneContentGridToggleButtonRow" Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="8"/> <!-- above list margin -->
+                                            <RowDefinition Height="0"/> <!-- above list margin -->
                                             <RowDefinition x:Name="ItemsContainerRow" Height="*"/>
                                         </Grid.RowDefinitions>
 
@@ -500,7 +501,8 @@
                                         <Grid
                                             x:Name="AutoSuggestArea"
                                             Grid.Row="3"
-                                            Height="{ThemeResource NavigationViewTopPaneHeight}"
+                                            Height="{ThemeResource NavigationViewAutoSuggestAreaHeight}"
+                                            Margin="0,0,0,8"
                                             VerticalAlignment="Center">
 
                                             <ContentControl
@@ -554,7 +556,7 @@
                                             Grid.Row="4" />
 
                                         <!-- "Non header" content -->
-                                        <Grid x:Name="ItemsContainerGrid" Grid.Row="6" Margin="0,0,0,8">
+                                        <Grid x:Name="ItemsContainerGrid" Grid.Row="6">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto"/> <!-- MenuItems -->
                                                 <RowDefinition Height="*"/> <!-- Fill spacing -->
