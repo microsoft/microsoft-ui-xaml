@@ -48,7 +48,7 @@
                                 <VisualState x:Name="TogglePaneButtonVisible">
                                     <VisualState.Setters>
                                         <!-- Might not need this setter when all the margins/paddings will be adequately set. -->
-                                        <!-- This MinHeight setter is only here to ensure that AutoSuggestBox doesn't draw over ToggelButton. -->
+                                        <!-- This MinHeight setter is only here to ensure that AutoSuggestBox doesn't draw over ToggleButton. -->
                                         <Setter Target="PaneContentGridToggleButtonRow.MinHeight" Value="{StaticResource NavigationViewPaneHeaderRowMinHeight}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -206,7 +206,7 @@
                             <Grid x:Name="TogglePaneTopPadding"
                                   Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPadding}"/>
 
-                            <Grid x:Name="ButtonHolderGrid" Grid.Row="1" Margin="0,4">
+                            <Grid x:Name="ButtonHolderGrid" Grid.Row="1" Margin="{ThemeResource NavigationViewButtonHolderGridMargin}">
                                 <Button
                                     x:Name="NavigationViewBackButton"
                                     Style="{StaticResource NavigationBackButtonNormalStyle}"
@@ -313,6 +313,7 @@
                                         IsTabStop="False"
                                         VerticalContentAlignment="Stretch"
                                         HorizontalContentAlignment="Stretch"
+                                        Margin="{ThemeResource NavigationViewItemInnerHeaderMargin}"
                                         Grid.Column="2"/>
 
                                     <!-- Top nav ItemsRepeater -->
@@ -464,7 +465,7 @@
                                         x:Name="PaneContentGrid"
                                         BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
                                         HorizontalAlignment="Left"
-                                        Margin="0,4"
+                                        Margin="{ThemeResource NavigationViewPaneContentGridMargin}"
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
@@ -558,8 +559,8 @@
                                         <!-- "Non header" content -->
                                         <Grid x:Name="ItemsContainerGrid" Grid.Row="6">
                                             <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/> <!-- MenuItems -->
-                                                <RowDefinition Height="*"/> <!-- Fill spacing -->
+                                                <RowDefinition Height="*"/> <!-- MenuItems -->
+                                                <RowDefinition Height="Auto"/> <!-- Separator if overflow -->
                                                 <RowDefinition Height="Auto" /> <!-- PaneFooter -->
                                                 <RowDefinition Height="Auto"/> <!-- FooterItems -->
                                             </Grid.RowDefinitions>
@@ -579,15 +580,20 @@
                                                 </ScrollViewer>
                                             </local:ItemsRepeaterScrollHost>
 
-                                            <local:NavigationViewItemSeparator x:Name="VisualItemsSeparator"
-                                                Grid.Row="1" VerticalAlignment="Center"
-                                                Visibility="Collapsed" HorizontalAlignment="Stretch"/>
+                                            <local:NavigationViewItemSeparator
+                                                x:Name="VisualItemsSeparator"
+                                                Grid.Row="1"
+                                                Margin="0,0,0,2"
+                                                Visibility="Collapsed"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Stretch"/>
 
                                             <!-- PaneFooter -->
                                             <ContentControl x:Name="FooterContentBorder"
                                                         IsTabStop="False"
                                                         VerticalContentAlignment="Stretch"
                                                         HorizontalContentAlignment="Stretch"
+                                                        Margin="0,0,0,4"
                                                         Grid.Row="2" />
 
                                             <!-- FooterItems -->
@@ -643,7 +649,7 @@
                                             Grid.Row="2"
                                             Grid.ColumnSpan="2"
                                             Content="{TemplateBinding Content}"
-                                            Margin="-3"/>
+                                            Margin="{ThemeResource NavigationViewContentPresenterMargin}"/>
                                     </Grid>
                                 </SplitView.Content>
                             </SplitView>
@@ -881,6 +887,7 @@
         <Setter Property="IsEnabled" Value="False" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Margin" Value="{ThemeResource NavigationViewItemSeparatorMargin}" />
         <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
         <Setter Property="Template">
             <Setter.Value>
@@ -908,8 +915,8 @@
                         <Rectangle 
                             x:Name="SeparatorLine"
                             Height="{ThemeResource NavigationViewItemSeparatorHeight}"
-                            Margin="{ThemeResource NavigationViewItemSeparatorMargin}"
-                            Fill="{ThemeResource NavigationViewItemSeparatorForeground}" />
+                            Fill="{ThemeResource NavigationViewItemSeparatorForeground}"
+                            Margin="{TemplateBinding Margin}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
