@@ -92,7 +92,7 @@ static constexpr int c_paneToggleButtonWidth = 40;
 static constexpr int c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Behavior = 56;
 static constexpr int c_backButtonRowDefinition = 1;
 static constexpr float c_paneElevationTranslationZ = 32;
-static constexpr int c_paneItemsSeparatorHeight = 9;
+static constexpr int c_paneItemsSeparatorHeight = 12;
 
 static constexpr int c_mainMenuBlockIndex = 0;
 static constexpr int c_footerMenuBlockIndex = 1;
@@ -1492,7 +1492,7 @@ void NavigationView::UpdatePaneLayout()
                 }();
                 auto availableHeight = paneContentRow.ActualHeight() - itemsContainerMargin;
 
-                // The -21 below is to account for the separator height that we need to subtract.
+                // The -9px from c_paneItemsSeparatorHeight is to account for the separator height that we need to subtract.
                 if (PaneFooter())
                 {
                     availableHeight -= c_paneItemsSeparatorHeight;
@@ -1908,12 +1908,13 @@ void NavigationView::UpdatePaneTitleFrameworkElementParents()
         const auto isPaneToggleButtonVisible = IsPaneToggleButtonVisible();
         const auto isTopNavigationView = IsTopNavigationView();
 
-        paneTitleHolderFrameworkElement.Visibility(
-            (isPaneToggleButtonVisible ||
-                isTopNavigationView ||
-                PaneTitle().size() == 0 ||
-                (PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::LeftMinimal && !IsPaneOpen())) ?
-            winrt::Visibility::Collapsed : winrt::Visibility::Visible);
+        m_isPaneTitleEmpty = (isPaneToggleButtonVisible ||
+            isTopNavigationView ||
+            PaneTitle().size() == 0 ||
+            (PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::LeftMinimal && !IsPaneOpen()));
+
+        paneTitleHolderFrameworkElement.Visibility(m_isPaneTitleEmpty ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
+
 
         if (auto&& paneTitleFrameworkElement = m_paneTitleFrameworkElement.get())
         {
@@ -3352,7 +3353,7 @@ void NavigationView::UpdateVisualStateForOverflowButton()
 void NavigationView::UpdateLeftNavigationOnlyVisualState(bool useTransitions)
 {
     const bool isToggleButtonVisible = IsPaneToggleButtonVisible();
-    winrt::VisualStateManager::GoToState(*this, isToggleButtonVisible ? L"TogglePaneButtonVisible" : L"TogglePaneButtonCollapsed", false /*useTransitions*/);
+    winrt::VisualStateManager::GoToState(*this, isToggleButtonVisible || !m_isPaneTitleEmpty ? L"TogglePaneButtonVisible" : L"TogglePaneButtonCollapsed", false /*useTransitions*/);
 }
 
 void NavigationView::InvalidateTopNavPrimaryLayout()

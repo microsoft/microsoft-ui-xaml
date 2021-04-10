@@ -50,6 +50,7 @@
                                         <!-- Might not need this setter when all the margins/paddings will be adequately set. -->
                                         <!-- This MinHeight setter is only here to ensure that AutoSuggestBox doesn't draw over ToggleButton. -->
                                         <Setter Target="PaneContentGridToggleButtonRow.MinHeight" Value="{StaticResource NavigationViewPaneHeaderRowMinHeight}"/>
+                                        <Setter Target="PaneTitlePresenter.Margin" Value="{ThemeResource NavigationViewItemInnerHeaderMargin}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -247,6 +248,7 @@
 
                                     <Grid
                                     x:Name="PaneTitleHolder"
+                                    Height="40"
                                     Visibility="Collapsed">
                                     <ContentControl
                                         x:Name="PaneTitlePresenter"
