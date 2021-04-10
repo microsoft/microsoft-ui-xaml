@@ -1,0 +1,53 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:local="using:Experiments">
+    
+    <Style TargetType="local:CarousalView" xmlns:local2="using:Experiments.Controls">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:CarousalView">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button x:Name="PreviousButton" Margin="5">
+                            <SymbolIcon Symbol="Previous" />
+                        </Button>
+                        <muxc:ItemsRepeaterScrollHost Grid.Column="1">
+                            <ScrollViewer
+                                x:Name="ScrollViewer"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Disabled"
+                                  HorizontalScrollMode="Enabled"
+                                  VerticalScrollMode="Disabled">
+
+                                <local:SnapPointForwardingGrid HorizontalSnapPointSize="{TemplateBinding ItemWidth}">
+                                    <muxc:ItemsRepeater x:Name="ItemsRepeater"
+                                                        ItemsSource="{TemplateBinding ItemsSource}"
+                                                        ItemTemplate="{TemplateBinding ItemTemplate}"
+                                                    >
+                                        <muxc:ItemsRepeater.Layout>
+                                            <muxc:StackLayout Orientation="Horizontal" />
+                                        </muxc:ItemsRepeater.Layout>
+
+                                    </muxc:ItemsRepeater>
+                                </local:SnapPointForwardingGrid>
+                            </ScrollViewer>
+                        </muxc:ItemsRepeaterScrollHost>
+                        <Button x:Name="NextButton" Grid.Column="2" Margin="5">
+                            <SymbolIcon Symbol="Next" />
+                        </Button>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

@@ -1,0 +1,36 @@
+﻿<Page
+    x:Class="Experiments.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Experiments"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <muxc:NavigationView x:Name="navigator" >
+        <muxc:NavigationView.MenuItems>
+            <muxc:NavigationViewItem Content="Shimmer">
+                <muxc:NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Favorite" />
+                </muxc:NavigationViewItem.Icon>
+            </muxc:NavigationViewItem>
+            <muxc:NavigationViewItem Content="Carousal">
+                <muxc:NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Trim" />
+                </muxc:NavigationViewItem.Icon>
+            </muxc:NavigationViewItem>
+            <muxc:NavigationViewItem Content="CommandBar" >
+                <muxc:NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Cut" />
+                </muxc:NavigationViewItem.Icon>
+            </muxc:NavigationViewItem>
+        </muxc:NavigationView.MenuItems>
+        <Grid Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TextBlock x:Name="headerText" Style="{StaticResource HeaderTextBlockStyle}" Margin="5"/>
+            <Frame x:Name="frame" Grid.Row="1"  />
+        </Grid>
+    </muxc:NavigationView>
+</Page>
