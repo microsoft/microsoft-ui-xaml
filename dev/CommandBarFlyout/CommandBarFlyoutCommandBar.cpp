@@ -390,62 +390,12 @@ bool CommandBarFlyoutCommandBar::HasOpenAnimation()
 
 void CommandBarFlyoutCommandBar::PlayOpenAnimation()
 {
-    if (SharedHelpers::IsAnimationsEnabled())
+    if (auto openingStoryboard = m_openingStoryboard.get())
     {
-        if (auto openingStoryboard = m_openingStoryboard.get())
+        if (openingStoryboard.GetCurrentState() != winrt::ClockState::Active)
         {
-            if (openingStoryboard.GetCurrentState() != winrt::ClockState::Active)
-            {
-                openingStoryboard.Begin();
-            }
+            openingStoryboard.Begin();
         }
-    }
-    else
-    {
-        GoToOpenPosition();
-    }
-}
-
-void CommandBarFlyoutCommandBar::GoToOpenPosition()
-{
-    auto transform = [this]()
-    {
-        if (auto transform = m_outerContentRootClipTransform.get())
-        {
-            return transform;
-        }
-        else
-        {
-            winrt::IControlProtected thisAsControlProtected = *this;
-            auto outerTransform = GetTemplateChildT<winrt::TranslateTransform>(L"OuterContentRootClipTransform", thisAsControlProtected);
-            m_outerContentRootClipTransform.set(outerTransform);
-            return outerTransform;
-        }
-    }();
-
-    if (transform)
-    {
-        transform.X(FlyoutTemplateSettings().OpenAnimationEndPosition());
-    }
-
-    auto overflowTransform = [this]()
-    {
-        if (auto overflowTransform = m_outerOverflowContentRootClipTransform.get())
-        {
-            return overflowTransform;
-        }
-        else
-        {
-            winrt::IControlProtected thisAsControlProtected = *this;
-            auto outerOverflowTransform = GetTemplateChildT<winrt::TranslateTransform>(L"OuterOverflowContentRootClipTransform", thisAsControlProtected);
-            m_outerContentRootClipTransform.set(outerOverflowTransform);
-            return outerOverflowTransform;
-        }
-    }();
-
-    if (overflowTransform)
-    {
-        overflowTransform.X(FlyoutTemplateSettings().OpenAnimationEndPosition());
     }
 }
 
@@ -457,30 +407,21 @@ bool CommandBarFlyoutCommandBar::HasCloseAnimation()
 void CommandBarFlyoutCommandBar::PlayCloseAnimation(
     std::function<void()> onCompleteFunc)
 {
-    if (SharedHelpers::IsAnimationsEnabled())
+    if (auto closingStoryboard = m_closingStoryboard.get())
     {
-        if (auto closingStoryboard = m_closingStoryboard.get())
+        if (closingStoryboard.GetCurrentState() != winrt::ClockState::Active)
         {
-            if (closingStoryboard.GetCurrentState() != winrt::ClockState::Active)
-            {
-                m_closingStoryboardCompletedCallbackRevoker = closingStoryboard.Completed(winrt::auto_revoke,
+            m_closingStoryboardCompletedCallbackRevoker = closingStoryboard.Completed(winrt::auto_revoke,
+                {
+                    [this, onCompleteFunc](auto const&, auto const&)
                     {
-                        [this, onCompleteFunc](auto const&, auto const&)
-                        {
-                            onCompleteFunc();
-                        }
-                    });
+                        onCompleteFunc();
+                    }
+                });
 
-                UpdateTemplateSettings();
-                closingStoryboard.Begin();
-            }
+            UpdateTemplateSettings();
+            closingStoryboard.Begin();
         }
-    }
-    else
-    {
-        UpdateTemplateSettings();
-        GoToClosedPosition();
-        onCompleteFunc();
     }
 }
 
@@ -1310,11 +1251,14 @@ void CommandBarFlyoutCommandBar::AttachEventsToSecondaryStoryboards()
             {
                 [this](auto const&, auto const&)
                 {
-                    if (auto owningFlyout = m_owningFlyout.get())
+                    if (SharedHelpers::IsAnimationsEnabled())
                     {
-                        if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+                        if (auto owningFlyout = m_owningFlyout.get())
                         {
-                            actualFlyout->AddDropShadow();
+                            if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+                            {
+                                actualFlyout->AddDropShadow();
+                            }
                         }
                     }
                 }
@@ -1328,11 +1272,14 @@ void CommandBarFlyoutCommandBar::AttachEventsToSecondaryStoryboards()
             {
                 [this](auto const&, auto const&)
                 {
-                    if (auto owningFlyout = m_owningFlyout.get())
+                    if (SharedHelpers::IsAnimationsEnabled())
                     {
-                        if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+                        if (auto owningFlyout = m_owningFlyout.get())
                         {
-                            actualFlyout->AddDropShadow();
+                            if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+                            {
+                                actualFlyout->AddDropShadow();
+                            }
                         }
                     }
                 }
@@ -1346,11 +1293,14 @@ void CommandBarFlyoutCommandBar::AttachEventsToSecondaryStoryboards()
             {
                 [this](auto const&, auto const&)
                 {
-                    if (auto owningFlyout = m_owningFlyout.get())
+                    if (SharedHelpers::IsAnimationsEnabled())
                     {
-                        if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+                        if (auto owningFlyout = m_owningFlyout.get())
                         {
-                            actualFlyout->AddDropShadow();
+                            if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+                            {
+                                actualFlyout->AddDropShadow();
+                            }
                         }
                     }
                 }
@@ -1364,11 +1314,14 @@ void CommandBarFlyoutCommandBar::AttachEventsToSecondaryStoryboards()
             {
                 [this](auto const&, auto const&)
                 {
-                    if (auto owningFlyout = m_owningFlyout.get())
+                    if (SharedHelpers::IsAnimationsEnabled())
                     {
-                        if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+                        if (auto owningFlyout = m_owningFlyout.get())
                         {
-                            actualFlyout->AddDropShadow();
+                            if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+                            {
+                                actualFlyout->AddDropShadow();
+                            }
                         }
                     }
                 }

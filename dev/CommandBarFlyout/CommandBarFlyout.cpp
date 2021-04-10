@@ -318,11 +318,11 @@ winrt::Control CommandBarFlyout::CreatePresenter()
 
         if (SharedHelpers::Is21H1OrHigher() && m_presenter)
         {
-            if (m_secondaryCommands.Size() > 0)
+            if (winrt::IControl7 presenterControl7 = m_presenter.get())
             {
-                if (winrt::IControl7 presenterControl7 = m_presenter.get())
+                if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
                 {
-                    if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
+                    if (m_secondaryCommands.Size() > 0 || commandBar->IsOpen())
                     {
                         if (commandBar->IsExpandedUp())
                         {
