@@ -26,17 +26,22 @@
       <Type>ThemeResources</Type>
       <Priority>1</Priority>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)Common_21h1_themeresources.xaml">
-      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
-      <Version>21H1</Version>
-      <Type>ThemeResources</Type>
-      <Priority>1</Priority>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Common_themeresources_any.xaml">
       <ControlsResourcesVersion>Any</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <Priority>1</Priority>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Deprecated_themeresources.xaml" >
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+	<Page Include="$(MSBuildThisFileDirectory)Deprecated_themeresources_any.xaml" >
+      <ControlsResourcesVersion>Any</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+	  <Priority>1</Priority>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)Hyperlink_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
@@ -48,7 +53,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)InkToolbar_themeresources.xaml" >
+    <Page Include="$(MSBuildThisFileDirectory)InkToolbar_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -113,6 +118,11 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)SplitView_themeresources.xaml">
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)ToggleSwitch_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -148,6 +158,11 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)GridViewItem_themeresources_v1.xaml">
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)GridViewItem_themeresources_21h1.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>21H1</Version>
@@ -173,7 +188,7 @@
     <Page Include="$(MSBuildThisFileDirectory)TextBox_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
-      <Type>ThemeResources</Type> 
+      <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TextBox_themeresources_v1.xaml">
       <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
@@ -250,7 +265,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    
     <Page Include="$(MSBuildThisFileDirectory)CalendarDatePicker_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -261,7 +275,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-
     <Page Include="$(MSBuildThisFileDirectory)CalendarView_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -272,12 +285,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)CalendarView_21h1_themeresources.xaml">
-      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
-      <Version>21H1</Version>
-      <Type>ThemeResources</Type>
-    </Page>
-
     <Page Include="$(MSBuildThisFileDirectory)CheckBox_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -288,7 +295,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-
     <Page Include="$(MSBuildThisFileDirectory)ContentDialog_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -299,7 +305,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-
     <Page Include="$(MSBuildThisFileDirectory)DatePicker_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -320,7 +325,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-
     <Page Include="$(MSBuildThisFileDirectory)FlipView_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -341,7 +345,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-
     <Page Include="$(MSBuildThisFileDirectory)MenuFlyout_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -356,7 +359,6 @@
       <Priority>2</Priority>
       <SubType>Designer</SubType>
     </Page>
-
     <Page Include="$(MSBuildThisFileDirectory)Pivot_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -367,7 +369,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-
     <Page Include="$(MSBuildThisFileDirectory)ScrollBar_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -378,7 +379,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-
     <Page Include="$(MSBuildThisFileDirectory)ScrollViewer_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -389,7 +389,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-
     <Page Include="$(MSBuildThisFileDirectory)Slider_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -400,7 +399,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-
     <Page Include="$(MSBuildThisFileDirectory)TimePicker_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -411,7 +409,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-
     <Page Include="$(MSBuildThisFileDirectory)ToolTip_rs1_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>

@@ -50,6 +50,7 @@ namespace MUXControlsTestApp
             Tabs.TabItems.Remove(e.Tab);
 
             TabViewWidth.Text = Tabs.ActualWidth.ToString();
+            TabViewHeaderWidth.Text = Tab3.Width.ToString();
 
             var scrollButtonStateValue = "";
 
@@ -66,6 +67,15 @@ namespace MUXControlsTestApp
         {
             // This is the smallest width that fits our content without any scrolling.
             TabViewWidth.Text = Tabs.ActualWidth.ToString();
+
+            // Header width
+            TabViewHeaderWidth.Text = Tab3.Width.ToString();
+        }
+
+        public void IncreaseScrollButton_Click(object sender, RoutedEventArgs e)
+        {
+            var sv = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollViewer") as ScrollViewer;
+            sv.ChangeView(10000, null, null, disableAnimation: true);
         }
 
     }

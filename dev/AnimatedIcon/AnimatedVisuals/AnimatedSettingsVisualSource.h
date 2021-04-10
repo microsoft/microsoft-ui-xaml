@@ -10,7 +10,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedSettingsVisualSource.json
 //       
 //       Input file:
-//           AnimatedSettingsVisualSource.json (31188 bytes created 11:16-08:00 Mar 5 2021)
+//           AnimatedSettingsVisualSource.json (28755 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie

@@ -22,7 +22,7 @@ public:
     // ISelectionProvider
     bool CanSelectMultiple() { return false; };
     bool IsSelectionRequired() { return true; };
-    winrt::com_array<winrt::IInspectable> GetSelection();
+    winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProviderSimple> GetSelection();
 
     void RaiseSelectionChanged(double oldIndex, double newIndex);
 

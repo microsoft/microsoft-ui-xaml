@@ -783,7 +783,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 Log.Comment("Verify correct TabView width");
-                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - 500) < pixelTolerance);
+                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - 283) < pixelTolerance);
             }
 
             void CloseTabAndVerifyWidth(string tabName, int expectedValue, string expectedScrollbuttonStates)
@@ -802,6 +802,44 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var tabviewWidth = new TextBlock(FindElement.ByName("TabViewWidth"));
 
                 return Double.Parse(tabviewWidth.GetText());
+            }
+        }
+
+        [TestMethod]
+        public void VerifyHeaderSizeWhenClosingLastTab()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTabClosingBehaviorButton" }))
+            {
+                var increaseScrollButton = FindElement.ByName<Button>("IncreaseScrollButton");
+                increaseScrollButton.Click();
+                Wait.ForIdle();
+                var readTabViewWidthButton = new Button(FindElement.ByName("GetActualWidthButton"));
+                readTabViewWidthButton.Click();
+                Wait.ForIdle();
+
+                var initialWidth = GetTabViewHeaderWidth();
+                Verify.AreEqual(100, initialWidth);
+
+                var lastTab = FindElement.ByName("Tab 5");
+                FindCloseButton(lastTab).Click();
+                Wait.ForIdle();
+
+                var widthAfterClose = GetTabViewHeaderWidth();
+                Verify.AreEqual(100, widthAfterClose);
+                Verify.AreEqual("False;True;", FindElement.ByName("ScrollButtonStatus").GetText());
+
+                var newLastTab = FindElement.ByName("Tab 4");
+                FindCloseButton(newLastTab).Click();
+                Wait.ForIdle();
+
+                var widthAfterSecondClose = GetTabViewHeaderWidth();
+                Verify.AreEqual(100, widthAfterSecondClose);
+
+                double GetTabViewHeaderWidth()
+                {
+                    var tabViewHeaderWidth = new TextBlock(FindElement.ByName("TabViewHeaderWidth"));
+                    return double.Parse(tabViewHeaderWidth.GetText());
+                }
             }
         }
 
