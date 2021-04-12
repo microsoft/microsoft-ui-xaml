@@ -41,6 +41,8 @@ namespace Experiments
         {
             Frame rootFrame = Window.Current.Content as Frame;
 
+            DebugSettings.BindingFailed += DebugSettings_BindingFailed;
+
             // Do not repeat app initialization when the Window already has content,
             // just ensure that the window is active
             if (rootFrame == null)
@@ -49,6 +51,8 @@ namespace Experiments
                 rootFrame = new Frame();
 
                 rootFrame.NavigationFailed += OnNavigationFailed;
+
+               
 
                 if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
                 {
@@ -71,6 +75,11 @@ namespace Experiments
                 // Ensure the current window is active
                 Window.Current.Activate();
             }
+        }
+
+        private void DebugSettings_BindingFailed(object sender, BindingFailedEventArgs e)
+        {
+            
         }
 
         /// <summary>

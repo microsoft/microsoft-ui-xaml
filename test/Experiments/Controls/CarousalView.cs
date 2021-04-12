@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -30,7 +29,6 @@ namespace Experiments
             set { SetValue(ItemTemplateProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for ItemTemplate.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ItemTemplateProperty =
             DependencyProperty.Register("ItemTemplate", typeof(object), typeof(CarousalView), new PropertyMetadata(0));
 

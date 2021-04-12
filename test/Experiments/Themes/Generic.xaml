@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:local="using:Experiments">
-    
+
     <Style TargetType="local:CarousalView" xmlns:local2="using:Experiments.Controls">
         <Setter Property="Template">
             <Setter.Value>
@@ -45,6 +45,72 @@
                         <Button x:Name="NextButton" Grid.Column="2" Margin="5">
                             <SymbolIcon Symbol="Next" />
                         </Button>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+    <Style TargetType="ToggleButton" x:Name="SegmentedControlToggleButtonStyle" BasedOn="{StaticResource DefaultToggleButtonStyle}">
+
+    </Style>
+
+    <Style TargetType="local:SegmentedControl" >
+        <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}" />
+        <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="ItemTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <ToggleButton Content="{Binding}" Style="{StaticResource SegmentedControlToggleButtonStyle}"/>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:SegmentedControl">
+                    <Grid BorderThickness="1"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          Background="{TemplateBinding Background}"
+                          CornerRadius="{TemplateBinding CornerRadius}"
+                          HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                          VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                          Padding="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.ChildrenTransitions>
+                            <TransitionCollection>
+                                <RepositionThemeTransition />
+                            </TransitionCollection>
+                        </Grid.ChildrenTransitions>
+
+                        <Rectangle x:Name="AnimationBackPlate"
+                                   IsHitTestVisible="False"
+                                   Fill="{ThemeResource ToggleButtonBackgroundChecked}"
+                                   Opacity="0.2"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   RadiusX="4"
+                                   RadiusY="4"
+                                   Canvas.ZIndex="0"/>
+                        <muxc:ItemsRepeater x:Name="ItemsRepeater"
+                                            ItemsSource="{TemplateBinding ItemsSource}"
+                                            ItemTemplate="{TemplateBinding ItemTemplate}"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Top"
+                                            Canvas.ZIndex="30">
+                            <muxc:ItemsRepeater.Layout>
+                                <muxc:StackLayout Orientation="Horizontal" Spacing="5" />
+                            </muxc:ItemsRepeater.Layout>
+                        </muxc:ItemsRepeater>
+                        
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

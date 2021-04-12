@@ -130,6 +130,10 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Controls\SegmentedControl.cs" />
+    <Compile Include="SegmentedControlPage.xaml.cs">
+      <DependentUpon>SegmentedControlPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ShimmerPage.xaml.cs">
       <DependentUpon>ShimmerPage.xaml</DependentUpon>
     </Compile>
@@ -166,6 +170,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="SegmentedControlPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ShimmerPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -179,9 +187,12 @@
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.11</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.6.0-prerelease.210405001</Version>
-    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\dev\dll\Microsoft.UI.Xaml.vcxproj">
+      <Project>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</Project>
+      <Name>Microsoft.UI.Xaml</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

@@ -1,0 +1,29 @@
+﻿<Page
+    x:Class="Experiments.SegmentedControlPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Experiments"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel Margin="10" Spacing="10">
+        <local:SegmentedControl x:Name="segmentedControl" SelectedIndex="1" ShowPillVisual="{Binding ElementName=showPill, Path=IsOn}">
+            <local:MyCollection>
+                <x:String>Option 0</x:String>
+                <x:String>Option 1</x:String>
+                <x:String>Option 2</x:String>
+            </local:MyCollection>
+        </local:SegmentedControl>
+
+        <TextBlock>Selected Index: </TextBlock>
+        <TextBlock Text="{Binding ElementName=segmentedControl, Path=SelectedIndex}" />
+
+        <TextBlock>Selected Item: </TextBlock>
+        <TextBlock Text="{Binding ElementName=segmentedControl, Path=SelectedItem}" />
+
+        <ToggleSwitch Header="Show Pill" x:Name="showPill" />
+        
+    </StackPanel>
+</Page>

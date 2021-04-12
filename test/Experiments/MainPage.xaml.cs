@@ -44,6 +44,10 @@ namespace Experiments
                     frame.Navigate(typeof(CommandBarPage));
                     break;
 
+                case "SegmentedControl":
+                    frame.Navigate(typeof(SegmentedControlPage));
+                    break;
+
                 default:
                     break;
             }

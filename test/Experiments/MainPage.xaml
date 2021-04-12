@@ -23,6 +23,11 @@
                     <SymbolIcon Symbol="Cut" />
                 </muxc:NavigationViewItem.Icon>
             </muxc:NavigationViewItem>
+            <muxc:NavigationViewItem Content="SegmentedControl" >
+                <muxc:NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Bullets" />
+                </muxc:NavigationViewItem.Icon>
+            </muxc:NavigationViewItem>
         </muxc:NavigationView.MenuItems>
         <Grid Margin="10">
             <Grid.RowDefinitions>
