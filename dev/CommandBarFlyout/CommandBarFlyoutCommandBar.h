@@ -102,7 +102,4 @@ private:
     winrt::Storyboard::Completed_revoker m_expandedDownToCollapsedStoryboardRevoker{};
     winrt::Storyboard::Completed_revoker m_collapsedToExpandedUpStoryboardRevoker{};
     winrt::Storyboard::Completed_revoker m_collapsedToExpandedDownStoryboardRevoker{};
-
-    tracker_ref<winrt::TranslateTransform> m_outerContentRootClipTransform{ this };
-    tracker_ref<winrt::TranslateTransform> m_outerOverflowContentRootClipTransform{ this };
 };
