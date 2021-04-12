@@ -275,44 +275,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
         }
     }
 
-    // Since DropShadows don't play well with the entrance animation for the presenter,
-    // we'll need to fade it in. This name helps us locate the element to set the flag.
-    // We didn't want to apply this name to all FlyoutPresenters, which is why it's done
-    // in code behind here.
-    if (SharedHelpers::Is21H1OrHigher())
-    {
-        presenter.Name(L"DropShadowFadeInTarget");
-    }
-
     m_presenter.set(presenter);
-
-    if (SharedHelpers::Is21H1OrHigher())
-    {
-        m_commandBarOpeningRevoker = commandBar->Opening(winrt::auto_revoke, {
-            [this](auto const&, auto const&)
-            {
-                // During the SecondaryCommands's animations, drop shadows need to disappear.
-                // However, performing a Remove during Closing/Opening and a Add during Closed/Opened
-                // doesn't line up perfectly with the end of the animations. So, if there are animations
-                // we'll remove the shadow in the Closing and Opening events, but we'll put back the shadow
-                // inside of CommandBarFlyoutCommandBar's Storyboard Completed event handlers.
-                if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
-                {
-                    if (commandBar->HasSecondaryOpenCloseAnimations())
-                    {
-                        // We'll only need to do this mid-animation remove/add when the "..." button is
-                        // pressed to open/close the overflow. This means we shouldn't do it for AlwaysExpanded
-                        // and if there's nothing in the overflow.
-                        if (!AlwaysExpanded() && m_secondaryCommands.Size() > 0)
-                        {
-                            RemoveDropShadow();
-                        }
-                    }
-                }
-            }
-            });
-    }
-
 
     m_commandBarOpenedRevoker = commandBar->Opened(winrt::auto_revoke, {
         [this, controlCornerRadius](auto const&, auto const&)
@@ -354,6 +317,35 @@ winrt::Control CommandBarFlyout::CreatePresenter()
 
     if (SharedHelpers::Is21H1OrHigher())
     {
+        // Since DropShadows don't play well with the entrance animation for the presenter,
+        // we'll need to fade it in. This name helps us locate the element to set the flag.
+        // We didn't want to apply this name to all FlyoutPresenters, which is why it's done
+        // in code behind here.
+        presenter.Name(L"DropShadowFadeInTarget");
+
+        // We'll need to remove the presenter's drop shadow on the commandBar's Opening/Closing
+        // because we need it to disappear during its expand/shrink animation when the Overflow is opened.
+        // It will be re-added once the storyboard for the overflow animations are completed.
+        // That code can be found inside CommandBarFlyoutCommandBar.
+        m_commandBarOpeningRevoker = commandBar->Opening(winrt::auto_revoke, {
+            [this](auto const&, auto const&)
+            {
+                if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
+                {
+                    if (commandBar->HasSecondaryOpenCloseAnimations())
+                    {
+                        // We'll only need to do the mid-animation remove/add when the "..." button is
+                        // pressed to open/close the overflow. This means we shouldn't do it for AlwaysExpanded
+                        // and if there's nothing in the overflow.
+                        if (!AlwaysExpanded() && m_secondaryCommands.Size() > 0)
+                        {
+                            RemoveDropShadow();
+                        }
+                    }
+                }
+            }
+            });
+
         m_commandBarClosingRevoker = commandBar->Closing(winrt::auto_revoke, {
             [this](auto const&, auto const&)
             {
@@ -365,12 +357,8 @@ winrt::Control CommandBarFlyout::CreatePresenter()
                     }
                 }
             }
-        });
-    }
+            });
 
-    // When >21H1, if the CommandBar is closed, set the presenter's corner radius to 4.
-    if (SharedHelpers::Is21H1OrHigher())
-    {
         m_commandBarClosedRevoker = commandBar->Closed(winrt::auto_revoke, {
             [this, controlCornerRadius](auto const&, auto const&)
             {
@@ -382,8 +370,10 @@ winrt::Control CommandBarFlyout::CreatePresenter()
                     }
                 }
             }
-        });
+            });
     }
+
+
 
     commandBar->SetOwningFlyout(*this);
 
