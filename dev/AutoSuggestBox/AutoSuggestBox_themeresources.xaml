@@ -35,6 +35,7 @@
 
     <Thickness x:Key="AutoSuggestBoxTopHeaderMargin">0,0,0,8</Thickness>
     <Thickness x:Key="AutoSuggestBoxInnerButtonMargin">0,3</Thickness>
+    <Thickness x:Key="AutoSuggestBoxDeleteButtonMargin">0,2</Thickness>
     <Thickness x:Key="AutoSuggestBoxQueryButtonPadding">3,2</Thickness>
     <x:Double x:Key="AutoSuggestBoxRightButtonMargin">4</x:Double>
 
@@ -67,7 +68,7 @@
                                                 BorderBrush="{ThemeResource TextControlButtonBorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                 Background="{ThemeResource TextControlButtonBackground}"
-                                                Margin="{ThemeResource AutoSuggestBoxInnerButtonMargin}"
+                                                Margin="{ThemeResource AutoSuggestBoxDeleteButtonMargin}"
                                                 Padding="{TemplateBinding Padding}"
                                                 contract7Present:CornerRadius="{ThemeResource ControlCornerRadius}"
                                                 contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
@@ -148,7 +149,6 @@
                                                 VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                                 AutomationProperties.AccessibilityView="Raw"
                                                 local:AnimatedIcon.State="Normal">
-
                                                 <VisualStateManager.VisualStateGroups>
                                                     <VisualStateGroup x:Name="CommonStates">
                                                         <VisualState x:Name="Normal" />
