@@ -412,59 +412,20 @@ void CommandBarFlyoutCommandBar::PlayCloseAnimation(
         if (closingStoryboard.GetCurrentState() != winrt::ClockState::Active)
         {
             m_closingStoryboardCompletedCallbackRevoker = closingStoryboard.Completed(winrt::auto_revoke,
+            {
+                [this, onCompleteFunc](auto const&, auto const&)
                 {
-                    [this, onCompleteFunc](auto const&, auto const&)
-                    {
-                        onCompleteFunc();
-                    }
-                });
+                    onCompleteFunc();
+                }
+            });
 
             UpdateTemplateSettings();
             closingStoryboard.Begin();
         }
     }
-}
-
-void CommandBarFlyoutCommandBar::GoToClosedPosition()
-{
-    auto transform = [this]()
+    else
     {
-        if (auto transform = m_outerContentRootClipTransform.get())
-        {
-            return transform;
-        }
-        else
-        {
-            winrt::IControlProtected thisAsControlProtected = *this;
-            auto outerTransform = GetTemplateChildT<winrt::TranslateTransform>(L"OuterContentRootClipTransform", thisAsControlProtected);
-            m_outerContentRootClipTransform.set(outerTransform);
-            return outerTransform;
-        }
-    }();
-
-    if (transform)
-    {
-        transform.X(FlyoutTemplateSettings().OpenAnimationStartPosition());
-    }
-
-    auto overflowTransform = [this]()
-    {
-        if (auto overflowTransform = m_outerOverflowContentRootClipTransform.get())
-        {
-            return overflowTransform;
-        }
-        else
-        {
-            winrt::IControlProtected thisAsControlProtected = *this;
-            auto outerOverflowTransform = GetTemplateChildT<winrt::TranslateTransform>(L"OuterOverflowContentRootClipTransform", thisAsControlProtected);
-            m_outerContentRootClipTransform.set(outerOverflowTransform);
-            return outerOverflowTransform;
-        }
-    }();
-
-    if (overflowTransform)
-    {
-        overflowTransform.X(FlyoutTemplateSettings().OpenAnimationStartPosition());
+        onCompleteFunc();
     }
 }
 

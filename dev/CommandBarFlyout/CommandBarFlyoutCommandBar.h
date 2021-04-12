@@ -26,8 +26,6 @@ public:
     void PlayCloseAnimation(std::function<void()> onCompleteFunc);
 
     bool IsExpandedUp();
-    void GoToOpenPosition();
-    void GoToClosedPosition();
 
     void ClearShadow();
 
