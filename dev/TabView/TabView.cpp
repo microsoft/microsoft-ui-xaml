@@ -893,7 +893,8 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths,bool fillAllAvailableSpace
                         }
 
                         // Use current size to update items to fill the currently occupied space
-                        tabWidth = availableTabViewSpace / (double)(TabItems().Size());
+                        auto const tabWidthUnclamped = availableTabViewSpace / (double)(TabItems().Size());
+                        tabWidth = std::clamp(tabWidthUnclamped, minTabWidth, maxTabWidth);
                     }
 
 
@@ -983,20 +984,7 @@ void TabView::UpdateSelectedItem()
 {
     if (auto&& listView = m_listView.get())
     {
-        auto tvi = SelectedItem().try_as<winrt::TabViewItem>();
-        if (!tvi)
-        {
-            tvi = ContainerFromItem(SelectedItem()).try_as<winrt::TabViewItem>();
-        }
-
-        if (tvi)
-        {
-            listView.SelectedItem(tvi);
-
-            // Setting ListView.SelectedItem will not work here in all cases.
-            // The reason why that doesn't work but this does is unknown.
-            tvi.IsSelected(true);
-        }
+        listView.SelectedItem(SelectedItem());
     }
 }
 

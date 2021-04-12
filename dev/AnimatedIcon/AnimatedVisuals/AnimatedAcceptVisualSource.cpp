@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedAcceptVisualSource.json
 //       
 //       Input file:
-//           AnimatedAcceptVisualSource.json (32315 bytes created 16:32-08:00 Nov 23 2020)
+//           AnimatedAcceptVisualSource.json (26824 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -21,7 +21,7 @@
 // ____________________________________
 // |       Object stats       | Count |
 // |__________________________|_______|
-// | All CompositionObjects   |   267 |
+// | All CompositionObjects   |   265 |
 // |--------------------------+-------|
 // | Expression animators     |    30 |
 // | KeyFrame animators       |    29 |
@@ -70,7 +70,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
-    ::Windows::Graphics::IGeometrySource2DInterop>
+    ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
     winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 
@@ -100,7 +100,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         IClosable>
 {
     winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
-    static constexpr int64_t c_durationTicks{ 29166666L };
+    static constexpr int64_t c_durationTicks{ 26666666L };
     Compositor const _c{ nullptr };
     ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
     CompositionPropertySet const _themeProperties{ nullptr };
@@ -166,150 +166,150 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // PreComp layer: Indeterminate State
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_00()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.971428573F, true);
+        const auto result = CreateBooleanKeyFrameAnimation(0.96875F, true);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 18 - PressedOffToNormalOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_01()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.857142866F, true);
-        result.InsertKeyFrame(0.971428573F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.84375F, true);
+        result.InsertKeyFrame(0.96875F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_02()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.742857158F, true);
-        result.InsertKeyFrame(0.857142866F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.71875F, true);
+        result.InsertKeyFrame(0.84375F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_03()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.685714304F, true);
-        result.InsertKeyFrame(0.742857158F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.65625F, true);
+        result.InsertKeyFrame(0.71875F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_04()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.628571451F, true);
-        result.InsertKeyFrame(0.685714304F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.625F, true);
+        result.InsertKeyFrame(0.65625F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_05()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.571428597F, true);
-        result.InsertKeyFrame(0.628571451F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.59375F, true);
+        result.InsertKeyFrame(0.625F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_06()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.514285743F, true);
-        result.InsertKeyFrame(0.571428597F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.5625F, true);
+        result.InsertKeyFrame(0.59375F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 12 - PointerOverOffToPressedOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_07()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.485714287F, true);
-        result.InsertKeyFrame(0.514285743F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.53125F, true);
+        result.InsertKeyFrame(0.5625F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 11 - PointerOverOffToNormalOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_08()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.45714286F, true);
-        result.InsertKeyFrame(0.485714287F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.5F, true);
+        result.InsertKeyFrame(0.53125F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_09()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.400000006F, true);
-        result.InsertKeyFrame(0.45714286F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.375F, true);
+        result.InsertKeyFrame(0.5F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 09 - PointerOverOnToPressedOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_10()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.371428579F, true);
-        result.InsertKeyFrame(0.400000006F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.34375F, true);
+        result.InsertKeyFrame(0.375F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 08 - PointerOverOnToNormalOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_11()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.342857152F, true);
-        result.InsertKeyFrame(0.371428579F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.3125F, true);
+        result.InsertKeyFrame(0.34375F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_12()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.285714298F, true);
-        result.InsertKeyFrame(0.342857152F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.28125F, true);
+        result.InsertKeyFrame(0.3125F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 06 - NormalOffToPressedOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_13()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.257142872F, true);
-        result.InsertKeyFrame(0.285714298F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.25F, true);
+        result.InsertKeyFrame(0.28125F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 05 - NormalOffToPointerOverOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_14()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.22857143F, true);
-        result.InsertKeyFrame(0.257142872F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.21875F, true);
+        result.InsertKeyFrame(0.25F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 04 - NormalOffToNormalOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_15()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.114285715F, true);
-        result.InsertKeyFrame(0.22857143F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.09375F, true);
+        result.InsertKeyFrame(0.21875F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 03 - NormalOnToPressedOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_16()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.0857142881F, true);
-        result.InsertKeyFrame(0.114285715F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.0625F, true);
+        result.InsertKeyFrame(0.09375F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 02 - NormalOnToPointerOverOn
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_17()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.0571428575F, true);
-        result.InsertKeyFrame(0.0857142881F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.03125F, true);
+        result.InsertKeyFrame(0.0625F, false);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_18()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.0571428575F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.03125F, false);
         return result;
     }
 
@@ -336,9 +336,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
         winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
-        sink->BeginFigure({ -15.125F, 4.0F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ -5.44500017F, 13.8360004F });
-        sink->AddLine({ 14.875F, -9.625F });
+        sink->BeginFigure({ -15.1719999F, 0.0160000008F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ -5.0F, 10.1879997F });
+        sink->AddLine({ 15.2810001F, -10.2810001F });
         sink->EndFigure(D2D1_FIGURE_END_OPEN);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -369,7 +369,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
 
     // - - PreComp layer: Controls - 01 - Check - 18 - PressedOffToNormalOn
     // - Transforms for Controls - 01 - Check - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // Offset:<24.25, 21.75>
+    // Offset:<24, 24>
     CompositionPathGeometry PathGeometry_01()
     {
         const auto result = _c.CreatePathGeometry(Path());
@@ -380,7 +380,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // - - PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn
     // - Transforms for Controls - 01 - Check - 17 - PressedOffToPointerOverOn
     // Scale(1,1,0)
-    // Offset:<24.25, 21.75>
+    // Offset:<24, 24>
     CompositionPathGeometry PathGeometry_02()
     {
         const auto result = _c.CreatePathGeometry(_path);
@@ -390,7 +390,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
 
     // - - PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
     // - Transforms for Controls - 01 - Check - 16 - PressedOffToPressedOn Scale(1,1,0)
-    // Offset:<24.25, 21.75>
+    // Offset:<24, 24>
     CompositionPathGeometry PathGeometry_03()
     {
         const auto result = _c.CreatePathGeometry(_path);
@@ -400,7 +400,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
 
     // - - PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
     // - Transforms for Controls - 01 - Check - 15 - PressedOnToNormalOff Scale(1,1,0)
-    // Offset:<24.25, 21.75>
+    // Offset:<24, 24>
     CompositionPathGeometry PathGeometry_04()
     {
         const auto result = _c.CreatePathGeometry(_path);
@@ -411,7 +411,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // - - PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff
     // - Transforms for Controls - 01 - Check - 14 - PressedOnToPointerOverOff
     // Scale(1,1,0)
-    // Offset:<24.25, 21.75>
+    // Offset:<24, 24>
     CompositionPathGeometry PathGeometry_05()
     {
         const auto result = _c.CreatePathGeometry(_path);
@@ -421,7 +421,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
 
     // - - PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
     // - Transforms for Controls - 01 - Check - 13 - PressedOnToPressedOff Scale(1,1,0)
-    // Offset:<24.25, 21.75>
+    // Offset:<24, 24>
     CompositionPathGeometry PathGeometry_06()
     {
         const auto result = _c.CreatePathGeometry(_path);
@@ -432,7 +432,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // - - PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
     // - Transforms for Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
     // Scale(1,1,0)
-    // Offset:<24.25, 21.75>
+    // Offset:<24, 24>
     CompositionPathGeometry PathGeometry_07()
     {
         const auto result = _c.CreatePathGeometry(_path);
@@ -448,7 +448,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // - - PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
     // - Transforms for Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
     // Scale(1,1,0)
-    // Offset:<24.25, 21.75>
+    // Offset:<24, 24>
     CompositionPathGeometry PathGeometry_09()
     {
         const auto result = _c.CreatePathGeometry(_path);
@@ -458,7 +458,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
 
     // - - PreComp layer: Controls - 01 - Check - 04 - NormalOffToNormalOn
     // - Transforms for Controls - 01 - Check - 04 - NormalOffToNormalOn Scale(1,1,0)
-    // Offset:<24.25, 21.75>
+    // Offset:<24, 24>
     CompositionPathGeometry PathGeometry_10()
     {
         const auto result = _c.CreatePathGeometry(_path);
@@ -468,7 +468,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
 
     // - - PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff 
     // - Transforms for Controls - 01 - Check - 01 - NormalOnToNormalOff  Scale(1,1,0)
-    // Offset:<24.25, 21.75>
+    // Offset:<24, 24>
     CompositionPathGeometry PathGeometry_11()
     {
         const auto result = _c.CreatePathGeometry(_path);
@@ -497,15 +497,15 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // Path 1
     CompositionSpriteShape SpriteShape_01()
     {
-        // Offset:<24.25, 21.75>
-        const auto result = CreateSpriteShape(PathGeometry_01(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 21.75F });
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(PathGeometry_01(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(4.0F);
+        result.StrokeThickness(3.5F);
         return result;
     }
 
@@ -514,15 +514,15 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // Path 1
     CompositionSpriteShape SpriteShape_02()
     {
-        // Offset:<24.25, 21.75>
-        const auto result = CreateSpriteShape(PathGeometry_02(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 21.75F });
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(PathGeometry_02(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(4.0F);
+        result.StrokeThickness(3.5F);
         return result;
     }
 
@@ -531,15 +531,15 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // Path 1
     CompositionSpriteShape SpriteShape_03()
     {
-        // Offset:<24.25, 21.75>
-        const auto result = CreateSpriteShape(PathGeometry_03(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 21.75F });
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(PathGeometry_03(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(4.0F);
+        result.StrokeThickness(3.5F);
         return result;
     }
 
@@ -548,15 +548,15 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // Path 1
     CompositionSpriteShape SpriteShape_04()
     {
-        // Offset:<24.25, 21.75>
-        const auto result = CreateSpriteShape(PathGeometry_04(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 21.75F });
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(PathGeometry_04(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(4.0F);
+        result.StrokeThickness(3.5F);
         return result;
     }
 
@@ -565,15 +565,15 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // Path 1
     CompositionSpriteShape SpriteShape_05()
     {
-        // Offset:<24.25, 21.75>
-        const auto result = CreateSpriteShape(PathGeometry_05(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 21.75F });
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(PathGeometry_05(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(4.0F);
+        result.StrokeThickness(3.5F);
         return result;
     }
 
@@ -582,15 +582,15 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // Path 1
     CompositionSpriteShape SpriteShape_06()
     {
-        // Offset:<24.25, 21.75>
-        const auto result = CreateSpriteShape(PathGeometry_06(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 21.75F });
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(PathGeometry_06(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(4.0F);
+        result.StrokeThickness(3.5F);
         return result;
     }
 
@@ -600,15 +600,15 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // Path 1
     CompositionSpriteShape SpriteShape_07()
     {
-        // Offset:<24.25, 21.75>
-        const auto result = CreateSpriteShape(PathGeometry_07(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 21.75F });
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(PathGeometry_07(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(4.0F);
+        result.StrokeThickness(3.5F);
         return result;
     }
 
@@ -617,15 +617,15 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // Path 1
     CompositionSpriteShape SpriteShape_08()
     {
-        // Offset:<24.25, 21.75>
-        const auto result = CreateSpriteShape(PathGeometry_08(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 21.75F });
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(PathGeometry_08(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(4.0F);
+        result.StrokeThickness(3.5F);
         return result;
     }
 
@@ -634,15 +634,15 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // Path 1
     CompositionSpriteShape SpriteShape_09()
     {
-        // Offset:<24.25, 21.75>
-        const auto result = CreateSpriteShape(_pathGeometry_08, { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 21.75F });
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(_pathGeometry_08, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(4.0F);
+        result.StrokeThickness(3.5F);
         return result;
     }
 
@@ -652,15 +652,15 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // Path 1
     CompositionSpriteShape SpriteShape_10()
     {
-        // Offset:<24.25, 21.75>
-        const auto result = CreateSpriteShape(PathGeometry_09(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 21.75F });
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(PathGeometry_09(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(4.0F);
+        result.StrokeThickness(3.5F);
         return result;
     }
 
@@ -669,15 +669,15 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // Path 1
     CompositionSpriteShape SpriteShape_11()
     {
-        // Offset:<24.25, 21.75>
-        const auto result = CreateSpriteShape(PathGeometry_10(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 21.75F });
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(PathGeometry_10(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(4.0F);
+        result.StrokeThickness(3.5F);
         return result;
     }
 
@@ -686,15 +686,15 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // Path 1
     CompositionSpriteShape SpriteShape_12()
     {
-        // Offset:<24.25, 21.75>
-        const auto result = CreateSpriteShape(_pathGeometry_08, { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 21.75F });
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(_pathGeometry_08, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(4.0F);
+        result.StrokeThickness(3.5F);
         return result;
     }
 
@@ -703,15 +703,15 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // Path 1
     CompositionSpriteShape SpriteShape_13()
     {
-        // Offset:<24.25, 21.75>
-        const auto result = CreateSpriteShape(_pathGeometry_08, { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 21.75F });
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(_pathGeometry_08, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(4.0F);
+        result.StrokeThickness(3.5F);
         return result;
     }
 
@@ -720,15 +720,15 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     // Path 1
     CompositionSpriteShape SpriteShape_14()
     {
-        // Offset:<24.25, 21.75>
-        const auto result = CreateSpriteShape(PathGeometry_11(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 21.75F });
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(PathGeometry_11(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(4.0F);
+        result.StrokeThickness(3.5F);
         return result;
     }
 
@@ -1113,7 +1113,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
 
     CubicBezierEasingFunction CubicBezierEasingFunction_1()
     {
-        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.550000012F, 0.0F }, { 0.833000004F, 0.833000004F });
+        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.833000004F, 0.833000004F });
     }
 
     ExpressionAnimation RootProgress()
@@ -1131,124 +1131,124 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
 
     // - - - PreComp layer: Controls - 01 - Check - 18 - PressedOffToNormalOn
     // - - Transforms for Controls - 01 - Check - 18 - PressedOffToNormalOn Scale(1,1,0)
-    // -  Offset:<24.25, 21.75>
+    // -  Offset:<24, 24>
     // TrimEnd
     ScalarKeyFrameAnimation TrimEndScalarAnimation_0_to_1_0()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, StepThenHoldEasingFunction());
-        result.InsertKeyFrame(0.857142866F, 0.0F, HoldThenStepEasingFunction());
-        result.InsertKeyFrame(0.965714276F, 1.0F, CubicBezierEasingFunction_0());
+        result.InsertKeyFrame(0.84375F, 0.0F, HoldThenStepEasingFunction());
+        result.InsertKeyFrame(0.962499976F, 1.0F, CubicBezierEasingFunction_0());
         return result;
     }
 
     // - - - PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn
     // - - Transforms for Controls - 01 - Check - 17 - PressedOffToPointerOverOn
     // Scale(1,1,0)
-    // -  Offset:<24.25, 21.75>
+    // -  Offset:<24, 24>
     // TrimEnd
     ScalarKeyFrameAnimation TrimEndScalarAnimation_0_to_1_1()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.742857158F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.851428568F, 1.0F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.71875F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.837499976F, 1.0F, _cubicBezierEasingFunction_0);
         return result;
     }
 
     // - - - PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
     // - - Transforms for Controls - 01 - Check - 16 - PressedOffToPressedOn Scale(1,1,0)
-    // -  Offset:<24.25, 21.75>
+    // -  Offset:<24, 24>
     // TrimEnd
     ScalarKeyFrameAnimation TrimEndScalarAnimation_0_to_1_2()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.685714304F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.737142861F, 1.0F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.65625F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.712499976F, 1.0F, _cubicBezierEasingFunction_0);
         return result;
     }
 
     // - - - PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
     // - - Transforms for Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
     // Scale(1,1,0)
-    // -  Offset:<24.25, 21.75>
+    // -  Offset:<24, 24>
     // TrimEnd
     ScalarKeyFrameAnimation TrimEndScalarAnimation_0_to_1_3()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.400000006F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.451428562F, 1.0F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.375F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.493750006F, 1.0F, _cubicBezierEasingFunction_0);
         return result;
     }
 
     // - - - PreComp layer: Controls - 01 - Check - 04 - NormalOffToNormalOn
     // - - Transforms for Controls - 01 - Check - 04 - NormalOffToNormalOn Scale(1,1,0)
-    // -  Offset:<24.25, 21.75>
+    // -  Offset:<24, 24>
     // TrimEnd
     ScalarKeyFrameAnimation TrimEndScalarAnimation_0_to_1_4()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.114285715F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.222857147F, 1.0F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.09375F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.212500006F, 1.0F, _cubicBezierEasingFunction_0);
         return result;
     }
 
     // - - - PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
     // - - Transforms for Controls - 01 - Check - 15 - PressedOnToNormalOff Scale(1,1,0)
-    // -  Offset:<24.25, 21.75>
+    // -  Offset:<24, 24>
     // TrimStart
     ScalarKeyFrameAnimation TrimStartScalarAnimation_0_to_1_0()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.628571451F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.680000007F, 1.0F, CubicBezierEasingFunction_1());
+        result.InsertKeyFrame(0.625F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.649999976F, 1.0F, CubicBezierEasingFunction_1());
         return result;
     }
 
     // - - - PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff
     // - - Transforms for Controls - 01 - Check - 14 - PressedOnToPointerOverOff
     // Scale(1,1,0)
-    // -  Offset:<24.25, 21.75>
+    // -  Offset:<24, 24>
     // TrimStart
     ScalarKeyFrameAnimation TrimStartScalarAnimation_0_to_1_1()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.571428597F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.622857153F, 1.0F, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.59375F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.618749976F, 1.0F, _cubicBezierEasingFunction_1);
         return result;
     }
 
     // - - - PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
     // - - Transforms for Controls - 01 - Check - 13 - PressedOnToPressedOff Scale(1,1,0)
-    // -  Offset:<24.25, 21.75>
+    // -  Offset:<24, 24>
     // TrimStart
     ScalarKeyFrameAnimation TrimStartScalarAnimation_0_to_1_2()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.514285743F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.5657143F, 1.0F, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.5625F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.587499976F, 1.0F, _cubicBezierEasingFunction_1);
         return result;
     }
 
     // - - - PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
     // - - Transforms for Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
     // Scale(1,1,0)
-    // -  Offset:<24.25, 21.75>
+    // -  Offset:<24, 24>
     // TrimStart
     ScalarKeyFrameAnimation TrimStartScalarAnimation_0_to_1_3()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.285714298F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.337142855F, 1.0F, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.28125F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.306250006F, 1.0F, _cubicBezierEasingFunction_1);
         return result;
     }
 
     // - - - PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff 
     // - - Transforms for Controls - 01 - Check - 01 - NormalOnToNormalOff  Scale(1,1,0)
-    // -  Offset:<24.25, 21.75>
+    // -  Offset:<24, 24>
     // TrimStart
     ScalarKeyFrameAnimation TrimStartScalarAnimation_0_to_1_4()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.0514285713F, 1.0F, _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.833000004F, 0.833000004F }));
+        result.InsertKeyFrame(0.0250000004F, 1.0F, _cubicBezierEasingFunction_1);
         return result;
     }
 
@@ -1264,155 +1264,155 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     }
 
     // PreComp layer: Controls - 01 - Check - 18 - PressedOffToNormalOn
-    // Shape tree root for layer: Check - NormalOnToNormalOff
+    // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_01()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        // Offset:<24.25, 21.75>
+        // Offset:<24, 24>
         result.Shapes().Append(SpriteShape_01());
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn
-    // Shape tree root for layer: Check - NormalOnToNormalOff
+    // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_02()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        // Offset:<24.25, 21.75>
+        // Offset:<24, 24>
         result.Shapes().Append(SpriteShape_02());
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
-    // Shape tree root for layer: Check - NormalOnToNormalOff
+    // Shape tree root for layer: Shape Layer 2
     ShapeVisual ShapeVisual_03()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        // Offset:<24.25, 21.75>
+        // Offset:<24, 24>
         result.Shapes().Append(SpriteShape_03());
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
-    // Shape tree root for layer: Check - NormalOnToNormalOff
+    // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_04()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        // Offset:<24.25, 21.75>
+        // Offset:<24, 24>
         result.Shapes().Append(SpriteShape_04());
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff
-    // Shape tree root for layer: Check - NormalOnToNormalOff
+    // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_05()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        // Offset:<24.25, 21.75>
+        // Offset:<24, 24>
         result.Shapes().Append(SpriteShape_05());
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
-    // Shape tree root for layer: Check - NormalOnToNormalOff
+    // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_06()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        // Offset:<24.25, 21.75>
+        // Offset:<24, 24>
         result.Shapes().Append(SpriteShape_06());
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
-    // Shape tree root for layer: Check - NormalOnToNormalOff 2
+    // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_07()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        // Offset:<24.25, 21.75>
+        // Offset:<24, 24>
         result.Shapes().Append(SpriteShape_07());
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 09 - PointerOverOnToPressedOn
-    // Shape tree root for layer: Check - NormalOnToNormalOff
+    // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_08()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        // Offset:<24.25, 21.75>
+        // Offset:<24, 24>
         result.Shapes().Append(SpriteShape_08());
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 08 - PointerOverOnToNormalOn
-    // Shape tree root for layer: Check - NormalOnToNormalOff
+    // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_09()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        // Offset:<24.25, 21.75>
+        // Offset:<24, 24>
         result.Shapes().Append(SpriteShape_09());
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
-    // Shape tree root for layer: Check - NormalOnToNormalOff 2
+    // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_10()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        // Offset:<24.25, 21.75>
+        // Offset:<24, 24>
         result.Shapes().Append(SpriteShape_10());
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 04 - NormalOffToNormalOn
-    // Shape tree root for layer: Check - NormalOnToNormalOff
+    // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_11()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        // Offset:<24.25, 21.75>
+        // Offset:<24, 24>
         result.Shapes().Append(SpriteShape_11());
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 03 - NormalOnToPressedOn
-    // Shape tree root for layer: Check - NormalOnToNormalOff
+    // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_12()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        // Offset:<24.25, 21.75>
+        // Offset:<24, 24>
         result.Shapes().Append(SpriteShape_12());
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 02 - NormalOnToPointerOverOn
-    // Shape tree root for layer: Check - NormalOnToNormalOff
+    // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_13()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        // Offset:<24.25, 21.75>
+        // Offset:<24, 24>
         result.Shapes().Append(SpriteShape_13());
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff 
-    // Shape tree root for layer: Check - NormalOnToNormalOff
+    // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_14()
     {
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
-        // Offset:<24.25, 21.75>
+        // Offset:<24, 24>
         result.Shapes().Append(SpriteShape_14());
         return result;
     }
@@ -1508,13 +1508,6 @@ void AnimatedAcceptVisualSource::Foreground(Color value)
 }
 
 winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedAcceptVisualSource::TryCreateAnimatedVisual(
-    Compositor const& compositor)
-{
-    IInspectable diagnostics = nullptr;
-    return TryCreateAnimatedVisual(compositor, diagnostics);
-}
-
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedAcceptVisualSource::TryCreateAnimatedVisual(
     Compositor const& compositor,
     IInspectable& diagnostics)
 {
@@ -1533,7 +1526,7 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedAcceptVisualSource
 
 double AnimatedAcceptVisualSource::FrameCount()
 {
-    return 175.0;
+    return 160.0;
 }
 
 double AnimatedAcceptVisualSource::Framerate()
@@ -1543,12 +1536,12 @@ double AnimatedAcceptVisualSource::Framerate()
 
 TimeSpan AnimatedAcceptVisualSource::Duration()
 {
-    return TimeSpan{ 29166666L };
+    return TimeSpan{ 26666666L };
 }
 
 double AnimatedAcceptVisualSource::FrameToProgress(double frameNumber)
 {
-    return frameNumber / 175.0;
+    return frameNumber / 160.0;
 }
 
 winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedAcceptVisualSource::Markers()
@@ -1557,44 +1550,44 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedAccep
         std::map<winrt::hstring, double>
         {
             { L"NormalOnToNormalOff_Start", 0.0 },
-            { L"NormalOnToNormalOff_End", 0.0517142857142857 },
-            { L"NormalOnToPointerOverOn_Start", 0.0574285714285714 },
-            { L"NormalOnToPointerOverOn_End", 0.0802857142857143 },
-            { L"NormalOnToPressedOn_Start", 0.086 },
-            { L"NormalOnToPressedOn_End", 0.108857142857143 },
-            { L"NormalOffToNormalOn_Start", 0.114571428571429 },
-            { L"NormalOffToNormalOn_End", 0.223142857142857 },
-            { L"NormalOffToPointerOverOff_Start", 0.228857142857143 },
-            { L"NormalOffToPointerOverOff_End", 0.251714285714286 },
-            { L"NormalOffToPressedOff_Start", 0.257428571428571 },
-            { L"NormalOffToPressedOff_End", 0.280285714285714 },
-            { L"PointerOverOnToPointerOverOff_Start", 0.286 },
-            { L"PointerOverOnToPointerOverOff_End", 0.337428571428571 },
-            { L"PointerOverOnToNormalOn_Start", 0.343142857142857 },
-            { L"PointerOverOnToNormalOn_End", 0.366 },
-            { L"PointerOverOnToPressedOn_Start", 0.371714285714286 },
-            { L"PointerOverOnToPressedOn_End", 0.394571428571429 },
-            { L"PointerOverOffToPointerOverOn_Start", 0.400285714285714 },
-            { L"PointerOverOffToPointerOverOn_End", 0.451714285714286 },
-            { L"PointerOverOffToNormalOff_Start", 0.457428571428571 },
-            { L"PointerOverOffToNormalOff_End", 0.480285714285714 },
-            { L"PointerOverOffToPressedOff_Start", 0.486 },
-            { L"PointerOverOffToPressedOff_End", 0.508857142857143 },
-            { L"PressedOnToPressedOff_Start", 0.514571428571429 },
-            { L"PressedOnToPressedOff_End", 0.566 },
-            { L"PressedOnToPointerOverOff_Start", 0.571714285714286 },
-            { L"PressedOnToPointerOverOff_End", 0.623142857142857 },
-            { L"PressedOnToNormalOff_Start", 0.628857142857143 },
-            { L"PressedOnToNormalOff_End", 0.680285714285714 },
-            { L"PressedOffToPressedOn_Start", 0.686 },
-            { L"PressedOffToPressedOn_End", 0.737428571428572 },
-            { L"PressedOffToPointerOverOn_Start", 0.743142857142857 },
-            { L"PressedOffToPointerOverOn_End", 0.851714285714286 },
-            { L"PressedOffToNormalOn_Start", 0.857428571428572 },
-            { L"PressedOffToNormalOn_End", 0.966 },
-            { L"NormalIndeterminate", 0.971714285714286 },
-            { L"PointerOverIndeterminate", 0.983142857142857 },
-            { L"PressedIndeterminate", 0.994571428571429 },
+            { L"NormalOnToNormalOff_End", 0.0253125 },
+            { L"NormalOnToPointerOverOn_Start", 0.0315625 },
+            { L"NormalOnToPointerOverOn_End", 0.0565625 },
+            { L"NormalOnToPressedOn_Start", 0.0628125 },
+            { L"NormalOnToPressedOn_End", 0.0878125 },
+            { L"NormalOffToNormalOn_Start", 0.0940625 },
+            { L"NormalOffToNormalOn_End", 0.2128125 },
+            { L"NormalOffToPointerOverOff_Start", 0.2190625 },
+            { L"NormalOffToPointerOverOff_End", 0.2440625 },
+            { L"NormalOffToPressedOff_Start", 0.2503125 },
+            { L"NormalOffToPressedOff_End", 0.2753125 },
+            { L"PointerOverOnToPointerOverOff_Start", 0.2815625 },
+            { L"PointerOverOnToPointerOverOff_End", 0.3065625 },
+            { L"PointerOverOnToNormalOn_Start", 0.3128125 },
+            { L"PointerOverOnToNormalOn_End", 0.3378125 },
+            { L"PointerOverOnToPressedOn_Start", 0.3440625 },
+            { L"PointerOverOnToPressedOn_End", 0.3690625 },
+            { L"PointerOverOffToPointerOverOn_Start", 0.3753125 },
+            { L"PointerOverOffToPointerOverOn_End", 0.4940625 },
+            { L"PointerOverOffToNormalOff_Start", 0.5003125 },
+            { L"PointerOverOffToNormalOff_End", 0.5253125 },
+            { L"PointerOverOffToPressedOff_Start", 0.5315625 },
+            { L"PointerOverOffToPressedOff_End", 0.5565625 },
+            { L"PressedOnToPressedOff_Start", 0.5628125 },
+            { L"PressedOnToPressedOff_End", 0.5878125 },
+            { L"PressedOnToPointerOverOff_Start", 0.5940625 },
+            { L"PressedOnToPointerOverOff_End", 0.6190625 },
+            { L"PressedOnToNormalOff_Start", 0.6253125 },
+            { L"PressedOnToNormalOff_End", 0.6503125 },
+            { L"PressedOffToPressedOn_Start", 0.6565625 },
+            { L"PressedOffToPressedOn_End", 0.7128125 },
+            { L"PressedOffToPointerOverOn_Start", 0.7190625 },
+            { L"PressedOffToPointerOverOn_End", 0.8378125 },
+            { L"PressedOffToNormalOn_Start", 0.8440625 },
+            { L"PressedOffToNormalOn_End", 0.9628125 },
+            { L"NormalIndeterminate", 0.9690625 },
+            { L"PointerOverIndeterminate", 0.9815625 },
+            { L"PressedIndeterminate", 0.9940625 },
         }
     ).GetView();
 }

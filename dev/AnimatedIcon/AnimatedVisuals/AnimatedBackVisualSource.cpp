@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedBackVisualSource.json
 //       
 //       Input file:
-//           AnimatedBackVisualSource.json (19124 bytes created 12:28-08:00 Feb 8 2021)
+//           AnimatedBackVisualSource.json (27247 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -21,11 +21,11 @@
 // ____________________________________
 // |       Object stats       | Count |
 // |__________________________|_______|
-// | All CompositionObjects   |   133 |
+// | All CompositionObjects   |   223 |
 // |--------------------------+-------|
-// | Expression animators     |    16 |
-// | KeyFrame animators       |    14 |
-// | Reference parameters     |    17 |
+// | Expression animators     |    33 |
+// | KeyFrame animators       |    30 |
+// | Reference parameters     |    35 |
 // | Expression operations    |     4 |
 // |--------------------------+-------|
 // | Animated brushes         |     1 |
@@ -36,8 +36,8 @@
 // | ContainerVisuals         |     7 |
 // | ShapeVisuals             |     6 |
 // |--------------------------+-------|
-// | ContainerShapes          |     - |
-// | CompositionSpriteShapes  |    12 |
+// | ContainerShapes          |     4 |
+// | CompositionSpriteShapes  |    18 |
 // |--------------------------+-------|
 // | Brushes                  |     1 |
 // | Gradient stops           |     - |
@@ -52,6 +52,14 @@
 #include <d2d1_1.h>
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
+#ifdef BUILD_WINDOWS
+namespace ABI
+{
+#include <Windows.Graphics.Effects.Interop.h>
+}
+#else
+#include <Windows.Graphics.Effects.Interop.h>
+#endif
 #include <winrt/Windows.Graphics.Effects.h>
 
 using namespace winrt::Microsoft::UI::Xaml::Controls;
@@ -70,7 +78,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
-    ::Windows::Graphics::IGeometrySource2DInterop>
+    ::ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
     winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 
@@ -100,17 +108,22 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
         IClosable>
 {
     winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
-    static constexpr int64_t c_durationTicks{ 8333333L };
+    static constexpr int64_t c_durationTicks{ 13333333L };
     Compositor const _c{ nullptr };
     ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
     CompositionPropertySet const _themeProperties{ nullptr };
     CompositionColorBrush _themeColor_Foreground{ nullptr };
     CompositionPathGeometry _pathGeometry_0{ nullptr };
     CompositionPathGeometry _pathGeometry_1{ nullptr };
+    CompositionPathGeometry _pathGeometry_2{ nullptr };
     ContainerVisual _root{ nullptr };
     CubicBezierEasingFunction _cubicBezierEasingFunction_0{ nullptr };
     CubicBezierEasingFunction _cubicBezierEasingFunction_1{ nullptr };
     CubicBezierEasingFunction _cubicBezierEasingFunction_2{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_3{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_4{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_5{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_6{ nullptr };
     ExpressionAnimation _rootProgress{ nullptr };
     InsetClip _insetClip_0{ nullptr };
     StepEasingFunction _holdThenStepEasingFunction{ nullptr };
@@ -176,46 +189,46 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
     // PreComp layer: Controls - 03 - Back - 06 - PressedToPointerOver
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_0()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.899999976F, true);
+        const auto result = CreateBooleanKeyFrameAnimation(0.75F, true);
         return result;
     }
 
     // PreComp layer: Controls - 03 - Back - 05 - PressedToNormal
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_1()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.600000024F, true);
-        result.InsertKeyFrame(0.899999976F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.5F, true);
+        result.InsertKeyFrame(0.75F, false);
         return result;
     }
 
     // PreComp layer: Controls - 03 - Back - 04 - PointerOverToPressed
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_2()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.5F, true);
-        result.InsertKeyFrame(0.600000024F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.375F, true);
+        result.InsertKeyFrame(0.5F, false);
         return result;
     }
 
     // PreComp layer: Controls - 03 - Back - 03 - PointerOverToNormal
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_3()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.300000012F, true);
-        result.InsertKeyFrame(0.5F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.25F, true);
+        result.InsertKeyFrame(0.375F, false);
         return result;
     }
 
     // PreComp layer: Controls - 03 - Back - 02 - NormalToPressed
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_4()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.200000003F, true);
-        result.InsertKeyFrame(0.300000012F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.125F, true);
+        result.InsertKeyFrame(0.25F, false);
         return result;
     }
 
     // PreComp layer: Controls - 03 - Back - 01 - NormalToPointerOver
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_5()
     {
-        const auto result = CreateBooleanKeyFrameAnimation(0.200000003F, false);
+        const auto result = CreateBooleanKeyFrameAnimation(0.125F, false);
         return result;
     }
 
@@ -226,12 +239,10 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
         winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ -5.38600016F, 0.495000005F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ 7.5F, 0.499000013F });
+        sink->BeginFigure({ 7.5F, 0.499000013F }, D2D1_FIGURE_BEGIN_FILLED);
         sink->AddBezier({ { 7.77600002F, 0.499000013F }, { 8.0F, 0.275000006F }, { 8.0F, -0.00100000005F } });
         sink->AddBezier({ { 8.0F, -0.27700001F }, { 7.77600002F, -0.500999987F }, { 7.5F, -0.500999987F } });
-        sink->AddLine({ -5.3829999F, -0.504999995F });
-        sink->AddLine({ -5.38600016F, 0.495000005F });
+        sink->AddLine({ 7.5F, 0.499000013F });
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -245,13 +256,30 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
         winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
+        sink->BeginFigure({ -5.33400011F, 0.495000005F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ 7.5F, 0.499000013F });
+        sink->AddLine({ 7.5F, -0.500999987F });
+        sink->AddLine({ -5.33099985F, -0.504999995F });
+        sink->AddLine({ -5.33400011F, 0.495000005F });
+        sink->EndFigure(D2D1_FIGURE_END_CLOSED);
+        winrt::check_hresult(sink->Close());
+        auto result = winrt::make_self<CanvasGeometry>(path);
+        return result;
+    }
+
+    winrt::com_ptr<CanvasGeometry> Geometry_2()
+    {
+        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
+        winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
+        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
+        winrt::check_hresult(path->Open(sink.put()));
+        sink->SetFillMode(D2D1_FILL_MODE_WINDING);
         sink->BeginFigure({ -0.837000012F, 6.86800003F }, D2D1_FIGURE_BEGIN_FILLED);
         sink->AddBezier({ { -0.633000016F, 7.0539999F }, { -0.317000002F, 7.03999996F }, { -0.130999997F, 6.83599997F } });
         sink->AddBezier({ { 0.0549999997F, 6.63199997F }, { 0.0410000011F, 6.31500006F }, { -0.163000003F, 6.12900019F } });
         sink->AddLine({ -6.33099985F, 0.499000013F });
-        sink->AddLine({ 2.61100006F, 0.495000005F });
-        sink->AddBezier({ { 2.88700008F, 0.495000005F }, { 3.11100006F, 0.270999998F }, { 3.11100006F, -0.00499999989F } });
-        sink->AddBezier({ { 3.11100006F, -0.280999988F }, { 2.88700008F, -0.504999995F }, { 2.61100006F, -0.504999995F } });
+        sink->AddLine({ -5.32800007F, 0.488999993F });
+        sink->AddLine({ -5.32800007F, -0.510999978F });
         sink->AddLine({ -6.32800007F, -0.500999987F });
         sink->AddLine({ -0.163000003F, -6.12900019F });
         sink->AddBezier({ { 0.0410000011F, -6.31500006F }, { 0.0549999997F, -6.63199997F }, { -0.130999997F, -6.83599997F } });
@@ -276,6 +304,66 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
         return result;
     }
 
+    // - PreComp layer: Controls - 03 - Back - 06 - PressedToPointerOver
+    // Transforms for Controls - 03 - Back - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Round Cap 2
+    CompositionContainerShape ContainerShape_0()
+    {
+        const auto result = _c.CreateContainerShape();
+        const auto shapes = result.Shapes();
+        // Transforms: Round Cap 2 Scale:2.25,2.25
+        shapes.Append(SpriteShape_00());
+        // Transforms: Stem 2
+        shapes.Append(SpriteShape_01());
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_0(), _rootProgress);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 03 - Back - 05 - PressedToNormal
+    // Transforms for Controls - 03 - Back - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Round Cap 2
+    CompositionContainerShape ContainerShape_1()
+    {
+        const auto result = _c.CreateContainerShape();
+        const auto shapes = result.Shapes();
+        // Transforms: Round Cap 2 Scale:2.25,2.25
+        shapes.Append(SpriteShape_03());
+        // Transforms: Stem 2
+        shapes.Append(SpriteShape_04());
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_2(), _rootProgress);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 03 - Back - 04 - PointerOverToPressed 
+    // Transforms for Controls - 03 - Back - 04 - PointerOverToPressed  Scale(1,1,0)
+    // Layer: Round Cap 2
+    CompositionContainerShape ContainerShape_2()
+    {
+        const auto result = _c.CreateContainerShape();
+        const auto shapes = result.Shapes();
+        // Transforms: Round Cap 2 Scale:2.25,2.25
+        shapes.Append(SpriteShape_06());
+        // Transforms: Stem 2
+        shapes.Append(SpriteShape_07());
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_4(), _rootProgress);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 03 - Back - 02 - NormalToPressed
+    // Transforms for Controls - 03 - Back - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Round Cap 2
+    CompositionContainerShape ContainerShape_3()
+    {
+        const auto result = _c.CreateContainerShape();
+        const auto shapes = result.Shapes();
+        // Transforms: Round Cap 2 Scale:2.25,2.25
+        shapes.Append(SpriteShape_12());
+        // Transforms: Stem 2
+        shapes.Append(SpriteShape_13());
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_7(), _rootProgress);
+        return result;
+    }
+
     CompositionPathGeometry PathGeometry_0()
     {
         return _pathGeometry_0 = _c.CreatePathGeometry(CompositionPath(CanvasGeometryToIGeometrySource2D(Geometry_0())));
@@ -286,122 +374,203 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
         return _pathGeometry_1 = _c.CreatePathGeometry(CompositionPath(CanvasGeometryToIGeometrySource2D(Geometry_1())));
     }
 
-    // - PreComp layer: Controls - 03 - Back - 06 - PressedToPointerOver
-    // Transforms for Controls - 03 - Back - 06 - PressedToPointerOver Scale(1,1,0)
+    CompositionPathGeometry PathGeometry_2()
+    {
+        return _pathGeometry_2 = _c.CreatePathGeometry(CompositionPath(CanvasGeometryToIGeometrySource2D(Geometry_2())));
+    }
+
+    // - - PreComp layer: Controls - 03 - Back - 06 - PressedToPointerOver
+    // - Transforms for Controls - 03 - Back - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Round Cap 2
     // Path 1
     CompositionSpriteShape SpriteShape_00()
     {
-        // Offset:<24, 24>, Scale:<2.25, 2.25>
-        const auto result = CreateSpriteShape(PathGeometry_0(), { 2.25F, 0.0F, 0.0F, 2.25F, 24.0F, 24.0F }, ThemeColor_Foreground());
+        // Scale:<2.25, 2.25>
+        const auto result = CreateSpriteShape(PathGeometry_0(), { 2.25F, 0.0F, 0.0F, 2.25F, 0.0F, 0.0F }, ThemeColor_Foreground());
         return result;
     }
 
-    // - PreComp layer: Controls - 03 - Back - 06 - PressedToPointerOver
-    // Transforms for Controls - 03 - Back - 06 - PressedToPointerOver Scale(1,1,0)
+    // - - PreComp layer: Controls - 03 - Back - 06 - PressedToPointerOver
+    // - Transforms for Controls - 03 - Back - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Round Cap 2
     // Path 1
     CompositionSpriteShape SpriteShape_01()
     {
         const auto result = _c.CreateSpriteShape(PathGeometry_1());
-        result.Scale({ 2.25F, 2.25F });
+        result.CenterPoint({ 7.5F, -0.00300000003F });
+        result.Offset({ 9.375F, -0.00400000019F });
         result.FillBrush(_themeColor_Foreground);
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_0(), RootProgress());
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_1p622_to_1p86(), RootProgress());
+        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p25_to_2p25_0(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 03 - Back - 05 - PressedToNormal
-    // Transforms for Controls - 03 - Back - 05 - PressedToNormal Scale(1,1,0)
+    // - PreComp layer: Controls - 03 - Back - 06 - PressedToPointerOver
+    // Transforms for Controls - 03 - Back - 06 - PressedToPointerOver Scale(1,1,0)
     // Path 1
     CompositionSpriteShape SpriteShape_02()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_0);
+        const auto result = _c.CreateSpriteShape(PathGeometry_2());
         result.Scale({ 2.25F, 2.25F });
         result.FillBrush(_themeColor_Foreground);
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_1(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 03 - Back - 05 - PressedToNormal
-    // Transforms for Controls - 03 - Back - 05 - PressedToNormal Scale(1,1,0)
+    // - - PreComp layer: Controls - 03 - Back - 05 - PressedToNormal
+    // - Transforms for Controls - 03 - Back - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Round Cap 2
     // Path 1
     CompositionSpriteShape SpriteShape_03()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_1);
-        result.Scale({ 2.25F, 2.25F });
-        result.FillBrush(_themeColor_Foreground);
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_2(), _rootProgress);
+        // Scale:<2.25, 2.25>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 2.25F, 0.0F, 0.0F, 2.25F, 0.0F, 0.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - PreComp layer: Controls - 03 - Back - 04 - PointerOverToPressed 
-    // Transforms for Controls - 03 - Back - 04 - PointerOverToPressed  Scale(1,1,0)
+    // - - PreComp layer: Controls - 03 - Back - 05 - PressedToNormal
+    // - Transforms for Controls - 03 - Back - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Round Cap 2
     // Path 1
     CompositionSpriteShape SpriteShape_04()
     {
-        // Offset:<24, 24>, Scale:<2.25, 2.25>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 2.25F, 0.0F, 0.0F, 2.25F, 24.0F, 24.0F }, _themeColor_Foreground);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_1);
+        result.CenterPoint({ 7.5F, -0.00300000003F });
+        result.Offset({ 9.375F, -0.00400000019F });
+        result.FillBrush(_themeColor_Foreground);
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_1p622_to_2p25(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p25_to_2p25_1(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 03 - Back - 04 - PointerOverToPressed 
-    // Transforms for Controls - 03 - Back - 04 - PointerOverToPressed  Scale(1,1,0)
+    // - PreComp layer: Controls - 03 - Back - 05 - PressedToNormal
+    // Transforms for Controls - 03 - Back - 05 - PressedToNormal Scale(1,1,0)
     // Path 1
     CompositionSpriteShape SpriteShape_05()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_1);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_2);
         result.Scale({ 2.25F, 2.25F });
         result.FillBrush(_themeColor_Foreground);
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_3(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 03 - Back - 03 - PointerOverToNormal
-    // Transforms for Controls - 03 - Back - 03 - PointerOverToNormal Scale(1,1,0)
+    // - - PreComp layer: Controls - 03 - Back - 04 - PointerOverToPressed 
+    // - Transforms for Controls - 03 - Back - 04 - PointerOverToPressed  Scale(1,1,0)
+    // Layer: Round Cap 2
     // Path 1
     CompositionSpriteShape SpriteShape_06()
     {
-        // Offset:<24, 24>, Scale:<2.25, 2.25>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 2.25F, 0.0F, 0.0F, 2.25F, 24.0F, 24.0F }, _themeColor_Foreground);
+        // Scale:<2.25, 2.25>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 2.25F, 0.0F, 0.0F, 2.25F, 0.0F, 0.0F }, _themeColor_Foreground);
         return result;
     }
 
-    // - PreComp layer: Controls - 03 - Back - 03 - PointerOverToNormal
-    // Transforms for Controls - 03 - Back - 03 - PointerOverToNormal Scale(1,1,0)
+    // - - PreComp layer: Controls - 03 - Back - 04 - PointerOverToPressed 
+    // - Transforms for Controls - 03 - Back - 04 - PointerOverToPressed  Scale(1,1,0)
+    // Layer: Round Cap 2
     // Path 1
     CompositionSpriteShape SpriteShape_07()
     {
         const auto result = _c.CreateSpriteShape(_pathGeometry_1);
-        result.Scale({ 2.25F, 2.25F });
+        result.CenterPoint({ 7.5F, -0.00300000003F });
+        result.Offset({ 9.375F, -0.00400000019F });
         result.FillBrush(_themeColor_Foreground);
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_4(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_1p86_to_1p622(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p25_to_2p25_2(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Controls - 03 - Back - 02 - NormalToPressed
-    // Transforms for Controls - 03 - Back - 02 - NormalToPressed Scale(1,1,0)
+    // - PreComp layer: Controls - 03 - Back - 04 - PointerOverToPressed 
+    // Transforms for Controls - 03 - Back - 04 - PointerOverToPressed  Scale(1,1,0)
     // Path 1
     CompositionSpriteShape SpriteShape_08()
     {
-        // Offset:<24, 24>, Scale:<2.25, 2.25>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 2.25F, 0.0F, 0.0F, 2.25F, 24.0F, 24.0F }, _themeColor_Foreground);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 03 - Back - 02 - NormalToPressed
-    // Transforms for Controls - 03 - Back - 02 - NormalToPressed Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_09()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_1);
+        const auto result = _c.CreateSpriteShape(_pathGeometry_2);
         result.Scale({ 2.25F, 2.25F });
         result.FillBrush(_themeColor_Foreground);
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_5(), _rootProgress);
         return result;
     }
 
+    // - PreComp layer: Controls - 03 - Back - 03 - PointerOverToNormal
+    // Transforms for Controls - 03 - Back - 03 - PointerOverToNormal Scale(1,1,0)
+    // Path 1
+    CompositionSpriteShape SpriteShape_09()
+    {
+        // Offset:<24, 24>, Scale:<2.25, 2.25>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 2.25F, 0.0F, 0.0F, 2.25F, 24.0F, 24.0F }, _themeColor_Foreground);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 03 - Back - 03 - PointerOverToNormal
+    // Transforms for Controls - 03 - Back - 03 - PointerOverToNormal Scale(1,1,0)
+    // Path 1
+    CompositionSpriteShape SpriteShape_10()
+    {
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F }, _themeColor_Foreground);
+        result.CenterPoint({ 7.5F, -0.00300000003F });
+        result.Offset({ 9.375F, -0.00400000019F });
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_1p86_to_2p25(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p25_to_2p25_3(), _rootProgress);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 03 - Back - 03 - PointerOverToNormal
+    // Transforms for Controls - 03 - Back - 03 - PointerOverToNormal Scale(1,1,0)
+    // Path 1
+    CompositionSpriteShape SpriteShape_11()
+    {
+        const auto result = _c.CreateSpriteShape(_pathGeometry_2);
+        result.Scale({ 2.25F, 2.25F });
+        result.FillBrush(_themeColor_Foreground);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_6(), _rootProgress);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 03 - Back - 02 - NormalToPressed
+    // - Transforms for Controls - 03 - Back - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Round Cap 2
+    // Path 1
+    CompositionSpriteShape SpriteShape_12()
+    {
+        // Scale:<2.25, 2.25>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 2.25F, 0.0F, 0.0F, 2.25F, 0.0F, 0.0F }, _themeColor_Foreground);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 03 - Back - 02 - NormalToPressed
+    // - Transforms for Controls - 03 - Back - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Round Cap 2
+    // Path 1
+    CompositionSpriteShape SpriteShape_13()
+    {
+        const auto result = _c.CreateSpriteShape(_pathGeometry_1);
+        result.CenterPoint({ 7.5F, -0.00300000003F });
+        result.Offset({ 9.375F, -0.00400000019F });
+        result.FillBrush(_themeColor_Foreground);
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_2p25_to_1p622(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p25_to_2p25_4(), _rootProgress);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 03 - Back - 02 - NormalToPressed
+    // Transforms for Controls - 03 - Back - 02 - NormalToPressed Scale(1,1,0)
+    // Path 1
+    CompositionSpriteShape SpriteShape_14()
+    {
+        const auto result = _c.CreateSpriteShape(_pathGeometry_2);
+        result.Scale({ 2.25F, 2.25F });
+        result.FillBrush(_themeColor_Foreground);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_8(), _rootProgress);
+        return result;
+    }
+
     // - PreComp layer: Controls - 03 - Back - 01 - NormalToPointerOver
     // Transforms for Controls - 03 - Back - 01 - NormalToPointerOver Scale(1,1,0)
     // Path 1
-    CompositionSpriteShape SpriteShape_10()
+    CompositionSpriteShape SpriteShape_15()
     {
         // Offset:<24, 24>, Scale:<2.25, 2.25>
         const auto result = CreateSpriteShape(_pathGeometry_0, { 2.25F, 0.0F, 0.0F, 2.25F, 24.0F, 24.0F }, _themeColor_Foreground);
@@ -411,12 +580,26 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
     // - PreComp layer: Controls - 03 - Back - 01 - NormalToPointerOver
     // Transforms for Controls - 03 - Back - 01 - NormalToPointerOver Scale(1,1,0)
     // Path 1
-    CompositionSpriteShape SpriteShape_11()
+    CompositionSpriteShape SpriteShape_16()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_1);
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(_pathGeometry_1, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F }, _themeColor_Foreground);
+        result.CenterPoint({ 7.5F, -0.00300000003F });
+        result.Offset({ 9.375F, -0.00400000019F });
+        StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_2p25_to_1p86(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p25_to_2p25_5(), _rootProgress);
+        return result;
+    }
+
+    // - PreComp layer: Controls - 03 - Back - 01 - NormalToPointerOver
+    // Transforms for Controls - 03 - Back - 01 - NormalToPointerOver Scale(1,1,0)
+    // Path 1
+    CompositionSpriteShape SpriteShape_17()
+    {
+        const auto result = _c.CreateSpriteShape(_pathGeometry_2);
         result.Scale({ 2.25F, 2.25F });
         result.FillBrush(_themeColor_Foreground);
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_6(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_9(), _rootProgress);
         return result;
     }
 
@@ -516,6 +699,7 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto propertySet = result.Properties();
         propertySet.InsertScalar(L"Progress", 0.0F);
         propertySet.InsertScalar(L"t0", 0.0F);
+        propertySet.InsertScalar(L"t1", 0.0F);
         const auto children = result.Children();
         // PreComp layer: Controls - 03 - Back - 06 - PressedToPointerOver
         children.InsertAtTop(ContainerVisual_0());
@@ -530,12 +714,13 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
         // PreComp layer: Controls - 03 - Back - 01 - NormalToPointerOver
         children.InsertAtTop(ContainerVisual_5());
         StartProgressBoundAnimation(propertySet, L"t0", t0ScalarAnimation_0_to_1(), _rootProgress);
+        StartProgressBoundAnimation(propertySet, L"t1", t1ScalarAnimation_0_to_1(), _rootProgress);
         return result;
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_0()
     {
-        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
+        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.550000012F, 0.0F }, { 0.75F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_1()
@@ -545,7 +730,27 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
 
     CubicBezierEasingFunction CubicBezierEasingFunction_2()
     {
-        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.449999988F, 1.0F });
+        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.0F }, { 0.75F, 1.0F });
+    }
+
+    CubicBezierEasingFunction CubicBezierEasingFunction_3()
+    {
+        return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
+    }
+
+    CubicBezierEasingFunction CubicBezierEasingFunction_4()
+    {
+        return _cubicBezierEasingFunction_4 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.0F }, { 0.0F, 1.0F });
+    }
+
+    CubicBezierEasingFunction CubicBezierEasingFunction_5()
+    {
+        return _cubicBezierEasingFunction_5 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.449999988F, 1.0F });
+    }
+
+    CubicBezierEasingFunction CubicBezierEasingFunction_6()
+    {
+        return _cubicBezierEasingFunction_6 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.0F }, { 0.449999988F, 1.0F });
     }
 
     ExpressionAnimation RootProgress()
@@ -561,11 +766,173 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
         return result;
     }
 
+    // - - - PreComp layer: Controls - 03 - Back - 04 - PointerOverToPressed 
+    // - - Transforms for Controls - 03 - Back - 04 - PointerOverToPressed  Scale(1,1,0)
+    // - Layer: Round Cap 2
+    // Transforms: Stem 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_1p86_to_1p622()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.86041999F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.375F, 1.86041999F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.487500012F, 1.62211001F, CubicBezierEasingFunction_3());
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 03 - Back - 03 - PointerOverToNormal
+    // - Transforms for Controls - 03 - Back - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Round Cap 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_1p86_to_2p25()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.86041999F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.25F, 1.86041999F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.362500012F, 2.25F, CubicBezierEasingFunction_5());
+        return result;
+    }
+
+    // - - - PreComp layer: Controls - 03 - Back - 06 - PressedToPointerOver
+    // - - Transforms for Controls - 03 - Back - 06 - PressedToPointerOver Scale(1,1,0)
+    // - Layer: Round Cap 2
+    // Transforms: Stem 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_1p622_to_1p86()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.62211001F, StepThenHoldEasingFunction());
+        result.InsertKeyFrame(0.75F, 1.62211001F, HoldThenStepEasingFunction());
+        result.InsertKeyFrame(0.875F, 2.26947999F, CubicBezierEasingFunction_0());
+        result.InsertKeyFrame(0.987500012F, 1.86041999F, CubicBezierEasingFunction_1());
+        return result;
+    }
+
+    // - - - PreComp layer: Controls - 03 - Back - 05 - PressedToNormal
+    // - - Transforms for Controls - 03 - Back - 05 - PressedToNormal Scale(1,1,0)
+    // - Layer: Round Cap 2
+    // Transforms: Stem 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_1p622_to_2p25()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.62211001F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.5F, 1.62211001F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.625F, 2.26947999F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.737500012F, 2.25F, _cubicBezierEasingFunction_1);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 03 - Back - 01 - NormalToPointerOver
+    // - Transforms for Controls - 03 - Back - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Round Cap 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_2p25_to_1p86()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.25F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.112499997F, 1.86041999F, _cubicBezierEasingFunction_5);
+        return result;
+    }
+
+    // - - - PreComp layer: Controls - 03 - Back - 02 - NormalToPressed
+    // - - Transforms for Controls - 03 - Back - 02 - NormalToPressed Scale(1,1,0)
+    // - Layer: Round Cap 2
+    // Transforms: Stem 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleXScalarAnimation_2p25_to_1p622()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.25F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.125F, 2.25F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.237499997F, 1.62211001F, _cubicBezierEasingFunction_3);
+        return result;
+    }
+
+    // - - - PreComp layer: Controls - 03 - Back - 06 - PressedToPointerOver
+    // - - Transforms for Controls - 03 - Back - 06 - PressedToPointerOver Scale(1,1,0)
+    // - Layer: Round Cap 2
+    // Transforms: Stem 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleYScalarAnimation_2p25_to_2p25_0()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.25F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.75F, 2.25F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.875F, 2.25F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.987500012F, 2.25F, _cubicBezierEasingFunction_1);
+        return result;
+    }
+
+    // - - - PreComp layer: Controls - 03 - Back - 05 - PressedToNormal
+    // - - Transforms for Controls - 03 - Back - 05 - PressedToNormal Scale(1,1,0)
+    // - Layer: Round Cap 2
+    // Transforms: Stem 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleYScalarAnimation_2p25_to_2p25_1()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.25F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.5F, 2.25F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.625F, 2.25F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.737500012F, 2.25F, _cubicBezierEasingFunction_1);
+        return result;
+    }
+
+    // - - - PreComp layer: Controls - 03 - Back - 04 - PointerOverToPressed 
+    // - - Transforms for Controls - 03 - Back - 04 - PointerOverToPressed  Scale(1,1,0)
+    // - Layer: Round Cap 2
+    // Transforms: Stem 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleYScalarAnimation_2p25_to_2p25_2()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.25F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.375F, 2.25F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.487500012F, 2.25F, CubicBezierEasingFunction_4());
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 03 - Back - 03 - PointerOverToNormal
+    // - Transforms for Controls - 03 - Back - 03 - PointerOverToNormal Scale(1,1,0)
+    // Layer: Round Cap 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleYScalarAnimation_2p25_to_2p25_3()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.25F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.25F, 2.25F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.362500012F, 2.25F, CubicBezierEasingFunction_6());
+        return result;
+    }
+
+    // - - - PreComp layer: Controls - 03 - Back - 02 - NormalToPressed
+    // - - Transforms for Controls - 03 - Back - 02 - NormalToPressed Scale(1,1,0)
+    // - Layer: Round Cap 2
+    // Transforms: Stem 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleYScalarAnimation_2p25_to_2p25_4()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.25F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.125F, 2.25F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.237499997F, 2.25F, _cubicBezierEasingFunction_4);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 03 - Back - 01 - NormalToPointerOver
+    // - Transforms for Controls - 03 - Back - 01 - NormalToPointerOver Scale(1,1,0)
+    // Layer: Round Cap 2
+    // Scale
+    ScalarKeyFrameAnimation ScaleYScalarAnimation_2p25_to_2p25_5()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.25F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.112499997F, 2.25F, _cubicBezierEasingFunction_6);
+        return result;
+    }
+
     ScalarKeyFrameAnimation t0ScalarAnimation_0_to_1()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.700000048F, 0.0F, _stepThenHoldEasingFunction);
+        const auto result = CreateScalarKeyFrameAnimation(0.87500006F, 0.0F, _stepThenHoldEasingFunction);
         result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.879999936F, 1.0F, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.987499952F, 1.0F, _cubicBezierEasingFunction_1);
+        return result;
+    }
+
+    ScalarKeyFrameAnimation t1ScalarAnimation_0_to_1()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.62500006F, 0.0F, _stepThenHoldEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.737499952F, 1.0F, _cubicBezierEasingFunction_1);
         return result;
     }
 
@@ -576,10 +943,10 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Stem 2
-        shapes.Append(SpriteShape_00());
-        // Layer: Stem 2
-        shapes.Append(SpriteShape_01());
+        // Layer: Round Cap 2
+        shapes.Append(ContainerShape_0());
+        // Layer: Round Cap 2
+        shapes.Append(SpriteShape_02());
         return result;
     }
 
@@ -590,10 +957,10 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Stem 2
-        shapes.Append(SpriteShape_02());
-        // Layer: Stem 2
-        shapes.Append(SpriteShape_03());
+        // Layer: Round Cap 2
+        shapes.Append(ContainerShape_1());
+        // Layer: Round Cap 2
+        shapes.Append(SpriteShape_05());
         return result;
     }
 
@@ -604,10 +971,10 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Stem 2
-        shapes.Append(SpriteShape_04());
-        // Layer: Stem 2
-        shapes.Append(SpriteShape_05());
+        // Layer: Round Cap 2
+        shapes.Append(ContainerShape_2());
+        // Layer: Round Cap 2
+        shapes.Append(SpriteShape_08());
         return result;
     }
 
@@ -618,10 +985,12 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Stem 2
-        shapes.Append(SpriteShape_06());
-        // Layer: Stem 2
-        shapes.Append(SpriteShape_07());
+        // Layer: Round Cap 2
+        shapes.Append(SpriteShape_09());
+        // Layer: Round Cap 2
+        shapes.Append(SpriteShape_10());
+        // Layer: Round Cap 2
+        shapes.Append(SpriteShape_11());
         return result;
     }
 
@@ -632,10 +1001,10 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Stem 2
-        shapes.Append(SpriteShape_08());
-        // Layer: Stem 2
-        shapes.Append(SpriteShape_09());
+        // Layer: Round Cap 2
+        shapes.Append(ContainerShape_3());
+        // Layer: Round Cap 2
+        shapes.Append(SpriteShape_14());
         return result;
     }
 
@@ -646,10 +1015,12 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
         const auto result = _c.CreateShapeVisual();
         result.Size({ 48.0F, 48.0F });
         const auto shapes = result.Shapes();
-        // Layer: Stem 2
-        shapes.Append(SpriteShape_10());
-        // Layer: Stem 2
-        shapes.Append(SpriteShape_11());
+        // Layer: Round Cap 2
+        shapes.Append(SpriteShape_15());
+        // Layer: Round Cap 2
+        shapes.Append(SpriteShape_16());
+        // Layer: Round Cap 2
+        shapes.Append(SpriteShape_17());
         return result;
     }
 
@@ -669,88 +1040,128 @@ class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<Animate
 
     // - - PreComp layer: Controls - 03 - Back - 06 - PressedToPointerOver
     // - Transforms for Controls - 03 - Back - 06 - PressedToPointerOver Scale(1,1,0)
-    // Layer: Stem 2
+    // Layer: Round Cap 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_0()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 27.4379997F, 24.0F }, StepThenHoldEasingFunction());
-        result.InsertKeyFrame(0.899999976F, { 27.4379997F, 24.0F }, HoldThenStepEasingFunction());
-        result.InsertKeyFrame(0.980000019F, { 26.5F, 24.0F }, CubicBezierEasingFunction_0());
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.9379997F, 24.0F }, _stepThenHoldEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.75F, { 24.9379997F, 24.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.875F, { 20.25F, 24.0F }, _cubicBezierEasingFunction_0);
+        result.InsertExpressionKeyFrame(0.987499952F, L"(Pow(1-_.t0,3)*Vector2(20.25,24))+(3*Square(1-_.t0)*_.t0*Vector2(20.094,24))+(3*(1-_.t0)*Square(_.t0)*Vector2(23.375,24))+(Pow(_.t0,3)*Vector2(24,24))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.987500012F, { 24.0F, 24.0F }, _stepThenHoldEasingFunction);
         return result;
     }
 
-    // - - PreComp layer: Controls - 03 - Back - 05 - PressedToNormal
-    // - Transforms for Controls - 03 - Back - 05 - PressedToNormal Scale(1,1,0)
-    // Layer: Stem 2
+    // - - PreComp layer: Controls - 03 - Back - 06 - PressedToPointerOver
+    // - Transforms for Controls - 03 - Back - 06 - PressedToPointerOver Scale(1,1,0)
+    // Layer: Round Cap 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_1()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 24.0F }, _stepThenHoldEasingFunction);
-        result.SetReferenceParameter(L"_", _root);
-        result.InsertKeyFrame(0.600000024F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.699999988F, { 21.5F, 24.0F }, _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.0F }, { 0.75F, 1.0F }));
-        result.InsertExpressionKeyFrame(0.879999936F, L"(Pow(1-_.t0,3)*Vector2(21.5,24))+(3*Square(1-_.t0)*_.t0*Vector2(21.5,24))+(3*(1-_.t0)*Square(_.t0)*Vector2(23.583,24))+(Pow(_.t0,3)*Vector2(24,24))", _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.879999995F, { 24.0F, 24.0F }, _stepThenHoldEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 33.0F, 24.0F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.75F, { 33.0F, 24.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.875F, { 19.9839993F, 24.0F }, CubicBezierEasingFunction_2());
+        result.InsertKeyFrame(0.987500012F, { 28.9839993F, 24.0F }, _cubicBezierEasingFunction_1);
         return result;
     }
 
     // - - PreComp layer: Controls - 03 - Back - 05 - PressedToNormal
     // - Transforms for Controls - 03 - Back - 05 - PressedToNormal Scale(1,1,0)
-    // Layer: Stem 2
+    // Layer: Round Cap 2
     // Offset
     Vector2KeyFrameAnimation OffsetVector2Animation_2()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 26.9379997F, 24.0F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.600000024F, { 26.9379997F, 24.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.699999988F, { 19.75F, 24.0F }, _c.CreateCubicBezierEasingFunction({ 0.550000012F, 0.0F }, { 0.75F, 1.0F }));
-        result.InsertKeyFrame(0.879999995F, { 24.0F, 24.0F }, CubicBezierEasingFunction_1());
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.9379997F, 24.0F }, _stepThenHoldEasingFunction);
+        result.SetReferenceParameter(L"_", _root);
+        result.InsertKeyFrame(0.5F, { 24.9379997F, 24.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.625F, { 20.25F, 24.0F }, _cubicBezierEasingFunction_0);
+        result.InsertExpressionKeyFrame(0.737499952F, L"(Pow(1-_.t1,3)*Vector2(20.25,24))+(3*Square(1-_.t1)*_.t1*Vector2(20.094,24))+(3*(1-_.t1)*Square(_.t1)*Vector2(23.375,24))+(Pow(_.t1,3)*Vector2(24,24))", _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.737500012F, { 24.0F, 24.0F }, _stepThenHoldEasingFunction);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 03 - Back - 05 - PressedToNormal
+    // - Transforms for Controls - 03 - Back - 05 - PressedToNormal Scale(1,1,0)
+    // Layer: Round Cap 2
+    // Offset
+    Vector2KeyFrameAnimation OffsetVector2Animation_3()
+    {
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 33.0F, 24.0F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.5F, { 33.0F, 24.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.625F, { 19.9839993F, 24.0F }, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.737500012F, { 24.0F, 24.0F }, _cubicBezierEasingFunction_1);
         return result;
     }
 
     // - - PreComp layer: Controls - 03 - Back - 04 - PointerOverToPressed 
     // - Transforms for Controls - 03 - Back - 04 - PointerOverToPressed  Scale(1,1,0)
-    // Layer: Stem 2
+    // Layer: Round Cap 2
     // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_3()
+    Vector2KeyFrameAnimation OffsetVector2Animation_4()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 26.5F, 24.0F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.5F, { 26.5F, 24.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.579999983F, { 27.4379997F, 24.0F }, CubicBezierEasingFunction_2());
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 24.0F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.375F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.487500012F, { 24.9379997F, 24.0F }, _cubicBezierEasingFunction_3);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 03 - Back - 04 - PointerOverToPressed 
+    // - Transforms for Controls - 03 - Back - 04 - PointerOverToPressed  Scale(1,1,0)
+    // Layer: Round Cap 2
+    // Offset
+    Vector2KeyFrameAnimation OffsetVector2Animation_5()
+    {
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 28.9839993F, 24.0F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.375F, { 28.9839993F, 24.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.487500012F, { 33.0F, 24.0F }, _cubicBezierEasingFunction_3);
         return result;
     }
 
     // - - PreComp layer: Controls - 03 - Back - 03 - PointerOverToNormal
     // - Transforms for Controls - 03 - Back - 03 - PointerOverToNormal Scale(1,1,0)
-    // Layer: Stem 2
+    // Layer: Round Cap 2
     // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_4()
+    Vector2KeyFrameAnimation OffsetVector2Animation_6()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 26.5F, 24.0F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.300000012F, { 26.5F, 24.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.479999989F, { 24.0F, 24.0F }, _cubicBezierEasingFunction_0);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 28.9839993F, 24.0F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.25F, { 28.9839993F, 24.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.362500012F, { 24.0F, 24.0F }, _cubicBezierEasingFunction_5);
         return result;
     }
 
     // - - PreComp layer: Controls - 03 - Back - 02 - NormalToPressed
     // - Transforms for Controls - 03 - Back - 02 - NormalToPressed Scale(1,1,0)
-    // Layer: Stem 2
+    // Layer: Round Cap 2
     // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_5()
+    Vector2KeyFrameAnimation OffsetVector2Animation_7()
     {
         const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 24.0F }, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.200000003F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.280000001F, { 27.4379997F, 24.0F }, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.125F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.237499997F, { 24.9379997F, 24.0F }, _cubicBezierEasingFunction_3);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 03 - Back - 02 - NormalToPressed
+    // - Transforms for Controls - 03 - Back - 02 - NormalToPressed Scale(1,1,0)
+    // Layer: Round Cap 2
+    // Offset
+    Vector2KeyFrameAnimation OffsetVector2Animation_8()
+    {
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 24.0F }, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.125F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.237499997F, { 33.0F, 24.0F }, _cubicBezierEasingFunction_3);
         return result;
     }
 
     // - - PreComp layer: Controls - 03 - Back - 01 - NormalToPointerOver
     // - Transforms for Controls - 03 - Back - 01 - NormalToPointerOver Scale(1,1,0)
-    // Layer: Stem 2
+    // Layer: Round Cap 2
     // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_6()
+    Vector2KeyFrameAnimation OffsetVector2Animation_9()
     {
         const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.180000007F, { 26.5F, 24.0F }, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.112499997F, { 28.9839993F, 24.0F }, _cubicBezierEasingFunction_5);
         return result;
     }
 
@@ -856,7 +1267,7 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedBackVisualSource::
 
 double AnimatedBackVisualSource::FrameCount()
 {
-    return 50.0;
+    return 80.0;
 }
 
 double AnimatedBackVisualSource::Framerate()
@@ -866,12 +1277,12 @@ double AnimatedBackVisualSource::Framerate()
 
 TimeSpan AnimatedBackVisualSource::Duration()
 {
-    return TimeSpan{ 8333333L };
+    return TimeSpan{ 13333333L };
 }
 
 double AnimatedBackVisualSource::FrameToProgress(double frameNumber)
 {
-    return frameNumber / 50.0;
+    return frameNumber / 80.0;
 }
 
 winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedBackVisualSource::Markers()
@@ -880,17 +1291,17 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedBackV
         std::map<winrt::hstring, double>
         {
             { L"NormalToPointerOver_Start", 0.0 },
-            { L"NormalToPointerOver_End", 0.181 },
-            { L"NormalToPressed_Start", 0.201 },
-            { L"NormalToPressed_End", 0.281 },
-            { L"PointerOverToNormal_Start", 0.301 },
-            { L"PointerOverToNormal_End", 0.481 },
-            { L"PointerOverToPressed_Start", 0.501 },
-            { L"PointerOverToPressed_End", 0.581 },
-            { L"PressedToNormal_Start", 0.601 },
-            { L"PressedToNormal_End", 0.881 },
-            { L"PressedToPointerOver_Start", 0.901 },
-            { L"PressedToPointerOver_End", 0.981 },
+            { L"NormalToPointerOver_End", 0.113125 },
+            { L"NormalToPressed_Start", 0.125625 },
+            { L"NormalToPressed_End", 0.238125 },
+            { L"PointerOverToNormal_Start", 0.250625 },
+            { L"PointerOverToNormal_End", 0.363125 },
+            { L"PointerOverToPressed_Start", 0.375625 },
+            { L"PointerOverToPressed_End", 0.488125 },
+            { L"PressedToNormal_Start", 0.500625 },
+            { L"PressedToNormal_End", 0.738125 },
+            { L"PressedToPointerOver_Start", 0.750625 },
+            { L"PressedToPointerOver_End", 0.988125 },
         }
     ).GetView();
 }

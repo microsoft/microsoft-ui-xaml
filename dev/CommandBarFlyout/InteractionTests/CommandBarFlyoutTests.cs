@@ -661,5 +661,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 VerifyElement.NotFound("FirstFlyoutItem",FindBy.Name);
             }
         }
+
+        [TestMethod]
+        public void VerifyAlwaysExpandedBehavior()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                return;
+            }
+
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with AlwaysExpanded");
+
+                Log.Comment("Tapping on a button to show the CommandBarFlyout.");
+                showCommandBarFlyoutButton.InvokeAndWait();
+
+                Log.Comment("Verifying that the secondary commands are visible.");
+                Button undoButton = FindElement.ById<Button>("UndoButton9");
+                Verify.IsNotNull(undoButton);
+
+                Log.Comment("Verifying that the ... button is not visible.");
+                UIObject moreButton = TryFindElement.ById("MoreButton");
+                Verify.IsNull(moreButton);
+
+                Log.Comment("Tapping on one of the primary commands");
+                FindElement.ById<Button>("CutButton9").InvokeAndWait();
+                ElementCache.Clear();
+
+                Log.Comment("Verifying that the secondary commands are still visible.");
+                undoButton = FindElement.ById<Button>("UndoButton9");
+                Verify.IsNotNull(undoButton);
+
+                Log.Comment("Tapping on a button to hide the CommandBarFlyout.");
+                InputHelper.Tap(showCommandBarFlyoutButton);
+            }
+        }
     }
 }

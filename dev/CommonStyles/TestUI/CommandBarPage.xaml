@@ -33,12 +33,12 @@
                     <controls:ToggleSplitButton Content="Toggle"/>
                 </contract7Present:AppBarElementContainer>
             </CommandBar>
-            
+
             <CommandBar>
                 <AppBarButton Icon="Add" Label="Add"/>
                 <AppBarButton Icon="Remove" Label="Remove" LabelPosition="Collapsed"/>
                 <AppBarSeparator/>
-                <AppBarButton Icon="Save" Label="Save"/>
+                <AppBarButton Icon="Save" Label="Save And Quit"/>
                 <AppBarToggleButton Icon="Add" Label="Toggle"/>
                 <CommandBar.SecondaryCommands>
                     <AppBarButton Icon="Add" Label="Add"/>
@@ -48,7 +48,7 @@
                 </CommandBar.SecondaryCommands>
             </CommandBar>
 
-            <CommandBar DefaultLabelPosition="Right">
+            <CommandBar DefaultLabelPosition="Right" OverflowButtonVisibility="Collapsed">
                 <AppBarButton Icon="Add" Label="Add"/>
                 <AppBarButton Icon="Remove" Label="Remove"/>
                 <AppBarSeparator/>
