@@ -784,7 +784,7 @@
                         x:Name="LayoutRoot" 
                         Background="{TemplateBinding Background}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}"
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                         Margin="{ThemeResource NavigationViewItemButtonMargin}"
                         Height="{StaticResource TopNavigationViewSettingsButtonHeight}"
                         Width="{StaticResource TopNavigationViewSettingsButtonHeight}"
