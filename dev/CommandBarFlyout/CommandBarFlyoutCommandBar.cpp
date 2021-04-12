@@ -1244,88 +1244,42 @@ void CommandBarFlyoutCommandBar::AttachEventsToSecondaryStoryboards()
 {
     winrt::IControlProtected thisAsControlProtected = *this;
 
+    const auto addDropShadowFunc = [this](auto const&, auto const&)
+    {
+        if (SharedHelpers::IsAnimationsEnabled())
+        {
+            if (auto owningFlyout = m_owningFlyout.get())
+            {
+                if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+                {
+                    actualFlyout->AddDropShadow();
+                }
+            }
+        }
+    };
+
     m_expandedDownToCollapsedStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"ExpandedDownToCollapsed", thisAsControlProtected));
     if (m_expandedDownToCollapsedStoryboard)
     {
-        m_expandedDownToCollapsedStoryboardRevoker = m_expandedDownToCollapsedStoryboard.get().Completed(winrt::auto_revoke,
-            {
-                [this](auto const&, auto const&)
-                {
-                    if (SharedHelpers::IsAnimationsEnabled())
-                    {
-                        if (auto owningFlyout = m_owningFlyout.get())
-                        {
-                            if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
-                            {
-                                actualFlyout->AddDropShadow();
-                            }
-                        }
-                    }
-                }
-            });
+        m_expandedDownToCollapsedStoryboardRevoker = m_expandedDownToCollapsedStoryboard.get().Completed(winrt::auto_revoke, addDropShadowFunc);
     }
 
     m_expandedUpToCollapsedStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"ExpandedUpToCollapsed", thisAsControlProtected));
     if (m_expandedUpToCollapsedStoryboard)
     {
-        m_expandedUpToCollapsedStoryboardRevoker = m_expandedUpToCollapsedStoryboard.get().Completed(winrt::auto_revoke,
-            {
-                [this](auto const&, auto const&)
-                {
-                    if (SharedHelpers::IsAnimationsEnabled())
-                    {
-                        if (auto owningFlyout = m_owningFlyout.get())
-                        {
-                            if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
-                            {
-                                actualFlyout->AddDropShadow();
-                            }
-                        }
-                    }
-                }
-            });
+        m_expandedUpToCollapsedStoryboardRevoker = m_expandedUpToCollapsedStoryboard.get().Completed(winrt::auto_revoke, addDropShadowFunc);
     }
 
     m_collapsedToExpandedUpStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"CollapsedToExpandedUp", thisAsControlProtected));
     if (m_collapsedToExpandedUpStoryboard)
     {
-        m_collapsedToExpandedUpStoryboardRevoker = m_collapsedToExpandedUpStoryboard.get().Completed(winrt::auto_revoke,
-            {
-                [this](auto const&, auto const&)
-                {
-                    if (SharedHelpers::IsAnimationsEnabled())
-                    {
-                        if (auto owningFlyout = m_owningFlyout.get())
-                        {
-                            if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
-                            {
-                                actualFlyout->AddDropShadow();
-                            }
-                        }
-                    }
-                }
-            });
+        m_collapsedToExpandedUpStoryboardRevoker = m_collapsedToExpandedUpStoryboard.get().Completed(winrt::auto_revoke, addDropShadowFunc);
     }
 
     m_collapsedToExpandedDownStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"CollapsedToExpandedDown", thisAsControlProtected));
     if (m_collapsedToExpandedDownStoryboard)
     {
-        m_collapsedToExpandedDownStoryboardRevoker = m_collapsedToExpandedDownStoryboard.get().Completed(winrt::auto_revoke,
-            {
-                [this](auto const&, auto const&)
-                {
-                    if (SharedHelpers::IsAnimationsEnabled())
-                    {
-                        if (auto owningFlyout = m_owningFlyout.get())
-                        {
-                            if (auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
-                            {
-                                actualFlyout->AddDropShadow();
-                            }
-                        }
-                    }
-                }
-            });
+        m_collapsedToExpandedDownStoryboardRevoker = m_collapsedToExpandedDownStoryboard.get().Completed(winrt::auto_revoke, addDropShadowFunc);
     }
 
 }

@@ -7,12 +7,16 @@
 #include "CommandBarFlyoutCommandBar.h"
 #include "Vector.h"
 #include "RuntimeProfiler.h"
+#include "ResourceAccessor.h"
+#include "CornerRadiusFilterConverter.h"
 
 #include "CommandBarFlyout.properties.cpp"
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ false };
 bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ false };
+
+static constexpr auto c_controlCornerRadiusKey = L"ControlCornerRadius"sv;
 
 CommandBarFlyout::CommandBarFlyout()
 {
@@ -255,6 +259,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
         presenter2.IsDefaultShadowEnabled(false);
     }
 
+    auto controlCornerRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*commandBar, box_value(c_controlCornerRadiusKey)));
     if (winrt::IControl7 presenterControl7 = presenter)
     {
         // When >21H1, we'll need to manage the presenter's CornerRadius when the overflow is opened/
@@ -262,7 +267,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
         // the correct corner radius as well. Otherwise the shadow will render with sharp corners.
         if (SharedHelpers::Is21H1OrHigher())
         {
-            presenterControl7.CornerRadius({ 4 });
+            presenterControl7.CornerRadius(controlCornerRadius);
         }
         else
         {
@@ -280,97 +285,105 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     }
 
     m_presenter.set(presenter);
-    m_commandBarOpeningRevoker = commandBar->Opening(winrt::auto_revoke, {
-    [this](auto const&, auto const&)
+
+    if (SharedHelpers::Is21H1OrHigher())
     {
-        // When >21H1, if the CommandBar is opening, set the presenter's corner
-        // radius to 0 to let the CommandBar's corner radius show through.
-        if (SharedHelpers::Is21H1OrHigher())
-        {
-            // During the SecondaryCommands's animations, drop shadows need to disappear.
-            // However, performing a Remove during Closing/Opening and a Add during Closed/Opened
-            // doesn't line up perfectly with the end of the animations. So, if there are animations
-            // we'll remove the shadow in the Closing and Opening events, but we'll put back the shadow
-            // inside of CommandBarFlyoutCommandBar's Storyboard Completed event handlers.
-            if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
+        m_commandBarOpeningRevoker = commandBar->Opening(winrt::auto_revoke, {
+            [this](auto const&, auto const&)
             {
-                if (commandBar->HasSecondaryOpenCloseAnimations())
+                // During the SecondaryCommands's animations, drop shadows need to disappear.
+                // However, performing a Remove during Closing/Opening and a Add during Closed/Opened
+                // doesn't line up perfectly with the end of the animations. So, if there are animations
+                // we'll remove the shadow in the Closing and Opening events, but we'll put back the shadow
+                // inside of CommandBarFlyoutCommandBar's Storyboard Completed event handlers.
+                if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
                 {
-                    if (!AlwaysExpanded() && m_secondaryCommands.Size() > 0)
+                    if (commandBar->HasSecondaryOpenCloseAnimations())
+                    {
+                        // We'll only need to do this mid-animation remove/add when the "..." button is
+                        // pressed to open/close the overflow. This means we shouldn't do it for AlwaysExpanded
+                        // and if there's nothing in the overflow.
+                        if (!AlwaysExpanded() && m_secondaryCommands.Size() > 0)
+                        {
+                            RemoveDropShadow();
+                        }
+                    }
+                }
+            }
+            });
+    }
+
+
+    m_commandBarOpenedRevoker = commandBar->Opened(winrt::auto_revoke, {
+        [this, controlCornerRadius](auto const&, auto const&)
+        {
+            if (winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this)
+            {
+                // If we open the CommandBar, then we should no longer be in a transient show mode -
+                // we now know that the user wants to interact with us.
+                thisAsFlyoutBase5.ShowMode(winrt::FlyoutShowMode::Standard);
+            }
+
+            if (SharedHelpers::Is21H1OrHigher() && m_presenter)
+            {
+                if (winrt::IControl7 presenterControl7 = m_presenter.get())
+                {
+                    if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
+                    {
+                        if (m_secondaryCommands.Size() > 0 || commandBar->IsOpen())
+                        {
+                            auto cornerRadiusConverter = winrt::make_self<CornerRadiusFilterConverter>();
+
+                            // CommandBarFlyout already changes its corner radius depending on if the overflow is open
+                            // and in which direction through visual states. Since we're managing the corner radius
+                            // on the presenter manually, we'll need to mimic these changes onto the presenter's corner radius.
+                            if (commandBar->IsExpandedUp())
+                            {
+                                presenterControl7.CornerRadius(cornerRadiusConverter->Convert(controlCornerRadius, winrt::CornerRadiusFilterKind::Bottom));
+                            }
+                            else
+                            {
+                                presenterControl7.CornerRadius(cornerRadiusConverter->Convert(controlCornerRadius, winrt::CornerRadiusFilterKind::Top));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    if (SharedHelpers::Is21H1OrHigher())
+    {
+        m_commandBarClosingRevoker = commandBar->Closing(winrt::auto_revoke, {
+            [this](auto const&, auto const&)
+            {
+                if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
+                {
+                    if (commandBar->HasSecondaryOpenCloseAnimations())
                     {
                         RemoveDropShadow();
                     }
                 }
             }
-        }
+        });
     }
-    });
 
-    m_commandBarOpenedRevoker = commandBar->Opened(winrt::auto_revoke, {
-    [this](auto const&, auto const&)
+    // When >21H1, if the CommandBar is closed, set the presenter's corner radius to 4.
+    if (SharedHelpers::Is21H1OrHigher())
     {
-        if (winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this)
-        {
-            // If we open the CommandBar, then we should no longer be in a transient show mode -
-            // we now know that the user wants to interact with us.
-            thisAsFlyoutBase5.ShowMode(winrt::FlyoutShowMode::Standard);
-        }
-
-        if (SharedHelpers::Is21H1OrHigher() && m_presenter)
-        {
-            if (winrt::IControl7 presenterControl7 = m_presenter.get())
+        m_commandBarClosedRevoker = commandBar->Closed(winrt::auto_revoke, {
+            [this, controlCornerRadius](auto const&, auto const&)
             {
-                if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
+                if (m_presenter)
                 {
-                    if (m_secondaryCommands.Size() > 0 || commandBar->IsOpen())
+                    if (winrt::IControl7 presenterControl7 = m_presenter.get())
                     {
-                        if (commandBar->IsExpandedUp())
-                        {
-                            presenterControl7.CornerRadius({ 0,0,4,4 });
-                        }
-                        else
-                        {
-                            presenterControl7.CornerRadius({ 4,4,0,0 });
-                        }
+                        presenterControl7.CornerRadius({ controlCornerRadius });
                     }
                 }
             }
-        }
+        });
     }
-    });
-
-    m_commandBarClosingRevoker = commandBar->Closing(winrt::auto_revoke, {
-    [this](auto const&, auto const&)
-    {
-        if (SharedHelpers::Is21H1OrHigher())
-        {
-            if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
-            {
-                if (commandBar->HasSecondaryOpenCloseAnimations())
-                {
-                    RemoveDropShadow();
-                }
-            }
-        }
-    }
-    });
-
-    m_commandBarClosedRevoker = commandBar->Closed(winrt::auto_revoke, {
-    [this](auto const&, auto const&)
-    {
-        // When >21H1, if the CommandBar is closed, set the presenter's corner radius to 4.
-        if (SharedHelpers::Is21H1OrHigher())
-        {
-            if (m_presenter)
-            {
-                if (winrt::IControl7 presenterControl7 = m_presenter.get())
-                {
-                    presenterControl7.CornerRadius({ 4 });
-                }
-            }
-        }
-    }
-    });
 
     commandBar->SetOwningFlyout(*this);
 
