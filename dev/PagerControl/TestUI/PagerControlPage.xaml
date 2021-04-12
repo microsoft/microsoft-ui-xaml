@@ -53,7 +53,6 @@
                 VerticalAlignment="Top"
                 HorizontalAlignment="Left"
                 NumberOfPages="10"
-                SelectedPageIndex="2"
                 FirstButtonVisibility="Hidden"
                 PreviousButtonVisibility="Hidden"
                 NextButtonVisibility="Hidden"
