@@ -33,6 +33,9 @@ public:
     void OnPointerExited(const winrt::PointerRoutedEventArgs& args);
     void OnPointerCanceled(const winrt::PointerRoutedEventArgs& args);
     void OnKeyDown(const winrt::KeyRoutedEventArgs& args);
+    void LosingFocus(const IInspectable& sender, const winrt::LosingFocusEventArgs& args);
+    void OnLostFocus(const winrt::RoutedEventArgs& args);
+    void OnGotFocus(const winrt::RoutedEventArgs& args);
 
     /* Property changed handlers */
     void OnNumberOfPagesChanged();
@@ -43,6 +46,8 @@ public:
         const wstring_view& collapsedStateName,
         const wstring_view& disabledStateName);
     void OnOrientationChanged();
+
+    winrt::UIElement GetSelectedItem();
 
     /* Dependency property for pip buttons revokers */
     GlobalDependencyProperty s_pipButtonHandlersProperty;
@@ -63,7 +68,8 @@ private:
     void ScrollToCenterOfViewport(const winrt::UIElement sender, const int index);
     double CalculateScrollViewerSize(const double defaultPipSize, const double selectedPipSize, const int numberOfPages, int maxVisualIndicators);
     void UpdateSelectedPip(const int index);
-
+    void UpdatePipOrientation(const winrt::Control& pip);
+    void ApplyStyleToPipAndUpdateOrientation(const winrt::FrameworkElement& pip, const winrt::Style& style);
     /* Eventing */
     void RaiseSelectedIndexChanged();
 
@@ -72,6 +78,7 @@ private:
     void OnNextButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::GettingFocusEventArgs& args);
     void OnPipsAreaBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args);
+    void OnScrollViewerBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args);
 
     /* Pips Logic */
     void UpdatePipsItems(const int numberOfPages, int maxVisualIndicators);
@@ -81,6 +88,8 @@ private:
     /* Refs */
     tracker_ref<winrt::ItemsRepeater> m_pipsPagerRepeater{ this };
     tracker_ref<winrt::FxScrollViewer> m_pipsPagerScrollViewer{ this };
+    tracker_ref<winrt::Button> m_previousPageButton{ this };
+    tracker_ref<winrt::Button> m_nextPageButton{ this };
 
     /* Revokers */
     winrt::Button::Click_revoker m_previousPageButtonClickRevoker{};
@@ -88,6 +97,7 @@ private:
     winrt::ItemsRepeater::ElementPrepared_revoker m_pipsPagerElementPreparedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_pipsAreaGettingFocusRevoker{};
     winrt::ItemsRepeater::BringIntoViewRequested_revoker m_pipsAreaBringIntoViewRequestedRevoker{};
+    winrt::FxScrollViewer::BringIntoViewRequested_revoker m_scrollViewerBringIntoViewRequestedRevoker{};
     /* Items */
     winrt::IObservableVector<int> m_pipsPagerItems{};
 
@@ -96,4 +106,6 @@ private:
     winrt::Size m_selectedPipSize{ 0.0, 0.0 };
     int m_lastSelectedPageIndex{ -1 };
     bool m_isPointerOver{ false };
+    bool m_isFocused{ false };
+    bool m_ifNextFocusElementInside{ false };
 };

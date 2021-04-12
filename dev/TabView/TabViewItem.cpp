@@ -66,7 +66,10 @@ void TabViewItem::OnApplyTemplate()
             if (internalTabView)
             {
                 winrt::ThemeShadow shadow;
-                shadow.Receivers().Append(internalTabView->GetShadowReceiver());
+                if (!SharedHelpers::Is21H1OrHigher())
+                {
+                    shadow.Receivers().Append(internalTabView->GetShadowReceiver());
+                }
                 m_shadow = shadow;
 
                 double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
@@ -377,7 +380,7 @@ void TabViewItem::OnIconSourceChanged()
     auto const templateSettings = winrt::get_self<TabViewItemTemplateSettings>(TabViewTemplateSettings());
     if (auto const source = IconSource())
     {
-        templateSettings->IconElement(source.CreateIconElement());
+        templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
         winrt::VisualStateManager::GoToState(*this, L"Icon"sv, false);
     }
     else
