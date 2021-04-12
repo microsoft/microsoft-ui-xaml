@@ -64,12 +64,13 @@
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
                                             <Grid x:Name="ButtonLayoutGrid"
-                                                Margin="{ThemeResource AutoSuggestBoxInnerButtonMargin}"
                                                 BorderBrush="{ThemeResource TextControlButtonBorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                 Background="{ThemeResource TextControlButtonBackground}"
-                                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                                contract7NotPresent:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}">
+                                                Margin="{ThemeResource AutoSuggestBoxInnerButtonMargin}"
+                                                Padding="{TemplateBinding Padding}"
+                                                contract7Present:CornerRadius="{ThemeResource ControlCornerRadius}"
+                                                contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                                                 <VisualStateManager.VisualStateGroups>
                                                     <VisualStateGroup x:Name="CommonStates">
                                                         <VisualState x:Name="Normal" />
@@ -348,15 +349,16 @@
                             IsHitTestVisible="False" />
                         <Button x:Name="DeleteButton"
                             Grid.Row="1"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             Style="{StaticResource DeleteButtonStyle}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             Padding="{ThemeResource HelperButtonThemePadding}"
                             IsTabStop="False"
                             Grid.Column="1"
                             Visibility="Collapsed"
                             FontSize="{TemplateBinding FontSize}"
                             Width="32"
+                            Height="28"
                             AutomationProperties.AccessibilityView="Raw"
                             VerticalAlignment="Stretch" />
                         <Button x:Name="QueryButton"
