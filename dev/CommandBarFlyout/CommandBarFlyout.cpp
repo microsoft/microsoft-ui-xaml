@@ -259,7 +259,13 @@ winrt::Control CommandBarFlyout::CreatePresenter()
         presenter2.IsDefaultShadowEnabled(false);
     }
 
-    auto controlCornerRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*commandBar, box_value(c_controlCornerRadiusKey)));
+    auto cornerRadiusResource = ResourceAccessor::ResourceLookup(*commandBar, box_value(c_controlCornerRadiusKey));
+    winrt::CornerRadius primaryCornerRadius{ 4,4,4,4 };
+    if (cornerRadiusResource)
+    {
+        primaryCornerRadius = unbox_value<winrt::CornerRadius>(cornerRadiusResource);
+    }
+
     if (winrt::IControl7 presenterControl7 = presenter)
     {
         // When >21H1, we'll need to manage the presenter's CornerRadius when the overflow is opened/
@@ -267,7 +273,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
         // the correct corner radius as well. Otherwise the shadow will render with sharp corners.
         if (SharedHelpers::Is21H1OrHigher())
         {
-            presenterControl7.CornerRadius(controlCornerRadius);
+            presenterControl7.CornerRadius(primaryCornerRadius);
         }
         else
         {
@@ -278,7 +284,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     m_presenter.set(presenter);
 
     m_commandBarOpenedRevoker = commandBar->Opened(winrt::auto_revoke, {
-        [this, controlCornerRadius](auto const&, auto const&)
+        [this, primaryCornerRadius](auto const&, auto const&)
         {
             if (winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this)
             {
@@ -302,11 +308,11 @@ winrt::Control CommandBarFlyout::CreatePresenter()
                             // on the presenter manually, we'll need to mimic these changes onto the presenter's corner radius.
                             if (commandBar->IsExpandedUp())
                             {
-                                presenterControl7.CornerRadius(cornerRadiusConverter->Convert(controlCornerRadius, winrt::CornerRadiusFilterKind::Bottom));
+                                presenterControl7.CornerRadius(cornerRadiusConverter->Convert(primaryCornerRadius, winrt::CornerRadiusFilterKind::Bottom));
                             }
                             else
                             {
-                                presenterControl7.CornerRadius(cornerRadiusConverter->Convert(controlCornerRadius, winrt::CornerRadiusFilterKind::Top));
+                                presenterControl7.CornerRadius(cornerRadiusConverter->Convert(primaryCornerRadius, winrt::CornerRadiusFilterKind::Top));
                             }
                         }
                     }
@@ -360,13 +366,13 @@ winrt::Control CommandBarFlyout::CreatePresenter()
             });
 
         m_commandBarClosedRevoker = commandBar->Closed(winrt::auto_revoke, {
-            [this, controlCornerRadius](auto const&, auto const&)
+            [this, primaryCornerRadius](auto const&, auto const&)
             {
                 if (m_presenter)
                 {
                     if (winrt::IControl7 presenterControl7 = m_presenter.get())
                     {
-                        presenterControl7.CornerRadius({ controlCornerRadius });
+                        presenterControl7.CornerRadius({ primaryCornerRadius });
                     }
                 }
             }
