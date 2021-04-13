@@ -112,6 +112,7 @@
                 <ControlTemplate TargetType="CommandBar">
                     <Grid x:Name="LayoutRoot">
                         <Grid.Resources>
+                            <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Collapsed</Visibility>
                             <Storyboard x:Key="OverlayOpeningAnimation">
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
                                     <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
