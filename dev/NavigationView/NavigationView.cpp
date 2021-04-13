@@ -1492,10 +1492,10 @@ void NavigationView::UpdatePaneLayout()
                 }();
                 auto availableHeight = paneContentRow.ActualHeight() - itemsContainerMargin;
 
-                // The c_paneItemsSeparatorHeight below is to account for the 9px separator height that we need to subtract.
+                // The c_paneItemsSeparatorHeight is to account for the 9px separator height that we need to subtract.
                 if (PaneFooter())
                 {
-                    availableHeight -= c_panefmeItemsSeparatorHeight;
+                    availableHeight -= c_paneItemsSeparatorHeight;
                     if (const auto& paneFooter = m_leftNavFooterContentBorder.get())
                     {
                         availableHeight -= paneFooter.ActualHeight();

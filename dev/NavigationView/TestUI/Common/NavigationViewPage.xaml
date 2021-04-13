@@ -39,7 +39,7 @@
             <muxcontrols:NavigationView.MenuItems>
                 <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home"/>
                 <muxcontrols:NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" />
-                <muxcontrols:NavigationViewItem x:Name="GamesItem" Content="Games"/>
+                <muxcontrols:NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
                 <muxcontrols:NavigationViewItemSeparator />
                 <muxcontrols:NavigationViewItemHeader x:Name="HeaderTextItem" Content="Header Text" />
                 <muxcontrols:NavigationViewItem x:Name="MusicItem" AutomationProperties.Name="Music" Content="Music" Icon="Audio"/>
@@ -53,14 +53,9 @@
                 </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem x:Name="IntegerItem" AutomationProperties.Name="Integer" Icon="Accept"/>
                 <muxcontrols:NavigationViewItemSeparator />
-                <muxcontrols:NavigationViewItem x:Name="HasChildItem" AutomationProperties.Name="HasChildItem" Content="Item with child" Icon="Document">
+                <muxcontrols:NavigationViewItem x:Name="HasChildItem" AutomationProperties.Name="HasChildItem" Content="Item with child">
                     <muxcontrols:NavigationViewItem.MenuItems>
                         <muxcontrols:NavigationViewItem x:Name="ChildItem" AutomationProperties.Name="ChildItem" Content="Child Item Content" Icon="Document" />
-                    </muxcontrols:NavigationViewItem.MenuItems>
-                </muxcontrols:NavigationViewItem>
-                <muxcontrols:NavigationViewItem Content="Item with child">
-                    <muxcontrols:NavigationViewItem.MenuItems>
-                        <muxcontrols:NavigationViewItem Content="Child Item Content" />
                     </muxcontrols:NavigationViewItem.MenuItems>
                 </muxcontrols:NavigationViewItem>
             </muxcontrols:NavigationView.MenuItems>

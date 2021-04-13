@@ -1028,11 +1028,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 FindElement.ByName("NoFooter").Click();
                 Wait.ForIdle();
                 // No footer items, but a settings item => 40px height
-                VerifyHeights(120, 40);
+                VerifyHeights(360, 40);
 
                 FindElement.ByName("Both").Click();
                 Wait.ForIdle();
-                VerifyHeights(120, 160);
+                VerifyHeights(240, 160);
 
                 void VerifyHeights(int menuItemsHeight, int footerItemsHeight)
                 {
@@ -1058,28 +1058,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var resetCollectionsButton = new Button(FindElement.ByName("ResetCollectionsButton"));
 
                 // Fill menu items
-                AddMenuItem(160, 160);
-                AddMenuItem(200, 160);
-                AddMenuItem(219, 160);
+                AddMenuItem(240, 160);
+                AddMenuItem(240, 160);
+                AddMenuItem(240, 160);
 
                 // Fill footer items
-                AddFooterItem(190, 190);
+                AddFooterItem(200, 200);
 
                 // Check that we reached equilibrium.
-                AddFooterItem(190, 190);
-                AddMenuItem(190, 190);
+                AddFooterItem(200, 200);
+                AddMenuItem(200, 200);
 
                 resetCollectionsButton.Click();
                 Wait.ForIdle();
-                VerifyHeights(120, 160);
+                VerifyHeights(240, 160);
 
                 void VerifyHeights(double menuItemsHeight, double footerItemsHeight)
                 {
                     readResults.Click();
                     var result = resultTextBlock.GetText().Split(";");
 
-                    Verify.IsTrue(Math.Abs(menuItemsHeight - int.Parse(result[0])) < 4, "Expected menu: " + menuItemsHeight + ", Actual: " + result[0]);
-                    Verify.IsTrue(Math.Abs(footerItemsHeight - int.Parse(result[1])) < 4, "Expected footer: " + footerItemsHeight + ", Actual: " + result[1]);
+                    Verify.IsTrue(Math.Abs(menuItemsHeight - double.Parse(result[0])) < 4, "Expected menu: " + menuItemsHeight + ", Actual: " + result[0]);
+                    Verify.IsTrue(Math.Abs(footerItemsHeight - double.Parse(result[1])) < 4, "Expected footer: " + footerItemsHeight + ", Actual: " + result[1]);
                 }
 
                 void AddMenuItem(double menuItemsHeight, double footerItemsHeight)
@@ -1111,23 +1111,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var resetCollectionsButton = new Button(FindElement.ByName("ResetCollectionsButton"));
 
                 // Fill footer items
-                AddFooterItem(120, 200);
-                AddFooterItem(120, 240);
-                AddFooterItem(120, 259);
+                AddFooterItem(200, 200);
+                AddFooterItem(200, 200);
+                AddFooterItem(200, 200);
                 // Reached maximum height
-                AddFooterItem(120, 259);
+                AddFooterItem(200, 200);
 
-                AddMenuItem(120, 259);
-                AddMenuItem(160, 219);
-                AddMenuItem(190, 190);
+                AddMenuItem(200, 200);
+                AddMenuItem(200, 200);
+                AddMenuItem(200, 200);
 
                 void VerifyHeights(double menuItemsHeight, double footerItemsHeight)
                 {
                     readResults.Click();
                     var result = resultTextBlock.GetText().Split(";");
 
-                    Verify.IsTrue(Math.Abs(menuItemsHeight - int.Parse(result[0])) < 4, "Expected menu: " + menuItemsHeight + ", Actual: " + result[0]);
-                    Verify.IsTrue(Math.Abs(footerItemsHeight - int.Parse(result[1])) < 4, "Expected footer: " + footerItemsHeight + ", Actual: " + result[1]);
+                    Verify.IsTrue(Math.Abs(menuItemsHeight - double.Parse(result[0])) < 4, "Expected menu: " + menuItemsHeight + ", Actual: " + result[0]);
+                    Verify.IsTrue(Math.Abs(footerItemsHeight - double.Parse(result[1])) < 4, "Expected footer: " + footerItemsHeight + ", Actual: " + result[1]);
                 }
 
                 void AddMenuItem(double menuItemsHeight, double footerItemsHeight)
@@ -1158,18 +1158,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 new Button(FindElement.ByName("ClearCollectionsButton")).Click();
                 new CheckBox(FindElement.ByName("IsSettingsEnabledCheckbox")).Uncheck();
 
-                AddMenuItem(40 , 0);
-                AddMenuItem(80 , 0);
-                AddMenuItem(120, 0);
-                AddMenuItem(160, 0);
-                AddMenuItem(200, 0);
-                AddMenuItem(240, 0);
-                AddMenuItem(280, 0);
-                AddMenuItem(320, 0);
-                AddMenuItem(360, 0);
-                AddMenuItem(400, 0);
-                AddMenuItem(400, 0);
-                AddMenuItem(400, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
 
                 void VerifyHeights(int menuItemsHeight, int footerItemsHeight)
                 {
@@ -1211,8 +1211,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 AddFooterItem(0,320);
                 AddFooterItem(0,360);
                 AddFooterItem(0,400);
-                AddFooterItem(0,400);
-                AddFooterItem(0,400);
+                AddFooterItem(0,412);
+                AddFooterItem(0,412);
 
                 void VerifyHeights(int menuItemsHeight, int footerItemsHeight)
                 {
