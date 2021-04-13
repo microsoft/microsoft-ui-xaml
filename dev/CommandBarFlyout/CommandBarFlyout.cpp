@@ -16,7 +16,7 @@
 bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ false };
 bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ false };
 
-static constexpr auto c_controlCornerRadiusKey = L"ControlCornerRadius"sv;
+static constexpr auto c_overlayCornerRadiusKey = L"OverlayCornerRadius"sv;
 
 CommandBarFlyout::CommandBarFlyout()
 {
@@ -259,13 +259,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
         presenter2.IsDefaultShadowEnabled(false);
     }
 
-    auto cornerRadiusResource = ResourceAccessor::ResourceLookup(*commandBar, box_value(c_controlCornerRadiusKey));
-    winrt::CornerRadius primaryCornerRadius{ 4,4,4,4 };
-    if (cornerRadiusResource)
-    {
-        primaryCornerRadius = unbox_value<winrt::CornerRadius>(cornerRadiusResource);
-    }
-
+    auto primaryCornerRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*commandBar, box_value(c_overlayCornerRadiusKey)));
     if (winrt::IControl7 presenterControl7 = presenter)
     {
         // When >21H1, we'll need to manage the presenter's CornerRadius when the overflow is opened/
