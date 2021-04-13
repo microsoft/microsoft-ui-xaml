@@ -60,13 +60,13 @@
           Background=Microsoft.UI.Xaml.Media.AcrylicBrush
           Name=ContentRoot
           MinHeight=48
-          Margin=4,0,0,0
+          Margin=0,0,0,0
           FocusVisualSecondaryThickness=1,1,1,1
           FocusVisualSecondaryBrush=#B3FFFFFF
           FocusVisualPrimaryThickness=2,2,2,2
           FocusVisualPrimaryBrush=#E4000000
           Visibility=Visible
-          RenderSize=396,64
+          RenderSize=400,64
         [Windows.UI.Xaml.Controls.Grid]
             Padding=0,0,0,0
             CornerRadius=0,0,0,0
@@ -79,7 +79,7 @@
             FocusVisualPrimaryThickness=2,2,2,2
             FocusVisualPrimaryBrush=#E4000000
             Visibility=Visible
-            RenderSize=348,64
+            RenderSize=352,64
           [Windows.UI.Xaml.Controls.ContentControl]
               Padding=0,0,0,0
               Foreground=#E4000000
@@ -88,7 +88,7 @@
               Background=[NULL]
               CornerRadius=0,0,0,0
               Name=ContentControl
-              Margin=0,0,0,0
+              Margin=4,0,0,0
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -336,7 +336,7 @@
                           RenderSize=0,0
                       [Windows.UI.Xaml.Controls.TextBlock]
                           Padding=0,0,0,0
-                          Foreground=#93000000
+                          Foreground=#9E000000
                           Name=KeyboardAcceleratorTextLabel
                           Margin=24,0,12,0
                           FocusVisualSecondaryThickness=1,1,1,1
@@ -510,7 +510,7 @@
                           RenderSize=0,0
                       [Windows.UI.Xaml.Controls.TextBlock]
                           Padding=0,0,0,0
-                          Foreground=#93000000
+                          Foreground=#9E000000
                           Name=KeyboardAcceleratorTextLabel
                           Margin=24,0,12,0
                           FocusVisualSecondaryThickness=1,1,1,1
@@ -660,7 +660,7 @@
             FocusVisualPrimaryThickness=2,2,2,2
             FocusVisualPrimaryBrush=#E4000000
             Visibility=Visible
-            RenderSize=396,64
+            RenderSize=400,64
         [Windows.UI.Xaml.Controls.Border]
             Padding=0,0,0,0
             CornerRadius=10,10,10,10
@@ -674,7 +674,7 @@
             FocusVisualPrimaryThickness=2,2,2,2
             FocusVisualPrimaryBrush=#E4000000
             Visibility=Visible
-            RenderSize=396,64
+            RenderSize=400,64
       [Windows.UI.Xaml.Controls.Primitives.Popup]
           Name=OverflowPopup
           Margin=0,0,0,0
@@ -720,13 +720,13 @@
           Background=#FF008000
           Name=ContentRoot
           MinHeight=48
-          Margin=4,0,0,0
+          Margin=0,0,0,0
           FocusVisualSecondaryThickness=1,1,1,1
           FocusVisualSecondaryBrush=#B3FFFFFF
           FocusVisualPrimaryThickness=2,2,2,2
           FocusVisualPrimaryBrush=#E4000000
           Visibility=Visible
-          RenderSize=396,64
+          RenderSize=400,64
         [Windows.UI.Xaml.Controls.Grid]
             Padding=0,0,0,0
             CornerRadius=0,0,0,0
@@ -739,7 +739,7 @@
             FocusVisualPrimaryThickness=2,2,2,2
             FocusVisualPrimaryBrush=#E4000000
             Visibility=Visible
-            RenderSize=348,64
+            RenderSize=352,64
           [Windows.UI.Xaml.Controls.ContentControl]
               Padding=0,0,0,0
               Foreground=#E4000000
@@ -748,7 +748,7 @@
               Background=[NULL]
               CornerRadius=0,0,0,0
               Name=ContentControl
-              Margin=0,0,0,0
+              Margin=4,0,0,0
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -996,7 +996,7 @@
                           RenderSize=0,0
                       [Windows.UI.Xaml.Controls.TextBlock]
                           Padding=0,0,0,0
-                          Foreground=#93000000
+                          Foreground=#9E000000
                           Name=KeyboardAcceleratorTextLabel
                           Margin=24,0,12,0
                           FocusVisualSecondaryThickness=1,1,1,1
@@ -1170,7 +1170,7 @@
                           RenderSize=0,0
                       [Windows.UI.Xaml.Controls.TextBlock]
                           Padding=0,0,0,0
-                          Foreground=#93000000
+                          Foreground=#9E000000
                           Name=KeyboardAcceleratorTextLabel
                           Margin=24,0,12,0
                           FocusVisualSecondaryThickness=1,1,1,1
