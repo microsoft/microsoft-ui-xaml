@@ -363,7 +363,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             var xaml =
                 @"<StackPanel Width='400' Height='400' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' 
-                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:controls='using:Microsoft.UI.Xaml.Controls'> 
+                    <StackPanel.Resources>
+                        <controls:XamlControlsResources ControlsResourcesVersion='Version2'/>
+                    </StackPanel.Resources>
                         <CommandBar Background='Green' CornerRadius='10,10,10,10' IsOpen='True'>
                         <AppBarToggleButton Icon='Shuffle' Label='Shuffle'  />
                         <AppBarToggleButton Icon='RepeatAll' Label='Repeat' />

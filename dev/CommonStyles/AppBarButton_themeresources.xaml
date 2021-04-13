@@ -420,7 +420,8 @@
                                 Foreground="{ThemeResource MenuFlyoutSubItemChevron}"
                                 Margin="12,0,12,0"
                                 MirroredWhenRightToLeft="True"
-                                Visibility="Collapsed" />
+                                Visibility="Collapsed"
+                                VerticalAlignment="Center"/>
 
                         </Grid>
 
