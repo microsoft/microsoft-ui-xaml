@@ -68,7 +68,7 @@
                                                 BorderBrush="{ThemeResource TextControlButtonBorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                 Background="{ThemeResource TextControlButtonBackground}"
-                                                Margin="{ThemeResource AutoSuggestBoxDeleteButtonMargin}"
+                                                Margin="{StaticResource AutoSuggestBoxDeleteButtonMargin}"
                                                 Padding="{TemplateBinding Padding}"
                                                 contract7Present:CornerRadius="{ThemeResource ControlCornerRadius}"
                                                 contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
