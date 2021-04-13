@@ -42,7 +42,7 @@
     <x:Double x:Key="ContentDialogMaxHeight">756</x:Double>
     <GridLength x:Key="ContentDialogButtonSpacing">8</GridLength>
     <Thickness x:Key="ContentDialogTitleMargin">0,0,0,12</Thickness>
-    <Thickness x:Key="ContentDialogPadding">24</Thickness>
+    <Thickness x:Key="ContentDialogPadding">21</Thickness>
     <Thickness x:Key="ContentDialogSeparatorThickness">0,0,0,1</Thickness>
 
     <Style TargetType="ContentDialog" BasedOn="{StaticResource DefaultContentDialogStyle}" />
@@ -205,7 +205,8 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Grid x:Name="LayoutRoot">
+                        <Grid x:Name="LayoutRoot"
+                            contract7Present:CornerRadius="{ThemeResource OverlayCornerRadius}">
                             <Rectangle x:Name="SmokeLayerBackground" Fill="{ThemeResource ContentDialogSmokeFill}" />
                             <Border
                                 x:Name="BackgroundElement"
@@ -225,7 +226,7 @@
                                 <Border.RenderTransform>
                                     <ScaleTransform x:Name="ScaleTransform" />
                                 </Border.RenderTransform>
-                                <Grid x:Name="DialogSpace">
+                                <Grid x:Name="DialogSpace" contract7Present:CornerRadius="{ThemeResource OverlayCornerRadius}">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="Auto" />
@@ -252,7 +253,7 @@
                                                 ContentTemplate="{TemplateBinding TitleTemplate}"
                                                 FontSize="20"
                                                 FontFamily="XamlAutoFontFamily"
-                                                FontWeight="Normal"
+                                                FontWeight="SemiBold"
                                                 Foreground="{TemplateBinding Foreground}"
                                                 HorizontalAlignment="Left"
                                                 VerticalAlignment="Top"
