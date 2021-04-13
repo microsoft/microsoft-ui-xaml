@@ -124,6 +124,8 @@ void PagerControl::OnApplyTemplate()
         m_comboBox.set(comboBox);
         if (comboBox)
         {
+            FillComboBoxCollectionToSize(NumberOfPages());
+            comboBox.UpdateLayout();
             comboBox.SelectedIndex(SelectedPageIndex() - 1);
             winrt::AutomationProperties::SetName(comboBox, ResourceAccessor::GetLocalizedStringResource(SR_PagerControlPageTextName));
             m_comboBoxSelectionChangedRevoker = comboBox.SelectionChanged(winrt::auto_revoke, { this, &PagerControl::ComboBoxSelectionChanged });
