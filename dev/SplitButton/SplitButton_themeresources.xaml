@@ -40,6 +40,8 @@
             <StaticResource x:Key="SplitButtonBorderBrushCheckedDisabled" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedDivider" ResourceKey="ControlStrokeColorOnAccentTertiaryBrush" />
             <Thickness x:Key="SplitButtonBorderThemeThickness">1</Thickness>
+
+            <StaticResource x:Key="SplitButtonInAppBarUnfocusedPointerOver" ResourceKey="SubtleFillColorTertiaryBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -72,6 +74,8 @@
             <StaticResource x:Key="SplitButtonBorderBrushCheckedDisabled" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedDivider" ResourceKey="ControlStrokeColorOnAccentTertiaryBrush" />
             <Thickness x:Key="SplitButtonBorderThemeThickness">1</Thickness>
+
+            <StaticResource x:Key="SplitButtonInAppBarUnfocusedPointerOver" ResourceKey="SubtleFillColorTertiaryBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -104,6 +108,8 @@
             <StaticResource x:Key="SplitButtonBorderBrushCheckedDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedDivider" ResourceKey="SystemControlHighlightAltTransparentBrush" />
             <Thickness x:Key="SplitButtonBorderThemeThickness">1</Thickness>
+
+            <StaticResource x:Key="SplitButtonInAppBarUnfocusedPointerOver" ResourceKey="SubtleFillColorTertiaryBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -113,13 +119,14 @@
         <Setter Property="BorderBrush" Value="{ThemeResource AppBarButtonBorderBrush}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="HorizontalContentAlignment" Value="Right" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="IsTabStop" Value="True"/>
-        <Setter Property="Padding" Value="8,6,8,6"/>
+        <Setter Property="Padding" Value="12,7,4,9"/>
         <Setter Property="Height" Value="{ThemeResource AppBarThemeCompactHeight}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
@@ -154,7 +161,7 @@
 
                                                         <VisualState x:Name="Disabled">
                                                             <VisualState.Setters>
-                                                                <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource SplitButtonForegroundDisabled}"/>
+                                                                <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource AppBarButtonForegroundDisabled}"/>
                                                             </VisualState.Setters>
                                                         </VisualState>
                                                     </VisualStateGroup>
@@ -204,46 +211,42 @@
                                 <VisualState x:Name="PrimaryPointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AppBarButtonBackgroundPointerOver}"/>
-                                        <Setter Target="PrimaryButton.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPointerOver}"/>
+                                        <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonInAppBarUnfocusedPointerOver}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}"/>
-                                        <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AppBarButtonBackground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="PrimaryPressed">
                                     <VisualState.Setters>
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AppBarButtonBackgroundPressed}"/>
-                                        <Setter Target="PrimaryButton.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPressed}"/>
+                                        <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonInAppBarUnfocusedPointerOver}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}"/>
-                                        <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AppBarButtonBackground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="SecondaryPointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AppBarButtonBackground}"/>
+                                        <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonInAppBarUnfocusedPointerOver}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AppBarButtonBackgroundPointerOver}"/>
-                                        <Setter Target="SecondaryButton.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPointerOver}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AppBarButtonForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="SecondaryPressed">
                                     <VisualState.Setters>
-                                        <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AppBarButtonBackground}"/>
+                                        <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonInAppBarUnfocusedPointerOver}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AppBarButtonBackgroundPressed}"/>
-                                        <Setter Target="SecondaryButton.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPressed}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Checked">
                                     <VisualState.Setters>
-                                        <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundChecked}"/>
-                                        <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundChecked}"/>
-                                        <Setter Target="Border.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushChecked}"/>
-                                        <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundChecked}"/>
-                                        <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundChecked}"/>
+                                        <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AppBarToggleButtonBackgroundChecked}"/>
+                                        <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AppBarToggleButtonBackgroundChecked}"/>
+                                        <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushChecked}"/>
+                                        <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundChecked}"/>
+                                        <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundChecked}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -271,7 +274,6 @@
                                     <VisualState.Setters>
                                         <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushChecked}"/>
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedPointerOver}"/>
-                                        <Setter Target="PrimaryButton.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPointerOver}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedPointerOver}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AppBarToggleButtonBackgroundChecked}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundChecked}"/>
@@ -282,7 +284,6 @@
                                     <VisualState.Setters>
                                         <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushChecked}"/>
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedPressed}"/>
-                                        <Setter Target="PrimaryButton.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPressed}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedPressed}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AppBarToggleButtonBackgroundChecked}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundChecked}"/>
@@ -295,7 +296,6 @@
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AppBarToggleButtonBackgroundChecked}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundChecked}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedPointerOver}"/>
-                                        <Setter Target="SecondaryButton.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPointerOver}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedPointerOver}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -306,7 +306,6 @@
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AppBarToggleButtonBackgroundChecked}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundChecked}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedPressed}"/>
-                                        <Setter Target="SecondaryButton.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPressed}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedPressed}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -325,28 +324,21 @@
                         </VisualStateManager.VisualStateGroups>
 
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition x:Name="PrimaryButtonColumn" Width="*" MinWidth="{ThemeResource SplitButtonPrimaryButtonSize}"/>
-                            <ColumnDefinition x:Name="Separator" Width="1" />
-                            <ColumnDefinition x:Name="SecondaryButtonColumn" Width="{ThemeResource SplitButtonSecondaryButtonSize}"/>
+                            <ColumnDefinition x:Name="PrimaryButtonColumn" Width="*"/>
+                            <ColumnDefinition x:Name="SecondaryButtonColumn" Width="23"/>
                         </Grid.ColumnDefinitions>
 
                         <Grid x:Name="PrimaryBackgroundGrid"
                             Background="{TemplateBinding Background}"
-                            contract7Present:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource LeftCornerRadiusFilterConverter}}"
-                            Grid.ColumnSpan="2" />
-
-                        <Grid x:Name="DividerBackgroundGrid"
-                            Width="1"
-                            Background="{TemplateBinding BorderBrush}"
-                            Grid.Column="1"/>
+                            contract7Present:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource LeftCornerRadiusFilterConverter}}" />
 
                         <Grid x:Name="SecondaryBackgroundGrid"
                             Background="{TemplateBinding Background}"
                             contract7Present:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}"
-                            Grid.Column="2"/>
+                            Grid.Column="1"/>
 
                         <Grid x:Name="Border"
-                            Grid.ColumnSpan="3"
+                            Grid.ColumnSpan="2"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
@@ -374,8 +366,8 @@
                             AutomationProperties.AccessibilityView="Raw"/>
 
                         <Button x:Name="SecondaryButton"
-                            Grid.Column="2"
-                            Foreground="{ThemeResource SplitButtonForegroundSecondary}"
+                            Grid.Column="1"
+                            Foreground="{ThemeResource AppBarButtonForeground}"
                             Background="{TemplateBinding Background}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             BorderBrush="Transparent"
@@ -383,7 +375,7 @@
                             VerticalContentAlignment="Stretch"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
-                            Padding="0,0,9,0"
+                            Padding="2,0,7,0"
                             IsTabStop="False"
                             AutomationProperties.AccessibilityView="Raw">
                             <Button.Content>
@@ -392,8 +384,8 @@
                                     FontSize="8"
                                     Text="&#xE96E;"
                                     VerticalAlignment="Center"
-                                    Padding="2,4,2,0"
-                                    HorizontalAlignment="Right"
+                                    Padding="2,2,2,0"
+                                    HorizontalAlignment="Left"
                                     IsTextScaleFactorEnabled="False"
                                     AutomationProperties.AccessibilityView="Raw"/>
                             </Button.Content>

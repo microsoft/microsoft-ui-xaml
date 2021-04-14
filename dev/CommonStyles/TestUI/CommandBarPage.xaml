@@ -27,7 +27,15 @@
                 <AppBarButton Icon="Save" Label="Save"/>
                 <AppBarToggleButton Icon="Add" Label="Toggle"/>
                 <contract7Present:AppBarElementContainer IsTabStop="False">
-                    <controls:SplitButton Content="Split"/>
+                    <controls:SplitButton Content="Split">
+                        <controls:SplitButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuFlyoutItem Text="Do Something"/>
+                                <MenuFlyoutItem Text="Something Else"/>
+                                <MenuFlyoutItem Text="Yet More Things"/>
+                            </MenuFlyout>
+                        </controls:SplitButton.Flyout>
+                    </controls:SplitButton>
                 </contract7Present:AppBarElementContainer>
                 <contract7Present:AppBarElementContainer IsTabStop="False">
                     <controls:ToggleSplitButton Content="Toggle"/>
@@ -56,7 +64,7 @@
                 <AppBarToggleButton Icon="Add" Label="Toggle"/>
                 <contract7Present:AppBarElementContainer>
                     <controls:SplitButton>
-                        <Grid>
+                        <Grid Margin="0,1,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -68,7 +76,7 @@
                 </contract7Present:AppBarElementContainer>
                 <contract7Present:AppBarElementContainer>
                     <controls:ToggleSplitButton>
-                        <Grid>
+                        <Grid Margin="0,1,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
