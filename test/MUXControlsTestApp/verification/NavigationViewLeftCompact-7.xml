@@ -750,14 +750,14 @@
                         Background=#00FFFFFF
                         CornerRadius=0,0,0,0
                         Name=MenuItemsScrollViewer
-                        MaxHeight=460
+                        MaxHeight=463
                         Margin=0,0,0,0
                         FocusVisualSecondaryThickness=1,1,1,1
                         FocusVisualSecondaryBrush=#B3FFFFFF
                         FocusVisualPrimaryThickness=2,2,2,2
                         FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
-                        RenderSize=48,460
+                        RenderSize=48,463
                       [Windows.UI.Xaml.Controls.Border]
                           Padding=0,0,0,0
                           CornerRadius=0,0,0,0
@@ -771,7 +771,7 @@
                           FocusVisualPrimaryThickness=2,2,2,2
                           FocusVisualPrimaryBrush=#E4000000
                           Visibility=Visible
-                          RenderSize=48,460
+                          RenderSize=48,463
                         [Windows.UI.Xaml.Controls.Grid]
                             Padding=0,0,0,0
                             CornerRadius=0,0,0,0
@@ -784,7 +784,7 @@
                             FocusVisualPrimaryThickness=2,2,2,2
                             FocusVisualPrimaryBrush=#E4000000
                             Visibility=Visible
-                            RenderSize=48,460
+                            RenderSize=48,463
                           [Windows.UI.Xaml.Controls.ScrollContentPresenter]
                               Foreground=#E4000000
                               Padding=0,0,0,0
@@ -799,7 +799,7 @@
                               FocusVisualPrimaryThickness=2,2,2,2
                               FocusVisualPrimaryBrush=#E4000000
                               Visibility=Visible
-                              RenderSize=48,460
+                              RenderSize=48,463
                             [Microsoft.UI.Xaml.Controls.ItemsRepeater]
                                 Background=[NULL]
                                 Name=MenuItemsHost
@@ -809,10 +809,10 @@
                                 FocusVisualPrimaryThickness=2,2,2,2
                                 FocusVisualPrimaryBrush=#E4000000
                                 Visibility=Visible
-                                RenderSize=48,460
+                                RenderSize=48,463
                               [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                                   Padding=0,0,0,0
-                                  Foreground=#93000000
+                                  Foreground=#9E000000
                                   BorderThickness=1,1,1,1
                                   BorderBrush=#00FFFFFF
                                   Background=#00FFFFFF
@@ -840,7 +840,7 @@
                                     RenderSize=48,40
                                   [Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenter]
                                       Padding=0,0,0,0
-                                      Foreground=#93000000
+                                      Foreground=#9E000000
                                       BorderThickness=1,1,1,1
                                       BorderBrush=#00FFFFFF
                                       Background=#00FFFFFF
@@ -961,7 +961,7 @@
                                                   Visibility=Visible
                                                   RenderSize=20,20
                                                 [Windows.UI.Xaml.Controls.ContentPresenter]
-                                                    Foreground=#93000000
+                                                    Foreground=#9E000000
                                                     Padding=0,0,0,0
                                                     CornerRadius=0,0,0,0
                                                     BorderThickness=0,0,0,0
@@ -976,7 +976,7 @@
                                                     Visibility=Visible
                                                     RenderSize=20,20
                                                   [Windows.UI.Xaml.Controls.SymbolIcon]
-                                                      Foreground=#93000000
+                                                      Foreground=#9E000000
                                                       Margin=0,0,0,0
                                                       FocusVisualSecondaryThickness=1,1,1,1
                                                       FocusVisualSecondaryBrush=#B3FFFFFF
@@ -999,7 +999,7 @@
                                                         RenderSize=20,20
                                                       [Windows.UI.Xaml.Controls.TextBlock]
                                                           Padding=0,0,0,0
-                                                          Foreground=#93000000
+                                                          Foreground=#9E000000
                                                           Margin=0,0,0,0
                                                           FocusVisualSecondaryThickness=1,1,1,1
                                                           FocusVisualSecondaryBrush=#B3FFFFFF
@@ -1008,7 +1008,7 @@
                                                           Visibility=Visible
                                                           RenderSize=20,20
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
-                                              Foreground=#93000000
+                                              Foreground=#9E000000
                                               Padding=0,0,0,0
                                               CornerRadius=0,0,0,0
                                               BorderThickness=0,0,0,0
@@ -1024,7 +1024,7 @@
                                               RenderSize=0,19
                                             [Windows.UI.Xaml.Controls.TextBlock]
                                                 Padding=0,0,0,0
-                                                Foreground=#93000000
+                                                Foreground=#9E000000
                                                 Margin=0,0,0,0
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#B3FFFFFF
@@ -1048,7 +1048,7 @@
                                               Visibility=Collapsed
                                               RenderSize=0,0
                                             [Microsoft.UI.Xaml.Controls.AnimatedIcon]
-                                                Foreground=#93000000
+                                                Foreground=#9E000000
                                                 Width=12
                                                 Name=ExpandCollapseChevronIcon
                                                 Margin=0,0,0,0
@@ -1071,7 +1071,7 @@
                                       RenderSize=0,0
                               [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                                   Padding=0,0,0,0
-                                  Foreground=#93000000
+                                  Foreground=#9E000000
                                   BorderThickness=1,1,1,1
                                   BorderBrush=#00FFFFFF
                                   Background=#00FFFFFF
@@ -1099,7 +1099,7 @@
                                     RenderSize=48,40
                                   [Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenter]
                                       Padding=0,0,0,0
-                                      Foreground=#93000000
+                                      Foreground=#9E000000
                                       BorderThickness=1,1,1,1
                                       BorderBrush=#00FFFFFF
                                       Background=#00FFFFFF
@@ -1220,7 +1220,7 @@
                                                   Visibility=Visible
                                                   RenderSize=20,20
                                                 [Windows.UI.Xaml.Controls.ContentPresenter]
-                                                    Foreground=#93000000
+                                                    Foreground=#9E000000
                                                     Padding=0,0,0,0
                                                     CornerRadius=0,0,0,0
                                                     BorderThickness=0,0,0,0
@@ -1235,7 +1235,7 @@
                                                     Visibility=Visible
                                                     RenderSize=20,20
                                                   [Windows.UI.Xaml.Controls.SymbolIcon]
-                                                      Foreground=#93000000
+                                                      Foreground=#9E000000
                                                       Margin=0,0,0,0
                                                       FocusVisualSecondaryThickness=1,1,1,1
                                                       FocusVisualSecondaryBrush=#B3FFFFFF
@@ -1258,7 +1258,7 @@
                                                         RenderSize=20,20
                                                       [Windows.UI.Xaml.Controls.TextBlock]
                                                           Padding=0,0,0,0
-                                                          Foreground=#93000000
+                                                          Foreground=#9E000000
                                                           Margin=0,0,0,0
                                                           FocusVisualSecondaryThickness=1,1,1,1
                                                           FocusVisualSecondaryBrush=#B3FFFFFF
@@ -1267,7 +1267,7 @@
                                                           Visibility=Visible
                                                           RenderSize=20,20
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
-                                              Foreground=#93000000
+                                              Foreground=#9E000000
                                               Padding=0,0,0,0
                                               CornerRadius=0,0,0,0
                                               BorderThickness=0,0,0,0
@@ -1283,7 +1283,7 @@
                                               RenderSize=0,19
                                             [Windows.UI.Xaml.Controls.TextBlock]
                                                 Padding=0,0,0,0
-                                                Foreground=#93000000
+                                                Foreground=#9E000000
                                                 Margin=0,0,0,0
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#B3FFFFFF
@@ -1307,7 +1307,7 @@
                                               Visibility=Collapsed
                                               RenderSize=0,0
                                             [Microsoft.UI.Xaml.Controls.AnimatedIcon]
-                                                Foreground=#93000000
+                                                Foreground=#9E000000
                                                 Width=12
                                                 Name=ExpandCollapseChevronIcon
                                                 Margin=0,0,0,0
@@ -1340,7 +1340,7 @@
                               FocusVisualPrimaryThickness=2,2,2,2
                               FocusVisualPrimaryBrush=#E4000000
                               Visibility=Visible
-                              RenderSize=48,460
+                              RenderSize=48,463
                           [Windows.UI.Xaml.Controls.Grid]
                               Padding=1,1,1,1
                               CornerRadius=0,0,0,0
@@ -1972,7 +1972,7 @@
                                 RenderSize=48,40
                               [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                                   Padding=0,0,0,0
-                                  Foreground=#93000000
+                                  Foreground=#9E000000
                                   BorderThickness=1,1,1,1
                                   BorderBrush=#00FFFFFF
                                   Background=#00FFFFFF
@@ -2001,7 +2001,7 @@
                                     RenderSize=48,40
                                   [Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenter]
                                       Padding=0,0,0,0
-                                      Foreground=#93000000
+                                      Foreground=#9E000000
                                       BorderThickness=1,1,1,1
                                       BorderBrush=#00FFFFFF
                                       Background=#00FFFFFF
@@ -2122,7 +2122,7 @@
                                                   Visibility=Visible
                                                   RenderSize=48,48
                                                 [Windows.UI.Xaml.Controls.ContentPresenter]
-                                                    Foreground=#93000000
+                                                    Foreground=#9E000000
                                                     Padding=0,0,0,0
                                                     CornerRadius=0,0,0,0
                                                     BorderThickness=0,0,0,0
@@ -2137,7 +2137,7 @@
                                                     Visibility=Visible
                                                     RenderSize=48,48
                                                   [Microsoft.UI.Xaml.Controls.AnimatedIcon]
-                                                      Foreground=#93000000
+                                                      Foreground=#9E000000
                                                       Margin=0,0,0,0
                                                       FocusVisualSecondaryThickness=1,1,1,1
                                                       FocusVisualSecondaryBrush=#B3FFFFFF
@@ -2168,7 +2168,7 @@
                                                           Visibility=Collapsed
                                                           RenderSize=0,0
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
-                                              Foreground=#93000000
+                                              Foreground=#9E000000
                                               Padding=0,0,0,0
                                               CornerRadius=0,0,0,0
                                               BorderThickness=0,0,0,0
@@ -2184,7 +2184,7 @@
                                               RenderSize=0,19
                                             [Windows.UI.Xaml.Controls.TextBlock]
                                                 Padding=0,0,0,0
-                                                Foreground=#93000000
+                                                Foreground=#9E000000
                                                 Margin=0,0,0,0
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#B3FFFFFF
@@ -2208,7 +2208,7 @@
                                               Visibility=Collapsed
                                               RenderSize=0,0
                                             [Microsoft.UI.Xaml.Controls.AnimatedIcon]
-                                                Foreground=#93000000
+                                                Foreground=#9E000000
                                                 Width=12
                                                 Name=ExpandCollapseChevronIcon
                                                 Margin=0,0,0,0
