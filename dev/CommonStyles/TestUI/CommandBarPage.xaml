@@ -86,12 +86,6 @@
                         </Grid>
                     </controls:ToggleSplitButton>
                 </contract7Present:AppBarElementContainer>
-                <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Add" Label="Add"/>
-                    <AppBarButton Icon="Remove" Label="Remove"/>
-                    <AppBarSeparator/>
-                    <AppBarToggleButton Icon="Add" Label="Toggle"/>
-                </CommandBar.SecondaryCommands>
             </CommandBar>
 
             <CommandBar DefaultLabelPosition="Collapsed">
