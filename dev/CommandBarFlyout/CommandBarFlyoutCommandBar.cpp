@@ -571,12 +571,10 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
 
         if (shouldExpandUp)
         {
-            m_isExpandedUp = true;
             winrt::VisualStateManager::GoToState(*this, L"ExpandedUp", useTransitions);
         }
         else
         {
-            m_isExpandedUp = false;
             winrt::VisualStateManager::GoToState(*this, L"ExpandedDown", useTransitions);
         }
 
@@ -1192,11 +1190,6 @@ void CommandBarFlyoutCommandBar::ClearShadow()
             }
         }
     }
-}
-
-bool CommandBarFlyoutCommandBar::IsExpandedUp()
-{
-    return m_isExpandedUp;
 }
 
 bool CommandBarFlyoutCommandBar::HasSecondaryOpenCloseAnimations()

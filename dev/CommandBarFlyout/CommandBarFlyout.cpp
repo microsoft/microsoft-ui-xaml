@@ -14,8 +14,6 @@
 bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ false };
 bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ false };
 
-static constexpr auto c_overlayCornerRadiusKey = L"OverlayCornerRadius"sv;
-
 CommandBarFlyout::CommandBarFlyout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_CommandBarFlyout);
