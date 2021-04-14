@@ -26,6 +26,7 @@ public:
     void PlayCloseAnimation(std::function<void()> onCompleteFunc);
 
     bool IsExpandedUp();
+    void BindOwningFlyoutPresenterToCornerRadius();
 
     void ClearShadow();
 
@@ -91,12 +92,8 @@ private:
     bool m_secondaryItemsRootSized{ false };
 
     bool m_isExpandedUp{ false };
+    bool m_isAlwaysExpandedClosing{ false };
     void AttachEventsToSecondaryStoryboards();
-
-    tracker_ref<winrt::Storyboard> m_expandedUpToCollapsedStoryboard{ this };
-    tracker_ref<winrt::Storyboard> m_expandedDownToCollapsedStoryboard{ this };
-    tracker_ref<winrt::Storyboard> m_collapsedToExpandedUpStoryboard{ this };
-    tracker_ref<winrt::Storyboard> m_collapsedToExpandedDownStoryboard{ this };
 
     winrt::Storyboard::Completed_revoker m_expandedUpToCollapsedStoryboardRevoker{};
     winrt::Storyboard::Completed_revoker m_expandedDownToCollapsedStoryboardRevoker{};

@@ -108,7 +108,7 @@
 
     <Thickness x:Key="CommandBarFlyoutAppBarButtonInnerBorderMargin">2</Thickness>
     <Thickness x:Key="CommandBarFlyoutAppBarEllipsisButtonInnerBorderMargin">2,2,6,2</Thickness>
-    <contract12Present:ThemeShadow x:Key="OverflowShadow"/>
+    <contract12Present:ThemeShadow x:Key="CommandBarFlyoutOverflowShadow"/>
 
     <Style x:Key="CommandBarFlyoutAppBarButtonStyleBase" TargetType="AppBarButton">
         <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackground}" />
@@ -1121,7 +1121,7 @@
                                         <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                         <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                         <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
-                                        <contract12Present:Setter Target="OuterOverflowContentRoot.Shadow" Value="{StaticResource OverflowShadow}"/>
+                                        <contract12Present:Setter Target="OuterOverflowContentRoot.Shadow" Value="{StaticResource CommandBarFlyoutOverflowShadow}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ExpandedUpWithoutPrimaryCommands">
@@ -1134,7 +1134,7 @@
                                         <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
                                         <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
                                         <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
-                                        <contract12Present:Setter Target="OuterOverflowContentRoot.Shadow" Value="{StaticResource OverflowShadow}"/>
+                                        <contract12Present:Setter Target="OuterOverflowContentRoot.Shadow" Value="{StaticResource CommandBarFlyoutOverflowShadow}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ExpandedDownWithoutPrimaryCommands">
@@ -1147,7 +1147,7 @@
                                         <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
                                         <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
                                         <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
-                                        <contract12Present:Setter Target="OuterOverflowContentRoot.Shadow" Value="{StaticResource OverflowShadow}"/>
+                                        <contract12Present:Setter Target="OuterOverflowContentRoot.Shadow" Value="{StaticResource CommandBarFlyoutOverflowShadow}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>

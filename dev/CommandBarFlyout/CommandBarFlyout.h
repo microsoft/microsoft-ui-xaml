@@ -24,6 +24,7 @@ public:
 
     void AddDropShadow();
     void RemoveDropShadow();
+    tracker_ref<winrt::FlyoutPresenter> GetPresenter();
 
 protected:
     tracker_ref<winrt::CommandBarFlyoutCommandBar> m_commandBar{ this };
@@ -50,7 +51,7 @@ private:
     std::map<int, winrt::ToggleButton::Checked_revoker> m_secondaryToggleButtonCheckedRevokerByIndexMap;
     std::map<int, winrt::ToggleButton::Unchecked_revoker> m_secondaryToggleButtonUncheckedRevokerByIndexMap;
 
-    tracker_ref<winrt::Control> m_presenter{ this };
+    tracker_ref<winrt::FlyoutPresenter> m_presenter{ this };
 
     bool m_isClosingAfterCloseAnimation{ false };
 }; 

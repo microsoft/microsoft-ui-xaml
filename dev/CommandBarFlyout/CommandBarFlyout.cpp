@@ -259,7 +259,6 @@ winrt::Control CommandBarFlyout::CreatePresenter()
         presenter2.IsDefaultShadowEnabled(false);
     }
 
-    auto primaryCornerRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*commandBar, box_value(c_overlayCornerRadiusKey)));
     if (winrt::IControl7 presenterControl7 = presenter)
     {
         // When >21H1, we'll need to manage the presenter's CornerRadius when the overflow is opened/
@@ -267,7 +266,13 @@ winrt::Control CommandBarFlyout::CreatePresenter()
         // the correct corner radius as well. Otherwise the shadow will render with sharp corners.
         if (SharedHelpers::Is21H1OrHigher())
         {
-            presenterControl7.CornerRadius(primaryCornerRadius);
+            //winrt::Binding binding;
+            //binding.Source(*commandBar->LayoutRoot());
+            //binding.Path(winrt::PropertyPath(L"CornerRadius"));
+            //binding.Mode(winrt::BindingMode::OneWay);
+            //presenter.SetBinding(winrt::Control::CornerRadiusProperty(), binding);
+
+            //presenterControl7.CornerRadius(primaryCornerRadius);
         }
         else
         {
@@ -278,39 +283,13 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     m_presenter.set(presenter);
 
     m_commandBarOpenedRevoker = commandBar->Opened(winrt::auto_revoke, {
-        [this, primaryCornerRadius](auto const&, auto const&)
+        [this](auto const&, auto const&)
         {
             if (winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this)
             {
                 // If we open the CommandBar, then we should no longer be in a transient show mode -
                 // we now know that the user wants to interact with us.
                 thisAsFlyoutBase5.ShowMode(winrt::FlyoutShowMode::Standard);
-            }
-
-            if (SharedHelpers::Is21H1OrHigher() && m_presenter)
-            {
-                if (winrt::IControl7 presenterControl7 = m_presenter.get())
-                {
-                    if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
-                    {
-                        if (m_secondaryCommands.Size() > 0 || commandBar->IsOpen())
-                        {
-                            auto cornerRadiusConverter = winrt::make_self<CornerRadiusFilterConverter>();
-
-                            // CommandBarFlyout already changes its corner radius depending on if the overflow is open
-                            // and in which direction through visual states. Since we're managing the corner radius
-                            // on the presenter manually, we'll need to mimic these changes onto the presenter's corner radius.
-                            if (commandBar->IsExpandedUp())
-                            {
-                                presenterControl7.CornerRadius(cornerRadiusConverter->Convert(primaryCornerRadius, winrt::CornerRadiusFilterKind::Bottom));
-                            }
-                            else
-                            {
-                                presenterControl7.CornerRadius(cornerRadiusConverter->Convert(primaryCornerRadius, winrt::CornerRadiusFilterKind::Top));
-                            }
-                        }
-                    }
-                }
             }
         }
     });
@@ -328,7 +307,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
         // It will be re-added once the storyboard for the overflow animations are completed.
         // That code can be found inside CommandBarFlyoutCommandBar.
         m_commandBarOpeningRevoker = commandBar->Opening(winrt::auto_revoke, {
-            [this](auto const&, auto const&)
+            [this, presenter](auto const&, auto const&)
             {
                 if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
                 {
@@ -358,22 +337,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
                 }
             }
             });
-
-        m_commandBarClosedRevoker = commandBar->Closed(winrt::auto_revoke, {
-            [this, primaryCornerRadius](auto const&, auto const&)
-            {
-                if (m_presenter)
-                {
-                    if (winrt::IControl7 presenterControl7 = m_presenter.get())
-                    {
-                        presenterControl7.CornerRadius({ primaryCornerRadius });
-                    }
-                }
-            }
-            });
     }
-
-
 
     commandBar->SetOwningFlyout(*this);
 
@@ -411,10 +375,10 @@ void CommandBarFlyout::AddDropShadow()
 {
     if (SharedHelpers::Is21H1OrHigher())
     {
-        if (m_presenter)
+        if (auto&& presenter = m_presenter.get())
         {
             winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
-            m_presenter.get().Shadow(shadow);
+            presenter.Shadow(shadow);
         }
     }
 }
@@ -423,9 +387,14 @@ void CommandBarFlyout::RemoveDropShadow()
 {
     if (SharedHelpers::Is21H1OrHigher())
     {
-        if (m_presenter)
+        if (auto&& presenter = m_presenter.get())
         {
-            m_presenter.get().Shadow(nullptr);
+            presenter.Shadow(nullptr);
         }
     }
+}
+
+tracker_ref<winrt::FlyoutPresenter> CommandBarFlyout::GetPresenter()
+{
+    return m_presenter;
 }
