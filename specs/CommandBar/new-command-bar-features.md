@@ -185,7 +185,7 @@ For example:
 
 When using [RadioMenuFlyoutItem](https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.radiomenuflyoutitem?view=winui-2.5) type objects as children of [MenuFlyoutSubItem](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.menuflyoutsubitem?view=winrt-19041), you'll want to make sure that `MenuFlyoutSubItem` displays the selection indicator (usually a dot) if one of its children is selected. 
 
-The `RadioMenuFlyoutSubItemStyle` can be applied to a `MenuFlyoutSubItem`. Applying this style ensures that the `MenuFlyoutSubItem` will visually indicate if one of its children are selected. To do this, it works with a new attached property that's defined by `RadioMenuFlyoutItem`, called `ContainsRadioMenuFlyoutItems`.
+The `RadioMenuFlyoutSubItemStyle` can be applied to a `MenuFlyoutSubItem`. Applying this style ensures that the `MenuFlyoutSubItem` will visually indicate if one of its children are selected. To do this, it works with a new attached property that's defined by `RadioMenuFlyoutItem`, called `AreCheckStatesEnabled`.
 
 The parent (`MenuFlyoutSubItem`) cannot be selected. It can only achieve selection (and show the selection indicator) if it is bubbled up from one of its child items. Therefore, only one item out of the child items and parent-level RadioMenuFlyout items can be selected at a time.
 
@@ -284,7 +284,7 @@ For example:
 | Name | Description |
 |:--|:--|
 | `CommandBarFlyout.AlwaysExpanded` Property | Gets or sets a value that indicates whether or not the CommandBarFlyout should always stay in its Expanded state and block the user from entering the Collapsed state. Defaults to false. |
-| `RadioMenuFlyoutItem.ContainsRadioMenuFlyoutItemsProperty` Dependency Property  | Represents whether the MenuFlyoutSubItem has RadioMenuFlyoutItems as children, and the checked state of these children.   |
+| `RadioMenuFlyoutItem.AreCheckStatesEnabledProperty` Dependency Property  | Represents whether the MenuFlyoutSubItem has RadioMenuFlyoutItems as children, and the checked state of these children.   |
 
 
 ## New ThemeResources
@@ -318,14 +318,14 @@ unsealed runtimeclass RadioMenuFlyoutItem : Windows.UI.Xaml.Controls.MenuFlyoutI
     // ...
 
     [MUX_DEFAULT_VALUE("false")]
-    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnContainsRadioMenuFlyoutItemsPropertyChanged")]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("AreCheckStatesEnabledPropertyChanged")]
 
-    static Windows.UI.Xaml.DependencyProperty ContainsRadioMenuFlyoutItemsProperty { get; };
-    static void SetContainsRadioMenuFlyoutItems(Windows.UI.Xaml.DependencyObject object,  Boolean value);
-    static Boolean GetContainsRadioMenuFlyoutItems(Windows.UI.Xaml.DependencyObject object);
+    static Windows.UI.Xaml.DependencyProperty AreCheckStatesEnabledProperty { get; };
+    static void SetAreCheckStatesEnabled(Windows.UI.Xaml.DependencyObject object,  Boolean value);
+    static Boolean GetAreCheckStatesEnabled(Windows.UI.Xaml.DependencyObject object);
 }
 
 ```
 # Remarks
 ### More on the RadioMenuFlyoutItem implementation:
-When a `MenuFlyoutSubItem` applies `RadioMenuFlyoutSubItemStyle`, the style sets the `ContainsRadioMenuFlyoutItems` property to true. This property change is attached to the `MenuFlyoutSubItem`’s [Loaded event](https://docs.microsoft.com/windows/winui/api/microsoft.ui.xaml.frameworkelement.loaded?view=winui-3.0), which fires every time the item is shown (i.e. the parent menu opens). In this event, a check is performed to see if any of the child items are of type `RadioMenuFlyoutItem`, and if they are currently in a checked state. Based on the child items checked/unchecked state, the `MenuFlyoutSubItem` (parent item) applies the “checked” or “unchecked” visual state – i.e. the parent item shows the dot indicator if one of its children are currently selected.  
+When a `MenuFlyoutSubItem` applies `RadioMenuFlyoutSubItemStyle`, the style sets the `AreCheckStatesEnabled` dependency property to true. This property change is attached to the `MenuFlyoutSubItem`’s [Loaded event](https://docs.microsoft.com/windows/winui/api/microsoft.ui.xaml.frameworkelement.loaded?view=winui-3.0), which fires every time the item is shown (i.e. the parent menu opens). In this event, a check is performed to see if any of the child items are of type `RadioMenuFlyoutItem`, and if they are currently in a checked state. Based on the child items checked/unchecked state, the `MenuFlyoutSubItem` (parent item) applies the “checked” or “unchecked” visual state – i.e. the parent item shows the dot indicator if one of its children are currently selected.  
