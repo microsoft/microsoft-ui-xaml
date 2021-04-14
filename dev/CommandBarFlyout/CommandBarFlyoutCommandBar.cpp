@@ -181,6 +181,9 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
         AttachEventsToSecondaryStoryboards();
     }
 
+    // We'll need to manage the presenter's CornerRadius when the overflow is opened/
+    // closed. In order for drop shadows to render correctly, the element with the shadow needs to have
+    // the correct corner radius as well. Otherwise the shadow will render with sharp corners.
     BindOwningFlyoutPresenterToCornerRadius();
 
     AttachEventHandlers();
@@ -1251,10 +1254,10 @@ void CommandBarFlyoutCommandBar::BindOwningFlyoutPresenterToCornerRadius()
     {
         if (const auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
         {
-            winrt::Binding binding;
             winrt::IControlProtected thisAsControlProtected = *this;
             if (const auto root = GetTemplateChildT<winrt::Grid>(L"LayoutRoot", thisAsControlProtected))
             {
+                winrt::Binding binding;
                 binding.Source(root);
                 binding.Path(winrt::PropertyPath(L"CornerRadius"));
                 binding.Mode(winrt::BindingMode::OneWay);
