@@ -42,7 +42,7 @@
     <x:Double x:Key="ContentDialogMaxHeight">756</x:Double>
     <GridLength x:Key="ContentDialogButtonSpacing">8</GridLength>
     <Thickness x:Key="ContentDialogTitleMargin">0,0,0,12</Thickness>
-    <Thickness x:Key="ContentDialogPadding">21</Thickness>
+    <Thickness x:Key="ContentDialogPadding">24</Thickness>
     <Thickness x:Key="ContentDialogSeparatorThickness">0,0,0,1</Thickness>
 
     <Style TargetType="ContentDialog" BasedOn="{StaticResource DefaultContentDialogStyle}" />
