@@ -63,7 +63,9 @@ namespace SystemBackdropComponentInternal
 
     struct BaseWindowHandler
     {
-        virtual ~BaseWindowHandler() {}
+        virtual ~BaseWindowHandler()
+        {
+        }
 
         void ActivateOrDeactivateController();
 

@@ -38,7 +38,7 @@ struct MicaController : winrt::implementation::MicaControllerT<MicaController>, 
 
 private:
     bool IsMicaSupportedOnCurrentOS() const;
-    void Crossfade(const winrt::Windows::UI::Composition::CompositionBrush& newBrush) const;
+    void Crossfade(const winrt::Windows::UI::Composition::CompositionBrush& newBrush);
     void Update();
 
     winrt::Windows::UI::Color m_tintColor{ winrt::Windows::UI::Colors::Teal() };

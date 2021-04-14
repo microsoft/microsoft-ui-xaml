@@ -223,7 +223,7 @@
             (m_compositor.TryCreateBlurredWallpaperBackdropBrush() != nullptr));
     }
 
-    void MicaController::Crossfade(const winrt::Windows::UI::Composition::CompositionBrush& newBrush) const
+    void MicaController::Crossfade(const winrt::Windows::UI::Composition::CompositionBrush& newBrush)
     {
         const winrt::CompositionBrush& oldBrush = m_target ? m_target.SystemBackdrop() : m_target2.SystemBackdrop();
 
@@ -253,12 +253,15 @@
         crossFadeBrush.StartAnimation(L"Crossfade.Weight", animation);
         crossFadeAnimationBatch.End();
 
-        crossFadeAnimationBatch.Completed([&, newBrush](auto&&, auto&&)
+        crossFadeAnimationBatch.Completed([weakThis = get_weak(), newBrush](auto&&, auto&&)
             {
-                if (m_target)
-                    m_target.SystemBackdrop(newBrush);
-                else
-                    m_target2.SystemBackdrop(newBrush);
+                if (auto self = weakThis.get())
+                {
+                    if (self->m_target)
+                        self->m_target.SystemBackdrop(newBrush);
+                    else
+                        self->m_target2.SystemBackdrop(newBrush);
+                }
             });
     }
 
