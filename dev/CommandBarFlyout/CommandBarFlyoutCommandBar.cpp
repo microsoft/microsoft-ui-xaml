@@ -181,9 +181,8 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
         AttachEventsToSecondaryStoryboards();
     }
 
-    // We'll need to manage the presenter's CornerRadius when the overflow is opened/
-    // closed. In order for drop shadows to render correctly, the element with the shadow needs to have
-    // the correct corner radius as well. Otherwise the shadow will render with sharp corners.
+    // Keep the owning FlyoutPresenter's corner radius in sync with the
+    // primary commands's corner radius.
     BindOwningFlyoutPresenterToCornerRadius();
 
     AttachEventHandlers();
