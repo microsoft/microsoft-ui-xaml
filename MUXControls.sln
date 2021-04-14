@@ -649,6 +649,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MonochromaticOverlayPresent
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MonochromaticOverlayPresenter_TestUI", "dev\MonochromaticOverlayPresenter\TestUI\MonochromaticOverlayPresenter_TestUI.shproj", "{52AAA6ED-E5A0-41BB-8858-66249333A8D4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Backdrop", "Backdrop", "{5693A4DE-E468-4EB1-86C2-1C3EEE4C75DC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SystemBackdropComponent", "dev\Materials\Backdrop\SystemBackdropComponent.vcxitems", "{99AF040E-B77B-487D-9CC8-3334E1F1162A}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
@@ -754,6 +758,7 @@ Global
 		dev\DropDownButton\TestUI\DropDownButton_TestUI.projitems*{954d7000-c06f-49eb-a7d2-0df83de6ca35}*SharedItemsImports = 13
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\APITests\APITests.projitems*{999c289e-5ad6-4700-a44e-e85b696e508a}*SharedItemsImports = 13
 		dev\Repeater\InteractionTests\Repeater_InteractionTests.projitems*{999e00c9-0e58-402a-8e0e-cbafb0adc7e3}*SharedItemsImports = 13
+		dev\Materials\Backdrop\SystemBackdropComponent.vcxitems*{99af040e-b77b-487d-9cc8-3334e1f1162a}*SharedItemsImports = 9
 		dev\SwipeControl\SwipeControl_InteractionTests\SwipeControl_InteractionTests.projitems*{9a8da438-193c-4950-a046-2952de2d3b0b}*SharedItemsImports = 13
 		dev\TwoPaneView\TestUI\TwoPaneView_TestUI.projitems*{9c533ec3-f8fa-4b0e-ba1b-3323932cdfcb}*SharedItemsImports = 13
 		dev\PipsPager\APITests\PipsPager_APITests.projitems*{9cf0d73a-e435-4c17-a41c-11e9fa3eea2f}*SharedItemsImports = 13
@@ -1642,6 +1647,8 @@ Global
 		{7FA40D21-3085-41B3-9C46-6CBC2F56B442} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{D03847C1-7EE7-4423-82FD-3CB31DAF98D1} = {7FA40D21-3085-41B3-9C46-6CBC2F56B442}
 		{52AAA6ED-E5A0-41BB-8858-66249333A8D4} = {7FA40D21-3085-41B3-9C46-6CBC2F56B442}
+		{5693A4DE-E468-4EB1-86C2-1C3EEE4C75DC} = {414D2AE4-5B65-43E1-9C11-D94817835B3D}
+		{99AF040E-B77B-487D-9CC8-3334E1F1162A} = {5693A4DE-E468-4EB1-86C2-1C3EEE4C75DC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}

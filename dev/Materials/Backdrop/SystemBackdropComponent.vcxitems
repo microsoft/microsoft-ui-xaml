@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{99AF040E-B77B-487D-9CC8-3334E1F1162A}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);MATERIALS_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropBrushFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropComponent.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropPolicyStateMachine.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropWindowHandler.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropBrushFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropComponent.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropController.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropPolicyState.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropPolicyStateMachine.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropWindowHandler.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)SystemBackdropComponent.idl" />
+  </ItemGroup>
+</Project>
