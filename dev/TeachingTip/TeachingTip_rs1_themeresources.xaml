@@ -91,6 +91,7 @@
         <Setter Property="HorizontalAlignment" Value="Right" />
         <Setter Property="Padding" Value="{ThemeResource TeachingTipAlternateCloseButtonPadding}"/>
         <Setter Property="BorderThickness" Value="{ThemeResource TeachingTipAlternateCloseButtonBorderThickness}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ControlElevationBorderBrush}" />
         <Setter Property="Content" Value="{ThemeResource TeachingTipAlternateCloseButtonGlyph}"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
         <Setter Property="FocusVisualMargin" Value="1"/>
