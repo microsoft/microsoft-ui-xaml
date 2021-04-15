@@ -162,12 +162,6 @@ namespace MUXControlsTestApp
             // Always set it to false when app restarted
             CoreApplicationViewTitleBar titleBar = CoreApplication.GetCurrentView().TitleBar;
             titleBar.ExtendViewIntoTitleBar = false;
-
-            var controller = new Microsoft.UI.Xaml.Controls.Primitives.MicaController();
-            if (controller.SetTarget(Window.Current))
-            {
-                Background = null;
-            }
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()

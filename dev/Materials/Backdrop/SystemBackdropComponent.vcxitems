@@ -15,12 +15,15 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Generated\BackdropMateriaBrush.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BackdropMaterialBrush.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropBrushFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropComponent.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropPolicyStateMachine.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropWindowHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)BackdropMaterialBrush.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropBrushFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropComponent.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropController.h" />

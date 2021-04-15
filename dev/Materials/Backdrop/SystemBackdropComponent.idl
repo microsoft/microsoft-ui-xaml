@@ -1,4 +1,15 @@
-﻿namespace MU_XCP_NAMESPACE
+﻿namespace MU_XM_NAMESPACE
+{
+    [MUX_PREVIEW]
+    [webhosthidden]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    unsealed runtimeclass BackdropMaterialBrush : Windows.UI.Xaml.Media.XamlCompositionBrushBase
+    {
+        BackdropMaterialBrush();
+    }
+}
+
+namespace MU_XCP_NAMESPACE
 {
     [webhosthidden]
     [default_interface]

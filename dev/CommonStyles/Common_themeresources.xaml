@@ -2,6 +2,7 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:media="using:Microsoft.UI.Xaml.Media"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)" xmlns:controls="using:Microsoft.UI.Xaml.Controls">
     <!--
         SystemControlTransparentBrush isn't defined in TH2. In RS1 and RS2, it's set to Transparent
@@ -20,6 +21,7 @@
             <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="SystemControlFocusVisualPrimaryBrush" ResourceKey="FocusStrokeColorOuterBrush"/>
             <StaticResource x:Key="SystemControlFocusVisualSecondaryBrush" ResourceKey="FocusStrokeColorInnerBrush"/>
+            <media:BackdropMaterialBrush x:Key="BaseLayerBrush" FallbackColor="{ThemeResource SolidBackgroundFillColorBase}"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -34,6 +36,7 @@
             <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="SystemControlFocusVisualPrimaryBrush" ResourceKey="FocusStrokeColorOuterBrush"/>
             <StaticResource x:Key="SystemControlFocusVisualSecondaryBrush" ResourceKey="FocusStrokeColorInnerBrush"/>
+            <media:BackdropMaterialBrush x:Key="BaseLayerBrush" FallbackColor="{ThemeResource SolidBackgroundFillColorBase}"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -48,6 +51,7 @@
             <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="SystemControlFocusVisualPrimaryBrush" ResourceKey="FocusStrokeColorOuterBrush"/>
             <StaticResource x:Key="SystemControlFocusVisualSecondaryBrush" ResourceKey="FocusStrokeColorInnerBrush"/>
+            <media:BackdropMaterialBrush x:Key="BaseLayerBrush" FallbackColor="{ThemeResource SystemColorWindowColor}"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
