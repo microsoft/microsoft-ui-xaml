@@ -272,9 +272,8 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     if (SharedHelpers::Is21H1OrHigher())
     {
         // Since DropShadows don't play well with the entrance animation for the presenter,
-        // we'll need to fade it in. This name helps us locate the element to set the flag.
-        // We didn't want to apply this name to all FlyoutPresenters, which is why it's done
-        // in code behind here.
+        // we'll need to fade it in. This name helps us locate the element to set the fade in
+        // flag in the OS code.
         presenter.Name(L"DropShadowFadeInTarget");
 
         // We'll need to remove the presenter's drop shadow on the commandBar's Opening/Closing
