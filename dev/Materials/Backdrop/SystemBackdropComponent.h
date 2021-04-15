@@ -47,8 +47,7 @@ private:
     winrt::Windows::UI::Color m_fallbackColor{ m_tintColor };
 
     winrt::Windows::UI::Composition::Compositor m_compositor{ nullptr };
-    winrt::Windows::UI::Composition::ICompositionSupportsSystemBackdropImplementation m_target{ nullptr };
-    winrt::ICompositionSupportsSystemBackdropLatest m_target2{ nullptr };
+    winrt::ICompositionSupportsSystemBackdrop m_target{ nullptr };
     std::unique_ptr<SystemBackdropComponentInternal::BaseWindowHandler> m_windowHandler{ nullptr };
 
     bool m_isActive{ false };

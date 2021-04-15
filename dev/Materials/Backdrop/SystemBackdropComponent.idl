@@ -30,12 +30,4 @@ namespace MU_XCP_NAMESPACE
         Single LuminosityOpacity;
         Windows.UI.Color FallbackColor;
     }
-
-    [MUX_PREVIEW]
-    [webhosthidden]
-    [uuid("397dafe4-b6c2-5bb9-951d-f5707de8b7bc")]
-    interface ICompositionSupportsSystemBackdropLatest
-    {
-        Windows.UI.Composition.CompositionBrush SystemBackdrop;
-    };
 }

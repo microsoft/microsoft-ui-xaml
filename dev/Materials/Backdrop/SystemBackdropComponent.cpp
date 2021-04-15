@@ -11,8 +11,7 @@
 #if NEVER
     bool MicaController::SetTarget(Windows::UI::WindowId const& windowId, Windows::UI::Composition::CompositionTarget const& desktopWindowTarget)
     {
-        m_target = desktopWindowTarget.try_as<winrt::ICompositionSupportsSystemBackdropImplementation>();
-        m_target2 = desktopWindowTarget.try_as<winrt::SystemBackdropComponent::ICompositionSupportsSystemBackdropLatest>();
+        m_target = desktopWindowTarget.try_as<winrt::ICompositionSupportsSystemBackdrop>();
         m_compositor = desktopWindowTarget.Compositor();
 
         WINRT_ASSERT(m_compositor != nullptr);
@@ -38,8 +37,7 @@
     
     bool MicaController::SetTarget(Windows::UI::Core::CoreWindow const& coreWindow, Windows::UI::Composition::CompositionTarget const& compositionTarget)
     {
-        m_target = compositionTarget.try_as<winrt::ICompositionSupportsSystemBackdropImplementation>();
-        m_target2 = compositionTarget.try_as<winrt::SystemBackdropComponent::ICompositionSupportsSystemBackdropLatest>();
+        m_target = compositionTarget.try_as<winrt::ICompositionSupportsSystemBackdrop>();
         m_compositor = compositionTarget.Compositor();
 
         WINRT_ASSERT(m_compositor != nullptr);
@@ -66,8 +64,7 @@
 
     bool MicaController::SetTarget(winrt::Windows::UI::Xaml::Window const& xamlWindow)
     {
-        m_target = xamlWindow.try_as<winrt::ICompositionSupportsSystemBackdropImplementation>();
-        m_target2 = xamlWindow.try_as<winrt::ICompositionSupportsSystemBackdropLatest>();
+        m_target = xamlWindow.try_as<winrt::ICompositionSupportsSystemBackdrop>();
         m_compositor = xamlWindow.Compositor();
 
         WINRT_ASSERT(m_compositor != nullptr);
@@ -218,21 +215,18 @@
     {
         WINRT_ASSERT(m_compositor != nullptr);
 
-        return ((m_target || m_target2) &&
+        return (m_target &&
             (m_compositor.try_as<winrt::ICompositorWithBlurredWallpaperBackdropBrush>() != nullptr) &&
             (m_compositor.TryCreateBlurredWallpaperBackdropBrush() != nullptr));
     }
 
     void MicaController::Crossfade(const winrt::Windows::UI::Composition::CompositionBrush& newBrush)
     {
-        const winrt::CompositionBrush& oldBrush = m_target ? m_target.SystemBackdrop() : m_target2.SystemBackdrop();
+        const winrt::CompositionBrush& oldBrush = m_target.SystemBackdrop();
 
         if (oldBrush == nullptr)
         {
-            if (m_target)
-                m_target.SystemBackdrop(newBrush);
-            else
-                m_target2.SystemBackdrop(newBrush);
+            m_target.SystemBackdrop(newBrush);
             return;
         }
 
@@ -244,10 +238,7 @@
 
         const winrt::CompositionBrush crossFadeBrush = SystemBackdropComponentInternal::CreateCrossFadeEffectBrush(m_compositor, oldBrush, newBrush);
         winrt::ScalarKeyFrameAnimation animation = SystemBackdropComponentInternal::CreateCrossFadeAnimation(m_compositor);
-        if (m_target)
-            m_target.SystemBackdrop(crossFadeBrush);
-        else
-            m_target2.SystemBackdrop(crossFadeBrush);
+        m_target.SystemBackdrop(crossFadeBrush);
 
         const auto crossFadeAnimationBatch = m_compositor.CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
         crossFadeBrush.StartAnimation(L"Crossfade.Weight", animation);
@@ -257,10 +248,7 @@
             {
                 if (auto self = weakThis.get())
                 {
-                    if (self->m_target)
-                        self->m_target.SystemBackdrop(newBrush);
-                    else
-                        self->m_target2.SystemBackdrop(newBrush);
+                    self->m_target.SystemBackdrop(newBrush);
                 }
             });
     }
@@ -277,7 +265,7 @@
                     self->m_currentlyUpdatingProperty = false;
                     self->m_propertyUpdated = true;
 
-                    if (self->m_target || self->m_target2)
+                    if (self->m_target)
                     {
                         if (self->m_isMicaSupported && self->m_isActive)
                         {
