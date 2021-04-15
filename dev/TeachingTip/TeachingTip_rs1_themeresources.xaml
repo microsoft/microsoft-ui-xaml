@@ -7,14 +7,6 @@
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonBackground"                                 ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonBackgroundPointerOver"                      ResourceKey="SubtleFillColorSecondaryBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonBackgroundPressed"                          ResourceKey="SubtleFillColorTertiaryBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonBackgroundDisabled"                         ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonForeground"                                 ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonForegroundPointerOver"                      ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonForegroundPressed"                          ResourceKey="TextFillColorSecondaryBrush"/>
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonForegroundDisabled"                         ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="TeachingTipBorderBrush"                                                    ResourceKey="SurfaceStrokeColorDefaultBrush"/>
             <SolidColorBrush x:Key="TeachingTipTopHighlightBrush"                                             Color="#0DFFFFFF"/>
             <StaticResource x:Key="TeachingTipTransientBackground"                                            ResourceKey="SystemControlPageBackgroundChromeLowBrush"/>
@@ -25,14 +17,6 @@
             <Thickness x:Key="TeachingTipAlternateCloseButtonBorderThickness">0</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonBackground"                                 ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonBackgroundPointerOver"                      ResourceKey="SubtleFillColorSecondaryBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonBackgroundPressed"                          ResourceKey="SubtleFillColorTertiaryBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonBackgroundDisabled"                         ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonForeground"                                 ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonForegroundPointerOver"                      ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonForegroundPressed"                          ResourceKey="TextFillColorSecondaryBrush"/>
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonForegroundDisabled"                         ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="TeachingTipBorderBrush"                                                    ResourceKey="SurfaceStrokeColorDefaultBrush"/>
             <SolidColorBrush x:Key="TeachingTipTopHighlightBrush"                                             Color="#99FFFFFF"/>
             <StaticResource x:Key="TeachingTipTransientBackground"                                            ResourceKey="SystemControlPageBackgroundChromeLowBrush"/>
@@ -43,14 +27,6 @@
             <Thickness x:Key="TeachingTipAlternateCloseButtonBorderThickness">0</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonBackground"                                 ResourceKey="SystemControlBackgroundBaseLowBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonBackgroundPointerOver"                      ResourceKey="SystemControlHighlightChromeHighBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonBackgroundPressed"                          ResourceKey="SystemControlHighlightChromeHighBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonBackgroundDisabled"                         ResourceKey="SystemControlBackgroundBaseLowBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonForeground"                                 ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonForegroundPointerOver"                      ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonForegroundPressed"                          ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="TeachingTipAlternateCloseButtonForegroundDisabled"                         ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="TeachingTipBorderBrush"                                                    ResourceKey="SystemControlTransientBorderBrush"/>
             <SolidColorBrush x:Key="TeachingTipTopHighlightBrush"                                             Color="Transparent"/>
             <StaticResource x:Key="TeachingTipTransientBackground"                                            ResourceKey="SystemControlPageBackgroundChromeLowBrush"/>
@@ -107,8 +83,8 @@
     <Style x:Key="AlternateCloseButtonStyle" TargetType="Button">
         <Setter Property="Width" Value="{ThemeResource TeachingTipAlternateCloseButtonSize}" />
         <Setter Property="Height" Value="{ThemeResource TeachingTipAlternateCloseButtonSize}" />
-        <Setter Property="Background" Value="{ThemeResource TeachingTipAlternateCloseButtonBackground}" />
-        <Setter Property="Foreground" Value="{ThemeResource TeachingTipAlternateCloseButtonForeground}" />
+        <Setter Property="Background" Value="{ThemeResource SubtleFillColorTransparentBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
         <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource TeachingTipAlternateCloseButtonGlyphSize}" />
         <Setter Property="VerticalAlignment" Value="Top" />
@@ -131,30 +107,30 @@
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TeachingTipAlternateCloseButtonBackgroundPointerOver}"/>
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleFillColorSecondaryBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TeachingTipAlternateCloseButtonForegroundPointerOver}"/>
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TeachingTipAlternateCloseButtonBackgroundPressed}"/>
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleFillColorTertiaryBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TeachingTipAlternateCloseButtonForegroundPressed}"/>
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TeachingTipAlternateCloseButtonBackgroundDisabled}"/>
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleFillColorTransparentBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TeachingTipAlternateCloseButtonForegroundDisabled}"/>
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextFillColorDisabledBrush}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
