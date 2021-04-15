@@ -158,7 +158,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 {
                     // To install from a directory, we have a script that does two things: first, it runs an MSBuild script
                     // that generates the AppX directory, and then second, it registers the AppX manifest placed in that directory.
-                    ProcessStartInfo powershellStartInfo = new ProcessStartInfo(
+                    ProcessStartInfo powershellStartInfo = new(
                         Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), @"system32\windowspowershell\v1.0\powershell.exe"),
                         "-NoLogo -NonInteractive -ExecutionPolicy Unrestricted -File \"" + createAppxDirectoryScript + "\"");
 
