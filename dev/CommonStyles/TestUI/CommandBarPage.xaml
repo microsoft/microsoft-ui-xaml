@@ -85,6 +85,56 @@
                 </CommandBar.SecondaryCommands>
             </CommandBar>
 
+            <TextBlock Text="AppBarButton with flyout"/>
+            <CommandBar HorizontalAlignment="Left">
+                <CommandBar.Resources>
+                    <!--Does not work-->
+                    <Visibility x:Key="CommandBarAppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
+                </CommandBar.Resources>
+                <AppBarButton Icon="Add" Label="Add">
+                    <AppBarButton.Flyout>
+                        <contract7Present:CommandBarFlyout Placement="Right">
+                            <AppBarButton  Icon="Play" />
+                            <AppBarButton  Icon="People" />
+                        </contract7Present:CommandBarFlyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
+                <AppBarButton Icon="Remove" Label="Remove" LabelPosition="Collapsed"/>
+                <AppBarSeparator/>
+                <AppBarButton Icon="Save" Label="Save"/>
+                <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                <CommandBar.SecondaryCommands>
+                    <AppBarButton Icon="Add" Label="Add"/>
+                    <AppBarButton Icon="Remove" Label="Remove"/>
+                    <AppBarSeparator/>
+                    <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                </CommandBar.SecondaryCommands>
+            </CommandBar>
+
+            <TextBlock Text="AppBarButton with flyout with visibility override"/>
+            <CommandBar HorizontalAlignment="Left">
+                <AppBarButton Icon="Add" Label="Add">
+                    <AppBarButton.Resources>
+                        <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
+                    </AppBarButton.Resources>
+                    <AppBarButton.Flyout>
+                        <contract7Present:CommandBarFlyout Placement="Right">
+                            <AppBarButton  Icon="Play" />
+                            <AppBarButton  Icon="People" />
+                        </contract7Present:CommandBarFlyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
+                <AppBarButton Icon="Remove" Label="Remove" LabelPosition="Collapsed"/>
+                <AppBarSeparator/>
+                <AppBarButton Icon="Save" Label="Save"/>
+                <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                <CommandBar.SecondaryCommands>
+                    <AppBarButton Icon="Add" Label="Add"/>
+                    <AppBarButton Icon="Remove" Label="Remove"/>
+                    <AppBarSeparator/>
+                    <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                </CommandBar.SecondaryCommands>
+            </CommandBar>
         </StackPanel>
 
     </Grid>
