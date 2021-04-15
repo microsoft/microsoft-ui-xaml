@@ -498,6 +498,6 @@ private:
 
     bool m_TabKeyPrecedesFocusChange{ false };
 
-    bool m_isPaneTitleEmpty{ false };
+    bool m_isLeftPaneTitleEmpty{ false };
 };
 

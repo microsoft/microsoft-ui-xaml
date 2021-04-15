@@ -1907,21 +1907,25 @@ void NavigationView::UpdatePaneTitleFrameworkElementParents()
     {
         const auto isPaneToggleButtonVisible = IsPaneToggleButtonVisible();
         const auto isTopNavigationView = IsTopNavigationView();
+        const auto paneTitleSize = PaneTitle().size();
 
-        m_isPaneTitleEmpty = (isPaneToggleButtonVisible ||
+        m_isLeftPaneTitleEmpty = (isPaneToggleButtonVisible ||
             isTopNavigationView ||
-            PaneTitle().size() == 0 ||
+            paneTitleSize == 0 ||
             (PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::LeftMinimal && !IsPaneOpen()));
 
-        paneTitleHolderFrameworkElement.Visibility(m_isPaneTitleEmpty ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
-
+        paneTitleHolderFrameworkElement.Visibility(m_isLeftPaneTitleEmpty ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
 
         if (auto&& paneTitleFrameworkElement = m_paneTitleFrameworkElement.get())
         {
+            const auto paneTitleTopPane = m_paneTitleOnTopPane.get();
+
             const auto first = SetPaneTitleFrameworkElementParent(m_paneToggleButton.get(), paneTitleFrameworkElement, isTopNavigationView || !isPaneToggleButtonVisible);
             const auto second = SetPaneTitleFrameworkElementParent(m_paneTitlePresenter.get(), paneTitleFrameworkElement, isTopNavigationView || isPaneToggleButtonVisible);
-            const auto third = SetPaneTitleFrameworkElementParent(m_paneTitleOnTopPane.get(), paneTitleFrameworkElement, !isTopNavigationView || isPaneToggleButtonVisible);
+            const auto third = SetPaneTitleFrameworkElementParent(paneTitleTopPane, paneTitleFrameworkElement, !isTopNavigationView || isPaneToggleButtonVisible);
             first ? first() : second ? second() : third ? third() : []() {}();
+
+            paneTitleTopPane.Visibility(third && paneTitleSize != 0 ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
         }
     }
 }
@@ -3353,7 +3357,7 @@ void NavigationView::UpdateVisualStateForOverflowButton()
 void NavigationView::UpdateLeftNavigationOnlyVisualState(bool useTransitions)
 {
     const bool isToggleButtonVisible = IsPaneToggleButtonVisible();
-    winrt::VisualStateManager::GoToState(*this, isToggleButtonVisible || !m_isPaneTitleEmpty ? L"TogglePaneButtonVisible" : L"TogglePaneButtonCollapsed", false /*useTransitions*/);
+    winrt::VisualStateManager::GoToState(*this, isToggleButtonVisible || !m_isLeftPaneTitleEmpty ? L"TogglePaneButtonVisible" : L"TogglePaneButtonCollapsed", false /*useTransitions*/);
 }
 
 void NavigationView::InvalidateTopNavPrimaryLayout()
