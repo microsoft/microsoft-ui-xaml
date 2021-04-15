@@ -761,6 +761,11 @@
                                     <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationStartPosition}" />
                                     <DiscreteDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationAfterDuration}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CloseAnimationEndPosition}" />
                                 </DoubleAnimationUsingKeyFrames>
+                                <!-- When closing in AlwaysExpanded, the IsOpen() call causes us to not go back to the Default visual state. This presents a
+                                     problem with drop shadows, as it relies on the transitions between visual states to show/hide itself during animations. So,
+                                     we'll set it to null here in order to guarantee that when all is said and done and the whole flyout is closing, the shadow
+                                     is set to null. We may be messing with the shadow in multiple places, but when the ClosingStoryboard is played, it's the last to play.
+                                     So when the flyout is closed it will always win out. -->
                                 <contract12Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRoot" Storyboard.TargetProperty="Shadow">
                                     <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Null}"/>
                                 </contract12Present:ObjectAnimationUsingKeyFrames>
