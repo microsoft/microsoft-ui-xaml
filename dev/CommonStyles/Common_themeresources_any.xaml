@@ -81,7 +81,7 @@
 
             <Color x:Key="SmokeFillColorDefault">#332C2C2C</Color>
 
-            <Color x:Key="LayerFillColorDefault">#09FFFFFF</Color>
+            <Color x:Key="LayerFillColorDefault">#4C3A3A3A</Color>
             <Color x:Key="LayerFillColorAlt">#0DFFFFFF</Color>
             <Color x:Key="LayerOnAcrylicFillColorDefault">#09FFFFFF</Color>
             <Color x:Key="LayerOnAccentAcrylicFillColorDefault">#09FFFFFF</Color>
@@ -247,7 +247,7 @@
             <!-- Colors -->
 
             <Color x:Key="TextFillColorPrimary">#E4000000</Color>
-            <Color x:Key="TextFillColorSecondary">#93000000</Color>
+            <Color x:Key="TextFillColorSecondary">#9E000000</Color>
             <Color x:Key="TextFillColorTertiary">#72000000</Color>
             <Color x:Key="TextFillColorDisabled">#5C000000</Color>
             <Color x:Key="TextFillColorInverse">#FFFFFF</Color>
