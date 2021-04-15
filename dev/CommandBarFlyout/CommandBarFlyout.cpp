@@ -255,6 +255,11 @@ winrt::Control CommandBarFlyout::CreatePresenter()
         presenter2.IsDefaultShadowEnabled(false);
     }
 
+    if (!SharedHelpers::Is21H1OrHigher())
+    {
+        presenter.CornerRadius({ 0 });
+    }
+
     m_presenter.set(presenter);
 
     m_commandBarOpenedRevoker = commandBar->Opened(winrt::auto_revoke, {

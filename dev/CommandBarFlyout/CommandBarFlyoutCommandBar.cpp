@@ -168,7 +168,10 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
 
     // Keep the owning FlyoutPresenter's corner radius in sync with the
     // primary commands's corner radius.
-    BindOwningFlyoutPresenterToCornerRadius();
+    if (SharedHelpers::Is21H1OrHigher())
+    {
+        BindOwningFlyoutPresenterToCornerRadius();
+    }
 
     AttachEventHandlers();
     UpdateFlowsFromAndFlowsTo();
