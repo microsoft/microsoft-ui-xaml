@@ -175,7 +175,7 @@
         }
 
         // If we are in high contrast mode, the system fallback color might have changed, so we have to always check.
-        auto fallbackColor = m_isHighContrast ? m_windowHandler->GetHighContrastFallbackColor() : m_fallbackColor;
+        const auto fallbackColor = m_isHighContrast ? m_windowHandler->GetHighContrastFallbackColor() : m_fallbackColor;
 
         const winrt::CompositionBrush& newBrush = m_compositor.CreateColorBrush(fallbackColor);
 

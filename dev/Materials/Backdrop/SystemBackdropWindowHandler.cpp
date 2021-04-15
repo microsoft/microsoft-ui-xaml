@@ -280,7 +280,7 @@ namespace SystemBackdropComponentInternal
     {
         if (auto root = m_xamlWindow.Content().try_as<winrt::Windows::UI::Xaml::FrameworkElement>())
         {
-            auto actualTheme = root.ActualTheme();
+            const auto actualTheme = root.ActualTheme();
             if (m_actualTheme != actualTheme)
             {
                 m_actualTheme = actualTheme;
