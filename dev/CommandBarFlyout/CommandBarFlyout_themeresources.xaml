@@ -761,6 +761,9 @@
                                     <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationStartPosition}" />
                                     <DiscreteDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationAfterDuration}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CloseAnimationEndPosition}" />
                                 </DoubleAnimationUsingKeyFrames>
+                                <contract12Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRoot" Storyboard.TargetProperty="Shadow">
+                                    <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Null}"/>
+                                </contract12Present:ObjectAnimationUsingKeyFrames>
                             </contract7Present:Storyboard>
                         </Grid.Resources>
                         <VisualStateManager.VisualStateGroups>
