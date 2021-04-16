@@ -92,7 +92,7 @@ The Universal Windows Platform contains more than just the XAML framework (e.g. 
 
 ### Updating your apps to use WinUI 3
 
-Creating a new WinUI 3 app will be easy using new [Visual Studio 2019 project templates](https://docs.microsoft.com/windows/apps/winui/winui3/create-winui3-projects). 
+Creating a new WinUI 3 app will be easy using new [Visual Studio 2019 project templates](https://docs.microsoft.com/en-us/windows/apps/winui/winui3/winui-project-templates-in-visual-studio). 
 
 For existing UWP XAML apps there will be some updates required when migrating to WinUI 3. These updates will require little effort, with the bulk of most project changes involving find-and-replace namespace changes. We'd love to hear your thoughts on the developer experience in the [WinUI 3.0 tooling discussion issue](https://github.com/microsoft/microsoft-ui-xaml/issues/1045).
 
