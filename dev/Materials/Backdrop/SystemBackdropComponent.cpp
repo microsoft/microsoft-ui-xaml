@@ -8,6 +8,16 @@
 
 //namespace winrt::SystemBackdropComponent::implementation
 //{
+
+    MicaController::~MicaController()
+    {
+        // If we are going away and we own the backdrop, clear it.
+        if (m_target && m_target.SystemBackdrop() == m_currentBrush)
+        {
+            m_target.SystemBackdrop(nullptr);
+        }
+    }
+
 #if NEVER
     bool MicaController::SetTarget(Windows::UI::WindowId const& windowId, Windows::UI::Composition::CompositionTarget const& desktopWindowTarget)
     {
@@ -226,7 +236,7 @@
 
         if (oldBrush == nullptr)
         {
-            m_target.SystemBackdrop(newBrush);
+            UpdateSystemBackdropBrush(newBrush);
             return;
         }
 
@@ -238,7 +248,7 @@
 
         const winrt::CompositionBrush crossFadeBrush = SystemBackdropComponentInternal::CreateCrossFadeEffectBrush(m_compositor, oldBrush, newBrush);
         winrt::ScalarKeyFrameAnimation animation = SystemBackdropComponentInternal::CreateCrossFadeAnimation(m_compositor);
-        m_target.SystemBackdrop(crossFadeBrush);
+        UpdateSystemBackdropBrush(crossFadeBrush);
 
         const auto crossFadeAnimationBatch = m_compositor.CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
         crossFadeBrush.StartAnimation(L"Crossfade.Weight", animation);
@@ -248,9 +258,15 @@
             {
                 if (auto self = weakThis.get())
                 {
-                    self->m_target.SystemBackdrop(newBrush);
+                    self->UpdateSystemBackdropBrush(newBrush);
                 }
             });
+    }
+
+    void MicaController::UpdateSystemBackdropBrush(const winrt::CompositionBrush& brush)
+    {
+        m_currentBrush = brush;
+        m_target.SystemBackdrop(m_currentBrush);
     }
 
     void MicaController::Update()

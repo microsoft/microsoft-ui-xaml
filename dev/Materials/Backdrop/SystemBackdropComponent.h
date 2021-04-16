@@ -8,6 +8,7 @@
 struct MicaController : winrt::implementation::MicaControllerT<MicaController>, SystemBackdropComponentInternal::ISystemBackdropController
 {
     MicaController() = default;
+    ~MicaController();
 
 #if NEVER
     bool SetTarget(Windows::UI::WindowId const& windowId, Windows::UI::Composition::CompositionTarget const& desktopWindowTarget);
@@ -40,12 +41,14 @@ private:
     bool IsMicaSupportedOnCurrentOS() const;
     void Crossfade(const winrt::Windows::UI::Composition::CompositionBrush& newBrush);
     void Update();
+    void UpdateSystemBackdropBrush(const winrt::CompositionBrush& brush);
 
     winrt::Windows::UI::Color m_tintColor{ winrt::Windows::UI::Colors::Teal() };
     float m_tintOpacity{ 0.05f };
     float m_luminosityOpacity{ 0.15f };
     winrt::Windows::UI::Color m_fallbackColor{ m_tintColor };
 
+    winrt::CompositionBrush m_currentBrush{ nullptr };
     winrt::Windows::UI::Composition::Compositor m_compositor{ nullptr };
     winrt::ICompositionSupportsSystemBackdrop m_target{ nullptr };
     std::unique_ptr<SystemBackdropComponentInternal::BaseWindowHandler> m_windowHandler{ nullptr };

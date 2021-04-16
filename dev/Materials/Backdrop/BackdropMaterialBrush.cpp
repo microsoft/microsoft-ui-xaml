@@ -21,6 +21,10 @@ void BackdropMaterialBrush::CreateOrDestroyMicaController()
             m_micaController = nullptr;
         }
     }
+    else if (m_connectedBrushCount == 0 && m_micaController)
+    {
+        m_micaController = nullptr;
+    }
 }
 
 void BackdropMaterialBrush::OnConnected()
