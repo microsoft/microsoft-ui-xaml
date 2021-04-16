@@ -15,7 +15,7 @@
         <ResourceDictionary x:Key="Dark">
             <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
             <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="ControlFillColorTransparentBrush" />
-            <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+            <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="NavigationViewContentBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
 
             <StaticResource x:Key="NavigationViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
@@ -85,7 +85,7 @@
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
             <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="ControlFillColorTransparentBrush" />
-            <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+            <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="NavigationViewContentBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
 
             <StaticResource x:Key="NavigationViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
@@ -247,7 +247,7 @@
     <Thickness x:Key="NavigationViewItemBorderThickness">1</Thickness>
     <Thickness x:Key="NavigationViewItemOnLeftIconBoxMargin">11,0,11,0</Thickness>
     <Thickness x:Key="NavigationViewItemButtonMargin">4,2</Thickness>
-    <Thickness x:Key="NavigationViewItemInnerHeaderMargin">16,0</Thickness>
+    <Thickness x:Key="NavigationViewItemInnerHeaderMargin">12,0,8,0</Thickness>
     <Thickness x:Key="NavigationViewMinimalHeaderMargin">8,5,0,0</Thickness>
     <Thickness x:Key="NavigationViewButtonHolderGridMargin">0,4</Thickness>
     <Thickness x:Key="NavigationViewPaneContentGridMargin">0,4</Thickness>
@@ -263,7 +263,7 @@
     <Thickness x:Key="TopNavigationViewOverflowButtonMargin">0</Thickness>
     <Thickness x:Key="NavigationViewItemContentPresenterMargin">4,-1,20,-1</Thickness>
     <Thickness x:Key="NavigationViewCompactItemContentPresenterMargin">0,0,0,0</Thickness>
-    <Thickness x:Key="TopNavigationViewItemContentPresenterMargin">8,-1,12,-1</Thickness>
+    <Thickness x:Key="TopNavigationViewItemContentPresenterMargin">8,-1</Thickness>
     <Thickness x:Key="TopNavigationViewItemContentOnlyContentPresenterMargin">12,0</Thickness>
     <Thickness x:Key="NavigationViewItemExpandChevronMargin">0</Thickness>
     <Thickness x:Key="TopNavigationViewItemExpandChevronMargin">-16,0,0,0</Thickness>
@@ -961,7 +961,6 @@
                                 <VisualState x:Name="IconOnLeft" />
                                 <VisualState x:Name="IconOnly">
                                     <VisualState.Setters>
-                                        <Setter Target="PointerRectangle.Visibility" Value="Visible" />
                                         <Setter Target="LayoutRoot.Width" Value="36" />
                                         <Setter Target="LayoutRoot.Height" Value="36" />
                                         <Setter Target="LayoutRoot.Margin" Value="{ThemeResource NavigationViewItemButtonMargin}" />
