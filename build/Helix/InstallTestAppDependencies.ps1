@@ -5,10 +5,11 @@ $dependencyFiles = Get-ChildItem -Filter "*dependencies.txt"
 
 foreach ($file in $dependencyFiles)
 {
-    Write-Host "Adding dependency $($file)..."
+    Write-Host "Adding dependencies in $file..."
 
     foreach ($line in Get-Content $file)
     {
+    	Write-Host "    Adding dependency $line..."
         Add-AppxPackage $line -ErrorVariable appxerror -ErrorAction SilentlyContinue
 
         if($appxerror)

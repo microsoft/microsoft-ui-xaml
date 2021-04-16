@@ -10,7 +10,7 @@ reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t 
 
 rem enable dump collection for our test apps:
 rem note, this script is run from a 32-bit cmd, but we need to set the native reg-key
-FOR %%A IN (MUXControlsTestApp.exe,IXMPTestApp.exe,NugetPackageTestApp.exe,NugetPackageTestAppCX.exe,te.exe,te.processhost.exe,AppThatUsesMUXIndirectly.exe) DO (
+FOR %%A IN (MUXControlsTestApp.exe,IXMPTestApp.exe,NugetPackageTestApp.exe,NugetPackageTestAppCX.exe,te.exe,te.processhost.exe,AppThatUsesMUXIndirectly.exe,WpfApp.exe) DO (
   %systemroot%\sysnative\cmd.exe /c reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\%%A" /v DumpFolder /t REG_EXPAND_SZ /d %HELIX_DUMP_FOLDER% /f
   %systemroot%\sysnative\cmd.exe /c reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\%%A" /v DumpType /t REG_DWORD /d 2 /f
   %systemroot%\sysnative\cmd.exe /c reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\%%A" /v DumpCount /t REG_DWORD /d 10 /f

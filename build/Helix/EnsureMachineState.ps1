@@ -99,7 +99,7 @@ Write-Host "Uninstall AppX packages that are known to cause issues with our test
 UninstallApps("*Skype*", "*Windows.Photos*")
 
 Write-Host "Uninstall any of our test apps that may have been left over from previous test runs"
-UninstallTestApps("NugetPackageTestApp", "NugetPackageTestAppCX", "IXMPTestApp", "MUXControlsTestApp")
+UninstallTestApps("NugetPackageTestApp", "NugetPackageTestAppCX", "IXMPTestApp", "MUXControlsTestApp", "WpfApp")
 
 Write-Host "Uninstall MUX Framework package that may have been left over from previous test runs"
 # We don't want to uninstall all versions of the MUX Framework package, as there may be other apps preinstalled on the system 
