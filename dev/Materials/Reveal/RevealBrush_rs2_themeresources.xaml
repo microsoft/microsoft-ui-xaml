@@ -321,7 +321,7 @@
             <StaticResource x:Key="ListViewItemRevealBackgroundSelected" ResourceKey="SystemControlHighlightAccent3RevealBackgroundBrush" />
             <StaticResource x:Key="ListViewItemRevealBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightAccent2RevealBackgroundBrush" />
             <StaticResource x:Key="ListViewItemRevealBackgroundSelectedPressed" ResourceKey="SystemControlHighlightAccent3RevealAccent2BackgroundBrush" />
-            <StaticResource x:Key="ListViewItemRevealPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemRevealPlaceholderBackground" ResourceKey="ControlStrongFillColorDisabledBrush" />
             <StaticResource x:Key="ListViewItemRevealBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ListViewItemRevealBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="ListViewItemRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
@@ -332,7 +332,7 @@
             <StaticResource x:Key="GridViewItemRevealBackgroundSelected" ResourceKey="SystemControlHighlightAccentRevealBackgroundBrush" />
             <StaticResource x:Key="GridViewItemRevealBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightAccent2RevealBackgroundBrush" />
             <StaticResource x:Key="GridViewItemRevealBackgroundSelectedPressed" ResourceKey="SystemControlHighlightAccent3RevealAccent2BackgroundBrush" />
-            <StaticResource x:Key="GridViewItemRevealPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="GridViewItemRevealPlaceholderBackground" ResourceKey="ControlStrongFillColorDisabledBrush" />
             <StaticResource x:Key="GridViewItemRevealBorderBrush" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.ComboBoxItem -->
             <StaticResource x:Key="ComboBoxItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
@@ -670,7 +670,7 @@
             <StaticResource x:Key="ListViewItemRevealBackgroundSelected" ResourceKey="SystemControlHighlightAccent3RevealBackgroundBrush" />
             <StaticResource x:Key="ListViewItemRevealBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightAccent2RevealBackgroundBrush" />
             <StaticResource x:Key="ListViewItemRevealBackgroundSelectedPressed" ResourceKey="SystemControlHighlightAccent3RevealAccent2BackgroundBrush" />
-            <StaticResource x:Key="ListViewItemRevealPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemRevealPlaceholderBackground" ResourceKey="ControlStrongFillColorDisabledBrush" />
             <StaticResource x:Key="ListViewItemRevealBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ListViewItemRevealBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="ListViewItemRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
@@ -681,7 +681,7 @@
             <StaticResource x:Key="GridViewItemRevealBackgroundSelected" ResourceKey="SystemControlHighlightAccentRevealBackgroundBrush" />
             <StaticResource x:Key="GridViewItemRevealBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightAccent2RevealBackgroundBrush" />
             <StaticResource x:Key="GridViewItemRevealBackgroundSelectedPressed" ResourceKey="SystemControlHighlightAccent3RevealAccent2BackgroundBrush" />
-            <StaticResource x:Key="GridViewItemRevealPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="GridViewItemRevealPlaceholderBackground" ResourceKey="ControlStrongFillColorDisabledBrush" />
             <StaticResource x:Key="GridViewItemRevealBorderBrush" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.ComboBoxItem -->
             <StaticResource x:Key="ComboBoxItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
@@ -2051,11 +2051,11 @@
                                     <VisualState.Setters>
                                         <Setter Target="MultiSelectCheck.Visibility" Value="Visible"/>
                                         <Setter Target="BorderRectangle.Visibility" Value="Visible"/>
-                                        <Setter Target="BorderRectangle.Stroke" Value="{ThemeResource AccentAAFillColorDefaultBrush}"/>
+                                        <Setter Target="BorderRectangle.Stroke" Value="{ThemeResource AccentFillColorDefaultBrush}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
-                                        <Setter Target="ContentBorder.FocusVisualSecondaryBrush" Value="{ThemeResource AccentAAFillColorDefaultBrush}"/>
+                                        <Setter Target="ContentBorder.FocusVisualSecondaryBrush" Value="{ThemeResource AccentFillColorDefaultBrush}"/>
                                         <Setter Target="ContentBorder.FocusVisualSecondaryThickness" Value="2"/>
-                                        <Setter Target="MultiSelectSquare.Background" Value="{ThemeResource AccentAAFillColorDefaultBrush}"/>
+                                        <Setter Target="MultiSelectSquare.Background" Value="{ThemeResource AccentFillColorDefaultBrush}"/>
                                         <Setter Target="ContentBorder.Background" Value="{ThemeResource GridViewItemRevealBackgroundSelected}"/>
                                     </VisualState.Setters>
 
@@ -2068,11 +2068,11 @@
                                     <VisualState.Setters>
                                         <Setter Target="MultiSelectCheck.Visibility" Value="Visible"/>
                                         <Setter Target="BorderRectangle.Visibility" Value="Visible"/>
-                                        <Setter Target="BorderRectangle.Stroke" Value="{ThemeResource AccentAAFillColorSecondaryBrush}"/>
+                                        <Setter Target="BorderRectangle.Stroke" Value="{ThemeResource AccentFillColorSecondaryBrush}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
-                                        <Setter Target="ContentBorder.FocusVisualSecondaryBrush" Value="{ThemeResource AccentAAFillColorSecondaryBrush}"/>
+                                        <Setter Target="ContentBorder.FocusVisualSecondaryBrush" Value="{ThemeResource AccentFillColorSecondaryBrush}"/>
                                         <Setter Target="ContentBorder.FocusVisualSecondaryThickness" Value="2"/>
-                                        <Setter Target="MultiSelectSquare.Background" Value="{ThemeResource AccentAAFillColorDefaultBrush}"/>
+                                        <Setter Target="MultiSelectSquare.Background" Value="{ThemeResource AccentFillColorDefaultBrush}"/>
                                         <Setter Target="ContentBorder.Background" Value="{ThemeResource GridViewItemRevealBackgroundSelectedPointerOver}"/>
                                         <Setter Target="ContentBorder.(local:RevealBrush.State)" Value="PointerOver"/>
                                     </VisualState.Setters>
@@ -2090,7 +2090,7 @@
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
                                         <Setter Target="ContentBorder.FocusVisualSecondaryBrush" Value="{ThemeResource SubtleFillColorTertiaryBrush}"/>
                                         <Setter Target="ContentBorder.FocusVisualSecondaryThickness" Value="2"/>
-                                        <Setter Target="MultiSelectSquare.Background" Value="{ThemeResource AccentAAFillColorDefaultBrush}"/>
+                                        <Setter Target="MultiSelectSquare.Background" Value="{ThemeResource AccentFillColorDefaultBrush}"/>
                                         <Setter Target="ContentBorder.Background" Value="{ThemeResource GridViewItemRevealBackgroundSelectedPressed}"/>
                                         <Setter Target="ContentBorder.(local:RevealBrush.State)" Value="Pressed"/>
                                     </VisualState.Setters>
@@ -2320,9 +2320,9 @@
                             Height="20"  
                             VerticalAlignment="Center"  
                             HorizontalAlignment="Center"  
-                            Background="{ThemeResource AccentAAFillColorDefaultBrush}"  
+                            Background="{ThemeResource AccentFillColorDefaultBrush}"  
                             BorderThickness="2"  
-                            BorderBrush="{ThemeResource TextOnAccentAAFillColorPrimaryBrush}">
+                            BorderBrush="{ThemeResource TextOnAccentFillColorPrimaryBrush}">
                             <TextBlock x:Name="MultiArrangeOverlayText"  
                                 Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.DragItemsCount}"  
                                 Style="{ThemeResource CaptionTextBlockStyle}"  

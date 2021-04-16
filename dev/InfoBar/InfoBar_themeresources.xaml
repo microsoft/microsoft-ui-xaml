@@ -73,7 +73,7 @@
 
             <StaticResource x:Key="InfoBarTitleForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="InfoBarMessageForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="InfoBarHyperlinkButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="InfoBarHyperlinkButtonForeground" ResourceKey="SystemControlHyperlinkTextBrush" />
 
             <StaticResource x:Key="InfoBarBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
             <Thickness x:Key="InfoBarBorderThickness">2</Thickness>

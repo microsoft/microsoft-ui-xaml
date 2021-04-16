@@ -14,11 +14,11 @@
             <StaticResource x:Key="SwipeItemBackgroundPressed" ResourceKey="ControlAltFillColorQuarternaryBrush"/>
             <!-- execute items-->
             <!-- pre-threshold -->
-            <StaticResource x:Key="SwipeItemPreThresholdExecuteForeground" ResourceKey="ControlAAFillColorDefaultBrush"/>
+            <StaticResource x:Key="SwipeItemPreThresholdExecuteForeground" ResourceKey="ControlStrongFillColorDefaultBrush"/>
             <StaticResource x:Key="SwipeItemPreThresholdExecuteBackground" ResourceKey="ControlFillColorTertiaryBrush"/>
             <!-- post-threshold -->
-            <StaticResource x:Key="SwipeItemPostThresholdExecuteForeground" ResourceKey="TextOnAccentAAFillColorPrimaryBrush"/>
-            <StaticResource x:Key="SwipeItemPostThresholdExecuteBackground" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="SwipeItemPostThresholdExecuteForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
+            <StaticResource x:Key="SwipeItemPostThresholdExecuteBackground" ResourceKey="AccentFillColorDefaultBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <!-- reveal brushes-->
@@ -27,11 +27,11 @@
             <StaticResource x:Key="SwipeItemBackgroundPressed" ResourceKey="ControlAltFillColorQuarternaryBrush"/>
             <!-- execute items-->
             <!-- pre-threshold -->
-            <StaticResource x:Key="SwipeItemPreThresholdExecuteForeground" ResourceKey="ControlAAFillColorDefaultBrush"/>
+            <StaticResource x:Key="SwipeItemPreThresholdExecuteForeground" ResourceKey="ControlStrongFillColorDefaultBrush"/>
             <StaticResource x:Key="SwipeItemPreThresholdExecuteBackground" ResourceKey="ControlFillColorTertiaryBrush"/>
             <!-- post-threshold -->
-            <StaticResource x:Key="SwipeItemPostThresholdExecuteForeground" ResourceKey="TextOnAccentAAFillColorPrimaryBrush"/>
-            <StaticResource x:Key="SwipeItemPostThresholdExecuteBackground" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="SwipeItemPostThresholdExecuteForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
+            <StaticResource x:Key="SwipeItemPostThresholdExecuteBackground" ResourceKey="AccentFillColorDefaultBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <!-- reveal brushes-->
