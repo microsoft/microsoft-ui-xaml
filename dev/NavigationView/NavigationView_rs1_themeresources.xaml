@@ -247,7 +247,7 @@
     <Thickness x:Key="NavigationViewItemBorderThickness">1</Thickness>
     <Thickness x:Key="NavigationViewItemOnLeftIconBoxMargin">11,0,11,0</Thickness>
     <Thickness x:Key="NavigationViewItemButtonMargin">4,2</Thickness>
-    <Thickness x:Key="NavigationViewItemInnerHeaderMargin">12,0,8,0</Thickness>
+    <Thickness x:Key="NavigationViewItemInnerHeaderMargin">12,0</Thickness>
     <Thickness x:Key="NavigationViewMinimalHeaderMargin">8,5,0,0</Thickness>
     <Thickness x:Key="NavigationViewButtonHolderGridMargin">0,4</Thickness>
     <Thickness x:Key="NavigationViewPaneContentGridMargin">0,4</Thickness>
@@ -263,7 +263,7 @@
     <Thickness x:Key="TopNavigationViewOverflowButtonMargin">0</Thickness>
     <Thickness x:Key="NavigationViewItemContentPresenterMargin">4,-1,20,-1</Thickness>
     <Thickness x:Key="NavigationViewCompactItemContentPresenterMargin">0,0,0,0</Thickness>
-    <Thickness x:Key="TopNavigationViewItemContentPresenterMargin">8,-1</Thickness>
+    <Thickness x:Key="TopNavigationViewItemContentPresenterMargin">8,-1,12,-1</Thickness>
     <Thickness x:Key="TopNavigationViewItemContentOnlyContentPresenterMargin">12,0</Thickness>
     <Thickness x:Key="NavigationViewItemExpandChevronMargin">0</Thickness>
     <Thickness x:Key="TopNavigationViewItemExpandChevronMargin">-16,0,0,0</Thickness>
@@ -963,7 +963,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.Width" Value="36" />
                                         <Setter Target="LayoutRoot.Height" Value="36" />
-                                        <Setter Target="LayoutRoot.Margin" Value="{ThemeResource NavigationViewItemButtonMargin}" />
+                                        <Setter Target="LayoutRoot.Margin" Value="2" />
                                         <Setter Target="IconBox.Margin" Value="10,0" />
                                         <Setter Target="ContentPresenter.Visibility" Value="Collapsed" />
                                         <Setter Target="SelectionIndicatorGrid.Margin" Value="0" />
@@ -1052,7 +1052,7 @@
                                 x:Name="IconBox" 
                                 Height="16"
                                 Width="16"
-                                Margin="16,0,0,0"
+                                Margin="12,0,0,0"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Center">
                                 <ContentPresenter 

@@ -285,7 +285,7 @@
                                       Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPaneVisibility}"
                                       BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition x:Name="BackButtonPlaceholderOnTopNav" Width="{ThemeResource NavigationBackButtonWidth}"/>
+                                        <ColumnDefinition x:Name="BackButtonPlaceholderOnTopNav" Width="44"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
