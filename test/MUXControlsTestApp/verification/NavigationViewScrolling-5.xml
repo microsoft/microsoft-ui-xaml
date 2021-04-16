@@ -342,7 +342,7 @@
               BorderBrush=[NULL]
               Background=[NULL]
               Name=PaneTitlePresenter
-              Margin=16,0,16,0
+              Margin=12,0,8,0
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -394,7 +394,7 @@
         [Windows.UI.Xaml.Controls.Grid]
             Padding=0,0,0,0
             CornerRadius=0,0,0,0
-            BorderThickness=0,0,0,1
+            BorderThickness=0,0,0,0
             BorderBrush=#0F000000
             Background=[NULL]
             Name=TopNavGrid
@@ -442,12 +442,12 @@
               BorderBrush=[NULL]
               Background=[NULL]
               Name=PaneTitleOnTopPane
-              Margin=16,0,16,0
+              Margin=12,0,8,0
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualPrimaryBrush=#E4000000
-              Visibility=Visible
+              Visibility=Collapsed
               RenderSize=0,0
           [Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost]
               Margin=0,0,0,0
@@ -1403,7 +1403,7 @@
                                       BorderBrush=[NULL]
                                       Background=[NULL]
                                       Name=InnerHeaderGrid
-                                      Margin=16,0,16,0
+                                      Margin=12,0,8,0
                                       Height=40
                                       FocusVisualSecondaryThickness=1,1,1,1
                                       FocusVisualSecondaryBrush=#B3FFFFFF
@@ -3036,7 +3036,7 @@
                                       BorderBrush=[NULL]
                                       Background=[NULL]
                                       Name=InnerHeaderGrid
-                                      Margin=16,0,16,0
+                                      Margin=12,0,8,0
                                       Height=40
                                       FocusVisualSecondaryThickness=1,1,1,1
                                       FocusVisualSecondaryBrush=#B3FFFFFF
