@@ -868,7 +868,17 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+                            
+                            <VisualStateGroup x:Name="DisplayModeStates">
+                                <VisualState x:Name="LeftMode"/>
+                                <VisualState x:Name="TopMode">
+                                    <VisualState.Setters>
+                                        <Setter Target="InnerHeaderGrid.Margin" Value="{ThemeResource TopNavigationViewItemInnerHeaderMargin}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
+                        
                         <Grid x:Name="InnerHeaderGrid" Height="40" HorizontalAlignment="Left" Margin="{ThemeResource NavigationViewItemInnerHeaderMargin}">
                             <TextBlock
                                 x:Name="HeaderText"
