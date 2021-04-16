@@ -31,12 +31,24 @@ namespace MUXControls.ReleaseTest
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public static void ClassInitialize(TestContext testContext)
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5))
+            {
+                // UIA in Xaml islands is only available in 19H1
+                return;
+            }
+
             TestEnvironment.Initialize(testContext, TestApplicationInfo.XamlIslandsTestApp); 
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5))
+            {
+                // UIA in Xaml islands is only available in 19H1
+                return;
+            }
+
             TestEnvironment.AssemblyCleanupWorker(TestApplicationInfo.XamlIslandsTestApp);
         }
     }
