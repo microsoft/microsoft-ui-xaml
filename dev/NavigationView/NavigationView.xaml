@@ -282,10 +282,11 @@
 
                                 <Grid x:Name="TopNavGrid" 
                                       Height="{ThemeResource NavigationViewTopPaneHeight}"
+                                      Margin="{ThemeResource TopNavigationViewTopNavGridMargin}"
                                       Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPaneVisibility}"
                                       BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition x:Name="BackButtonPlaceholderOnTopNav" Width="44"/>
+                                        <ColumnDefinition x:Name="BackButtonPlaceholderOnTopNav" Width="{ThemeResource NavigationBackButtonWidth}"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
