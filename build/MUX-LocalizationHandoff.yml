@@ -1,8 +1,15 @@
+variables:
+- group: WinUITeamKeyVault-Secrets
+
+
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: LocalizationHandoff
   pool:
     name: Package ES Standard Build
+  variables:
+    resourceStagingDirectory: '$(Build.ArtifactStagingDirectory)\LocStaging'
+    resourceOutputDirectory: '$(Build.ArtifactStagingDirectory)\LocOutput'
 
   steps:
   - task: PkgESSetupBuild@10
@@ -13,24 +20,30 @@ jobs:
       nugetVer: true
       useDfs: false
 
-  - template: AzurePipelinesTemplates\MUX-PopulateBuildDateAndRevision-Steps.yml
-
-  - task: CmdLine@1
-    displayName: 'Run Loc Workflow'
-    inputs:
-      filename: '$(Build.SourcesDirectory)\tools\VSTSRunLocWorkflow.cmd'
-
   - powershell: |
-      $changes = & git ls-files -m
-      Write-Host "Edited files:"
-      Write-Host "$changes"
-      if ($changes -imatch "\.resw")
-      {
-        Write-Host "##vso[task.complete result=SucceededWithIssues;]"
-        Write-Host "##vso[task.logissue type=warning;]Localization updates needed"
-        foreach ($change in $changes)
-        {
-          Write-Host "##vso[task.logissue type=warning;]$change"
-        }
-      }
-    displayName: checkEditedFiles
+      & "$env:Build_SourcesDirectory\build\Localization\PrepLocFilesForUpload.ps1" `
+        -DestinationFilePath '${{ variables.resourceStagingDirectory }}'
+    displayName: 'PrepLocFilesForUpload.ps1'
+
+  - task: TouchdownBuildTask@1
+    displayName: 'Call Touchdown Build Service'
+    inputs:
+      environment: 'PRODEXT'
+      teamId: '104'
+      authType: 'OAuth'
+      authId: 'e8416663-8a55-4cb6-9bba-12038b37a6ed'
+      authKey: $(WinUILab-TouchdownLoc-Key)
+      relativePathRoot: ${{ variables.resourceStagingDirectory }}
+      resourceFilePath: '**/Resources.resw'
+      outputDirectoryRoot: ${{ variables.resourceOutputDirectory }}
+      appendRelativeDir: true
+      cultureMappingType: 'None'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifacts - Localized Resources'
+    condition: always()
+    inputs:
+      PathtoPublish: ${{ variables.resourceOutputDirectory }}
+      artifactName: 'LocalizationDrop'
+      parallel: true
+      parallelCount: 8

@@ -131,6 +131,7 @@ public:
 #define SR_ProgressBarPausedStatus L"ProgressBarPausedStatus"
 #define SR_ProgressBarErrorStatus L"ProgressBarErrorStatus"
 #define SR_RatingLocalizedControlType L"RatingLocalizedControlType"
+#define SR_BreadcrumbBarItemLocalizedControlType L"BreadcrumbBarItemLocalizedControlType"
 #define SR_SplitButtonSecondaryButtonName L"SplitButtonSecondaryButtonName"
 #define SR_ProofingMenuItemLabel L"ProofingMenuItemLabel"
 #define SR_TextCommandLabelCut L"TextCommandLabelCut"

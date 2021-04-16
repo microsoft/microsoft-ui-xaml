@@ -13,6 +13,7 @@
         <Setter Property="Background" Value="{ThemeResource TeachingTipBackgroundBrush}"/>
         <Setter Property="Foreground" Value="{ThemeResource TeachingTipForegroundBrush}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource TeachingTipBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="{ThemeResource TeachingTipContentBorderThicknessUntargeted}"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="ActionButtonStyle" Value="{ThemeResource DefaultButtonStyle}"/>
         <Setter Property="CloseButtonStyle" Value="{ThemeResource DefaultButtonStyle}"/>
@@ -465,13 +466,28 @@
                                 </VisualState>
                                 <VisualState x:Name="Untargeted">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessUntargeted}"/>
                                         <Setter Target="TailEdgeBorder.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopTailPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TailPolygon.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="TitleBlockStates">
+                                <VisualState x:Name="ShowTitleTextBlock">
+                                    <VisualState.Setters>
+                                        <Setter Target="TitleTextBlock.Visibility" Value="Visible"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="CollapseTitleTextBlock"/>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="SubtitleBlockStates">
+                                <VisualState x:Name="ShowSubtitleTextBlock">
+                                    <VisualState.Setters>
+                                        <Setter Target="SubtitleTextBlock.Visibility" Value="Visible"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="CollapseSubtitleTextBlock"/>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Grid MinHeight="{ThemeResource TeachingTipMinHeight}" 
@@ -541,6 +557,7 @@
                                       AutomationProperties.LandmarkType="Custom"
                                       Background="{TemplateBinding Background}"
                                       BorderBrush="{TemplateBinding BorderBrush}"
+                                      BorderThickness="{TemplateBinding BorderThickness}"
                                       FlowDirection="{TemplateBinding FlowDirection}"
                                       Grid.Row="1"
                                       Grid.Column="1"
@@ -572,10 +589,10 @@
                                                     <StackPanel x:Name="TitlesStackPanel" Grid.Column="1">
                                                         <TextBlock x:Name="TitleTextBlock" Grid.Column="0" Text="{TemplateBinding Title}" TextWrapping="WrapWholeWords"
                                                             Foreground="{ThemeResource TeachingTipTitleForegroundBrush}" FontFamily="{TemplateBinding FontFamily}"
-                                                            FontWeight="SemiBold"/>
+                                                            FontWeight="SemiBold" Visibility="Collapsed"/>
                                                         <TextBlock x:Name="SubtitleTextBlock" Grid.Row="1" Text="{TemplateBinding Subtitle}"
                                                             Foreground="{ThemeResource TeachingTipSubtitleForegroundBrush}" FontFamily="{TemplateBinding FontFamily}"
-                                                            TextWrapping="WrapWholeWords"/>
+                                                            TextWrapping="WrapWholeWords" Visibility="Collapsed"/>
                                                     </StackPanel>
                                                 </Grid>
                                                 <ContentPresenter x:Name="MainContentPresenter" Grid.Row="1" Content="{TemplateBinding Content}"

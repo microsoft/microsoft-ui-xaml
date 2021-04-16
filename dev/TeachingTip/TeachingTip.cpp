@@ -13,6 +13,13 @@
 #include "../ResourceHelper/Utils.h"
 #include <enum_array.h>
 
+static constexpr auto c_TitleTextBlockVisibleStateName = L"ShowTitleTextBlock"sv;
+static constexpr auto c_TitleTextBlockCollapsedStateName = L"CollapseTitleTextBlock"sv;
+static constexpr auto c_SubtitleTextBlockVisibleStateName = L"ShowSubtitleTextBlock"sv;
+static constexpr auto c_SubtitleTextBlockCollapsedStateName = L"CollapseSubtitleTextBlock"sv;
+
+static constexpr auto c_OverlayCornerRadiusName = L"OverlayCornerRadius"sv;
+
 TeachingTip::TeachingTip()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TeachingTip);
@@ -31,6 +38,8 @@ winrt::AutomationPeer TeachingTip::OnCreateAutomationPeer()
 
 void TeachingTip::OnApplyTemplate()
 {
+    base_type::OnApplyTemplate();
+
     m_acceleratorKeyActivatedRevoker.revoke();
     m_effectiveViewportChangedRevoker.revoke();
     m_contentSizeChangedRevoker.revoke();
@@ -52,8 +61,9 @@ void TeachingTip::OnApplyTemplate()
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
     m_tailEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_tailEdgeBorderName, controlProtected));
     m_tailPolygon.set(GetTemplateChildT<winrt::Polygon>(s_tailPolygonName, controlProtected));
-    m_titleTextBox.set(GetTemplateChildT<winrt::UIElement>(s_titleTextBoxName, controlProtected));
-    m_subtitleTextBox.set(GetTemplateChildT<winrt::UIElement>(s_subtitleTextBoxName, controlProtected));
+    ToggleVisibilityForEmptyContent(c_TitleTextBlockVisibleStateName, c_TitleTextBlockCollapsedStateName, Title());
+    ToggleVisibilityForEmptyContent(c_SubtitleTextBlockVisibleStateName, c_SubtitleTextBlockCollapsedStateName, Subtitle());
+
 
     if (auto&& container = m_container.get())
     {
@@ -176,14 +186,14 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     else if (property == s_TitleProperty)
     {
         SetPopupAutomationProperties();
-        if (ToggleVisibilityForEmptyContent(m_titleTextBox.get(), Title()))
+        if (ToggleVisibilityForEmptyContent(c_TitleTextBlockVisibleStateName, c_TitleTextBlockCollapsedStateName, Title()))
         {
             TeachingTipTestHooks::NotifyTitleVisibilityChanged(*this);
         }
     }
     else if (property == s_SubtitleProperty)
     {
-        if (ToggleVisibilityForEmptyContent(m_subtitleTextBox.get(), Subtitle()))
+        if (ToggleVisibilityForEmptyContent(c_SubtitleTextBlockVisibleStateName, c_SubtitleTextBlockCollapsedStateName, Subtitle()))
         {
             TeachingTipTestHooks::NotifySubtitleVisibilityChanged(*this);
         }
@@ -191,26 +201,18 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
 
 }
 
-bool TeachingTip::ToggleVisibilityForEmptyContent(const winrt::UIElement& element, const winrt::hstring& content)
+bool TeachingTip::ToggleVisibilityForEmptyContent(const wstring_view visibleStateName, const wstring_view collapsedStateName, const winrt::hstring& content)
 {
-    if (element)
+    
+    if (content != L"")
     {
-        if (content != L"")
-        {
-            if (element.Visibility() == winrt::Visibility::Collapsed)
-            {
-                element.Visibility(winrt::Visibility::Visible);
-                return true;
-            }
-        }
-        else
-        {
-            if (element.Visibility() == winrt::Visibility::Visible)
-            {
-                element.Visibility(winrt::Visibility::Collapsed);
-                return true;
-            }
-        }
+        winrt::VisualStateManager::GoToState(*this, visibleStateName, false);
+        return true;
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, collapsedStateName, false);
+        return true;
     }
     return false;
 }
@@ -956,7 +958,7 @@ void TeachingTip::OnIconSourceChanged()
     auto const templateSettings = winrt::get_self<::TeachingTipTemplateSettings>(TemplateSettings());
     if (auto const source = IconSource())
     {
-        templateSettings->IconElement(source.CreateIconElement());
+        templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
         winrt::VisualStateManager::GoToState(*this, L"Icon"sv, false);
     }
     else
@@ -2239,6 +2241,22 @@ float TeachingTip::MinimumTipEdgeToTailCenter()
     return 0;
 }
 
+winrt::CornerRadius TeachingTip::GetTeachingTipCornerRadius()
+{
+    if (SharedHelpers::IsRS5OrHigher())
+    {
+        return CornerRadius();
+    }
+    else if (auto const contentRootGrid = m_contentRootGrid.get())
+    {
+        return contentRootGrid.CornerRadius();
+    }
+    else
+    {
+        return unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*this, box_value(c_OverlayCornerRadiusName)));
+    }
+}
+
 ////////////////
 // Test Hooks //
 ////////////////
@@ -2407,7 +2425,7 @@ double TeachingTip::GetVerticalOffset()
 
 winrt::Visibility TeachingTip::GetTitleVisibility()
 {
-    if (auto&& titleTextBox = m_titleTextBox.get())
+    if (auto&& titleTextBox = GetTemplateChildT<winrt::UIElement>(s_titleTextBoxName, *this))
     {
         return titleTextBox.Visibility();
     }
@@ -2416,7 +2434,7 @@ winrt::Visibility TeachingTip::GetTitleVisibility()
 
 winrt::Visibility TeachingTip::GetSubtitleVisibility()
 {
-    if (auto&& subtitleTextBox = m_subtitleTextBox.get())
+    if (auto&& subtitleTextBox = GetTemplateChildT<winrt::UIElement>(s_subtitleTextBoxName, *this))
     {
         return subtitleTextBox.Visibility();
     }

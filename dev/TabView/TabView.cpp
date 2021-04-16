@@ -88,7 +88,10 @@ void TabView::OnApplyTemplate()
         m_tabStripPointerExitedRevoker = containerGrid.PointerExited(winrt::auto_revoke, { this,&TabView::OnTabStripPointerExited });
     }
 
-    m_shadowReceiver.set(GetTemplateChildT<winrt::Grid>(L"ShadowReceiver", controlProtected));
+    if (!SharedHelpers::Is21H1OrHigher())
+    {
+        m_shadowReceiver.set(GetTemplateChildT<winrt::Grid>(L"ShadowReceiver", controlProtected));
+    }
 
     m_listView.set([this, controlProtected]() {
         auto listView = GetTemplateChildT<winrt::ListView>(L"TabListView", controlProtected);
@@ -136,18 +139,21 @@ void TabView::OnApplyTemplate()
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-        if (auto shadowCaster = GetTemplateChildT<winrt::Grid>(L"ShadowCaster", controlProtected))
+        if (!SharedHelpers::Is21H1OrHigher())
         {
-            winrt::ThemeShadow shadow;
-            shadow.Receivers().Append(GetShadowReceiver());
+            if (auto shadowCaster = GetTemplateChildT<winrt::Grid>(L"ShadowCaster", controlProtected))
+            {
+                winrt::ThemeShadow shadow;
+                shadow.Receivers().Append(GetShadowReceiver());
 
-            double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
+                double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
 
-            const auto currentTranslation = shadowCaster.Translation();
-            const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
-            shadowCaster.Translation(translation);
+                const auto currentTranslation = shadowCaster.Translation();
+                const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
+                shadowCaster.Translation(translation);
 
-            shadowCaster.Shadow(shadow);
+                shadowCaster.Shadow(shadow);
+            }
         }
     }
 
@@ -887,7 +893,8 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths,bool fillAllAvailableSpace
                         }
 
                         // Use current size to update items to fill the currently occupied space
-                        tabWidth = availableTabViewSpace / (double)(TabItems().Size());
+                        auto const tabWidthUnclamped = availableTabViewSpace / (double)(TabItems().Size());
+                        tabWidth = std::clamp(tabWidthUnclamped, minTabWidth, maxTabWidth);
                     }
 
 
@@ -977,20 +984,7 @@ void TabView::UpdateSelectedItem()
 {
     if (auto&& listView = m_listView.get())
     {
-        auto tvi = SelectedItem().try_as<winrt::TabViewItem>();
-        if (!tvi)
-        {
-            tvi = ContainerFromItem(SelectedItem()).try_as<winrt::TabViewItem>();
-        }
-
-        if (tvi)
-        {
-            listView.SelectedItem(tvi);
-
-            // Setting ListView.SelectedItem will not work here in all cases.
-            // The reason why that doesn't work but this does is unknown.
-            tvi.IsSelected(true);
-        }
+        listView.SelectedItem(SelectedItem());
     }
 }
 

@@ -45,6 +45,16 @@
                             <ToggleMenuFlyoutItem Text="A Toggle Item"/>
                             <controls:RadioMenuFlyoutItem Text="A Radio Item"/>
                             <controls:RadioMenuFlyoutItem x:Name="IconRadioMenuFlyoutItem" Text="Radio And Has Icon"/>
+                            <controls:RadioMenuFlyoutItem x:Name="IconRadioMenuFlyoutItem2" Text="Radio with icon and accelerator">
+                                <controls:RadioMenuFlyoutItem.KeyboardAccelerators>
+                                    <KeyboardAccelerator Key="S" Modifiers="Control"/>
+                                </controls:RadioMenuFlyoutItem.KeyboardAccelerators>
+                            </controls:RadioMenuFlyoutItem>
+                            <controls:RadioMenuFlyoutItem Text="Radio accelerator" AccessKey="A">
+                                <controls:RadioMenuFlyoutItem.KeyboardAccelerators>
+                                    <KeyboardAccelerator Key="S" Modifiers="Control"/>
+                                </controls:RadioMenuFlyoutItem.KeyboardAccelerators>
+                            </controls:RadioMenuFlyoutItem>
                             <MenuFlyoutItem x:Name="IconMenuFlyoutItem" Text="Just Has Icon"/>
                         </MenuFlyout>
                     </Button.Flyout>

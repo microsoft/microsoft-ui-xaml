@@ -32,7 +32,7 @@ void PathIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::PathIconSource>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Geometry>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnDataPropertyChanged));
     }
 }
 
@@ -40,6 +40,14 @@ void PathIconSourceProperties::ClearProperties()
 {
     s_DataProperty = nullptr;
     IconSource::ClearProperties();
+}
+
+void PathIconSourceProperties::OnDataPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::PathIconSource>();
+    winrt::get_self<PathIconSource>(owner)->OnPropertyChanged(args);
 }
 
 void PathIconSourceProperties::Data(winrt::Geometry const& value)
