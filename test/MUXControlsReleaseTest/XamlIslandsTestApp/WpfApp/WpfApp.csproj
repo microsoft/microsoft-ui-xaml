@@ -11,10 +11,10 @@
     <RuntimeIdentifiers>win10-x86;win10-x64</RuntimeIdentifiers>
     <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
     <OutDir>$(OutDir)$(MSBuildProjectName)\</OutDir>
-    <OutDir Condition="'$(PublishDir)' != ''">$(OutDir)Packaged\</OutDir>
+    <OutDir Condition="'$(IsBeingPackaged)' == 'true'">$(OutDir)Packaged\</OutDir>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(PublishDir)' == ''">
+  <PropertyGroup Condition="'$(IsBeingPackaged)' != 'true'">
     <RuntimeIdentifier Condition="'$(Platform)' != 'AnyCPU'">win10-$(Platform)</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
     <PublishSingleFile>False</PublishSingleFile>
@@ -30,7 +30,7 @@
 
   <!-- To avoid needing to install anything when running this app unpackaged, we'll bundle the dependency DLLs
        that we need in the exe folder. These are all of the desktop C++ runtime implementation DLLs from Visual Studio. -->
-  <Target Name="BinplaceDependencyDlls" AfterTargets="AfterBuild" Condition="'$(PublishDir)' == ''">
+  <Target Name="BinplaceDependencyDlls" AfterTargets="AfterBuild" Condition="'$(IsBeingPackaged)' != 'true'">
     <GetInstalledSDKLocations
            SDKDirectoryRoots="$(SDKReferenceDirectoryRoot)"
            SDKExtensionDirectoryRoots="$(SDKExtensionDirectoryRoot)"
