@@ -7,7 +7,8 @@
     xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
     xmlns:contract6NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,6)"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
-    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
+    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:contract12Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,12)">
     
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
@@ -107,6 +108,7 @@
 
     <Thickness x:Key="CommandBarFlyoutAppBarButtonInnerBorderMargin">2</Thickness>
     <Thickness x:Key="CommandBarFlyoutAppBarEllipsisButtonInnerBorderMargin">2,2,6,2</Thickness>
+    <contract12Present:ThemeShadow x:Key="CommandBarFlyoutOverflowShadow"/>
 
     <Style x:Key="CommandBarFlyoutAppBarButtonStyleBase" TargetType="AppBarButton">
         <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackground}" />
@@ -246,14 +248,6 @@
                                 <VisualState x:Name="KeyboardAcceleratorTextVisible">
                                     <VisualState.Setters>
                                         <Setter Target="KeyboardAcceleratorTextLabel.Visibility" Value="Visible" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="FlyoutStates">
-                                <VisualState x:Name="NoFlyout" />
-                                <VisualState x:Name="HasFlyout">
-                                    <VisualState.Setters>
-                                        <Setter Target="SubItemChevron.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -759,6 +753,14 @@
                                     <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationStartPosition}" />
                                     <DiscreteDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationAfterDuration}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CloseAnimationEndPosition}" />
                                 </DoubleAnimationUsingKeyFrames>
+                                <!-- When closing in AlwaysExpanded, the IsOpen() call causes us to not go back to the Default visual state. This presents a
+                                     problem with drop shadows, as it relies on the transitions between visual states to show/hide itself during animations. So,
+                                     we'll set it to null here in order to guarantee that when all is said and done and the whole flyout is closing, the shadow
+                                     is set to null. We may be messing with the shadow in multiple places, but when the ClosingStoryboard is played, it's the last to play.
+                                     So when the flyout is closed it will always win out. -->
+                                <contract12Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRoot" Storyboard.TargetProperty="Shadow">
+                                    <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Null}"/>
+                                </contract12Present:ObjectAnimationUsingKeyFrames>
                             </contract7Present:Storyboard>
                         </Grid.Resources>
                         <VisualStateManager.VisualStateGroups>
@@ -797,7 +799,7 @@
                             <VisualStateGroup x:Name="ExpansionStates">
                                 <VisualStateGroup.Transitions>
                                     <VisualTransition From="Collapsed" To="ExpandedUp" GeneratedDuration="{StaticResource ControlNormalAnimationDuration}">
-                                        <Storyboard>
+                                        <Storyboard x:Name="CollapsedToExpandedUp">
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Width">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}" />
                                             </ObjectAnimationUsingKeyFrames>
@@ -838,7 +840,7 @@
                                         </Storyboard>
                                     </VisualTransition>
                                     <VisualTransition From="ExpandedUp" To="Collapsed" GeneratedDuration="{StaticResource ControlFastAnimationDuration}">
-                                        <Storyboard FillBehavior="Stop">
+                                        <Storyboard x:Name="ExpandedUpToCollapsed" FillBehavior="Stop">
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Width">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}" />
                                             </ObjectAnimationUsingKeyFrames>
@@ -868,7 +870,7 @@
                                         </Storyboard>
                                     </VisualTransition>
                                     <VisualTransition From="Collapsed" To="ExpandedDown" GeneratedDuration="{StaticResource ControlNormalAnimationDuration}">
-                                        <Storyboard>
+                                        <Storyboard x:Name="CollapsedToExpandedDown">
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Width">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}" />
                                             </ObjectAnimationUsingKeyFrames>
@@ -906,7 +908,7 @@
                                         </Storyboard>
                                     </VisualTransition>
                                     <VisualTransition From="ExpandedDown" To="Collapsed" GeneratedDuration="{StaticResource ControlFastAnimationDuration}">
-                                        <Storyboard FillBehavior="Stop">
+                                        <Storyboard x:Name="ExpandedDownToCollapsed" FillBehavior="Stop">
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Width">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}" />
                                             </ObjectAnimationUsingKeyFrames>
@@ -1119,6 +1121,7 @@
                                         <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                         <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                         <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
+                                        <contract12Present:Setter Target="OuterOverflowContentRoot.Shadow" Value="{StaticResource CommandBarFlyoutOverflowShadow}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ExpandedUpWithoutPrimaryCommands">
@@ -1131,6 +1134,7 @@
                                         <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
                                         <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
                                         <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
+                                        <contract12Present:Setter Target="OuterOverflowContentRoot.Shadow" Value="{StaticResource CommandBarFlyoutOverflowShadow}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ExpandedDownWithoutPrimaryCommands">
@@ -1143,6 +1147,7 @@
                                         <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
                                         <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
                                         <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
+                                        <contract12Present:Setter Target="OuterOverflowContentRoot.Shadow" Value="{StaticResource CommandBarFlyoutOverflowShadow}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
