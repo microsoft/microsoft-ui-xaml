@@ -35,7 +35,7 @@
 
     <Thickness x:Key="AutoSuggestBoxTopHeaderMargin">0,0,0,8</Thickness>
     <Thickness x:Key="AutoSuggestBoxInnerButtonMargin">0,3</Thickness>
-    <Thickness x:Key="AutoSuggestBoxDeleteButtonMargin">0,2</Thickness>
+    <Thickness x:Key="AutoSuggestBoxDeleteButtonMargin">0,4,0,4</Thickness>
     <Thickness x:Key="AutoSuggestBoxQueryButtonPadding">3,2</Thickness>
     <x:Double x:Key="AutoSuggestBoxRightButtonMargin">4</x:Double>
 
@@ -69,7 +69,6 @@
                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                 Background="{ThemeResource TextControlButtonBackground}"
                                                 Margin="{StaticResource AutoSuggestBoxDeleteButtonMargin}"
-                                                Padding="{TemplateBinding Padding}"
                                                 contract7Present:CornerRadius="{ThemeResource ControlCornerRadius}"
                                                 contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                                                 <VisualStateManager.VisualStateGroups>
@@ -358,7 +357,6 @@
                             Visibility="Collapsed"
                             FontSize="{TemplateBinding FontSize}"
                             Width="32"
-                            Height="28"
                             AutomationProperties.AccessibilityView="Raw"
                             VerticalAlignment="Stretch" />
                         <Button x:Name="QueryButton"
