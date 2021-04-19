@@ -69,6 +69,9 @@
     <PackageReference Include="MUXCustomBuildTasks">
       <Version>1.0.67</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.UI.Xaml">
+      <Version>2.1.190606001</Version>
+    </PackageReference>
   </ItemGroup>
   <!-- For reasons that are unclear, _RemoveExtraPriFiles fails to remove an instance of AppTestAutomationHelpers.pri,
        which causes an duplicate item issue during MakePri.exe.  We'll remove it explicitly to avoid that. -->

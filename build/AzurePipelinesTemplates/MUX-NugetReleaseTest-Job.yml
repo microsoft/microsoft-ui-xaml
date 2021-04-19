@@ -7,6 +7,7 @@ parameters:
   helixType: 'test/nuget'
   test_matrix: ''
   useFrameworkPkg: false
+  taefQuery: ''
   matrix:
     Debug_x86:
       buildPlatform: 'x86'
@@ -97,6 +98,7 @@ jobs:
       testSuite: 'NugetTestSuite'
       helixType: ${{ parameters.helixType }}
       artifactName: ${{ parameters.buildArtifactName }}
+      taefQuery: ${{ parameters.taefQuery }}
       rerunPassesRequiredToAvoidFailure: 5
       ${{if ne(parameters.test_matrix, '') }}:
         matrix: ${{ parameters.test_matrix }}

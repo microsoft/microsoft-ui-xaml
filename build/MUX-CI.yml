@@ -70,6 +70,7 @@ jobs:
     helixType: 'test/frpkg'
     dependsOn: CreateNugetPackage
     useFrameworkPkg: true
+    taefQuery: "@NugetPkgTestsOnly != 'True'"
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:
