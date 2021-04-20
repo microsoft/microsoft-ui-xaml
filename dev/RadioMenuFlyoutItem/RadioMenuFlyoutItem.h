@@ -45,6 +45,7 @@ class RadioMenuFlyoutItem :
 
 public:
     RadioMenuFlyoutItem();
+    ~RadioMenuFlyoutItem();
 
     // IsChecked property is ambiguous with ToggleMenuFlyoutItem, lift up RadioMenuFlyoutItem::IsChecked to disambiguate.
     using RadioMenuFlyoutItemProperties::IsChecked;
@@ -62,6 +63,5 @@ private:
 
     PropertyChanged_revoker m_InternalIsCheckedChangedRevoker{};
 
-    //static winrt::IMap<winrt::hstring, winrt::hstring> s_selectionMap;
     static winrt::IMap<winrt::hstring, winrt::RadioMenuFlyoutItem> s_selectionMap;
 };

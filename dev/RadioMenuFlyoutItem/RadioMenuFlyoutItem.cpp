@@ -24,6 +24,15 @@ RadioMenuFlyoutItem::RadioMenuFlyoutItem()
     SetDefaultStyleKey(this);
 }
 
+RadioMenuFlyoutItem::~RadioMenuFlyoutItem()
+{
+    // If this is the checked item, remove it from the lookup.
+    if (IsChecked())
+    {
+        s_selectionMap.Insert(GroupName(), nullptr);
+    }
+}
+
 void RadioMenuFlyoutItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
