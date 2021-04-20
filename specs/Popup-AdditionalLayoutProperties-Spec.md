@@ -37,7 +37,8 @@ determine which monitor it's being displayed in, which makes it unable to know w
 to open its secondary commands below its primary commands or whether it should open them above instead.
 
 This proposed API adds three properties and an event to Popup which will allow apps to specify where it desires a popup
-to be displayed relative to another element, and then respond to where system XAML was able to actually 
+to be displayed relative to another element, and then respond to where system XAML was able to actually place
+the popup.
 
 # Visual Examples
 <!-- Use this section to provide a brief description of the feature.
@@ -96,13 +97,25 @@ class Popup
 }
 ```
 
-`AnchorElement` is used to describe which UI element the Popup should be positioned near.
-`DesiredPlacement` is used to describe how the app author would ideally like the popup
-positioned relative to `AnchorElement`.  `ActualPlacement` returns where the app actually
-positioned the Popup after taking into account available space.  `PlacementChanged` is raised
-whenever XAML sets the value of `ActualPlacement`, which allows apps to respond to where the
-Popup was placed - for example, by setting a visual state based on whether a Popup is appearing
-above or below `AnchorElement`.
+`AnchorElement` is used to describe which element the `Popup` should be positioned relative to.
+Defaults to `null`.  `DesiredPlacement` is ignored, `ActualPlacement` is always `None`, and
+`PlacementChanged` is never raised if this is `null`.
+
+`DesiredPlacement` is used to describe how the app author would ideally like the `Popup`
+positioned relative to `AnchorElement`.  Defaults to `None`.  `AnchorElement` is ignored,
+`ActualPlacement` is always `None` and `PlacementChanged` is never raised if this is `None`. 
+If both `DesiredPlacement` and `AnchorElement` are set and `HorizontalOffset` and/or `VerticalOffset`
+are also set, then the latter two properties will offset the `Popup` from where it would have been
+placed by `DesiredPlacement` and `AnchorElement` alone.
+
+`ActualPlacement` returns where the app actually positioned the `Popup`, after taking into account
+available space, if both `AnchorElement` and `DesiredPlacement` were set.
+
+`PlacementChanged` is synchronously raised whenever XAML sets the value of `ActualPlacement`,
+which allows apps to respond to where a `Popup` was placed - for example, by setting
+a visual state based on whether a `Popup` is appearing above or below `AnchorElement`.
+This event is raised before the screen is refreshed, meaning that any visual changes made
+in response to this event can be made before anything is drawn to the screen at the new position.
 
 # API Details
 <!-- The exact API, in MIDL3 format (https://docs.microsoft.com/en-us/uwp/midl-3/) -->
@@ -146,7 +159,7 @@ namespace Windows.UI.Xaml.Controls.Primitives
 
 # Examples
 The example below shows how the new APIs can be used to control where to place a CommandBarFlyoutCommandBar's
-secondary commands Popup, and how to respond to where the Popup was placed.
+secondary commands Popup, and how to respond to the event raised when XAML places the Popup.
 
 ```xml
 <!-- Part of the CommandBarFlyoutCommandBar's default template -->
