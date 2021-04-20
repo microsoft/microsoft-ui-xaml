@@ -38,7 +38,8 @@ to open its secondary commands below its primary commands or whether it should o
 
 This proposed API adds three properties and an event to Popup which will allow apps to specify where it desires a popup
 to be displayed relative to another element, and then respond to where system XAML was able to actually place
-the popup.
+the popup.  This will allow elements such as CommandBar to be able to rely on system XAML for the placement of their
+child popups in a way that will take monitor or app bounds into account without needing to do that accounting manuall.
 
 # Visual Examples
 <!-- Use this section to provide a brief description of the feature.
