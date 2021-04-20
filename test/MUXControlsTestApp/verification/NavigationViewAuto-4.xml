@@ -399,7 +399,7 @@
               BorderBrush=[NULL]
               Background=[NULL]
               Name=PaneTitlePresenter
-              Margin=12,0,8,0
+              Margin=16,0,16,0
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -455,7 +455,7 @@
             BorderBrush=#0F000000
             Background=[NULL]
             Name=TopNavGrid
-            Margin=0,0,0,0
+            Margin=4,0,4,0
             Height=48
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#B3FFFFFF
@@ -499,7 +499,7 @@
               BorderBrush=[NULL]
               Background=[NULL]
               Name=PaneTitleOnTopPane
-              Margin=12,0,8,0
+              Margin=16,0,16,0
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
