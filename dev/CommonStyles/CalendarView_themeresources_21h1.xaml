@@ -166,6 +166,9 @@
     <x:Double x:Key="CalendarViewNavigationButtonFontSize">8</x:Double>
     <FontWeight x:Key="CalendarViewHeaderNavigationFontWeight">SemiBold</FontWeight>
     <Thickness x:Key="CalendarViewDayItemMargin">0,6,0,0</Thickness>
+    <Thickness x:Key="CalendarViewMonthYearItemMargin">0,6,0,0</Thickness>
+    <Thickness x:Key="CalendarViewFirstOfMonthLabelMargin">0,1,0,0</Thickness>
+    <Thickness x:Key="CalendarViewFirstOfYearDecadeLabelMargin">0,2,0,0</Thickness>
     <Thickness x:Key="CalendarViewHeaderNavigationButtonPadding">8,1,8,1</Thickness>
     <Thickness x:Key="CalendarViewNavigationButtonPadding">1</Thickness>
     <Thickness x:Key="CalendarViewNavigationButtonMargin">2</Thickness>
@@ -238,10 +241,13 @@
         <!--<Setter Property="DayItemMargin" Value="{ThemeResource CalendarViewDayItemMargin}" />-->
         <Setter Property="FirstOfMonthLabelFontFamily" Value="XamlAutoFontFamily" />
         <Setter Property="FirstOfMonthLabelFontSize" Value="{ThemeResource CalendarViewFirstOfMonthLabelFontSize}" />
+        <!--<Setter Property="FirstOfMonthLabelMargin" Value="{ThemeResource CalendarViewFirstOfMonthLabelMargin}" />-->
         <Setter Property="MonthYearItemFontFamily" Value="XamlAutoFontFamily" />
         <Setter Property="MonthYearItemFontSize" Value="{ThemeResource CalendarViewMonthYearItemFontSize}" />
+        <!--<Setter Property="MonthYearItemMargin" Value="{ThemeResource CalendarViewMonthYearItemMargin}" />-->
         <Setter Property="FirstOfYearDecadeLabelFontFamily" Value="XamlAutoFontFamily" />
         <Setter Property="FirstOfYearDecadeLabelFontSize" Value="{ThemeResource CalendarViewFirstOfYearDecadeLabelFontSize}" />
+        <!--<Setter Property="FirstOfYearDecadeLabelMargin" Value="{ThemeResource CalendarViewFirstOfYearDecadeLabelMargin}" />-->
         <Setter Property="CalendarItemBorderThickness" Value="1" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="HorizontalAlignment" Value="Left" />

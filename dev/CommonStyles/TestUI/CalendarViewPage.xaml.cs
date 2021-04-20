@@ -146,6 +146,39 @@ namespace MUXControlsTestApp
             PageCalendar.Tag = float.Parse(thicknessParts[3]);
         }
 
+        private void SetMonthYearItemMargin_Click(object sender, RoutedEventArgs e)
+        {
+            string[] thicknessParts = monthYearItemMargin.Text.Split(',');
+
+            PageCalendar.Tag = 19; // Set MonthYearItemMargin
+            PageCalendar.Tag = float.Parse(thicknessParts[0]);
+            PageCalendar.Tag = float.Parse(thicknessParts[1]);
+            PageCalendar.Tag = float.Parse(thicknessParts[2]);
+            PageCalendar.Tag = float.Parse(thicknessParts[3]);
+        }
+
+        private void SetFirstOfMonthLabelMargin_Click(object sender, RoutedEventArgs e)
+        {
+            string[] thicknessParts = firstOfMonthLabelMargin.Text.Split(',');
+
+            PageCalendar.Tag = 20; // Set FirstOfMonthLabelMargin
+            PageCalendar.Tag = float.Parse(thicknessParts[0]);
+            PageCalendar.Tag = float.Parse(thicknessParts[1]);
+            PageCalendar.Tag = float.Parse(thicknessParts[2]);
+            PageCalendar.Tag = float.Parse(thicknessParts[3]);
+        }
+
+        private void SetFirstOfYearDecadeLabelMargin_Click(object sender, RoutedEventArgs e)
+        {
+            string[] thicknessParts = firstOfYearDecadeLabelMargin.Text.Split(',');
+
+            PageCalendar.Tag = 21; // Set FirstOfYearDecadeLabelMargin
+            PageCalendar.Tag = float.Parse(thicknessParts[0]);
+            PageCalendar.Tag = float.Parse(thicknessParts[1]);
+            PageCalendar.Tag = float.Parse(thicknessParts[2]);
+            PageCalendar.Tag = float.Parse(thicknessParts[3]);
+        }
+
         private void GetDayItemFontSize_Click(object sender, RoutedEventArgs e)
         {
             dayItemFontSize.Text = PageCalendar.DayItemFontSize.ToString();
@@ -188,14 +221,34 @@ namespace MUXControlsTestApp
 
         private void SetCalendarItemOuterCornerRadius_Click(object sender, RoutedEventArgs e)
         {
-            PageCalendar.Tag = 19; // Set CalendarItemOuterCornerRadius
+            PageCalendar.Tag = 22; // Set CalendarItemOuterCornerRadius
             PageCalendar.Tag = float.Parse(calendarItemOuterCornerRadius.Text);
+        }
+
+        private void ResetCalendarItemOuterCornerRadius_Click(object sender, RoutedEventArgs e)
+        {
+            PageCalendar.Tag = 23; // Reset CalendarItemOuterCornerRadius
         }
 
         private void SetCalendarItemInnerCornerRadius_Click(object sender, RoutedEventArgs e)
         {
-            PageCalendar.Tag = 20; // Set CalendarItemInnerCornerRadius
+            PageCalendar.Tag = 24; // Set CalendarItemInnerCornerRadius
             PageCalendar.Tag = float.Parse(calendarItemInnerCornerRadius.Text);
+        }
+
+        private void ResetCalendarItemInnerCornerRadius_Click(object sender, RoutedEventArgs e)
+        {
+            PageCalendar.Tag = 25; // Reset CalendarItemInnerCornerRadius
+        }
+
+        private void GetCalendarItemBorderThickness_Click(object sender, RoutedEventArgs e)
+        {
+            calendarItemBorderThickness.Text = PageCalendar.CalendarItemBorderThickness.ToString();
+        }
+
+        private void SetCalendarItemBorderThickness_Click(object sender, RoutedEventArgs e)
+        {
+            PageCalendar.CalendarItemBorderThickness = new Thickness(Single.Parse(calendarItemBorderThickness.Text));
         }
 
         private Brush GetBrushFromIndex()
@@ -244,7 +297,7 @@ namespace MUXControlsTestApp
                         switch (brushPropertyName.SelectedIndex)
                         {
                             case 5: // CalendarItemDisabledBackground
-                                retrun PageCalendar.CalendarItemDisabledBackground;
+                                return PageCalendar.CalendarItemDisabledBackground;
                             case 7: // CalendarItemHoverBackground
                                 return PageCalendar.CalendarItemHoverBackground;
                             case 8: // CalendarItemPressedBackground
@@ -516,7 +569,72 @@ namespace MUXControlsTestApp
 
             if (string.IsNullOrEmpty(defaultBrushColor))
             {
-                _defaultBrushColors[brushPropertyName.SelectedIndex] = GetBrushColorString(GetBrushFromIndex());
+                Brush brush = GetBrushFromIndex();
+
+                if (brush == null)
+                {
+                    switch (brushPropertyName.SelectedIndex)
+                    {
+                        case 5: // CalendarItemDisabledBackground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#00000000";
+                            break;
+                        case 7: // CalendarItemHoverBackground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#0A000000";
+                            break;
+                        case 8: // CalendarItemPressedBackground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#06000000";
+                            break;
+                        case 9: // DisabledForeground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#5C000000";
+                            break;
+                        case 14: // OutOfScopeHoverForeground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#9B000000";
+                            break;
+                        case 15: // OutOfScopePressedForeground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#72000000";
+                            break;
+                        case 19: // SelectedDisabledBorderBrush
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#37000000";
+                            break;
+                        case 20: // SelectedDisabledForeground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#5C000000";
+                            break;
+                        case 23: // SelectedHoverForeground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#xFF003E92";
+                            break;
+                        case 25: // SelectedPressedForeground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF005FB7";
+                            break;
+                        case 26: // TodayBackground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF0067C0";
+                            break;
+                        case 27: // TodayBlackoutBackground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF0078D4";
+                            break;
+                        case 28: // TodayBlackoutForeground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FFFFFFFF";
+                            break;
+                        case 29: // TodayDisabledBackground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#37000000";
+                            break;
+                        case 31: // TodayHoverBackground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF003E92";
+                            break;
+                        case 32: // TodayPressedBackground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF0078D4";
+                            break;
+                        case 33: // TodaySelectedInnerBorderBrush
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FFFFFFFF";
+                            break;
+                        default:
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "N/A";
+                            break;
+                    }
+                }
+                else
+                {
+                    _defaultBrushColors[brushPropertyName.SelectedIndex] = GetBrushColorString(brush);
+                }
             }
 
             SolidColorBrush solidColorBrush = null;
@@ -537,7 +655,7 @@ namespace MUXControlsTestApp
                     break;
 
                 case 0: // Default
-                    if (defaultBrushColor != "N/A")
+                    if (defaultBrushColor != null && defaultBrushColor != "N/A")
                     {
                         Color defaultColor = Color.FromArgb(
                             Byte.Parse(defaultBrushColor.Substring(1, 2), System.Globalization.NumberStyles.HexNumber), // a
