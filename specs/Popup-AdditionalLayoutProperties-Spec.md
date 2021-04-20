@@ -36,9 +36,8 @@ have access to the HWND used to allow it to escape the XAML root's bounds.  As s
 determine which monitor it's being displayed in, which makes it unable to know whether it has enough visual space
 to open its secondary commands below its primary commands or whether it should open them above instead.
 
-This proposed API adds a method to UIElement that allows any UIElement to return the bounds for the monitor
-it's being primarily drawn within, as well as its screen coordinates within that monitor, which it can use
-to determine how much space it has available within that monitor.
+This proposed API adds three properties and an event to Popup which will allow apps to specify where it desires a popup
+to be displayed relative to another element, and then respond to where system XAML was able to actually 
 
 # Visual Examples
 <!-- Use this section to provide a brief description of the feature.
@@ -70,50 +69,115 @@ with a "///" comment above the member or type. -->
 ## New APIs
 
 ```csharp
-void UIElement.GetMonitorInformation(out Windows.Foundation.Rect monitorBounds, out Windows.Foundation.Point screenPosition);
+enum PopupPlacementMode
+{
+    None,
+    Top,
+    Bottom,
+    Left,
+    Right,
+    TopEdgeAlignedLeft,
+    TopEdgeAlignedRight,
+    BottomEdgeAlignedLeft,
+    BottomEdgeAlignedRight,
+    LeftEdgeAlignedTop,
+    LeftEdgeAlignedBottom,
+    RightEdgeAlignedTop,
+    RightEdgeAlignedBottom
+}
+
+class Popup
+{
+    UIElement AnchorElement { get; set; }
+    PopupPlacementMode DesiredPlacement { get; set; }
+    PopupPlacementMode ActualPlacement { get; }
+    
+    public event System.EventHandler<object> PlacementChanged;
+}
 ```
 
-Returns the bounds for the monitor where the UIElement is primarily drawn to,
-plus the UIElement's screen position within that monitor.
+`AnchorElement` is used to describe which UI element the Popup should be positioned near.
+`DesiredPlacement` is used to describe how the app author would ideally like the popup
+positioned relative to `AnchorElement`.  `ActualPlacement` returns where the app actually
+positioned the Popup after taking into account available space.  `PlacementChanged` is raised
+whenever XAML sets the value of `ActualPlacement`, which allows apps to respond to where the
+Popup was placed - for example, by setting a visual state based on whether a Popup is appearing
+above or below `AnchorElement`.
 
 # API Details
 <!-- The exact API, in MIDL3 format (https://docs.microsoft.com/en-us/uwp/midl-3/) -->
 
 ```csharp
-namespace Microsoft.UI.Xaml.Controls
+namespace Windows.UI.Xaml.Controls.Primitives
 {
-[webhosthidden]
-interface IUIElement11
-{
-    void GetMonitorInformation(out Windows.Foundation.Rect monitorBounds, out Windows.Foundation.Point screenPosition);
-};
+    [webhosthidden]
+    enum DurationType
+    {
+        None,
+        Top,
+        Bottom,
+        Left,
+        Right,
+        TopEdgeAlignedLeft,
+        TopEdgeAlignedRight,
+        BottomEdgeAlignedLeft,
+        BottomEdgeAlignedRight,
+        LeftEdgeAlignedTop,
+        LeftEdgeAlignedBottom,
+        RightEdgeAlignedTop,
+        RightEdgeAlignedBottom
+    };
+
+    [webhosthidden]
+    interface IPopup2
+    {
+        Windows.UI.Xaml.UIElement AnchorElement;
+        Windows.UI.Xaml.Controls.Primitives.PopupPlacementMode DesiredPlacement;
+        Windows.UI.Xaml.Controls.Primitives.PopupPlacementMode ActualPlacement { get; };
+        
+        event Windows.Foundation.EventHandler<Object> PlacementChanged;
+        
+        static Windows.UI.Xaml.DependencyProperty AnchorElementProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty DesiredPlacementProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty ActualPlacementProperty{ get; };
+    };
 }
 ```
 
 # Examples
-The example below shows how the new `GetMonitorInformation` API can be used to determine whether to open a CommandBarFlyout
-up or down.
+The example below shows how the new APIs can be used to control where to place a CommandBarFlyoutCommandBar's
+secondary commands Popup, and how to respond to where the Popup was placed.
+
+```xml
+<!-- Part of the CommandBarFlyoutCommandBar's default template -->
+<Popup
+    x:Name="OverflowPopup"
+    AnchorElement="{Binding ElementName=PrimaryItemsRoot}"
+    DesiredPlacement="Bottom">
+</Popup>
+```
 
 ```csharp
-    double availableHeight = -1;
-    Rect controlBounds = this.TransformToVisual(null).TransformBounds(new Rect(0, 0, ActualWidth(), ActualHeight()));
+void OnApplyTemplate()
+{
+    m_overflowPopup = GetTemplateChild("OverflowPopup");
+    m_overflowPopup.PlacementChanged += OnOverflowPopupPlacementChanged;
+}
 
-    if (this.IsConstrainedToRootBounds)
+void OnOverflowPopupPlacementChanged(object sender, object args)
+{
+    UpdateVisualState(useTransitions: false);
+}
+
+void UpdateVisualState(bool useTransitions)
+{
+    if (m_overflowPopup.ActualPlacement == PopupPlacementMode.Top)
     {
-        // non-windowed handling
+        VisualStateManager.GoToState(this, "ExpandedUp", useTransitions);
     }
     else
     {
-        this.GetMonitorInformation(out Rect monitorBounds, out Point screenOffset);
-        availableHeight = monitorBounds.Height;
-        controlBounds.X += screenOffset.X;
-        controlBounds.Y += screenOffset.Y;
+        VisualStateManager.GoToState(this, "ExpandedDown", useTransitions);
     }
-    
-    m_secondaryItemsRoot.Measure({ float.Infinity, float.Infinity });
-    Size overflowPopupSize = m_secondaryItemsRoot.DesiredSize;
-
-    bool shouldExpandUp =
-        controlBounds.Y + controlBounds.Height + overflowPopupSize.Height > availableHeight &&
-        controlBounds.Y - overflowPopupSize.Height >= 0;
+}
 ```
