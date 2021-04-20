@@ -99,7 +99,7 @@ class Popup
 ```
 
 `AnchorElement` is used to describe which element the `Popup` should be positioned relative to.
-Defaults to `null`.  If this is `null`, then`DesiredPlacement` is ignored, `ActualPlacement` is always `None`, and
+Defaults to `null`.  If this is `null`, then `DesiredPlacement` is ignored, `ActualPlacement` is always `None`, and
 `PlacementChanged` is never raised.
 
 `DesiredPlacement` is used to describe how the app author would ideally like the `Popup`
@@ -127,7 +127,7 @@ Will never be raised if either `AnchorElement` and `DesiredPlacement` are not se
 namespace Windows.UI.Xaml.Controls.Primitives
 {
     [webhosthidden]
-    enum DurationType
+    enum PopupPlacementMode
     {
         None,
         Top,
