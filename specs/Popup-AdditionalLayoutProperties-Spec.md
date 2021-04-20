@@ -90,7 +90,7 @@ enum PopupPlacementMode
 
 class Popup
 {
-    UIElement AnchorElement { get; set; }
+    UIElement Target { get; set; }
     PopupPlacementMode DesiredPlacement { get; set; }
     PopupPlacementMode ActualPlacement { get; }
     
@@ -98,28 +98,28 @@ class Popup
 }
 ```
 
-`AnchorElement` is used to describe which element the `Popup` should be positioned relative to.
+`Target` is used to describe which element the `Popup` should be positioned relative to.
 Defaults to `null`.  If this is `null`, then `DesiredPlacement` is ignored, `ActualPlacement` is always `None`, and
-`PlacementChanged` is never raised.  Setting `AnchorElement` to an element under a different XAML root than `Popup.XamlRoot`
+`PlacementChanged` is never raised.  Setting `Target` to an element under a different XAML root than `Popup.XamlRoot`
 is invalid and will throw.
 
 `DesiredPlacement` is used to describe how the app author would ideally like the `Popup`
-positioned relative to `AnchorElement`.  Defaults to `None`.  If this is `None`, then `AnchorElement` is ignored,
+positioned relative to `Target`.  Defaults to `None`.  If this is `None`, then `Target` is ignored,
 `ActualPlacement` is always `None` and `PlacementChanged` is never raised. 
-If both `DesiredPlacement` and `AnchorElement` are set and `HorizontalOffset` and/or `VerticalOffset`
+If both `DesiredPlacement` and `Target` are set and `HorizontalOffset` and/or `VerticalOffset`
 are also set, then the latter two properties will offset the `Popup` from where it would have been
-placed by `DesiredPlacement` and `AnchorElement` alone.
+placed by `DesiredPlacement` and `Target` alone.
 
 `ActualPlacement` returns where the app actually positioned the `Popup`, after taking into account
-available space, if both `AnchorElement` and `DesiredPlacement` were set.  Will always be `None`
-if either `AnchorElement` and `DesiredPlacement` are not set.
+available space, if both `Target` and `DesiredPlacement` were set.  Will always be `None`
+if either `Target` and `DesiredPlacement` are not set.
 
 `PlacementChanged` is synchronously raised whenever XAML sets the value of `ActualPlacement`,
 which allows apps to respond to where a `Popup` was placed - for example, by setting
-a visual state based on whether a `Popup` is appearing above or below `AnchorElement`.
+a visual state based on whether a `Popup` is appearing above or below `Target`.
 This event is raised before the screen is refreshed, meaning that any visual changes made
 in response to this event can be made before anything is drawn to the screen at the new position.
-Will never be raised if either `AnchorElement` and `DesiredPlacement` are not set.
+Will never be raised if either `Target` and `DesiredPlacement` are not set.
 
 # API Details
 <!-- The exact API, in MIDL3 format (https://docs.microsoft.com/en-us/uwp/midl-3/) -->
@@ -148,13 +148,13 @@ namespace Windows.UI.Xaml.Controls.Primitives
     [webhosthidden]
     interface IPopup2
     {
-        Windows.UI.Xaml.UIElement AnchorElement;
+        Windows.UI.Xaml.UIElement Target;
         Windows.UI.Xaml.Controls.Primitives.PopupPlacementMode DesiredPlacement;
         Windows.UI.Xaml.Controls.Primitives.PopupPlacementMode ActualPlacement { get; };
         
         event Windows.Foundation.EventHandler<Object> PlacementChanged;
         
-        static Windows.UI.Xaml.DependencyProperty AnchorElementProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty TargetProperty{ get; };
         static Windows.UI.Xaml.DependencyProperty DesiredPlacementProperty{ get; };
         static Windows.UI.Xaml.DependencyProperty ActualPlacementProperty{ get; };
     };
@@ -169,7 +169,7 @@ secondary commands Popup, and how to respond to the event raised when XAML place
 <!-- Part of the CommandBarFlyoutCommandBar's default template -->
 <Popup
     x:Name="OverflowPopup"
-    AnchorElement="{Binding ElementName=PrimaryItemsRoot}"
+    Target="{Binding ElementName=PrimaryItemsRoot}"
     DesiredPlacement="Bottom">
 </Popup>
 ```
