@@ -178,14 +178,6 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="FlyoutStates">
-                                <VisualState x:Name="NoFlyout" />
-                                <VisualState x:Name="HasFlyout">
-                                    <VisualState.Setters>
-                                        <Setter Target="SubItemChevron.Visibility" Value="Visible" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Grid x:Name="ContentRoot">
                             <Grid.ColumnDefinitions>

@@ -404,18 +404,7 @@
                                                 </Grid>
                                             </StackPanel>
                                         </ScrollViewer>
-                                        <Button x:Name="AlternateCloseButton"
-                                                Width="{StaticResource TeachingTipAlternateCloseButtonSize}"
-                                                Height="{StaticResource TeachingTipAlternateCloseButtonSize}"
-                                                Background="Transparent"
-                                                VerticalAlignment="Top"
-                                                HorizontalAlignment="Right"
-                                                BorderThickness="{ThemeResource TeachingTipAlternateCloseButtonBorderThickness}">
-                                            <Viewbox Width="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}"
-                                                     Height="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}">
-                                                <SymbolIcon Symbol="Cancel"/>
-                                            </Viewbox>
-                                        </Button>
+                                        <Button x:Name="AlternateCloseButton" Style="{ThemeResource AlternateCloseButtonStyle}"/>
                                     </Grid>
                                 </Grid>
                                 <Polygon x:Name="TailPolygon"

@@ -7,23 +7,39 @@ parameters:
 
 jobs:
 - job: ProcessTestResults
-  condition: succeededOrFailed()
+  condition: always()
   dependsOn: ${{ parameters.dependsOn }}
   pool:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120
   variables:
     helixOutputFolder: $(Build.SourcesDirectory)\HelixOutput
+    winuiHelixVersion: 0.0.2.4
+    helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.WinUI.Helix.$(winuiHelixVersion)\scripts\pipeline
+    ${{if eq(parameters.pgoArtifact, '') }}:
+      processHelixFilesExtraArgs: ''
+    ${{if ne(parameters.pgoArtifact, '') }}:
+      processHelixFilesExtraArgs: -ProcessAllJobs
 
   steps:
+
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: 'NuGet restore build/Helix/packages.config'
+    inputs:
+      restoreSolution: build/Helix/packages.config
+      feedsToUse: config
+      nugetConfigPath: nuget.config
+      restoreDirectory: packages
+
   - task: powershell@2
     displayName: 'UpdateUnreliableTests.ps1'
     condition: succeededOrFailed()
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      HelixAccessToken: $(HelixApiAccessToken)
     inputs:
       targetType: filePath
-      filePath: build\Helix\UpdateUnreliableTests.ps1
+      filePath: $(helixScriptPath)\UpdateUnreliableTests.ps1
       arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}'
 
   - task: powershell@2
@@ -31,10 +47,11 @@ jobs:
     condition: succeededOrFailed()
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      HelixAccessToken: $(HelixApiAccessToken)
     inputs:
       targetType: filePath
-      filePath: build\Helix\OutputTestResults.ps1
-      arguments: -MinimumExpectedTestsExecutedCount '${{ parameters.minimumExpectedTestsExecutedCount }}' -CheckJobAttempt $${{ parameters.checkJobAttempt }}
+      filePath: $(helixScriptPath)\OutputTestResults.ps1
+      arguments: -MinimumExpectedTestsExecutedCount '${{ parameters.minimumExpectedTestsExecutedCount }}'
 
   - task: powershell@2
     displayName: 'ProcessHelixFiles.ps1'
@@ -44,19 +61,23 @@ jobs:
       HelixAccessToken: $(HelixApiAccessToken)
     inputs:
       targetType: filePath
-      filePath: build\Helix\ProcessHelixFiles.ps1
-      arguments: -OutputFolder '$(helixOutputFolder)'
+      filePath: $(helixScriptPath)\ProcessHelixFiles.ps1
+      arguments: -OutputFolder '$(helixOutputFolder)' $(processHelixFilesExtraArgs)
 
   - ${{if ne(parameters.pgoArtifact, '') }}:
-    - script: move /y $(helixOutputFolder)\PGO $(Build.ArtifactStagingDirectory)
-      displayName: 'Move pgc files to PGO artifact'
+    - task: powershell@2
+      displayName: CopyPGOFiles.ps1
+      inputs:
+        targetType: filePath
+        filePath: build\Helix\CopyPGOFiles.ps1
+        arguments: -SourceFolder '$(helixOutputFolder)' -OutputFolder '$(Build.ArtifactStagingDirectory)'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Helix files'
     condition: succeededOrFailed()
     inputs:
       PathtoPublish: $(helixOutputFolder)
-      artifactName: drop
+      artifactName: helixTestOutput
 
   - ${{if ne(parameters.pgoArtifact, '') }}:
     - task: PublishBuildArtifacts@1
