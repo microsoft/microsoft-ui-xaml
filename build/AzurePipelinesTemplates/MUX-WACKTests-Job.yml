@@ -43,10 +43,8 @@ jobs:
 
   - task: PkgESWACKTests@12
     inputs:
-      AppxFolder: '$(artifactDownloadPath)\${{parameters.artifactName}}\$(BuildConfiguration)\$(BuildPlatform)\AppxPackages\NugetPackageTestApp_Test'
-      WACKFailbuild: true
+      PackageFilePath: '$(artifactDownloadPath)\${{parameters.artifactName}}\$(BuildConfiguration)\$(BuildPlatform)\AppxPackages\NugetPackageTestApp_Test\NugetPackageTestApp.appx'
       
   - task: PkgESWACKTests@12
     inputs:
-      AppxFolder: '$(artifactDownloadPath)\${{parameters.artifactName}}\$(BuildConfiguration)\$(BuildPlatform)\AppxPackages\AppThatUsesMUXIndirectly_Test'
-      WACKFailbuild: true
+      PackageFilePath: '$(artifactDownloadPath)\${{parameters.artifactName}}\$(BuildConfiguration)\$(BuildPlatform)\AppxPackages\AppThatUsesMUXIndirectly_Test\AppThatUsesMUXIndirectly.appx'
