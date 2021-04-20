@@ -26,7 +26,7 @@ foreach ($dependency in $dependencies)
     [System.IO.File]::WriteAllBytes($dependencyCertFile, (Get-AuthenticodeSignature $dependency).SignerCertificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert))
     
     Write-Host "    Installing certificate..."
-    Start-Process "certutil.exe" -ArgumentList "-addStore TrustedPeople $dependencyCertFile" -NoNewWindow -Wait
+    Start-Process "certutil.exe" -ArgumentList "-addStore TrustedPeople $dependencyCertFile" -NoNewWindow -Wait | Out-Null
     
     Write-Host "    Installing AppX..."
     Add-AppxPackage $dependency -ErrorVariable appxerror -ErrorAction SilentlyContinue

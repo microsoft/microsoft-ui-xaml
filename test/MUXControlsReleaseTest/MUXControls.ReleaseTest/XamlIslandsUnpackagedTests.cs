@@ -29,7 +29,7 @@ namespace MUXControls.ReleaseTest
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        [TestProperty("NugetPkgTestsOnly", "True")] // Unpackaged WPF apps don't properly pick up framework packages' contents.
+        [TestProperty("NugetPkgTestsOnly", "True")] // WPF apps don't properly pick up framework packages' contents.
         public static void ClassInitialize(TestContext testContext)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5))
