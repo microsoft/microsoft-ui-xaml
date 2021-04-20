@@ -319,7 +319,7 @@
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualPrimaryBrush=#E4000000
                   Visibility=Visible
-                  RenderSize=0,21.28125
+                  RenderSize=0,19
         [Windows.UI.Xaml.Controls.Grid]
             Padding=0,0,0,0
             CornerRadius=0,0,0,0
