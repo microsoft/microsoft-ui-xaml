@@ -51,12 +51,12 @@ public:
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    static void OnContainsRadioMenuFlyoutItemsPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
+    static void OnAreCheckStatesEnabledPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
     void OnInternalIsCheckedChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
-    void UpdateSiblings();
+    void UncheckPreviousIfNecessary();
 
     bool m_isSafeUncheck{ false };
 

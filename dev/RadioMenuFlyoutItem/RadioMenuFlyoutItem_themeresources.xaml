@@ -7,7 +7,7 @@
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
 
     <Style TargetType="local:RadioMenuFlyoutItem" BasedOn="{StaticResource DefaultRadioMenuFlyoutItemStyle}" />
-
+    
     <!-- Same as DefaultToggleMenuFlyoutItemStyle -->
     <Style x:Key="DefaultRadioMenuFlyoutItemStyle" TargetType="local:RadioMenuFlyoutItem">
         <Setter Property="Background" Value="{ThemeResource MenuFlyoutItemBackground}" />
@@ -154,7 +154,8 @@
     </Style>
 
     <Style TargetType="MenuFlyoutSubItem" x:Key="RadioMenuFlyoutSubItemStyle" BasedOn="{StaticResource DefaultMenuFlyoutSubItemStyle}">
-        <Setter Property="controls:RadioMenuFlyoutItem.ContainsRadioMenuFlyoutItems" Value="True"/>
+        <Setter Property="controls:RadioMenuFlyoutItem.AreCheckStatesEnabled" Value="True"/>
+        <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="MenuFlyoutSubItem">
@@ -176,7 +177,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutSubItemBackgroundPointerOver}"/>
                                         <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPointerOver}"/>
                                         <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource MenuFlyoutSubItemChevronPointerOver}"/>
-                                        <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPointerOver}"/>
+                                        <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPointerOver}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -185,7 +186,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutSubItemBackgroundPressed}"/>
                                         <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}"/>
                                         <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource MenuFlyoutSubItemChevronPressed}"/>
-                                        <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}"/>
+                                        <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="SubMenuOpened">
@@ -193,7 +194,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutSubItemBackgroundSubMenuOpened}"/>
                                         <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundSubMenuOpened}"/>
                                         <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource MenuFlyoutSubItemChevronSubMenuOpened}"/>
-                                        <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundSubMenuOpened}"/>
+                                        <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundSubMenuOpened}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -202,7 +203,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutSubItemBackgroundDisabled}"/>
                                         <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}"/>
                                         <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource MenuFlyoutSubItemChevronDisabled}"/>
-                                        <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}"/>
+                                        <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -211,7 +212,22 @@
                                 <VisualState x:Name="Unchecked" />
                                 <VisualState x:Name="Checked">
                                     <VisualState.Setters>
-                                        <Setter Target="IconRoot.Visibility" Value="Visible"/>
+                                        <Setter Target="CheckGlyph.Opacity" Value="1"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            
+                            <VisualStateGroup x:Name="CheckPlaceholderStates">
+                                <VisualState x:Name="NoPlaceholder" />
+                                <VisualState x:Name="CheckPlaceholder" />
+                                <VisualState x:Name="IconPlaceholder">
+                                    <VisualState.Setters>
+                                        <Setter Target="TextBlock.Margin" Value="{ThemeResource MenuFlyoutItemPlaceholderThemeThickness}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="CheckAndIconPlaceholder">
+                                    <VisualState.Setters>
+                                        <Setter Target="TextBlock.Margin" Value="{ThemeResource MenuFlyoutItemPlaceholderThemeThickness}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -231,32 +247,27 @@
                         </VisualStateManager.VisualStateGroups>
                         <Grid>
                             <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Viewbox x:Name="IconRoot"
-                                Grid.Column="0"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Width="16"
-                                Height="16"
-                                Visibility="Collapsed">
-                                <TextBlock x:Name="IconContent"
-                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                    Text="&#xE915;"
-                                    FontSize="12"
-                                    AutomationProperties.AccessibilityView="Raw" />
-                            </Viewbox>
+                            <FontIcon
+                                x:Name="CheckGlyph"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                Glyph="&#xE915;"
+                                FontSize="12"
+                                Foreground="{ThemeResource MenuFlyoutSubItemChevron}"
+                                Opacity="0"
+                                Margin="0,0,15,0" />
                             <TextBlock x:Name="TextBlock"
-                                Grid.Column="0"
+                                Grid.Column="1"
                                 Foreground="{TemplateBinding Foreground}"
                                 Text="{TemplateBinding Text}"
                                 TextTrimming="Clip"
-                                Margin="{StaticResource MenuFlyoutItemPlaceholderThemeThickness}"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                             <FontIcon x:Name="SubItemChevron"
-                                Grid.Column="1"
+                                Grid.Column="2"
                                 Glyph="&#xE0E3;"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 FontSize="12"

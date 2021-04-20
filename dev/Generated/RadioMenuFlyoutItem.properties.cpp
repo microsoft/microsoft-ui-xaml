@@ -13,7 +13,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "RadioMenuFlyoutItem.g.cpp"
 
-GlobalDependencyProperty RadioMenuFlyoutItemProperties::s_ContainsRadioMenuFlyoutItemsProperty{ nullptr };
+GlobalDependencyProperty RadioMenuFlyoutItemProperties::s_AreCheckStatesEnabledProperty{ nullptr };
 GlobalDependencyProperty RadioMenuFlyoutItemProperties::s_GroupNameProperty{ nullptr };
 GlobalDependencyProperty RadioMenuFlyoutItemProperties::s_IsCheckedProperty{ nullptr };
 
@@ -24,16 +24,16 @@ RadioMenuFlyoutItemProperties::RadioMenuFlyoutItemProperties()
 
 void RadioMenuFlyoutItemProperties::EnsureProperties()
 {
-    if (!s_ContainsRadioMenuFlyoutItemsProperty)
+    if (!s_AreCheckStatesEnabledProperty)
     {
-        s_ContainsRadioMenuFlyoutItemsProperty =
+        s_AreCheckStatesEnabledProperty =
             InitializeDependencyProperty(
-                L"ContainsRadioMenuFlyoutItems",
+                L"AreCheckStatesEnabled",
                 winrt::name_of<bool>(),
                 winrt::name_of<winrt::RadioMenuFlyoutItem>(),
                 true /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
-                &RadioMenuFlyoutItem::OnContainsRadioMenuFlyoutItemsPropertyChanged);
+                &RadioMenuFlyoutItem::OnAreCheckStatesEnabledPropertyChanged);
     }
     if (!s_GroupNameProperty)
     {
@@ -61,7 +61,7 @@ void RadioMenuFlyoutItemProperties::EnsureProperties()
 
 void RadioMenuFlyoutItemProperties::ClearProperties()
 {
-    s_ContainsRadioMenuFlyoutItemsProperty = nullptr;
+    s_AreCheckStatesEnabledProperty = nullptr;
     s_GroupNameProperty = nullptr;
     s_IsCheckedProperty = nullptr;
 }
@@ -83,14 +83,14 @@ void RadioMenuFlyoutItemProperties::OnIsCheckedPropertyChanged(
 }
 
 
-void RadioMenuFlyoutItemProperties::SetContainsRadioMenuFlyoutItems(winrt::DependencyObject const& target, bool value)
+void RadioMenuFlyoutItemProperties::SetAreCheckStatesEnabled(winrt::MenuFlyoutSubItem const& target, bool value)
 {
-    target.SetValue(s_ContainsRadioMenuFlyoutItemsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    target.SetValue(s_AreCheckStatesEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
 }
 
-bool RadioMenuFlyoutItemProperties::GetContainsRadioMenuFlyoutItems(winrt::DependencyObject const& target)
+bool RadioMenuFlyoutItemProperties::GetAreCheckStatesEnabled(winrt::MenuFlyoutSubItem const& target)
 {
-    return ValueHelper<bool>::CastOrUnbox(target.GetValue(s_ContainsRadioMenuFlyoutItemsProperty));
+    return ValueHelper<bool>::CastOrUnbox(target.GetValue(s_AreCheckStatesEnabledProperty));
 }
 
 void RadioMenuFlyoutItemProperties::GroupName(winrt::hstring const& value)
