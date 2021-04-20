@@ -319,7 +319,7 @@
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualPrimaryBrush=#E4000000
                   Visibility=Visible
-                  RenderSize=0,21.28125
+                  RenderSize=0,19
         [Windows.UI.Xaml.Controls.Grid]
             Padding=0,0,0,0
             CornerRadius=0,0,0,0
@@ -1409,7 +1409,7 @@
                                       FocusVisualPrimaryThickness=2,2,2,2
                                       FocusVisualPrimaryBrush=#E4000000
                                       Visibility=Visible
-                                      RenderSize=53,40
+                                      RenderSize=49,40
                                     [Windows.UI.Xaml.Controls.TextBlock]
                                         Padding=0,0,0,0
                                         Foreground=#E4000000
@@ -1420,7 +1420,7 @@
                                         FocusVisualPrimaryThickness=2,2,2,2
                                         FocusVisualPrimaryBrush=#E4000000
                                         Visibility=Visible
-                                        RenderSize=53,20
+                                        RenderSize=49,19
                               [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                                   Padding=0,0,0,0
                                   Foreground=#E4000000
@@ -3042,7 +3042,7 @@
                                       FocusVisualPrimaryThickness=2,2,2,2
                                       FocusVisualPrimaryBrush=#E4000000
                                       Visibility=Visible
-                                      RenderSize=57,40
+                                      RenderSize=53,40
                                     [Windows.UI.Xaml.Controls.TextBlock]
                                         Padding=0,0,0,0
                                         Foreground=#E4000000
@@ -3053,7 +3053,7 @@
                                         FocusVisualPrimaryThickness=2,2,2,2
                                         FocusVisualPrimaryBrush=#E4000000
                                         Visibility=Visible
-                                        RenderSize=57,20
+                                        RenderSize=53,19
                               [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                                   Padding=0,0,0,0
                                   Foreground=#E4000000
