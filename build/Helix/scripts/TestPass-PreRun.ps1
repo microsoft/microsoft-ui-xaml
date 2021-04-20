@@ -85,4 +85,4 @@ function Enable-CrashDumpsForProcesses {
     }
 }
 
-Enable-CrashDumpsForProcesses @("MUXControlsTestApp.exe,IXMPTestApp.exe","NugetPackageTestApp.exe","NugetPackageTestAppCX.exe","AppThatUsesMUXIndirectly.exe")
+Enable-CrashDumpsForProcesses @("MUXControlsTestApp.exe,IXMPTestApp.exe","NugetPackageTestApp.exe","NugetPackageTestAppCX.exe","AppThatUsesMUXIndirectly.exe","WpfApp.exe")

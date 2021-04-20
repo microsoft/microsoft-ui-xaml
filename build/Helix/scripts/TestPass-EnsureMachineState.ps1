@@ -9,7 +9,8 @@ $testProcessNames = @(
     "te",
     "te.processhost",
     "AppThatUsesMUXIndirectly",
-    "TextInputHost")
+    "TextInputHost",
+    "WpfApp")
 foreach($testProcessName in $testProcessNames)
 {
     $procs = Get-Process -Name $testProcessName -ErrorAction SilentlyContinue
