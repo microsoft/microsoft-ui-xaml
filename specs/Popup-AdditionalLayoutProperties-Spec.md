@@ -100,7 +100,8 @@ class Popup
 
 `AnchorElement` is used to describe which element the `Popup` should be positioned relative to.
 Defaults to `null`.  If this is `null`, then `DesiredPlacement` is ignored, `ActualPlacement` is always `None`, and
-`PlacementChanged` is never raised.
+`PlacementChanged` is never raised.  Setting `AnchorElement` to an element under a different XAML root than `Popup.XamlRoot`
+is invalid and will throw.
 
 `DesiredPlacement` is used to describe how the app author would ideally like the `Popup`
 positioned relative to `AnchorElement`.  Defaults to `None`.  If this is `None`, then `AnchorElement` is ignored,
