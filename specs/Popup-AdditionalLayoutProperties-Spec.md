@@ -98,24 +98,26 @@ class Popup
 ```
 
 `AnchorElement` is used to describe which element the `Popup` should be positioned relative to.
-Defaults to `null`.  `DesiredPlacement` is ignored, `ActualPlacement` is always `None`, and
-`PlacementChanged` is never raised if this is `null`.
+Defaults to `null`.  If this is `null`, then`DesiredPlacement` is ignored, `ActualPlacement` is always `None`, and
+`PlacementChanged` is never raised.
 
 `DesiredPlacement` is used to describe how the app author would ideally like the `Popup`
-positioned relative to `AnchorElement`.  Defaults to `None`.  `AnchorElement` is ignored,
-`ActualPlacement` is always `None` and `PlacementChanged` is never raised if this is `None`. 
+positioned relative to `AnchorElement`.  Defaults to `None`.  If this is `None`, then `AnchorElement` is ignored,
+`ActualPlacement` is always `None` and `PlacementChanged` is never raised. 
 If both `DesiredPlacement` and `AnchorElement` are set and `HorizontalOffset` and/or `VerticalOffset`
 are also set, then the latter two properties will offset the `Popup` from where it would have been
 placed by `DesiredPlacement` and `AnchorElement` alone.
 
 `ActualPlacement` returns where the app actually positioned the `Popup`, after taking into account
-available space, if both `AnchorElement` and `DesiredPlacement` were set.
+available space, if both `AnchorElement` and `DesiredPlacement` were set.  Will always be `None`
+if either `AnchorElement` and `DesiredPlacement` are not set.
 
 `PlacementChanged` is synchronously raised whenever XAML sets the value of `ActualPlacement`,
 which allows apps to respond to where a `Popup` was placed - for example, by setting
 a visual state based on whether a `Popup` is appearing above or below `AnchorElement`.
 This event is raised before the screen is refreshed, meaning that any visual changes made
 in response to this event can be made before anything is drawn to the screen at the new position.
+Will never be raised if either `AnchorElement` and `DesiredPlacement` are not set.
 
 # API Details
 <!-- The exact API, in MIDL3 format (https://docs.microsoft.com/en-us/uwp/midl-3/) -->
