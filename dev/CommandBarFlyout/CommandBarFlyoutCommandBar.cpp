@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
+#include "CommandBarFlyout.h"
 #include "CommandBarFlyoutCommandBar.h"
 #include "CommandBarFlyoutCommandBarTemplateSettings.h"
 #include "TypeLogging.h"
@@ -67,6 +68,20 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
             UpdateUI();
+        }
+    });
+
+    Closing({
+        [this](auto const&, auto const&)
+        {
+            if (auto owningFlyout = m_owningFlyout.get())
+            {
+                if (owningFlyout.AlwaysExpanded())
+                {
+                    // Don't close the secondary commands list when the flyout is AlwaysExpanded.
+                    IsOpen(true);
+                }
+            }
         }
     });
 
@@ -144,6 +159,18 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
         {
             moreButton.IsTabStop(false);
         }
+    }
+
+    if (SharedHelpers::Is21H1OrHigher() && m_owningFlyout)
+    {
+        AttachEventsToSecondaryStoryboards();
+    }
+
+    // Keep the owning FlyoutPresenter's corner radius in sync with the
+    // primary commands's corner radius.
+    if (SharedHelpers::IsRS5OrHigher())
+    {
+        BindOwningFlyoutPresenterToCornerRadius();
     }
 
     AttachEventHandlers();
@@ -341,6 +368,10 @@ void CommandBarFlyoutCommandBar::DetachEventHandlers()
     m_openingStoryboardCompletedRevoker.revoke();
     m_closingStoryboardCompletedRevoker.revoke();
     m_closingStoryboardCompletedCallbackRevoker.revoke();
+    m_expandedUpToCollapsedStoryboardRevoker.revoke();
+    m_expandedDownToCollapsedStoryboardRevoker.revoke();
+    m_collapsedToExpandedUpStoryboardRevoker.revoke();
+    m_collapsedToExpandedDownStoryboardRevoker.revoke();
 }
 
 bool CommandBarFlyoutCommandBar::HasOpenAnimation()
@@ -1144,6 +1175,76 @@ void CommandBarFlyoutCommandBar::ClearShadow()
                 //Undo the elevation
                 const auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 0.0f };
                 grid.Translation(translation);
+            }
+        }
+    }
+}
+
+bool CommandBarFlyoutCommandBar::HasSecondaryOpenCloseAnimations()
+{
+    return SharedHelpers::IsAnimationsEnabled() &&
+           static_cast<bool>(m_expandedDownToCollapsedStoryboardRevoker ||
+                             m_expandedUpToCollapsedStoryboardRevoker ||
+                             m_collapsedToExpandedUpStoryboardRevoker ||
+                             m_collapsedToExpandedDownStoryboardRevoker);
+}
+
+void CommandBarFlyoutCommandBar::AttachEventsToSecondaryStoryboards()
+{
+    winrt::IControlProtected thisAsControlProtected = *this;
+
+    const auto addDropShadowFunc = [this](auto const&, auto const&)
+    {
+        if (SharedHelpers::IsAnimationsEnabled())
+        {
+            if (const auto owningFlyout = m_owningFlyout.get())
+            {
+                if (const auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+                {
+                    actualFlyout->AddDropShadow();
+                }
+            }
+        }
+    };
+
+    if (const auto expandedDownToCollapsed = GetTemplateChildT<winrt::Storyboard>(L"ExpandedDownToCollapsed", thisAsControlProtected))
+    {
+        m_expandedDownToCollapsedStoryboardRevoker = expandedDownToCollapsed.Completed(winrt::auto_revoke, addDropShadowFunc);
+    }
+
+    if (const auto expandedUpToCollapsed = GetTemplateChildT<winrt::Storyboard>(L"ExpandedUpToCollapsed", thisAsControlProtected))
+    {
+        m_expandedUpToCollapsedStoryboardRevoker = expandedUpToCollapsed.Completed(winrt::auto_revoke, addDropShadowFunc);
+    }
+
+    if (const auto collapsedToExpandedUp = GetTemplateChildT<winrt::Storyboard>(L"CollapsedToExpandedUp", thisAsControlProtected))
+    {
+        m_collapsedToExpandedUpStoryboardRevoker = collapsedToExpandedUp.Completed(winrt::auto_revoke, addDropShadowFunc);
+    }
+
+    if (const auto collapsedToExpandedDown = GetTemplateChildT<winrt::Storyboard>(L"CollapsedToExpandedDown", thisAsControlProtected))
+    {
+        m_collapsedToExpandedDownStoryboardRevoker = collapsedToExpandedDown.Completed(winrt::auto_revoke, addDropShadowFunc);
+    }
+}
+
+void CommandBarFlyoutCommandBar::BindOwningFlyoutPresenterToCornerRadius()
+{
+    if (const auto owningFlyout = m_owningFlyout.get())
+    {
+        if (const auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+        {
+            winrt::IControlProtected thisAsControlProtected = *this;
+            if (const auto root = GetTemplateChildT<winrt::Grid>(L"LayoutRoot", thisAsControlProtected))
+            {
+                winrt::Binding binding;
+                binding.Source(root);
+                binding.Path(winrt::PropertyPath(L"CornerRadius"));
+                binding.Mode(winrt::BindingMode::OneWay);
+                if (auto&& presenter = actualFlyout->GetPresenter().get())
+                {
+                    presenter.SetBinding(winrt::Control::CornerRadiusProperty(), binding);
+                }
             }
         }
     }

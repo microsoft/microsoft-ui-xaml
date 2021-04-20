@@ -23,7 +23,7 @@
                     <muxc:TabViewItem Header="Tab 0" AutomationProperties.Name="Tab 0"/>
                     <muxc:TabViewItem Header="Tab 1" AutomationProperties.Name="Tab 1"/>
                     <muxc:TabViewItem Header="Tab 2" AutomationProperties.Name="Tab 2"/>
-                    <muxc:TabViewItem Header="Tab 3" AutomationProperties.Name="Tab 3"/>
+                    <muxc:TabViewItem Header="Tab 3" x:Name="Tab3" AutomationProperties.Name="Tab 3"/>
                     <muxc:TabViewItem Header="Tab 4" AutomationProperties.Name="Tab 4"/>
                     <muxc:TabViewItem Header="Tab 5" AutomationProperties.Name="Tab 5"/>
                 </muxc:TabView>
@@ -33,11 +33,16 @@
                 <TextBlock x:Name="TabViewWidth" AutomationProperties.Name="TabViewWidth"/>
                 <TextBlock Text="Scroll buttons status"/>
                 <TextBlock x:Name="ScrollButtonStatus" AutomationProperties.Name="ScrollButtonStatus" />
+                <TextBlock Text="Header Width"/>
+                <TextBlock x:Name="TabViewHeaderWidth" AutomationProperties.Name="TabViewHeaderWidth"/>
             </StackPanel>
             <StackPanel>
                 <Button AutomationProperties.Name="GetActualWidthButton"
                         Click="GetActualWidthsButton_Click"
                         Content="Get actual TabView width"/>
+                <Button AutomationProperties.Name="IncreaseScrollButton"
+                        Click="IncreaseScrollButton_Click"
+                        Content="Increase scroll" />
             </StackPanel>
         </StackPanel>
     </Grid>

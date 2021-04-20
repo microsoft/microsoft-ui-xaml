@@ -27,7 +27,9 @@ AnimatedIcon::AnimatedIcon()
 void AnimatedIcon::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
-    OnSourcePropertyChanged(nullptr);
+    // Construct the visual from the Source property in on apply template so that it participates
+    // in the initial measure for the object.
+    ConstructAndInsertVisual();
     auto const panel = winrt::VisualTreeHelper::GetChild(*this, 0).as<winrt::Panel>();
     m_rootPanel.set(panel);
     m_currentState = GetState(*this);
@@ -46,7 +48,6 @@ void AnimatedIcon::OnApplyTemplate()
                 path.Visibility(winrt::Visibility::Collapsed);
             }
         }
-        OnFallbackIconSourcePropertyChanged(nullptr);
         if (auto const visual = m_animatedVisual.get())
         {
             winrt::ElementCompositionPreview::SetElementChildVisual(panel, visual.RootVisual());
@@ -60,18 +61,41 @@ void AnimatedIcon::OnApplyTemplate()
 
 void AnimatedIcon::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
-    // AnimatedIcon might get added to a UI which has already set the State property on the parent.
+    // AnimatedIcon might get added to a UI which has already set the State property on an ancestor.
     // If this is the case and the animated icon being added doesn't have its own state property
-    // We copy the parent value when we load.
+    // We copy the ancestor value when we load. Additionally we attach to our ancestor's property
+    // changed event for AnimatedIcon.State to copy the value to AnimatedIcon.
     auto const property = winrt::AnimatedIcon::StateProperty();
-    auto const stateValue = GetValue(property);
-    if (unbox_value<winrt::hstring>(stateValue).empty())
+
+    auto const [ancestorWithState, stateValue] = [this, property]()
     {
-        if (auto const parent = winrt::VisualTreeHelper::GetParent(*this))
+        auto parent = winrt::VisualTreeHelper::GetParent(*this);
+        while (parent)
         {
-            SetValue(property, parent.GetValue(property));
+            auto const stateValue = parent.GetValue(property);
+            if (!unbox_value<winrt::hstring>(stateValue).empty())
+            {
+                return std::make_tuple(parent, stateValue);
+            }
+            parent = winrt::VisualTreeHelper::GetParent(parent);
         }
+        return std::make_tuple(static_cast<winrt::DependencyObject>(nullptr), winrt::box_value(winrt::hstring{}));
+    }();
+
+    if (unbox_value<winrt::hstring>(GetValue(property)).empty())
+    {
+        SetValue(property, stateValue);
     }
+
+    if (ancestorWithState)
+    {
+        m_ancestorStatePropertyChangedRevoker = RegisterPropertyChanged(ancestorWithState, property, { this, &AnimatedIcon::OnAncestorAnimatedIconStatePropertyChanged });
+    }
+
+    // Wait until loaded to apply the fallback icon source property because we need the icon source
+    // properties to be set before we create the icon element from it.  If those poperties are bound in,
+    // they will not have been set during OnApplyTemplate.
+    OnFallbackIconSourcePropertyChanged(nullptr);
 }
 
 winrt::Size AnimatedIcon::MeasureOverride(winrt::Size const& availableSize)
@@ -162,13 +186,13 @@ void AnimatedIcon::OnAnimatedIconStatePropertyChanged(
     {
         senderAsAnimatedIcon->OnStatePropertyChanged();
     }
-    else if (winrt::VisualTreeHelper::GetChildrenCount(sender) > 0)
-    {
-        if (auto const childAsAnimatedIcon = winrt::VisualTreeHelper::GetChild(sender, 0).try_as<winrt::AnimatedIcon>())
-        {
-            childAsAnimatedIcon.SetValue(AnimatedIconProperties::s_StateProperty, args.NewValue());
-        }
-    }
+}
+
+void AnimatedIcon::OnAncestorAnimatedIconStatePropertyChanged(
+    const winrt::DependencyObject& sender,
+    const winrt::DependencyProperty& args)
+{
+    SetValue(AnimatedIconProperties::s_StateProperty, sender.GetValue(args));
 }
 
 // When we receive a state change it might be erroneous. This is because these state changes often come from Animated Icon's parent control's
@@ -417,6 +441,14 @@ void AnimatedIcon::PlaySegment(float from, float to, float playbackMultiplier)
 
 void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
 {
+    if(!ConstructAndInsertVisual())
+    {
+        SetRootPanelChildToFallbackIcon();
+    }
+}
+
+bool AnimatedIcon::ConstructAndInsertVisual()
+{
     auto const visual = [this]()
     {
         if (auto const source = Source())
@@ -460,11 +492,13 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
         auto const progressAnimation = compositor.CreateExpressionAnimation(expression);
         progressAnimation.SetReferenceParameter(L"_", m_progressPropertySet);
         visual.Properties().StartAnimation(s_progressPropertyName, progressAnimation);
+
+        return true;
     }
     else
     {
         m_canDisplayPrimaryContent = false;
-        SetRootPanelChildToFallbackIcon();
+        return false;
     }
 }
 

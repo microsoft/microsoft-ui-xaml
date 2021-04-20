@@ -10,25 +10,44 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-        <StackPanel>
-        <Button Content="MenuFlyout" VerticalAlignment="Top">
-            <Button.Flyout>
-                <MenuFlyout>
-                    <MenuFlyoutItem Text="MenuFlyoutItem"/>
-                    <MenuFlyoutSubItem Text="MenuFlyoutSubItem">
-                        <MenuFlyoutItem Text="MenuFlyoutItem" />
-                        <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.RowSpan="2">
+            <Button Content="Short Text MenuFlyout" x:Name="TestMenuFlyoutButton" AutomationProperties.Name="TestMenuFlyoutButton" Margin="0,0,0,12">
+                <Button.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Reset" x:Name="TestMenuFlyoutItem" AutomationProperties.Name="TestMenuFlyoutItem" Click="TestMenuFlyoutItemClick"/>
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem Text="Repeat" />
+                        <MenuFlyoutItem Text="Shuffle" />
+                    </MenuFlyout>
+                </Button.Flyout>
+            </Button>
+
+            <Button Content="MenuFlyout">
+                <Button.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="MenuFlyoutItem"/>
                         <MenuFlyoutSubItem Text="MenuFlyoutSubItem">
                             <MenuFlyoutItem Text="MenuFlyoutItem" />
-                            <MenuFlyoutSeparator/>
-                            <MenuFlyoutItem Text="MenuFlyoutItem" />
+                            <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" />
+                            <MenuFlyoutSubItem Text="MenuFlyoutSubItem">
+                                <MenuFlyoutItem Text="MenuFlyoutItem" />
+                                <MenuFlyoutSeparator/>
+                                <MenuFlyoutItem Text="MenuFlyoutItem" />
+                            </MenuFlyoutSubItem>
                         </MenuFlyoutSubItem>
-                    </MenuFlyoutSubItem>
-                    <MenuFlyoutSeparator/>
-                    <MenuFlyoutItem Text="MenuFlyoutItem"/>
-                </MenuFlyout>
-            </Button.Flyout>
-        </Button>
+                        <MenuFlyoutSeparator/>
+                        <MenuFlyoutItem Text="MenuFlyoutItem"/>
+                    </MenuFlyout>
+                </Button.Flyout>
+            </Button>
 
             <Button Content="Icons" Margin="0,12,0,12">
                 <Button.Flyout>
@@ -40,40 +59,75 @@
                         </MenuFlyoutItem>
                         <MenuFlyoutItem Text="Copy" Icon="Copy"/>
                         <MenuFlyoutItem Text="Delete" Icon="Delete"/>
+                        <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" Icon="Delete"/>
+                        <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" Icon="Delete">
+                            <ToggleMenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="S" Modifiers="Control"/>
+                            </ToggleMenuFlyoutItem.KeyboardAccelerators>
+                        </ToggleMenuFlyoutItem>
+                        <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" AccessKey="A" />
+                        <MenuFlyoutSeparator/>
+                        <muxc:RadioMenuFlyoutItem Text="Radio And Has Icon" Icon="Delete"/>
+                        <muxc:RadioMenuFlyoutItem Text="Radio with icon and accelerator" Icon="Delete">
+                            <muxc:RadioMenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="S" Modifiers="Control"/>
+                            </muxc:RadioMenuFlyoutItem.KeyboardAccelerators>
+                        </muxc:RadioMenuFlyoutItem>
+                        <muxc:RadioMenuFlyoutItem Text="Radio with accelerator">
+                            <muxc:RadioMenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="S" Modifiers="Control"/>
+                            </muxc:RadioMenuFlyoutItem.KeyboardAccelerators>
+                        </muxc:RadioMenuFlyoutItem>
+                        <MenuFlyoutItem Text="Rename"/>
+                        <MenuFlyoutItem Text="Select"/>
+                    </MenuFlyout>
+                </Button.Flyout>
+            </Button>
+
+            <Button Content="Keyboard accelerators">
+                <Button.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Share">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE72D;"/>
+                            </MenuFlyoutItem.Icon>
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="S" Modifiers="Control"/>
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem Text="Copy" Icon="Copy">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="C" Modifiers="Control"/>
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem Text="Delete" Icon="Delete">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="Delete" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
                         <MenuFlyoutSeparator/>
                         <MenuFlyoutItem Text="Rename"/>
                         <MenuFlyoutItem Text="Select"/>
                     </MenuFlyout>
                 </Button.Flyout>
             </Button>
-            
-            <Button Content="Keyboard accelerators">
-            <Button.Flyout>
-                <MenuFlyout>
-                    <MenuFlyoutItem Text="Share">
-                        <MenuFlyoutItem.Icon>
-                            <FontIcon Glyph="&#xE72D;"/>
-                        </MenuFlyoutItem.Icon>
-                        <MenuFlyoutItem.KeyboardAccelerators>
-                            <KeyboardAccelerator Key="S" Modifiers="Control"/>
-                        </MenuFlyoutItem.KeyboardAccelerators>
-                    </MenuFlyoutItem>
-                    <MenuFlyoutItem Text="Copy" Icon="Copy">
-                        <MenuFlyoutItem.KeyboardAccelerators>
-                            <KeyboardAccelerator Key="C" Modifiers="Control"/>
-                        </MenuFlyoutItem.KeyboardAccelerators>
-                    </MenuFlyoutItem>
-                    <MenuFlyoutItem Text="Delete" Icon="Delete">
-                        <MenuFlyoutItem.KeyboardAccelerators>
-                            <KeyboardAccelerator Key="Delete" />
-                        </MenuFlyoutItem.KeyboardAccelerators>
-                    </MenuFlyoutItem>
-                    <MenuFlyoutSeparator/>
-                    <MenuFlyoutItem Text="Rename"/>
-                    <MenuFlyoutItem Text="Select"/>
-                </MenuFlyout>
-            </Button.Flyout>
-        </Button>
         </StackPanel>
+
+        <Grid Grid.Column="1" Margin="20,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="MenuFlyoutItem height: "/>
+            <TextBlock x:Name="TestMenuFlyoutItemHeightTextBlock" AutomationProperties.Name="TestMenuFlyoutItemHeightTextBlock" Text="0" Grid.Column="1" Margin="5, 0, 0, 0"/>
+
+            <TextBlock Text="MenuFlyoutItem width: " Grid.Row="1"/>
+            <TextBlock x:Name="TestMenuFlyoutItemWidthTextBlock" AutomationProperties.Name="TestMenuFlyoutItemWidthTextBlock" Text="0" Grid.Row="1" Grid.Column="1" Margin="5, 0, 0, 0"/>
+        </Grid>
     </Grid>
 </local:TestPage>

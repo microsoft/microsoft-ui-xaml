@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
+#include "ResourceAccessor.h"
 #include "BreadcrumbBarItem.h"
 #include "BreadcrumbBarItemAutomationPeer.h"
 #include "BreadcrumbBarItemAutomationPeer.properties.cpp"
@@ -13,6 +14,11 @@ BreadcrumbBarItemAutomationPeer::BreadcrumbBarItemAutomationPeer(winrt::Breadcru
 }
 
 // IAutomationPeerOverrides
+hstring BreadcrumbBarItemAutomationPeer::GetLocalizedControlTypeCore()
+{
+    return ResourceAccessor::GetLocalizedStringResource(SR_BreadcrumbBarItemLocalizedControlType);
+}
+
 winrt::IInspectable BreadcrumbBarItemAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
     if (patternInterface == winrt::PatternInterface::Invoke)

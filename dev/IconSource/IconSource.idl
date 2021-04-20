@@ -3,10 +3,12 @@
 
 [MUX_PUBLIC]
 [webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass IconSource : Windows.UI.Xaml.DependencyObject
 {
     Windows.UI.Xaml.Controls.IconElement CreateIconElement();
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Windows.UI.Xaml.Media.Brush Foreground { get; set; };
 
     static Windows.UI.Xaml.DependencyProperty ForegroundProperty { get; };
@@ -14,11 +16,13 @@ unsealed runtimeclass IconSource : Windows.UI.Xaml.DependencyObject
 
 [MUX_PUBLIC]
 [webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass SymbolIconSource : IconSource
 {
     SymbolIconSource();
 
     [MUX_DEFAULT_VALUE("winrt::Symbol::Emoji")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Windows.UI.Xaml.Controls.Symbol Symbol { get; set; };
 
     static Windows.UI.Xaml.DependencyProperty SymbolProperty { get; };
@@ -26,21 +30,35 @@ unsealed runtimeclass SymbolIconSource : IconSource
 
 [MUX_PUBLIC]
 [webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass FontIconSource : IconSource
 {
     FontIconSource();
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String Glyph { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("20.0")]
     Double FontSize { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::FontFamily{ c_fontIconSourceDefaultFontFamily }")]
     Windows.UI.Xaml.Media.FontFamily FontFamily { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("{ 400 }")]
     Windows.UI.Text.FontWeight FontWeight { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::FontStyle::Normal")]
     Windows.UI.Text.FontStyle FontStyle { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("true")]
     Boolean IsTextScaleFactorEnabled { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean MirroredWhenRightToLeft { get; set; };
 
     static Windows.UI.Xaml.DependencyProperty GlyphProperty { get; };
@@ -54,11 +72,15 @@ unsealed runtimeclass FontIconSource : IconSource
 
 [MUX_PUBLIC]
 [webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass BitmapIconSource : IconSource
 {
     BitmapIconSource();
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Windows.Foundation.Uri UriSource { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("true")]
     Boolean ShowAsMonochrome { get; set; };
 
@@ -68,10 +90,12 @@ unsealed runtimeclass BitmapIconSource : IconSource
 
 [MUX_PUBLIC]
 [webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass PathIconSource : IconSource
 {
     PathIconSource();
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Windows.UI.Xaml.Media.Geometry Data { get; set; };
 
     static Windows.UI.Xaml.DependencyProperty DataProperty { get; };
@@ -79,10 +103,12 @@ unsealed runtimeclass PathIconSource : IconSource
 
 [MUX_PUBLIC]
 [webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass ImageIconSource : IconSource
 {
     ImageIconSource();
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Windows.UI.Xaml.Media.ImageSource ImageSource{ get; set; };
 
     static Windows.UI.Xaml.DependencyProperty ImageSourceProperty{ get; };
@@ -90,11 +116,14 @@ unsealed runtimeclass ImageIconSource : IconSource
 
 [MUX_PREVIEW]
 [webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass AnimatedIconSource : IconSource
 {
     AnimatedIconSource();
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     IAnimatedVisualSource2 Source{ get; set; };
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     IconSource FallbackIconSource{ get; set; };
 
     static Windows.UI.Xaml.DependencyProperty SourceProperty { get; };

@@ -7,9 +7,9 @@
         <ResourceDictionary x:Key="Default">
             <StaticResource x:Key="TeachingTipBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush"/>
             <SolidColorBrush x:Key="TeachingTipTopHighlightBrush" Color="#0DFFFFFF"/>
-            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemControlPageBackgroundChromeLowBrush"/>
+            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SolidBackgroundFillColorTertiaryBrush"/>
             <StaticResource x:Key="TeachingTipForegroundBrush" ResourceKey="TextFillColorPrimaryBrush"/>
-            <StaticResource x:Key="TeachingTipBackgroundBrush" ResourceKey="SystemControlPageBackgroundChromeLowBrush"/>
+            <StaticResource x:Key="TeachingTipBackgroundBrush" ResourceKey="SolidBackgroundFillColorTertiaryBrush"/>
             <StaticResource x:Key="TeachingTipTitleForegroundBrush" ResourceKey="TextFillColorPrimaryBrush"/>
             <StaticResource x:Key="TeachingTipSubtitleForegroundBrush" ResourceKey="TextFillColorPrimaryBrush"/>
             <Thickness x:Key="TeachingTipAlternateCloseButtonBorderThickness">0</Thickness>
@@ -17,9 +17,9 @@
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="TeachingTipBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush"/>
             <SolidColorBrush x:Key="TeachingTipTopHighlightBrush" Color="#99FFFFFF"/>
-            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemControlPageBackgroundChromeLowBrush"/>
+            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SolidBackgroundFillColorTertiaryBrush"/>
             <StaticResource x:Key="TeachingTipForegroundBrush" ResourceKey="TextFillColorPrimaryBrush"/>
-            <StaticResource x:Key="TeachingTipBackgroundBrush" ResourceKey="SystemControlPageBackgroundChromeLowBrush"/>
+            <StaticResource x:Key="TeachingTipBackgroundBrush" ResourceKey="SolidBackgroundFillColorTertiaryBrush"/>
             <StaticResource x:Key="TeachingTipTitleForegroundBrush" ResourceKey="TextFillColorPrimaryBrush"/>
             <StaticResource x:Key="TeachingTipSubtitleForegroundBrush" ResourceKey="TextFillColorPrimaryBrush"/>
             <Thickness x:Key="TeachingTipAlternateCloseButtonBorderThickness">0</Thickness>
