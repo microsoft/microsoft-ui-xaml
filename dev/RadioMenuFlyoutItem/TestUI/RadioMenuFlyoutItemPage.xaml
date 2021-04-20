@@ -76,6 +76,10 @@
                                 <controls:RadioMenuFlyoutItem GroupName="AnotherSortGroup" AutomationProperties.Name="AnotherArtistNameItem" Text="Artist Name"/>
                                 <controls:RadioMenuFlyoutItem GroupName="AnotherSortGroup" AutomationProperties.Name="AnotherGenreItem" Text="Genre"/>
                             </MenuFlyoutSubItem>
+
+                            <MenuFlyoutSubItem Text="More" Icon="People" Style="{StaticResource RadioMenuFlyoutSubItemStyle}">
+                                <controls:RadioMenuFlyoutItem GroupName="AnotherSortGroup" AutomationProperties.Name="OneMoreThing" Text="One More"/>
+                            </MenuFlyoutSubItem>
                         </MenuFlyout>
                     </Button.Flyout>
                 </Button>
