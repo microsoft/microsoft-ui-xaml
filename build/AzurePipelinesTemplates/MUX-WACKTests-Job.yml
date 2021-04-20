@@ -20,14 +20,33 @@ jobs:
   strategy:
     maxParallel: 10
     matrix: ${{ parameters.matrix }}
+
+  variables:
+    artifactDownloadPath: $(Build.SourcesDirectory)\Artifacts
       
   steps:
+
+  # - task: DownloadBuildArtifacts@0 
+  #   inputs: 
+  #     artifactName: ${{ parameters.artifactName }} 
+  #     downloadPath: '$(artifactDownloadPath)'
+
+  - task: DownloadBuildArtifacts@0 
+    inputs: 
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: $(System.DefinitionId)
+      buildId: 33645743
+      artifactName: ${{ parameters.artifactName }} 
+      downloadPath: '$(artifactDownloadPath)'
+
   - task: PkgESWACKTests@12
     inputs:
-      AppxFolder: '$(artifactDownloadPath)\${{parameters.artifactName}}\$(BuildConfiguration)\$(BuildPlatform)\NugetPackageTestApp\AppPackages\NugetPackageTestApp_Test'
+      AppxFolder: '$(artifactDownloadPath)\${{parameters.artifactName}}\$(BuildConfiguration)\$(BuildPlatform)\AppxPackages\NugetPackageTestApp_Test'
       WACKFailbuild: true
       
   - task: PkgESWACKTests@12
     inputs:
-      AppxFolder: '$(artifactDownloadPath)\${{parameters.artifactName}}\$(BuildConfiguration)\$(BuildPlatform)\AppThatUsesMUXIndirectly\AppPackages\AppThatUsesMUXIndirectly_Test'
+      AppxFolder: '$(artifactDownloadPath)\${{parameters.artifactName}}\$(BuildConfiguration)\$(BuildPlatform)\AppxPackages\AppThatUsesMUXIndirectly_Test'
       WACKFailbuild: true
