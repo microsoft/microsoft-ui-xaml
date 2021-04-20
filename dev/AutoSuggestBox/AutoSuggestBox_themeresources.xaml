@@ -34,8 +34,8 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <Thickness x:Key="AutoSuggestBoxTopHeaderMargin">0,0,0,8</Thickness>
-    <Thickness x:Key="AutoSuggestBoxInnerButtonMargin">0,3</Thickness>
-    <Thickness x:Key="AutoSuggestBoxDeleteButtonMargin">0,4,0,4</Thickness>
+    <Thickness x:Key="AutoSuggestBoxInnerButtonMargin">2,3,0,3</Thickness>
+    <Thickness x:Key="AutoSuggestBoxDeleteButtonMargin">0,4</Thickness>
     <Thickness x:Key="AutoSuggestBoxQueryButtonPadding">3,2</Thickness>
     <x:Double x:Key="AutoSuggestBoxRightButtonMargin">4</x:Double>
 
