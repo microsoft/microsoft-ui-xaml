@@ -26,9 +26,8 @@ modifying an existing API. -->
 <!-- For example, this is a place to provide a brief explanation of some dependent
 area, just explanation enough to understand this new API, rather than telling
 the reader "go read 100 pages of background information posted at ...". -->
-New styling properties are being added to the OS Xaml CalendarView control in order to enable a new look in line with the overall styling of the next Windows OS release.
-Because a large part of the CalendarView rendering is achieved through custom OS code, the desired look cannot be achieved solely via XAML markup in the WinUI 2.6+ packages.
-New properties, used by those WinUI 2.6+ packages, are required to drive the custom OS rendering code.
+New styling properties are being added to the OS Xaml CalendarView control in order to enable more flexible rendering. Because a large part of the CalendarView rendering is achieved through custom OS code, 
+the desired look cannot be achieved solely via XAML markup in the WinUI 2.6+ packages. New properties, used by those WinUI 2.6+ packages, are required to drive the custom OS rendering code.
 
 # Description
 <!-- Use this section to provide a brief description of the feature.
