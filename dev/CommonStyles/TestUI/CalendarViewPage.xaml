@@ -6,30 +6,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     mc:Ignorable="d">
-    <!--<local:TestPage.Resources>
-        <Style x:Key="CalendarViewDayItemStyleWithCustomContent" TargetType="CalendarViewDayItem">
-            <Setter Property="MinWidth" Value="40" />
-            <Setter Property="MinHeight" Value="40" />
-            <Setter Property="Margin" Value="1" />
-            <Setter Property="Padding" Value="0, 0, 0, 4" />
-            <Setter Property="UseSystemFocusVisuals" Value="True" />
-            <Setter Property="FocusVisualMargin" Value="-2" />
-            <Setter Property="CornerRadius" Value="6" />
-            --><!--contract7Present:Setter Property="CornerRadius" Value="6" /--><!--
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="CalendarViewDayItem">
-                        <TextBlock x:Name="DayContent" Text="DD"/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </local:TestPage.Resources>-->
-
+    
     <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12" Orientation="Horizontal">
         <StackPanel Orientation="Horizontal">
             <CalendarView
@@ -41,35 +20,6 @@
                 IsGroupLabelVisible="{x:Bind isGroupLabelVisible.IsChecked.Value, Mode=OneWay}"
                 IsOutOfScopeEnabled="{x:Bind isOutOfScopeEnabled.IsChecked.Value, Mode=OneWay}"
                 IsTodayHighlighted="{x:Bind isTodayHighlighted.IsChecked.Value, Mode=OneWay}" />
-
-            <!--CalendarView
-                x:Name="CalendarControl2"
-                Margin="20"
-                VerticalAlignment="Top"
-                DayItemFontSize="15"
-                MonthYearItemFontSize="15"
-                SelectionMode="None"
-                NumberOfWeeksInView="2"/>
-
-            <StackPanel>
-                <CalendarView
-                    x:Name="CalendarControl6"
-                    Margin="20"
-                    VerticalAlignment="Top"
-                    DayItemFontSize="15"
-                    MonthYearItemFontSize="15"
-                    SelectionMode="None"
-                    NumberOfWeeksInView="6"/>
-                <ComboBox x:Name="cmbNumberOfWeeksInView" Margin="10"
-                          SelectionChanged="cmbNumberOfWeeksInView_SelectionChanged">
-                    <ComboBoxItem>1</ComboBoxItem>
-                    <ComboBoxItem>2</ComboBoxItem>
-                    <ComboBoxItem>3</ComboBoxItem>
-                    <ComboBoxItem>4</ComboBoxItem>
-                    <ComboBoxItem>5</ComboBoxItem>
-                    <ComboBoxItem>6</ComboBoxItem>
-                </ComboBox>
-            </StackPanel-->
         </StackPanel>
         
         <StackPanel Margin="20,0,0,0" VerticalAlignment="Top" Padding="8"
@@ -82,7 +32,6 @@
             <CheckBox x:Name="isGroupLabelVisible" Content="IsGroupLabelVisible" IsChecked="True" />
             <CheckBox x:Name="isOutOfScopeEnabled" Content="IsOutOfScopeEnabled" IsChecked="True" />
             <CheckBox x:Name="hasDensityBars" Content="HasDensityBars" IsChecked="False" Checked="HasDensityBars_Checked" Unchecked="HasDensityBars_Unchecked" />
-            <!--<CheckBox x:Name="hasCustomContent" Content="HasCustomContent" IsChecked="False" Checked="HasCustomContent_Checked" Unchecked="HasCustomContent_Unchecked" />-->
             
             <ComboBox
                 x:Name="selectionMode"
@@ -96,6 +45,13 @@
             </ComboBox>
 
             <ComboBox x:Name="calendarIdentifier" Margin="0,2,0,0" Header="CalendarIdentifier" Width="220" />
+
+            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                <TextBlock Text="Width:" VerticalAlignment="Center"/>
+                <TextBox x:Name="calendarWidth" Text="600" Margin="2" VerticalAlignment="Center" MinWidth="60"/>
+                <Button x:Name="getCalendarWidth" Content="Get" Margin="2" Click="GetCalendarWidth_Click" VerticalAlignment="Center"/>
+                <Button x:Name="setCalendarWidth" Content="Set" Margin="2" Click="SetCalendarWidth_Click" VerticalAlignment="Center"/>
+            </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
                 <TextBlock Text="DayItemMargin:" VerticalAlignment="Center"/>
@@ -150,17 +106,10 @@
             </StackPanel>
             
             <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                <TextBlock Text="CalendarItemOuterCornerRadius:" VerticalAlignment="Center"/>
-                <TextBox x:Name="calendarItemOuterCornerRadius" Text="4" Margin="2" VerticalAlignment="Center" MinWidth="60"/>
-                <Button x:Name="setCalendarItemOuterCornerRadius" Content="Set" Margin="2" Click="SetCalendarItemOuterCornerRadius_Click" VerticalAlignment="Center"/>
-                <Button x:Name="resetCalendarItemOuterCornerRadius" Content="Reset" Margin="2" Click="ResetCalendarItemOuterCornerRadius_Click" VerticalAlignment="Center"/>
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                <TextBlock Text="CalendarItemInnerCornerRadius:" VerticalAlignment="Center"/>
-                <TextBox x:Name="calendarItemInnerCornerRadius" Text="4" Margin="2" VerticalAlignment="Center" MinWidth="60"/>
-                <Button x:Name="setCalendarItemInnerCornerRadius" Content="Set" Margin="2" Click="SetCalendarItemInnerCornerRadius_Click" VerticalAlignment="Center"/>
-                <Button x:Name="resetCalendarItemInnerCornerRadius" Content="Reset" Margin="2" Click="ResetCalendarItemInnerCornerRadius_Click" VerticalAlignment="Center"/>
+                <TextBlock Text="CalendarItemCornerRadius:" VerticalAlignment="Center"/>
+                <TextBox x:Name="calendarItemCornerRadius" Text="4" Margin="2" VerticalAlignment="Center" MinWidth="60"/>
+                <Button x:Name="setCalendarItemCornerRadius" Content="Set" Margin="2" Click="SetCalendarItemCornerRadius_Click" VerticalAlignment="Center"/>
+                <Button x:Name="resetCalendarItemCornerRadius" Content="Reset" Margin="2" Click="ResetCalendarItemCornerRadius_Click" VerticalAlignment="Center"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
@@ -174,6 +123,7 @@
                 <TextBlock Text="Brush:" VerticalAlignment="Center"/>
                 <ComboBox x:Name="brushPropertyName" Margin="2" VerticalAlignment="Center" MinWidth="260" SelectedIndex="0">
                     <ComboBoxItem>Background</ComboBoxItem>
+                    <ComboBoxItem>BlackoutBackground *</ComboBoxItem>
                     <ComboBoxItem>BlackoutForeground</ComboBoxItem>
                     <ComboBoxItem>BorderBrush</ComboBoxItem>
                     <ComboBoxItem>CalendarItemBorderBrush</ComboBoxItem>
@@ -241,12 +191,11 @@
                         <Setter Property="FocusVisualMargin" Value="-3" />
                         <Setter Property="FocusVisualPrimaryThickness" Value="2" />
                         <Setter Property="FocusVisualSecondaryThickness" Value="1" />
-                        <!--Setter Property="CornerRadius" Value="6" /-->
-                        <!--contract7Present:Setter Property="CornerRadius" Value="8" /-->
+                        <Setter Property="CornerRadius" Value="4" />
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="CalendarViewDayItem">
-                                    <TextBlock x:Name="DayContent" Text="FOO" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+                                    <TextBlock x:Name="DayContent" Text="Test" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
@@ -255,12 +204,14 @@
                 
                 <CalendarView
                     x:Name="PageCalendar2"
+                    Width="600"
+                    Height="600"
                     Margin="2"
-                    Visibility="Collapsed"
                     VerticalAlignment="Top"
-                    DayItemFontSize="30"
-                    MonthYearItemFontSize="30"
+                    DayItemFontSize="24"
+                    MonthYearItemFontSize="24"
                     SelectionMode="Multiple"
+                    CalendarIdentifier="{x:Bind calendarIdentifier.SelectedValue, Mode=OneWay}"
                     IsEnabled="{x:Bind isEnabled.IsChecked.Value, Mode=OneWay}"
                     IsGroupLabelVisible="{x:Bind isGroupLabelVisible.IsChecked.Value, Mode=OneWay}"
                     IsOutOfScopeEnabled="{x:Bind isOutOfScopeEnabled.IsChecked.Value, Mode=OneWay}"
@@ -268,15 +219,5 @@
                     CalendarViewDayItemStyle="{StaticResource RoundedCalendarViewDayItemStyle}"/>
             </Grid>
         </StackPanel>
-
-        <CalendarView
-            x:Name="cv3"
-            Visibility="Collapsed"
-            Width="800"
-            Height="800"
-            Background="Aqua"
-            Margin="2"
-            VerticalAlignment="Top"
-            SelectionMode="Multiple"/>
     </StackPanel>
 </local:TestPage>
