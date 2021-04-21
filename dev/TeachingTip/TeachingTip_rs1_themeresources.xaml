@@ -61,10 +61,10 @@
     <Thickness x:Key="TeachingTipContentBorderThicknessRight">0,1,1,1</Thickness>
     <Thickness x:Key="TeachingTipContentBorderThicknessUntargeted">1,1,1,1</Thickness>
 
-    <Thickness x:Key="TeachingTipTailPolygonMarginTop">0,-2,0,0</Thickness>
-    <Thickness x:Key="TeachingTipTailPolygonMarginBottom">0,0,0,-2</Thickness>
-    <Thickness x:Key="TeachingTipTailPolygonMarginLeft">-2,0,0,0</Thickness>
-    <Thickness x:Key="TeachingTipTailPolygonMarginRight">0,0,-2,0</Thickness>
+    <Thickness x:Key="TeachingTipTailPolygonMarginTop">0,-1,0,0</Thickness>
+    <Thickness x:Key="TeachingTipTailPolygonMarginBottom">0,0,0,-1</Thickness>
+    <Thickness x:Key="TeachingTipTailPolygonMarginLeft">-1,0,0,0</Thickness>
+    <Thickness x:Key="TeachingTipTailPolygonMarginRight">0,0,-1,0</Thickness>
 
     <GridLength x:Key="TeachingTipTailShortSideLength">8</GridLength>
     <GridLength x:Key="TeachingTipTailMargin">10</GridLength>
