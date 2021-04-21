@@ -47,6 +47,8 @@ jobs:
     displayName: Run WACK tests for NugetPackageTestApp
     inputs:
       PackageFilePath: '$(appxPackagesPath)\NugetPackageTestApp_Test\NugetPackageTestApp.appx'
+      TestIDs: 38
+      ExcludeTestIDs: true
 
   - task: CopyFiles@2
     displayName: 'Copy'
@@ -61,6 +63,8 @@ jobs:
     condition: succeededOrFailed()
     inputs:
       PackageFilePath: '$(appxPackagesPath)\AppThatUsesMUXIndirectly_Test\AppThatUsesMUXIndirectly.appx'
+      TestIDs: 38
+      ExcludeTestIDs: true
 
   - task: CopyFiles@2
     displayName: 'Copy'
