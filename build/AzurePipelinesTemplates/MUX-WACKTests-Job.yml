@@ -16,7 +16,9 @@ jobs:
 - job: ${{ parameters.name }}
   dependsOn: ${{ parameters.dependsOn }}
   pool:
-    name: Package ES Lab E
+    vmImage: windows-latest
+  # pool:
+  #   name: Package ES Lab E
   strategy:
     maxParallel: 10
     matrix: ${{ parameters.matrix }}
