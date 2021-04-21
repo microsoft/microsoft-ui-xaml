@@ -28,18 +28,8 @@ jobs:
       
   steps:
 
-  # - task: DownloadBuildArtifacts@0 
-  #   inputs: 
-  #     artifactName: ${{ parameters.artifactName }} 
-  #     downloadPath: '$(artifactDownloadPath)'
-
   - task: DownloadBuildArtifacts@0 
     inputs: 
-      buildType: specific
-      buildVersionToDownload: specific
-      project: $(System.TeamProjectId)
-      pipeline: $(System.DefinitionId)
-      buildId: 33651254
       artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactDownloadPath)'
 
