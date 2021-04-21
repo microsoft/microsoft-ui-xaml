@@ -155,6 +155,7 @@ This shows a typical use of the new CalendarView properties set in markup. The H
             <StaticResource x:Key="CalendarViewTodayHoverBackground" ResourceKey="AccentFillColorSecondaryBrush" />
             <StaticResource x:Key="CalendarViewTodayPressedBackground" ResourceKey="AccentFillColorTertiaryBrush" />
             <StaticResource x:Key="CalendarViewTodayDisabledBackground" ResourceKey="AccentFillColorDisabledBrush" />
+            <StaticResource x:Key="CalendarViewBlackoutBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="CalendarViewOutOfScopeBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="CalendarViewForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="CalendarViewBackground" ResourceKey="ControlFillColorInputActiveBrush" />
@@ -212,6 +213,7 @@ This shows a typical use of the new CalendarView properties set in markup. The H
         <Setter Property="TodayHoverBackground" Value="{ThemeResource CalendarViewTodayHoverBackground}" /> *
         <Setter Property="TodayPressedBackground" Value="{ThemeResource CalendarViewTodayPressedBackground}" /> *
         <Setter Property="TodayDisabledBackground" Value="{ThemeResource CalendarViewTodayDisabledBackground}" /> *
+        <Setter Property="BlackoutBackground" Value="{ThemeResource CalendarViewBlackoutBackground}" />
         <Setter Property="OutOfScopeBackground" Value="{ThemeResource CalendarViewOutOfScopeBackground}" />
         <Setter Property="CalendarItemBackground" Value="{ThemeResource CalendarViewCalendarItemBackground}" />
         <Setter Property="CalendarItemHoverBackground" Value="{ThemeResource CalendarViewCalendarItemHoverBackground}" /> *
@@ -342,6 +344,10 @@ Gets or sets a brush that provides the foreground of calendar items that are out
 
 Gets or sets a brush that provides the background of the calendar item for the current date.
 
+`public Windows.UI.Xaml.Media.Brush BlackoutBackground { get; set; }`
+
+Gets or sets a brush that provides the background of calendar items while they are blacked out.
+
 `public Windows.UI.Xaml.Media.Brush TodayBlackoutBackground { get; set; }`
 
 Gets or sets a brush that provides the background of the calendar item for the current date while it's blacked out.
@@ -399,6 +405,7 @@ Gets or sets a brush that provides the border of the calendar item for the curre
             Windows.UI.Xaml.Media.Brush CalendarItemDisabledBackground;
             Windows.UI.Xaml.Media.Brush OutOfScopeHoverForeground;
             Windows.UI.Xaml.Media.Brush OutOfScopePressedForeground;
+            Windows.UI.Xaml.Media.Brush BlackoutBackground;
             Windows.UI.Xaml.Media.Brush TodayBackground;
             Windows.UI.Xaml.Media.Brush TodayBlackoutBackground;
             Windows.UI.Xaml.Media.Brush TodayBlackoutForeground;
@@ -422,6 +429,7 @@ Gets or sets a brush that provides the border of the calendar item for the curre
             static Windows.UI.Xaml.DependencyProperty CalendarItemDisabledBackgroundProperty{ get; };
             static Windows.UI.Xaml.DependencyProperty OutOfScopeHoverForegroundProperty{ get; };
             static Windows.UI.Xaml.DependencyProperty OutOfScopePressedForegroundProperty{ get; };
+            static Windows.UI.Xaml.DependencyProperty BlackoutBackgroundProperty{ get; };
             static Windows.UI.Xaml.DependencyProperty TodayBackgroundProperty{ get; };
             static Windows.UI.Xaml.DependencyProperty TodayBlackoutBackgroundProperty{ get; };
             static Windows.UI.Xaml.DependencyProperty TodayBlackoutForegroundProperty{ get; };
@@ -465,6 +473,7 @@ CalendarItemPressedBackground | CalendarItemBackground, CalendarItemForeground
 CalendarItemDisabledBackground | CalendarItemBackground, CalendarItemForeground
 OutOfScopeHoverForeground | OutOfScopeForeground, OutOfScopeBackground
 OutOfScopePressedForeground | OutOfScopeForeground, OutOfScopeBackground
+BlackoutBackground | BlackoutForeground, OutOfScopeBackground
 TodayBackground | TodayForeground, OutOfScopeBackground
 TodayBlackoutBackground | TodayForeground, OutOfScopeBackground
 TodayBlackoutForeground | TodayForeground, OutOfScopeForeground
