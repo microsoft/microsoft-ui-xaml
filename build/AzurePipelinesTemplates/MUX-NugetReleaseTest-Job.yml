@@ -51,21 +51,10 @@ jobs:
   # projects at the just-built nupkg. The MUXRelease projects use a specific nuget version so we need
   # to update nuget.config to include the drop location as well as update the version in the csproj and
   # packages.config for the projects.
-  # - task: DownloadBuildArtifacts@0
-  #   inputs:
-  #     artifactName: drop
-  #     downloadPath: $(artifactDownloadPath)
-  #     itemPattern: '**\*.nupkg'
-
-  - task: DownloadBuildArtifacts@0 
-    inputs: 
-      buildType: specific
-      buildVersionToDownload: specific
-      project: $(System.TeamProjectId)
-      pipeline: $(System.DefinitionId)
-      buildId: 33645743
+  - task: DownloadBuildArtifacts@0
+    inputs:
       artifactName: drop
-      downloadPath: '$(artifactDownloadPath)'
+      downloadPath: $(artifactDownloadPath)
       itemPattern: '**\*.nupkg'
 
   # Copy nupkg to localpackages and update proj file to point to it
@@ -101,15 +90,15 @@ jobs:
     parameters:
       artifactName: ${{ parameters.buildArtifactName }}
 
-# - ${{if eq(parameters.runTests, 'true')}}:
-#   - template: MUX-RunHelixTests-Job.yml
-#     parameters:
-#       name: ${{ parameters.runTestJobName }}
-#       dependsOn: ${{ parameters.buildJobName }}
-#       testSuite: 'NugetTestSuite'
-#       helixType: ${{ parameters.helixType }}
-#       artifactName: ${{ parameters.buildArtifactName }}
-#       taefQuery: ${{ parameters.taefQuery }}
-#       rerunPassesRequiredToAvoidFailure: 5
-#       ${{if ne(parameters.test_matrix, '') }}:
-#         matrix: ${{ parameters.test_matrix }}
+- ${{if eq(parameters.runTests, 'true')}}:
+  - template: MUX-RunHelixTests-Job.yml
+    parameters:
+      name: ${{ parameters.runTestJobName }}
+      dependsOn: ${{ parameters.buildJobName }}
+      testSuite: 'NugetTestSuite'
+      helixType: ${{ parameters.helixType }}
+      artifactName: ${{ parameters.buildArtifactName }}
+      taefQuery: ${{ parameters.taefQuery }}
+      rerunPassesRequiredToAvoidFailure: 5
+      ${{if ne(parameters.test_matrix, '') }}:
+        matrix: ${{ parameters.test_matrix }}

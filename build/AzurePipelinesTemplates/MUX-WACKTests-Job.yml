@@ -17,8 +17,6 @@ jobs:
   dependsOn: ${{ parameters.dependsOn }}
   pool:
     vmImage: windows-latest
-  # pool:
-  #   name: Package ES Lab E
   strategy:
     maxParallel: 10
     matrix: ${{ parameters.matrix }}
@@ -30,19 +28,8 @@ jobs:
       
   steps:
 
-  # - task: DownloadBuildArtifacts@0 
-  #   inputs: 
-  #     artifactName: ${{ parameters.artifactName }} 
-  #     downloadPath: '$(artifactDownloadPath)'
-  #     itemPattern: '**\*.appx'
-
   - task: DownloadBuildArtifacts@0 
     inputs: 
-      buildType: specific
-      buildVersionToDownload: specific
-      project: $(System.TeamProjectId)
-      pipeline: $(System.DefinitionId)
-      buildId: 33651254
       artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactDownloadPath)'
       itemPattern: '**\*.appx'
@@ -53,11 +40,9 @@ jobs:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       PackageFilePath: '$(appxPackagesPath)\NugetPackageTestApp_Test\NugetPackageTestApp.appx'
-      # TestIDs: 38
-      # ExcludeTestIDs: true
 
   - task: CopyFiles@2
-    displayName: 'Copy'
+    displayName: 'Copy results for NugetPackageTestApp'
     condition: succeededOrFailed()
     inputs:
       sourceFolder: $(appxPackagesPath)\NugetPackageTestApp_Test\
@@ -71,11 +56,9 @@ jobs:
     condition: succeededOrFailed()
     inputs:
       PackageFilePath: '$(appxPackagesPath)\AppThatUsesMUXIndirectly_Test\AppThatUsesMUXIndirectly.appx'
-      # TestIDs: 38
-      # ExcludeTestIDs: true
 
   - task: CopyFiles@2
-    displayName: 'Copy'
+    displayName: 'Copy results for AppThatUsesMUXIndirectly'
     condition: succeededOrFailed()
     inputs:
       sourceFolder: $(appxPackagesPath)\AppThatUsesMUXIndirectly_Test\
