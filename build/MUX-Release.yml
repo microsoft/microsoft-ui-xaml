@@ -2,212 +2,212 @@ name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 variables:
   minimumExpectedTestsExecutedCount: 35  # Sanity check for minimum expected tests to be reported
 jobs:
-- job: ComponentDetection
-  pool:
-    vmImage: 'windows-2019'
+# - job: ComponentDetection
+#   pool:
+#     vmImage: 'windows-2019'
 
-  steps:
-  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-    displayName: 'Component Detection'
+#   steps:
+#   - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+#     displayName: 'Component Detection'
 
-- job: Build
-  # Skip the build job if we are reusing the output of a previous build.
-  # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
-  condition:
-    eq(variables['useBuildOutputFromBuildId'],'')
-  pool:
-    name: 'windevbuildagents'
-  timeoutInMinutes: 120
-  strategy:
-    maxParallel: 10
-    matrix:
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-        PGOBuildMode: 'Optimize'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-        PGOBuildMode: 'Optimize'
-      Release_Arm:
-        buildPlatform: 'arm'
-        buildConfiguration: 'Release'
-      Release_Arm64:
-        buildPlatform: 'arm64'
-        buildConfiguration: 'Release'
+# - job: Build
+#   # Skip the build job if we are reusing the output of a previous build.
+#   # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
+#   condition:
+#     eq(variables['useBuildOutputFromBuildId'],'')
+#   pool:
+#     name: 'windevbuildagents'
+#   timeoutInMinutes: 120
+#   strategy:
+#     maxParallel: 10
+#     matrix:
+#       Release_x86:
+#         buildPlatform: 'x86'
+#         buildConfiguration: 'Release'
+#         PGOBuildMode: 'Optimize'
+#       Release_x64:
+#         buildPlatform: 'x64'
+#         buildConfiguration: 'Release'
+#         PGOBuildMode: 'Optimize'
+#       Release_Arm:
+#         buildPlatform: 'arm'
+#         buildConfiguration: 'Release'
+#       Release_Arm64:
+#         buildPlatform: 'arm64'
+#         buildConfiguration: 'Release'
 
-  variables:
-    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
-    buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
-    publishDir : $(Build.ArtifactStagingDirectory)
-  steps:
+#   variables:
+#     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+#     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
+#     publishDir : $(Build.ArtifactStagingDirectory)
+#   steps:
 
-  # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
-  - task: DownloadPackage@1
-    displayName: 'Download Microsoft.Telemetry.Inbox.Native'
-    inputs:
-      feed: '/3415933f-ac0d-4766-8c0a-3f4c247c25f5'                         # 0
-      view: 'ef61a1c1-003b-4a27-bde5-beec8301021b'                          # Release
-      definition: '2fe60c09-c66f-4275-ae2d-f015c7170c72'                    # Microsoft.Telemetry.Inbox.Native
-      version: '10.0.18362.1-190318-1202.19h1-release.amd64fre'             # latest version
-      downloadPath: '$(System.DefaultWorkingDirectory)'                     # download and extract to repo root
+#   # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
+#   - task: DownloadPackage@1
+#     displayName: 'Download Microsoft.Telemetry.Inbox.Native'
+#     inputs:
+#       feed: '/3415933f-ac0d-4766-8c0a-3f4c247c25f5'                         # 0
+#       view: 'ef61a1c1-003b-4a27-bde5-beec8301021b'                          # Release
+#       definition: '2fe60c09-c66f-4275-ae2d-f015c7170c72'                    # Microsoft.Telemetry.Inbox.Native
+#       version: '10.0.18362.1-190318-1202.19h1-release.amd64fre'             # latest version
+#       downloadPath: '$(System.DefaultWorkingDirectory)'                     # download and extract to repo root
 
-  # Replace the stubbed MicrosoftTelemetry.h with the real one
-  # Delete the existing stubbed MicrosoftTelemetry.h first, to ensure that if it is no longer at the expected path that the task, and build, fails
-  - script: |
-     del $(System.DefaultWorkingDirectory)\dev\telemetry\MicrosoftTelemetry.h
-     move /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dev\telemetry\
-    failOnStderr: true
-    displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
+#   # Replace the stubbed MicrosoftTelemetry.h with the real one
+#   # Delete the existing stubbed MicrosoftTelemetry.h first, to ensure that if it is no longer at the expected path that the task, and build, fails
+#   - script: |
+#      del $(System.DefaultWorkingDirectory)\dev\telemetry\MicrosoftTelemetry.h
+#      move /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dev\telemetry\
+#     failOnStderr: true
+#     displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
 
-  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+#   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
 
-  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
+#   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
-- job: SignBinariesAndPublishSymbols
-  dependsOn: Build
-  condition:
-    in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
-  pool:
-    name: Package ES Lab E
+# - job: SignBinariesAndPublishSymbols
+#   dependsOn: Build
+#   condition:
+#     in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+#   pool:
+#     name: Package ES Lab E
 
-  steps:
-  - task: PkgESSetupBuild@10
-    displayName: 'XESSetupBuild'
-    inputs:
-      productName: dep.controls
-      branchVersion: false
-      nugetVer: true
-      useDfs: false
+#   steps:
+#   - task: PkgESSetupBuild@10
+#     displayName: 'XESSetupBuild'
+#     inputs:
+#       productName: dep.controls
+#       branchVersion: false
+#       nugetVer: true
+#       useDfs: false
 
-  - task: DownloadBuildArtifacts@0
-    condition:
-      eq(variables['useBuildOutputFromBuildId'],'')
-    inputs:
-      artifactName: drop
-      downloadPath: '$(Build.ArtifactStagingDirectory)'
+#   - task: DownloadBuildArtifacts@0
+#     condition:
+#       eq(variables['useBuildOutputFromBuildId'],'')
+#     inputs:
+#       artifactName: drop
+#       downloadPath: '$(Build.ArtifactStagingDirectory)'
 
-  - task: DownloadBuildArtifacts@0
-    condition:
-      ne(variables['useBuildOutputFromBuildId'],'')
-    inputs:
-      buildType: specific
-      buildVersionToDownload: specific
-      project: $(System.TeamProjectId)
-      pipeline: $(System.DefinitionId)
-      buildId: $(useBuildOutputFromBuildId)
-      artifactName: drop
-      downloadPath: '$(Build.ArtifactStagingDirectory)'
+#   - task: DownloadBuildArtifacts@0
+#     condition:
+#       ne(variables['useBuildOutputFromBuildId'],'')
+#     inputs:
+#       buildType: specific
+#       buildVersionToDownload: specific
+#       project: $(System.TeamProjectId)
+#       pipeline: $(System.DefinitionId)
+#       buildId: $(useBuildOutputFromBuildId)
+#       artifactName: drop
+#       downloadPath: '$(Build.ArtifactStagingDirectory)'
 
-  - task: CmdLine@1
-    displayName: 'Display build machine environment variables'
-    inputs:
-      filename: 'set'
+#   - task: CmdLine@1
+#     displayName: 'Display build machine environment variables'
+#     inputs:
+#       filename: 'set'
 
-  - script: cmd /c dir /s /b $(Build.ArtifactStagingDirectory)
-    displayName: Dump artifact staging directory
+#   - script: cmd /c dir /s /b $(Build.ArtifactStagingDirectory)
+#     displayName: Dump artifact staging directory
 
-  - template: AzurePipelinesTemplates\MUX-PopulateBuildDateAndRevision-Steps.yml
+#   - template: AzurePipelinesTemplates\MUX-PopulateBuildDateAndRevision-Steps.yml
 
-  - task: PublishSymbols@2
-    displayName: 'Publish symbols'
-    inputs:
-      SearchPattern: $(Build.ArtifactStagingDirectory)/drop/**/*.pdb
-      SymbolServerType: 'TeamServices'
-    env:
-      LIB: $(Build.SourcesDirectory)
-      ArtifactServices_Symbol_AccountName: microsoftpublicsymbols
-      ArtifactServices_Symbol_PAT: $(WinUILab-Pipeline-PAT)
+#   - task: PublishSymbols@2
+#     displayName: 'Publish symbols'
+#     inputs:
+#       SearchPattern: $(Build.ArtifactStagingDirectory)/drop/**/*.pdb
+#       SymbolServerType: 'TeamServices'
+#     env:
+#       LIB: $(Build.SourcesDirectory)
+#       ArtifactServices_Symbol_AccountName: microsoftpublicsymbols
+#       ArtifactServices_Symbol_PAT: $(WinUILab-Pipeline-PAT)
 
-  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
-    displayName: 'CodeSign'
-    inputs:
-      ConnectedServiceName: WinUISigning
-      FolderPath: '$(Build.ArtifactStagingDirectory)\drop\Release'
-      # Recursively finds files matching these patterns:
-      Pattern: |
-        **/Microsoft.UI.Xaml.dll
-        **/Microsoft.UI.Xaml.winmd
-      UseMinimatch: true
-      signConfigType: inlineSignParams
-      inlineOperation: | 
-        [
-          {
-              "KeyCode" : "CP-230217",
-              "OperationCode" : "SigntoolSign",
-              "Parameters" : {
-                  "OpusName" : "Microsoft",
-                  "OpusInfo" : "http://www.microsoft.com",
-                  "FileDigest" : "/fd \"SHA256\"",
-                  "PageHash" : "/NPH",
-                  "TimeStamp" : "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
-              },
-              "ToolName" : "sign",
-              "ToolVersion" : "1.0"
-          },
-          {
-              "KeyCode" : "CP-230217",
-              "OperationCode" : "SigntoolVerify",
-              "Parameters" : {},
-              "ToolName" : "sign",
-              "ToolVersion" : "1.0"
-          }
-        ]
+#   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+#     displayName: 'CodeSign'
+#     inputs:
+#       ConnectedServiceName: WinUISigning
+#       FolderPath: '$(Build.ArtifactStagingDirectory)\drop\Release'
+#       # Recursively finds files matching these patterns:
+#       Pattern: |
+#         **/Microsoft.UI.Xaml.dll
+#         **/Microsoft.UI.Xaml.winmd
+#       UseMinimatch: true
+#       signConfigType: inlineSignParams
+#       inlineOperation: | 
+#         [
+#           {
+#               "KeyCode" : "CP-230217",
+#               "OperationCode" : "SigntoolSign",
+#               "Parameters" : {
+#                   "OpusName" : "Microsoft",
+#                   "OpusInfo" : "http://www.microsoft.com",
+#                   "FileDigest" : "/fd \"SHA256\"",
+#                   "PageHash" : "/NPH",
+#                   "TimeStamp" : "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+#               },
+#               "ToolName" : "sign",
+#               "ToolVersion" : "1.0"
+#           },
+#           {
+#               "KeyCode" : "CP-230217",
+#               "OperationCode" : "SigntoolVerify",
+#               "Parameters" : {},
+#               "ToolName" : "sign",
+#               "ToolVersion" : "1.0"
+#           }
+#         ]
 
-  # Re-publish signed artifacts to the drop.
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish artifact: drop'
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)\drop'
-      artifactName: 'drop'
+#   # Re-publish signed artifacts to the drop.
+#   - task: PublishBuildArtifacts@1
+#     displayName: 'Publish artifact: drop'
+#     inputs:
+#       PathtoPublish: '$(Build.ArtifactStagingDirectory)\drop'
+#       artifactName: 'drop'
 
-# Create Nuget Package
-- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
-  parameters:
-    jobName: CreateNugetPackage
-    dependsOn: SignBinariesAndPublishSymbols
-    signOutput: true
-    useReleaseTag: '$(MUXFinalRelease)'
-    prereleaseVersionTag: prerelease
+# # Create Nuget Package
+# - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+#   parameters:
+#     jobName: CreateNugetPackage
+#     dependsOn: SignBinariesAndPublishSymbols
+#     signOutput: true
+#     useReleaseTag: '$(MUXFinalRelease)'
+#     prereleaseVersionTag: prerelease
 
-# Build solution that depends on nuget package
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildNugetPkgTests'
-    buildArtifactName: 'NugetPkgTestsDrop'
-    runTestJobName: 'RunNugetPkgTestsInHelix'
-    helixType: 'test/nuget'
-    dependsOn: CreateNugetPackage
-    useFrameworkPkg: false
+# # Build solution that depends on nuget package
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     buildJobName: 'BuildNugetPkgTests'
+#     buildArtifactName: 'NugetPkgTestsDrop'
+#     runTestJobName: 'RunNugetPkgTestsInHelix'
+#     helixType: 'test/nuget'
+#     # dependsOn: CreateNugetPackage
+#     useFrameworkPkg: false
 
-# Framework package tests
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildFrameworkPkgTests'
-    buildArtifactName: 'FrameworkPkgTestsDrop'
-    runTestJobName: 'RunFrameworkPkgTestsInHelix'
-    helixType: 'test/frpkg'
-    dependsOn: CreateNugetPackage
-    useFrameworkPkg: true
+# # Framework package tests
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     buildJobName: 'BuildFrameworkPkgTests'
+#     buildArtifactName: 'FrameworkPkgTestsDrop'
+#     runTestJobName: 'RunFrameworkPkgTestsInHelix'
+#     helixType: 'test/frpkg'
+#     # dependsOn: CreateNugetPackage
+#     useFrameworkPkg: true
 
-- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
-  parameters:
-    dependsOn:
-    - RunNugetPkgTestsInHelix
-    - RunFrameworkPkgTestsInHelix
-    rerunPassesRequiredToAvoidFailure: 5
-    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+# - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+#   parameters:
+#     dependsOn:
+#     - RunNugetPkgTestsInHelix
+#     - RunFrameworkPkgTestsInHelix
+#     rerunPassesRequiredToAvoidFailure: 5
+#     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
 
 # NuGet package WACK tests
 - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
   parameters:
     name: 'NugetPkgWACKTests'
-    dependsOn: BuildNugetPkgTests
+    # dependsOn: BuildNugetPkgTests
     artifactName: 'NugetPkgTestsDrop'
 
 # Framework package WACK tests
 - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
   parameters:
     name: 'FrameworkPkgWACKTests'
-    dependsOn: BuildFrameworkPkgTests
+    # dependsOn: BuildFrameworkPkgTests
     artifactName: 'FrameworkPkgTestsDrop'
