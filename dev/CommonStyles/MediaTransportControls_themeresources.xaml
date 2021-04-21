@@ -8,7 +8,7 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
-            <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="ControlOnImageFillColorDefaultBrush" />
+            <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="ControlStrongFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFillTimeElapsedText" ResourceKey="TextFillColorSecondaryBrush" />
@@ -24,7 +24,7 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
-            <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="ControlOnImageFillColorDefaultBrush" />
+            <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="ControlStrongFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFillTimeElapsedText" ResourceKey="TextFillColorSecondaryBrush" />
@@ -32,6 +32,8 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
+    <x:Double x:Key="MediaTransportControlsAppBarButtonSize">40</x:Double>
+    
     <Style TargetType="MediaTransportControls" BasedOn="{StaticResource DefaultMediaTransportControlsStyle}" />
 
     <Style x:Key="DefaultMediaTransportControlsStyle" TargetType="MediaTransportControls">
@@ -45,21 +47,18 @@
                 <ControlTemplate TargetType="MediaTransportControls">
                     <Grid x:Name="RootGrid" Background="Transparent">
                         <Grid.Resources>
-                            <!-- New AppBar button style 48x48 pixels in size -->
+                            <!-- New AppBar button style 40x40 pixels in size -->
                             <Style x:Key="AppBarButtonStyle" TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}">
-                                <Setter Property="Width" Value="{ThemeResource MTCMediaButtonWidth}" />
-                                <Setter Property="Height" Value="{ThemeResource MTCMediaButtonHeight}" />
+                                <Setter Property="Width" Value="{StaticResource MediaTransportControlsAppBarButtonSize}" />
                                 <Setter Property="AllowFocusOnInteraction" Value="True" />
                             </Style>
-                            <!-- New AppBarToggle button style 48x48 pixels in size -->
+                            <!-- New AppBarToggle button style 40x40 pixels in size -->
                             <Style x:Key="AppBarToggleButtonStyle" TargetType="AppBarToggleButton" BasedOn="{StaticResource DefaultAppBarToggleButtonStyle}">
-                                <Setter Property="Width" Value="{ThemeResource MTCMediaButtonWidth}" />
-                                <Setter Property="Height" Value="{ThemeResource MTCMediaButtonHeight}" />
+                                <Setter Property="Width" Value="{StaticResource MediaTransportControlsAppBarButtonSize}" />
                                 <Setter Property="AllowFocusOnInteraction" Value="True" />
                             </Style>
                             <!-- New CommandBar Style -->
                             <Style x:Key="CommandBarStyle" TargetType="CommandBar" BasedOn="{StaticResource DefaultCommandBarStyle}">
-                                <Setter Property="Height" Value="{ThemeResource MTCMediaButtonHeight}" />
                                 <Setter Property="Background" Value="Transparent" />
                             </Style>
                             <!-- Style for Error Message text -->
@@ -338,7 +337,7 @@
                                 <Setter Property="VerticalAlignment" Value="Top" />
                                 <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
                                 <Setter Property="FontWeight" Value="Normal" />
-                                <Setter Property="Width" Value="{ThemeResource MTCMediaButtonWidth}" />
+                                <Setter Property="Width" Value="{StaticResource MediaTransportControlsAppBarButtonSize}" />
                                 <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}"  />
                                 <Setter Property="AllowFocusOnInteraction" Value="False" />
                                 <Setter Property="Template">
@@ -774,7 +773,7 @@
                                     <CommandBar x:Name="MediaControlsCommandBar" Margin="0,0" Style="{StaticResource CommandBarStyle}" IsDynamicOverflowEnabled="False">
                                         <CommandBar.PrimaryCommands>
                                             <AppBarButton x:Name="VolumeMuteButton" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="19">
-                                                <AppBarButton.Flyout>
+                                                 <AppBarButton.Flyout>
                                                     <Flyout x:Name="VolumeFlyout" FlyoutPresenterStyle="{StaticResource FlyoutStyle}" contract8Present:ShouldConstrainToRootBounds="False">
                                                         <StackPanel Orientation="Horizontal">
                                                             <AppBarButton x:Name="AudioMuteButton" Style="{StaticResource MediaControlAppBarButtonStyle}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="12">
@@ -835,6 +834,7 @@
                                                     <FontIcon Glyph="&#xEC57;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
+                                            <!--This separator is causing clipping the button on the right-->
                                             <AppBarSeparator x:Name="RightSeparator" Height="0" Width="0" Margin="0,0" />
                                             <AppBarToggleButton x:Name="RepeatButton" Style="{StaticResource AppBarToggleButtonStyle}" MediaTransportControlsHelper.DropoutOrder="1" Visibility="Collapsed">
                                                 <AppBarToggleButton.Icon>
