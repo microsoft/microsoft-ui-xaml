@@ -34,6 +34,7 @@ jobs:
   #   inputs: 
   #     artifactName: ${{ parameters.artifactName }} 
   #     downloadPath: '$(artifactDownloadPath)'
+  #     itemPattern: '**\*.appx'
 
   - task: DownloadBuildArtifacts@0 
     inputs: 
@@ -44,9 +45,12 @@ jobs:
       buildId: 33651254
       artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactDownloadPath)'
+      itemPattern: '**\*.appx'
 
   - task: PkgESWACKTests@12
     displayName: Run WACK tests for NugetPackageTestApp
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       PackageFilePath: '$(appxPackagesPath)\NugetPackageTestApp_Test\NugetPackageTestApp.appx'
       # TestIDs: 38
@@ -62,6 +66,8 @@ jobs:
 
   - task: PkgESWACKTests@12
     displayName: Run WACK tests for AppThatUsesMUXIndirectly
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     condition: succeededOrFailed()
     inputs:
       PackageFilePath: '$(appxPackagesPath)\AppThatUsesMUXIndirectly_Test\AppThatUsesMUXIndirectly.appx'
