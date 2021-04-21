@@ -24,6 +24,7 @@ jobs:
   variables:
     artifactDownloadPath: $(Build.SourcesDirectory)\Artifacts
     appxPackagesPath: $(artifactDownloadPath)\${{parameters.artifactName}}\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+    resultLogStagingPath: $(Build.ArtifactStagingDirectory)\Results\WACKTestResults-$(buildConfiguration)-$(buildPlatform)
       
   steps:
 
@@ -31,7 +32,6 @@ jobs:
   #   inputs: 
   #     artifactName: ${{ parameters.artifactName }} 
   #     downloadPath: '$(artifactDownloadPath)'
-  #     resultLogStagingPath: $(Build.ArtifactStagingDirectory)\Results\WACKTestResults-$(buildConfiguration)-$(buildPlatform)
 
   - task: DownloadBuildArtifacts@0 
     inputs: 
