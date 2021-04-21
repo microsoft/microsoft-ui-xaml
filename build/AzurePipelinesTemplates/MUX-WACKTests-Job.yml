@@ -23,28 +23,56 @@ jobs:
 
   variables:
     artifactDownloadPath: $(Build.SourcesDirectory)\Artifacts
+    appxPackagesPath: $(artifactDownloadPath)\${{parameters.artifactName}}\$(buildConfiguration)\$(buildPlatform)\AppxPackages
       
   steps:
 
+  # - task: DownloadBuildArtifacts@0 
+  #   inputs: 
+  #     artifactName: ${{ parameters.artifactName }} 
+  #     downloadPath: '$(artifactDownloadPath)'
+  #     resultLogStagingPath: $(Build.ArtifactStagingDirectory)\Results\WACKTestResults-$(buildConfiguration)-$(buildPlatform)
+
   - task: DownloadBuildArtifacts@0 
     inputs: 
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: $(System.DefinitionId)
+      buildId: 33651254
       artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactDownloadPath)'
 
-  # - task: DownloadBuildArtifacts@0 
-  #   inputs: 
-  #     buildType: specific
-  #     buildVersionToDownload: specific
-  #     project: $(System.TeamProjectId)
-  #     pipeline: $(System.DefinitionId)
-  #     buildId: 33645743
-  #     artifactName: ${{ parameters.artifactName }} 
-  #     downloadPath: '$(artifactDownloadPath)'
+  - task: PkgESWACKTests@12
+    displayName: Run WACK tests for NugetPackageTestApp
+    inputs:
+      PackageFilePath: '$(appxPackagesPath)\NugetPackageTestApp_Test\NugetPackageTestApp.appx'
+
+  - task: CopyFiles@2
+    displayName: 'Copy'
+    condition: succeededOrFailed()
+    inputs:
+      sourceFolder: $(appxPackagesPath)\NugetPackageTestApp_Test\
+      contents: '*.xml'
+      targetFolder: $(resultLogStagingPath)
 
   - task: PkgESWACKTests@12
+    displayName: Run WACK tests for AppThatUsesMUXIndirectly
+    condition: succeededOrFailed()
     inputs:
-      PackageFilePath: '$(artifactDownloadPath)\${{parameters.artifactName}}\$(BuildConfiguration)\$(BuildPlatform)\AppxPackages\NugetPackageTestApp_Test\NugetPackageTestApp.appx'
-      
-  - task: PkgESWACKTests@12
+      PackageFilePath: '$(appxPackagesPath)\AppThatUsesMUXIndirectly_Test\AppThatUsesMUXIndirectly.appx'
+
+  - task: CopyFiles@2
+    displayName: 'Copy'
+    condition: succeededOrFailed()
     inputs:
-      PackageFilePath: '$(artifactDownloadPath)\${{parameters.artifactName}}\$(BuildConfiguration)\$(BuildPlatform)\AppxPackages\AppThatUsesMUXIndirectly_Test\AppThatUsesMUXIndirectly.appx'
+      sourceFolder: $(appxPackagesPath)\AppThatUsesMUXIndirectly_Test\
+      contents: '*.xml'
+      targetFolder: $(resultLogStagingPath)
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish results
+    condition: succeededOrFailed()
+    inputs:
+      targetPath: $(Build.ArtifactStagingDirectory)\Results
+      artifactName: ${{ parameters.artifactName }}
