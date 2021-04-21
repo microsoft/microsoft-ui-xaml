@@ -70,9 +70,9 @@ jobs:
       contents: '*.xml'
       targetFolder: $(resultLogStagingPath)
 
-  - task: PublishPipelineArtifact@1
+  - task: PublishBuildArtifacts@1
     displayName: Publish results
     condition: succeededOrFailed()
     inputs:
-      targetPath: $(Build.ArtifactStagingDirectory)\Results
+      PathtoPublish: $(Build.ArtifactStagingDirectory)\Results
       artifactName: ${{ parameters.artifactName }}
