@@ -85,8 +85,6 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <x:Double x:Key="FlipViewButtonFontSize">8</x:Double>
-    <x:Double x:Key="FlipViewButtonFontSizePointerOver">9</x:Double>
-    <x:Double x:Key="FlipViewButtonFontSizePressed">7</x:Double>
 
     <Style TargetType="FlipView" BasedOn="{StaticResource DefaultFlipViewStyle}" />
 
