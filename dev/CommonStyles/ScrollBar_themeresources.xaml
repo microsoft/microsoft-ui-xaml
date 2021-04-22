@@ -207,6 +207,11 @@
     <primitives:CornerRadiusFilterConverter x:Key="TopLeftCornerRadiusDoubleValueConverter2x" Filter="TopLeftValue" Scale="2"/>
     <primitives:CornerRadiusFilterConverter x:Key="BottomRightCornerRadiusDoubleValueConverter2x" Filter="BottomRightValue" Scale="2"/>
 
+    <Thickness x:Key="ScrollBarHorizontalDecreaseMargin">1,0,0,0</Thickness>
+    <Thickness x:Key="ScrollBarHorizontalIncreaseMargin">0,0,1,0</Thickness>
+    <Thickness x:Key="ScrollBarVerticalDecreaseMargin">0,1,0,0</Thickness>
+    <Thickness x:Key="ScrollBarVerticalIncreaseMargin">0,0,0,1</Thickness>
+
     <Style TargetType="ScrollBar" BasedOn="{StaticResource DefaultScrollBarStyle}" />
 
     <Style x:Key="DefaultScrollBarStyle" TargetType="ScrollBar">
@@ -681,7 +686,16 @@
                                        contract7NotPresent:RadiusX="{Binding Source={ThemeResource ScrollBarCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter2x}}"
                                        contract7NotPresent:RadiusY="{Binding Source={ThemeResource ScrollBarCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter2x}}"
                                        Opacity="0" Grid.ColumnSpan="5" Margin="0" StrokeThickness="{ThemeResource ScrollBarTrackBorderThemeThickness}" Fill="{ThemeResource ScrollBarTrackFill}" Stroke="{ThemeResource ScrollBarTrackStroke}" />
-                            <RepeatButton x:Name="HorizontalSmallDecrease" Opacity="0" Grid.Column="0" MinHeight="{StaticResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Template="{StaticResource HorizontalDecrementTemplate}" Width="{StaticResource ScrollBarSize}" AllowFocusOnInteraction="False" VerticalAlignment="Center" />
+                            <RepeatButton
+                                x:Name="HorizontalSmallDecrease"
+                                Opacity="0"
+                                Grid.Column="0" MinHeight="{StaticResource ScrollBarSize}"
+                                IsTabStop="False"
+                                Interval="50"
+                                Margin="{ThemeResource ScrollBarHorizontalDecreaseMargin}"
+                                Template="{StaticResource HorizontalDecrementTemplate}"
+                                Width="{StaticResource ScrollBarSize}"
+                                AllowFocusOnInteraction="False" VerticalAlignment="Center" />
                             <RepeatButton x:Name="HorizontalLargeDecrease" Opacity="0" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" Template="{StaticResource RepeatButtonTemplate}" Width="0" AllowFocusOnInteraction="False" />
                             <Thumb x:Name="HorizontalThumb"
                                    Opacity="0"
@@ -700,12 +714,22 @@
                             </Thumb>
 
                             <RepeatButton x:Name="HorizontalLargeIncrease" Opacity="0" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" AllowFocusOnInteraction="False" Template="{StaticResource RepeatButtonTemplate}" />
-                            <RepeatButton x:Name="HorizontalSmallIncrease" Opacity="0" Grid.Column="4" MinHeight="{StaticResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Template="{StaticResource HorizontalIncrementTemplate}" Width="{StaticResource ScrollBarSize}" AllowFocusOnInteraction="False" VerticalAlignment="Center" />
+                            <RepeatButton
+                                x:Name="HorizontalSmallIncrease"
+                                Opacity="0"
+                                Grid.Column="4"
+                                MinHeight="{StaticResource ScrollBarSize}"
+                                IsTabStop="False"
+                                Interval="50"
+                                Margin="{ThemeResource ScrollBarHorizontalIncreaseMargin}" Template="{StaticResource HorizontalIncrementTemplate}" Width="{StaticResource ScrollBarSize}" AllowFocusOnInteraction="False" VerticalAlignment="Center" />
                         </Grid>
                         <Grid x:Name="HorizontalPanningRoot" MinWidth="24" Visibility="Collapsed" Opacity="0" contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
                             <Border x:Name="HorizontalPanningThumb" VerticalAlignment="Bottom" HorizontalAlignment="Left" Background="{ThemeResource ScrollBarPanningThumbBackground}" BorderThickness="0" Height="2" MinWidth="32" Margin="0,2,0,2"/>
                         </Grid>
-                        <Grid x:Name="VerticalRoot" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" IsHitTestVisible="False">
+                        <Grid x:Name="VerticalRoot"
+                              Background="{TemplateBinding Background}"
+                              BorderBrush="{TemplateBinding BorderBrush}"
+                              IsHitTestVisible="False">
 
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -720,8 +744,28 @@
                                        contract7NotPresent:RadiusX="{Binding Source={ThemeResource ScrollBarCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter2x}}"
                                        contract7NotPresent:RadiusY="{Binding Source={ThemeResource ScrollBarCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter2x}}"
                                        Opacity="0" Grid.RowSpan="5" Margin="0" StrokeThickness="{ThemeResource ScrollBarTrackBorderThemeThickness}" Fill="{ThemeResource ScrollBarTrackFill}" Stroke="{ThemeResource ScrollBarTrackStroke}" />
-                            <RepeatButton x:Name="VerticalSmallDecrease" Opacity="0" Height="{StaticResource ScrollBarSize}" MinWidth="{StaticResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Grid.Row="0" Template="{StaticResource VerticalDecrementTemplate}" HorizontalAlignment="Center" />
-                            <RepeatButton x:Name="VerticalLargeDecrease" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="0" IsTabStop="False" Interval="50" Grid.Row="1" AllowFocusOnInteraction="False" Template="{StaticResource RepeatButtonTemplate}" />
+                            <RepeatButton
+                                x:Name="VerticalSmallDecrease"
+                                Opacity="0"
+                                Height="{StaticResource ScrollBarSize}"
+                                MinWidth="{StaticResource ScrollBarSize}"
+                                IsTabStop="False"
+                                Interval="50"
+                                Margin="{ThemeResource ScrollBarVerticalDecreaseMargin}"
+                                Grid.Row="0"
+                                Template="{StaticResource VerticalDecrementTemplate}"
+                                HorizontalAlignment="Center" />
+                            <RepeatButton
+                                x:Name="VerticalLargeDecrease"
+                                Opacity="0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Height="0"
+                                IsTabStop="False"
+                                Interval="50"
+                                Grid.Row="1"
+                                AllowFocusOnInteraction="False"
+                                Template="{StaticResource RepeatButtonTemplate}" />
                             <Thumb x:Name="VerticalThumb"
                                    Opacity="0"
                                    Grid.Row="2"
@@ -739,7 +783,13 @@
                             </Thumb>
 
                             <RepeatButton x:Name="VerticalLargeIncrease" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" Grid.Row="3" AllowFocusOnInteraction="False" Template="{StaticResource RepeatButtonTemplate}" />
-                            <RepeatButton x:Name="VerticalSmallIncrease" Opacity="0" Height="{StaticResource ScrollBarSize}" MinWidth="{StaticResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Grid.Row="4" Template="{StaticResource VerticalIncrementTemplate}" HorizontalAlignment="Center" />
+                            <RepeatButton x:Name="VerticalSmallIncrease"
+                                Opacity="0"
+                                Height="{StaticResource ScrollBarSize}"
+                                          MinWidth="{StaticResource ScrollBarSize}"
+                                          IsTabStop="False"
+                                          Interval="50"
+                                          Margin="{ThemeResource ScrollBarVerticalIncreaseMargin}" Grid.Row="4" Template="{StaticResource VerticalIncrementTemplate}" HorizontalAlignment="Center" />
                         </Grid>
                         <Grid x:Name="VerticalPanningRoot" MinHeight="24" Visibility="Collapsed" Opacity="0" contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
                             <Border x:Name="VerticalPanningThumb" VerticalAlignment="Top" HorizontalAlignment="Right" Background="{ThemeResource ScrollBarPanningThumbBackground}" BorderThickness="0" Width="2" MinHeight="32" Margin="2,0,2,0" />
