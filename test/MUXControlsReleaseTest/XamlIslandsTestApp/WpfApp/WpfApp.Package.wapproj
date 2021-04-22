@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\MUXControlsReleaseTest.props" />
+  <PropertyGroup Condition="'$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '15.0'">
+    <VisualStudioVersion>15.0</VisualStudioVersion>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x86">
+      <Configuration>Debug</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x86">
+      <Configuration>Release</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup>
+    <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge</WapProjPath>
+    <SDKIdentifier>Windows</SDKIdentifier>
+    <SDKVersion>10.0</SDKVersion>
+  </PropertyGroup>
+  <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
+  <PropertyGroup>
+    <ProjectGuid>4454b583-39a0-4a91-881c-2078fa26c447</ProjectGuid>
+    <TargetPlatformVersion>$(MuxSdkVersion)</TargetPlatformVersion>
+    <TargetPlatformMinVersion>$(MuxSdkVersion)</TargetPlatformMinVersion>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
+    <EntryPointProjectUniqueName>WpfApp.csproj</EntryPointProjectUniqueName>
+    <AppxPackageName>WpfApp</AppxPackageName>
+    <AppxBundleNameForOutput>WpfApp</AppxBundleNameForOutput>
+    <PackageCertificateKeyFile>..\..\..\..\build\MSTest.pfx</PackageCertificateKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+  </ItemGroup>
+  <ItemGroup>
+    <SDKReference Include="Microsoft.VCLibs.Desktop, Version=14.0" />
+    <!-- Needed for ucrtbased.dll when running a debug build. -->
+    <SDKReference Include="Microsoft.UniversalCRT.Debug, Version=$(TargetPlatformVersion)" Condition="'$(Configuration)' == 'Debug'" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Images\SplashScreen.scale-200.png" />
+    <Content Include="Images\LockScreenLogo.scale-200.png" />
+    <Content Include="Images\Square150x150Logo.scale-200.png" />
+    <Content Include="Images\Square44x44Logo.scale-200.png" />
+    <Content Include="Images\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Images\StoreLogo.png" />
+    <Content Include="Images\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="WpfApp.csproj">
+      <SkipGetTargetFrameworkProperties>True</SkipGetTargetFrameworkProperties>
+      <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
+  <ItemGroup>
+    <PackageReference Include="MUXCustomBuildTasks">
+      <Version>1.0.67</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.UI.Xaml">
+      <Version>2.1.190606001</Version>
+    </PackageReference>
+  </ItemGroup>
+  <!-- For reasons that are unclear, _RemoveExtraPriFiles fails to remove an instance of AppTestAutomationHelpers.pri,
+       which causes an duplicate item issue during MakePri.exe.  We'll remove it explicitly to avoid that. -->
+  <Target Name="RemoveAnotherExtraPriFile" AfterTargets="_RemoveExtraPriFiles" BeforeTargets="_GenerateProjectPriConfigurationFiles">
+    <PropertyGroup>
+      <WpfAppOutDir>$([System.IO.Path]::GetFullPath('$(OutDir)..\WpfApp\Packaged'))\</WpfAppOutDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_PriFile Remove="@(_PriFile)" Condition="'%(Identity)' == '$(WpfAppOutDir)AppTestAutomationHelpers.pri'" />
+    </ItemGroup>
+  </Target>
+  <!-- The packaging step also "helpfully" puts DLLs and WinMDs with the same name in the root directory,
+       instead of the app directory. We need to fix that. -->
+  <Target Name="PlaceEverythingInAppDirectory" AfterTargets="_ValidateAppxPackage" BeforeTargets="_GenerateAppxPackageFile">
+    <ItemGroup>
+      <AppxPackagePayloadToCopy Include="@(AppxPackagePayload)" Condition="'%(TargetPath)' == '%(Filename)%(Extension)' and ('%(Extension)' == '.dll' or '%(Extension)' == '.winmd')" />
+      <AppxPackagePayload Include="@(AppxPackagePayloadToCopy)">
+        <TargetPath>$(AppxPackageName)\%(Filename)%(Extension)</TargetPath>
+      </AppxPackagePayload>
+    </ItemGroup>
+  </Target>
+  <!-- We also need to remove the UWP app payload that conflicts with the desktop DLLs.
+       This comes from the UWP app, and we have no use for it in WPF. -->
+  <Target Name="RemoveUWPAppPayload" AfterTargets="_ValidateAppxPackage" BeforeTargets="_GenerateAppxPackageFile">
+    <PropertyGroup>
+      <UWPNugetRepo>$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\NuGet\Repository', 'UWPNugetPackages', null, RegistryView.Registry32, RegistryView.Default))</UWPNugetRepo>
+      <UWPAppOutDir>$([System.IO.Path]::GetFullPath('$(OutDir)..\UwpApp'))\</UWPAppOutDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <UWPAppPayload Include="$(UWPNugetRepo)\runtime.win10-$(Platform).microsoft.netcore.universalwindowsplatform\**\System.Runtime.dll" />
+      <UWPAppPayload Include="$(NuGetPackageRoot)runtime.win10-$(Platform).microsoft.netcore.universalwindowsplatform\**\System.Runtime.dll" />
+      <UWPAppPayload Include="$(UWPAppOutDir)ilc\clrcompression.dll" />
+      <AppxPackagePayload Remove="@(UWPAppPayload)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="AfterBuild" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+    <RunPowershellScript Path="$(MSBuildProjectDirectory)\..\..\tools\ExtractPackageDependencies_ReleaseTest.ps1" Parameters="-sourceFile $(OutDir)\WpfApp.Package.build.appxrecipe -platform $(PlatformName) -outputFile $(AppxPackageTestDir)\$(AppxPackageName).dependencies.txt" FilesWritten="$(AppxPackageTestDir)\$(AppxPackageName).dependencies.txt" />
+  </Target>
+</Project>

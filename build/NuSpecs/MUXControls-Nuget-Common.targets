@@ -75,5 +75,6 @@
         <TargetPath>Microsoft.UI.Xaml.winmd</TargetPath>
       </AppxUploadPackagePayload>
     </ItemGroup>
+    <Copy SourceFiles="@(XamlWinmd)" DestinationFiles="@(XamlWinmd -> '$(OutDir)\%(Filename)%(Extension)')" />
   </Target>
 </Project>

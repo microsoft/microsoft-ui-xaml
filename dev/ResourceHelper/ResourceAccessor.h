@@ -182,6 +182,14 @@ public:
 #define SR_InfoBarClosedNotification L"InfoBarClosedNotification"
 #define SR_InfoBarCustomLandmarkName L"InfoBarCustomLandmarkName"
 #define SR_InfoBarCloseButtonTooltip L"InfoBarCloseButtonTooltip"
+#define SR_InfoBarSeverityInformationalName L"InfoBarSeverityInformationalName"
+#define SR_InfoBarSeveritySuccessName L"InfoBarSeveritySuccessName"
+#define SR_InfoBarSeverityWarningName L"InfoBarSeverityWarningName"
+#define SR_InfoBarSeverityErrorName L"InfoBarSeverityErrorName"
+#define SR_InfoBarIconSeverityInformationalName L"InfoBarIconSeverityInformationalName"
+#define SR_InfoBarIconSeveritySuccessName L"InfoBarIconSeveritySuccessName"
+#define SR_InfoBarIconSeverityWarningName L"InfoBarIconSeverityWarningName"
+#define SR_InfoBarIconSeverityErrorName L"InfoBarIconSeverityErrorName"
 
 #define SR_AutomationNameEllipsisBreadcrumbBarItem L"AutomationNameEllipsisBreadcrumbBarItem"
 
