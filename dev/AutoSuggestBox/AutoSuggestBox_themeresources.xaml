@@ -34,7 +34,7 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <Thickness x:Key="AutoSuggestBoxTopHeaderMargin">0,0,0,8</Thickness>
-    <Thickness x:Key="AutoSuggestBoxInnerButtonMargin">3,3,1,3</Thickness>
+    <Thickness x:Key="AutoSuggestBoxInnerButtonMargin">1,3</Thickness>
     <Thickness x:Key="AutoSuggestBoxDeleteButtonMargin">0,4</Thickness>
     <Thickness x:Key="AutoSuggestBoxQueryButtonPadding">3,2</Thickness>
     <x:Double x:Key="AutoSuggestBoxLeftButtonMargin">3</x:Double>
@@ -366,6 +366,7 @@
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             Style="{StaticResource QueryButtonStyle}"
                             BorderThickness="{TemplateBinding BorderThickness}"
+                            Margin="2,0,0,0"
                             Padding="{ThemeResource HelperButtonThemePadding}"
                             IsTabStop="False"
                             FontSize="{TemplateBinding FontSize}"
