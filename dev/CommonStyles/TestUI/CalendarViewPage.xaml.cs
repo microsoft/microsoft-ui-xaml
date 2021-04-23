@@ -147,13 +147,13 @@ namespace MUXControlsTestApp
         {
             string[] thicknessParts = dayItemMargin.Text.Split(',');
 
-            PageCalendar.Tag = 19; // Set DayItemMargin
+            PageCalendar.Tag = 20; // Set DayItemMargin
             PageCalendar.Tag = float.Parse(thicknessParts[0]);
             PageCalendar.Tag = float.Parse(thicknessParts[1]);
             PageCalendar.Tag = float.Parse(thicknessParts[2]);
             PageCalendar.Tag = float.Parse(thicknessParts[3]);
 
-            PageCalendar2.Tag = 19; // Set DayItemMargin
+            PageCalendar2.Tag = 20; // Set DayItemMargin
             PageCalendar2.Tag = float.Parse(thicknessParts[0]);
             PageCalendar2.Tag = float.Parse(thicknessParts[1]);
             PageCalendar2.Tag = float.Parse(thicknessParts[2]);
@@ -164,13 +164,13 @@ namespace MUXControlsTestApp
         {
             string[] thicknessParts = monthYearItemMargin.Text.Split(',');
 
-            PageCalendar.Tag = 20; // Set MonthYearItemMargin
+            PageCalendar.Tag = 21; // Set MonthYearItemMargin
             PageCalendar.Tag = float.Parse(thicknessParts[0]);
             PageCalendar.Tag = float.Parse(thicknessParts[1]);
             PageCalendar.Tag = float.Parse(thicknessParts[2]);
             PageCalendar.Tag = float.Parse(thicknessParts[3]);
 
-            PageCalendar2.Tag = 20; // Set MonthYearItemMargin
+            PageCalendar2.Tag = 21; // Set MonthYearItemMargin
             PageCalendar2.Tag = float.Parse(thicknessParts[0]);
             PageCalendar2.Tag = float.Parse(thicknessParts[1]);
             PageCalendar2.Tag = float.Parse(thicknessParts[2]);
@@ -181,13 +181,13 @@ namespace MUXControlsTestApp
         {
             string[] thicknessParts = firstOfMonthLabelMargin.Text.Split(',');
 
-            PageCalendar.Tag = 21; // Set FirstOfMonthLabelMargin
+            PageCalendar.Tag = 22; // Set FirstOfMonthLabelMargin
             PageCalendar.Tag = float.Parse(thicknessParts[0]);
             PageCalendar.Tag = float.Parse(thicknessParts[1]);
             PageCalendar.Tag = float.Parse(thicknessParts[2]);
             PageCalendar.Tag = float.Parse(thicknessParts[3]);
 
-            PageCalendar2.Tag = 21; // Set FirstOfMonthLabelMargin
+            PageCalendar2.Tag = 22; // Set FirstOfMonthLabelMargin
             PageCalendar2.Tag = float.Parse(thicknessParts[0]);
             PageCalendar2.Tag = float.Parse(thicknessParts[1]);
             PageCalendar2.Tag = float.Parse(thicknessParts[2]);
@@ -198,13 +198,13 @@ namespace MUXControlsTestApp
         {
             string[] thicknessParts = firstOfYearDecadeLabelMargin.Text.Split(',');
 
-            PageCalendar.Tag = 22; // Set FirstOfYearDecadeLabelMargin
+            PageCalendar.Tag = 23; // Set FirstOfYearDecadeLabelMargin
             PageCalendar.Tag = float.Parse(thicknessParts[0]);
             PageCalendar.Tag = float.Parse(thicknessParts[1]);
             PageCalendar.Tag = float.Parse(thicknessParts[2]);
             PageCalendar.Tag = float.Parse(thicknessParts[3]);
 
-            PageCalendar2.Tag = 22; // Set FirstOfYearDecadeLabelMargin
+            PageCalendar2.Tag = 23; // Set FirstOfYearDecadeLabelMargin
             PageCalendar2.Tag = float.Parse(thicknessParts[0]);
             PageCalendar2.Tag = float.Parse(thicknessParts[1]);
             PageCalendar2.Tag = float.Parse(thicknessParts[2]);
@@ -257,17 +257,17 @@ namespace MUXControlsTestApp
 
         private void SetCalendarItemCornerRadius_Click(object sender, RoutedEventArgs e)
         {
-            PageCalendar.Tag = 23; // Set CalendarItemCornerRadius
+            PageCalendar.Tag = 24; // Set CalendarItemCornerRadius
             PageCalendar.Tag = float.Parse(calendarItemCornerRadius.Text);
 
-            PageCalendar2.Tag = 23; // Set CalendarItemCornerRadius
+            PageCalendar2.Tag = 24; // Set CalendarItemCornerRadius
             PageCalendar2.Tag = float.Parse(calendarItemCornerRadius.Text);
         }
 
         private void ResetCalendarItemCornerRadius_Click(object sender, RoutedEventArgs e)
         {
-            PageCalendar.Tag = 24; // Reset CalendarItemCornerRadius
-            PageCalendar2.Tag = 24; // Reset CalendarItemCornerRadius
+            PageCalendar.Tag = 25; // Reset CalendarItemCornerRadius
+            PageCalendar2.Tag = 25; // Reset CalendarItemCornerRadius
         }
 
         private void GetCalendarItemBorderThickness_Click(object sender, RoutedEventArgs e)
@@ -289,36 +289,38 @@ namespace MUXControlsTestApp
                     return PageCalendar.Background;
                 case 2: // BlackoutForeground
                     return PageCalendar.BlackoutForeground;
-                case 3: // BorderBrush
+                case 4: // BorderBrush
                     return PageCalendar.BorderBrush;
-                case 4: // CalendarItemBorderBrush
+                case 5: // CalendarItemBorderBrush
                     return PageCalendar.CalendarItemBorderBrush;
-                case 5: // CalendarItemBackground
+                case 6: // CalendarItemBackground
                     return PageCalendar.CalendarItemBackground;
-                case 7: // CalendarItemForeground
+                case 8: // CalendarItemForeground
                     return PageCalendar.CalendarItemForeground;
-                case 11: // Foreground
+                case 12: // Foreground
                     return PageCalendar.Foreground;
-                case 12: // HoverBorderBrush
+                case 13: // HoverBorderBrush
                     return PageCalendar.HoverBorderBrush;
-                case 13: // OutOfScopeBackground
+                case 14: // OutOfScopeBackground
                     return PageCalendar.OutOfScopeBackground;
-                case 14: // OutOfScopeForeground
+                case 15: // OutOfScopeForeground
                     return PageCalendar.OutOfScopeForeground;
-                case 17: // PressedBorderBrush
+                case 18: // PressedBorderBrush
                     return PageCalendar.PressedBorderBrush;
-                case 18: // PressedForeground
+                case 19: // PressedForeground
                     return PageCalendar.PressedForeground;
-                case 19: // SelectedBorderBrush
+                case 20: // SelectedBorderBrush
                     return PageCalendar.SelectedBorderBrush;
-                case 22: // SelectedForeground
+                case 23: // SelectedForeground
                     return PageCalendar.SelectedForeground;
-                case 23: // SelectedHoverBorderBrush
+                case 24: // SelectedHoverBorderBrush
                     return PageCalendar.SelectedHoverBorderBrush;
-                case 25: // SelectedPressedBorderBrush
+                case 26: // SelectedPressedBorderBrush
                     return PageCalendar.SelectedPressedBorderBrush;
-                case 31: // TodayForeground
+                case 32: // TodayForeground
                     return PageCalendar.TodayForeground;
+                case 36: // CalendarViewDayItem.Background
+                    return null;
                 default:
 /*
 #if USE_INSIDER_SDK
@@ -328,39 +330,41 @@ namespace MUXControlsTestApp
                         {
                             case 1: // BlackoutBackground
                                 return PageCalendar.BlackoutBackground;
-                            case 6: // CalendarItemDisabledBackground
+                            case 3: // BlackoutStrikethroughBrush
+                                return PageCalendar.BlackoutStrikethroughBrush;
+                            case 4: // CalendarItemDisabledBackground
                                 return PageCalendar.CalendarItemDisabledBackground;
-                            case 8: // CalendarItemHoverBackground
+                            case 9: // CalendarItemHoverBackground
                                 return PageCalendar.CalendarItemHoverBackground;
-                            case 9: // CalendarItemPressedBackground
+                            case 10: // CalendarItemPressedBackground
                                 return PageCalendar.CalendarItemPressedBackground;
-                            case 10: // DisabledForeground
+                            case 11: // DisabledForeground
                                 return PageCalendar.DisabledForeground;
-                            case 15: // OutOfScopeHoverForeground
+                            case 16: // OutOfScopeHoverForeground
                                 return PageCalendar.OutOfScopeHoverForeground;
-                            case 16: // OutOfScopePressedForeground
+                            case 17: // OutOfScopePressedForeground
                                 return PageCalendar.OutOfScopePressedForeground;
-                            case 20: // SelectedDisabledBorderBrush
+                            case 21: // SelectedDisabledBorderBrush
                                 return PageCalendar.SelectedDisabledBorderBrush;
-                            case 21: // SelectedDisabledForeground
+                            case 22: // SelectedDisabledForeground
                                 return PageCalendar.SelectedDisabledForeground;
-                            case 24: // SelectedHoverForeground
+                            case 25: // SelectedHoverForeground
                                 return PageCalendar.SelectedHoverForeground;
-                            case 26: // SelectedPressedForeground
+                            case 27: // SelectedPressedForeground
                                 return PageCalendar.SelectedPressedForeground;
-                            case 27: // TodayBackground
+                            case 28: // TodayBackground
                                 return PageCalendar.TodayBackground;
-                            case 28: // TodayBlackoutBackground
+                            case 29: // TodayBlackoutBackground
                                 return PageCalendar.TodayBlackoutBackground;
-                            case 29: // TodayBlackoutForeground
+                            case 30: // TodayBlackoutForeground
                                 return PageCalendar.TodayBlackoutForeground;
-                            case 30: // TodayDisabledBackground
+                            case 31: // TodayDisabledBackground
                                 return PageCalendar.TodayDisabledBackground;
-                            case 32: // TodayHoverBackground
+                            case 33: // TodayHoverBackground
                                 return PageCalendar.TodayHoverBackground;
-                            case 33: // TodayPressedBackground
+                            case 34: // TodayPressedBackground
                                 return PageCalendar.TodayPressedBackground;
-                            case 34: // TodaySelectedInnerBorderBrush
+                            case 35: // TodaySelectedInnerBorderBrush
                                 return PageCalendar.TodaySelectedInnerBorderBrush;
                         }
                     }
@@ -398,7 +402,7 @@ namespace MUXControlsTestApp
         {
             SolidColorBrush solidColorBrush = GetSolidColorBrush();
 
-            if (solidColorBrush == null)
+            if (solidColorBrush == null && brushPropertyName.SelectedIndex != 36)
             {
                 return;
             }
@@ -413,65 +417,69 @@ namespace MUXControlsTestApp
                     PageCalendar.BlackoutForeground = solidColorBrush;
                     PageCalendar2.BlackoutForeground = solidColorBrush;
                     break;
-                case 3: // BorderBrush
+                case 4: // BorderBrush
                     PageCalendar.BorderBrush = solidColorBrush;
                     PageCalendar2.BorderBrush = solidColorBrush;
                     break;
-                case 4: // CalendarItemBorderBrush
+                case 5: // CalendarItemBorderBrush
                     PageCalendar.CalendarItemBorderBrush = solidColorBrush;
                     PageCalendar2.CalendarItemBorderBrush = solidColorBrush;
                     break;
-                case 5: // CalendarItemBackground
+                case 6: // CalendarItemBackground
                     PageCalendar.CalendarItemBackground = solidColorBrush;
                     PageCalendar2.CalendarItemBackground = solidColorBrush;
                     break;
-                case 7: // CalendarItemForeground
+                case 8: // CalendarItemForeground
                     PageCalendar.CalendarItemForeground = solidColorBrush;
                     PageCalendar2.CalendarItemForeground = solidColorBrush;
                     break;
-                case 11: // Foreground
+                case 12: // Foreground
                     PageCalendar.Foreground = solidColorBrush;
                     PageCalendar2.Foreground = solidColorBrush;
                     break;
-                case 12: // HoverBorderBrush
+                case 13: // HoverBorderBrush
                     PageCalendar.HoverBorderBrush = solidColorBrush;
                     PageCalendar2.HoverBorderBrush = solidColorBrush;
                     break;
-                case 13: // OutOfScopeBackground
+                case 14: // OutOfScopeBackground
                     PageCalendar.OutOfScopeBackground = solidColorBrush;
                     PageCalendar2.OutOfScopeBackground = solidColorBrush;
                     break;
-                case 14: // OutOfScopeForeground
+                case 15: // OutOfScopeForeground
                     PageCalendar.OutOfScopeForeground = solidColorBrush;
                     PageCalendar2.OutOfScopeForeground = solidColorBrush;
                     break;
-                case 17: // PressedBorderBrush
+                case 18: // PressedBorderBrush
                     PageCalendar.PressedBorderBrush = solidColorBrush;
                     PageCalendar2.PressedBorderBrush = solidColorBrush;
                     break;
-                case 18: // PressedForeground
+                case 19: // PressedForeground
                     PageCalendar.PressedForeground = solidColorBrush;
                     PageCalendar2.PressedForeground = solidColorBrush;
                     break;
-                case 19: // SelectedBorderBrush
+                case 20: // SelectedBorderBrush
                     PageCalendar.SelectedBorderBrush = solidColorBrush;
                     PageCalendar2.SelectedBorderBrush = solidColorBrush;
                     break;
-                case 22: // SelectedForeground
+                case 23: // SelectedForeground
                     PageCalendar.SelectedForeground = solidColorBrush;
                     PageCalendar2.SelectedForeground = solidColorBrush;
                     break;
-                case 23: // SelectedHoverBorderBrush
+                case 24: // SelectedHoverBorderBrush
                     PageCalendar.SelectedHoverBorderBrush = solidColorBrush;
                     PageCalendar2.SelectedHoverBorderBrush = solidColorBrush;
                     break;
-                case 25: // SelectedPressedBorderBrush
+                case 26: // SelectedPressedBorderBrush
                     PageCalendar.SelectedPressedBorderBrush = solidColorBrush;
                     PageCalendar2.SelectedPressedBorderBrush = solidColorBrush;
                     break;
-                case 31: // TodayForeground
+                case 32: // TodayForeground
                     PageCalendar.TodayForeground = solidColorBrush;
                     PageCalendar2.TodayForeground = solidColorBrush;
+                    break;
+                case 36: // CalendarViewDayItem.Background
+                    SetBackgrounds(PageCalendar, solidColorBrush);
+                    SetBackgrounds(PageCalendar2, solidColorBrush);
                     break;
 /*
 #if USE_INSIDER_SDK
@@ -483,55 +491,58 @@ namespace MUXControlsTestApp
                             case 1: // BlackoutBackground
                                 PageCalendar.BlackoutBackground = solidColorBrush;
                                 break;
-                            case 6: // CalendarItemDisabledBackground
+                            case 3: // BlackoutStrikethroughBrush
+                                PageCalendar.BlackoutStrikethroughBrush = solidColorBrush;
+                                break;
+                            case 7: // CalendarItemDisabledBackground
                                 PageCalendar.CalendarItemDisabledBackground = solidColorBrush;
                                 break;
-                            case 8: // CalendarItemHoverBackground
+                            case 9: // CalendarItemHoverBackground
                                 PageCalendar.CalendarItemHoverBackground = solidColorBrush;
                                 break;
-                            case 9: // CalendarItemPressedBackground
+                            case 10: // CalendarItemPressedBackground
                                 PageCalendar.CalendarItemPressedBackground = solidColorBrush;
                                 break;
-                            case 10: // DisabledForeground
+                            case 11: // DisabledForeground
                                 PageCalendar.DisabledForeground = solidColorBrush;
                                 break;
-                            case 15: // OutOfScopeHoverForeground
+                            case 16: // OutOfScopeHoverForeground
                                 PageCalendar.OutOfScopeHoverForeground = solidColorBrush;
                                 break;
-                            case 16: // OutOfScopePressedForeground
+                            case 17: // OutOfScopePressedForeground
                                 PageCalendar.OutOfScopePressedForeground = solidColorBrush;
                                 break;
-                            case 20: // SelectedDisabledBorderBrush
+                            case 21: // SelectedDisabledBorderBrush
                                 PageCalendar.SelectedDisabledBorderBrush = solidColorBrush;
                                 break;
-                            case 21: // SelectedDisabledForeground
+                            case 22: // SelectedDisabledForeground
                                 PageCalendar.SelectedDisabledForeground = solidColorBrush;
                                 break;
-                            case 24: // SelectedHoverForeground
+                            case 25: // SelectedHoverForeground
                                 PageCalendar.SelectedHoverForeground = solidColorBrush;
                                 break;
-                            case 26: // SelectedPressedForeground
+                            case 27: // SelectedPressedForeground
                                 PageCalendar.SelectedPressedForeground = solidColorBrush;
                                 break;
-                            case 27: // TodayBackground
+                            case 28: // TodayBackground
                                 PageCalendar.TodayBackground = solidColorBrush;
                                 break;
                             case 28: // TodayBlackoutBackground
                                 PageCalendar.TodayBlackoutBackground = solidColorBrush;
                                 break;
-                            case 29: // TodayBlackoutForeground
+                            case 30: // TodayBlackoutForeground
                                 PageCalendar.TodayBlackoutForeground = solidColorBrush;
                                 break;
-                            case 30: // TodayDisabledBackground
+                            case 31: // TodayDisabledBackground
                                 PageCalendar.TodayDisabledBackground = solidColorBrush;
                                 break;
-                            case 32: // TodayHoverBackground
+                            case 33: // TodayHoverBackground
                                 PageCalendar.TodayHoverBackground = solidColorBrush;
                                 break;
-                            case 33: // TodayPressedBackground
+                            case 34: // TodayPressedBackground
                                 PageCalendar.TodayPressedBackground = solidColorBrush;
                                 break;
-                            case 34: // TodaySelectedInnerBorderBrush
+                            case 35: // TodaySelectedInnerBorderBrush
                                 PageCalendar.TodaySelectedInnerBorderBrush = solidColorBrush;
                                 break;
                         }
@@ -540,96 +551,101 @@ namespace MUXControlsTestApp
 #endif // USE_INSIDER_SDK
 */
                 case 1: // BlackoutBackground
-                case 6: // CalendarItemDisabledBackground
-                case 8: // CalendarItemHoverBackground
-                case 9: // CalendarItemPressedBackground
-                case 10: // DisabledForeground
-                case 15: // OutOfScopeHoverForeground
-                case 16: // OutOfScopePressedForeground
-                case 20: // SelectedDisabledBorderBrush
-                case 21: // SelectedDisabledForeground
-                case 24: // SelectedHoverForeground
-                case 26: // SelectedPressedForeground
-                case 27: // TodayBackground
-                case 28: // TodayBlackoutBackground
-                case 29: // TodayBlackoutForeground
-                case 30: // TodayDisabledBackground
-                case 32: // TodayHoverBackground
-                case 33: // TodayPressedBackground
-                case 34: // TodaySelectedInnerBorderBrush
+                case 3: // BlackoutStrikethroughBrush
+                case 7: // CalendarItemDisabledBackground
+                case 9: // CalendarItemHoverBackground
+                case 10: // CalendarItemPressedBackground
+                case 11: // DisabledForeground
+                case 16: // OutOfScopeHoverForeground
+                case 17: // OutOfScopePressedForeground
+                case 21: // SelectedDisabledBorderBrush
+                case 22: // SelectedDisabledForeground
+                case 25: // SelectedHoverForeground
+                case 27: // SelectedPressedForeground
+                case 28: // TodayBackground
+                case 29: // TodayBlackoutBackground
+                case 30: // TodayBlackoutForeground
+                case 31: // TodayDisabledBackground
+                case 33: // TodayHoverBackground
+                case 34: // TodayPressedBackground
+                case 35: // TodaySelectedInnerBorderBrush
                     switch (brushPropertyName.SelectedIndex)
                     {
                         case 1: // BlackoutBackground
                             PageCalendar.Tag = 1;
                             PageCalendar2.Tag = 1;
                             break;
-                        case 6: // CalendarItemDisabledBackground
+                        case 3: // BlackoutStrikethroughBrush
                             PageCalendar.Tag = 2;
                             PageCalendar2.Tag = 2;
                             break;
-                        case 8: // CalendarItemHoverBackground
+                        case 7: // CalendarItemDisabledBackground
                             PageCalendar.Tag = 3;
                             PageCalendar2.Tag = 3;
                             break;
-                        case 9: // CalendarItemPressedBackground
+                        case 9: // CalendarItemHoverBackground
                             PageCalendar.Tag = 4;
                             PageCalendar2.Tag = 4;
                             break;
-                        case 10: // DisabledForeground
+                        case 10: // CalendarItemPressedBackground
                             PageCalendar.Tag = 5;
                             PageCalendar2.Tag = 5;
                             break;
-                        case 15: // OutOfScopeHoverForeground
+                        case 11: // DisabledForeground
                             PageCalendar.Tag = 6;
                             PageCalendar2.Tag = 6;
                             break;
-                        case 16: // OutOfScopePressedForeground
+                        case 16: // OutOfScopeHoverForeground
                             PageCalendar.Tag = 7;
                             PageCalendar2.Tag = 7;
                             break;
-                        case 20: // SelectedDisabledBorderBrush
+                        case 17: // OutOfScopePressedForeground
                             PageCalendar.Tag = 8;
                             PageCalendar2.Tag = 8;
                             break;
-                        case 21: // SelectedDisabledForeground
+                        case 21: // SelectedDisabledBorderBrush
                             PageCalendar.Tag = 9;
                             PageCalendar2.Tag = 9;
                             break;
-                        case 24: // SelectedHoverForeground
+                        case 22: // SelectedDisabledForeground
                             PageCalendar.Tag = 10;
                             PageCalendar2.Tag = 10;
                             break;
-                        case 26: // SelectedPressedForeground
+                        case 25: // SelectedHoverForeground
                             PageCalendar.Tag = 11;
                             PageCalendar2.Tag = 11;
                             break;
-                        case 27: // TodayBackground
+                        case 27: // SelectedPressedForeground
                             PageCalendar.Tag = 12;
                             PageCalendar2.Tag = 12;
                             break;
-                        case 28: // TodayBlackoutBackground
+                        case 28: // TodayBackground
                             PageCalendar.Tag = 13;
                             PageCalendar2.Tag = 13;
                             break;
-                        case 29: // TodayBlackoutForeround
+                        case 29: // TodayBlackoutBackground
                             PageCalendar.Tag = 14;
                             PageCalendar2.Tag = 14;
                             break;
-                        case 30: // TodayDisabledBackground
+                        case 30: // TodayBlackoutForeround
                             PageCalendar.Tag = 15;
                             PageCalendar2.Tag = 15;
                             break;
-                        case 32: // TodayHoverBackground
+                        case 31: // TodayDisabledBackground
                             PageCalendar.Tag = 16;
                             PageCalendar2.Tag = 16;
                             break;
-                        case 33: // TodayPressedBackground
+                        case 33: // TodayHoverBackground
                             PageCalendar.Tag = 17;
                             PageCalendar2.Tag = 17;
                             break;
-                        case 34: // TodaySelectedInnerBorderBrush
+                        case 34: // TodayPressedBackground
                             PageCalendar.Tag = 18;
                             PageCalendar2.Tag = 18;
+                            break;
+                        case 35: // TodaySelectedInnerBorderBrush
+                            PageCalendar.Tag = 19;
+                            PageCalendar2.Tag = 19;
                             break;
                     }
                     PageCalendar.Tag = solidColorBrush;
@@ -653,55 +669,58 @@ namespace MUXControlsTestApp
                         case 1: // BlackoutBackground
                             _defaultBrushColors[brushPropertyName.SelectedIndex] = "#00FFFFFF";
                             break;
-                        case 6: // CalendarItemDisabledBackground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#00FFFFFF";
-                            break;
-                        case 8: // CalendarItemHoverBackground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#0A000000";
-                            break;
-                        case 9: // CalendarItemPressedBackground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#06000000";
-                            break;
-                        case 10: // DisabledForeground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#5C000000";
-                            break;
-                        case 15: // OutOfScopeHoverForeground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#9B000000";
-                            break;
-                        case 16: // OutOfScopePressedForeground
+                        case 3: // BlackoutStrikethroughBrush
                             _defaultBrushColors[brushPropertyName.SelectedIndex] = "#72000000";
                             break;
-                        case 20: // SelectedDisabledBorderBrush
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#37000000";
+                        case 7: // CalendarItemDisabledBackground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#00FFFFFF";
                             break;
-                        case 21: // SelectedDisabledForeground
+                        case 9: // CalendarItemHoverBackground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#0A000000";
+                            break;
+                        case 10: // CalendarItemPressedBackground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#06000000";
+                            break;
+                        case 11: // DisabledForeground
                             _defaultBrushColors[brushPropertyName.SelectedIndex] = "#5C000000";
                             break;
-                        case 24: // SelectedHoverForeground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#xFF003E92";
+                        case 16: // OutOfScopeHoverForeground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#9B000000";
                             break;
-                        case 26: // SelectedPressedForeground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF005FB7";
+                        case 17: // OutOfScopePressedForeground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#72000000";
                             break;
-                        case 27: // TodayBackground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF0067C0";
-                            break;
-                        case 28: // TodayBlackoutBackground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF0078D4";
-                            break;
-                        case 29: // TodayBlackoutForeground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FFFFFFFF";
-                            break;
-                        case 30: // TodayDisabledBackground
+                        case 21: // SelectedDisabledBorderBrush
                             _defaultBrushColors[brushPropertyName.SelectedIndex] = "#37000000";
                             break;
-                        case 32: // TodayHoverBackground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF003E92";
+                        case 22: // SelectedDisabledForeground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#5C000000";
                             break;
-                        case 33: // TodayPressedBackground
+                        case 25: // SelectedHoverForeground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#xFF003E92";
+                            break;
+                        case 27: // SelectedPressedForeground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF005FB7";
+                            break;
+                        case 28: // TodayBackground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF0067C0";
+                            break;
+                        case 29: // TodayBlackoutBackground
                             _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF0078D4";
                             break;
-                        case 34: // TodaySelectedInnerBorderBrush
+                        case 30: // TodayBlackoutForeground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FFFFFFFF";
+                            break;
+                        case 31: // TodayDisabledBackground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#37000000";
+                            break;
+                        case 33: // TodayHoverBackground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF003E92";
+                            break;
+                        case 34: // TodayPressedBackground
+                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF0078D4";
+                            break;
+                        case 35: // TodaySelectedInnerBorderBrush
                             _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FFFFFFFF";
                             break;
                         default:
@@ -809,6 +828,18 @@ namespace MUXControlsTestApp
             foreach (var dayItem in dayItems)
             {
                 SetBlackout(dayItem);
+            }
+        }
+
+        private void SetBackgrounds(CalendarView cv, Brush brush)
+        {
+            if (cv == null) return;
+
+            var dayItems = Utilities.TestUtilities.FindDescendents<CalendarViewDayItem>(cv);
+
+            foreach (var dayItem in dayItems)
+            {
+                dayItem.Background = brush;
             }
         }
 

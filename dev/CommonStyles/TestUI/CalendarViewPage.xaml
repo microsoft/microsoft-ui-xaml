@@ -125,6 +125,7 @@
                     <ComboBoxItem>Background</ComboBoxItem>
                     <ComboBoxItem>BlackoutBackground *</ComboBoxItem>
                     <ComboBoxItem>BlackoutForeground</ComboBoxItem>
+                    <ComboBoxItem>BlackoutStrikethroughBrush *</ComboBoxItem>
                     <ComboBoxItem>BorderBrush</ComboBoxItem>
                     <ComboBoxItem>CalendarItemBorderBrush</ComboBoxItem>
                     <ComboBoxItem>CalendarItemBackground</ComboBoxItem>
@@ -157,6 +158,7 @@
                     <ComboBoxItem>TodayHoverBackground *</ComboBoxItem>
                     <ComboBoxItem>TodayPressedBackground *</ComboBoxItem>
                     <ComboBoxItem>TodaySelectedInnerBorderBrush *</ComboBoxItem>
+                    <ComboBoxItem>CalendarViewDayItem.Background</ComboBoxItem>
                 </ComboBox>
                 <ComboBox x:Name="brushColor" Margin="2" VerticalAlignment="Center" IsEditable="True" MinWidth="115" SelectedIndex="0">
                     <ComboBoxItem>Default</ComboBoxItem>
@@ -170,54 +172,43 @@
             </StackPanel>
         </StackPanel>
 
-        <StackPanel>
-            <CalendarView
-                x:Name="cv1"
-                Margin="2"
-                Visibility="Collapsed"
-                VerticalAlignment="Top"
-                DayItemFontSize="30"
-                MonthYearItemFontSize="30"
-                SelectionMode="Multiple"/>
-            
-            <Grid>
-                <Grid.Resources>
-                    <Style x:Key="RoundedCalendarViewDayItemStyle" TargetType="CalendarViewDayItem">
-                        <Setter Property="MinWidth" Value="40" />
-                        <Setter Property="MinHeight" Value="40" />
-                        <Setter Property="Margin" Value="1" />
-                        <Setter Property="Padding" Value="0, 0, 0, 4" />
-                        <Setter Property="UseSystemFocusVisuals" Value="True" />
-                        <Setter Property="FocusVisualMargin" Value="-3" />
-                        <Setter Property="FocusVisualPrimaryThickness" Value="2" />
-                        <Setter Property="FocusVisualSecondaryThickness" Value="1" />
-                        <Setter Property="CornerRadius" Value="4" />
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="CalendarViewDayItem">
-                                    <TextBlock x:Name="DayContent" Text="Test" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </Grid.Resources>
+        <Grid>
+            <Grid.Resources>
+                <Style x:Key="RoundedCalendarViewDayItemStyle" TargetType="CalendarViewDayItem">
+                    <Setter Property="MinWidth" Value="40" />
+                    <Setter Property="MinHeight" Value="40" />
+                    <Setter Property="Margin" Value="1" />
+                    <Setter Property="Padding" Value="0, 0, 0, 4" />
+                    <Setter Property="UseSystemFocusVisuals" Value="True" />
+                    <Setter Property="FocusVisualMargin" Value="-3" />
+                    <Setter Property="FocusVisualPrimaryThickness" Value="2" />
+                    <Setter Property="FocusVisualSecondaryThickness" Value="1" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="CalendarViewDayItem">
+                                <TextBlock x:Name="DayContent" Text="Test" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Grid.Resources>
                 
-                <CalendarView
-                    x:Name="PageCalendar2"
-                    Width="600"
-                    Height="600"
-                    Margin="2"
-                    VerticalAlignment="Top"
-                    DayItemFontSize="24"
-                    MonthYearItemFontSize="24"
-                    SelectionMode="Multiple"
-                    CalendarIdentifier="{x:Bind calendarIdentifier.SelectedValue, Mode=OneWay}"
-                    IsEnabled="{x:Bind isEnabled.IsChecked.Value, Mode=OneWay}"
-                    IsGroupLabelVisible="{x:Bind isGroupLabelVisible.IsChecked.Value, Mode=OneWay}"
-                    IsOutOfScopeEnabled="{x:Bind isOutOfScopeEnabled.IsChecked.Value, Mode=OneWay}"
-                    IsTodayHighlighted="{x:Bind isTodayHighlighted.IsChecked.Value, Mode=OneWay}"
-                    CalendarViewDayItemStyle="{StaticResource RoundedCalendarViewDayItemStyle}"/>
-            </Grid>
-        </StackPanel>
+            <CalendarView
+                x:Name="PageCalendar2"
+                Width="600"
+                Height="600"
+                Margin="2"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                DayItemFontSize="24"
+                MonthYearItemFontSize="24"
+                SelectionMode="Multiple"
+                CalendarIdentifier="{x:Bind calendarIdentifier.SelectedValue, Mode=OneWay}"
+                IsEnabled="{x:Bind isEnabled.IsChecked.Value, Mode=OneWay}"
+                IsGroupLabelVisible="{x:Bind isGroupLabelVisible.IsChecked.Value, Mode=OneWay}"
+                IsOutOfScopeEnabled="{x:Bind isOutOfScopeEnabled.IsChecked.Value, Mode=OneWay}"
+                IsTodayHighlighted="{x:Bind isTodayHighlighted.IsChecked.Value, Mode=OneWay}"
+                CalendarViewDayItemStyle="{StaticResource RoundedCalendarViewDayItemStyle}"/>
+        </Grid>
     </StackPanel>
 </local:TestPage>
