@@ -10,7 +10,7 @@
     <!-- Note that we cannot name this with the key DefaultProgressBarStyle since that is already used for WUXC.ProgressBar-->
     <Style TargetType="local:ProgressBar">
         <Setter Property="Foreground" Value="{ThemeResource ProgressBarForeground}" />
-        <Setter Property="Background" Value="{ThemeResource ProgressBarBackground}" />
+        <Setter Property="Background" Value="Red" />
         <Setter Property="BorderThickness" Value="{ThemeResource ProgressBarBorderThemeThickness}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ProgressBarBorderBrush}" />
         <Setter Property="MinHeight" Value="{StaticResource ProgressBarMinHeight}" />
@@ -221,7 +221,7 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}"
-                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            contract7Present:CornerRadius="{Binding Path=ActualHeight, ElementName=ProgressBarRoot, Converter={StaticResource DefaultFullyRoundedCornerRadiusConverter}}"
                             contract7NotPresent:CornerRadius="{StaticResource ProgressBarCornerRadius}">
 
                             <Border Clip="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ClipRect}">
@@ -233,8 +233,8 @@
                                         Height="{StaticResource ProgressBarTrackHeight}"
                                         Width="{TemplateBinding Width}"
                                         VerticalAlignment="Center"
-                                        RadiusX="{Binding Source={StaticResource ProgressBarTrackCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                        RadiusY="{Binding Source={StaticResource ProgressBarTrackCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
+                                        RadiusX="{Binding Path=ActualHeight, ElementName=ProgressBarTrack, Converter={StaticResource DefaultFullyRoundedCornerRadiusConverter}}"
+                                        RadiusY="{Binding Path=ActualHeight, ElementName=ProgressBarTrack, Converter={StaticResource DefaultFullyRoundedCornerRadiusConverter}}">
                                         <Rectangle.RenderTransform>
                                             <CompositeTransform/>
                                         </Rectangle.RenderTransform>
@@ -244,10 +244,8 @@
                                         x:Name="DeterminateProgressBarIndicator"
                                         Fill="{TemplateBinding Foreground}"
                                         HorizontalAlignment="Left"
-                                        contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                        contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                        contract7NotPresent:RadiusX="{Binding Source={StaticResource ProgressBarCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                        contract7NotPresent:RadiusY="{Binding Source={StaticResource ProgressBarCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
+                                        RadiusX="{Binding Path=ActualHeight, ElementName=DeterminateProgressBarIndicator, Converter={StaticResource DefaultFullyRoundedCornerRadiusConverter}}"
+                                        RadiusY="{Binding Path=ActualHeight, ElementName=DeterminateProgressBarIndicator, Converter={StaticResource DefaultFullyRoundedCornerRadiusConverter}}">
                                     </Rectangle>
 
                                     <Rectangle
@@ -255,10 +253,8 @@
                                         Fill="{TemplateBinding Foreground}"
                                         HorizontalAlignment="Left"
                                         Opacity="0"
-                                        contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                        contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                        contract7NotPresent:RadiusX="{Binding Source={StaticResource ProgressBarCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                        contract7NotPresent:RadiusY="{Binding Source={StaticResource ProgressBarCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
+                                        RadiusX="{Binding Path=ActualHeight, ElementName=IndeterminateProgressBarIndicator, Converter={StaticResource DefaultFullyRoundedCornerRadiusConverter}}"
+                                        RadiusY="{Binding Path=ActualHeight, ElementName=IndeterminateProgressBarIndicator, Converter={StaticResource DefaultFullyRoundedCornerRadiusConverter}}">
                                         <Rectangle.RenderTransform>
                                             <CompositeTransform/>
                                         </Rectangle.RenderTransform>
@@ -269,10 +265,8 @@
                                         Fill="{TemplateBinding Foreground}"
                                         HorizontalAlignment="Left"
                                         Opacity="0"
-                                        contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                        contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                        contract7NotPresent:RadiusX="{Binding Source={StaticResource ProgressBarCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                        contract7NotPresent:RadiusY="{Binding Source={StaticResource ProgressBarCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
+                                        RadiusX="{Binding Path=ActualHeight, ElementName=IndeterminateProgressBarIndicator2, Converter={StaticResource DefaultFullyRoundedCornerRadiusConverter}}"
+                                        RadiusY="{Binding Path=ActualHeight, ElementName=IndeterminateProgressBarIndicator2, Converter={StaticResource DefaultFullyRoundedCornerRadiusConverter}}">
                                         <Rectangle.RenderTransform>
                                             <CompositeTransform/>
                                         </Rectangle.RenderTransform>

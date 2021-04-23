@@ -1,0 +1,17 @@
+﻿namespace MU_XCP_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+[default_interface]
+runtimeclass FullyRoundedCornerRadiusConverter : Windows.UI.Xaml.DependencyObject, Windows.UI.Xaml.Data.IValueConverter
+{
+    FullyRoundedCornerRadiusConverter();
+
+    [MUX_DEFAULT_VALUE("0.0")]
+    Double Offset{ get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty OffsetProperty{ get; };
+};
+
+}

@@ -649,6 +649,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MonochromaticOverlayPresent
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MonochromaticOverlayPresenter_TestUI", "dev\MonochromaticOverlayPresenter\TestUI\MonochromaticOverlayPresenter_TestUI.shproj", "{52AAA6ED-E5A0-41BB-8858-66249333A8D4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InfoBadge", "InfoBadge", "{C67BD98D-1228-4154-8EDA-2F8255BBA941}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InfoBadge", "dev\InfoBadge\InfoBadge.vcxitems", "{E7DEA84C-CCCE-4458-8499-5182F67BC7BA}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "InfoBadge_APITests", "dev\InfoBadge\APITests\InfoBadge_APITests.shproj", "{D83F60A3-EB44-46F2-8EE7-B28C90004E5F}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "InfoBadge_TestUI", "dev\InfoBadge\TestUI\InfoBadge_TestUI.shproj", "{1F30CAC6-7EFB-4CE9-B119-64821C117CB9}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "InfoBadge_InteractionTests", "dev\InfoBadge\InteractionTests\InfoBadge_InteractionTests.shproj", "{F55AB8BF-F828-4A2E-BCDF-68F22AED35C3}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
@@ -673,6 +683,7 @@ Global
 		dev\NavigationView\NavigationView.vcxitems*{1b8ef049-a38e-43e4-b88e-f1ebfcef07d2}*SharedItemsImports = 9
 		dev\TabView\TestUI\TabView_TestUI.projitems*{1d87aac7-1e11-40fc-90a7-b6ce1c4567ae}*SharedItemsImports = 13
 		dev\Materials\Reveal\InteractionTests\Reveal_InteractionTests\Reveal_InteractionTests.projitems*{1f2872e7-28c9-4c01-88ed-73c43ee1c9a4}*SharedItemsImports = 13
+		dev\InfoBadge\TestUI\InfoBadge_TestUI.projitems*{1f30cac6-7efb-4ce9-b119-64821c117cb9}*SharedItemsImports = 13
 		dev\ScrollView\TestUI\ScrollView_TestUI.projitems*{20c52fd5-62fd-53b4-a4a0-995c9b5a014d}*SharedItemsImports = 13
 		dev\PagerControl\TestUI\PagerControl_TestUI.projitems*{225c4174-3141-49b8-ade2-c7d3408d5103}*SharedItemsImports = 13
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\ScrollViewerIRefreshInfoProviderAdapter.vcxitems*{22a3d1c4-4d1c-4b04-b695-8fec39bfed86}*SharedItemsImports = 9
@@ -780,6 +791,7 @@ Global
 		dev\Expander\Expander.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\IconSource\IconSource.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\ImageIcon\ImageIcon.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
+		dev\InfoBadge\InfoBadge.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\InfoBar\InfoBar.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Interactions\ButtonInteraction\ButtonInteraction.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Interactions\SliderInteraction\SliderInteraction.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
@@ -849,6 +861,7 @@ Global
 		dev\PipsPager\PipsPager.vcxitems*{d1eb61d8-c689-4ad1-bd61-fdaa50362563}*SharedItemsImports = 9
 		dev\Expander\InteractionTests\Expander_InteractionTests.projitems*{d6df4ab9-facc-4e51-8c57-6b1f96919365}*SharedItemsImports = 13
 		dev\IconSource\APITests\IconSource_APITests.projitems*{d73627e9-564c-4a72-a12d-f6c82f17ad0d}*SharedItemsImports = 13
+		dev\InfoBadge\APITests\InfoBadge_APITests.projitems*{d83f60a3-eb44-46f2-8ee7-b28c90004e5f}*SharedItemsImports = 13
 		dev\SplitView\TestUI\SplitView_TestUI.projitems*{d8cea3b7-0012-4f74-b50f-b46e9a93c979}*SharedItemsImports = 13
 		dev\DropDownButton\InteractionTests\DropDownButton_InteractionTests.projitems*{d9ac3716-5608-40d0-999f-26f4b544be33}*SharedItemsImports = 13
 		dev\AnimatedIcon\APITests\AnimatedIcon_APITests.projitems*{db15ff28-ab3a-4fed-a1d5-004a095a3fd5}*SharedItemsImports = 13
@@ -879,6 +892,8 @@ Global
 		dev\IconSource\APITests\IconSource_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\ImageIcon\APITests\ImageIcon_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\ImageIcon\TestUI\ImageIcon_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\InfoBadge\APITests\InfoBadge_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\InfoBadge\TestUI\InfoBadge_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\InfoBar\TestUI\InfoBar_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\Materials\Acrylic\APITests\AcrylicBrush_ApiTests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
@@ -937,6 +952,7 @@ Global
 		dev\CommandBarFlyout\TestUI\CommandBarFlyout_TestUI.projitems*{e63f1c1d-f06d-46a0-b5c2-184184e44f29}*SharedItemsImports = 13
 		dev\SplitButton\APITests\SplitButton_APITests.projitems*{e687c158-4c66-4ac5-8a1b-d095a82f1549}*SharedItemsImports = 13
 		dev\RadioButtons\RadioButtons.vcxitems*{e770a6d3-7252-4e8a-bd10-fa8524df8c83}*SharedItemsImports = 9
+		dev\InfoBadge\InfoBadge.vcxitems*{e7dea84c-ccce-4458-8499-5182f67bc7ba}*SharedItemsImports = 9
 		dev\NavigationView\NavigationView_ApiTests\NavigationView_ApiTests.projitems*{e98f3da3-3c00-4f2e-bf3b-2d2ad9d176bc}*SharedItemsImports = 13
 		dev\ColorPicker\APITests\ColorPicker_APITests.projitems*{e9ac4938-ec2a-46d3-85bf-27316db8cc4d}*SharedItemsImports = 13
 		test\MUXControls.Test\MUXControls.Test.Shared.projitems*{e9fc52cd-519a-41bb-8092-523ffa9d5617}*SharedItemsImports = 13
@@ -948,6 +964,7 @@ Global
 		dev\AnimatedIcon\AnimatedIcon.vcxitems*{f1c8a5a1-b1b0-4095-8849-e550fcf2ebf6}*SharedItemsImports = 9
 		dev\PullToRefresh\RefreshContainer\InteractionTests\RefreshContainer_InteractionTests.projitems*{f30fe0d3-2e44-405e-8519-ec3ab098c41f}*SharedItemsImports = 13
 		dev\InfoBar\InteractionTests\InfoBar_InteractionTests.projitems*{f470a64e-780e-45aa-abb7-73a8734e51d7}*SharedItemsImports = 13
+		dev\InfoBadge\InteractionTests\InfoBadge_InteractionTests.projitems*{f55ab8bf-f828-4a2e-bcdf-68f22aed35c3}*SharedItemsImports = 13
 		dev\SplitView\SplitView.vcxitems*{f567d0a2-9c61-4793-ae79-12da915ac11f}*SharedItemsImports = 9
 		dev\Materials\Acrylic\InteractionTests\AcrylicBrush_InteractionTests.projitems*{f601284a-00c1-49f9-99b3-70d45585f784}*SharedItemsImports = 13
 		dev\SplitButton\SplitButton.vcxitems*{faf114dd-af1f-4d9f-a511-354c19912aad}*SharedItemsImports = 9
@@ -973,6 +990,8 @@ Global
 		dev\IconSource\APITests\IconSource_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\ImageIcon\APITests\ImageIcon_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\ImageIcon\TestUI\ImageIcon_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\InfoBadge\APITests\InfoBadge_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\InfoBadge\TestUI\InfoBadge_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\InfoBar\TestUI\InfoBar_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\Materials\Acrylic\APITests\AcrylicBrush_ApiTests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
@@ -1642,6 +1661,11 @@ Global
 		{7FA40D21-3085-41B3-9C46-6CBC2F56B442} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{D03847C1-7EE7-4423-82FD-3CB31DAF98D1} = {7FA40D21-3085-41B3-9C46-6CBC2F56B442}
 		{52AAA6ED-E5A0-41BB-8858-66249333A8D4} = {7FA40D21-3085-41B3-9C46-6CBC2F56B442}
+		{C67BD98D-1228-4154-8EDA-2F8255BBA941} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
+		{E7DEA84C-CCCE-4458-8499-5182F67BC7BA} = {C67BD98D-1228-4154-8EDA-2F8255BBA941}
+		{D83F60A3-EB44-46F2-8EE7-B28C90004E5F} = {C67BD98D-1228-4154-8EDA-2F8255BBA941}
+		{1F30CAC6-7EFB-4CE9-B119-64821C117CB9} = {C67BD98D-1228-4154-8EDA-2F8255BBA941}
+		{F55AB8BF-F828-4A2E-BCDF-68F22AED35C3} = {C67BD98D-1228-4154-8EDA-2F8255BBA941}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}

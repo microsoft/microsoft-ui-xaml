@@ -134,7 +134,7 @@
     <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}" />
 
     <Style x:Key="DefaultButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
+        <Setter Property="Background" Value="Red" />
         <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
         <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}" />

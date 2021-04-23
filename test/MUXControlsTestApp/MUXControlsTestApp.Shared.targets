@@ -85,4 +85,6 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AnimatedIcon\TestUI\AnimatedIcon_TestUI.projitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AnimatedIcon\APITests\AnimatedIcon_APITests.projitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\MonochromaticOverlayPresenter\TestUI\MonochromaticOverlayPresenter_TestUI.projitems" Label="Shared" Condition="$(FeatureMonochromaticOverlayPresenterEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\InfoBadge\TestUI\InfoBadge_TestUI.projitems" Label="Shared" Condition="$(FeatureInfoBadgeEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\InfoBadge\APITests\InfoBadge_APITests.projitems" Label="Shared" Condition="$(FeatureInfoBadgeEnabled) == 'true'" />
 </Project>
