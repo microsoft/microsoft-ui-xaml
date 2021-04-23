@@ -90,7 +90,7 @@ enum PopupPlacementMode
 
 class Popup
 {
-    UIElement Target { get; set; }
+    UIElement PlacementTarget { get; set; }
     PopupPlacementMode DesiredPlacement { get; set; }
     PopupPlacementMode ActualPlacement { get; }
     
@@ -98,29 +98,29 @@ class Popup
 }
 ```
 
-`Target` is used to describe which element the `Popup` should be positioned relative to.
+`PlacementTarget` is used to describe which element the `Popup` should be positioned relative to.
 Defaults to `null`.  If this is `null`, then `DesiredPlacement` is ignored, `ActualPlacement` is always `None`, and
-`PlacementChanged` is never raised.  If the `Popup` is in the visual tree, `Target` will override what its
-position would otherwise be set to by layout.  Setting `Target` to an element under a different XAML root than
+`PlacementChanged` is never raised.  If the `Popup` is in the visual tree, `PlacementTarget` will override what its
+position would otherwise be set to by layout.  Setting `PlacementTarget` to an element under a different XAML root than
 `Popup.XamlRoot` is invalid and will throw an `ArgumentException`.
 
 `DesiredPlacement` is used to describe how the app author would ideally like the `Popup`
-positioned relative to `Target`.  Defaults to `None`.  If this is `None`, then `Target` is ignored,
+positioned relative to `PlacementTarget`.  Defaults to `None`.  If this is `None`, then `PlacementTarget` is ignored,
 `ActualPlacement` is always `None` and `PlacementChanged` is never raised. 
-If both `DesiredPlacement` and `Target` are set and `HorizontalOffset` and/or `VerticalOffset`
+If both `DesiredPlacement` and `PlacementTarget` are set and `HorizontalOffset` and/or `VerticalOffset`
 are also set, then the latter two properties will offset the `Popup` from where it would have been
-placed by `DesiredPlacement` and `Target` alone.
+placed by `DesiredPlacement` and `PlacementTarget` alone.
 
 `ActualPlacement` returns where the app actually positioned the `Popup`, after taking into account
-available space, if both `Target` and `DesiredPlacement` were set.  Will always be `None`
-if either `Target` and `DesiredPlacement` are not set.
+available space, if both `PlacementTarget` and `DesiredPlacement` were set.  Will always be `None`
+if either `PlacementTarget` and `DesiredPlacement` are not set.
 
 `PlacementChanged` is synchronously raised whenever XAML sets the value of `ActualPlacement`,
 which allows apps to respond to where a `Popup` was placed - for example, by setting
-a visual state based on whether a `Popup` is appearing above or below `Target`.
+a visual state based on whether a `Popup` is appearing above or below `PlacementTarget`.
 This event is raised before the screen is refreshed, meaning that any visual changes made
 in response to this event can be made before anything is drawn to the screen at the new position.
-Will never be raised if either `Target` and `DesiredPlacement` are not set.
+Will never be raised if either `PlacementTarget` and `DesiredPlacement` are not set.
 
 # API Details
 <!-- The exact API, in MIDL3 format (https://docs.microsoft.com/en-us/uwp/midl-3/) -->
@@ -149,13 +149,13 @@ namespace Windows.UI.Xaml.Controls.Primitives
     [webhosthidden]
     interface IPopup2
     {
-        Windows.UI.Xaml.UIElement Target;
+        Windows.UI.Xaml.UIElement PlacementTarget;
         Windows.UI.Xaml.Controls.Primitives.PopupPlacementMode DesiredPlacement;
         Windows.UI.Xaml.Controls.Primitives.PopupPlacementMode ActualPlacement { get; };
         
         event Windows.Foundation.EventHandler<Object> PlacementChanged;
         
-        static Windows.UI.Xaml.DependencyProperty TargetProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty PlacementTargetProperty{ get; };
         static Windows.UI.Xaml.DependencyProperty DesiredPlacementProperty{ get; };
         static Windows.UI.Xaml.DependencyProperty ActualPlacementProperty{ get; };
     };
@@ -170,7 +170,7 @@ secondary commands Popup, and how to respond to the event raised when XAML place
 <!-- Part of the CommandBarFlyoutCommandBar's default template -->
 <Popup
     x:Name="OverflowPopup"
-    Target="{Binding ElementName=PrimaryItemsRoot}"
+    PlacementTarget="{Binding ElementName=PrimaryItemsRoot}"
     DesiredPlacement="Bottom">
 </Popup>
 ```
