@@ -65,12 +65,17 @@ TodayBackground, TodayBlackoutBackground, TodayBlackoutForeground, TodayHoverBac
 ![Pressed Today Background.](images/PressedTodayBackground.png)
 
 ### Showcasing the TodayBlackoutBackground and TodayBlackoutForeground properties - the old property CalendarView.IsTodayBlackedOut is True
-Note: the blue background and white foreground colors are not final here.
-
 ![Blacked Out Today Background And Foreground.](images/BlackoutTodayBackgroundAndForeground.png)
 
 ### Showcasing the TodaySelectedInnerBorderBrush property - current date is selected
 ![Selected Today Border.](images/SelectedTodayBorder.png)
+
+## Blacked Out styling
+The following properties of type Windows.UI.Xaml.Media.Brush are used to customize the calendar items that are blacked out in the month view:
+TodayBlackoutBackground, TodayBlackoutForeground, BlackoutStrikethroughBrush.
+
+### Showcasing the BlackoutStrikethroughBrush property - all Sundays are blacked out
+![Blacked Out Sundays.](images/BlackoutStrikethroughBrush.png)
 
 ## Out Of Scope styling
 The following properties of type Windows.UI.Xaml.Media.Brush are used to customize the calendar items that are outside the current scope (month, year, or decade):
@@ -128,6 +133,7 @@ This shows a typical use of the new CalendarView properties set in markup. The H
             <StaticResource x:Key="CalendarViewFocusVisualPrimaryBrush" ResourceKey="FocusStrokeColorOuterBrush" />
             <StaticResource x:Key="CalendarViewFocusVisualSecondaryBrush" ResourceKey="FocusStrokeColorInnerBrush" />
             <StaticResource x:Key="CalendarViewFocusBorderBrush" ResourceKey="AccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="CalendarViewBlackoutStrikethroughBrush" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
             <StaticResource x:Key="CalendarViewSelectedHoverBorderBrush" ResourceKey="AccentFillColorSecondaryBrush" />
             <StaticResource x:Key="CalendarViewSelectedPressedBorderBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="CalendarViewSelectedDisabledBorderBrush" ResourceKey="AccentFillColorDisabledBrush" />
@@ -189,6 +195,7 @@ This shows a typical use of the new CalendarView properties set in markup. The H
     <Thickness x:Key="CalendarViewFirstOfYearDecadeLabelMargin">0,3,0,0</Thickness>
 
     <Style x:Key="CalendarViewDefaultStyle" TargetType="CalendarView">
+        <Setter Property="BlackoutStrikethroughBrush" Value="{ThemeResource CalendarViewBlackoutStrikethroughBrush}" />
         <Setter Property="SelectedHoverBorderBrush" Value="{ThemeResource CalendarViewSelectedHoverBorderBrush}" />
         <Setter Property="SelectedPressedBorderBrush" Value="{ThemeResource CalendarViewSelectedPressedBorderBrush}" />
         <Setter Property="SelectedDisabledBorderBrush" Value="{ThemeResource CalendarViewSelectedDisabledBorderBrush}" /> *
@@ -316,6 +323,10 @@ In this example, the CalendarItemCornerRadius property is set to 4px:
 
 Gets or sets a brush that provides the foreground of a calendar item while it's disabled.
 
+`public Windows.UI.Xaml.Media.Brush BlackoutStrikethroughBrush { get; set; }`
+
+Gets or sets a brush for the strikethrough line over calendar items while they are blacked out.
+
 `public Windows.UI.Xaml.Media.Brush SelectedDisabledBorderBrush { get; set; }`
 
 Gets or sets a brush that provides the border of a selected calendar item while it's disabled.
@@ -399,6 +410,7 @@ Gets or sets a brush that provides the border of the calendar item for the curre
             Windows.UI.Xaml.CornerRadius CalendarItemCornerRadius;
 
             Windows.UI.Xaml.Media.Brush DisabledForeground;
+            Windows.UI.Xaml.Media.Brush BlackoutStrikethroughBrush;
             Windows.UI.Xaml.Media.Brush SelectedDisabledBorderBrush;
             Windows.UI.Xaml.Media.Brush CalendarItemHoverBackground;
             Windows.UI.Xaml.Media.Brush CalendarItemPressedBackground;
@@ -423,6 +435,7 @@ Gets or sets a brush that provides the border of the calendar item for the curre
             static Windows.UI.Xaml.DependencyProperty CalendarItemCornerRadiusProperty{ get; };
 
             static Windows.UI.Xaml.DependencyProperty DisabledForegroundProperty{ get; };
+            static Windows.UI.Xaml.DependencyProperty BlackoutStrikethroughBrushProperty{ get; };
             static Windows.UI.Xaml.DependencyProperty SelectedDisabledBorderBrushProperty{ get; };
             static Windows.UI.Xaml.DependencyProperty CalendarItemHoverBackgroundProperty{ get; };
             static Windows.UI.Xaml.DependencyProperty CalendarItemPressedBackgroundProperty{ get; };
@@ -467,6 +480,7 @@ FirstOfMonthLabelMargin | FirstOfMonthLabelFontFamily, FirstOfMonthLabelFontSize
 FirstOfYearDecadeLabelMargin | FirstOfYearDecadeLabelFontFamily, FirstOfYearDecadeLabelFontSize, FirstOfYearDecadeLabelFontStyle
 CalendarItemCornerRadius | CalendarItemBorderThickness, CalendarItemBorderBrush, CalendarItemForeground
 DisabledForeground | PressedForeground, SelectedForeground, BlackoutForeground
+BlackoutStrikethroughBrush | HoverBorderBrush, FocusBorderBrush
 SelectedDisabledBorderBrush | SelectedHoverBorderBrush, SelectedPressedBorderBrush
 CalendarItemHoverBackground | CalendarItemBackground, CalendarItemForeground
 CalendarItemPressedBackground | CalendarItemBackground, CalendarItemForeground
