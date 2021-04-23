@@ -104,8 +104,8 @@ public:
     }
 };
 class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<AnimatedAcceptVisualSource_AnimatedVisual,
-        winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
-        IClosable>
+    winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
+    IClosable>
 {
     winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
     static constexpr int64_t c_durationTicks{ 26666666L };
@@ -1513,8 +1513,8 @@ public:
     AnimatedAcceptVisualSource_AnimatedVisual(
         Compositor compositor,
         CompositionPropertySet themeProperties)
-        : _c{compositor}
-        , _themeProperties{themeProperties}
+        : _c{ compositor }
+        , _themeProperties{ themeProperties }
         , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
     {
         winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.put()));
@@ -1628,47 +1628,47 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedAccep
 {
     return winrt::single_threaded_map<winrt::hstring, double>(
         std::map<winrt::hstring, double>
-        {
-            { L"NormalOnToNormalOff_Start", 0.0 },
-            { L"NormalOnToNormalOff_End", 0.0253125 },
-            { L"NormalOnToPointerOverOn_Start", 0.0315625 },
-            { L"NormalOnToPointerOverOn_End", 0.0565625 },
-            { L"NormalOnToPressedOn_Start", 0.0628125 },
-            { L"NormalOnToPressedOn_End", 0.0878125 },
-            { L"NormalOffToNormalOn_Start", 0.0940625 },
-            { L"NormalOffToNormalOn_End", 0.2128125 },
-            { L"NormalOffToPointerOverOff_Start", 0.2190625 },
-            { L"NormalOffToPointerOverOff_End", 0.2440625 },
-            { L"NormalOffToPressedOff_Start", 0.2503125 },
-            { L"NormalOffToPressedOff_End", 0.2753125 },
-            { L"PointerOverOnToPointerOverOff_Start", 0.2815625 },
-            { L"PointerOverOnToPointerOverOff_End", 0.3065625 },
-            { L"PointerOverOnToNormalOn_Start", 0.3128125 },
-            { L"PointerOverOnToNormalOn_End", 0.3378125 },
-            { L"PointerOverOnToPressedOn_Start", 0.3440625 },
-            { L"PointerOverOnToPressedOn_End", 0.3690625 },
-            { L"PointerOverOffToPointerOverOn_Start", 0.3753125 },
-            { L"PointerOverOffToPointerOverOn_End", 0.4940625 },
-            { L"PointerOverOffToNormalOff_Start", 0.5003125 },
-            { L"PointerOverOffToNormalOff_End", 0.5253125 },
-            { L"PointerOverOffToPressedOff_Start", 0.5315625 },
-            { L"PointerOverOffToPressedOff_End", 0.5565625 },
-            { L"PressedOnToPressedOff_Start", 0.5628125 },
-            { L"PressedOnToPressedOff_End", 0.5878125 },
-            { L"PressedOnToPointerOverOff_Start", 0.5940625 },
-            { L"PressedOnToPointerOverOff_End", 0.6190625 },
-            { L"PressedOnToNormalOff_Start", 0.6253125 },
-            { L"PressedOnToNormalOff_End", 0.6503125 },
-            { L"PressedOffToPressedOn_Start", 0.6565625 },
-            { L"PressedOffToPressedOn_End", 0.7128125 },
-            { L"PressedOffToPointerOverOn_Start", 0.7190625 },
-            { L"PressedOffToPointerOverOn_End", 0.8378125 },
-            { L"PressedOffToNormalOn_Start", 0.8440625 },
-            { L"PressedOffToNormalOn_End", 0.9628125 },
-            { L"NormalIndeterminate", 0.9690625 },
-            { L"PointerOverIndeterminate", 0.9815625 },
-            { L"PressedIndeterminate", 0.9940625 },
-        }
+    {
+        { L"NormalOnToNormalOff_Start", 0.0 },
+        { L"NormalOnToNormalOff_End", 0.0253125 },
+        { L"NormalOnToPointerOverOn_Start", 0.0315625 },
+        { L"NormalOnToPointerOverOn_End", 0.0565625 },
+        { L"NormalOnToPressedOn_Start", 0.0628125 },
+        { L"NormalOnToPressedOn_End", 0.0878125 },
+        { L"NormalOffToNormalOn_Start", 0.0940625 },
+        { L"NormalOffToNormalOn_End", 0.2128125 },
+        { L"NormalOffToPointerOverOff_Start", 0.2190625 },
+        { L"NormalOffToPointerOverOff_End", 0.2440625 },
+        { L"NormalOffToPressedOff_Start", 0.2503125 },
+        { L"NormalOffToPressedOff_End", 0.2753125 },
+        { L"PointerOverOnToPointerOverOff_Start", 0.2815625 },
+        { L"PointerOverOnToPointerOverOff_End", 0.3065625 },
+        { L"PointerOverOnToNormalOn_Start", 0.3128125 },
+        { L"PointerOverOnToNormalOn_End", 0.3378125 },
+        { L"PointerOverOnToPressedOn_Start", 0.3440625 },
+        { L"PointerOverOnToPressedOn_End", 0.3690625 },
+        { L"PointerOverOffToPointerOverOn_Start", 0.3753125 },
+        { L"PointerOverOffToPointerOverOn_End", 0.4940625 },
+        { L"PointerOverOffToNormalOff_Start", 0.5003125 },
+        { L"PointerOverOffToNormalOff_End", 0.5253125 },
+        { L"PointerOverOffToPressedOff_Start", 0.5315625 },
+        { L"PointerOverOffToPressedOff_End", 0.5565625 },
+        { L"PressedOnToPressedOff_Start", 0.5628125 },
+        { L"PressedOnToPressedOff_End", 0.5878125 },
+        { L"PressedOnToPointerOverOff_Start", 0.5940625 },
+        { L"PressedOnToPointerOverOff_End", 0.6190625 },
+        { L"PressedOnToNormalOff_Start", 0.6253125 },
+        { L"PressedOnToNormalOff_End", 0.6503125 },
+        { L"PressedOffToPressedOn_Start", 0.6565625 },
+        { L"PressedOffToPressedOn_End", 0.7128125 },
+        { L"PressedOffToPointerOverOn_Start", 0.7190625 },
+        { L"PressedOffToPointerOverOn_End", 0.8378125 },
+        { L"PressedOffToNormalOn_Start", 0.8440625 },
+        { L"PressedOffToNormalOn_End", 0.9628125 },
+        { L"NormalIndeterminate", 0.9690625 },
+        { L"PointerOverIndeterminate", 0.9815625 },
+        { L"PressedIndeterminate", 0.9940625 },
+    }
     ).GetView();
 }
 
