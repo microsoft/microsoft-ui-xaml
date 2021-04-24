@@ -1,130 +1,219 @@
-<!-- The purpose of this spec is to describe a new feature and
-its APIs that make up a new feature in WinUI. -->
-
-<!-- There are two audiences for the spec. The first are people
-that want to evaluate and give feedback on the API, as part of
-the submission process.  When it's complete
-it will be incorporated into the public documentation at
-docs.microsoft.com (http://docs.microsoft.com/uwp/toolkits/winui/).
-Hopefully we'll be able to copy it mostly verbatim.
-So the second audience is everyone that reads there to learn how
-and why to use this API. -->
 
 # Background
-<!-- Use this section to provide background context for the new API(s) 
-in this spec. -->
 
-<!-- This section and the appendix are the only sections that likely
-do not get copied to docs.microsoft.com; they're just an aid to reading this spec. -->
+The XAML [CalendarView](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.CalendarView)
+control shows the user a calendar and lets them pick a date (range).
 
-<!-- If you're modifying an existing API, included a link here to the
-existing page(s) -->
-
-<!-- For example, this section is a place to explain why you're adding this API rather than
-modifying an existing API. -->
-
-<!-- For example, this is a place to provide a brief explanation of some dependent
-area, just explanation enough to understand this new API, rather than telling
-the reader "go read 100 pages of background information posted at ...". -->
-New styling properties are being added to the OS Xaml CalendarView control in order to enable more flexible rendering. Because a large part of the CalendarView rendering is achieved through custom OS code, 
-the desired look cannot be achieved solely via XAML markup in the WinUI 2.6+ packages. New properties, used by those WinUI 2.6+ packages, are required to drive the custom OS rendering code.
-
-# Description
-<!-- Use this section to provide a brief description of the feature.
-For an example, see the introduction to the PasswordBox control 
-(http://docs.microsoft.com/windows/uwp/design/controls-and-patterns/password-box). -->
 A new set of CalendarView styling properties are introduced to allow greater customization of the control's rendering in upcoming Windows OS releases.
 These properties will be used in WinUI to align the CalendarView's styling with the rest of the standard controls.
 
-# Examples
-<!-- Use this section to explain the features of the API, showing
-example code with each description. The general format is: 
-  feature explanation,
-  example code
-  feature explanation,
-  example code
-  etc.-->
-  
-<!-- Code samples should be in C# and/or C++/WinRT -->
+There's a version of CalendarView that ships in the OS (Windows namespace),
+and a version that ships in 
+[WinUI2](https://github.com/microsoft/microsoft-ui-xaml)
+(Microsoft namespace).
+Because a large part of the CalendarView rendering is achieved through
+custom OS code,
+the desired look cannot be achieved solely via XAML markup in the WinUI2 package.
+New properties, used by those WinUI 2.6+ packages, are required to drive the custom OS
+rendering code.
 
-<!-- As an example of this section, see the Examples section for the PasswordBox control 
-(https://docs.microsoft.com/windows/uwp/design/controls-and-patterns/password-box#examples). -->
+# Conceptual page
+
 ## Today styling
-The following properties of type Windows.UI.Xaml.Media.Brush are used to customize the current day's rendering when CalendarView.IsTodayHighlighted is True:
-TodayBackground, TodayBlackoutBackground, TodayBlackoutForeground, TodayHoverBackground, TodayPressedBackground, TodaySelectedInnerBorderBrush.
+
+The following properties of type
+[Brush](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Media.Brush)
+are used to customize the current day's rendering when `CalendarView.IsTodayHighlighted` is True:
+`TodayBackground`, `TodayBlackoutBackground`, `TodayBlackoutForeground`,
+`TodayHoverBackground`, `TodayPressedBackground`, `TodaySelectedInnerBorderBrush`.
 
 ### Showcasing the TodayBackground property in the month, year and decade views
+
+The value of the `TodayBackground` property is used in the different modes
+of the `CalendarView` (day/month/year??):
+
+```xml
+<CalendarView TodayBackground='??'/>
+```
+
 ![Default Today Background.](images/DefaultTodayBackground.png)
 ![Default Today Month Background.](images/TodayMonthBackground.png)
 ![Default Today Year Background.](images/TodayYearBackground.png)
 
 ### Showcasing the TodayHoverBackground property - current date is hovered
+
+The value of the `TodayHoverBackground` property is used when the user
+hovers a pointer over the current date:
+
+```xml
+<CalendarView TodayHoverBackground='??'/>
+```
+
 ![Hover Today Background.](images/HoverTodayBackground.png)
 
 ### Showcasing the TodayPressedBackground property - current date is pressed
+
+The value of the `TodayPressedBackground` property is used when the user
+clicks/taps the current date:
+
+```xml
+<CalendarView TodayPressedBackground='??'/>
+```
+
 ![Pressed Today Background.](images/PressedTodayBackground.png)
 
-### Showcasing the TodayBlackoutBackground and TodayBlackoutForeground properties - the old property CalendarView.IsTodayBlackedOut is True
+### Showcasing the TodayBlackoutBackground and TodayBlackoutForeground properties - the old property `CalendarView.IsTodayBlackedOut` is True
+
 ![Blacked Out Today Background And Foreground.](images/BlackoutTodayBackgroundAndForeground.png)
 
-### Showcasing the TodaySelectedInnerBorderBrush property - current date is selected
+### Showcasing the `TodaySelectedInnerBorderBrush` property - current date is selected
+
 ![Selected Today Border.](images/SelectedTodayBorder.png)
 
 ## Blacked Out styling
+
 The following properties of type Windows.UI.Xaml.Media.Brush are used to customize the calendar items that are blacked out in the month view:
 TodayBlackoutBackground, TodayBlackoutForeground, BlackoutStrikethroughBrush.
 
 ### Showcasing the BlackoutStrikethroughBrush property - all Sundays are blacked out
+
 ![Blacked Out Sundays.](images/BlackoutStrikethroughBrush.png)
 
 ## Out Of Scope styling
-The following properties of type Windows.UI.Xaml.Media.Brush are used to customize the calendar items that are outside the current scope (month, year, or decade):
-OutOfScopeHoverForeground, OutOfScopePressedForeground.
 
-### Showcasing the OutOfScopeHoverForeground property - 4th of May is hovered
+The following properties of type
+[Brush](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Media.Brush)
+are used to customize the calendar items that are outside the current scope
+(month, year, or decade):
+`OutOfScopeHoverForeground`, `OutOfScopePressedForeground`.
+
+### Showcasing the `OutOfScopeHoverForeground` property
+
+This example shows the month of April and the beginning of May. Since
+`IsOutOfScopeEnabled` is set, the May days are out of scope and disabled (??).
+
+```xml
+<CalendarView IsOutOfScopeEnabled='true' OutOfScopeHoverForeground='??'/>
+```
+
+In this screenshot the mouse is hovered over the out-of-scope 4th of May,
+so the `OutOfScopeHoverForeground` color is displayed.
+
 ![Hover Out Of Scope Foreground.](images/HoverOutOfScopeForeground.png)
 
-### Showcasing the OutOfScopePressedForeground property - 4th of May is pressed
+### Showcasing the OutOfScopePressedForeground property
+
+This example shows the month of April and the beginning of May. Since
+`IsOutOfScopeEnabled` is set, the May days are out of scope and disabled (??).
+
+```xml
+<CalendarView IsOutOfScopeEnabled='true' OutOfScopePressedForeground='??'/>
+```
+
+In this screenshot the 4th of May is being pressed,
+so the `OutOfScopePressedForeground` color is displayed.
+
 ![Pressed Out Of Scope Foreground.](images/PressedOutOfScopeForeground.png)
 
 ## Item background styling
-The following properties of type Windows.UI.Xaml.Media.Brush are used to customize the background rendering of items in any DisplayMode:
-CalendarItemHoverBackground, CalendarItemPressedBackground.
+
+The `CalendarItemHoverBackground`, `CalendarItemPressedBackground` properties of type
+[Brush](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Media.Brush)
+are used to customize the background rendering of items in any of the `CalendarView's`
+[DisplayModes](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.CalendarDatePicker.DisplayMode).
 
 ### Showcasing the CalendarItemHoverBackground property - February is hovered
+
+This example sets the
+[Brush](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Media.Brush)
+to use as the background when a pointer hovers(??) over any calendar item.
+
+```xml
+<CalendarView CalendarItemHoverBackground='??'/>
+```
+
 ![Hover Item Background.](images/HoverItemBackground.png)
 
 ### Showcasing the CalendarItemPressedBackground property - 2034 is pressed
+
+This example sets the
+[Brush](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Media.Brush)
+to use as the background when a calendar item is pressed.
+
+```xml
+<CalendarView CalendarItemPressedBackground='??'/>
+```
+
 ![Pressed Item Background.](images/PressedItemBackground.png)
 
 ## Disabled styling
-The following properties of type Windows.UI.Xaml.Media.Brush are used to customize the rendering of a disabled CalendarView (when CalendarView.IsEnabled is False):
-DisabledForeground, SelectedDisabledBorderBrush, CalendarItemDisabledBackground, TodayDisabledBackground, TodayDisabledForeground.
 
-### Showcasing a disabled month view - the 12th and 20th of April are selected
+The following properties of type 
+[Brush](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Media.Brush)
+are used to customize the rendering of a disabled CalendarView
+(when the `CalendarView`
+[Control.IsEnabled](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Control.IsEnabled)
+is False):
+`DisabledForeground`, `SelectedDisabledBorderBrush`, `CalendarItemDisabledBackground`,
+`TodayDisabledBackground`, `TodayDisabledForeground`.
+
+### Showcasing a disabled month view
+
+In this example the 12th and 20th of April are selected:
+
+?? code snippet?
+
 ![A disabled CalendarView.](images/DisabledCalendarView.png)
 
 ## Day item positioning
-The CalendarView's DayItemMargin, MonthYearMargin, FirstOfMonthLabelMargin, FirstOfYearDecadeLabelMargin properties of type Windows.UI.Xaml.Thickness 
-allow positioning the day, month, year, first-of-month and first-of-year labels within a calendar item. 
+
+The `CalendarView`'s `DayItemMargin`, `MonthYearMargin`, `FirstOfMonthLabelMargin`,
+and `FirstOfYearDecadeLabelMargin` properties of type
+[Thickness](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Thickness)
+allow positioning the day, month, year, first-of-month and first-of-year labels within a calendar item.
 
 ### Showcasing the DayItemMargin and FirstOfMonthLabelMargin properties
-Here the Month view has CalendarView.IsGroupLabelVisible set to True and the group and main labels do not overlap because CalendarView.DayItemMargin.Top is set to 6 pixels.
+
+Here the Month view has
+[CalendarView.IsGroupLabelVisible](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.CalendarView.IsGroupLabelVisible)
+set to True and the group and main labels do not overlap because 
+`CalendarView.DayItemMargin.Top` is set to 6 pixels.
+
+?? code snippet?
+
 April 1st is selected and May 1st is hovered.
 
 ![A month view with visible group labels.](images/MonthViewWithVisibleGroupLabels.png)
 
 ### Showcasing the MonthYearMargin and FirstOfYearDecadeLabelMargin properties
-A Year view has CalendarView.IsGroupLabelVisible set to True with CalendarView.MonthYearItemMargin.Top and CalendarView.FirstOfYearDecadeLabelMargin.Top set to 2 and 3 pixels respectively.
+
+A Year view has
+[CalendarView.IsGroupLabelVisible](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.CalendarView.IsGroupLabelVisible) 
+set to True with `CalendarView.MonthYearItemMargin.Top` and
+`CalendarView.FirstOfYearDecadeLabelMargin.Top` set to 2 and 3 pixels respectively.
+
+?? code snippet
+
 January 2021 is hovered.
 
 ![A year view with visible group labels.](images/YearViewWithVisibleGroupLabels.png)
 
 ## Markup example
 
+The default style for a `CalendarView` has resource references to default values.
+You can override these defaults with your own resource definitions.
+See the
+[Lightweight Styling](https://docs.microsoft.com/en-us/windows/uwp/design/controls-and-patterns/xaml-styles#lightweight-styling)
+artical for more information.
+
 This shows a typical use of the new CalendarView properties set in markup. The HighContrast & Dark themes and control template have been removed for conciseness.
 
-```
+The new properties appear with a * on their right.
+
+> Issue for final docs: is there a way to highlight lines? Adding the asterisk here
+breaks it for copy/paste.
+
+```xml
 <ResourceDictionary 
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -257,32 +346,17 @@ This shows a typical use of the new CalendarView properties set in markup. The H
 </ResourceDictionary>
 ```
 
-The new properties appear with a * on their right.
-
-
 # Remarks
-<!-- Explanation and guidance that doesn't fit into the Examples section. -->
 
-<!-- APIs should only throw exceptions in exceptional conditions; basically,
-only when there's a bug in the caller, such as argument exception.  But if for some
-reason it's necessary for a caller to catch an exception from an API, call that
-out with an explanation either here or in the Examples -->
-
-The Windows OS code switches to the new rendering, capable of showing calendar items with rounded corners, when there is a boolean theme resource named CalendarViewBaseItemRoundedChromeEnabled set to True.
+The Windows OS code switches to the new rendering, capable of showing calendar items with rounded corners, when there is a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` set to True.
 WinUI will set that resource to True for applications that use 'Version2' for ControlsResourcesVersion (<controls:XamlControlsResources ControlsResourcesVersion="Version2"/>).
-```
+
+```xml
     <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
 ```
 
 # API Notes
-<!-- Option 1: Give a one or two line description of each API (type
-and member), or at least the ones that aren't obvious
-from their name.  These descriptions are what show up
-in IntelliSense. For properties, specify the default value of the property if it
-isn't the type's default (for example an int-typed property that doesn't default to zero.) -->
 
-<!-- Option 2: Put these descriptions in the below API Details section,
-with a "///" comment above the member or type. -->
 These properties are added to the CalendarView control:
 
 `public Windows.UI.Xaml.Thickness DayItemMargin { get; set; }`
@@ -389,7 +463,7 @@ Gets or sets a brush that provides the border of the calendar item for the curre
 
 
 # API Details
-<!-- The exact API, in MIDL3 format (https://docs.microsoft.com/en-us/uwp/midl-3/) -->
+
     [contract(Windows.Foundation.UniversalApiContract, 1)]
     [webhosthidden]
     [static_name("Windows.UI.Xaml.Controls.ICalendarViewStatics", 7260f1c4-2f5d-41bd-99bb-4571b20b79a8)]
@@ -455,13 +529,13 @@ Gets or sets a brush that provides the border of the calendar item for the curre
     };
 
 # Appendix
-<!-- Anything else that you want to write down for posterity, but 
-that isn't necessary to understand the purpose and usage of the API.
-For example, implementation details. -->
+
 ## New CalendarViewBaseItemRoundedChromeEnabled resource
 
-The new CalendarViewBaseItemRoundedChromeEnabled boolean resource is similar to other ones introduced recently:
-```
+The new `CalendarViewBaseItemRoundedChromeEnabled` boolean resource is similar to other ones
+introduced recently:
+
+```xml
     <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">False</x:Boolean>
 
     <x:Boolean x:Key="HyperlinkUnderlineVisible">True</x:Boolean>
@@ -470,6 +544,7 @@ The new CalendarViewBaseItemRoundedChromeEnabled boolean resource is similar to 
 ```
 
 ## Fitting the new property names among the old ones
+
 The new properties were named to fit well with the CalendarView existing properties:
 
 New property name | Similar old property names
