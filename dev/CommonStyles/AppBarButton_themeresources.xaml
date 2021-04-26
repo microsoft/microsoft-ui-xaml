@@ -33,6 +33,7 @@
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SystemControlTransparentBrush" />
@@ -60,6 +61,7 @@
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
@@ -87,6 +89,7 @@
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -331,7 +334,7 @@
                                 <VisualState x:Name="NoFlyout" />
                                 <VisualState x:Name="HasFlyout">
                                     <VisualState.Setters>
-                                        <Setter Target="SubItemChevron.Visibility" Value="Visible" />
+                                        <Setter Target="SubItemChevron.Visibility" Value="{ThemeResource AppBarButtonHasFlyoutChevronVisibility}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -417,7 +420,7 @@
                                 Foreground="{ThemeResource MenuFlyoutSubItemChevron}"
                                 Margin="12,0,12,0"
                                 MirroredWhenRightToLeft="True"
-                                Visibility="Collapsed" />
+                                Visibility="Collapsed"/>
 
                         </Grid>
 
