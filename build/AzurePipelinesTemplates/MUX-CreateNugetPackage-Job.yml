@@ -39,8 +39,9 @@ jobs:
       downloadPath: '$(Build.SourcesDirectory)\Artifacts'
 
   - template: MUX-InstallNuget-Steps.yml
+  - template: MUX-InstallWindowsSDK-Steps.yml
 
-  - ${{if parameters.signConfig }}:
+  - ${{ if eq( parameters.signOutput, true) }}:
     # Re-create framework packages because we made them in the build step against unsigned binaries.
     - template: MUX-MakeFrameworkPackages-Steps.yml
 
