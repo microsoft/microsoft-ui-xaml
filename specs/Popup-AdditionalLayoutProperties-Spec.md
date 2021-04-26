@@ -38,7 +38,7 @@ Secondary commands flyout open:
 
 ![Shows the CommandBarFlyout opened down](images/CommandBarFlyout-SufficientSpace-Open.png)
 
-** Opening up**
+**Opening up**
 
 When CommandBarFlyout does *not* have enough space below its primary commands, we want it to be able to open up.
 
