@@ -57,7 +57,7 @@ public:
 private:
     void OnInternalIsCheckedChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
-    void UncheckPreviousIfNecessary();
+    void UpdateCheckedItemInGroup();
 
     bool m_isSafeUncheck{ false };
 

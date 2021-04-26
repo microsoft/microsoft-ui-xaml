@@ -44,7 +44,7 @@ void RadioMenuFlyoutItem::OnPropertyChanged(const winrt::DependencyPropertyChang
             m_isSafeUncheck = true;
             InternalIsChecked(IsChecked());
             m_isSafeUncheck = false;
-            UncheckPreviousIfNecessary();
+            UpdateCheckedItemInGroup();
         }
     }
 }
@@ -67,11 +67,11 @@ void RadioMenuFlyoutItem::OnInternalIsCheckedChanged(const winrt::DependencyObje
     else if (!IsChecked())
     {
         IsChecked(true);
-        UncheckPreviousIfNecessary();
+        UpdateCheckedItemInGroup();
     }
 }
 
-void RadioMenuFlyoutItem::UncheckPreviousIfNecessary()
+void RadioMenuFlyoutItem::UpdateCheckedItemInGroup()
 {
     if (IsChecked())
     {

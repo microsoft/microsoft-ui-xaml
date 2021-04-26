@@ -51,7 +51,7 @@
                             <controls:RadioMenuFlyoutItem GroupName="SortGroup" AutomationProperties.Name="DateItem" Text="Date"/>
                             <controls:RadioMenuFlyoutItem GroupName="SortGroup" AutomationProperties.Name="SizeItem" Text="Size"/>
 
-                            <MenuFlyoutSubItem Text="Other" Style="{StaticResource RadioMenuFlyoutSubItemStyle}">
+                            <MenuFlyoutSubItem x:Name="RadioSubMenu" AutomationProperties.Name="RadioSubMenu" Text="Other" Style="{StaticResource RadioMenuFlyoutSubItemStyle}">
                                 <controls:RadioMenuFlyoutItem GroupName="SortGroup" AutomationProperties.Name="AlbumNameItem" Text="Album Name"/>
                                 <controls:RadioMenuFlyoutItem GroupName="SortGroup" AutomationProperties.Name="ArtistNameItem" Text="Artist Name"/>
                                 <controls:RadioMenuFlyoutItem GroupName="SortGroup" AutomationProperties.Name="GenreItem" Text="Genre"/>
@@ -106,11 +106,9 @@
                 </Button>
             </StackPanel>
 
-            <StackPanel x:Name="InfoGrid" Margin="12,0,0,0" Style="{ThemeResource StandardGroupingStackPanel}"
+            <StackPanel x:Name="InfoGrid" Margin="12,0,0,0" Style="{ThemeResource StandardGroupingStackPanel}" Orientation="Horizontal"
                         MinWidth="250" VerticalAlignment="Top">
-                <TextBlock Text="Status" Style="{ThemeResource StandardGroupHeader}"/>
-
-                <StackPanel x:Name="ItemNames"/>
+                <StackPanel x:Name="ItemNames" Margin="0,0,12,0"/>
 
                 <StackPanel x:Name="ItemStates" Grid.Column="1"/>
             </StackPanel>
