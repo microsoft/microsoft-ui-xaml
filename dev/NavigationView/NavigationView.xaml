@@ -48,8 +48,9 @@
                                 <VisualState x:Name="TogglePaneButtonVisible">
                                     <VisualState.Setters>
                                         <!-- Might not need this setter when all the margins/paddings will be adequately set. -->
-                                        <!-- This MinHeight setter is only here to ensure that AutoSuggestBox doesn't draw over ToggelButton. -->
+                                        <!-- This MinHeight setter is only here to ensure that AutoSuggestBox doesn't draw over ToggleButton. -->
                                         <Setter Target="PaneContentGridToggleButtonRow.MinHeight" Value="{StaticResource NavigationViewPaneHeaderRowMinHeight}"/>
+                                        <Setter Target="PaneTitlePresenter.Margin" Value="{ThemeResource NavigationViewItemInnerHeaderMargin}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -131,9 +132,7 @@
                                 <VisualState x:Name="PaneOverlaying" />
                                 <VisualState x:Name="PaneNotOverlaying">
                                     <VisualState.Setters>
-                                        <Setter Target="RootSplitView.CornerRadius" Value="0" />
                                         <Setter Target="RootSplitView.BorderThickness" Value="0" />
-                                        <Setter Target="PaneContentGrid.BorderThickness" Value="0,0,1,0" />
                                         <Setter Target="ShadowCaster.Opacity" Value="0" />
                                         <Setter Target="RootSplitView.PaneBackground" Value="{ThemeResource NavigationViewExpandedPaneBackground}" />
                                     </VisualState.Setters>
@@ -207,7 +206,7 @@
                             <Grid x:Name="TogglePaneTopPadding"
                                   Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPadding}"/>
 
-                            <Grid x:Name="ButtonHolderGrid" Margin="0,4" Grid.Row="1">
+                            <Grid x:Name="ButtonHolderGrid" Grid.Row="1" Margin="{ThemeResource NavigationViewButtonHolderGridMargin}">
                                 <Button
                                     x:Name="NavigationViewBackButton"
                                     Style="{StaticResource NavigationBackButtonNormalStyle}"
@@ -239,6 +238,7 @@
                                     <TextBlock
                                         x:Name="PaneTitleTextBlock"
                                         Grid.Column="0"
+                                        Margin="0,-2,0,0"
                                         Text="{TemplateBinding PaneTitle}"
                                         HorizontalAlignment="Left"
                                         VerticalAlignment="Center"
@@ -247,6 +247,7 @@
 
                                     <Grid
                                     x:Name="PaneTitleHolder"
+                                    Height="40"
                                     Visibility="Collapsed">
                                     <ContentControl
                                         x:Name="PaneTitlePresenter"
@@ -281,9 +282,9 @@
 
                                 <Grid x:Name="TopNavGrid" 
                                       Height="{ThemeResource NavigationViewTopPaneHeight}"
+                                      Margin="{ThemeResource TopNavigationViewTopNavGridMargin}"
                                       Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPaneVisibility}"
-                                      BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
-                                      BorderThickness="0,0,0,1">
+                                      BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition x:Name="BackButtonPlaceholderOnTopNav" Width="{ThemeResource NavigationBackButtonWidth}"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -313,6 +314,7 @@
                                         IsTabStop="False"
                                         VerticalContentAlignment="Stretch"
                                         HorizontalContentAlignment="Stretch"
+                                        Margin="{ThemeResource NavigationViewItemInnerHeaderMargin}"
                                         Grid.Column="2"/>
 
                                     <!-- Top nav ItemsRepeater -->
@@ -415,7 +417,7 @@
                                         <ContentControl
                                             x:Name="TopPaneAutoSuggestBoxPresenter"
                                             Margin="{ThemeResource TopNavigationViewAutoSuggestBoxMargin}"
-                                            MinWidth="48"
+                                            MinWidth="216"
                                             IsTabStop="False"
                                             HorizontalContentAlignment="Stretch"
                                             VerticalContentAlignment="Center"/>
@@ -449,7 +451,7 @@
                                 x:Name="RootSplitView"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
-                                BorderThickness="0"
+                                BorderThickness="1"
                                 CompactPaneLength="{TemplateBinding CompactPaneLength}"
                                 DisplayMode="Inline"
                                 IsPaneOpen="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsPaneOpen, Mode=TwoWay}"
@@ -463,8 +465,8 @@
                                     <Grid 
                                         x:Name="PaneContentGrid"
                                         BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
-                                        BorderThickness="0,0,1,0"
                                         HorizontalAlignment="Left"
+                                        Margin="{ThemeResource NavigationViewPaneContentGridMargin}"
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
@@ -472,7 +474,7 @@
                                             <RowDefinition x:Name="PaneContentGridToggleButtonRow" Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="8"/> <!-- above list margin -->
+                                            <RowDefinition Height="0"/> <!-- above list margin -->
                                             <RowDefinition x:Name="ItemsContainerRow" Height="*"/>
                                         </Grid.RowDefinitions>
 
@@ -501,7 +503,8 @@
                                         <Grid
                                             x:Name="AutoSuggestArea"
                                             Grid.Row="3"
-                                            Height="{ThemeResource NavigationViewTopPaneHeight}"
+                                            Height="{ThemeResource NavigationViewAutoSuggestAreaHeight}"
+                                            Margin="0,0,0,8"
                                             VerticalAlignment="Center">
 
                                             <ContentControl
@@ -517,7 +520,10 @@
                                                 Style="{ThemeResource NavigationViewPaneSearchButtonStyle}"
                                                 Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SmallerPaneToggleButtonWidth}">
                                                 <Button.Resources>
-                                                    <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="NavigationViewItemBackgroundPointerOver" />
+                                                    <ResourceDictionary>
+                                                        <ResourceDictionary.ThemeDictionaries>
+                                                            <ResourceDictionary x:Key="Default">
+                                                                <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="NavigationViewItemBackgroundPointerOver" />
                                                     <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="NavigationViewItemBackgroundPressed" />
                                                     <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="NavigationViewItemBackgroundDisabled" />
                                                     <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="NavigationViewItemForegroundPointerOver" />
@@ -526,6 +532,20 @@
                                                     <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="NavigationViewItemBorderBrushPointerOver" />
                                                     <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="NavigationViewItemBorderBrushPressed" />
                                                     <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="NavigationViewItemBorderBrushDisabled" />
+                                                            </ResourceDictionary>
+                                                            <ResourceDictionary x:Key="Light">
+                                                                <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="NavigationViewItemBackgroundPointerOver" />
+                                                    <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="NavigationViewItemBackgroundPressed" />
+                                                    <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="NavigationViewItemBackgroundDisabled" />
+                                                    <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="NavigationViewItemForegroundPointerOver" />
+                                                    <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="NavigationViewItemForegroundPressed" />
+                                                    <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="NavigationViewItemForegroundDisabled" />
+                                                    <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="NavigationViewItemBorderBrushPointerOver" />
+                                                    <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="NavigationViewItemBorderBrushPressed" />
+                                                    <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="NavigationViewItemBorderBrushDisabled" />
+                                                            </ResourceDictionary>
+                                                        </ResourceDictionary.ThemeDictionaries>
+                                                    </ResourceDictionary>
                                                 </Button.Resources>
                                             </Button>
                                         </Grid>
@@ -538,10 +558,10 @@
                                             Grid.Row="4" />
 
                                         <!-- "Non header" content -->
-                                        <Grid x:Name="ItemsContainerGrid" Grid.Row="6" Margin="0,0,0,8">
+                                        <Grid x:Name="ItemsContainerGrid" Grid.Row="6">
                                             <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/> <!-- MenuItems -->
-                                                <RowDefinition Height="*"/> <!-- Fill spacing -->
+                                                <RowDefinition Height="*"/> <!-- MenuItems -->
+                                                <RowDefinition Height="Auto"/> <!-- Separator if overflow -->
                                                 <RowDefinition Height="Auto" /> <!-- PaneFooter -->
                                                 <RowDefinition Height="Auto"/> <!-- FooterItems -->
                                             </Grid.RowDefinitions>
@@ -561,15 +581,20 @@
                                                 </ScrollViewer>
                                             </local:ItemsRepeaterScrollHost>
 
-                                            <local:NavigationViewItemSeparator x:Name="VisualItemsSeparator"
-                                                Grid.Row="1" VerticalAlignment="Center"
-                                                Visibility="Collapsed" HorizontalAlignment="Stretch"/>
+                                            <local:NavigationViewItemSeparator
+                                                x:Name="VisualItemsSeparator"
+                                                Grid.Row="1"
+                                                Margin="0,0,0,2"
+                                                Visibility="Collapsed"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Stretch"/>
 
                                             <!-- PaneFooter -->
                                             <ContentControl x:Name="FooterContentBorder"
                                                         IsTabStop="False"
                                                         VerticalContentAlignment="Stretch"
                                                         HorizontalContentAlignment="Stretch"
+                                                        Margin="0,0,0,4"
                                                         Grid.Row="2" />
 
                                             <!-- FooterItems -->
@@ -587,7 +612,10 @@
                                 </SplitView.Pane>
 
                                 <SplitView.Content>
-                                    <Grid x:Name="ContentGrid" Background="{ThemeResource NavigationViewContentBackground}">
+                                    <Grid
+                                        x:Name="ContentGrid"
+                                        Background="{ThemeResource NavigationViewContentBackground}"
+                                        Margin="{ThemeResource NavigationViewContentMargin}">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
@@ -621,7 +649,8 @@
                                             AutomationProperties.LandmarkType="Main"
                                             Grid.Row="2"
                                             Grid.ColumnSpan="2"
-                                            Content="{TemplateBinding Content}"/>
+                                            Content="{TemplateBinding Content}"
+                                            Margin="{ThemeResource NavigationViewContentPresenterMargin}"/>
                                     </Grid>
                                 </SplitView.Content>
                             </SplitView>
@@ -813,7 +842,7 @@
                                     <VisualTransition From="HeaderTextVisible" To="HeaderTextCollapsed">
                                         <Storyboard>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="InnerHeaderGrid" Storyboard.TargetProperty="Height">
-                                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="20" />
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="0" />
                                             </ObjectAnimationUsingKeyFrames>
 
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HeaderText" Storyboard.TargetProperty="Visibility">
@@ -835,11 +864,21 @@
                                 <VisualState x:Name="HeaderTextCollapsed">
                                     <VisualState.Setters>
                                         <Setter Target="HeaderText.Visibility" Value="Collapsed" />
-                                        <Setter Target="InnerHeaderGrid.Height" Value="20"/>
+                                        <Setter Target="InnerHeaderGrid.Height" Value="0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            
+                            <VisualStateGroup x:Name="DisplayModeStates">
+                                <VisualState x:Name="LeftMode"/>
+                                <VisualState x:Name="TopMode">
+                                    <VisualState.Setters>
+                                        <Setter Target="InnerHeaderGrid.Margin" Value="{ThemeResource TopNavigationViewItemInnerHeaderMargin}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
+                        
                         <Grid x:Name="InnerHeaderGrid" Height="40" HorizontalAlignment="Left" Margin="{ThemeResource NavigationViewItemInnerHeaderMargin}">
                             <TextBlock
                                 x:Name="HeaderText"
@@ -859,6 +898,7 @@
         <Setter Property="IsEnabled" Value="False" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Margin" Value="{ThemeResource NavigationViewItemSeparatorMargin}" />
         <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
         <Setter Property="Template">
             <Setter.Value>
@@ -886,8 +926,8 @@
                         <Rectangle 
                             x:Name="SeparatorLine"
                             Height="{ThemeResource NavigationViewItemSeparatorHeight}"
-                            Margin="{ThemeResource NavigationViewItemSeparatorMargin}"
-                            Fill="{ThemeResource NavigationViewItemSeparatorForeground}" />
+                            Fill="{ThemeResource NavigationViewItemSeparatorForeground}"
+                            Margin="{TemplateBinding Margin}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
