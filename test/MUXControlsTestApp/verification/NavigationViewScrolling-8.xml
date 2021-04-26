@@ -3934,7 +3934,7 @@
                                       Width=12
                                       Name=HorizontalSmallDecrease
                                       MinHeight=12
-                                      Margin=0,0,0,0
+                                      Margin=1,0,0,0
                                       FocusVisualSecondaryThickness=1,1,1,1
                                       FocusVisualSecondaryBrush=#B3FFFFFF
                                       FocusVisualPrimaryThickness=2,2,2,2
@@ -3999,7 +3999,7 @@
                                       Width=12
                                       Name=HorizontalSmallIncrease
                                       MinHeight=12
-                                      Margin=0,0,0,0
+                                      Margin=0,0,1,0
                                       FocusVisualSecondaryThickness=1,1,1,1
                                       FocusVisualSecondaryBrush=#B3FFFFFF
                                       FocusVisualPrimaryThickness=2,2,2,2
@@ -4070,7 +4070,7 @@
                                       CornerRadius=4,4,4,4
                                       Name=VerticalSmallDecrease
                                       MinWidth=12
-                                      Margin=0,0,0,0
+                                      Margin=0,1,0,0
                                       Height=12
                                       FocusVisualSecondaryThickness=1,1,1,1
                                       FocusVisualSecondaryBrush=#B3FFFFFF
@@ -4186,7 +4186,7 @@
                                       FocusVisualPrimaryThickness=2,2,2,2
                                       FocusVisualPrimaryBrush=#E4000000
                                       Visibility=Visible
-                                      RenderSize=12,14
+                                      RenderSize=12,12
                                     [Windows.UI.Xaml.Controls.Grid]
                                         Padding=0,0,0,0
                                         CornerRadius=0,0,0,0
@@ -4200,7 +4200,7 @@
                                         FocusVisualPrimaryThickness=2,2,2,2
                                         FocusVisualPrimaryBrush=#E4000000
                                         Visibility=Visible
-                                        RenderSize=12,14
+                                        RenderSize=12,12
                                   [Windows.UI.Xaml.Controls.Primitives.RepeatButton]
                                       Padding=11,5,11,6
                                       Foreground=#E4000000
@@ -4210,7 +4210,7 @@
                                       CornerRadius=4,4,4,4
                                       Name=VerticalSmallIncrease
                                       MinWidth=12
-                                      Margin=0,0,0,0
+                                      Margin=0,0,0,1
                                       Height=12
                                       FocusVisualSecondaryThickness=1,1,1,1
                                       FocusVisualSecondaryBrush=#B3FFFFFF
