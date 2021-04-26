@@ -491,43 +491,28 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
 
         // If there isn't enough space to display the overflow below the command bar,
         // and if there is enough space above, then we'll display it above instead.
-        if (m_secondaryItemsRoot)
+        if (auto window = winrt::Window::Current() && m_secondaryItemsRoot)
         {
             double availableHeight = -1;
             bool isConstrainedToRootBounds = true;
-            auto controlBounds = TransformToVisual(nullptr).TransformBounds({ 0, 0, static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()) });
+            const auto controlBounds = TransformToVisual(nullptr).TransformBounds({ 0, 0, static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()) });
             
             if (winrt::IFlyoutBase6 owningFlyoutAsFlyoutBase6 = m_owningFlyout.get())
             {
                 isConstrainedToRootBounds = owningFlyoutAsFlyoutBase6.IsConstrainedToRootBounds();
             }
 
-            if (isConstrainedToRootBounds)
+            try
             {
-                try
-                {
-                    auto view = winrt::ApplicationView::GetForCurrentView();
-                    availableHeight = view.VisibleBounds().Height;
-                }
-                catch (winrt::hresult_error)
-                {
-                    // Calling GetForCurrentView on threads without a CoreWindow throws an error. This comes up in places like LogonUI.
-                    // In this circumstance, we'll just always expand down, since we can't get bounds information.
-                }
+                // Note: this doesn't work right for islands scenarios
+                // Bug 19617460: CommandBarFlyoutCommandBar isn't able to decide whether to open up or down because it doesn't know where it is relative to the monitor
+                auto view = winrt::ApplicationView::GetForCurrentView();
+                availableHeight = view.VisibleBounds().Height;
             }
-            else
+            catch (winrt::hresult_error)
             {
-                winrt::IUIElement11 thisAsUIElement11 = try_as<winrt::IUIElement11>();
-
-                if (thisAsUIElement11)
-                {
-                    winrt::Rect monitorBounds = {};
-                    winrt::Point screenOffset = {};
-                    thisAsUIElement11.GetMonitorInformation(monitorBounds, screenOffset);
-                    availableHeight = monitorBounds.Height;
-                    controlBounds.X += screenOffset.X;
-                    controlBounds.Y += screenOffset.Y;
-                }
+                // Calling GetForCurrentView on threads without a CoreWindow throws an error. This comes up in places like LogonUI.
+                // In this circumstance, we'll just always expand down, since we can't get bounds information.
             }
 
             if (availableHeight >= 0)

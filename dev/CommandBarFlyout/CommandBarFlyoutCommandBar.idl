@@ -1,4 +1,4 @@
-﻿namespace MU_XCP_NAMESPACE
+namespace MU_XCP_NAMESPACE
 {
 
 [MUX_PUBLIC]
@@ -37,15 +37,6 @@ unsealed runtimeclass CommandBarFlyoutCommandBar : Windows.UI.Xaml.Controls.Comm
 
     [MUX_PROPERTY_NEEDS_DP_FIELD]
     CommandBarFlyoutCommandBarTemplateSettings FlyoutTemplateSettings { get; };
-};
-
-// Needed so we can access this interface until it ships in the official SDK.
-[MUX_INTERNAL]
-[webhosthidden]
-[uuid(9e8f35fd-98a5-59ed-bc56-51b565acb335)]
-interface IUIElement11
-{
-    void GetMonitorInformation(out Windows.Foundation.Rect monitorBounds, out Windows.Foundation.Point screenPosition);
 };
 
 }
