@@ -292,8 +292,10 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="MenuFlyoutPresenter">
-                    <Grid
+                    <Border
                         Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                         contract7Present:BackgroundSizing="InnerBorderEdge">
                         <ScrollViewer x:Name="MenuFlyoutPresenterScrollViewer"
@@ -309,12 +311,7 @@
                             AutomationProperties.AccessibilityView="Raw">
                             <ItemsPresenter />
                         </ScrollViewer>
-                        <Border
-                            x:Name="MenuFlyoutPresenterBorder"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}" />
-                    </Grid>
+                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

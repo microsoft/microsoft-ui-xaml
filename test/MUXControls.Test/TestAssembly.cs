@@ -40,6 +40,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         [TestProperty("CoreClrProfile", ".NETCoreApp2.1")]
         [TestProperty("RunFixtureAs:Assembly", "ElevatedUserOrSystem")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("HelixWorkItemCreation", "CreateWorkItemPerTestClass")]
         public static void AssemblyInitialize(TestContext testContext)
         {
             TestEnvironment.AssemblyInitialize(testContext, "MUXControlsTestApp.cer");
