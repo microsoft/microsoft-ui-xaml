@@ -168,6 +168,7 @@ private:
     void UpdateVisualStateForOverflowButton();
     void UpdateLeftNavigationOnlyVisualState(bool useTransitions);
     void UpdatePaneShadow();
+    void UpdatePaneOverlayGroup();
     void UpdateNavigationViewItemsFactory();
     void SyncItemTemplates();
     bool IsRootGridOfFlyout(const winrt::DependencyObject& element);
@@ -496,5 +497,7 @@ private:
     bool m_OrientationChangedPendingAnimation{ false };
 
     bool m_TabKeyPrecedesFocusChange{ false };
+
+    bool m_isLeftPaneTitleEmpty{ false };
 };
 
