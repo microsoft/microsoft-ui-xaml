@@ -156,12 +156,13 @@ Will never be raised if either `PlacementTarget` and `DesiredPlacement` are not 
 
 _Spec note: This is designed to align with the existing
 [FlyoutPlacementMode](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.FlyoutPlacementMode)
-enum._
+enum, with the exception of the absence of "Full".  "Full" is absent since developers should just use a Flyout
+if they want something full-screen._
 
 ```csharp
 enum PopupPlacementMode
 {
-    None,
+    Auto,
     Top,
     Bottom,
     Left,
