@@ -3,7 +3,6 @@ var xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
         var xmlResp = this.responseXML;
-        console.log("data:    " + xmlResp.getElementsByTagName("headerHtml")[0].textContent);
         var header_markup = xmlResp.getElementsByTagName("headerHtml")[0];
         document.getElementById("UHF-header").innerHTML = header_markup.textContent;
 
