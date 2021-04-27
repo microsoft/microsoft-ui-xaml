@@ -20,46 +20,37 @@ using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
-namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
+namespace MUXControls.ReleaseTest
 {
-    // Disabled due to bug Bug 19370504: Dependencies for a centennial wpf app not created automatically.
-    // Microsoft.VCLibs.140.00.Debug specifically is not installed
-    // [TestClass]
-    public class NavigationViewXamlIslandsTests
+    [TestClass]
+    public class XamlIslandsTests : XamlIslandsTestsBase
     {
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        [TestProperty("NugetPkgTestsOnly", "True")] // WPF apps don't properly pick up framework packages' contents.
         public static void ClassInitialize(TestContext testContext)
         {
-            TestEnvironment.Initialize(testContext, TestApplicationInfo.MUXControlsTestAppWPFPackage); 
+            if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5))
+            {
+                // UIA in Xaml islands is only available in 19H1
+                return;
+            }
+
+            TestEnvironment.Initialize(testContext, TestApplicationInfo.XamlIslandsTestApp); 
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
-            TestEnvironment.AssemblyCleanupWorker(TestApplicationInfo.MUXControlsTestAppWPFPackage);
-        }
-
-        [TestMethod]
-        public void XamlIslandNavViewTest()
-        {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5))
             {
-                // UIA in Xaml islands is only available in RS6
+                // UIA in Xaml islands is only available in 19H1
                 return;
             }
 
-            using (var setup = new TestSetupHelper("NavigationView Tests"))
-            {
-                var openButton = new Button(FindElement.ByName("Open Navigation"));
-                Verify.IsNotNull(openButton);
-                openButton.Click();
-                var closeButton = new Button(FindElement.ByName("Close Navigation"));
-                Verify.IsNotNull(closeButton);
-                closeButton.Click();
-            }
+            TestEnvironment.AssemblyCleanupWorker(TestApplicationInfo.XamlIslandsTestApp);
         }
     }
 }
