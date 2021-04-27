@@ -116,19 +116,18 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <Grid
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center">
 
-                            <Rectangle
-                                x:Name="SelectionIndicator"
-                                Width="3"
-                                Height="16"
-                                Fill="{ThemeResource TreeViewItemSelectionIndicatorForeground}"
-                                Opacity="0"
-                                contract7Present:RadiusX="2"
-                                contract7Present:RadiusY="2"/>
-                        </Grid>
+                        <Rectangle
+                            x:Name="SelectionIndicator"
+                            Width="3"
+                            Height="16"
+                            Fill="{ThemeResource TreeViewItemSelectionIndicatorForeground}"
+                            Opacity="0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            contract7Present:RadiusX="2"
+                            contract7Present:RadiusY="2"/>
+
 
                         <Grid x:Name="MultiSelectGrid" Padding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.Indentation}">
                             <Grid.ColumnDefinitions>
