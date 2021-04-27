@@ -1044,7 +1044,7 @@
                                   Background=#B3FFFFFF
                                   Width=32
                                   Name=QueryButton
-                                  Margin=0,0,0,0
+                                  Margin=2,0,0,0
                                   Height=28
                                   FocusVisualSecondaryThickness=1,1,1,1
                                   FocusVisualSecondaryBrush=#B3FFFFFF
@@ -1060,13 +1060,13 @@
                                     BorderBrush=#00FFFFFF
                                     Background=#00FFFFFF
                                     Name=ContentPresenter
-                                    Margin=0,3,0,3
+                                    Margin=1,3,1,3
                                     FocusVisualSecondaryThickness=1,1,1,1
                                     FocusVisualSecondaryBrush=#B3FFFFFF
                                     FocusVisualPrimaryThickness=2,2,2,2
                                     FocusVisualPrimaryBrush=#E4000000
                                     Visibility=Visible
-                                    RenderSize=32,22
+                                    RenderSize=30,22
                           [Windows.UI.Xaml.Controls.Primitives.Popup]
                               Name=SuggestionsPopup
                               Margin=0,0,0,0
