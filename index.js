@@ -3,6 +3,7 @@ var xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
         var xmlResp = this.responseXML;
+        console.log("data:    " + xmlResp.getElementsByTagName("headerHtml")[0].textContent);
         var header_markup = xmlResp.getElementsByTagName("headerHtml")[0];
         document.getElementById("UHF-header").innerHTML = header_markup.textContent;
 
@@ -10,7 +11,7 @@ xhttp.onreadystatechange = function() {
         document.getElementById("UHF-footer").innerHTML = footer_markup.textContent;
     }
 };
-xhttp.open("GET", "https://uhf.microsoft.com/en-US/shell/xml/MSWinUI?headerId=MSWinUIHeader&footerid=MSWinUIFooter", true);
+xhttp.open("GET", "https://uhf.microsoft.com/en-US/shell/xml/MSWinUI?headerId=MSWinUIHeader&footerid=MSWinUIFooter&CookieComplianceEnabled=true", true);
 xhttp.send();
 
 function Include(type, src) {
