@@ -2,10 +2,8 @@
 SETLOCAL
 set ERRORLEVEL=
 
-echo executing %~dp0..\..\packages\InternalWindowsSDK\winsdksetup.exe /quiet
-call %~dp0..\..\packages\InternalWindowsSDK\winsdksetup.exe /quiet
-
-dir "c:\program files (x86)\windows kits\10\References"
+echo executing %~dp0..\..\packages\InternalWindowsSDK.1.0.3\winsdksetup.exe /quiet
+call %~dp0..\..\packages\InternalWindowsSDK.1.0.3\winsdksetup.exe /quiet
 
 :END
 exit /B %ERRORLEVEL%
