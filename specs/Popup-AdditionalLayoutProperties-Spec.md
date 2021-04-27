@@ -7,8 +7,9 @@ Popup additional layout properties
 and
 [flyouts](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.FlyoutBase)
 in XAML are given two modes of display:
-they can either appear as part of the rest of XAML,
-in which case they're confined to the bounds of the XAML root, or they can appear in their own HWND, which
+* They can either appear as part of the rest of XAML,
+in which case they're confined to the bounds of the XAML root, 
+* Or they can appear in their own HWND, which
 allows them to escape the bounds of the XAML root.  This is common for elements such as context menus.
 
 [CommandBarFlyout](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.CommandBarFlyout) 
@@ -18,7 +19,7 @@ have access to the HWND used to allow it to escape the XAML root's bounds.  As s
 determine which monitor it's being displayed in, which makes it unable to know whether it has enough visual space
 to open the popup for its secondary commands _below_ its primary commands or whether it should open them above instead.
 
-This proposed API adds three properties and an event to Popup which will allow apps to specify where it logically
+This new API adds three properties and an event to `Popup` which will allow apps to specify where it logically
 desires a popup
 to be displayed relative to another element, and then respond to where system XAML was able to actually place
 the popup.  This will allow elements such as `CommandBarFlyout` to be able to rely on system XAML for the placement of their
@@ -109,7 +110,6 @@ void UpdateVisualState(bool useTransitions)
 }
 ```
 
-
 ## Popup.PlacementTarget property
 
 Use this property to describe which element the `Popup` should be positioned relative to.
@@ -152,13 +152,11 @@ This event is raised before the screen is refreshed, meaning that any visual cha
 in response to this event can be made before anything is drawn to the screen at the new position.
 Will never be raised if either `PlacementTarget` and `DesiredPlacement` are not set.
 
-
 ## PopupPlacementMode enum
 
 _Spec note: This is designed to align with the existing
 [FlyoutPlacementMode](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.FlyoutPlacementMode)
 enum._
-
 
 ```csharp
 enum PopupPlacementMode
