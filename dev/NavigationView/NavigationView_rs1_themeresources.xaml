@@ -80,6 +80,7 @@
             <StaticResource x:Key="NavigationViewButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="TextFillColorPrimaryBrush"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -150,6 +151,7 @@
             <StaticResource x:Key="NavigationViewButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="TextFillColorPrimaryBrush"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -220,6 +222,7 @@
             <StaticResource x:Key="NavigationViewButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 

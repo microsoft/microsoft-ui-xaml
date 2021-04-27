@@ -703,6 +703,7 @@
         <Setter Property="MinHeight" Value="0"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="AutomationProperties.AccessibilityView" Value="Raw"/>
+        <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemHeaderForeground}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NavigationViewItemHeader">

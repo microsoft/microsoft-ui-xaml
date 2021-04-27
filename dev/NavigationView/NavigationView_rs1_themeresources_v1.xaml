@@ -80,6 +80,7 @@
             <StaticResource x:Key="NavigationViewButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="TextFillColorPrimaryBrush"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -151,6 +152,7 @@
             <StaticResource x:Key="NavigationViewButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="TextFillColorPrimaryBrush"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -222,6 +224,7 @@
             <StaticResource x:Key="NavigationViewButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
     
@@ -1569,7 +1572,7 @@
     <Style x:Key="NavigationViewItemHeaderTextStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="OpticalMarginAlignment" Value="TrimSideBearings" />
-        <Setter Property="TextWrapping" Value="NoWrap"/>        
+        <Setter Property="TextWrapping" Value="NoWrap"/>
     </Style>
 
     <!-- based on TitleTextBlockStyle -->
