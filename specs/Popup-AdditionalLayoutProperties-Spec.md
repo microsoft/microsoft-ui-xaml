@@ -182,6 +182,10 @@ enum PopupPlacementMode
 }
 ```
 
+_Spec note: The meaning of "Left" and "Right" are swapped if
+[FlowDirection](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.frameworkelement.flowdirection)
+is `RightToLeft`._
+
 # API Details
 
 ```csharp
