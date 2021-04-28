@@ -1,3 +1,6 @@
+parameters:
+  signOutput: false
+
 steps:
   - template: MUX-BuildProject-Steps.yml
     parameters:
@@ -6,6 +9,51 @@ steps:
       appxPackageDir: $(appxPackageDir)
       buildOutputDir: $(buildOutputDir)
       publishDir: $(publishDir)
+
+  - ${{ if eq( parameters.signOutput, true) }}:
+    - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+      displayName: 'CodeSign'
+      inputs:
+        ConnectedServiceName: WinUISigning
+        FolderPath: '$(buildOutputDir)/$(buildConfiguration)/$(buildPlatform)/Microsoft.UI.Xaml'
+        # Recursively finds files matching these patterns:
+        Pattern: |
+          **/Microsoft.UI.Xaml.dll
+          **/Microsoft.UI.Xaml.winmd
+        UseMinimatch: true
+        signConfigType: inlineSignParams
+        inlineOperation: | 
+          [
+            {
+                "KeyCode" : "CP-230217",
+                "OperationCode" : "SigntoolSign",
+                "Parameters" : {
+                    "OpusName" : "Microsoft",
+                    "OpusInfo" : "http://www.microsoft.com",
+                    "FileDigest" : "/fd \"SHA256\"",
+                    "PageHash" : "/NPH",
+                    "TimeStamp" : "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+                },
+                "ToolName" : "sign",
+                "ToolVersion" : "1.0"
+            },
+            {
+                "KeyCode" : "CP-230217",
+                "OperationCode" : "SigntoolVerify",
+                "Parameters" : {},
+                "ToolName" : "sign",
+                "ToolVersion" : "1.0"
+            }
+          ]
+    - task: PublishSymbols@2 # We only publish symbols to microsoftpublicsymbols for signed builds.
+      displayName: 'Publish symbols'
+      inputs:
+        SearchPattern: $(buildOutputDir)/$(buildConfiguration)/$(buildPlatform)/**/*.pdb
+        SymbolServerType: 'TeamServices'
+      env:
+        LIB: $(Build.SourcesDirectory)
+        ArtifactServices_Symbol_AccountName: microsoftpublicsymbols
+        ArtifactServices_Symbol_PAT: $(WinUILab-Pipeline-PAT)
 
   - template: MUX-MakeFrameworkPackages-Steps.yml
     parameters:
