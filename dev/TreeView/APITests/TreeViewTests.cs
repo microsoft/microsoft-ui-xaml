@@ -494,7 +494,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             TreeView treeView = null;
             RunOnUIThread.Execute(() =>
             {
-                treeView = new TreeView() { Width = 400, Height = 300 };
+                treeView = new TreeView() { Width = 400, Height = 400 };
                 var node1 = new TreeViewNode() { Content = "Node1" };
                 treeView.RootNodes.Add(node1);
             });
