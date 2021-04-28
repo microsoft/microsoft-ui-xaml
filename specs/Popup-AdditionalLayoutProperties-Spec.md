@@ -120,6 +120,8 @@ If this is `null`, then `DesiredPlacement` is ignored, `ActualPlacement` is alwa
 position would otherwise be set to by layout.  Setting `PlacementTarget` to an element under a different XAML root than
 `Popup.XamlRoot` is invalid and will throw an `ArgumentException`.
 
+Ignored if `DesiredPlacement` is `None`.
+
 _Spec note: this property is analogous to the
 [FlyoutBase.Target](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.FlyoutBase.Target)
 property, but `Popup.Target` looked confusing, so we added the `Placement` prefix._
@@ -135,6 +137,8 @@ If both `DesiredPlacement` and `PlacementTarget` are set and `HorizontalOffset` 
 are also set, then the latter two properties will offset the `Popup` from where it would have been
 placed by `DesiredPlacement` and `PlacementTarget` alone.
 
+Ignored if `PlacementTarget` is null.
+
 ## Popup.ActualPlacement property
 
 Use this read-only property to determine where the popup was positioned.
@@ -142,7 +146,7 @@ Will always be `None` if either `PlacementTarget` and `DesiredPlacement` are not
 
 ## Popup.PlacementChanged event
 
-Raised whenever XAML sets the value of `ActualPlacement`,
+Raised whenever XAML changes the value of `ActualPlacement`,
 which allows apps to respond to where a `Popup` was placed.
 
 For example, use this to determine the visual state to go into, 
@@ -162,7 +166,7 @@ if they want something full-screen._
 ```csharp
 enum PopupPlacementMode
 {
-    Auto,
+    None,
     Top,
     Bottom,
     Left,
