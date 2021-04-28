@@ -60,7 +60,7 @@ public:
     void SetNavigationViewParent(winrt::NavigationView const& navigationView);
 
     // TODO: Constant is a temporary measure. Potentially expose using TemplateSettings.
-    static constexpr int c_itemIndentation = 25;
+    static constexpr int c_itemIndentation = 31;
 
     void IsTopLevelItem(bool isTopLevelItem) { m_isTopLevelItem = isTopLevelItem; };
     bool IsTopLevelItem() const { return m_isTopLevelItem; };
