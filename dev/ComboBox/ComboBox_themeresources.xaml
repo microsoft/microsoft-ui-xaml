@@ -359,7 +359,7 @@
     <Thickness x:Key="ComboBoxDropdownContentMargin">0,4</Thickness>
     <Thickness x:Key="ComboBoxTopHeaderMargin">0,0,0,8</Thickness>
     <Thickness x:Key="ComboBoxPadding">12,5,0,7</Thickness>
-    <Thickness x:Key="ComboBoxEditableTextPadding">11,5,32,6</Thickness>
+    <Thickness x:Key="ComboBoxEditableTextPadding">11,5,38,6</Thickness>
 
     <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">7</CornerRadius>
     <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4</CornerRadius>
@@ -589,7 +589,6 @@
                                     <VisualState.Setters>
                                         <Setter Target="DropDownGlyph.Foreground" Value="{ThemeResource ComboBoxEditableDropDownGlyphForeground}" />
                                         <Setter Target="DropDownOverlay.Background" Value="{ThemeResource ComboBoxFocusedDropDownBackgroundPointerPressed}" />
-                                        <Setter Target="DropDownOverlay.Margin" Value="0,2,2,2" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="TextBoxOverlayPointerOver">
@@ -612,7 +611,7 @@
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="40" />
+                            <ColumnDefinition Width="38" />
                         </Grid.ColumnDefinitions>
                         <ContentPresenter x:Name="HeaderContentPresenter"
                             Grid.Row="0"
@@ -699,7 +698,7 @@
                             Grid.Row="1"
                             Grid.Column="1"
                             Background="Transparent"
-                            Margin="1,5,5,5"
+                            Margin="4,4,4,4"
                             Visibility="Collapsed"
                             contract7Present:CornerRadius="{StaticResource ComboBoxDropDownButtonBackgroundCornerRadius}"
                             contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
