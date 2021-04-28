@@ -126,7 +126,7 @@ property, but `Popup.Target` looked confusing, so we added the `Placement` prefi
 
 ## Popup.DesiredPlacement property
 
-Use this property to describe how the you would ideally like the `Popup`
+Use this property to describe how you would ideally like the `Popup`
 positioned relative to `PlacementTarget`.  Defaults to `None`.
 
 If this is `None`, then `PlacementTarget` is ignored,
