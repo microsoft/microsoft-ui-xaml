@@ -27,12 +27,12 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal">
+        <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="8">
             <TextBlock Text="Sample Progressbar" Style="{ThemeResource StandardGroupHeader}"/>
             <FontIcon Glyph="&#xF0AF;" Margin="4,0,40,3" FontSize="14" VerticalAlignment="Center"/>
             <ProgressBar
                 x:Name="TestWUXProgressBar"
-                Width="400"
+                Width="300"
                 VerticalAlignment="Center"
                 AutomationProperties.Name="TestWUXProgressBar"
                 Style="{StaticResource DefaultProgressBarStyle}"
@@ -42,7 +42,7 @@
                 ShowError="{x:Bind ShowErrorCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"/>
             <controls:ProgressBar
                 x:Name="TestProgressBar"
-                Width="400"
+                Width="300"
                 VerticalAlignment="Center"
                 AutomationProperties.Name="TestProgressBar"
                 HorizontalAlignment="Left"
@@ -107,19 +107,18 @@
                 <CheckBox x:Name="ShowErrorCheckBox" AutomationProperties.Name="ShowErrorCheckBox"  Content="ShowError"/>
                 <CheckBox x:Name="ShowIsIndeterminateCheckBox" AutomationProperties.Name="ShowIsIndeterminateCheckBox" Content="IsIndeterminate"/>
             </StackPanel>
-
-            <StackPanel Style="{ThemeResource StandardGroupingStackPanel}" Margin="0,16,0,0">
-                <TextBlock Text="Actions" Style="{ThemeResource StandardGroupHeader}"/>
-                <Button x:Name="UpdateMinMaxButton" AutomationProperties.Name="UpdateMinMaxButton" Content="Update Min and Max" Click="UpdateMinMax_Click"/>
-                <Button x:Name="UpdateWidthButton" AutomationProperties.Name="UpdateWidthButton" Content="Update Width" Click="UpdateWidth_Click"/>
-                <Button x:Name="UpdateValueButton" AutomationProperties.Name="UpdateValueButton" Content="Update Value" Click="UpdateValue_Click"/>
-                <RepeatButton x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Hold and Change Value" Click="ChangeValue_Click" />
-                <Button x:Name="UpdatePaddingButton" AutomationProperties.Name="UpdatePaddingButton" Content="Update Padding Left and Right" Click="UpdatePadding_Click"/>
-            </StackPanel>
-
         </StackPanel>
 
-        <StackPanel Grid.Column="1" Grid.Row="1" Margin="16,0,0,0"
+        <StackPanel Style="{ThemeResource StandardGroupingStackPanel}" Grid.Row="1" Grid.Column="1" Margin="16,0,0,0">
+            <TextBlock Text="Actions" Style="{ThemeResource StandardGroupHeader}"/>
+            <Button x:Name="UpdateMinMaxButton" AutomationProperties.Name="UpdateMinMaxButton" Content="Update Min and Max" Click="UpdateMinMax_Click"/>
+            <Button x:Name="UpdateWidthButton" AutomationProperties.Name="UpdateWidthButton" Content="Update Width" Click="UpdateWidth_Click"/>
+            <Button x:Name="UpdateValueButton" AutomationProperties.Name="UpdateValueButton" Content="Update Value" Click="UpdateValue_Click"/>
+            <RepeatButton x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Hold and Change Value" Click="ChangeValue_Click" />
+            <Button x:Name="UpdatePaddingButton" AutomationProperties.Name="UpdatePaddingButton" Content="Update Padding Left and Right" Click="UpdatePadding_Click"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="2" Grid.Row="1" Margin="16,0,0,0"
                     Style="{ThemeResource StandardGroupingStackPanel}">
             <TextBlock Text="Properties" Style="{ThemeResource StandardGroupHeader}"/>
 
