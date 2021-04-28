@@ -6,7 +6,6 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:media="using:Microsoft.UI.Xaml.Media"
     mc:Ignorable="d"
     AutomationProperties.AutomationId="MainPage">
 
