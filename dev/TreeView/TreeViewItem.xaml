@@ -24,8 +24,8 @@
                         Background="{TemplateBinding Background}" 
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        Height="{TemplateBinding MinHeight}"
-                        Margin="{ThemeResource NavigationViewItemButtonMargin}"
+                        Margin="{ThemeResource TreeViewItemPresenterMargin}"
+                        Padding="{ThemeResource TreeViewItemPresenterPadding}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                         contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
                         <VisualStateManager.VisualStateGroups>
@@ -95,6 +95,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="MultiSelectCheckBox.Visibility" Value="Visible" />
                                         <Setter Target="ExpandCollapseChevron.Padding" Value="0,0,14,0" />
+                                        <Setter Target="ContentPresenterGrid.Padding" Value="0,-1" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="TreeViewMultiSelectEnabledSelected">
@@ -102,6 +103,7 @@
                                         <Setter Target="MultiSelectCheckBox.Visibility" Value="Visible" />
                                         <Setter Target="MultiSelectGrid.Background" Value="{ThemeResource TreeViewItemBackgroundSelected}" />
                                         <Setter Target="ExpandCollapseChevron.Padding" Value="0,0,14,0" />
+                                        <Setter Target="ContentPresenterGrid.Padding" Value="0,-1" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -115,7 +117,6 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-
 
                         <Rectangle
                             x:Name="SelectionIndicator"
@@ -140,6 +141,7 @@
                                 <CheckBox x:Name="MultiSelectCheckBox"
                                             Width="32"
                                             MinWidth="32"
+                                            MinHeight="{ThemeResource TreeViewItemMinHeight}"
                                             Margin="12,0,0,0"
                                             VerticalAlignment="Center"
                                             Visibility="Collapsed"
