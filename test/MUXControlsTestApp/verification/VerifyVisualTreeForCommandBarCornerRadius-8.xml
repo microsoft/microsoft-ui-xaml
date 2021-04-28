@@ -134,7 +134,7 @@
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualPrimaryBrush=#E4000000
               Visibility=Visible
-              RenderSize=208,64
+              RenderSize=181,64
             [Windows.UI.Xaml.Controls.ItemsPresenter]
                 Padding=0,0,0,0
                 Margin=0,0,0,0
@@ -143,7 +143,7 @@
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualPrimaryBrush=#E4000000
                 Visibility=Visible
-                RenderSize=208,64
+                RenderSize=181,64
               [Windows.UI.Xaml.Controls.ContentControl]
                   Padding=0,0,0,0
                   Foreground=#E4000000
@@ -170,7 +170,7 @@
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualPrimaryBrush=#E4000000
                   Visibility=Visible
-                  RenderSize=208,64
+                  RenderSize=181,64
                 [Windows.UI.Xaml.Controls.AppBarToggleButton]
                     Padding=0,0,0,0
                     Foreground=#E4000000
@@ -532,7 +532,7 @@
                     FocusVisualPrimaryThickness=2,2,2,2
                     FocusVisualPrimaryBrush=#E4000000
                     Visibility=Visible
-                    RenderSize=32,54
+                    RenderSize=5,54
                   [Windows.UI.Xaml.Controls.Grid]
                       Padding=0,0,0,0
                       CornerRadius=0,0,0,0
@@ -546,18 +546,18 @@
                       FocusVisualPrimaryThickness=2,2,2,2
                       FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
-                      RenderSize=32,54
+                      RenderSize=5,54
                     [Windows.UI.Xaml.Shapes.Rectangle]
                         StrokeThickness=1
                         Width=1
                         Name=SeparatorRectangle
-                        Margin=16,12,15,12
+                        Margin=2,8,2,8
                         FocusVisualSecondaryThickness=1,1,1,1
                         FocusVisualSecondaryBrush=#B3FFFFFF
                         FocusVisualPrimaryThickness=2,2,2,2
                         FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
-                        RenderSize=1,30
+                        RenderSize=1,38
               [Windows.UI.Xaml.Controls.ContentControl]
                   Padding=0,0,0,0
                   Foreground=#E4000000
@@ -794,7 +794,7 @@
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualPrimaryBrush=#E4000000
               Visibility=Visible
-              RenderSize=208,64
+              RenderSize=181,64
             [Windows.UI.Xaml.Controls.ItemsPresenter]
                 Padding=0,0,0,0
                 Margin=0,0,0,0
@@ -803,7 +803,7 @@
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualPrimaryBrush=#E4000000
                 Visibility=Visible
-                RenderSize=208,64
+                RenderSize=181,64
               [Windows.UI.Xaml.Controls.ContentControl]
                   Padding=0,0,0,0
                   Foreground=#E4000000
@@ -830,7 +830,7 @@
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualPrimaryBrush=#E4000000
                   Visibility=Visible
-                  RenderSize=208,64
+                  RenderSize=181,64
                 [Windows.UI.Xaml.Controls.AppBarToggleButton]
                     Padding=0,0,0,0
                     Foreground=#E4000000
@@ -1192,7 +1192,7 @@
                     FocusVisualPrimaryThickness=2,2,2,2
                     FocusVisualPrimaryBrush=#E4000000
                     Visibility=Visible
-                    RenderSize=32,54
+                    RenderSize=5,54
                   [Windows.UI.Xaml.Controls.Grid]
                       Padding=0,0,0,0
                       CornerRadius=0,0,0,0
@@ -1207,18 +1207,18 @@
                       FocusVisualPrimaryThickness=2,2,2,2
                       FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
-                      RenderSize=32,48
+                      RenderSize=5,48
                     [Windows.UI.Xaml.Shapes.Rectangle]
                         StrokeThickness=1
                         Width=1
                         Name=SeparatorRectangle
-                        Margin=16,12,15,12
+                        Margin=2,8,2,8
                         FocusVisualSecondaryThickness=1,1,1,1
                         FocusVisualSecondaryBrush=#B3FFFFFF
                         FocusVisualPrimaryThickness=2,2,2,2
                         FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
-                        RenderSize=1,24
+                        RenderSize=1,32
               [Windows.UI.Xaml.Controls.ContentControl]
                   Padding=0,0,0,0
                   Foreground=#E4000000
