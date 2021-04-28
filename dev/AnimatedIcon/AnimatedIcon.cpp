@@ -165,12 +165,11 @@ winrt::Size AnimatedIcon::ArrangeOverride(winrt::Size const& finalSize)
             std::min(finalSize.Height / scale.y, visualSize.y)
         };
         const auto offset = (finalSize - (visualSize * scale)) / 2;
-        const auto z = 0.0F;
         const auto rootVisual = visual.RootVisual();
-        rootVisual.Offset({ offset, z });
+        rootVisual.Offset({ offset, 0.0f });
         rootVisual.Size(arrangedSize);
-        rootVisual.Scale({ scale, z });
-        return finalSize;
+        rootVisual.Scale({ scale, 1.0f });
+        return __super::ArrangeOverride(finalSize);
     }
     else
     {
