@@ -10,7 +10,7 @@ xhttp.onreadystatechange = function() {
         document.getElementById("UHF-footer").innerHTML = footer_markup.textContent;
     }
 };
-xhttp.open("GET", "https://uhf.microsoft.com/en-US/shell/xml/MSWinUI?headerId=MSWinUIHeader&footerid=MSWinUIFooter", true);
+xhttp.open("GET", "https://uhf.microsoft.com/en-US/shell/xml/MSWinUI?headerId=MSWinUIHeader&footerid=MSWinUIFooter&CookieComplianceEnabled=true", true);
 xhttp.send();
 
 function Include(type, src) {
