@@ -49,7 +49,7 @@
 
             <!-- Note: These theme resources below are no longer used and might be removed in a future WinUI update. -->
             <StaticResource x:Key="TabViewButtonBackgroundActiveTab"                        ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="TabViewButtonForegroundActiveTab"                        ResourceKey="ControlAAFillColorDefaultBrush" />
+            <StaticResource x:Key="TabViewButtonForegroundActiveTab"                        ResourceKey="ControlStrongFillColorDefaultBrush" />
 
             <StaticResource x:Key="TabViewBorderBrush"                                      ResourceKey="CardStrokeColorDefault" />
             <StaticResource x:Key="TabViewItemBorderBrush"                                  ResourceKey="SubtleFillColorTransparentBrush" />
@@ -108,7 +108,7 @@
 
             <!-- Note: These theme resources below are no longer used and might be removed in a future WinUI update. -->
             <StaticResource x:Key="TabViewButtonBackgroundActiveTab"                        ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="TabViewButtonForegroundActiveTab"                        ResourceKey="ControlAAFillColorDefaultBrush" />
+            <StaticResource x:Key="TabViewButtonForegroundActiveTab"                        ResourceKey="ControlStrongFillColorDefaultBrush" />
 
             <StaticResource x:Key="TabViewBorderBrush"                                      ResourceKey="CardStrokeColorDefault" />
             <StaticResource x:Key="TabViewItemBorderBrush"                                  ResourceKey="SubtleFillColorTransparentBrush" />

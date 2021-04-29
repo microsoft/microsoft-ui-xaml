@@ -382,7 +382,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(dropTab);
 
                 Log.Comment("Reordering tabs with drag-drop operation...");
-                InputHelper.DragToTarget(sourceTab, dropTab);
+                InputHelper.DragToTarget(sourceTab, dropTab, -5);
                 Wait.ForIdle();
                 ElementCache.Refresh();
                 Log.Comment("...reordering done. Expecting a TabView.TabItemsChanged event was raised with CollectionChange=ItemInserted and Index=1.");
@@ -719,9 +719,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 CloseTabAndVerifyWidth("Tab 3", 500, "False;False;");
 
-                CloseTabAndVerifyWidth("Tab 5", 401, "False;False;");
+                CloseTabAndVerifyWidth("Tab 5", 405, "False;False;");
 
-                CloseTabAndVerifyWidth("Tab 4", 401, "False;False;");
+                CloseTabAndVerifyWidth("Tab 4", 405, "False;False;");
 
                 Log.Comment("Leaving the pointer exited area");
                 var readTabViewWidthButton = new Button(FindElement.ByName("GetActualWidthButton"));
@@ -823,6 +823,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var lastTab = FindElement.ByName("Tab 5");
                 FindCloseButton(lastTab).Click();
                 Wait.ForIdle();
+                readTabViewWidthButton.Click();
+                Wait.ForIdle();
 
                 var widthAfterClose = GetTabViewHeaderWidth();
                 Verify.AreEqual(100, widthAfterClose);
@@ -830,6 +832,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 var newLastTab = FindElement.ByName("Tab 4");
                 FindCloseButton(newLastTab).Click();
+                Wait.ForIdle();
+                readTabViewWidthButton.Click();
                 Wait.ForIdle();
 
                 var widthAfterSecondClose = GetTabViewHeaderWidth();

@@ -1,4 +1,6 @@
-﻿// Copyright (c) Microsoft Corporation. All rights res
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
 #include "pch.h"
 #include "common.h"
 #include "TabView.h"
@@ -374,7 +376,7 @@ void TabViewItem::OnIconSourceChanged()
     auto const templateSettings = winrt::get_self<TabViewItemTemplateSettings>(TabViewTemplateSettings());
     if (auto const source = IconSource())
     {
-        templateSettings->IconElement(source.CreateIconElement());
+        templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
         winrt::VisualStateManager::GoToState(*this, L"Icon"sv, false);
     }
     else

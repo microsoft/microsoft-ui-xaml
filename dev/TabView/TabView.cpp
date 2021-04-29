@@ -235,6 +235,9 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
 
 void TabView::OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    // We update previous selected and adjacent on the left tab
+    // as well as current selected and adjacent on the left tab
+    // to show/hide tabSeparator accordingly.
     UpdateSelectedIndex();
     SetTabSeparatorOpacity(winrt::unbox_value<int>(args.OldValue()));
     SetTabSeparatorOpacity(winrt::unbox_value<int>(args.OldValue()) - 1);
@@ -674,11 +677,9 @@ void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, cons
     
     if (auto&& listView = m_listView.get())
     {
-        auto index = listView.SelectedIndex();
         SelectedIndex(listView.SelectedIndex());
         SelectedItem(listView.SelectedItem());
     }
-    int numItems = static_cast<int>(TabItems().Size());
 
     UpdateTabContent();
 
@@ -827,7 +828,6 @@ void TabView::OnScrollDecreaseClick(const winrt::IInspectable&, const winrt::Rou
 {
     if (auto&& scrollViewer = m_scrollViewer.get())
     {
-        auto const offset = scrollViewer.HorizontalOffset();
         scrollViewer.ChangeView(std::max(0.0, scrollViewer.HorizontalOffset() - c_scrollAmount), nullptr, nullptr);
     }
 }
@@ -836,8 +836,6 @@ void TabView::OnScrollIncreaseClick(const winrt::IInspectable&, const winrt::Rou
 {
     if (auto&& scrollViewer = m_scrollViewer.get())
     {
-        auto const offset = scrollViewer.HorizontalOffset();
-        auto const scrollableWidth = scrollViewer.ScrollableWidth();
         scrollViewer.ChangeView(std::min(scrollViewer.ScrollableWidth(), scrollViewer.HorizontalOffset() + c_scrollAmount), nullptr, nullptr);
     }
 }
@@ -921,7 +919,8 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths, bool fillAllAvailableSpac
                         }
 
                         // Use current size to update items to fill the currently occupied space
-                        tabWidth = availableTabViewSpace / (double)(TabItems().Size());
+                        auto const tabWidthUnclamped = availableTabViewSpace / (double)(TabItems().Size());
+                        tabWidth = std::clamp(tabWidthUnclamped, minTabWidth, maxTabWidth);
                     }
 
 

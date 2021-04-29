@@ -208,10 +208,8 @@
                                 contract4Present:TabFocusNavigation="Once" />
 
                             <Border x:Name="ScrollIncreaseButtonContainer"
-                            
                                 Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
                                 Grid.Column="2"
-                              
                                 Padding="{ThemeResource TabViewItemRightScrollButtonContainerPadding}"
                                 VerticalAlignment="Bottom">
                                 <RepeatButton x:Name="ScrollIncreaseButton"
@@ -619,15 +617,6 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
-
-                            <VisualStateGroup x:Name="TabSeparatorVisbilityStates">
-                                <VisualState x:Name="TabSeparatorHidden"/>
-                                <VisualState x:Name="TabSeparatorVisible">
-                                    <VisualState.Setters>
-                                        <Setter Target="TabSeparator.Opacity" Value="1"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
 
@@ -680,8 +669,8 @@
                         <Grid x:Name="TabContainer"
                             Grid.Column="1"
                             Background="{ThemeResource TabViewItemHeaderBackground}"
-                            BorderBrush="Transparent"
-                            BorderThickness="1,1,1,1"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
                             Control.IsTemplateFocusTarget="True"
                             Padding="{ThemeResource TabViewItemHeaderPadding}"
                             contract7Present:CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource TopCornerRadiusFilterConverter}}"
