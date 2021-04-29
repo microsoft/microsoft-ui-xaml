@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License. See LICENSE in the project root for license information.
-
+﻿
 #pragma once
 
 #include "pch.h"
@@ -14,8 +12,6 @@
 #include "TabViewTabDragCompletedEventArgs.g.h"
 #include "DispatcherHelper.h"
 
-static constexpr double c_tabShadowDepth = 16.0;
-static constexpr wstring_view c_tabViewShadowDepthName{ L"TabViewShadowDepth"sv };
 
 class TabViewTabCloseRequestedEventArgs :
     public winrt::implementation::TabViewTabCloseRequestedEventArgsT<TabViewTabCloseRequestedEventArgs>
@@ -30,6 +26,7 @@ private:
     winrt::IInspectable m_item{};
     winrt::TabViewItem m_tab{};
 };
+
 
 class TabViewTabDroppedOutsideEventArgs :
     public winrt::implementation::TabViewTabDroppedOutsideEventArgsT<TabViewTabDroppedOutsideEventArgs>
@@ -97,6 +94,7 @@ public:
     // From ListView
     winrt::DependencyObject ContainerFromItem(winrt::IInspectable const& item);
     winrt::DependencyObject ContainerFromIndex(int index);
+    int IndexFromContainer(winrt::DependencyObject const& container);
     winrt::IInspectable ItemFromContainer(winrt::DependencyObject const& container);
 
     // Control
@@ -114,9 +112,9 @@ public:
 
     void RequestCloseTab(winrt::TabViewItem const& item);
 
-    winrt::UIElement GetShadowReceiver() { return m_shadowReceiver.get(); }
-
     winrt::hstring GetTabCloseButtonTooltipText() { return m_tabCloseButtonTooltipText; }
+    void SetTabSeparatorOpacity(int index, int opacityValue);
+    void SetTabSeparatorOpacity(int index);
 
 private:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -146,7 +144,7 @@ private:
     void UpdateSelectedItem();
     void UpdateSelectedIndex();
 
-    void UpdateTabWidths(bool shouldUpdateWidths=true, bool fillAllAvailableSpace=true);
+    void UpdateTabWidths(bool shouldUpdateWidths = true, bool fillAllAvailableSpace = true);
 
     void UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
     void UpdateListViewItemContainerTransitions();
@@ -176,8 +174,6 @@ private:
     tracker_ref<winrt::RepeatButton> m_scrollIncreaseButton{ this };
     tracker_ref<winrt::Button> m_addButton{ this };
     tracker_ref<winrt::ItemsPresenter> m_itemsPresenter{ this };
-
-    tracker_ref<winrt::Grid> m_shadowReceiver{ this };
 
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::ListView::PointerExited_revoker m_tabStripPointerExitedRevoker{};

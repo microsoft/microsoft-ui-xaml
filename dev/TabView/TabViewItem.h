@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License. See LICENSE in the project root for license information.
-
+﻿
 #pragma once
 
 #include "pch.h"
@@ -22,7 +20,7 @@ public:
 
     // IFrameworkElement
     void OnApplyTemplate();
-
+    void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     // IUIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
 
@@ -44,7 +42,7 @@ public:
     winrt::TabView GetParentTabView();
     void SetParentTabView(winrt::TabView const& tabView);
 
- private:
+private:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::ToolTip> m_toolTip{ this };
     winrt::TabViewWidthMode m_tabViewWidthMode{ winrt::TabViewWidthMode::Equal };
@@ -68,12 +66,14 @@ public:
     void OnTabDragStarting(const winrt::IInspectable& sender, const winrt::TabViewTabDragStartingEventArgs& args);
     void OnTabDragCompleted(const winrt::IInspectable& sender, const winrt::TabViewTabDragCompletedEventArgs& args);
 
+    void HideLeftAdjacentTabSeparator();
+    void RestoreLeftAdjacentTabSeparatorVisibility();
+
     bool m_hasPointerCapture = false;
     bool m_isMiddlePointerButtonPressed = false;
     bool m_isDragging = false;
     bool m_isPointerOver = false;
 
-    void UpdateShadow();
     winrt::IInspectable m_shadow{ nullptr };
 
     winrt::weak_ref<winrt::TabView> m_parentTabView{ nullptr };
