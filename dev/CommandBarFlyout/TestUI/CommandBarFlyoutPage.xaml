@@ -26,7 +26,7 @@
                 <AppBarToggleButton x:Name="UnderlineButton1" AutomationProperties.AutomationId="UnderlineButton1" Label="Underline" Icon="Underline" Click="OnElementClicked" />
                 <muxc:CommandBarFlyout.SecondaryCommands>
                     <AppBarButton x:Name="UndoButton1" AutomationProperties.AutomationId="UndoButton1" Label="Undo" Icon="Undo" Click="OnElementClicked" />
-                    <AppBarSeparator />
+                    <AppBarSeparator IsTabStop="False" />
                     <AppBarButton x:Name="RedoButton1" AutomationProperties.AutomationId="RedoButton1" Label="Redo" Icon="Redo" Click="OnElementClicked" />
                     <AppBarButton x:Name="SelectAllButton1" AutomationProperties.AutomationId="SelectAllButton1" Label="Select all" Click="OnElementClicked" />
                     <AppBarToggleButton x:Name="FavoriteToggleButton1" AutomationProperties.AutomationId="FavoriteToggleButton1" Label="Favorite" Icon="Favorite" Checked="OnElementChecked" Unchecked="OnElementUnchecked" />
