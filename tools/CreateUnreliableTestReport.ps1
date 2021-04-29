@@ -6,7 +6,7 @@ Param(
 
     [string]$CollectionUri = "https://dev.azure.com/ms/",
     [string]$TeamProject = "microsoft-ui-xaml",
-    [string]$BranchName = "refs/heads/master",
+    [string]$BranchName = "refs/heads/main",
     [int]$BuildDefinitionId = 20,
     [int]$DaysPrior = 14,
     [string]$OutputCsvFile = "UnreliableTestReport.csv"
