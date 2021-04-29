@@ -69,12 +69,14 @@
                                 <VisualState x:Name="HorizontalOrientationView">
                                     <VisualState.Setters>
                                         <Setter Target="RootPanel.Orientation" Value="Horizontal"/>
+					                    <Setter Target="PreviousPageButton.(ToolTipService.Placement)" Value="Left"/>
                                         <Setter Target="PreviousPageButton.RenderTransformOrigin" Value="0.5, 0.5"/>
                                         <Setter Target="PreviousPageButton.RenderTransform">
                                             <Setter.Value>
                                                 <RotateTransform Angle="-90"/>
                                             </Setter.Value>
                                         </Setter>
+					                    <Setter Target="NextPageButton.(ToolTipService.Placement)" Value="Right"/>
                                         <Setter Target="NextPageButton.RenderTransformOrigin" Value="0.5, 0.5"/>
                                         <Setter Target="NextPageButton.RenderTransform">
                                             <Setter.Value>
@@ -88,6 +90,7 @@
 
                         <Button x:Name="PreviousPageButton"
                                 ToolTipService.ToolTip="{Binding ElementName=PreviousPageButton, Path=(AutomationProperties.Name)}"
+				                ToolTipService.Placement="Top"
                                 Style="{TemplateBinding PreviousButtonStyle}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center" />
@@ -117,6 +120,7 @@
 
                         <Button x:Name="NextPageButton"
                                 ToolTipService.ToolTip="{Binding ElementName=NextPageButton, Path=(AutomationProperties.Name)}"
+				                ToolTipService.Placement="Bottom"
                                 Style="{TemplateBinding NextButtonStyle}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"/>
