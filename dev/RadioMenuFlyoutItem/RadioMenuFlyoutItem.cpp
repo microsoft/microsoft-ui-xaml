@@ -7,7 +7,7 @@
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
-winrt::IMap<winrt::hstring, winrt::RadioMenuFlyoutItem> RadioMenuFlyoutItem::s_selectionMap = nullptr;
+thread_local std::unique_ptr<std::map<winrt::hstring, winrt::weak_ref<RadioMenuFlyoutItem>>> RadioMenuFlyoutItem::s_selectionMap;
 
 RadioMenuFlyoutItem::RadioMenuFlyoutItem()
 {
@@ -18,7 +18,7 @@ RadioMenuFlyoutItem::RadioMenuFlyoutItem()
     if (!s_selectionMap)
     {
         // Ensure that this object exists
-        s_selectionMap = winrt::single_threaded_map<winrt::hstring, winrt::RadioMenuFlyoutItem>();
+        s_selectionMap = std::make_unique<std::map<winrt::hstring, winrt::weak_ref<RadioMenuFlyoutItem>>>();
     }
 
     SetDefaultStyleKey(this);
@@ -29,7 +29,7 @@ RadioMenuFlyoutItem::~RadioMenuFlyoutItem()
     // If this is the checked item, remove it from the lookup.
     if (IsChecked())
     {
-        s_selectionMap.Insert(GroupName(), nullptr);
+        SharedHelpers::EraseIfExists(*s_selectionMap, GroupName());
     }
 }
 
@@ -77,15 +77,15 @@ void RadioMenuFlyoutItem::UpdateCheckedItemInGroup()
     {
         const auto groupName = GroupName();
 
-        if (s_selectionMap.HasKey(groupName))
+        if (const auto previousCheckedItemWeak = (*s_selectionMap)[groupName])
         {
-            if (const auto previousCheckedItem = s_selectionMap.Lookup(groupName))
+            if (auto previousCheckedItem = previousCheckedItemWeak.get())
             {
                 // Uncheck the previously checked item.
-                previousCheckedItem.IsChecked(false);
+                previousCheckedItem->IsChecked(false);
             }
         }
-        s_selectionMap.Insert(groupName, *this);
+        (*s_selectionMap)[groupName] = this->get_weak();
     }
 }
 
@@ -98,18 +98,21 @@ void RadioMenuFlyoutItem::OnAreCheckStatesEnabledPropertyChanged(const winrt::De
             // Every time the submenu is loaded, see if it contains a checked RadioMenuFlyoutItem or not.
             subMenu.Loaded(
             {
-                [subMenu](winrt::IInspectable const& sender, auto const&)
+                [subMenuWeak = winrt::make_weak(subMenu)](winrt::IInspectable const& sender, auto const&)
                 {
-                    bool isAnyItemChecked = false;
-                    for (auto const& item : subMenu.Items())
+                    if (auto subMenu = subMenuWeak.get())
                     {
-                        if (auto const& radioItem = item.try_as<winrt::RadioMenuFlyoutItem>())
+                        bool isAnyItemChecked = false;
+                        for (auto const& item : subMenu.Items())
                         {
-                            isAnyItemChecked = isAnyItemChecked || radioItem.IsChecked();
+                            if (auto const& radioItem = item.try_as<winrt::RadioMenuFlyoutItem>())
+                            {
+                                isAnyItemChecked = isAnyItemChecked || radioItem.IsChecked();
+                            }
                         }
-                    }
 
-                    winrt::VisualStateManager::GoToState(subMenu, isAnyItemChecked ? L"Checked" : L"Unchecked", false);
+                        winrt::VisualStateManager::GoToState(subMenu, isAnyItemChecked ? L"Checked" : L"Unchecked", false);
+                    }
                 }
             });
         }

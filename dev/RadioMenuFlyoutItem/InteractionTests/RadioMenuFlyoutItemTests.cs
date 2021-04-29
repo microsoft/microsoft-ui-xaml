@@ -58,6 +58,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void BasicTest()
         {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
+            {
+                Log.Warning("Test is disabled on RS2");
+                return;
+            }
+
             using (var setup = new TestSetupHelper("RadioMenuFlyoutItem Tests"))
             {
                 Log.Comment("Verify initial states");
@@ -78,6 +84,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void SubMenuTest()
         {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
+            {
+                Log.Warning("Test is disabled on RS2");
+                return;
+            }
+
             using (var setup = new TestSetupHelper("RadioMenuFlyoutItem Tests"))
             {
                 InvokeSubItem("SubMenuFlyoutButton", "RadioSubMenu", "ArtistNameItem");
