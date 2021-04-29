@@ -494,7 +494,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 int positionInSet = (int)cutButtonElement.GetCurrentPropertyValue(AutomationProperty.LookupById(UIA_PositionInSetPropertyId));
 
                 Log.Comment("Verify first primary command's SizeOfSet and PositionInSet automation properties.");
-                Verify.AreEqual(sizeOfSet, 7);
+                Verify.AreEqual(sizeOfSet, 8);
                 Verify.IsTrue(positionInSet == -1 || positionInSet == 1);
 
                 Log.Comment("Press Right key to move focus to last primary command: Underline.");
@@ -512,8 +512,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 positionInSet = (int)underlineButtonElement.GetCurrentPropertyValue(AutomationProperty.LookupById(UIA_PositionInSetPropertyId));
 
                 Log.Comment("Verify last primary command's SizeOfSet and PositionInSet automation properties.");
-                Verify.AreEqual(sizeOfSet, 7);
-                Verify.IsTrue(positionInSet == -1 || positionInSet == 6);
+                Verify.AreEqual(sizeOfSet, 8);
+                Verify.IsTrue(positionInSet == -1 || positionInSet == 7);
 
                 Log.Comment("Press Right key to move focus to MoreButton.");
                 KeyboardHelper.PressKey(Key.Right);
@@ -527,8 +527,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 positionInSet = (int)moreButtonElement.GetCurrentPropertyValue(AutomationProperty.LookupById(UIA_PositionInSetPropertyId));
 
                 Log.Comment("Verify MoreButton's SizeOfSet and PositionInSet automation properties.");
-                Verify.AreEqual(sizeOfSet, 7);
-                Verify.AreEqual(positionInSet, 7);
+                Verify.AreEqual(sizeOfSet, 8);
+                Verify.AreEqual(positionInSet, 8);
             }
         }
 
