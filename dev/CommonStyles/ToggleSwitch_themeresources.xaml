@@ -634,7 +634,7 @@
                                     Height="12"
                                     CornerRadius="7"
                                     Opacity="0"
-                                    HorizontalAlignment="Right"
+                                    HorizontalAlignment="Center"
                                     Margin="0,0,3,0"
                                     RenderTransformOrigin="0.5, 0.5">
                                     <Border.RenderTransform>
@@ -647,7 +647,7 @@
                                     Height="12"
                                     RadiusX="7"
                                     RadiusY="7"
-                                    HorizontalAlignment="Left"
+                                    HorizontalAlignment="Center"
                                     Margin="3,0,0,0"
                                     RenderTransformOrigin="0.5, 0.5">
                                     <Rectangle.RenderTransform>
