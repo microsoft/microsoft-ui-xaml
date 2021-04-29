@@ -17,7 +17,7 @@
         </Grid.RowDefinitions>
         <Grid.Resources>
             <muxc:CommandBarFlyout Placement="Right" x:Name="Flyout1" AutomationProperties.AutomationId="Flyout1" Opened="OnFlyoutOpened" Closed="OnFlyoutClosed">
-                <AppBarButton x:Name="CutButton1" AutomationProperties.AutomationId="CutButton1" Label="Cut" Icon="Cut" Click="OnElementClicked" />
+                <AppBarButton x:Name="CutButton1" AutomationProperties.AutomationId="CutButton1" Label="Cut" Icon="Cut" Click="OnElementClicked"/>
                 <AppBarButton x:Name="CopyButton1" AutomationProperties.AutomationId="CopyButton1" Label="Copy" Icon="Copy" Click="OnElementClicked" />
                 <AppBarButton x:Name="PasteButton1" AutomationProperties.AutomationId="PasteButton1" Label="Paste" Icon="Paste" Click="OnElementClicked" />
                 <AppBarButton x:Name="BoldButton1" AutomationProperties.AutomationId="BoldButton1" Label="Bold" Icon="Bold" Click="OnElementClicked" />

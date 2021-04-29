@@ -21,7 +21,7 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
 
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 3; i++)
             {
                 menuItems.Add(
                     new NavigationViewItem() {
@@ -31,7 +31,7 @@ namespace MUXControlsTestApp
             }
 
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 3; i++)
             {
                 footerItems.Add(
                     new NavigationViewItem() {
@@ -77,15 +77,22 @@ namespace MUXControlsTestApp
 
         private void ResetCollectionsButton_Click(object sender, RoutedEventArgs e)
         {
-            for (int i = menuItems.Count - 1; i > 3; i--)
+            for (int i = menuItems.Count - 1; i > 2; i--)
             {
                 menuItems.RemoveAt(i);
             }
 
-            for (int i = footerItems.Count - 1; i > 3; i--)
+            for (int i = footerItems.Count - 1; i > 2; i--)
             {
                 footerItems.RemoveAt(i);
             }
+        }
+
+        
+        private void ClearCollectionsButton_Click(object sender, RoutedEventArgs e)
+        {
+            menuItems.Clear();
+            footerItems.Clear();
         }
 
         private void GetLayoutHeightsButton_Click(object sender, RoutedEventArgs e)
@@ -95,5 +102,14 @@ namespace MUXControlsTestApp
             LayoutHeightsReport.Text = itemsScroll.ActualHeight + ";" + footerScroll.ActualHeight;
         }
 
+        private void IsSettingsEnabledCheckbox_Checked(object sender, RoutedEventArgs e)
+        {
+            RootNavigationView.IsSettingsVisible = true;
+        }
+
+        private void IsSettingsEnabledCheckbox_UnChecked(object sender, RoutedEventArgs e)
+        {
+            RootNavigationView.IsSettingsVisible = false;
+        }
     }
 }

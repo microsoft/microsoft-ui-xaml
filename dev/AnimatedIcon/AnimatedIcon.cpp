@@ -27,7 +27,9 @@ AnimatedIcon::AnimatedIcon()
 void AnimatedIcon::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
-    OnSourcePropertyChanged(nullptr);
+    // Construct the visual from the Source property in on apply template so that it participates
+    // in the initial measure for the object.
+    ConstructAndInsertVisual();
     auto const panel = winrt::VisualTreeHelper::GetChild(*this, 0).as<winrt::Panel>();
     m_rootPanel.set(panel);
     m_currentState = GetState(*this);
@@ -46,7 +48,6 @@ void AnimatedIcon::OnApplyTemplate()
                 path.Visibility(winrt::Visibility::Collapsed);
             }
         }
-        OnFallbackIconSourcePropertyChanged(nullptr);
         if (auto const visual = m_animatedVisual.get())
         {
             winrt::ElementCompositionPreview::SetElementChildVisual(panel, visual.RootVisual());
@@ -90,6 +91,11 @@ void AnimatedIcon::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs c
     {
         m_ancestorStatePropertyChangedRevoker = RegisterPropertyChanged(ancestorWithState, property, { this, &AnimatedIcon::OnAncestorAnimatedIconStatePropertyChanged });
     }
+
+    // Wait until loaded to apply the fallback icon source property because we need the icon source
+    // properties to be set before we create the icon element from it.  If those poperties are bound in,
+    // they will not have been set during OnApplyTemplate.
+    OnFallbackIconSourcePropertyChanged(nullptr);
 }
 
 winrt::Size AnimatedIcon::MeasureOverride(winrt::Size const& availableSize)
@@ -435,6 +441,14 @@ void AnimatedIcon::PlaySegment(float from, float to, float playbackMultiplier)
 
 void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
 {
+    if(!ConstructAndInsertVisual())
+    {
+        SetRootPanelChildToFallbackIcon();
+    }
+}
+
+bool AnimatedIcon::ConstructAndInsertVisual()
+{
     auto const visual = [this]()
     {
         if (auto const source = Source())
@@ -478,12 +492,13 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
         auto const progressAnimation = compositor.CreateExpressionAnimation(expression);
         progressAnimation.SetReferenceParameter(L"_", m_progressPropertySet);
         visual.Properties().StartAnimation(s_progressPropertyName, progressAnimation);
+
+        return true;
     }
-    // If we were previously able to display primary content and now cannot, use the fallback icon.
-    else if (m_canDisplayPrimaryContent)
+    else
     {
         m_canDisplayPrimaryContent = false;
-        SetRootPanelChildToFallbackIcon();
+        return false;
     }
 }
 

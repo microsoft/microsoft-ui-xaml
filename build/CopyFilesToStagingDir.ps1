@@ -48,7 +48,7 @@ PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\vcruntime140.dll $F
 
 PublishFile -IfExists $FullBuildOutput\FrameworkPackage\*.* $FullPublishDir\FrameworkPackage
 
-if($PublishAppxFiles)
+if ($PublishAppxFiles)
 {
     $AppxPackagesDir = "$FullPublishDir\AppxPackages"
 
@@ -59,7 +59,12 @@ if($PublishAppxFiles)
     PublishFile -IfExists $FullBuildOutput\NugetPackageTestApp\AppPackages\NugetPackageTestApp_Test\ $AppxPackagesDir
     PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\AppPackages\NugetPackageTestAppCX_Test\ $AppxPackagesDir
     PublishFile -IfExists $FullBuildOutput\AppThatUsesMUXIndirectly\AppPackages\AppThatUsesMUXIndirectly_Test\ $AppxPackagesDir
+    PublishFile -IfExists $FullBuildOutput\WpfApp.Package\AppPackages\WpfApp_Test\ $AppxPackagesDir
 }
+
+$UnpackagedAppsDir = "$FullPublishDir\UnpackagedApps"
+
+PublishFile -IfExists $FullBuildOutput\WpfApp\ $UnpackagedAppsDir
 
 # Publish pdbs:
 $symbolsOutputDir = "$($FullPublishDir)\Symbols\"

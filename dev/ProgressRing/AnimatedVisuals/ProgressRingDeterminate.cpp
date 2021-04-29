@@ -188,7 +188,7 @@ namespace
             const auto result = CreateSpriteShape(Ellipse_7_0(), { 1.76999998F, 0.0F, 0.0F, 1.76999998F, 16.0F, 16.0F });
             result.StrokeBrush(ThemeColor_Background());
             result.StrokeDashCap(CompositionStrokeCap::Round);
-            result.StrokeThickness(2.0F);
+            result.StrokeThickness(1.5F);
             return result;
         }
 
@@ -203,7 +203,7 @@ namespace
             result.StrokeDashCap(CompositionStrokeCap::Round);
             result.StrokeStartCap(CompositionStrokeCap::Round);
             result.StrokeEndCap(CompositionStrokeCap::Round);
-            result.StrokeThickness(2.0F);
+            result.StrokeThickness(1.5F);
             return result;
         }
 
@@ -218,7 +218,7 @@ namespace
             result.StrokeDashCap(CompositionStrokeCap::Round);
             result.StrokeStartCap(CompositionStrokeCap::Round);
             result.StrokeEndCap(CompositionStrokeCap::Round);
-            result.StrokeThickness(2.0F);
+            result.StrokeThickness(1.5F);
             return result;
         }
 
