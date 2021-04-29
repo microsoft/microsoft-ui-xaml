@@ -141,7 +141,7 @@
                                 <CheckBox x:Name="MultiSelectCheckBox"
                                             Width="32"
                                             MinWidth="32"
-                                            MinHeight="{ThemeResource TreeViewItemMinHeight}"
+                                            MinHeight="{ThemeResource TreeViewItemMultiSelectCheckBoxMinHeight}"
                                             Margin="12,0,0,0"
                                             VerticalAlignment="Center"
                                             Visibility="Collapsed"

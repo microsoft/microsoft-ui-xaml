@@ -39,6 +39,7 @@
             <Thickness x:Key="TreeViewItemPresenterMargin">4,2</Thickness>
             <Thickness x:Key="TreeViewItemPresenterPadding">0,3,0,4</Thickness>
             <x:Double x:Key="TreeViewItemMinHeight">28</x:Double>
+            <x:Double x:Key="TreeViewItemMultiSelectCheckBoxMinHeight">28</x:Double>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="TreeViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
@@ -73,6 +74,7 @@
             <Thickness x:Key="TreeViewItemPresenterMargin">4,2</Thickness>
             <Thickness x:Key="TreeViewItemPresenterPadding">0,3,0,4</Thickness>
             <x:Double x:Key="TreeViewItemMinHeight">28</x:Double>
+            <x:Double x:Key="TreeViewItemMultiSelectCheckBoxMinHeight">28</x:Double>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="TreeViewItemBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
@@ -107,6 +109,7 @@
             <Thickness x:Key="TreeViewItemPresenterMargin">4,2</Thickness>
             <Thickness x:Key="TreeViewItemPresenterPadding">0,3,0,4</Thickness>
             <x:Double x:Key="TreeViewItemMinHeight">28</x:Double>
+            <x:Double x:Key="TreeViewItemMultiSelectCheckBoxMinHeight">28</x:Double>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
     
