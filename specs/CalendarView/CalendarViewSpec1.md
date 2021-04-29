@@ -9,8 +9,8 @@ control's rendering in upcoming Windows OS releases.
 These properties will be used in WinUI to align the CalendarView's styling with the rest of the
 standard controls.
 
-There's a version of CalendarView that ships in the OS (Windows namespace),
-and a version that ships in 
+The CalendarView control only ships in the OS (Windows namespace),
+and thus there is no version in  
 [WinUI2](https://github.com/microsoft/microsoft-ui-xaml)
 (Microsoft namespace).
 Because a large part of the CalendarView rendering is achieved through
@@ -31,16 +31,16 @@ are used to customize the current day's rendering when `CalendarView.IsTodayHigh
 
 ### Showcasing the TodayBackground property in the month, year and decade views
 
-The value of the `TodayBackground` property is used in the different modes
-of the `CalendarView` (day/month/year??):
+The value of the `TodayBackground` property is used in the month, year and decade display modes
+of the `CalendarView`:
 
 ```xml
-<CalendarView TodayBackground='??'/>
+<CalendarView TodayBackground='{StaticResource AccentFillColorDefaultBrush}'/>
 ```
 
-![Default Today Month Background.](images/DefaultTodayBackground.png)
-![Default Today Year Background.](images/TodayMonthBackground.png)
-![Default Today Decade Background.](images/TodayYearBackground.png)
+![Default Today Month Background.](images/TodayMonthBackground.png)
+![Default Today Year Background.](images/TodayYearBackground.png)
+![Default Today Decade Background.](images/TodayDecadeBackground.png)
 
 ### Showcasing the TodayHoverBackground property - current date is hovered
 
@@ -48,7 +48,7 @@ The value of the `TodayHoverBackground` property is used when the user
 hovers a pointer over the current date:
 
 ```xml
-<CalendarView TodayHoverBackground='??'/>
+<CalendarView TodayHoverBackground='{StaticResource AccentFillColorSecondaryBrush}'/>
 ```
 
 ![Hover Today Background.](images/HoverTodayBackground.png)
@@ -59,7 +59,7 @@ The value of the `TodayPressedBackground` property is used when the user
 clicks/taps the current date:
 
 ```xml
-<CalendarView TodayPressedBackground='??'/>
+<CalendarView TodayPressedBackground='{StaticResource AccentFillColorTertiaryBrush}'/>
 ```
 
 ![Pressed Today Background.](images/PressedTodayBackground.png)
@@ -96,10 +96,11 @@ are used to customize the calendar items that are outside the current scope
 ### Showcasing the `OutOfScopeHoverForeground` property
 
 This example shows the month of April and the beginning of May. Since
-`IsOutOfScopeEnabled` is set, the May days are out of scope and disabled (??).
+`IsOutOfScopeEnabled` is set, the May days are out-of-scope, use different brushes than in-scope days,
+but are still selectable.
 
 ```xml
-<CalendarView IsOutOfScopeEnabled='true' OutOfScopeHoverForeground='??'/>
+<CalendarView IsOutOfScopeEnabled='true' OutOfScopeHoverForeground='{StaticResource TextFillColorPrimaryBrush}'/>
 ```
 
 In this screenshot the mouse is hovered over the out-of-scope 4th of May,
@@ -110,10 +111,11 @@ so the `OutOfScopeHoverForeground` color is displayed.
 ### Showcasing the OutOfScopePressedForeground property
 
 This example shows the month of April and the beginning of May. Since
-`IsOutOfScopeEnabled` is set, the May days are out of scope and disabled (??).
+`IsOutOfScopeEnabled` is set, the May days are out-of-scope, use different brushes than in-scope days,
+but are still selectable.
 
 ```xml
-<CalendarView IsOutOfScopeEnabled='true' OutOfScopePressedForeground='??'/>
+<CalendarView IsOutOfScopeEnabled='true' OutOfScopePressedForeground='{StaticResource TextFillColorTertiaryBrush}'/>
 ```
 
 In this screenshot the 4th of May is being pressed,
@@ -132,10 +134,10 @@ are used to customize the background rendering of items in any of the `CalendarV
 
 This example sets the
 [Brush](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Media.Brush)
-to use as the background when a pointer hovers(??) over any calendar item.
+to use as the background when a pointer moves over any calendar item.
 
 ```xml
-<CalendarView CalendarItemHoverBackground='??'/>
+<CalendarView CalendarItemHoverBackground='{StaticResource SubtleFillColorSecondaryBrush}'/>
 ```
 
 ![Hover Item Background.](images/HoverItemBackground.png)
@@ -147,7 +149,7 @@ This example sets the
 to use as the background when a calendar item is pressed.
 
 ```xml
-<CalendarView CalendarItemPressedBackground='??'/>
+<CalendarView CalendarItemPressedBackground='{StaticResource SubtleFillColorTertiaryBrush}'/>
 ```
 
 ![Pressed Item Background.](images/PressedItemBackground.png)
@@ -161,13 +163,18 @@ are used to customize the rendering of a disabled CalendarView
 [Control.IsEnabled](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Control.IsEnabled)
 is False):
 `DisabledForeground`, `SelectedDisabledBorderBrush`, `CalendarItemDisabledBackground`,
-`TodayDisabledBackground`, `TodayDisabledForeground`.
+`TodayDisabledBackground`.
 
 ### Showcasing a disabled month view
 
 In this example the 12th and 20th of April are selected:
 
-?? code snippet?
+``` csharp
+calendarView1.SelectedDates.Add(new DateTime(2021, 4, 12));
+calendarView1.SelectedDates.Add(new DateTime(2021, 4, 20));
+
+calendarView1.IsEnabled = false;
+```
 
 ![A disabled CalendarView.](images/DisabledCalendarView.png)
 
@@ -185,7 +192,11 @@ Here the Month view has
 set to True and the group and main labels do not overlap because 
 `CalendarView.DayItemMargin.Top` is set to 6 pixels.
 
-?? code snippet?
+``` csharp
+calendarView1.DayItemMargin = new Thickness(0, 6, 0, 0);
+
+calendarView1.IsGroupLabelVisible = true;
+```
 
 April 1st is selected and May 1st is hovered.
 
@@ -196,9 +207,14 @@ April 1st is selected and May 1st is hovered.
 A Year view has
 [CalendarView.IsGroupLabelVisible](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.CalendarView.IsGroupLabelVisible) 
 set to True with `CalendarView.MonthYearItemMargin.Top` and
-`CalendarView.FirstOfYearDecadeLabelMargin.Top` set to 2 and 3 pixels respectively.
+`CalendarView.FirstOfYearDecadeLabelMargin.Top` set to 6 and 2 pixels respectively.
 
-?? code snippet
+``` csharp
+calendarView1.MonthYearItemMargin = new Thickness(0, 6, 0, 0);
+calendarView1.FirstOfYearDecadeLabelMargin = new Thickness(0, 2, 0, 0);
+
+calendarView1.IsGroupLabelVisible = true;
+```
 
 January 2021 is hovered.
 
@@ -214,30 +230,29 @@ The new properties in this spec have default values according to new resources:
 
 | Property | Resource key
 | - | - |
+| BlackoutBackground | CalendarViewBlackoutBackground |
 | BlackoutStrikethroughBrush | CalendarViewBlackoutStrikethroughBrush |
-| SelectedDisabledBorderBrush | CalendarViewSelectedDisabledBorderBrush |
-| TodaySelectedInnerBorderBrush | CalendarViewTodaySelectedInnerBorderBrush |
-| TodayDisabledForeground | CalendarViewTodayDisabledForeground |
+| CalendarItemDisabledBackground | CalendarViewCalendarItemDisabledBackground |
+| CalendarItemHoverBackground | CalendarViewCalendarItemHoverBackground |
+| CalendarItemPressedBackground | CalendarViewCalendarItemPressedBackground |
+| DayItemMargin | CalendarViewDayItemMargin |
 | DisabledForeground | CalendarViewDisabledForeground |
-| SelectedHoverForeground | CalendarViewSelectedHoverForeground |
-| SelectedPressedForeground | CalendarViewSelectedPressedForeground |
-| SelectedDisabledForeground | CalendarViewSelectedDisabledForeground |
+| FirstOfMonthLabelMargin | CalendarViewFirstOfMonthLabelMargin |
+| FirstOfYearDecadeLabelMargin | CalendarViewFirstOfYearDecadeLabelMargin |
+| MonthYearItemMargin | CalendarViewMonthYearItemMargin |
 | OutOfScopeHoverForeground | CalendarViewOutOfScopeHoverForeground |
 | OutOfScopePressedForeground | CalendarViewOutOfScopePressedForeground |
+| SelectedDisabledBorderBrush | CalendarViewSelectedDisabledBorderBrush |
+| SelectedDisabledForeground | CalendarViewSelectedDisabledForeground |
+| SelectedHoverForeground | CalendarViewSelectedHoverForeground |
+| SelectedPressedForeground | CalendarViewSelectedPressedForeground |
 | TodayBackground | CalendarViewTodayBackground |
 | TodayBlackoutBackground | CalendarViewTodayBlackoutBackground |
 | TodayBlackoutForeground | CalendarViewTodayBlackoutForeground |
+| TodayDisabledBackground | CalendarViewTodayDisabledBackground |
 | TodayHoverBackground | CalendarViewTodayHoverBackground |
 | TodayPressedBackground | CalendarViewTodayPressedBackground |
-| TodayDisabledBackground | CalendarViewTodayDisabledBackground |
-| BlackoutBackground | CalendarViewBlackoutBackground |
-| CalendarItemHoverBackground | CalendarViewCalendarItemHoverBackground |
-| CalendarItemPressedBackground | CalendarViewCalendarItemPressedBackground |
-| CalendarItemDisabledBackground | CalendarViewCalendarItemDisabledBackground |
-| DayItemMargin | CalendarViewDayItemMargin |
-| FirstOfMonthLabelMargin | CalendarViewFirstOfMonthLabelMargin |
-| MonthYearItemMargin | CalendarViewMonthYearItemMargin |
-| FirstOfYearDecadeLabelMargin | CalendarViewFirstOfYearDecadeLabelMargin |
+| TodaySelectedInnerBorderBrush | CalendarViewTodaySelectedInnerBorderBrush |
 
 # Remarks
 
@@ -256,17 +271,41 @@ These properties are added to the CalendarView control:
 
 Gets or sets the margin applied to the main label inside a calendar day item.
 
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
+
 `public Windows.UI.Xaml.Thickness MonthYearItemMargin { get; set; }`
 
 Gets or sets the margin applied to the main label inside a calendar month or year item.
+
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
 
 `public Windows.UI.Xaml.Thickness FirstOfMonthLabelMargin { get; set; }`
 
 Gets or sets the margin used to display the first-of-month banner in the calendar.
 
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
+
 `public Windows.UI.Xaml.Thickness FirstOfYearDecadeLabelMargin { get; set; }`
 
 Gets or sets the margin used to display the first-of-year banner in the calendar.
+
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
 
 `public Windows.UI.Xaml.CornerRadius CalendarItemCornerRadius { get; set; }`
 
@@ -286,74 +325,201 @@ In this example, the CalendarItemCornerRadius property is set to 4px:
 
 ![CalendarItemCornerRadius property set to 4 resulting in rounded square visuals.](images/CalendarItemCornerRadiusSetToFour.png)
 
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
+
 `public Windows.UI.Xaml.Media.Brush DisabledForeground { get; set; }`
 
 Gets or sets a brush that provides the foreground of a calendar item while it's disabled.
+
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
 
 `public Windows.UI.Xaml.Media.Brush BlackoutStrikethroughBrush { get; set; }`
 
 Gets or sets a brush for the strikethrough line over calendar items while they are blacked out.
 
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
+
 `public Windows.UI.Xaml.Media.Brush SelectedDisabledBorderBrush { get; set; }`
 
 Gets or sets a brush that provides the border of a selected calendar item while it's disabled.
+
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
+
+`public Windows.UI.Xaml.Media.Brush SelectedDisabledForeground { get; set; }`
+
+Gets or sets a brush that provides the foreground of a selected calendar item while it's disabled.
+
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
+
+`public Windows.UI.Xaml.Media.Brush SelectedHoverForeground { get; set; }`
+
+Gets or sets a brush that provides the foreground of a selected calendar item while the pointer is over it.
+
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
+
+`public Windows.UI.Xaml.Media.Brush SelectedPressedForeground { get; set; }`
+
+Gets or sets a brush that provides the foreground of a selected calendar item while it's pressed.
+
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
 
 `public Windows.UI.Xaml.Media.Brush CalendarItemHoverBackground { get; set; }`
 
 Gets or sets a brush that provides the background of a calendar item while the pointer is over it.
 
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
+
 `public Windows.UI.Xaml.Media.Brush CalendarItemPressedBackground { get; set; }`
 
 Gets or sets a brush that provides the background of a calendar item while it's pressed.
+
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
 
 `public Windows.UI.Xaml.Media.Brush CalendarItemDisabledBackground { get; set; }`
 
 Gets or sets a brush that provides the background of a calendar item while it's disabled.
 
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
+
 `public Windows.UI.Xaml.Media.Brush OutOfScopeHoverForeground { get; set; }`
 
 Gets or sets a brush that provides the foreground of calendar items that are outside the current scope (month, year, or decade) while the pointer is over them.
+
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
 
 `public Windows.UI.Xaml.Media.Brush OutOfScopePressedForeground { get; set; }`
 
 Gets or sets a brush that provides the foreground of calendar items that are outside the current scope (month, year, or decade) while they are pressed.
 
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
+
 `public Windows.UI.Xaml.Media.Brush TodayBackground { get; set; }`
 
 Gets or sets a brush that provides the background of the calendar item for the current date.
+
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
 
 `public Windows.UI.Xaml.Media.Brush BlackoutBackground { get; set; }`
 
 Gets or sets a brush that provides the background of calendar items while they are blacked out.
 
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
+
 `public Windows.UI.Xaml.Media.Brush TodayBlackoutBackground { get; set; }`
 
 Gets or sets a brush that provides the background of the calendar item for the current date while it's blacked out.
+
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
 
 `public Windows.UI.Xaml.Media.Brush TodayBlackoutForeground { get; set; }`
 
 Gets or sets a brush that provides the foreground of the calendar item for the current date while it's blacked out.
 
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
+
 `public Windows.UI.Xaml.Media.Brush TodayHoverBackground { get; set; }`
 
 Gets or sets a brush that provides the background of the calendar item for the current date while the pointer is over it.
+
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
 
 `public Windows.UI.Xaml.Media.Brush TodayPressedBackground { get; set; }`
 
 Gets or sets a brush that provides the background of the calendar item for the current date while it's pressed.
 
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
+
 `public Windows.UI.Xaml.Media.Brush TodayDisabledBackground { get; set; }`
 
 Gets or sets a brush that provides the background of the calendar item for the current date while it's disabled.
 
-`public Windows.UI.Xaml.Media.Brush TodayDisabledForeground { get; set; }`
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
 
-Gets or sets a brush that provides the foreground of the calendar item for the current date while it's disabled.
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
 
 `public Windows.UI.Xaml.Media.Brush TodaySelectedInnerBorderBrush { get; set; }`
 
 Gets or sets a brush that provides the border of the calendar item for the current date while it's selected.
 
+This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
+
+```xml
+    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
+```
 
 # API Details
 
@@ -367,7 +533,7 @@ Gets or sets a brush that provides the border of the calendar item for the curre
     {
         // Existing CalendarView APIs not shown here.
 
-        [contract(Windows.Foundation.UniversalApiContract, 13)]
+        [contract(Windows.Foundation.UniversalApiContract, 14)]
         {
             Windows.UI.Xaml.Thickness DayItemMargin;
             Windows.UI.Xaml.Thickness MonthYearItemMargin;
@@ -379,6 +545,9 @@ Gets or sets a brush that provides the border of the calendar item for the curre
             Windows.UI.Xaml.Media.Brush DisabledForeground;
             Windows.UI.Xaml.Media.Brush BlackoutStrikethroughBrush;
             Windows.UI.Xaml.Media.Brush SelectedDisabledBorderBrush;
+            Windows.UI.Xaml.Media.Brush SelectedDisabledForeground;
+            Windows.UI.Xaml.Media.Brush SelectedHoverForeground;
+            Windows.UI.Xaml.Media.Brush SelectedPressedForeground;
             Windows.UI.Xaml.Media.Brush CalendarItemHoverBackground;
             Windows.UI.Xaml.Media.Brush CalendarItemPressedBackground;
             Windows.UI.Xaml.Media.Brush CalendarItemDisabledBackground;
@@ -391,7 +560,6 @@ Gets or sets a brush that provides the border of the calendar item for the curre
             Windows.UI.Xaml.Media.Brush TodayHoverBackground;
             Windows.UI.Xaml.Media.Brush TodayPressedBackground;
             Windows.UI.Xaml.Media.Brush TodayDisabledBackground;
-            Windows.UI.Xaml.Media.Brush TodayDisabledForeground
             Windows.UI.Xaml.Media.Brush TodaySelectedInnerBorderBrush;
 
             static Windows.UI.Xaml.DependencyProperty DayItemMarginProperty{ get; };
@@ -404,6 +572,9 @@ Gets or sets a brush that provides the border of the calendar item for the curre
             static Windows.UI.Xaml.DependencyProperty DisabledForegroundProperty{ get; };
             static Windows.UI.Xaml.DependencyProperty BlackoutStrikethroughBrushProperty{ get; };
             static Windows.UI.Xaml.DependencyProperty SelectedDisabledBorderBrushProperty{ get; };
+            static Windows.UI.Xaml.DependencyProperty SelectedDisabledForegroundProperty{ get; };
+            static Windows.UI.Xaml.DependencyProperty SelectedHoverForegroundProperty{ get; };
+            static Windows.UI.Xaml.DependencyProperty SelectedPressedForegroundProperty{ get; };
             static Windows.UI.Xaml.DependencyProperty CalendarItemHoverBackgroundProperty{ get; };
             static Windows.UI.Xaml.DependencyProperty CalendarItemPressedBackgroundProperty{ get; };
             static Windows.UI.Xaml.DependencyProperty CalendarItemDisabledBackgroundProperty{ get; };
@@ -416,7 +587,6 @@ Gets or sets a brush that provides the border of the calendar item for the curre
             static Windows.UI.Xaml.DependencyProperty TodayHoverBackgroundProperty{ get; };
             static Windows.UI.Xaml.DependencyProperty TodayPressedBackgroundProperty{ get; };
             static Windows.UI.Xaml.DependencyProperty TodayDisabledBackgroundProperty{ get; };
-            static Windows.UI.Xaml.DependencyProperty TodayDisabledForegroundProperty{ get; };
             static Windows.UI.Xaml.DependencyProperty TodaySelectedInnerBorderBrushProperty{ get; };
         }
     };
@@ -442,27 +612,29 @@ The new properties were named to fit well with the CalendarView existing propert
 
 New property name | Similar old property names
 ------ | ------
-DayItemMargin | DayItemFontFamily, DayItemFontSize, DayItemFontStyle
-MonthYearItemMargin | MonthYearItemFontFamily, MonthYearItemFontSize, MonthYearItemFontStyle
-FirstOfMonthLabelMargin | FirstOfMonthLabelFontFamily, FirstOfMonthLabelFontSize, FirstOfMonthLabelFontStyle
-FirstOfYearDecadeLabelMargin | FirstOfYearDecadeLabelFontFamily, FirstOfYearDecadeLabelFontSize, FirstOfYearDecadeLabelFontStyle
-CalendarItemCornerRadius | CalendarItemBorderThickness, CalendarItemBorderBrush, CalendarItemForeground
-DisabledForeground | PressedForeground, SelectedForeground, BlackoutForeground
+BlackoutBackground | BlackoutForeground, OutOfScopeBackground
 BlackoutStrikethroughBrush | HoverBorderBrush, FocusBorderBrush
-SelectedDisabledBorderBrush | SelectedHoverBorderBrush, SelectedPressedBorderBrush
+CalendarItemCornerRadius | CalendarItemBorderThickness, CalendarItemBorderBrush, CalendarItemForeground
+CalendarItemDisabledBackground | CalendarItemBackground, CalendarItemForeground
 CalendarItemHoverBackground | CalendarItemBackground, CalendarItemForeground
 CalendarItemPressedBackground | CalendarItemBackground, CalendarItemForeground
-CalendarItemDisabledBackground | CalendarItemBackground, CalendarItemForeground
+DayItemMargin | DayItemFontFamily, DayItemFontSize, DayItemFontStyle
+DisabledForeground | PressedForeground, SelectedForeground, BlackoutForeground
+FirstOfMonthLabelMargin | FirstOfMonthLabelFontFamily, FirstOfMonthLabelFontSize, FirstOfMonthLabelFontStyle
+FirstOfYearDecadeLabelMargin | FirstOfYearDecadeLabelFontFamily, FirstOfYearDecadeLabelFontSize, FirstOfYearDecadeLabelFontStyle
+MonthYearItemMargin | MonthYearItemFontFamily, MonthYearItemFontSize, MonthYearItemFontStyle
 OutOfScopeHoverForeground | OutOfScopeForeground, OutOfScopeBackground
 OutOfScopePressedForeground | OutOfScopeForeground, OutOfScopeBackground
-BlackoutBackground | BlackoutForeground, OutOfScopeBackground
+SelectedDisabledBorderBrush | SelectedHoverBorderBrush, SelectedPressedBorderBrush
+SelectedDisabledForeground | SelectedForeground
+SelectedHoverForeground | SelectedForeground, SelectedHoverBorderBrush
+SelectedPressedForeground | SelectedForeground, SelectedPressedBorderBrush
 TodayBackground | TodayForeground, OutOfScopeBackground
 TodayBlackoutBackground | TodayForeground, OutOfScopeBackground
 TodayBlackoutForeground | TodayForeground, OutOfScopeForeground
+TodayDisabledBackground | OutOfScopeBackground, TodayForeground
 TodayHoverBackground | TodayHoverBorderBrush, TodayForeground
 TodayPressedBackground | OutOfScopeBackground, TodayForeground
-TodayDisabledBackground | OutOfScopeBackground, TodayForeground
-TodayDisabledForeground | TodayForeground, OutOfScopeForeground
 TodaySelectedInnerBorderBrush | TodayHoverBorderBrush, TodayPressedBorderBrush
 
 ## Example ResourceDictionary for CalendarView
@@ -486,16 +658,19 @@ TodaySelectedInnerBorderBrush | TodayHoverBorderBrush, TodayPressedBorderBrush
             <StaticResource x:Key="CalendarViewTodaySelectedInnerBorderBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="CalendarViewTodayForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="CalendarViewDisabledForeground" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="CalendarViewBlackoutForeground" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="CalendarViewBlackoutForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="CalendarViewSelectedForeground" ResourceKey="AccentTextFillColorPrimaryBrush" />
             <StaticResource x:Key="CalendarViewSelectedHoverForeground" ResourceKey="AccentTextFillColorPrimaryBrush" />
             <StaticResource x:Key="CalendarViewSelectedPressedForeground" ResourceKey="AccentTextFillColorTertiaryBrush" />
             <StaticResource x:Key="CalendarViewSelectedDisabledForeground" ResourceKey="AccentTextFillColorDisabledBrush" />
             <StaticResource x:Key="CalendarViewPressedForeground" ResourceKey="TextFillColorSecondaryBrush" />
-            <StaticResource x:Key="CalendarViewOutOfScopeForeground" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="CalendarViewOutOfScopeHoverForeground" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="CalendarViewOutOfScopeForeground" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="CalendarViewOutOfScopeHoverForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="CalendarViewOutOfScopePressedForeground" ResourceKey="TextFillColorTertiaryBrush" />
             <StaticResource x:Key="CalendarViewCalendarItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="CalendarViewCalendarItemHoverBackground" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="CalendarViewCalendarItemPressedBackground" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="CalendarViewCalendarItemDisabledBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="CalendarViewCalendarItemBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="CalendarViewCalendarItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="CalendarViewTodayBackground" ResourceKey="AccentFillColorDefaultBrush" />
@@ -533,12 +708,12 @@ TodaySelectedInnerBorderBrush | TodayHoverBorderBrush, TodayPressedBorderBrush
 
     <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
     <Thickness x:Key="CalendarViewDayItemMargin">0,6,0,0</Thickness>
-    <Thickness x:Key="CalendarViewMonthYearItemMargin">0,2,0,0</Thickness>
+    <Thickness x:Key="CalendarViewMonthYearItemMargin">0,6,0,0</Thickness>
     <Thickness x:Key="CalendarViewFirstOfMonthLabelMargin">0,1,0,0</Thickness>
-    <Thickness x:Key="CalendarViewFirstOfYearDecadeLabelMargin">0,3,0,0</Thickness>
+    <Thickness x:Key="CalendarViewFirstOfYearDecadeLabelMargin">0,2,0,0</Thickness>
 
     <Style x:Key="CalendarViewDefaultStyle" TargetType="CalendarView">
-        <Setter Property="BlackoutStrikethroughBrush" Value="{ThemeResource CalendarViewBlackoutStrikethroughBrush}" />
+        <Setter Property="BlackoutStrikethroughBrush" Value="{ThemeResource CalendarViewBlackoutStrikethroughBrush}" /> *
         <Setter Property="SelectedHoverBorderBrush" Value="{ThemeResource CalendarViewSelectedHoverBorderBrush}" />
         <Setter Property="SelectedPressedBorderBrush" Value="{ThemeResource CalendarViewSelectedPressedBorderBrush}" />
         <Setter Property="SelectedDisabledBorderBrush" Value="{ThemeResource CalendarViewSelectedDisabledBorderBrush}" /> *
@@ -548,10 +723,12 @@ TodaySelectedInnerBorderBrush | TodayHoverBorderBrush, TodayPressedBorderBrush
         <Setter Property="CalendarItemBorderBrush" Value="{ThemeResource  CalendarViewCalendarItemBorderBrush}" />
         <Setter Property="TodaySelectedInnerBorderBrush" Value="{ThemeResource  CalendarViewTodaySelectedInnerBorderBrush}" /> *
         <Setter Property="TodayForeground" Value="{ThemeResource CalendarViewTodayForeground}" />
-        <Setter Property="TodayDisabledForeground" Value="{ThemeResource CalendarViewTodayDisabledForeground}" /> *
         <Setter Property="DisabledForeground" Value="{ThemeResource CalendarViewDisabledForeground}" /> *
         <Setter Property="BlackoutForeground" Value="{ThemeResource CalendarViewBlackoutForeground}" />
         <Setter Property="SelectedForeground" Value="{ThemeResource CalendarViewSelectedForeground}" />
+        <Setter Property="SelectedHoverForeground" Value="{ThemeResource CalendarViewSelectedHoverForeground}" /> *
+        <Setter Property="SelectedPressedForeground" Value="{ThemeResource CalendarViewSelectedPressedForeground}" /> *
+        <Setter Property="SelectedDisabledForeground" Value="{ThemeResource CalendarViewSelectedDisabledForeground}" /> *
         <Setter Property="PressedForeground" Value="{ThemeResource CalendarViewPressedForeground}" />
         <Setter Property="OutOfScopeForeground" Value="{ThemeResource CalendarViewOutOfScopeForeground}" />
         <Setter Property="OutOfScopeHoverForeground" Value="{ThemeResource CalendarViewOutOfScopeHoverForeground}" /> *
@@ -563,7 +740,7 @@ TodaySelectedInnerBorderBrush | TodayHoverBorderBrush, TodayPressedBorderBrush
         <Setter Property="TodayHoverBackground" Value="{ThemeResource CalendarViewTodayHoverBackground}" /> *
         <Setter Property="TodayPressedBackground" Value="{ThemeResource CalendarViewTodayPressedBackground}" /> *
         <Setter Property="TodayDisabledBackground" Value="{ThemeResource CalendarViewTodayDisabledBackground}" /> *
-        <Setter Property="BlackoutBackground" Value="{ThemeResource CalendarViewBlackoutBackground}" />
+        <Setter Property="BlackoutBackground" Value="{ThemeResource CalendarViewBlackoutBackground}" /> *
         <Setter Property="OutOfScopeBackground" Value="{ThemeResource CalendarViewOutOfScopeBackground}" />
         <Setter Property="CalendarItemBackground" Value="{ThemeResource CalendarViewCalendarItemBackground}" />
         <Setter Property="CalendarItemHoverBackground" Value="{ThemeResource CalendarViewCalendarItemHoverBackground}" /> *
