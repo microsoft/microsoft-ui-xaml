@@ -520,7 +520,7 @@
                           Visibility=Collapsed
                           RenderSize=0,0
                 [Windows.UI.Xaml.Controls.AppBarSeparator]
-                    Padding=0,0,0,0
+                    Padding=16,12,15,12
                     Foreground=#FFFFFF00
                     BorderThickness=0,0,0,0
                     BorderBrush=[NULL]
@@ -1180,7 +1180,7 @@
                           Visibility=Collapsed
                           RenderSize=0,0
                 [Windows.UI.Xaml.Controls.AppBarSeparator]
-                    Padding=0,0,0,0
+                    Padding=16,12,15,12
                     Foreground=#FFFFFF00
                     BorderThickness=0,0,0,0
                     BorderBrush=[NULL]
