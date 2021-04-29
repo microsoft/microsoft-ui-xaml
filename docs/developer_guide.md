@@ -199,7 +199,7 @@ checks in order to pass on all versions.
 #### Visual tree verification tests
 
 ##### Update visual tree verification files
-Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xaml/tree/master/test/MUXControlsTestApp/verification) and we use them as the baseline for visual tree verifications. If you make UI changes, visual tree verification tests may fail since the new dump no longer matches with previous verification files. The verification files need to be updated to include your latest changes. A visual verification test automatically captures the new visual tree and uploads the dump to the test pipeline's artifacts. Below are the steps to replace existing verification files with the updated ones.
+Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xaml/tree/main/test/MUXControlsTestApp/verification) and we use them as the baseline for visual tree verifications. If you make UI changes, visual tree verification tests may fail since the new dump no longer matches with previous verification files. The verification files need to be updated to include your latest changes. A visual verification test automatically captures the new visual tree and uploads the dump to the test pipeline's artifacts. Below are the steps to replace existing verification files with the updated ones.
 
 1. Find your test run
 
@@ -236,7 +236,7 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 ##### Create new visual tree tests
 1. Write a new test
 
-    Write a new test using [VisualTreeTestHelper](https://github.com/microsoft/microsoft-ui-xaml/blob/master/test/MUXControlsTestApp/VisualTreeTestHelper.cs). Quick example [here](https://github.com/microsoft/microsoft-ui-xaml/blob/master/dev/AutoSuggestBox/APITests/AutoSuggestBoxTests.cs#L69-L74).
+    Write a new test using [VisualTreeTestHelper](https://github.com/microsoft/microsoft-ui-xaml/blob/main/test/MUXControlsTestApp/VisualTreeTestHelper.cs). Quick example [here](https://github.com/microsoft/microsoft-ui-xaml/blob/main/dev/AutoSuggestBox/APITests/AutoSuggestBoxTests.cs#L69-L74).
 
 2. Run the test locally
 
