@@ -23,6 +23,7 @@
 
     <Style x:Key="DefaultAppBarSeparatorStyle" TargetType="AppBarSeparator">
         <Setter Property="Foreground" Value="{ThemeResource AppBarSeparatorForeground}" />
+        <Setter Property="Padding" Value="{ThemeResource AppBarSeparatorMargin}" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
@@ -56,7 +57,7 @@
                             Width="{StaticResource AppBarSeparatorWidth}"
                             VerticalAlignment="Stretch"
                             Fill="{TemplateBinding Foreground}"
-                            Margin="{StaticResource AppBarSeparatorMargin}"/>
+                            Margin="{TemplateBinding Padding}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
