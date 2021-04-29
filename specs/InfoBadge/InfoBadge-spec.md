@@ -46,7 +46,7 @@ To help support the most common scenarios in which InfoBadges are used, WinUI pr
 ### List of style presets
 The following InfoBadge style presets each use one of the following colors for the background fill of the InfoBadge:
 
-![Colors available through InfoBadge style presets](images/color-breakdown.png)
+![Colors available through InfoBadge style presets](images/color-breakdown.PNG)
 
 | Style Name                      | Color                   | Icon |
 |---------------------------------|-------------------------|------|
@@ -92,6 +92,7 @@ Examples of inappropriate InfoBadge usage:
 Using InfoBadge in a NavigationView is the recommended approach for showing app-wide notifications and alerts. To enable or customize the InfoBadge on a NavigationViewItem, assign the `NavigationViewItem.InfoBadge` property to an InfoBadge object in your app.
 
 In Left-Expanded mode, InfoBadge will appear right-aligned to the edge of the NavigationViewItem. 
+
 ![Left-expanded NavigationView with an InfoBadge](images/navview-example1.png)
 
 In Left-Compact mode, InfoBadge will appear overlayed on the top right corner of the icon. 
