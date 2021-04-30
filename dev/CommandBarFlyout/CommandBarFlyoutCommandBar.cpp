@@ -716,7 +716,15 @@ void CommandBarFlyoutCommandBar::EnsureAutomationSetCountAndPosition()
     {
         if (auto commandAsUIElement = command.try_as<winrt::UIElement>())
         {
-            if (commandAsUIElement.Visibility() == winrt::Visibility::Visible)
+            // Don't count AppBarSeparator if IsTabStop is false
+            if (auto separator = commandAsUIElement.try_as<winrt::AppBarSeparator>())
+            {
+                if (!separator.IsTabStop())
+                {
+                    continue;
+                }
+            }
+            else if (commandAsUIElement.Visibility() == winrt::Visibility::Visible)
             {
                 sizeOfSet++;
             }
@@ -733,7 +741,15 @@ void CommandBarFlyoutCommandBar::EnsureAutomationSetCountAndPosition()
     {
         if (auto commandAsUIElement = command.try_as<winrt::UIElement>())
         {
-            if (commandAsUIElement.Visibility() == winrt::Visibility::Visible)
+            // Don't count AppBarSeparator if IsTabStop is false
+            if (auto separator = commandAsUIElement.try_as<winrt::AppBarSeparator>())
+            {
+                if (!separator.IsTabStop())
+                {
+                    continue;
+                }
+            }
+            else if (commandAsUIElement.Visibility() == winrt::Visibility::Visible)
             {
                 winrt::AutomationProperties::SetSizeOfSet(commandAsUIElement, sizeOfSet);
             }
