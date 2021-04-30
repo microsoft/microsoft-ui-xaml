@@ -7,6 +7,7 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:contract13Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,13)"
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -16,7 +17,7 @@
         </Grid.RowDefinitions>
         <Grid.Resources>
             <muxc:CommandBarFlyout Placement="Right" x:Name="Flyout1" AutomationProperties.AutomationId="Flyout1" Opened="OnFlyoutOpened" Closed="OnFlyoutClosed">
-                <AppBarButton x:Name="CutButton1" AutomationProperties.AutomationId="CutButton1" Label="Cut" Icon="Cut" Click="OnElementClicked" />
+                <AppBarButton x:Name="CutButton1" AutomationProperties.AutomationId="CutButton1" Label="Cut" Icon="Cut" Click="OnElementClicked"/>
                 <AppBarButton x:Name="CopyButton1" AutomationProperties.AutomationId="CopyButton1" Label="Copy" Icon="Copy" Click="OnElementClicked" />
                 <AppBarButton x:Name="PasteButton1" AutomationProperties.AutomationId="PasteButton1" Label="Paste" Icon="Paste" Click="OnElementClicked" />
                 <AppBarButton x:Name="BoldButton1" AutomationProperties.AutomationId="BoldButton1" Label="Bold" Icon="Bold" Click="OnElementClicked" />
@@ -173,6 +174,20 @@
                     <AppBarToggleButton x:Name="FavoriteToggleButton9" AutomationProperties.AutomationId="FavoriteToggleButton9" Label="Favorite" Icon="Favorite" Checked="OnElementChecked" Unchecked="OnElementUnchecked" />
                 </muxc:CommandBarFlyout.SecondaryCommands>
             </muxc:CommandBarFlyout>
+            <contract13Present:CommandBarFlyout Placement="Right" x:Name="Flyout10" AutomationProperties.AutomationId="Flyout10" Opened="OnFlyoutOpened" Closed="OnFlyoutClosed">
+                <AppBarButton x:Name="CutButton10" AutomationProperties.AutomationId="CutButton10" Label="Cut" Icon="Cut" Click="OnElementClicked" />
+                <AppBarButton x:Name="CopyButton10" AutomationProperties.AutomationId="CopyButton10" Label="Copy" Icon="Copy" Click="OnElementClicked" />
+                <AppBarButton x:Name="PasteButton10" AutomationProperties.AutomationId="PasteButton10" Label="Paste" Icon="Paste" Click="OnElementClicked" />
+                <AppBarButton x:Name="BoldButton10" AutomationProperties.AutomationId="BoldButton10" Label="Bold" Icon="Bold" Click="OnElementClicked" />
+                <AppBarButton x:Name="ItalicButton10" AutomationProperties.AutomationId="ItalicButton10" Label="Italic" Icon="Italic" Click="OnElementClicked" />
+                <AppBarButton x:Name="UnderlineButton10" AutomationProperties.AutomationId="UnderlineButton10" Label="Underline" Icon="Underline" Click="OnElementClicked" />
+                <contract13Present:CommandBarFlyout.SecondaryCommands>
+                    <AppBarButton x:Name="UndoButton10" AutomationProperties.AutomationId="UndoButton10" Label="Undo" Icon="Undo" Click="OnElementClicked" />
+                    <AppBarButton x:Name="RedoButton10" AutomationProperties.AutomationId="RedoButton10" Label="Redo" Icon="Redo" Click="OnElementClicked" />
+                    <AppBarButton x:Name="SelectAllButton10" AutomationProperties.AutomationId="SelectAllButton10" Label="Select all" Click="OnElementClicked" />
+                    <AppBarToggleButton x:Name="FavoriteToggleButton10" AutomationProperties.AutomationId="FavoriteToggleButton10" Label="Favorite" Icon="Favorite" Checked="OnElementChecked" Unchecked="OnElementUnchecked" />
+                </contract13Present:CommandBarFlyout.SecondaryCommands>
+            </contract13Present:CommandBarFlyout>
         </Grid.Resources>
         <ScrollViewer>
             <StackPanel>
@@ -185,6 +200,7 @@
                 <Button x:Name="FlyoutTarget7" Content="Show CommandBarFlyout with non-focusable primary commands" Margin="10" Click="OnFlyoutTarget7Click" />
                 <Button x:Name="FlyoutTarget8" Content="Show CommandBarFlyout with no secondary commands" Margin="10" Click="OnFlyoutTarget8Click" />
                 <Button x:Name="FlyoutTarget9" Content="Show CommandBarFlyout with AlwaysExpanded" Margin="10" Click="OnFlyoutTarget9Click" />
+                <contract13Present:Button x:Name="FlyoutTarget10" Content="Show Windows.UI.Xaml.Controls.CommandBarFlyout" Margin="10" Click="OnFlyoutTarget10Click" />
                 <CheckBox x:Name="IsRTLCheckBox" Content="Is Page in RightToLeft FlowDirection?" AutomationProperties.AutomationId="IsRTLCheckBox" Margin="10" Checked="IsRTLCheckBox_Checked" Unchecked="IsRTLCheckBox_Unchecked" />
             </StackPanel>
         </ScrollViewer>
