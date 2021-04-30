@@ -207,25 +207,15 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 
     ![test fail page2](images/test_fail_page2.png)
 
-2. Download new verification files
+2. Identify your buildId
 
-    First, open the published build artifacts:
+    The Build Id for the azure dev ops build associated with your test run can be found in this page's url.
     
-    ![released artifacts](images/test_fail_page3.png)
-    
-    ###### [For Microsoft employees]
-    
-    If you are a Microsoft employee, you can directly view the content of the created `drop` folder containing the updated verification files in Azure Pipelines. From here download the `UpdatedVisualTreeVerificationFiles` folder and extract it locally.
-    
-    ###### [For external contributors]
-    
-    If you are an external contributor, you cannot directly download the new verification files but instead have to download the entire generated **drop** archive and unpack it (its size can be around 1 GB):
-
-    ![drop folder](images/test_pipeline_drop.png) 
+    ![BuildId Location](images/test_fail_page3.png)
 
 3. Diff & replace
 
-    Open a powershell command prompt and navigate to the `tools` directory of your Winui 2 project.  Call the `GenerateVisualVerificationUpdates` script passing in the `UpdatedVisualTreeVerificationFiles` folder that you downloaded in step two (make sure this folder contains only .xml verification files).
+    Open a powershell command prompt and navigate to the `tools` directory of your Winui 2 project.  Call the `GenerateVisualVerificationUpdates` script passing in the `BuildId` number that you identified in step two.
 
     This script does the logic for determining the required verification file updates and publishes them to the VerificationFiles folder within the project. If preferred, they can be published to a different location by passing the desired location as a second optional argument.
 
