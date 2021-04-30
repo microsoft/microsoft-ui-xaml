@@ -211,7 +211,7 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 
     The Build Id for the azure dev ops build associated with your test run can be found in this page's url.
     
-    ![BuildId Location](images/test_fail_page3.png)
+    ![BuildId Location](images/ADO_Build_ID.png)
 
 3. Diff & replace
 
