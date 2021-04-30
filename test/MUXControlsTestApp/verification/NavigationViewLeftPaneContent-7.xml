@@ -1787,7 +1787,7 @@
                                       Visibility=Visible
                                       RenderSize=0,0
                                   [Windows.UI.Xaml.Controls.Primitives.RepeatButton]
-                                      Padding=11,5,11,6
+                                      Padding=4,0,0,0
                                       Foreground=#E4000000
                                       BorderThickness=1,1,1,1
                                       BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
@@ -1852,7 +1852,7 @@
                                       Visibility=Visible
                                       RenderSize=0,0
                                   [Windows.UI.Xaml.Controls.Primitives.RepeatButton]
-                                      Padding=11,5,11,6
+                                      Padding=0,0,4,0
                                       Foreground=#E4000000
                                       BorderThickness=1,1,1,1
                                       BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
@@ -1924,7 +1924,7 @@
                                       Visibility=Visible
                                       RenderSize=0,0
                                   [Windows.UI.Xaml.Controls.Primitives.RepeatButton]
-                                      Padding=11,5,11,6
+                                      Padding=0,4,0,0
                                       Foreground=#E4000000
                                       BorderThickness=1,1,1,1
                                       BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
@@ -1941,7 +1941,7 @@
                                       Visibility=Visible
                                       RenderSize=0,0
                                     [Windows.UI.Xaml.Controls.Grid]
-                                        Padding=0,0,0,0
+                                        Padding=0,4,0,0
                                         CornerRadius=0,0,0,0
                                         BorderThickness=0,0,0,0
                                         BorderBrush=#00FFFFFF
@@ -2064,7 +2064,7 @@
                                         Visibility=Visible
                                         RenderSize=0,0
                                   [Windows.UI.Xaml.Controls.Primitives.RepeatButton]
-                                      Padding=11,5,11,6
+                                      Padding=0,0,0,4
                                       Foreground=#E4000000
                                       BorderThickness=1,1,1,1
                                       BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
@@ -2081,7 +2081,7 @@
                                       Visibility=Visible
                                       RenderSize=0,0
                                     [Windows.UI.Xaml.Controls.Grid]
-                                        Padding=0,0,0,0
+                                        Padding=0,0,0,4
                                         CornerRadius=0,0,0,0
                                         BorderThickness=0,0,0,0
                                         BorderBrush=#00FFFFFF
