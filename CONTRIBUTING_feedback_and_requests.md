@@ -69,4 +69,4 @@ We strive to be respectful & empathetic toward each other, and we extend this to
 
 Our conduct guidelines help to ensure that discourse and feedback follows this same pattern of respect & empathy, and they also make it clear that non-constructive or hostile feedback is unacceptable. By following these guidelines, we can all enjoy the mutual respect that each WinUI team member, and each community member, deserve.
 
-Refer to our [conduct guidelines](https://github.com/microsoft/microsoft-ui-xaml/blob/master/CODE_OF_CONDUCT.md) for more guidance here. 
+Refer to our [conduct guidelines](https://github.com/microsoft/microsoft-ui-xaml/blob/main/CODE_OF_CONDUCT.md) for more guidance here. 

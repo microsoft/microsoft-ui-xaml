@@ -124,7 +124,7 @@
                                 Glyph="{StaticResource InfoBarInformationalIconGlyph}"
                                 Foreground="{ThemeResource InfoBarInformationalSeverityIconForeground}"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                AutomationProperties.AccessibilityView="Raw" />
+                                AutomationProperties.AccessibilityView="Content" />
 
                             <Border x:Name="UserIconBorder"
                                 Grid.Column="0"

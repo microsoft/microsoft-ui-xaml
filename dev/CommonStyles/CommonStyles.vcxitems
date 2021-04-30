@@ -118,6 +118,11 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)SplitView_themeresources.xaml">
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)ToggleSwitch_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>

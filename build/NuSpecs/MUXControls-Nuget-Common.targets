@@ -53,11 +53,28 @@
       <PackagingOutputs Include="@(XamlWinmd)" />
     </ItemGroup>
   </Target>
+  <!-- WinMD files should only go in the WinMetadata folder of the AppX if they're being supplied by a framework package. -->
+  <Target Name="_RemoveXamlWinmdFromWinMetadataFolder" Condition="'$(MicrosoftUIXamlAppxVersion)' == ''" AfterTargets="BuildNativePackage" BeforeTargets="_AddXamlWinmdToPackageLayoutRoot">
+    <ItemGroup>
+      <XamlWinmdAppxPackagePayload Include="@(AppxPackagePayload)" Condition="'%(AppxPackagePayload.TargetPath)' == '$(WinMetadataDir)\$(XamlWinmdName)'" />
+      <XamlWinmdAppxUploadPackagePayload Include="@(AppxUploadPackagePayload)" Condition="'%(AppxUploadPackagePayload.TargetPath)' == '$(WinMetadataDir)\$(XamlWinmdName)'" />
+    </ItemGroup>
+    <ItemGroup Condition="'@(XamlWinmdAppxPackagePayload)' != ''">
+      <AppxPackagePayload Remove="@(XamlWinmdAppxPackagePayload)" />
+    </ItemGroup>
+    <ItemGroup Condition="'@(XamlWinmdAppxUploadPackagePayload)' != ''">
+      <AppxUploadPackagePayload Remove="@(XamlWinmdAppxUploadPackagePayload)" />
+    </ItemGroup>
+  </Target>
   <Target Name="_AddXamlWinmdToPackageLayoutRoot" AfterTargets="BuildNativePackage">
     <ItemGroup>
       <AppxPackagePayload Include="@(XamlWinmd)">
         <TargetPath>Microsoft.UI.Xaml.winmd</TargetPath>
       </AppxPackagePayload>
+      <AppxUploadPackagePayload Include="@(XamlWinmd)">
+        <TargetPath>Microsoft.UI.Xaml.winmd</TargetPath>
+      </AppxUploadPackagePayload>
     </ItemGroup>
+    <Copy SourceFiles="@(XamlWinmd)" DestinationFiles="@(XamlWinmd -> '$(OutDir)\%(Filename)%(Extension)')" />
   </Target>
 </Project>

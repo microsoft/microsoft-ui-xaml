@@ -71,7 +71,6 @@ static constexpr auto c_leftNavPaneCustomContentBorder = L"PaneCustomContentBord
 
 static constexpr auto c_itemsContainer = L"ItemsContainerGrid"sv;
 static constexpr auto c_itemsContainerRow = L"ItemsContainerRow"sv;
-static constexpr auto c_visualItemsSeparator = L"VisualItemsSeparator"sv;
 static constexpr auto c_menuItemsScrollViewer = L"MenuItemsScrollViewer"sv;
 static constexpr auto c_footerItemsScrollViewer = L"FooterItemsScrollViewer"sv;
 
@@ -83,6 +82,9 @@ static constexpr auto c_paneHeaderCloseButtonColumn = L"PaneHeaderCloseButtonCol
 static constexpr auto c_paneHeaderToggleButtonColumn = L"PaneHeaderToggleButtonColumn"sv;
 static constexpr auto c_paneHeaderContentBorderRow = L"PaneHeaderContentBorderRow"sv;
 
+static constexpr auto c_separatorVisibleStateName = L"SeparatorVisible";
+static constexpr auto c_separatorCollapsedStateName = L"SeparatorCollapsed";
+
 static constexpr int c_backButtonHeight = 40;
 static constexpr int c_backButtonWidth = 40;
 static constexpr int c_paneToggleButtonHeight = 40;
@@ -90,14 +92,12 @@ static constexpr int c_paneToggleButtonWidth = 40;
 static constexpr int c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Behavior = 56;
 static constexpr int c_backButtonRowDefinition = 1;
 static constexpr float c_paneElevationTranslationZ = 32;
+static constexpr int c_paneItemsSeparatorHeight = 9;
 
 static constexpr int c_mainMenuBlockIndex = 0;
 static constexpr int c_footerMenuBlockIndex = 1;
 
-// Shadows specific items
 static constexpr auto c_shadowCaster = L"ShadowCaster"sv;
-static constexpr auto c_shadowCasterEaseInStoryboard = L"ShadowCasterEaseInStoryboard"sv;
-static constexpr auto c_shadowCasterSmallPaneEaseInStoryboard = L"ShadowCasterSmallPaneEaseInStoryboard"sv;
 static constexpr auto c_shadowCasterEaseOutStoryboard = L"ShadowCasterEaseOutStoryboard"sv;
 
 constexpr int s_itemNotFound{ -1 };
@@ -657,12 +657,12 @@ void NavigationView::OnApplyTemplate()
     m_itemsContainerRow.set(GetTemplateChildT<winrt::RowDefinition>(c_itemsContainerRow, controlProtected));
     m_menuItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_menuItemsScrollViewer, controlProtected));
     m_footerItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_footerItemsScrollViewer, controlProtected));
-    m_visualItemsSeparator.set(GetTemplateChildT<winrt::FrameworkElement>(c_visualItemsSeparator, controlProtected));
 
     m_itemsContainerSizeChangedRevoker.revoke();
-    if (const auto itemsContainerRow = GetTemplateChildT<winrt::FrameworkElement>(c_itemsContainer, controlProtected))
+    if (const auto itemsContainer = GetTemplateChildT<winrt::FrameworkElement>(c_itemsContainer, controlProtected))
     {
-        m_itemsContainerSizeChangedRevoker = itemsContainerRow.SizeChanged(winrt::auto_revoke,{ this,&NavigationView::OnItemsContainerSizeChanged });
+        m_itemsContainer.set(itemsContainer);
+        m_itemsContainerSizeChangedRevoker = itemsContainer.SizeChanged(winrt::auto_revoke, { this,&NavigationView::OnItemsContainerSizeChanged });
     }
 
     if (SharedHelpers::IsRS2OrHigher())
@@ -686,8 +686,6 @@ void NavigationView::OnApplyTemplate()
     if (SharedHelpers::Is21H1OrHigher())
     {
         m_shadowCaster.set(GetTemplateChildT<winrt::Grid>(c_shadowCaster, controlProtected));
-        m_shadowCasterEaseInStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterEaseInStoryboard, controlProtected));
-        m_shadowCasterSmallPaneEaseInStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterSmallPaneEaseInStoryboard, controlProtected));
         m_shadowCasterEaseOutStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterEaseOutStoryboard, controlProtected));
     }
     else
@@ -709,6 +707,7 @@ void NavigationView::OnApplyTemplate()
     UpdateVisualState();
     UpdatePaneTitleMargins();
     UpdatePaneLayout();
+    UpdatePaneOverlayGroup();
 }
 
 void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
@@ -1483,15 +1482,35 @@ void NavigationView::UpdatePaneLayout()
         const auto totalAvailableHeight = [this]() {
             if (const auto &paneContentRow = m_itemsContainerRow.get())
             {
-                // 20px is the padding between the two item lists
-                if (const auto &paneFooter = m_leftNavFooterContentBorder.get())
+                const double itemsContainerMargin = [this]() {
+                    if (const auto itemsContainer = m_itemsContainer.get())
+                    {
+                        const auto margin = itemsContainer.Margin();
+                        return margin.Top + margin.Bottom;
+                    }
+                    return 0.0;
+                }();
+                auto availableHeight = paneContentRow.ActualHeight() - itemsContainerMargin;
+
+                // The c_paneItemsSeparatorHeight is to account for the 9px separator height that we need to subtract.
+                if (PaneFooter())
                 {
-                    return paneContentRow.ActualHeight() - 29 - paneFooter.ActualHeight();
+                    availableHeight -= c_paneItemsSeparatorHeight;
+                    if (const auto& paneFooter = m_leftNavFooterContentBorder.get())
+                    {
+                        availableHeight -= paneFooter.ActualHeight();
+                    }
                 }
-                else
+                else if (IsSettingsVisible())
                 {
-                    return paneContentRow.ActualHeight() - 29;
+                    availableHeight -= c_paneItemsSeparatorHeight;
                 }
+                else if (m_footerItemsSource && m_menuItemsSource && m_footerItemsSource.Count() * m_menuItemsSource.Count() > 0)
+                {
+                    availableHeight -= c_paneItemsSeparatorHeight;
+                }
+
+                return availableHeight;
             }
             return 0.0;
         }();
@@ -1512,44 +1531,44 @@ void NavigationView::UpdatePaneLayout()
                         {
                             const auto footersActualHeight = footerItemsRepeater.ActualHeight();
                             const auto menuItemsActualHeight = menuItems.ActualHeight();
-                            if (totalAvailableHeight > menuItemsActualHeight + footersActualHeight)
+
+                            if (m_footerItemsSource.Count() == 0 && !IsSettingsVisible())
+                            {
+                                winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
+                                return totalAvailableHeight;
+                            }
+                            else if (m_menuItemsSource.Count() == 0)
+                            {
+                                footerItemsScrollViewer.MaxHeight(totalAvailableHeight);
+                                winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
+                                return 0.0;
+                            }
+                            else if (totalAvailableHeight > menuItemsActualHeight + footersActualHeight)
                             {
                                 // We have enough space for two so let everyone get as much as they need.
                                 footerItemsScrollViewer.MaxHeight(footersActualHeight);
-                                if (const auto &separator = m_visualItemsSeparator.get())
-                                {
-                                    separator.Visibility(winrt::Visibility::Collapsed);
-                                }
+                                winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
                                 return totalAvailableHeight - footersActualHeight;
                             }
                             else if (menuItemsActualHeight <= totalAvailableHeightHalf)
                             {
                                 // Footer items exceed over the half, so let's limit them.
                                 footerItemsScrollViewer.MaxHeight(totalAvailableHeight - menuItemsActualHeight);
-                                if (const auto& separator = m_visualItemsSeparator.get())
-                                {
-                                    separator.Visibility(winrt::Visibility::Visible);
-                                }
+                                winrt::VisualStateManager::GoToState(*this, c_separatorVisibleStateName,false);
                                 return menuItemsActualHeight;
                             }
                             else if (footersActualHeight <= totalAvailableHeightHalf)
                             {
                                 // Menu items exceed over the half, so let's limit them.
                                 footerItemsScrollViewer.MaxHeight(footersActualHeight);
-                                if (const auto& separator = m_visualItemsSeparator.get())
-                                {
-                                    separator.Visibility(winrt::Visibility::Visible);
-                                }
+                                winrt::VisualStateManager::GoToState(*this, c_separatorVisibleStateName, false);
                                 return totalAvailableHeight - footersActualHeight;
                             }
                             else
                             {
                                 // Both are more than half the height, so split evenly.
                                 footerItemsScrollViewer.MaxHeight(totalAvailableHeightHalf);
-                                if (const auto& separator = m_visualItemsSeparator.get())
-                                {
-                                    separator.Visibility(winrt::Visibility::Visible);
-                                }
+                                winrt::VisualStateManager::GoToState(*this, c_separatorVisibleStateName, false);
                                 return totalAvailableHeightHalf;
                             }
                         }
@@ -1888,20 +1907,25 @@ void NavigationView::UpdatePaneTitleFrameworkElementParents()
     {
         const auto isPaneToggleButtonVisible = IsPaneToggleButtonVisible();
         const auto isTopNavigationView = IsTopNavigationView();
+        const auto paneTitleSize = PaneTitle().size();
 
-        paneTitleHolderFrameworkElement.Visibility(
-            (isPaneToggleButtonVisible ||
-                isTopNavigationView ||
-                PaneTitle().size() == 0 ||
-                (PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::LeftMinimal && !IsPaneOpen())) ?
-            winrt::Visibility::Collapsed : winrt::Visibility::Visible);
+        m_isLeftPaneTitleEmpty = (isPaneToggleButtonVisible ||
+            isTopNavigationView ||
+            paneTitleSize == 0 ||
+            (PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::LeftMinimal && !IsPaneOpen()));
+
+        paneTitleHolderFrameworkElement.Visibility(m_isLeftPaneTitleEmpty ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
 
         if (auto&& paneTitleFrameworkElement = m_paneTitleFrameworkElement.get())
         {
+            const auto paneTitleTopPane = m_paneTitleOnTopPane.get();
+
             const auto first = SetPaneTitleFrameworkElementParent(m_paneToggleButton.get(), paneTitleFrameworkElement, isTopNavigationView || !isPaneToggleButtonVisible);
             const auto second = SetPaneTitleFrameworkElementParent(m_paneTitlePresenter.get(), paneTitleFrameworkElement, isTopNavigationView || isPaneToggleButtonVisible);
-            const auto third = SetPaneTitleFrameworkElementParent(m_paneTitleOnTopPane.get(), paneTitleFrameworkElement, !isTopNavigationView || isPaneToggleButtonVisible);
+            const auto third = SetPaneTitleFrameworkElementParent(paneTitleTopPane, paneTitleFrameworkElement, !isTopNavigationView || isPaneToggleButtonVisible);
             first ? first() : second ? second() : third ? third() : []() {}();
+
+            paneTitleTopPane.Visibility(third && paneTitleSize != 0 ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
         }
     }
 }
@@ -3333,7 +3357,7 @@ void NavigationView::UpdateVisualStateForOverflowButton()
 void NavigationView::UpdateLeftNavigationOnlyVisualState(bool useTransitions)
 {
     const bool isToggleButtonVisible = IsPaneToggleButtonVisible();
-    winrt::VisualStateManager::GoToState(*this, isToggleButtonVisible ? L"TogglePaneButtonVisible" : L"TogglePaneButtonCollapsed", false /*useTransitions*/);
+    winrt::VisualStateManager::GoToState(*this, isToggleButtonVisible || !m_isLeftPaneTitleEmpty ? L"TogglePaneButtonVisible" : L"TogglePaneButtonCollapsed", false /*useTransitions*/);
 }
 
 void NavigationView::InvalidateTopNavPrimaryLayout()
@@ -3971,6 +3995,10 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         SyncItemTemplates();
     }
+    else if (property == s_PaneFooterProperty)
+    {
+        UpdatePaneLayout();
+    }
 }
 
 void NavigationView::UpdateNavigationViewItemsFactory()
@@ -4058,6 +4086,8 @@ void NavigationView::OnIsPaneOpenChanged()
     UpdatePaneTabFocusNavigation();
     UpdateSettingsItemToolTip();
     UpdatePaneTitleFrameworkElementParents();
+    UpdatePaneOverlayGroup();
+    UpdatePaneButtonsWidths();
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
@@ -4088,8 +4118,6 @@ void NavigationView::OnIsPaneOpenChanged()
             }
         }   
     }
-
-    UpdatePaneButtonsWidths();
 }
 
 void NavigationView::UpdatePaneToggleButtonVisibility()
@@ -4426,15 +4454,6 @@ void NavigationView::UpdateBackAndCloseButtonsVisibility()
         paneHeaderCloseButtonColumn.Width(winrt::GridLengthHelper::FromValueAndType(paneHeaderPaddingForCloseButton, winrt::GridUnitType::Pixel));
     }
 
-    if (auto paneTitleHolderFrameworkElement = m_paneTitleHolderFrameworkElement.get())
-    {
-        if (paneHeaderContentBorderRowMinHeight == 0.00 && paneTitleHolderFrameworkElement.Visibility() == winrt::Visibility::Visible)
-        {
-            // Handling the case where the PaneTottleButton is collapsed and the PaneTitle's height needs to push the rest of the NavigationView's UI down.
-            paneHeaderContentBorderRowMinHeight = paneTitleHolderFrameworkElement.ActualHeight();
-        }
-    }
-
     if (auto paneHeaderContentBorderRow = m_paneHeaderContentBorderRow.get())
     {
         paneHeaderContentBorderRow.MinHeight(paneHeaderContentBorderRowMinHeight);
@@ -4745,14 +4764,6 @@ void NavigationView::SetDropShadow()
     {
         if (const auto shadowCaster = m_shadowCaster.get())
         {
-            const auto rootSplitView = m_rootSplitView.get();
-            const auto rootSplitViewActualWidth = rootSplitView.ActualWidth();
-
-            if (const auto shadowCasterEaseInStoryboard = m_shadowCasterEaseInStoryboard.get())
-            {
-                shadowCasterEaseInStoryboard.Begin();
-            }
-
             if (winrt::IUIElement10 shadowCaster_uiElement10 = shadowCaster)
             {
                 shadowCaster_uiElement10.Shadow(winrt::ThemeShadow{});
@@ -4771,9 +4782,9 @@ void NavigationView::UnsetDropShadow()
 
         m_shadowCasterEaseOutStoryboardRevoker =
             shadowCasterEaseOutStoryboard.Completed(winrt::auto_revoke,
-            {
-                [this, shadowCaster](auto const&, auto const&) { ShadowCasterEaseOutStoryboard_Completed(shadowCaster); }
-            });
+                {
+                    [this, shadowCaster](auto const&, auto const&) { ShadowCasterEaseOutStoryboard_Completed(shadowCaster); }
+                });
     }
 }
 
@@ -4841,6 +4852,21 @@ void NavigationView::UpdatePaneShadow()
             shadowReceiver.Width(OpenPaneLength() - shadowReceiverMargin.Right);
         }
         shadowReceiver.Margin(shadowReceiverMargin);
+    }
+}
+
+void NavigationView::UpdatePaneOverlayGroup()
+{
+    if (const auto splitView = m_rootSplitView.get())
+    {
+        if (IsPaneOpen() && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay))
+        {
+            winrt::VisualStateManager::GoToState(*this, L"PaneOverlaying", true /*useTransitions*/);
+        }
+        else
+        {
+            winrt::VisualStateManager::GoToState(*this, L"PaneNotOverlaying", true /*useTransitions*/);
+        }
     }
 }
 
