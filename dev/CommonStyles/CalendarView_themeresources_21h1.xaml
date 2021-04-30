@@ -177,13 +177,17 @@
     <x:Double x:Key="CalendarViewHeaderNavigationButtonFontSize">14</x:Double>
     <x:Double x:Key="CalendarViewNavigationButtonFontSize">8</x:Double>
     <FontWeight x:Key="CalendarViewHeaderNavigationFontWeight">SemiBold</FontWeight>
+    <FontWeight x:Key="CalendarViewWeekDayFontWeight">SemiBold</FontWeight>
     <Thickness x:Key="CalendarViewDayItemMargin">0,6,0,0</Thickness>
+    <Thickness x:Key="CalendarViewWeekDayMargin">1</Thickness>
+    <Thickness x:Key="CalendarViewWeekDayPadding">12</Thickness>
     <Thickness x:Key="CalendarViewMonthYearItemMargin">0,6,0,0</Thickness>
     <Thickness x:Key="CalendarViewFirstOfMonthLabelMargin">0,1,0,0</Thickness>
     <Thickness x:Key="CalendarViewFirstOfYearDecadeLabelMargin">0,2,0,0</Thickness>
-    <Thickness x:Key="CalendarViewHeaderNavigationButtonPadding">8,1,8,1</Thickness>
-    <Thickness x:Key="CalendarViewNavigationButtonPadding">1</Thickness>
-    <Thickness x:Key="CalendarViewNavigationButtonMargin">2</Thickness>
+    <Thickness x:Key="CalendarViewHeaderNavigationButtonPadding">8,8,8,7</Thickness>
+    <Thickness x:Key="CalendarViewNavigationButtonPadding">12,11.5,12,11.5</Thickness>
+    <Thickness x:Key="CalendarViewNavigationButtonMargin">7,6,7,7</Thickness>
+    <Thickness x:Key="CalendarViewNavigationButtonFocusVisualMargin">-2</Thickness>
 
     <Style TargetType="CalendarViewDayItem">
         <Setter Property="MinWidth" Value="40" />
@@ -284,6 +288,9 @@
                             <Style TargetType="TextBlock" x:Key="WeekDayNameStyle" BasedOn="{StaticResource CaptionTextBlockStyle}">
                                 <Setter Property="HorizontalAlignment" Value="Center" />
                                 <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="FontWeight" Value="{ThemeResource CalendarViewWeekDayFontWeight}" />
+                                <Setter Property="Margin" Value="{ThemeResource CalendarViewWeekDayMargin}" />
+                                <Setter Property="Padding" Value="{ThemeResource CalendarViewWeekDayPadding}" />
                             </Style>
                             <Style TargetType="Button" x:Key="HeaderNavigationButtonStyle">
                                 <Setter Property="HorizontalAlignment" Value="Stretch" />
@@ -296,7 +303,7 @@
                                 <Setter Property="Padding" Value="{ThemeResource CalendarViewHeaderNavigationButtonPadding}" />
                                 <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
                                 <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
-                                <Setter Property="FocusVisualMargin" Value="2,2,2,0"/>
+                                <Setter Property="FocusVisualMargin" Value="{StaticResource CalendarViewNavigationButtonFocusVisualMargin}"/>
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
@@ -353,7 +360,7 @@
                                 <Setter Property="Padding" Value="{ThemeResource CalendarViewNavigationButtonPadding}" />
                                 <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
                                 <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
-                                <Setter Property="FocusVisualMargin" Value="2,2,2,0" />
+                                <Setter Property="FocusVisualMargin" Value="{StaticResource CalendarViewNavigationButtonFocusVisualMargin}" />
                                 <Setter Property="IsTabStop" Value="True" />
                                 <Setter Property="Template">
                                     <Setter.Value>
@@ -650,7 +657,7 @@
                         </VisualStateManager.VisualStateGroups>
                         <Grid VerticalAlignment="{TemplateBinding VerticalContentAlignment}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.MinViewWidth}">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="40" />
+                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
@@ -682,7 +689,6 @@
                                 <Grid.Clip>
                                     <RectangleGeometry Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ClipRect}" />
                                 </Grid.Clip>
-                                <!--Border x:Name="BackgroundLayer" Background="{TemplateBinding BorderBrush}" use transparent background instead-->
                                 <Border x:Name="BackgroundLayer">
                                     <Border.RenderTransform>
                                         <ScaleTransform x:Name="BackgroundTransform" CenterX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.CenterX}" CenterY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.CenterY}" />
@@ -690,13 +696,13 @@
                                 </Border>
                                 <Grid x:Name="MonthView">
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="38" />
+                                        <RowDefinition Height="Auto" />
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <Grid.RenderTransform>
                                         <ScaleTransform x:Name="MonthViewTransform" CenterX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.CenterX}" CenterY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.CenterY}" />
                                     </Grid.RenderTransform>
-                                    <Grid x:Name="WeekDayNames" Background="{TemplateBinding Background}">
+                                    <Grid x:Name="WeekDayNames" Background="{TemplateBinding Background}" Margin="2,2,2,0">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="*" />
@@ -714,7 +720,7 @@
                                         <TextBlock Grid.Column="5" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.WeekDay6}" x:Name="WeekDay6" Foreground="{TemplateBinding CalendarItemForeground}" Style="{StaticResource WeekDayNameStyle}" />
                                         <TextBlock Grid.Column="6" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.WeekDay7}" x:Name="WeekDay7" Foreground="{TemplateBinding CalendarItemForeground}" Style="{StaticResource WeekDayNameStyle}" />
                                     </Grid>
-                                    <ScrollViewer x:Name="MonthViewScrollViewer" Grid.Row="1" Style="{StaticResource ScrollViewerStyle}" IsFocusEngagementEnabled="True">
+                                    <ScrollViewer x:Name="MonthViewScrollViewer" Grid.Row="1" Style="{StaticResource ScrollViewerStyle}" IsFocusEngagementEnabled="True" Margin="2">
                                         <CalendarPanel x:Name="MonthViewPanel" />
                                     </ScrollViewer>
                                 </Grid>
