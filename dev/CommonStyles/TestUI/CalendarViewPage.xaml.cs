@@ -48,7 +48,7 @@ namespace MUXControlsTestApp
             // Render basic day items.
             if (args.Phase == 0)
             {
-                if (isSundayBlackedOut.IsChecked.Value || hasDensityBars.IsChecked.Value)
+                if (isTodayBlackedOut.IsChecked.Value || isSundayBlackedOut.IsChecked.Value || hasDensityBars.IsChecked.Value)
                 {
                     // Register callback for next phase.
                     args.RegisterUpdateCallback(CalendarView_CalendarViewDayItemChanging);
