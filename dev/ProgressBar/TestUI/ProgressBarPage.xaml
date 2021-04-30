@@ -7,8 +7,9 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    mc:Ignorable="d"
+    xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 5)">
 
     <Page.Resources>
         <local:NullableBooleanToBooleanConverter x:Key="NullableBooleanToBooleanConverter" />
@@ -27,7 +28,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="8">
+        <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal" contract5Present:Spacing="8">
             <TextBlock Text="Sample Progressbar" Style="{ThemeResource StandardGroupHeader}"/>
             <FontIcon Glyph="&#xF0AF;" Margin="4,0,40,3" FontSize="14" VerticalAlignment="Center"/>
             <ProgressBar
