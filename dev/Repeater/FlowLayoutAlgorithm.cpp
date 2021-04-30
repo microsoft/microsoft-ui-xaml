@@ -49,13 +49,10 @@ winrt::Size FlowLayoutAlgorithm::Measure(
         realizationRect.X, realizationRect.Y, realizationRect.Width, realizationRect.Height);
 
     const auto suggestedAnchorIndex = m_context.get().RecommendedAnchorIndex();
-    if (m_elementManager.IsIndexValidInData(suggestedAnchorIndex))
+    const auto anchorRealized = m_elementManager.IsDataIndexRealized(suggestedAnchorIndex);
+    if (!anchorRealized)
     {
-        const auto anchorRealized = m_elementManager.IsDataIndexRealized(suggestedAnchorIndex);
-        if (!anchorRealized)
-        {
-            MakeAnchor(m_context.get(), suggestedAnchorIndex, availableSize);
-        }
+        MakeAnchor(m_context.get(), suggestedAnchorIndex, availableSize);
     }
 
     m_elementManager.OnBeginMeasure(orientation);

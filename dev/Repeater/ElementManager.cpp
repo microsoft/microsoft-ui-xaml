@@ -190,7 +190,7 @@ bool ElementManager::IsDataIndexRealized(int index) const
     else
     {
         // Non virtualized - everything is realized
-        return index >= 0 && index < m_context.ItemCount();
+        return IsIndexValidInData(index);
     }
 }
 
