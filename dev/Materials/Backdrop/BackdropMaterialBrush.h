@@ -6,7 +6,7 @@
 #include "BackdropMaterialBrush.g.h"
 //#include "BackdropMaterialBrush.properties.h"
 
-#include "SystemBackdropComponent.h"
+#include "MicaController.h"
 
 class BackdropMaterialBrush :
     public ReferenceTracker<BackdropMaterialBrush, winrt::implementation::BackdropMaterialBrushT>
