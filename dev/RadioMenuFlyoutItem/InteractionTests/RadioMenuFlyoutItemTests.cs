@@ -56,46 +56,88 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         };
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 19603059
         public void BasicTest()
         {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
+            {
+                Log.Warning("Test is disabled on RS2");
+                return;
+            }
+
             using (var setup = new TestSetupHelper("RadioMenuFlyoutItem Tests"))
             {
                 Log.Comment("Verify initial states");
-                VerifySelectedItems("Orange", "Compact");
+                VerifySelectedItems("Orange", "Compact", "Name");
 
-                InvokeItem("Yellow");
-                VerifySelectedItems("Yellow", "Compact");
+                InvokeItem("FlyoutButton", "YellowItem");
+                VerifySelectedItems("Yellow", "Compact", "Name");
 
-                InvokeItem("Expanded");
-                VerifySelectedItems("Yellow", "Expanded");
+                InvokeItem("FlyoutButton", "ExpandedItem");
+                VerifySelectedItems("Yellow", "Expanded", "Name");
 
                 Log.Comment("Verify you can't uncheck an item");
-                InvokeItem("Yellow");
-                VerifySelectedItems("Yellow", "Expanded");
+                InvokeItem("FlyoutButton", "YellowItem");
+                VerifySelectedItems("Yellow", "Expanded", "Name");
             }
         }
 
-        public void InvokeItem(string item)
+        [TestMethod]
+        public void SubMenuTest()
         {
-            Log.Comment("Open flyout");
-            Button flyoutButton = FindElement.ByName<Button>("FlyoutButton");
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
+            {
+                Log.Warning("Test is disabled on RS2");
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("RadioMenuFlyoutItem Tests"))
+            {
+                InvokeSubItem("SubMenuFlyoutButton", "RadioSubMenu", "ArtistNameItem");
+                VerifySelectedItems("Orange", "Compact", "ArtistName");
+
+                InvokeItem("SubMenuFlyoutButton", "DateItem");
+                VerifySelectedItems("Orange", "Compact", "Date");
+            }
+        }
+
+        public void InvokeItem(string flyoutButtonName, string itemName)
+        {
+            Log.Comment("Open flyout by clicking " + flyoutButtonName);
+            Button flyoutButton = FindElement.ByName<Button>(flyoutButtonName);
             flyoutButton.Invoke();
             Wait.ForIdle();
 
-            Log.Comment("Invoke item: " + item);
-            MenuItem menuItem = FindElement.ByName<MenuItem>(item + "Item");
+            Log.Comment("Invoke item: " + itemName);
+            MenuItem menuItem = FindElement.ByName<MenuItem>(itemName);
             menuItem.Click();
             Wait.ForIdle();
         }
 
-        public void VerifySelectedItems(string item1, string item2)
+        public void InvokeSubItem(string flyoutButtonName, string menuName, string itemName)
+        {
+            Log.Comment("Open flyout by clicking " + flyoutButtonName);
+            Button flyoutButton = FindElement.ByName<Button>(flyoutButtonName);
+            flyoutButton.Invoke();
+            Wait.ForIdle();
+
+            Log.Comment("Open Menu: " + menuName);
+            MenuItem menuItem = FindElement.ByName<MenuItem>(menuName);
+            menuItem.Click();
+            Wait.ForIdle();
+
+            Log.Comment("Invoke item: " + itemName);
+            menuItem = FindElement.ByName<MenuItem>(itemName);
+            menuItem.Click();
+            Wait.ForIdle();
+        }
+
+        public void VerifySelectedItems(string item1, string item2, string item3)
         {
             foreach (string item in Items)
             {
                 TextBlock itemState = FindElement.ByName<TextBlock>(item + "State");
 
-                if (item == item1 || item == item2)
+                if (item == item1 || item == item2 || item == item3)
                 {
                     Verify.AreEqual(itemState.DocumentText, "Checked", "Verify " + item + " is checked");
                 }
