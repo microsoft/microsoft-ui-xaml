@@ -62,7 +62,7 @@ class Popup
     // ...
 
     // New APIs
-    UIElement PlacementTarget { get; set; }
+    FrameworkElement PlacementTarget { get; set; }
     PopupPlacementMode DesiredPlacement { get; set; }
     PopupPlacementMode ActualPlacement { get; }
     
@@ -212,7 +212,7 @@ namespace Windows.UI.Xaml.Controls.Primitives
     [webhosthidden]
     interface IPopup2
     {
-        Windows.UI.Xaml.UIElement PlacementTarget;
+        Windows.UI.Xaml.FrameworkElement PlacementTarget;
         Windows.UI.Xaml.Controls.Primitives.PopupPlacementMode DesiredPlacement;
         Windows.UI.Xaml.Controls.Primitives.PopupPlacementMode ActualPlacement { get; };
         
