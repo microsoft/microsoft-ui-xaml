@@ -6,7 +6,7 @@
 #include "common.h"
 #include "MicaController.h"
 
-namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
+namespace winrt::Microsoft::UI::Private::Media
 {
     CppWinRTActivatableClassWithBasicFactory(MicaController)
 }
