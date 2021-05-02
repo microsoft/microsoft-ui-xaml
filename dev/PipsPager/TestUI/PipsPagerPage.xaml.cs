@@ -20,6 +20,7 @@ namespace MUXControlsTestApp
         Button previousPageButton;
         Button nextPageButton;
         ItemsRepeater repeater;
+        ItemsRepeater verticalOrientationPipsPagerRepeater;
 
         public List<string> Pictures = new List<string>()
         {
@@ -38,13 +39,16 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
             this.Loaded += OnLoad;
         }
-
+        
         private void OnLoad(object sender, RoutedEventArgs args)
         {
             var rootPanel = VisualTreeHelper.GetChild(TestPipsPager, 0);
             previousPageButton = VisualTreeHelper.GetChild(rootPanel, 0) as Button;
             nextPageButton = VisualTreeHelper.GetChild(rootPanel, 2) as Button;
             repeater = rootPanel.FindVisualChildByType<ItemsRepeater>();
+            var rootPanelVerticalPipsPager = VisualTreeHelper.GetChild(TestPipsPagerVerticalOrientation, 0);
+            verticalOrientationPipsPagerRepeater = rootPanelVerticalPipsPager.FindVisualChildByType<ItemsRepeater>();
+
 
             PreviousPageButtonVisibilityComboBox.SelectionChanged += OnPreviousPageButtonVisibilityChanged;
             NextPageButtonVisibilityComboBox.SelectionChanged += OnNextPageButtonVisibilityChanged;
@@ -70,6 +74,21 @@ namespace MUXControlsTestApp
             CurrentNumberOfPagesTextBlock.Text = GetNumberOfPages();
             CurrentMaxVisiblePipsTextBlock.Text = $"Current max visual indicators: {TestPipsPager.MaxVisiblePips}";
             CurrentOrientationTextBlock.Text = GetCurrentOrientation();
+        }
+
+        private void OnGetPipsPagerButtonSizesClicked(object sender, RoutedEventArgs args)
+        {
+            //Button horizontalOrientationButton;
+            if (repeater.TryGetElement(0) as FrameworkElement is var horizontalOrientationPip && horizontalOrientationPip != null)
+            {
+                HorizontalOrientationPipsPagerButtonWidthTextBlock.Text = $"{ horizontalOrientationPip.ActualWidth}";
+                HorizontalOrientationPipsPagerButtonHeightTextBlock.Text = $"{horizontalOrientationPip.ActualHeight}";
+            }
+            if (verticalOrientationPipsPagerRepeater.TryGetElement(1) as FrameworkElement is var verticalOrientationPip && verticalOrientationPip != null)
+            {
+                VerticalOrientationPipsPagerButtonWidthTextBlock.Text = $"{verticalOrientationPip.ActualWidth}";
+                VerticalOrientationPipsPagerButtonHeightTextBlock.Text = $"{verticalOrientationPip.ActualHeight}";
+            }
         }
 
         private void OnRepeaterGotFocus(object sender, RoutedEventArgs e)

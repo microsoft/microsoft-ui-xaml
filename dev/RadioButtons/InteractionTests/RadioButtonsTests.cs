@@ -505,6 +505,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
+        [TestProperty("Ignore", "True")] // Disabled due to #4576: Unreliable test
         public void GamepadCanEscapeAndDoesNotSelectWithFocus()
         {
             using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))

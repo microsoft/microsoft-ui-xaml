@@ -34,8 +34,10 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <Thickness x:Key="AutoSuggestBoxTopHeaderMargin">0,0,0,8</Thickness>
-    <Thickness x:Key="AutoSuggestBoxInnerButtonMargin">0,3</Thickness>
+    <Thickness x:Key="AutoSuggestBoxInnerButtonMargin">1,3</Thickness>
+    <Thickness x:Key="AutoSuggestBoxDeleteButtonMargin">0,4</Thickness>
     <Thickness x:Key="AutoSuggestBoxQueryButtonPadding">3,2</Thickness>
+    <x:Double x:Key="AutoSuggestBoxLeftButtonMargin">3</x:Double>
     <x:Double x:Key="AutoSuggestBoxRightButtonMargin">4</x:Double>
 
     <Style TargetType="TextBox" x:Key="AutoSuggestBoxTextBoxStyle">
@@ -64,12 +66,12 @@
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
                                             <Grid x:Name="ButtonLayoutGrid"
-                                                Margin="{ThemeResource AutoSuggestBoxInnerButtonMargin}"
                                                 BorderBrush="{ThemeResource TextControlButtonBorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                 Background="{ThemeResource TextControlButtonBackground}"
-                                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                                contract7NotPresent:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}">
+                                                Margin="{StaticResource AutoSuggestBoxDeleteButtonMargin}"
+                                                contract7Present:CornerRadius="{ThemeResource ControlCornerRadius}"
+                                                contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                                                 <VisualStateManager.VisualStateGroups>
                                                     <VisualStateGroup x:Name="CommonStates">
                                                         <VisualState x:Name="Normal" />
@@ -147,7 +149,6 @@
                                                 VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                                 AutomationProperties.AccessibilityView="Raw"
                                                 local:AnimatedIcon.State="Normal">
-
                                                 <VisualStateManager.VisualStateGroups>
                                                     <VisualStateGroup x:Name="CommonStates">
                                                         <VisualState x:Name="Normal" />
@@ -348,9 +349,9 @@
                             IsHitTestVisible="False" />
                         <Button x:Name="DeleteButton"
                             Grid.Row="1"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             Style="{StaticResource DeleteButtonStyle}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             Padding="{ThemeResource HelperButtonThemePadding}"
                             IsTabStop="False"
                             Grid.Column="1"
@@ -361,12 +362,13 @@
                             VerticalAlignment="Stretch" />
                         <Button x:Name="QueryButton"
                             Grid.Row="1"
+                            Grid.Column="2"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             Style="{StaticResource QueryButtonStyle}"
                             BorderThickness="{TemplateBinding BorderThickness}"
+                            Margin="2,0,0,0"
                             Padding="{ThemeResource HelperButtonThemePadding}"
                             IsTabStop="False"
-                            Grid.Column="2"
                             FontSize="{TemplateBinding FontSize}"
                             Width="32"
                             Height="28"
@@ -390,7 +392,7 @@
     <Style TargetType="AutoSuggestBox" BasedOn="{StaticResource DefaultAutoSuggestBoxStyle}" />
 
     <Style x:Key="DefaultAutoSuggestBoxStyle" TargetType="AutoSuggestBox">
-        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Top"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="IsTabStop" Value="False" />

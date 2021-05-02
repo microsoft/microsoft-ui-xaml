@@ -23,6 +23,16 @@
         <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
             <TextBlock Text="Sample Progressbar" Style="{ThemeResource StandardGroupHeader}"/>
             <FontIcon Glyph="&#xF0AF;" Margin="4,0,40,3" FontSize="14" VerticalAlignment="Center"/>
+            <ProgressBar
+                x:Name="TestWUXProgressBar"
+                Width="400"
+                VerticalAlignment="Center"
+                AutomationProperties.Name="TestWUXProgressBar"
+                Style="{StaticResource DefaultProgressBarStyle}"
+                HorizontalAlignment="Left"
+                IsIndeterminate="{x:Bind ShowIsIndeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
+                ShowPaused="{x:Bind ShowPausedCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
+                ShowError="{x:Bind ShowErrorCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"/>
             <controls:ProgressBar
                 x:Name="TestProgressBar"
                 Width="400"

@@ -10,7 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <ScrollViewer Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 
         <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
             <StackPanel.ChildrenTransitions>
@@ -29,19 +29,19 @@
                 <Button AutomationProperties.AutomationId="ExpandedExpanderContent">Content</Button>
             </controls:Expander>
 
-            <controls:Expander AutomationProperties.AutomationId="CollapsedExpander" AutomationProperties.Name="Expander2" IsExpanded="False" Margin="12">
+            <controls:Expander AutomationProperties.AutomationId="CollapsedExpander" AutomationProperties.Name="Expander2" IsExpanded="False" Margin="12" Width="{ThemeResource FlyoutThemeMaxWidth}">
                 <controls:Expander.Header>
                     <TextBlock Text="This expander is collapsed by default. This is a long title to test the header width. ext should be wrapping here." TextWrapping="Wrap" Margin="0,12,0,13"/>
                 </controls:Expander.Header>
                 <TextBlock AutomationProperties.AutomationId="CollapsedExpanderContent" Text="Content"/>
             </controls:Expander>
 
-            <controls:Expander AutomationProperties.Name="ExpanderWithButtons" IsExpanded="False" Margin="12">
+            <controls:Expander AutomationProperties.Name="ExpanderWithButtons" IsExpanded="False" Margin="12" MaxWidth="{ThemeResource FlyoutThemeMaxWidth}">
                 <controls:Expander.Header>
                     <ToggleButton>This is a toggle button in the header</ToggleButton>
                 </controls:Expander.Header>
                 <StackPanel>
-                    <TextBlock TextWrapping="Wrap" Text="Content. This is long content to test wrapping on the content section, this content should be wrapping."/>
+                    <TextBlock TextWrapping="Wrap" Text="Content. This is long content to test wrapping on the content section, this content should be wrapping after the control expands to max width."/>
                 </StackPanel>
             </controls:Expander>
 
@@ -73,7 +73,26 @@
                     </StackPanel>
                 </controls:Expander>
             </local:TestControl>
+
+            <controls:Expander AutomationProperties.Name="ExpanderStretched" ExpandDirection="Down" IsExpanded="True" Margin="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right">
+                <controls:Expander.Header>
+                    <TextBlock HorizontalAlignment="Right">This expander stretches along with its content</TextBlock>
+                </controls:Expander.Header>
+                <StackPanel HorizontalAlignment="Right">
+                    <TextBlock>Header and Content is right aligned</TextBlock>
+                </StackPanel>
+            </controls:Expander>
+
+            <controls:Expander AutomationProperties.Name="ExpanderSetHeight" ExpandDirection="Down" IsExpanded="False" Margin="12" Height="150" MaxWidth="{ThemeResource FlyoutThemeMaxWidth}">
+                <controls:Expander.Header>
+                    <TextBlock>This expander sets a fixed height</TextBlock>
+                </controls:Expander.Header>
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <TextBlock TextWrapping="Wrap">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id lacinia tellus. Integer eu mollis leo, ornare ultricies neque. Sed diam lectus, varius sed justo vel, malesuada condimentum lorem. Proin porttitor quis enim a facilisis. Suspendisse vehicula imperdiet egestas. Suspendisse imperdiet, ipsum in commodo cursus, mi nisl volutpat nulla, in interdum mi nulla a nulla. Cras feugiat odio ac eros ullamcorper suscipit. Praesent ultricies ligula eget efficitur tristique. Donec imperdiet ultrices dolor sollicitudin bibendum. In hac habitasse platea dictumst. Fusce vel lacinia purus. Sed tempor est sed suscipit luctus. Aenean laoreet tellus vitae efficitur scelerisque. Sed suscipit risus ac nisl rhoncus hendrerit.</TextBlock>
+                </ScrollViewer>
+            </controls:Expander>
+            
         </StackPanel>
 
-    </Grid>
+    </ScrollViewer>
 </local:TestPage>

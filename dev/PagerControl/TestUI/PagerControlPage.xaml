@@ -48,6 +48,19 @@
                     </Style>
                 </muxc:PagerControl.Resources>
             </muxc:PagerControl>
+            <TextBlock Text="Button state set in XAML test PagerControl"/>
+            <muxc:PagerControl x:Name="TemplateButtonVisibilitySetPager"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Left"
+                NumberOfPages="10"
+                SelectedPageIndex="2"
+                FirstButtonVisibility="Hidden"
+                PreviousButtonVisibility="Hidden"
+                NextButtonVisibility="Hidden"
+                LastButtonVisibility="Hidden"
+                DisplayMode="ButtonPanel"
+                ButtonPanelAlwaysShowFirstLastPageIndex="True"/>
+
         </StackPanel>
 
         <ScrollViewer Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
@@ -116,7 +129,10 @@
                         <Button x:Name="NumberOfPagesSetterButton" Content="Set NumberOfPages to 100" Click="NumberOfPagesSetterButtonClicked"/>
                         <Button x:Name="NumberOfPagesInfinityButton" AutomationProperties.Name="NumberOfPagesInfinityButton" Content="Set NumberOfPages to -1 (aka Infinity mode)" Click="NumberOfPagesInfinityButtonClicked"/>
                         <Button x:Name="IncreaseNumberOfPagesButton" Content="Increase NumberOfPages by 1" Click="IncreaseNumberOfPagesButtonClicked"/>
-                        
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="CheckIfButtonsHiddenButton" Content="Check if buttons hidden on last pager" Click="CheckIfButtonsHiddenButtonClicked" AutomationProperties.Name="CheckIfButtonsHiddenButton"/>
+                            <TextBlock x:Name="CheckIfButtonsHiddenLabel" AutomationProperties.Name="CheckIfButtonsHiddenLabel"/>
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
                 <Grid Grid.Column="1" Margin="5">

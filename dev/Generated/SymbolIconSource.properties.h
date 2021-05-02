@@ -18,4 +18,8 @@ public:
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnSymbolPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 };

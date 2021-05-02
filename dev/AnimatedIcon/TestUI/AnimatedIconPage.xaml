@@ -16,6 +16,7 @@
     mc:Ignorable="d">
     <Page.Resources>
         <SolidColorBrush x:Key="TestIconForeground" Color="#80808080"/>
+
         <Style TargetType="local:AnimatedIconHost">
             <Setter Property="Template">
                 <Setter.Value>
@@ -129,6 +130,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        
         <local:DoubleToStringConverter x:Key="DoubleToStringConverter"/>
         
     </Page.Resources>
@@ -324,8 +326,8 @@
                     
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_Cut" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
-                                <local:ToggleAnimatedIconHost.IconSource>
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_Cut" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
+                                <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
                                             <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
@@ -334,13 +336,13 @@
                                             <controls:FontIconSource Glyph="&#xE700;"/>
                                         </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
-                                </local:ToggleAnimatedIconHost.IconSource>
-                            </local:ToggleAnimatedIconHost>
+                                </local:AnimatedIconHost.IconSource>
+                            </local:AnimatedIconHost>
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_Queue" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
-                                <local:ToggleAnimatedIconHost.IconSource>
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_Queue" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
+                                <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
                                             <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
@@ -349,13 +351,13 @@
                                             <controls:FontIconSource Glyph="&#xE700;"/>
                                         </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
-                                </local:ToggleAnimatedIconHost.IconSource>
-                            </local:ToggleAnimatedIconHost>
+                                </local:AnimatedIconHost.IconSource>
+                            </local:AnimatedIconHost>
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_SpeedUpQueue" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
-                                <local:ToggleAnimatedIconHost.IconSource>
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_SpeedUpQueue" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
+                                <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
                                             <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
@@ -364,8 +366,8 @@
                                             <controls:FontIconSource Glyph="&#xE700;"/>
                                         </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
-                                </local:ToggleAnimatedIconHost.IconSource>
-                            </local:ToggleAnimatedIconHost>
+                                </local:AnimatedIconHost.IconSource>
+                            </local:AnimatedIconHost>
                             <TextBlock Text="Speed Up Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </StackPanel>
@@ -524,9 +526,7 @@
                         <Slider x:Name="Slider" Minimum="0" Maximum="100" Width="100" Value="{x:Bind Mode=TwoWay, Path=SliderIcon.(controls:AnimatedIcon.State), Converter={StaticResource DoubleToStringConverter}}">
                             <Slider.Header>
                                 <controls:AnimatedIcon x:Name="SliderIcon" Height="100" Width="100" Foreground="Red">
-                                    <controls:AnimatedIcon.Source>
-                                        <myAnimatedvisuals:BrightnessSun/>
-                                    </controls:AnimatedIcon.Source>
+                                    <myAnimatedvisuals:BrightnessSun/>
                                 </controls:AnimatedIcon>
                             </Slider.Header>
                         </Slider>
@@ -538,6 +538,41 @@
                             <CheckBox x:Name="LargeAnimatedCheckbox" HorizontalAlignment="Center"/>
                         </Viewbox>
                         <TextBlock x:Name="LastTransitionTextBlock"/>
+                    </StackPanel>
+                    <StackPanel Background="Gray">
+                        <TextBlock Text="Button with animated icon child"/>
+                        <Button Width="100" Height="100">
+                            <controls:AnimatedIcon>
+                                <animatedvisuals:AnimatedFindVisualSource/>
+                            </controls:AnimatedIcon>
+                        </Button>
+                        <TextBlock Text="Button with animated icon grandchild"/>
+                        <Button Width="100" Height="100">
+                            <Border>
+                                <controls:AnimatedIcon>
+                                    <animatedvisuals:AnimatedFindVisualSource/>
+                                </controls:AnimatedIcon>
+                            </Border>
+                        </Button>
+                        <StackPanel>
+                            <StackPanel.Resources>
+                                <controls:FontIconSource x:Name="MyFontIconSource" Glyph="{Binding ElementName=boundFallback, Path=FallbackGlyph}"/>
+                            </StackPanel.Resources>
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}"  x:Name="boundFallback" Title="AnimatedFindVisualSource" Background="DarkSlateGray" FallbackGlyph="&#xE001;">
+                                <local:AnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource FallbackIconSource="{StaticResource MyFontIconSource}"/>
+                                </local:AnimatedIconHost.IconSource>
+                            </local:AnimatedIconHost>
+                            <controls:AnimatedIcon FallbackIconSource="{StaticResource MyFontIconSource}"/>
+                            <Button Content="Change FallbackGlyph" Click="ChangeFallbackGlyphButton_Click"/>
+                        </StackPanel>
+                        <StackPanel Background="Maroon">
+                            <controls:AnimatedIcon Height="100" Width="100" Foreground="Pink">
+                                <controls:AnimatedIcon.FallbackIconSource>
+                                    <controls:SymbolIconSource Symbol="AddFriend" Foreground="Purple"/>
+                                </controls:AnimatedIcon.FallbackIconSource>
+                            </controls:AnimatedIcon>
+                        </StackPanel>
                     </StackPanel>
                 </StackPanel>
             </ScrollViewer>

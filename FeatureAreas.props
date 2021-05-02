@@ -185,7 +185,10 @@
   <!-- Dependencies for ImageIcon -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureImageIconEnabled) == 'true'">
   </PropertyGroup>
-    <!-- Dependencies for AnimatedIcon -->
+  <!-- Dependencies for MonochromaticOverlayPresenter -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureMonochromaticOverlayPresenterEnabled) == 'true'">
+  </PropertyGroup>
+  <!-- Dependencies for AnimatedIcon -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureAnimatedIconEnabled) == 'true'">
     <FeatureAnimatedVisualPlayerEnabled>productOnly</FeatureAnimatedVisualPlayerEnabled>
   </PropertyGroup>
@@ -239,6 +242,7 @@
     <FeaturePipsPagerEnabled>true</FeaturePipsPagerEnabled>
     <FeatureImageIconEnabled>true</FeatureImageIconEnabled>
     <FeatureAnimatedIconEnabled>true</FeatureAnimatedIconEnabled>
+    <FeatureMonochromaticOverlayPresenterEnabled>true</FeatureMonochromaticOverlayPresenterEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>

@@ -5,6 +5,9 @@
   xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
   xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
   xmlns:contract8Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,8)"
+  xmlns:contract12Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,12)"
+  xmlns:contract12NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,12)"  
+  xmlns:local="using:Microsoft.UI.Xaml.Controls"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
@@ -85,7 +88,8 @@
 
     <x:Double x:Key="AppBarThemeMinHeight">64</x:Double>
     <x:Double x:Key="AppBarThemeCompactHeight">48</x:Double>
-    <Thickness x:Key="AppBarEllipsisButtonInnerBorderMargin">0,9,9,9</Thickness>
+    <Thickness x:Key="AppBarEllipsisButtonInnerBorderMargin">2,6,6,6</Thickness>
+    <x:Double x:Key="AppBarMoreButtonColumnMinWidth">6</x:Double>
     
     <Thickness x:Key="CommandBarOverflowPresenterMargin">0,4,0,4</Thickness>
 
@@ -94,7 +98,7 @@
     <Style x:Key="DefaultCommandBarStyle" TargetType="CommandBar">
         <Setter Property="Background" Value="{ThemeResource CommandBarBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource CommandBarForeground}" />
-        <Setter Property="Padding" Value="9,0,0,0" />
+        <Setter Property="Padding" Value="4,0,0,0" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
@@ -103,11 +107,13 @@
         <Setter Property="ClosedDisplayMode" Value="Compact" />
         <Setter Property="ExitDisplayModeOnAccessKeyInvoked" Value="False" />
         <Setter Property="CommandBarOverflowPresenterStyle" Value="{ThemeResource DefaultCommandBarOverflowPresenterStyle}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CommandBar">
                     <Grid x:Name="LayoutRoot">
                         <Grid.Resources>
+                            <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Collapsed</Visibility>
                             <Storyboard x:Key="OverlayOpeningAnimation">
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
                                     <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
@@ -120,6 +126,8 @@
                                     <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="0" />
                                 </DoubleAnimationUsingKeyFrames>
                             </Storyboard>
+                            <Style TargetType="local:SplitButton" BasedOn="{StaticResource SplitButtonCommandBarStyle}"/>
+                            <Style TargetType="local:ToggleSplitButton" BasedOn="{StaticResource SplitButtonCommandBarStyle}"/>
                         </Grid.Resources>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -139,9 +147,12 @@
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Background">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource CommandBarBackgroundOpen}" />
                                             </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                            <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource ControlCornerRadius}" />
-                                            </ObjectAnimationUsingKeyFrames>
+                                            </contract7NotPresent:ObjectAnimationUsingKeyFrames>
+                                            <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius}" />
+                                            </contract7Present:ObjectAnimationUsingKeyFrames>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OpenBorder" Storyboard.TargetProperty="Visibility">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Visible" />
                                             </ObjectAnimationUsingKeyFrames>
@@ -211,9 +222,12 @@
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Background">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource CommandBarBackgroundOpen}" />
                                             </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                            <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource ControlCornerRadius}" />
-                                            </ObjectAnimationUsingKeyFrames>
+                                            </contract7NotPresent:ObjectAnimationUsingKeyFrames>
+                                            <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius}" />
+                                            </contract7Present:ObjectAnimationUsingKeyFrames>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OpenBorder" Storyboard.TargetProperty="Visibility">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Visible" />
                                             </ObjectAnimationUsingKeyFrames>
@@ -569,9 +583,12 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource CommandBarBackgroundOpen}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="CornerRadius">
                                             <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource ControlCornerRadius}" />
-                                        </ObjectAnimationUsingKeyFrames>
+                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
+                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                            <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius}" />
+                                        </contract7Present:ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OpenBorder" Storyboard.TargetProperty="Visibility">
                                             <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Visible" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -600,9 +617,12 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource CommandBarBackgroundOpen}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                        <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="CornerRadius">
                                             <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource ControlCornerRadius}" />
-                                        </ObjectAnimationUsingKeyFrames>
+                                        </contract7NotPresent:ObjectAnimationUsingKeyFrames>
+                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                            <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius}" />
+                                        </contract7Present:ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OpenBorder" Storyboard.TargetProperty="Visibility">
                                             <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Visible" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -807,14 +827,13 @@
                         </Grid.Clip>
                         <Grid x:Name="ContentRoot"
                               VerticalAlignment="Top"
-                              Margin="{TemplateBinding Padding}"
                               Height="{TemplateBinding Height}"
                               MinHeight="{ThemeResource AppBarThemeCompactHeight}"
                               Background="{TemplateBinding Background}"
                               XYFocusKeyboardNavigation="Enabled">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" MinWidth="{StaticResource AppBarMoreButtonColumnMinWidth}"/>
                             </Grid.ColumnDefinitions>
                             <Grid.RenderTransform>
                                 <TranslateTransform x:Name="ContentTransform" />
@@ -827,6 +846,7 @@
                                 <!-- Use a ContentControl rather than a ContentPresenter so that IsEnabled can be set to false
                                      in the Minimal/HiddenClosed states to remove it from being a tab-stop candidate. -->
                                 <ContentControl x:Name="ContentControl"
+                                      Margin="{TemplateBinding Padding}"
                                       Content="{TemplateBinding Content}"
                                       ContentTemplate="{TemplateBinding ContentTemplate}"
                                       ContentTransitions="{TemplateBinding ContentTransitions}"
@@ -878,7 +898,8 @@
                                 VerticalAlignment="Stretch"
                                 BorderThickness="{ThemeResource CommandBarBorderThicknessOpen}"
                                 BorderBrush="{ThemeResource CommandBarBorderBrushOpen}"
-                                contract7Present:CornerRadius="{ThemeResource ControlCornerRadius}" />
+                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}" />
                         </Grid>
                         <Popup x:Name="OverflowPopup">
                             <Popup.RenderTransform>
@@ -896,7 +917,7 @@
                                     <RowDefinition />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
-                                <Grid.Clip>
+                                <contract12NotPresent:Grid.Clip>
                                     <RectangleGeometry Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentClipRect}">
                                         <RectangleGeometry.Transform>
                                             <TransformGroup>
@@ -904,8 +925,8 @@
                                             </TransformGroup>
                                         </RectangleGeometry.Transform>
                                     </RectangleGeometry>
-                                </Grid.Clip>
-                                <CommandBarOverflowPresenter x:Name="SecondaryItemsControl"
+                                </contract12NotPresent:Grid.Clip>
+                                <contract12NotPresent:CommandBarOverflowPresenter x:Name="SecondaryItemsControl"
                                     Style="{TemplateBinding CommandBarOverflowPresenterStyle}"
                                     IsTabStop="False">
                                     <CommandBarOverflowPresenter.RenderTransform>
@@ -915,7 +936,32 @@
                                         <Style TargetType="AppBarButton" BasedOn="{StaticResource AppBarButtonOverflowStyle}" />
                                         <Style TargetType="AppBarToggleButton" BasedOn="{StaticResource AppBarToggleButtonOverflowStyle}" />
                                     </CommandBarOverflowPresenter.Resources>
-                                </CommandBarOverflowPresenter>
+                                </contract12NotPresent:CommandBarOverflowPresenter>
+                                <!--For 21H1 and up, we'll need to wrap the clip and presenter in a Grid which will host the Drop Shadow.-->
+                                <contract12Present:Grid x:Name="SecondaryItemsControlShadowWrapper"
+                                      contract7Present:CornerRadius="{ThemeResource OverlayCornerRadius}"
+                                      contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
+                                    <Grid.Clip>
+                                        <RectangleGeometry Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentClipRect}">
+                                            <RectangleGeometry.Transform>
+                                                <TransformGroup>
+                                                    <TranslateTransform x:Name="OverflowContentRootClipTransform" />
+                                                </TransformGroup>
+                                            </RectangleGeometry.Transform>
+                                        </RectangleGeometry>
+                                    </Grid.Clip>
+                                    <CommandBarOverflowPresenter x:Name="SecondaryItemsControl"
+                                        Style="{TemplateBinding CommandBarOverflowPresenterStyle}"
+                                        IsTabStop="False">
+                                        <CommandBarOverflowPresenter.RenderTransform>
+                                            <TranslateTransform x:Name="OverflowContentTransform" />
+                                        </CommandBarOverflowPresenter.RenderTransform>
+                                        <CommandBarOverflowPresenter.Resources>
+                                            <Style TargetType="AppBarButton" BasedOn="{StaticResource AppBarButtonOverflowStyle}" />
+                                            <Style TargetType="AppBarToggleButton" BasedOn="{StaticResource AppBarToggleButtonOverflowStyle}" />
+                                        </CommandBarOverflowPresenter.Resources>
+                                    </CommandBarOverflowPresenter>
+                                </contract12Present:Grid>
                                 <!-- In order to give us extra space in the windowed popup to translate things down,
                                      we add a rectangle to make the HWND taller than it otherwise would be. -->
                                 <Rectangle x:Name="WindowedPopupPadding" Grid.Row="1" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.ContentHeight}" />

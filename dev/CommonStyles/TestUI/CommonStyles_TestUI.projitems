@@ -30,6 +30,11 @@
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)InkToolbarPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)TextControlsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -69,6 +74,11 @@
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MediaTransportControlsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)PivotPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -102,6 +112,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)CornerRadiusPage.xaml.cs">
       <DependentUpon>CornerRadiusPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)InkToolbarPage.xaml.cs">
+      <DependentUpon>InkToolbarPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)TextControlsPage.xaml.cs">
       <DependentUpon>TextControlsPage.xaml</DependentUpon>
@@ -144,6 +157,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ToolTipPage.xaml.cs">
       <DependentUpon>ToolTipPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)MediaTransportControlsPage.xaml.cs">
+      <DependentUpon>MediaTransportControlsPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

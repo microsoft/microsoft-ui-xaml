@@ -19,20 +19,20 @@
             <StaticResource x:Key="ScrollBarBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ScrollBarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ScrollBarButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-            <StaticResource x:Key="ScrollBarButtonBackgroundPressed" ResourceKey="ControlAAFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarButtonBackgroundPressed" ResourceKey="ControlStrongFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ScrollBarButtonBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ScrollBarButtonBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ScrollBarButtonBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ScrollBarButtonBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="ScrollBarButtonArrowForeground" ResourceKey="ControlAAFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarButtonArrowForeground" ResourceKey="ControlStrongFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarButtonArrowForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ScrollBarButtonArrowForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-            <StaticResource x:Key="ScrollBarButtonArrowForegroundDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
-            <StaticResource x:Key="ScrollBarThumbFill" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ScrollBarThumbFillPointerOver" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ScrollBarThumbFillPressed" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ScrollBarThumbFillDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ScrollBarButtonArrowForegroundDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
+            <StaticResource x:Key="ScrollBarThumbFill" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarThumbFillPointerOver" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarThumbFillPressed" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarThumbFillDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
             <StaticResource x:Key="ScrollBarThumbBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="ScrollBarTrackFill" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarTrackFillPointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush"  />
@@ -40,9 +40,9 @@
             <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarTrackStrokeDisabled" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-            <StaticResource x:Key="ScrollBarThumbBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ScrollBarPanningThumbBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ScrollBarPanningThumbBackgroundDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ScrollBarThumbBackground" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarPanningThumbBackground" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarPanningThumbBackgroundDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
             <SolidColorBrush x:Key="ScrollBarButtonForegroundThemeBrush" Color="#99000000" />
             <SolidColorBrush x:Key="ScrollBarButtonPointerOverBackgroundThemeBrush" Color="#FFDADADA" />
             <SolidColorBrush x:Key="ScrollBarButtonPointerOverBorderThemeBrush" Color="#FFDADADA" />
@@ -60,8 +60,8 @@
             <SolidColorBrush x:Key="ScrollBarThumbPressedBorderThemeBrush" Color="#ED555555" />
             <SolidColorBrush x:Key="ScrollBarTrackBackgroundThemeBrush" Color="#59D5D5D5" />
             <SolidColorBrush x:Key="ScrollBarTrackBorderThemeBrush" Color="#59D5D5D5" />
-            <StaticResource x:Key="ScrollBarThumbBackgroundColor" ResourceKey="ControlAAFillColorDefault" />
-            <StaticResource x:Key="ScrollBarPanningThumbBackgroundColor" ResourceKey="ControlAAFillColorDefault" />
+            <StaticResource x:Key="ScrollBarThumbBackgroundColor" ResourceKey="ControlStrongFillColorDefault" />
+            <StaticResource x:Key="ScrollBarPanningThumbBackgroundColor" ResourceKey="ControlStrongFillColorDefault" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <x:Double x:Key="ScrollBarTrackBorderThemeThickness">1</x:Double>
@@ -131,20 +131,20 @@
             <StaticResource x:Key="ScrollBarBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ScrollBarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ScrollBarButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-            <StaticResource x:Key="ScrollBarButtonBackgroundPressed" ResourceKey="ControlAAFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarButtonBackgroundPressed" ResourceKey="ControlStrongFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ScrollBarButtonBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ScrollBarButtonBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ScrollBarButtonBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ScrollBarButtonBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="ScrollBarButtonArrowForeground" ResourceKey="ControlAAFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarButtonArrowForeground" ResourceKey="ControlStrongFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarButtonArrowForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ScrollBarButtonArrowForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-            <StaticResource x:Key="ScrollBarButtonArrowForegroundDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
-            <StaticResource x:Key="ScrollBarThumbFill" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ScrollBarThumbFillPointerOver" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ScrollBarThumbFillPressed" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ScrollBarThumbFillDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ScrollBarButtonArrowForegroundDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
+            <StaticResource x:Key="ScrollBarThumbFill" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarThumbFillPointerOver" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarThumbFillPressed" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarThumbFillDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
             <StaticResource x:Key="ScrollBarThumbBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
             <StaticResource x:Key="ScrollBarTrackFill" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarTrackFillPointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush"  />
@@ -152,9 +152,9 @@
             <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarTrackStrokeDisabled" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-            <StaticResource x:Key="ScrollBarThumbBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ScrollBarPanningThumbBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ScrollBarPanningThumbBackgroundDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ScrollBarThumbBackground" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarPanningThumbBackground" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarPanningThumbBackgroundDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
             <SolidColorBrush x:Key="ScrollBarButtonForegroundThemeBrush" Color="#99000000" />
             <SolidColorBrush x:Key="ScrollBarButtonPointerOverBackgroundThemeBrush" Color="#FFDADADA" />
             <SolidColorBrush x:Key="ScrollBarButtonPointerOverBorderThemeBrush" Color="#FFDADADA" />
@@ -172,8 +172,8 @@
             <SolidColorBrush x:Key="ScrollBarThumbPressedBorderThemeBrush" Color="#ED555555" />
             <SolidColorBrush x:Key="ScrollBarTrackBackgroundThemeBrush" Color="#59D5D5D5" />
             <SolidColorBrush x:Key="ScrollBarTrackBorderThemeBrush" Color="#59D5D5D5" />
-            <StaticResource x:Key="ScrollBarThumbBackgroundColor" ResourceKey="ControlAAFillColorDefault" />
-            <StaticResource x:Key="ScrollBarPanningThumbBackgroundColor" ResourceKey="ControlAAFillColorDefault" />
+            <StaticResource x:Key="ScrollBarThumbBackgroundColor" ResourceKey="ControlStrongFillColorDefault" />
+            <StaticResource x:Key="ScrollBarPanningThumbBackgroundColor" ResourceKey="ControlStrongFillColorDefault" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
     
@@ -187,7 +187,6 @@
     <x:String x:Key="ScrollBarContractDelay">00:00:02</x:String>
     <x:String x:Key="ScrollBarContractFinalKeyframe">00:00:02.1</x:String>
     <x:Double x:Key="ScrollBarSize">12</x:Double>
-    <Thickness x:Key="ScrollBarMargin">1</Thickness>
 
     <x:Double x:Key="ScrollBarVerticalThumbMinHeight">30</x:Double>
     <x:Double x:Key="ScrollBarVerticalThumbMinWidth">8</x:Double>
@@ -208,12 +207,16 @@
     <primitives:CornerRadiusFilterConverter x:Key="TopLeftCornerRadiusDoubleValueConverter2x" Filter="TopLeftValue" Scale="2"/>
     <primitives:CornerRadiusFilterConverter x:Key="BottomRightCornerRadiusDoubleValueConverter2x" Filter="BottomRightValue" Scale="2"/>
 
+    <Thickness x:Key="ScrollBarHorizontalDecreaseMargin">4,0,0,0</Thickness>
+    <Thickness x:Key="ScrollBarHorizontalIncreaseMargin">0,0,4,0</Thickness>
+    <Thickness x:Key="ScrollBarVerticalDecreaseMargin">0,4,0,0</Thickness>
+    <Thickness x:Key="ScrollBarVerticalIncreaseMargin">0,0,0,4</Thickness>
+
     <Style TargetType="ScrollBar" BasedOn="{StaticResource DefaultScrollBarStyle}" />
 
     <Style x:Key="DefaultScrollBarStyle" TargetType="ScrollBar">
         <Setter Property="MinWidth" Value="{StaticResource ScrollBarSize}" />
         <Setter Property="MinHeight" Value="{StaticResource ScrollBarSize}" />
-        <Setter Property="Margin" Value="{StaticResource ScrollBarMargin}"/>
         <Setter Property="Background" Value="{ThemeResource ScrollBarBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource ScrollBarForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ScrollBarBorderBrush}" />
@@ -234,7 +237,7 @@
                                 </Grid>
                             </ControlTemplate>
                             <ControlTemplate x:Key="HorizontalIncrementTemplate" TargetType="RepeatButton">
-                                <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}">
+                                <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}" Padding="{ThemeResource ScrollBarHorizontalIncreaseMargin}">
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
                                             <VisualState x:Name="Normal" />
@@ -261,11 +264,11 @@
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="{ThemeResource ScrollBarCaretRight}" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True" />
+                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDDA;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True" />
                                 </Grid>
                             </ControlTemplate>
                             <ControlTemplate x:Key="HorizontalDecrementTemplate" TargetType="RepeatButton">
-                                <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}">
+                                <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}" Padding="{ThemeResource ScrollBarHorizontalDecreaseMargin}">
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
                                             <VisualState x:Name="Normal" />
@@ -292,11 +295,11 @@
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="{ThemeResource ScrollBarCaretLeft}" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True" />
+                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDD9;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True" />
                                 </Grid>
                             </ControlTemplate>
                             <ControlTemplate x:Key="VerticalIncrementTemplate" TargetType="RepeatButton">
-                                <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}">
+                                <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}" Padding="{ThemeResource ScrollBarVerticalIncreaseMargin}">
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
                                             <VisualState x:Name="Normal" />
@@ -323,11 +326,11 @@
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="{ThemeResource ScrollBarCaretDown}" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" />
+                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDDC;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" />
                                 </Grid>
                             </ControlTemplate>
                             <ControlTemplate x:Key="VerticalDecrementTemplate" TargetType="RepeatButton">
-                                <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}">
+                                <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}" Padding="{ThemeResource ScrollBarVerticalDecreaseMargin}">
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
                                             <VisualState x:Name="Normal" />
@@ -354,7 +357,7 @@
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="{ThemeResource ScrollBarCaretUp}" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" />
+                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDDB;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" />
                                 </Grid>
                             </ControlTemplate>
                             <ControlTemplate x:Key="VerticalThumbTemplate" TargetType="Thumb">
@@ -683,7 +686,7 @@
                                        contract7NotPresent:RadiusX="{Binding Source={ThemeResource ScrollBarCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter2x}}"
                                        contract7NotPresent:RadiusY="{Binding Source={ThemeResource ScrollBarCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter2x}}"
                                        Opacity="0" Grid.ColumnSpan="5" Margin="0" StrokeThickness="{ThemeResource ScrollBarTrackBorderThemeThickness}" Fill="{ThemeResource ScrollBarTrackFill}" Stroke="{ThemeResource ScrollBarTrackStroke}" />
-                            <RepeatButton x:Name="HorizontalSmallDecrease" Opacity="0" Grid.Column="0" MinHeight="{StaticResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Template="{StaticResource HorizontalDecrementTemplate}" Width="{StaticResource ScrollBarSize}" AllowFocusOnInteraction="False" VerticalAlignment="Center" />
+                            <RepeatButton x:Name="HorizontalSmallDecrease" Grid.Column="0" Opacity="0" MinHeight="{StaticResource ScrollBarSize}" IsTabStop="False" Interval="50" Padding="{ThemeResource ScrollBarHorizontalDecreaseMargin}" Template="{StaticResource HorizontalDecrementTemplate}" Width="{StaticResource ScrollBarSize}" AllowFocusOnInteraction="False" VerticalAlignment="Center" />
                             <RepeatButton x:Name="HorizontalLargeDecrease" Opacity="0" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" Template="{StaticResource RepeatButtonTemplate}" Width="0" AllowFocusOnInteraction="False" />
                             <Thumb x:Name="HorizontalThumb"
                                    Opacity="0"
@@ -702,7 +705,7 @@
                             </Thumb>
 
                             <RepeatButton x:Name="HorizontalLargeIncrease" Opacity="0" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" AllowFocusOnInteraction="False" Template="{StaticResource RepeatButtonTemplate}" />
-                            <RepeatButton x:Name="HorizontalSmallIncrease" Opacity="0" Grid.Column="4" MinHeight="{StaticResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Template="{StaticResource HorizontalIncrementTemplate}" Width="{StaticResource ScrollBarSize}" AllowFocusOnInteraction="False" VerticalAlignment="Center" />
+                            <RepeatButton x:Name="HorizontalSmallIncrease" Grid.Column="4" Opacity="0" MinHeight="{StaticResource ScrollBarSize}" IsTabStop="False" Interval="50" Padding="{ThemeResource ScrollBarHorizontalIncreaseMargin}" Template="{StaticResource HorizontalIncrementTemplate}" Width="{StaticResource ScrollBarSize}" AllowFocusOnInteraction="False" VerticalAlignment="Center" />
                         </Grid>
                         <Grid x:Name="HorizontalPanningRoot" MinWidth="24" Visibility="Collapsed" Opacity="0" contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
                             <Border x:Name="HorizontalPanningThumb" VerticalAlignment="Bottom" HorizontalAlignment="Left" Background="{ThemeResource ScrollBarPanningThumbBackground}" BorderThickness="0" Height="2" MinWidth="32" Margin="0,2,0,2"/>
@@ -722,7 +725,7 @@
                                        contract7NotPresent:RadiusX="{Binding Source={ThemeResource ScrollBarCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter2x}}"
                                        contract7NotPresent:RadiusY="{Binding Source={ThemeResource ScrollBarCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter2x}}"
                                        Opacity="0" Grid.RowSpan="5" Margin="0" StrokeThickness="{ThemeResource ScrollBarTrackBorderThemeThickness}" Fill="{ThemeResource ScrollBarTrackFill}" Stroke="{ThemeResource ScrollBarTrackStroke}" />
-                            <RepeatButton x:Name="VerticalSmallDecrease" Opacity="0" Height="{StaticResource ScrollBarSize}" MinWidth="{StaticResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Grid.Row="0" Template="{StaticResource VerticalDecrementTemplate}" HorizontalAlignment="Center" />
+                            <RepeatButton x:Name="VerticalSmallDecrease" Grid.Row="0" Opacity="0" Height="{StaticResource ScrollBarSize}" MinWidth="{StaticResource ScrollBarSize}" IsTabStop="False" Interval="50" Padding="{ThemeResource ScrollBarVerticalDecreaseMargin}" Template="{StaticResource VerticalDecrementTemplate}" HorizontalAlignment="Center" />
                             <RepeatButton x:Name="VerticalLargeDecrease" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="0" IsTabStop="False" Interval="50" Grid.Row="1" AllowFocusOnInteraction="False" Template="{StaticResource RepeatButtonTemplate}" />
                             <Thumb x:Name="VerticalThumb"
                                    Opacity="0"
@@ -741,7 +744,7 @@
                             </Thumb>
 
                             <RepeatButton x:Name="VerticalLargeIncrease" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" Grid.Row="3" AllowFocusOnInteraction="False" Template="{StaticResource RepeatButtonTemplate}" />
-                            <RepeatButton x:Name="VerticalSmallIncrease" Opacity="0" Height="{StaticResource ScrollBarSize}" MinWidth="{StaticResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Grid.Row="4" Template="{StaticResource VerticalIncrementTemplate}" HorizontalAlignment="Center" />
+                            <RepeatButton x:Name="VerticalSmallIncrease" Grid.Row="4" Opacity="0" Height="{StaticResource ScrollBarSize}" MinWidth="{StaticResource ScrollBarSize}" IsTabStop="False" Interval="50" Padding="{ThemeResource ScrollBarVerticalIncreaseMargin}" Template="{StaticResource VerticalIncrementTemplate}" HorizontalAlignment="Center" />
                         </Grid>
                         <Grid x:Name="VerticalPanningRoot" MinHeight="24" Visibility="Collapsed" Opacity="0" contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
                             <Border x:Name="VerticalPanningThumb" VerticalAlignment="Top" HorizontalAlignment="Right" Background="{ThemeResource ScrollBarPanningThumbBackground}" BorderThickness="0" Width="2" MinHeight="32" Margin="2,0,2,0" />

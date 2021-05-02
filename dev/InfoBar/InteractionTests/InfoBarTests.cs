@@ -145,13 +145,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 StatusBar infoBar = FindElement.ByName<StatusBar>("TestInfoBar");
                 CheckBox customContent = FindElement.ByName<CheckBox>("CustomContentCheckBox");
 
+                // 0: icon; 1: title; 2: message; 3: action button
                 Log.Comment("Verify that title, message, and action button layout is left-to-right");
-                Verify.IsGreaterThan(infoBar.Children[1].BoundingRectangle.X, infoBar.Children[0].BoundingRectangle.X, "Expect Message to be on the right of Title");
-                Verify.IsGreaterThan(infoBar.Children[2].BoundingRectangle.X, infoBar.Children[1].BoundingRectangle.X, "Expect action button to be on the right of Message");
-                VerifyIsPrettyClose(infoBar.Children[1].BoundingRectangle.Y, infoBar.Children[0].BoundingRectangle.Y, "Expect Message to be top-aligned with Title");
+                Verify.IsGreaterThan(infoBar.Children[2].BoundingRectangle.X, infoBar.Children[1].BoundingRectangle.X, "Expect Message to be on the right of Title");
+                Verify.IsGreaterThan(infoBar.Children[3].BoundingRectangle.X, infoBar.Children[2].BoundingRectangle.X, "Expect action button to be on the right of Message");
+                VerifyIsPrettyClose(infoBar.Children[2].BoundingRectangle.Y, infoBar.Children[1].BoundingRectangle.Y, "Expect Message to be top-aligned with Title");
 
-                Verify.IsGreaterThan(customContent.BoundingRectangle.Y, infoBar.Children[0].BoundingRectangle.Y, "Expect custom content to be on under all other things");
-                VerifyIsPrettyClose(customContent.BoundingRectangle.X, infoBar.Children[0].BoundingRectangle.X, "Expect custom content to be left-aligned with title");
+                Verify.IsGreaterThan(customContent.BoundingRectangle.Y, infoBar.Children[1].BoundingRectangle.Y, "Expect custom content to be on under all other things");
+                VerifyIsPrettyClose(customContent.BoundingRectangle.X, infoBar.Children[1].BoundingRectangle.X, "Expect custom content to be left-aligned with title");
 
                 Log.Comment("Change title and message to long strings");
                 Edit editTitle = FindElement.ByName<Edit>("TitleTextBox");
@@ -160,13 +161,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 editMessage.SetValueAndWait("Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Praesent vehicula mauris eu libero pretium ullamcorper.");
 
                 Log.Comment("Verify that title, message, and action button layout is top-to-bottom");
-                Verify.IsGreaterThan(infoBar.Children[1].BoundingRectangle.Y, infoBar.Children[0].BoundingRectangle.Y, "Expect Message to be below Title");
-                Verify.IsGreaterThan(infoBar.Children[2].BoundingRectangle.Y, infoBar.Children[1].BoundingRectangle.Y, "Expect action button to be below Message");
-                VerifyIsPrettyClose(infoBar.Children[1].BoundingRectangle.X, infoBar.Children[0].BoundingRectangle.X, "Expect Message to be left-aligned with Title");
-                VerifyIsPrettyClose(infoBar.Children[2].BoundingRectangle.X, infoBar.Children[1].BoundingRectangle.X, "Expect action button to be left-aligned Message");
+                Verify.IsGreaterThan(infoBar.Children[2].BoundingRectangle.Y, infoBar.Children[1].BoundingRectangle.Y, "Expect Message to be below Title");
+                Verify.IsGreaterThan(infoBar.Children[3].BoundingRectangle.Y, infoBar.Children[2].BoundingRectangle.Y, "Expect action button to be below Message");
+                VerifyIsPrettyClose(infoBar.Children[2].BoundingRectangle.X, infoBar.Children[1].BoundingRectangle.X, "Expect Message to be left-aligned with Title");
+                VerifyIsPrettyClose(infoBar.Children[3].BoundingRectangle.X, infoBar.Children[2].BoundingRectangle.X, "Expect action button to be left-aligned Message");
 
-                Verify.IsGreaterThan(customContent.BoundingRectangle.Y, infoBar.Children[2].BoundingRectangle.Y, "Expect custom content to be on under all other things");
-                VerifyIsPrettyClose(customContent.BoundingRectangle.X, infoBar.Children[0].BoundingRectangle.X, "Expect custom content to be left-aligned with everyone else");
+                Verify.IsGreaterThan(customContent.BoundingRectangle.Y, infoBar.Children[3].BoundingRectangle.Y, "Expect custom content to be on under all other things");
+                VerifyIsPrettyClose(customContent.BoundingRectangle.X, infoBar.Children[1].BoundingRectangle.X, "Expect custom content to be left-aligned with everyone else");
             }
         }
 

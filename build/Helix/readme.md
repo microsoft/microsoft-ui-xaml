@@ -3,7 +3,7 @@ This directory contains code and configuration files to run WinUI tests in Helix
 Helix is a cloud hosted test execution environment which is accessed via the Arcade SDK.
 More details:
 * [Arcade](https://github.com/dotnet/arcade)
-* [Helix](https://github.com/dotnet/arcade/tree/master/src/Microsoft.DotNet.Helix/Sdk)
+* [Helix](https://github.com/dotnet/arcade/tree/main/src/Microsoft.DotNet.Helix/Sdk)
 
 WinUI tests are scheduled in Helix by the Azure DevOps Pipeline: [RunHelixTests.yml](../RunHelixTests.yml).
 
@@ -13,7 +13,7 @@ that are needed to run tests.
 2. PrepareHelixPayload.ps1 is called. This copies the necessary files from various locations into a Helix 
 payload directory. This directory is what will get sent to the Helix machines.
 3. RunTestsInHelix.proj is executed. This proj has a dependency on 
-[Microsoft.DotNet.Helix.Sdk](https://github.com/dotnet/arcade/tree/master/src/Microsoft.DotNet.Helix/Sdk) 
+[Microsoft.DotNet.Helix.Sdk](https://github.com/dotnet/arcade/tree/main/src/Microsoft.DotNet.Helix/Sdk) 
 which it uses to publish the Helix payload directory and to schedule the Helix Work Items. The WinUI tests 
 are parallelized into multiple Helix Work Items.
 4. Each Helix Work Item calls [runtests.cmd](runtests.cmd) with a specific query to pass to 

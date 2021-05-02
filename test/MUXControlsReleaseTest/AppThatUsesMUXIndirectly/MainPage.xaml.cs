@@ -17,13 +17,17 @@ namespace AppThatUsesMUXIndirectly
 {
     public sealed partial class MainPage : Page
     {
-        // This app does NOT directly consume MUX, but it references another library that does use MUX.
+        // This app does NOT directly consume MUX, but it references a library and a nupkg that use MUX.
         public MainPage()
         {
-            
             this.InitializeComponent();
+            
             var userControl = new LibraryThatUsesMUX.TestUserControl1();
             layoutRoot.Children.Add(userControl);
+            
+            var muxcInterfaceImplementation = new RuntimeComponentThatUsesMUX.MUXCInterfaceImplementation();
+            object dummy;
+            muxcInterfaceImplementation.TryCreateAnimatedVisual(null, out dummy);
         }
     }
 }

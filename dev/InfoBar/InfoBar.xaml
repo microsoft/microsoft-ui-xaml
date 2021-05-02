@@ -10,6 +10,7 @@
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="CloseButtonStyle" Value="{StaticResource InfoBarCloseButtonStyle}" />
         <Setter Property="Background" Value="Transparent" />
+        <contract7Present:Setter Property="AutomationProperties.IsDialog" Value="True"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -141,8 +142,7 @@
                                     FontSize="{StaticResource InfoBarIconFontSize}"
                                     Text="{StaticResource InfoBarInformationalIconGlyph}"
                                     Foreground="{ThemeResource InfoBarInformationalSeverityIconForeground}"
-                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                    AutomationProperties.AccessibilityView="Raw" />
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
                             </Grid>
 
                             <Viewbox x:Name="UserIconBox"

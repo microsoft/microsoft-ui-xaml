@@ -86,6 +86,7 @@
                 <TextBlock Text="Other Samples" Style="{ThemeResource HeaderTextBlockStyle}"/>
                 <Button x:Name="defaultDemo" AutomationProperties.Name="Default Demo" >Default Demo</Button>
                 <Button x:Name="basicDemo" AutomationProperties.Name="Basic Demo">Basic Demo</Button>
+                <Button x:Name="uniformGridLayoutDemo" AutomationProperties.Name="UniformGridLayoutDemo">UniformGridLayout testing</Button>
             </StackPanel>
         </controls:LayoutPanel>
     </ScrollViewer>
