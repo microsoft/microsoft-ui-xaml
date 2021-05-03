@@ -223,6 +223,7 @@ void AnimatedVisualPlayer::AnimationPlay::Resume()
 //   - when any property is set that invalidates the current play, such as starting a new play or setting progress.
 //  * CompositionScopedBatch::BatchCompleted event
 //   - when a non-looping animation gets to it final keyframe.
+//  * ~AnimatedVisualPlayer - in owner's destructor
 // Do not do anything with this object after calling here... the object is destructed already.
 // REENTRANCE SIDE EFFECT: IsPlaying DP.
 void AnimatedVisualPlayer::AnimationPlay::Complete()
@@ -342,10 +343,14 @@ AnimatedVisualPlayer::AnimatedVisualPlayer()
 AnimatedVisualPlayer::~AnimatedVisualPlayer()
 {
     // Ensure any outstanding play is stopped.
-    // NOTE: Stop() can cause reentrance when clients react to DP changes, but because
-    //       we're in the destructor we know that there aren't any clients who can reach
-    //       us, so reentrance is not a concern. 
-    Stop();
+    if (m_nowPlaying)
+    {
+        // To stop and destroy m_nowPlaying we need to call Complete()
+        // We need to detach m_nowPlaying first so that Complete()
+        // will not try to call us (owner), since we already in the destructor
+        auto nowPlaying = std::move(m_nowPlaying);
+        nowPlaying->Complete();
+    }
 }
 
 void AnimatedVisualPlayer::OnLoaded(winrt::IInspectable const& /*sender*/, winrt::RoutedEventArgs const& /*args*/)
