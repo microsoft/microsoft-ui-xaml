@@ -98,6 +98,11 @@ For info on the WinUI release schedule and high level plans please see the [Wind
  
 Other Project Reunion components are: [WebView2](https://docs.microsoft.com/microsoft-edge/webview2/),  [MSIX (MSIX-Core)](https://docs.microsoft.com/windows/msix/overview), [C++/WinRT](https://github.com/microsoft/cppwinrt), [Rust/WinRT](https://github.com/microsoft/winrt-rs), and [C#/WinRT](https://github.com/microsoft/cswinrt). If you'd like to learn more and contribute to Project Reunion, or have **UWP/app model related questions**, visit our [Github repo](https://github.com/microsoft/ProjectReunion). 
 
+## Let us know how we can improve this repo for you!
+The WinUI team is looking to get feedback on how we can make our GitHub repo work better for all of you. If you'd like to share your opinions and ideas, feel free to fill out our survey below. Survey responses will not be associated with any personal information, and data collected will only be used to improve the WinUI repository. This survey is nice and short and should take between 4-7 minutes.
+
+You can find the survey here: [GitHub Repo Experience Survey for Developers: WinUI](https://customervoice.microsoft.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR8hRacjHEXxFkhwDmnqBYbJUOTZZTVhSUUxTMEZIUTZTN0cxTkFXNzMxNy4u)
+
 ## Data/Telemetry
 
 This project collects usage data and sends it to Microsoft to help improve our products and services. See the [privacy statement](privacy.md) for more details.
