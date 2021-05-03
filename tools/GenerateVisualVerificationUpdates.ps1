@@ -1,6 +1,6 @@
 Param(
     [Parameter(Mandatory = $true)]
-    [string]$updatedVisualTreeVerificationFolder,
+    [String]$BuildId,
     [string]$outputFolder = "..\test\MUXControlsTestApp\verification"
 )
 
@@ -13,7 +13,12 @@ Param(
 # a -4.xml,-5.xml,-6.xml, and -7.xml files where the -6.xml file was a copy of the original -4.xml.  We then delete all of the files that were in the verifications folder and then
 # copy the files that remain in the array to the verification folder.
 
-$staging = "staging"
+function New-TemporaryDirectory {
+    $parent = [System.IO.Path]::GetTempPath()
+    $name = [System.IO.Path]::GetRandomFileName()
+    New-Item -ItemType Directory -Path (Join-Path $parent $name)
+}
+
 $currentVisualTreeVerificationFolder = "..\test\MUXControlsTestApp\verification"
 $maxOSVersionNumber = 8
 
@@ -21,14 +26,49 @@ if( -Not (Test-Path $outputFolder) )
 {
     New-Item $outputFolder -ItemType Directory
 }
-if( -Not (Test-Path $staging) )
-{
-    New-Item $staging -ItemType Directory
-}
 
-if(Test-Path $updatedVisualTreeVerificationFolder)
+if($BuildId)
 {
-    $updatedVerificationFiles = Get-ChildItem $UpdatedVisualTreeVerificationFolder
+    $artifactsDir = New-TemporaryDirectory
+    $artifactName = "helixTestOutput"
+
+    $tempDir = New-TemporaryDirectory
+    $tempDirPath = $tempDir.FullName
+
+    $downloadFileName = $artifactName + ".zip"
+    $downloadFilePath = Join-Path $tempDirPath $downloadFileName 
+
+    $dropData = Invoke-RestMethod -Uri "https://dev.azure.com/ms/microsoft-ui-xaml/_apis/build/builds/$buildId/artifacts?artifactName=$artifactName&api-version=4.1" -Method Get
+
+    # Invoke-WebRequest is orders of magnitude slower when the progress indicator is being displayed. So temporarily disable it.
+    $ProgressPreferenceOld = $ProgressPreference
+    $ProgressPreference = "SilentlyContinue"
+    try
+    {    
+        Write-Host "Downloading '$downloadFileName'. Please wait, this will take a few moments..."
+        Invoke-WebRequest -Uri $dropData.resource.downloadUrl -OutFile $downloadFilePath
+    }
+    finally
+    {
+        $ProgressPreference = $ProgressPreferenceOld    
+    }
+
+    Write-Host "Done!"
+    Write-Host "Downloaded file to $downloadFilePath"
+
+    Write-Host "Extracting files to $artifactsDir"
+    Expand-Archive -Path $downloadFilePath -DestinationPath $artifactsDir
+
+    $tempUpdatesDir = New-TemporaryDirectory
+
+    $files = Get-ChildItem -Path $artifactsDir -Recurse | Where-Object {$_.Name -match '^.+-[45678].xml$'}
+    Write-Host "Found these updated verification files: $files"
+    foreach($file in $files)
+    {
+        Copy-Item $file.FullName "$tempUpdatesDir\$file" 
+    }
+
+    $updatedVerificationFiles = Get-ChildItem $tempUpdatesDir
     $currentVerificationFiles = Get-ChildItem $CurrentVisualTreeVerificationFolder
     $baseNameList = @()
     foreach($file in $UpdatedVerificationFiles)
@@ -44,7 +84,8 @@ if(Test-Path $updatedVisualTreeVerificationFolder)
     {
         Write-Host "No verification files were found, did you call the script on the correct directory?"
 	}
-
+    
+    $staging = New-TemporaryDirectory
     foreach($baseName in $baseNameList)
     {
         Write-Host "Processing updates for $baseName"
@@ -109,7 +150,7 @@ if(Test-Path $updatedVisualTreeVerificationFolder)
         foreach($i in $indexesToPublish)
         {
             $j = $i+1
-            Copy-Item $finalVersionedVerificationFiles[$i].FullName "staging\$baseName-$j.xml" -Force
+            Copy-Item $finalVersionedVerificationFiles[$i].FullName "$staging\$baseName-$j.xml" -Force
             Write-Host "Copied $($finalVersionedVerificationFiles[$i].FullName) as updated $baseName-$j.xml"
         }
         Remove-Item $outputFolder\$baseName.xml
@@ -117,7 +158,6 @@ if(Test-Path $updatedVisualTreeVerificationFolder)
         Copy-item -Force -Recurse "$staging\*" -Destination $outputFolder
         Remove-Item $staging\*.*
     }
-    Remove-Item $staging
 }
 else
 {
