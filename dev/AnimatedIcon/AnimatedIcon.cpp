@@ -169,7 +169,7 @@ winrt::Size AnimatedIcon::ArrangeOverride(winrt::Size const& finalSize)
         rootVisual.Offset({ offset, 0.0f });
         rootVisual.Size(arrangedSize);
         rootVisual.Scale({ scale, 1.0f });
-        return __super::ArrangeOverride(finalSize);
+        return finalSize;
     }
     else
     {
