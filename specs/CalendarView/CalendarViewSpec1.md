@@ -69,7 +69,7 @@ clicks/taps the current date:
 The example sets the color to be used on the inner border for the current date:
 
 ```xml
-<CalendarView TodaySelectedInnerBorderBrush='??'/>
+<CalendarView TodaySelectedInnerBorderBrush='{StaticResource TextOnAccentFillColorPrimaryBrush}'/>
 ```
 
 ![Selected Today Border.](images/SelectedTodayBorder.png)
@@ -92,7 +92,7 @@ _Spec note: how to set a blackout date isn't documented very well,
 `TodayBlackoutBackground` takes precedence over the `BlackoutForeground` value.
 
 ```xml
-<CalendarView TodayBlackoutBackground='??' TodayBlackoutForeground='??' />
+<CalendarView TodayBlackoutBackground='{StaticResource AccentFillColorTertiaryBrush}' TodayBlackoutForeground='{StaticResource TextOnAccentFillColorPrimaryBrush}' />
 ```
 
 ![Blacked Out Today Background And Foreground.](images/BlackoutTodayBackgroundAndForeground.png)
