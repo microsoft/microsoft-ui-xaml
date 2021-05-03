@@ -218,7 +218,7 @@
                               CornerRadius=4,4,4,4
                               BorderThickness=1,1,1,1
                               BorderBrush=#FFFFFFFF
-                              Background=#FF0078D4
+                              Background=#FF0078D7
                               Name=MultiArrangeOverlayTextBorder
                               MinWidth=20
                               Margin=0,0,0,0
