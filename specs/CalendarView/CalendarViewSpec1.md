@@ -4,22 +4,22 @@
 The XAML [CalendarView](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.CalendarView)
 control shows the user a calendar and lets them pick a date (range).
 
-A new set of CalendarView styling properties are introduced to allow greater customization of the
+A new set of `CalendarView` styling properties are introduced to allow greater customization of the
 control's rendering in upcoming Windows OS releases.
 These properties will be used in WinUI to align the CalendarView's styling with the rest of the
 standard controls.
 
-The CalendarView control only ships in the OS (Windows namespace),
-and thus there is no version in  
-[WinUI2](https://github.com/microsoft/microsoft-ui-xaml)
-(Microsoft namespace).
-Because a large part of the CalendarView rendering is achieved through
-custom OS code,
-the desired look cannot be achieved solely via XAML markup in the WinUI2 package.
-New properties, used by those WinUI 2.6+ packages, are required to drive the custom OS
-rendering code.
+With this change, `CalendarView` still has its existing visualization (styles/templates) that
+don't use these properties, and new ones that do.
+By default, the older visualization is used.
+The new visualization can be enabled by setting a boolean resource value
+(see `CalendarViewBaseItemRoundedChromeEnabled` below).
+And the `WinUI2`
+[controls library](https://www.nuget.org/packages/Microsoft.UI.Xaml/))
+sets this boolean. The end result is that these properties are ignored by default, but
+come into play when an app is using WinUI2.
 
-# Conceptual content
+# Conceptual
 
 ## Today styling
 
@@ -53,7 +53,7 @@ hovers a pointer over the current date:
 
 ![Hover Today Background.](images/HoverTodayBackground.png)
 
-### Showcasing the TodayPressedBackground property - current date is pressed
+### Showcasing the TodayPressedBackground property
 
 The value of the `TodayPressedBackground` property is used when the user
 clicks/taps the current date:
@@ -64,20 +64,42 @@ clicks/taps the current date:
 
 ![Pressed Today Background.](images/PressedTodayBackground.png)
 
-### Showcasing the TodayBlackoutBackground and TodayBlackoutForeground properties - the old property `CalendarView.IsTodayBlackedOut` is True
-
-![Blacked Out Today Background And Foreground.](images/BlackoutTodayBackgroundAndForeground.png)
-
 ### Showcasing the `TodaySelectedInnerBorderBrush` property - current date is selected
+
+The example sets the color to be used on the inner border for the current date:
+
+```xml
+<CalendarView TodaySelectedInnerBorderBrush='??'/>
+```
 
 ![Selected Today Border.](images/SelectedTodayBorder.png)
 
 ## Blacked Out styling
 
-The following properties of type Windows.UI.Xaml.Media.Brush are used to customize the calendar items that are blacked out in the month view:
-TodayBlackoutBackground, TodayBlackoutForeground, BlackoutStrikethroughBrush.
+The following properties of type
+[Brush](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Media.Brush)
+are used to customize the calendar items that are blacked out in the month view:
+`BlackoutForeground`, `TodayBlackoutBackground`, `TodayBlackoutForeground`, `BlackoutStrikethroughBrush`.
+A blacked out day is one that the user cannot select.
 
-### Showcasing the BlackoutStrikethroughBrush property - all Sundays are blacked out
+_Spec note: `BlackoutForeground` is an existing property, the other three are new to this spec._
+
+_Spec note: how to set a blackout date isn't documented very well,
+[issue](https://github.com/MicrosoftDocs/winrt-api/issues/1989)._
+
+### Showcasing the TodayBlackoutBackground and TodayBlackoutForeground properties
+
+`TodayBlackoutBackground` takes precedence over the `BlackoutForeground` value.
+
+```xml
+<CalendarView TodayBlackoutBackground='??' TodayBlackoutForeground='??' />
+```
+
+![Blacked Out Today Background And Foreground.](images/BlackoutTodayBackgroundAndForeground.png)
+
+### Showcasing the BlackoutStrikethroughBrush property
+
+This example sets the color of the strikethrough on the text of backed out days.
 
 ![Blacked Out Sundays.](images/BlackoutStrikethroughBrush.png)
 
@@ -254,18 +276,24 @@ The new properties in this spec have default values according to new resources:
 | TodayPressedBackground | CalendarViewTodayPressedBackground |
 | TodaySelectedInnerBorderBrush | CalendarViewTodaySelectedInnerBorderBrush |
 
-# Remarks
 
-The Windows OS code switches to the new rendering, capable of showing calendar items with rounded corners, when there is a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` set to True.
-WinUI will set that resource to True for applications that use 'Version2' for ControlsResourcesVersion (<controls:XamlControlsResources ControlsResourcesVersion="Version2"/>).
+# API Pages
+
+_Spec note: the following remarks apply to each of the new properties_
+
+This property is only used by the `CalendarView` control when a boolean resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True in the
+[Application.Resources](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Application.Resources).
 
 ```xml
     <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
 ```
 
-# API Notes
+This property is used by the
+[WinUI2 controls library](https://docs.microsoft.com/en-us/windows/apps/winui/winui2/),
+which sets this boolean resource to enable it.
+So using WinUI2 in your app causes this property to be enabled.
 
-These properties are added to the CalendarView control:
+## CalendarView.DayItemMargin
 
 `public Windows.UI.Xaml.Thickness DayItemMargin { get; set; }`
 
@@ -276,36 +304,26 @@ This property is only used by the CalendarView control when a boolean theme reso
 ```xml
     <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
 ```
+## CalendarView.MonthYearItemMargin
 
 `public Windows.UI.Xaml.Thickness MonthYearItemMargin { get; set; }`
 
 Gets or sets the margin applied to the main label inside a calendar month or year item.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
 
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.FirstOfMonthLabelMargin
 
 `public Windows.UI.Xaml.Thickness FirstOfMonthLabelMargin { get; set; }`
 
 Gets or sets the margin used to display the first-of-month banner in the calendar.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.FirstOfyearDecadeLabelMargin
 
 `public Windows.UI.Xaml.Thickness FirstOfYearDecadeLabelMargin { get; set; }`
 
 Gets or sets the margin used to display the first-of-year banner in the calendar.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.CalendarItemCornerRadius
 
 `public Windows.UI.Xaml.CornerRadius CalendarItemCornerRadius { get; set; }`
 
@@ -325,201 +343,121 @@ In this example, the CalendarItemCornerRadius property is set to 4px:
 
 ![CalendarItemCornerRadius property set to 4 resulting in rounded square visuals.](images/CalendarItemCornerRadiusSetToFour.png)
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.DisabledForeground
 
 `public Windows.UI.Xaml.Media.Brush DisabledForeground { get; set; }`
 
 Gets or sets a brush that provides the foreground of a calendar item while it's disabled.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.BlackoutStrikethroughBrush
 
 `public Windows.UI.Xaml.Media.Brush BlackoutStrikethroughBrush { get; set; }`
 
 Gets or sets a brush for the strikethrough line over calendar items while they are blacked out.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.SelectedDisabledBorderBrush
 
 `public Windows.UI.Xaml.Media.Brush SelectedDisabledBorderBrush { get; set; }`
 
 Gets or sets a brush that provides the border of a selected calendar item while it's disabled.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.SelectedDisabledForeground
 
 `public Windows.UI.Xaml.Media.Brush SelectedDisabledForeground { get; set; }`
 
 Gets or sets a brush that provides the foreground of a selected calendar item while it's disabled.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.SelectedHoverForeground
 
 `public Windows.UI.Xaml.Media.Brush SelectedHoverForeground { get; set; }`
 
 Gets or sets a brush that provides the foreground of a selected calendar item while the pointer is over it.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.SelectedPressedForeground
 
 `public Windows.UI.Xaml.Media.Brush SelectedPressedForeground { get; set; }`
 
 Gets or sets a brush that provides the foreground of a selected calendar item while it's pressed.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.CalendarItemHoverBackground
 
 `public Windows.UI.Xaml.Media.Brush CalendarItemHoverBackground { get; set; }`
 
 Gets or sets a brush that provides the background of a calendar item while the pointer is over it.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.CalendarItemPressedBackground
 
 `public Windows.UI.Xaml.Media.Brush CalendarItemPressedBackground { get; set; }`
 
 Gets or sets a brush that provides the background of a calendar item while it's pressed.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.CalendarItemDisabledBackground
 
 `public Windows.UI.Xaml.Media.Brush CalendarItemDisabledBackground { get; set; }`
 
 Gets or sets a brush that provides the background of a calendar item while it's disabled.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
 
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.OutOfScopeHoverForeground
 
 `public Windows.UI.Xaml.Media.Brush OutOfScopeHoverForeground { get; set; }`
 
 Gets or sets a brush that provides the foreground of calendar items that are outside the current scope (month, year, or decade) while the pointer is over them.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.OutOfScopePressedForeground
 
 `public Windows.UI.Xaml.Media.Brush OutOfScopePressedForeground { get; set; }`
 
 Gets or sets a brush that provides the foreground of calendar items that are outside the current scope (month, year, or decade) while they are pressed.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.TodayBackground
 
 `public Windows.UI.Xaml.Media.Brush TodayBackground { get; set; }`
 
 Gets or sets a brush that provides the background of the calendar item for the current date.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.BlackoutBackground
 
 `public Windows.UI.Xaml.Media.Brush BlackoutBackground { get; set; }`
 
 Gets or sets a brush that provides the background of calendar items while they are blacked out.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.TodayBlackoutBackground
 
 `public Windows.UI.Xaml.Media.Brush TodayBlackoutBackground { get; set; }`
 
 Gets or sets a brush that provides the background of the calendar item for the current date while it's blacked out.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.TodayBlackoutForeground
 
 `public Windows.UI.Xaml.Media.Brush TodayBlackoutForeground { get; set; }`
 
 Gets or sets a brush that provides the foreground of the calendar item for the current date while it's blacked out.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.TodayHoverBackground
 
 `public Windows.UI.Xaml.Media.Brush TodayHoverBackground { get; set; }`
 
 Gets or sets a brush that provides the background of the calendar item for the current date while the pointer is over it.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.TodayPressedBackground
 
 `public Windows.UI.Xaml.Media.Brush TodayPressedBackground { get; set; }`
 
 Gets or sets a brush that provides the background of the calendar item for the current date while it's pressed.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.TodayDisabledBackground
 
 `public Windows.UI.Xaml.Media.Brush TodayDisabledBackground { get; set; }`
 
 Gets or sets a brush that provides the background of the calendar item for the current date while it's disabled.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
+## CalendarView.TodaySelectedInnerBorderBrush
 
 `public Windows.UI.Xaml.Media.Brush TodaySelectedInnerBorderBrush { get; set; }`
 
 Gets or sets a brush that provides the border of the calendar item for the current date while it's selected.
 
-This property is only used by the CalendarView control when a boolean theme resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True.
-
-```xml
-    <x:Boolean x:Key="CalendarViewBaseItemRoundedChromeEnabled">True</x:Boolean>
-```
 
 # API Details
 
