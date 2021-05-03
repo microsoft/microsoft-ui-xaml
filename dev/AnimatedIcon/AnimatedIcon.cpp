@@ -52,10 +52,8 @@ void AnimatedIcon::OnApplyTemplate()
         {
             winrt::ElementCompositionPreview::SetElementChildVisual(panel, visual.RootVisual());
         }
-        if (auto const source = Source())
-        {
-            TrySetForegroundProperty(source);
-        }
+
+        TrySetForegroundProperty();
     }
 }
 
@@ -530,17 +528,33 @@ void AnimatedIcon::SetRootPanelChildToFallbackIcon()
 
 void AnimatedIcon::OnForegroundPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
-    TrySetForegroundProperty(Source());
+    m_foregroundColorPropertyChangedRevoker.revoke();
+    if (auto const foregroundSolidColorBrush = Foreground().try_as<winrt::SolidColorBrush>())
+    {
+        m_foregroundColorPropertyChangedRevoker = RegisterPropertyChanged(foregroundSolidColorBrush, winrt::SolidColorBrush::ColorProperty(), { this, &AnimatedIcon::OnForegroundBrushColorPropertyChanged });
+        TrySetForegroundProperty(foregroundSolidColorBrush.Color());
+    }
+}
+
+void AnimatedIcon::OnForegroundBrushColorPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+    TrySetForegroundProperty(sender.GetValue(args).as<winrt::Color>());
 }
 
 void AnimatedIcon::TrySetForegroundProperty(winrt::IAnimatedVisualSource2 const& source)
 {
-    if (source)
+    if (auto const foregroundSolidColorBrush = Foreground().try_as<winrt::SolidColorBrush>())
     {
-        if (auto const ForegroundSolidColorBrush = Foreground().try_as<winrt::SolidColorBrush>())
-        {
-            source.SetColorProperty(s_foregroundPropertyName, ForegroundSolidColorBrush.Color());
-        }
+        TrySetForegroundProperty(foregroundSolidColorBrush.Color(), source);
+    }
+}
+
+void AnimatedIcon::TrySetForegroundProperty(winrt::Color color, winrt::IAnimatedVisualSource2 const& source)
+{
+    auto const localSource = source ? source : Source();
+    if (localSource)
+    {
+        localSource.SetColorProperty(s_foregroundPropertyName, color);
     }
 }
 
