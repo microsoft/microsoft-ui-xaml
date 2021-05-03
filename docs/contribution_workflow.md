@@ -19,7 +19,7 @@ We use and recommend the following workflow:
     issue filer and the implementer don't have to be the same person.
 2. Create a personal fork of the repository on GitHub (if you don't already 
 have one).
-3. Create a branch off of master (`git checkout -b mybranch`). 
+3. Create a branch off of main (`git checkout -b mybranch`). 
     * Name the branch so that it clearly communicates your intentions, such as 
     user/your-github-handle/issue-name.
     * Branches are useful since they isolate your changes from incoming changes 
@@ -33,7 +33,7 @@ have one).
     * Make sure that the builds are clean.
     * Make sure that the [tests](developer_guide.md#Testing) are all passing, including your new 
     tests.
-7. Create a pull request (PR) against the upstream repository's master branch. 
+7. Create a pull request (PR) against the upstream repository's main branch. 
     * Push your changes to your fork on GitHub (if you haven't already).
     - Note: It is okay for your PR to include a large number of commits. Once 
     your change is accepted, you will be asked to squash your commits into one 
@@ -71,7 +71,7 @@ discussing it first: see the [New Feature or API Process](feature_proposal_proce
 
 ## Checks
 
-Each pull request to `master` must pass the following checks.
+Each pull request to `main` must pass the following checks.
 
 Pull requests from a fork will not automatically trigger all of these checks. A member of the WinUI 
 team can trigger the Azure Pipeline checks by commenting `/azp run` on the PR. The Azure Pipelines
@@ -100,7 +100,7 @@ define them here:
 
 This pipeline extends [WinUI-Public-MUX-PR](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21) 
 to validate more platforms, adding Debug and ARM. It is run after your changes are merged to 
-master.
+main.
 
 ## Commit Messages
 

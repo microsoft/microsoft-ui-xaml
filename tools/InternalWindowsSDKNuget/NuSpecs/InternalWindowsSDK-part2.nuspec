@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>InternalWindowsSDK-part2</id>
-    <version>1.0.3</version>
+    <version>1.0.5</version>
     <title>InternalWindowsSDK-part2</title>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
@@ -12,6 +12,6 @@
     <copyright>Copyright 2021</copyright>
   </metadata>
   <files>
-    <file target="windowssdk-21330.1000.210303-1505-part2" src="..\windowssdk-21330.1000.210303-1505-part2\**\*.*"/>
+    <file target="windowssdk-21361.1000.210413-1700-part2" src="..\windowssdk-21361.1000.210413-1700-part2\**\*.*"/>
   </files>
 </package>

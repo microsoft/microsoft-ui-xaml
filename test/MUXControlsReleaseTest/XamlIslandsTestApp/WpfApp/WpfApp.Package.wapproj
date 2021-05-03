@@ -31,7 +31,7 @@
   <PropertyGroup>
     <ProjectGuid>4454b583-39a0-4a91-881c-2078fa26c447</ProjectGuid>
     <TargetPlatformVersion>$(MuxSdkVersion)</TargetPlatformVersion>
-    <TargetPlatformMinVersion>$(MuxSdkVersion)</TargetPlatformMinVersion>
+    <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
     <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
     <EntryPointProjectUniqueName>WpfApp.csproj</EntryPointProjectUniqueName>
