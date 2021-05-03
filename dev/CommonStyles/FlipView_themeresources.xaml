@@ -85,9 +85,8 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <x:Double x:Key="FlipViewButtonFontSize">8</x:Double>
-    <x:Double x:Key="FlipViewButtonFontSizePointerOver">9</x:Double>
-    <x:Double x:Key="FlipViewButtonFontSizePressed">7</x:Double>
-
+    <x:Double x:Key="FlipViewButtonScalePressed">0.875</x:Double>
+    
     <Style TargetType="FlipView" BasedOn="{StaticResource DefaultFlipViewStyle}" />
 
     <Style x:Key="DefaultFlipViewStyle" TargetType="FlipView">
@@ -156,6 +155,14 @@
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource FlipViewNextPreviousArrowForegroundPressed}" />
                                                     </ObjectAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX" RepeatBehavior="Forever">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource FlipViewButtonScalePressed}"/>
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource FlipViewButtonScalePressed}"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY" RepeatBehavior="Forever">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource FlipViewButtonScalePressed}"/>
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource FlipViewButtonScalePressed}"/>
+                                                    </DoubleAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
                                         </VisualStateGroup>
@@ -168,7 +175,12 @@
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         MirroredWhenRightToLeft="True"
-                                        UseLayoutRounding="False" />
+                                        UseLayoutRounding="False"
+                                        RenderTransformOrigin="0.5, 0.5">
+                                        <FontIcon.RenderTransform>
+                                            <ScaleTransform x:Name="ScaleTransform" ScaleY="1" ScaleX="1" />
+                                        </FontIcon.RenderTransform>
+                                    </FontIcon>
                                 </Border>
                             </ControlTemplate>
                             <ControlTemplate x:Key="HorizontalPreviousTemplate" TargetType="Button">
@@ -205,6 +217,14 @@
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource FlipViewNextPreviousArrowForegroundPressed}" />
                                                     </ObjectAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX" RepeatBehavior="Forever">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource FlipViewButtonScalePressed}"/>
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource FlipViewButtonScalePressed}"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY" RepeatBehavior="Forever">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource FlipViewButtonScalePressed}"/>
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource FlipViewButtonScalePressed}"/>
+                                                    </DoubleAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
                                         </VisualStateGroup>
@@ -217,7 +237,12 @@
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         MirroredWhenRightToLeft="True"
-                                        UseLayoutRounding="False" />
+                                        UseLayoutRounding="False"
+                                        RenderTransformOrigin="0.5, 0.5">
+                                        <FontIcon.RenderTransform>
+                                            <ScaleTransform x:Name="ScaleTransform" ScaleY="1" ScaleX="1" />
+                                        </FontIcon.RenderTransform>
+                                    </FontIcon>
                                 </Border>
                             </ControlTemplate>
                             <ControlTemplate x:Key="VerticalNextTemplate" TargetType="Button">
@@ -254,6 +279,14 @@
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource FlipViewNextPreviousArrowForegroundPressed}" />
                                                     </ObjectAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX" RepeatBehavior="Forever">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource FlipViewButtonScalePressed}"/>
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource FlipViewButtonScalePressed}"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY" RepeatBehavior="Forever">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource FlipViewButtonScalePressed}"/>
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource FlipViewButtonScalePressed}"/>
+                                                    </DoubleAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
                                         </VisualStateGroup>
@@ -265,7 +298,12 @@
                                         Glyph="&#xEDDC;"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        UseLayoutRounding="False" />
+                                        UseLayoutRounding="False"
+                                        RenderTransformOrigin="0.5, 0.5">
+                                        <FontIcon.RenderTransform>
+                                            <ScaleTransform x:Name="ScaleTransform" ScaleY="1" ScaleX="1" />
+                                        </FontIcon.RenderTransform>
+                                    </FontIcon>
                                 </Border>
                             </ControlTemplate>
                             <ControlTemplate x:Key="VerticalPreviousTemplate" TargetType="Button">
@@ -302,6 +340,14 @@
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource FlipViewNextPreviousArrowForegroundPressed}" />
                                                     </ObjectAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX" RepeatBehavior="Forever">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource FlipViewButtonScalePressed}"/>
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource FlipViewButtonScalePressed}"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY" RepeatBehavior="Forever">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource FlipViewButtonScalePressed}"/>
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource FlipViewButtonScalePressed}"/>
+                                                    </DoubleAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
                                         </VisualStateGroup>
@@ -313,7 +359,12 @@
                                         Glyph="&#xEDDB;"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        UseLayoutRounding="False" />
+                                        UseLayoutRounding="False"
+                                        RenderTransformOrigin="0.5, 0.5">
+                                        <FontIcon.RenderTransform>
+                                            <ScaleTransform x:Name="ScaleTransform" ScaleY="1" ScaleX="1" />
+                                        </FontIcon.RenderTransform>
+                                    </FontIcon>
                                 </Border>
                             </ControlTemplate>
                         </Grid.Resources>

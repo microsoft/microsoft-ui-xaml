@@ -91,6 +91,9 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
+
+    <x:Double x:Key="CalendarViewNavigationButtonScalePressed">0.875</x:Double>
+    
     <Style TargetType="CalendarViewDayItem">
         <Setter Property="MinWidth" Value="40" />
         <Setter Property="MinHeight" Value="40" />
@@ -165,16 +168,13 @@
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
-                                            <ContentPresenter
-                                                x:Name="Text"
+                                            <Border
+                                                x:Name="RootBorder"
                                                 Background="{TemplateBinding Background}"
                                                 contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
                                                 BorderBrush="{ThemeResource CalendarViewNavigationButtonBorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                                Content="{TemplateBinding Content}"
-                                                Margin="{TemplateBinding Padding}"
-                                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                Padding="{TemplateBinding Padding}"
                                                 AutomationProperties.AccessibilityView="Raw"
                                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                                                 contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}">
@@ -183,19 +183,41 @@
                                                         <VisualState x:Name="Normal" />
                                                         <VisualState x:Name="PointerOver">
                                                             <VisualState.Setters>
-                                                                <Setter Target="Text.BorderBrush" Value="{ThemeResource CalendarViewNavigationButtonBorderBrushPointerOver}" />
-                                                                <Setter Target="Text.Foreground" Value="{ThemeResource CalendarViewNavigationButtonForegroundPointerOver}" />
+                                                                <Setter Target="RootBorder.BorderBrush" Value="{ThemeResource CalendarViewNavigationButtonBorderBrushPointerOver}" />
+                                                                <Setter Target="Content.Foreground" Value="{ThemeResource CalendarViewNavigationButtonForegroundPointerOver}" />
                                                             </VisualState.Setters>
                                                         </VisualState>
                                                         <VisualState x:Name="Pressed">
                                                             <VisualState.Setters>
-                                                                <Setter Target="Text.Foreground" Value="{ThemeResource CalendarViewNavigationButtonForegroundPressed}" />
+                                                                <Setter Target="Content.Foreground" Value="{ThemeResource CalendarViewNavigationButtonForegroundPressed}" />
                                                             </VisualState.Setters>
+                                                            <Storyboard RepeatBehavior="Forever">
+                                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX">
+                                                                    <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource CalendarViewNavigationButtonScalePressed}"/>
+                                                                    <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource CalendarViewNavigationButtonScalePressed}"/>
+                                                                </DoubleAnimationUsingKeyFrames>
+                                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY">
+                                                                    <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource CalendarViewNavigationButtonScalePressed}"/>
+                                                                    <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource CalendarViewNavigationButtonScalePressed}"/>
+                                                                </DoubleAnimationUsingKeyFrames>
+                                                            </Storyboard>
                                                         </VisualState>
                                                         <VisualState x:Name="Disabled" />
                                                     </VisualStateGroup>
                                                 </VisualStateManager.VisualStateGroups>
-                                            </ContentPresenter>
+                                                <TextBlock
+                                                    x:Name="Content"
+                                                    FontSize="{TemplateBinding FontSize}"
+                                                    FontFamily="{TemplateBinding FontFamily}"
+                                                    Text="{TemplateBinding Content}"
+                                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                    RenderTransformOrigin="0.5, 0.5">
+                                                    <TextBlock.RenderTransform>
+                                                        <ScaleTransform x:Name="ScaleTransform" ScaleY="1" ScaleX="1" />
+                                                    </TextBlock.RenderTransform>
+                                                </TextBlock>
+                                            </Border>
                                         </ControlTemplate>
                                     </Setter.Value>
                                 </Setter>
