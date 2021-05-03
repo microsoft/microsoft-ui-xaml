@@ -197,6 +197,8 @@
     <x:Double x:Key="ScrollBarThumbStrokeThickness">6</x:Double>
 
     <x:Double x:Key="ScrollBarButtonArrowIconFontSize">8</x:Double>
+    <x:Double x:Key="ScrollBarButtonArrowIconFontSizePointerOver">9</x:Double>
+    <x:Double x:Key="ScrollBarButtonArrowIconFontSizePressed">7</x:Double>
     <x:String x:Key="ScrollBarExpandBeginTime">00:00:00.40</x:String>
     <x:String x:Key="ScrollBarContractBeginTime">00:00:00.50</x:String>
     <CornerRadius x:Key="ScrollBarCornerRadius">3</CornerRadius>
@@ -241,12 +243,23 @@
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPointerOver}" />
                                                     </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="FontSize">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowIconFontSizePointerOver}" />
                                                 </Storyboard>
                                             </VisualState>
                                             <VisualState x:Name="Pressed">
                                                 <Storyboard>
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="FontSize">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowIconFontSizePressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="1.14"/>
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="1.14"/>
                                                     </ObjectAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
@@ -259,7 +272,11 @@
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDDA;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True" />
+                                    <FontIcon x:Name="Arrow" RenderTransformOrigin="0.5, 0.5" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDDA;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True">
+                                        <FontIcon.RenderTransform>
+                                            <ScaleTransform x:Name="ScaleTransform" ScaleY="1" ScaleX="1" />
+                                        </FontIcon.RenderTransform>
+                                    </FontIcon>
                                 </Grid>
                             </ControlTemplate>
                             <ControlTemplate x:Key="HorizontalDecrementTemplate" TargetType="RepeatButton">
@@ -272,12 +289,18 @@
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPointerOver}" />
                                                     </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="FontSize">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowIconFontSizePointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
                                             <VisualState x:Name="Pressed">
                                                 <Storyboard>
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="FontSize">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowIconFontSizePressed}" />
                                                     </ObjectAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
@@ -303,12 +326,18 @@
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPointerOver}" />
                                                     </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="FontSize">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowIconFontSizePointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
                                             <VisualState x:Name="Pressed">
                                                 <Storyboard>
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="FontSize">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowIconFontSizePressed}" />
                                                     </ObjectAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
@@ -334,12 +363,18 @@
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPointerOver}" />
                                                     </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="FontSize">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowIconFontSizePointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
                                             <VisualState x:Name="Pressed">
                                                 <Storyboard>
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="FontSize">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowIconFontSizePressed}" />
                                                     </ObjectAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
