@@ -41,6 +41,16 @@ namespace MUXControlsTestApp
 
             PageCalendar.CalendarViewDayItemChanging += CalendarView_CalendarViewDayItemChanging;
             PageCalendar2.CalendarViewDayItemChanging += CalendarView_CalendarViewDayItemChanging;
+
+            Loaded += CalendarViewPage_Loaded;
+        }
+
+        private void CalendarViewPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            SetDayItemMargin_Click(null, null);
+            SetMonthYearItemMargin_Click(null, null);
+            SetFirstOfMonthLabelMargin_Click(null, null);
+            SetFirstOfYearDecadeLabelMargin_Click(null, null);
         }
 
         private void CalendarView_CalendarViewDayItemChanging(CalendarView sender, CalendarViewDayItemChangingEventArgs args)

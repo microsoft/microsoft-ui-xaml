@@ -55,7 +55,7 @@
 
             <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
                 <TextBlock Text="DayItemMargin:" VerticalAlignment="Center"/>
-                <TextBox x:Name="dayItemMargin" Text="0, 6, 0, 0" Margin="2" VerticalAlignment="Center" MinWidth="125"/>
+                <TextBox x:Name="dayItemMargin" Text="0, 5, 0, 0" Margin="2" VerticalAlignment="Center" MinWidth="125"/>
                 <Button x:Name="setDayItemMargin" Content="Set" Margin="2" Click="SetDayItemMargin_Click" VerticalAlignment="Center"/>
             </StackPanel>
 
@@ -81,7 +81,7 @@
 
             <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
                 <TextBlock Text="FirstOfMonthLabelMargin:" VerticalAlignment="Center"/>
-                <TextBox x:Name="firstOfMonthLabelMargin" Text="0, 1, 0, 0" Margin="2" VerticalAlignment="Center" MinWidth="125"/>
+                <TextBox x:Name="firstOfMonthLabelMargin" Text="0, 2, 0, 0" Margin="2" VerticalAlignment="Center" MinWidth="125"/>
                 <Button x:Name="setFirstOfMonthLabelMargin" Content="Set" Margin="2" Click="SetFirstOfMonthLabelMargin_Click" VerticalAlignment="Center"/>
             </StackPanel>
 
@@ -94,7 +94,7 @@
 
             <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
                 <TextBlock Text="FirstOfYearDecadeLabelMargin:" VerticalAlignment="Center"/>
-                <TextBox x:Name="firstOfYearDecadeLabelMargin" Text="0, 3, 0, 0" Margin="2" VerticalAlignment="Center" MinWidth="125"/>
+                <TextBox x:Name="firstOfYearDecadeLabelMargin" Text="0, 9, 0, 0" Margin="2" VerticalAlignment="Center" MinWidth="125"/>
                 <Button x:Name="setFirstOfYearDecadeLabelMargin" Content="Set" Margin="2" Click="SetFirstOfYearDecadeLabelMargin_Click" VerticalAlignment="Center"/>
             </StackPanel>
 
