@@ -817,8 +817,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 UIObject dragUIObject = FindElement.ById("Root.0");
 
                 var height = dragUIObject.BoundingRectangle.Height;
-                // 5% from the edge of the next item 
-                var distance = (int)(height * 1.45);
+                // Drag distance is 1.75 times the height of a TreeViewItem 
+                var distance = (int)(height * 1.75);
 
                 Log.Comment("Click on the item to help make the drag more reliable");
                 dragUIObject.Click();
@@ -1052,8 +1052,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 UIObject dragUIObject = FindElement.ById("Root.1");
 
                 var height = dragUIObject.BoundingRectangle.Height;
-                // 5% from the edge of the next item 
-                var distance = (int)(height * 1.45);
+                // Drag distance is 1.75 times the height of a TreeViewItem 
+                var distance = (int)(height * 1.75);
 
                 Log.Comment("Starting Drag...distance:" + distance);
                 InputHelper.DragDistance(dragUIObject, distance, Direction.South);
@@ -1199,8 +1199,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 UIObject dragUIObject = FindElement.ById("Root.1.0");
 
                 var height = dragUIObject.BoundingRectangle.Height;
-                // 5% from the edge of the next item 
-                var distance = (int)(height * 1.45);
+                // Drag distance is 1.75 times the height of a TreeViewItem 
+                var distance = (int)(height * 1.75);
 
                 Log.Comment("Starting Drag...distance:" + distance);
                 InputHelper.DragDistance(dragUIObject, distance, Direction.South);
