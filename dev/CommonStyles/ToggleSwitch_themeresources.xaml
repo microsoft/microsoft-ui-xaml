@@ -303,6 +303,14 @@
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
+
+                                    <VisualState.Setters>
+                                        <Setter Target="SwitchKnobOn.HorizontalAlignment" Value="Right" />
+                                        <Setter Target="SwitchKnobOn.Margin" Value="0,0,3,0" />
+                                        <Setter Target="SwitchKnobOff.HorizontalAlignment" Value="Left" />
+                                        <Setter Target="SwitchKnobOff.Margin" Value="3,0,0,0" />
+                                    </VisualState.Setters>
+                                    
                                     <Storyboard>
                                         <ColorAnimationUsingKeyFrames Storyboard.TargetName="OuterBorder" Storyboard.TargetProperty="(Shape.Stroke).(SolidColorBrush.Color)">
                                             <LinearColorKeyFrame KeyTime="{StaticResource ControlFasterAnimationDuration}" Value="{ThemeResource ToggleSwitchStrokeOffPressed}" />
