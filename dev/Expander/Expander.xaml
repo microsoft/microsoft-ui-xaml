@@ -38,6 +38,9 @@
                             <VisualStateGroup x:Name="ExpandStates">
                                 <VisualState x:Name="ExpandUp">
                                     <VisualState.Setters>
+                                        <Setter Target="Divider.Visibility" Value="Visible"/>
+                                        <Setter Target="ExpanderHeader.Padding" Value="{ThemeResource ExpanderHeaderPaddingExpandedUp}"/>
+                                        <Setter Target="ExpanderHeader.BorderThickness" Value="{ThemeResource ExpanderContentDownBorderThickness}" />
                                         <contract7Present:Setter Target="ExpanderHeader.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                     </VisualState.Setters>
                                     <VisualState.Storyboard>
@@ -71,6 +74,9 @@
                                 </VisualState>
                                 <VisualState x:Name="ExpandDown">
                                     <VisualState.Setters>
+                                        <Setter Target="Divider.Visibility" Value="Visible"/>
+                                        <Setter Target="ExpanderHeader.Padding" Value="{ThemeResource ExpanderHeaderPaddingExpandedDown}"/>
+                                        <Setter Target="ExpanderHeader.BorderThickness" Value="{ThemeResource ExpanderContentUpBorderThickness}" />
                                         <contract7Present:Setter Target="ExpanderHeader.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                     </VisualState.Setters>
                                     <VisualState.Storyboard>
@@ -167,6 +173,13 @@
                                 </Border.RenderTransform>
                             </Border>
                         </Border>
+                        <Border x:Name="Divider"
+                                BorderThickness="{ThemeResource ExpanderHeaderBorderThickness}"
+                                BorderBrush="{ThemeResource ExpanderDividerBorderBrush}"
+                                Margin="{ThemeResource ExpanderDividerMargin}"
+                                Height="{ThemeResource ExpanderDividerHeight}"
+                                VerticalAlignment="Bottom"
+                                Visibility="Collapsed" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

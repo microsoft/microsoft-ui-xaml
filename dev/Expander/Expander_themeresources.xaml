@@ -37,6 +37,11 @@
             <StaticResource x:Key="ExpanderContentBackground" ResourceKey="CardBackgroundFillColorSecondaryBrush" />
             <StaticResource x:Key="ExpanderContentBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
 
+            <!-- Divider -->
+            <StaticResource x:Key="ExpanderDividerBorderBrush" ResourceKey="ControlStrokeColorSecondaryBrush"/>
+            <Thickness x:Key="ExpanderDividerMargin">1,0,1,0</Thickness>
+            <x:Double x:Key="ExpanderDividerHeight">1</x:Double>
+
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -67,6 +72,11 @@
             <!-- Content -->
             <StaticResource x:Key="ExpanderContentBackground" ResourceKey="CardBackgroundFillColorSecondaryBrush" />
             <StaticResource x:Key="ExpanderContentBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+
+            <!-- Divider -->
+            <StaticResource x:Key="ExpanderDividerBorderBrush" ResourceKey="ControlStrokeColorSecondaryBrush"/>
+            <Thickness x:Key="ExpanderDividerMargin">1,0,1,0</Thickness>
+            <x:Double x:Key="ExpanderDividerHeight">1</x:Double>
 
         </ResourceDictionary>
 
@@ -99,6 +109,11 @@
             <StaticResource x:Key="ExpanderContentBackground" ResourceKey="SystemColorWindowColorBrush" />
             <StaticResource x:Key="ExpanderContentBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
 
+            <!-- Divider -->
+            <StaticResource x:Key="ExpanderDividerBorderBrush" ResourceKey="SystemColorButtonTextColorBrush"/>
+            <Thickness x:Key="ExpanderDividerMargin">2,0,2,0</Thickness>
+            <x:Double x:Key="ExpanderDividerHeight">2</x:Double>
+
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -109,6 +124,8 @@
     <HorizontalAlignment x:Key="ExpanderHeaderHorizontalContentAlignment">Stretch</HorizontalAlignment>
     <VerticalAlignment x:Key="ExpanderHeaderVerticalContentAlignment">Center</VerticalAlignment>
     <Thickness x:Key="ExpanderHeaderPadding">16,0,0,0</Thickness>
+    <Thickness x:Key="ExpanderHeaderPaddingExpandedUp">16,1,0,0</Thickness>
+    <Thickness x:Key="ExpanderHeaderPaddingExpandedDown">16,0,0,1</Thickness>
     <Thickness x:Key="ExpanderChevronMargin">20,0,8,0</Thickness>
     <x:String x:Key="ExpanderChevronUpGlyph">&#xE70E;</x:String>
     <x:String x:Key="ExpanderChevronDownGlyph">&#xE70D;</x:String>
