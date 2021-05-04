@@ -135,6 +135,9 @@
                                         <Setter Target="RootSplitView.BorderThickness" Value="0" />
                                         <Setter Target="ShadowCaster.Opacity" Value="0" />
                                         <Setter Target="RootSplitView.PaneBackground" Value="{ThemeResource NavigationViewExpandedPaneBackground}" />
+                                        <Setter Target="ContentGrid.CornerRadius" Value="8,0,0,0" />
+                                        <Setter Target="ContentGrid.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                                        <Setter Target="ContentGrid.BorderThickness" Value="1,1,0,0" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
