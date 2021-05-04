@@ -14,7 +14,7 @@
             <StaticResource x:Key="PersonPictureEllipseFillStrokeBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <x:Double x:Key="PersonPictureEllipseBadgeStrokeOpacity">0.8</x:Double>
             <x:Double x:Key="PersonPictureEllipseBadgeImageSourceStrokeOpacity">1.0</x:Double>
-            <x:Double x:Key="PersonPictureEllipseStrokeThickness">0</x:Double>
+            <x:Double x:Key="PersonPictureEllipseStrokeThickness">1</x:Double>
             <x:Double x:Key="PersonPictureEllipseBadgeStrokeThickness">2</x:Double>
         </ResourceDictionary>
 
@@ -27,7 +27,7 @@
             <StaticResource x:Key="PersonPictureEllipseFillStrokeBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <x:Double x:Key="PersonPictureEllipseBadgeStrokeOpacity">0.8</x:Double>
             <x:Double x:Key="PersonPictureEllipseBadgeImageSourceStrokeOpacity">1.0</x:Double>
-            <x:Double x:Key="PersonPictureEllipseStrokeThickness">0</x:Double>
+            <x:Double x:Key="PersonPictureEllipseStrokeThickness">1</x:Double>
             <x:Double x:Key="PersonPictureEllipseBadgeStrokeThickness">2</x:Double>
         </ResourceDictionary>
 
