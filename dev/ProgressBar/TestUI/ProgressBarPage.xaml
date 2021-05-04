@@ -7,8 +7,9 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    mc:Ignorable="d"
+    xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 5)">
 
     <Page.Resources>
         <local:NullableBooleanToBooleanConverter x:Key="NullableBooleanToBooleanConverter" />
@@ -27,12 +28,22 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal">
+        <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal" contract5Present:Spacing="8">
             <TextBlock Text="Sample Progressbar" Style="{ThemeResource StandardGroupHeader}"/>
             <FontIcon Glyph="&#xF0AF;" Margin="4,0,40,3" FontSize="14" VerticalAlignment="Center"/>
+            <ProgressBar
+                x:Name="TestWUXProgressBar"
+                Width="300"
+                VerticalAlignment="Center"
+                AutomationProperties.Name="TestWUXProgressBar"
+                Style="{StaticResource DefaultProgressBarStyle}"
+                HorizontalAlignment="Left"
+                IsIndeterminate="{x:Bind ShowIsIndeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
+                ShowPaused="{x:Bind ShowPausedCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
+                ShowError="{x:Bind ShowErrorCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"/>
             <controls:ProgressBar
                 x:Name="TestProgressBar"
-                Width="400"
+                Width="300"
                 VerticalAlignment="Center"
                 AutomationProperties.Name="TestProgressBar"
                 HorizontalAlignment="Left"
@@ -97,19 +108,18 @@
                 <CheckBox x:Name="ShowErrorCheckBox" AutomationProperties.Name="ShowErrorCheckBox"  Content="ShowError"/>
                 <CheckBox x:Name="ShowIsIndeterminateCheckBox" AutomationProperties.Name="ShowIsIndeterminateCheckBox" Content="IsIndeterminate"/>
             </StackPanel>
-
-            <StackPanel Style="{ThemeResource StandardGroupingStackPanel}" Margin="0,16,0,0">
-                <TextBlock Text="Actions" Style="{ThemeResource StandardGroupHeader}"/>
-                <Button x:Name="UpdateMinMaxButton" AutomationProperties.Name="UpdateMinMaxButton" Content="Update Min and Max" Click="UpdateMinMax_Click"/>
-                <Button x:Name="UpdateWidthButton" AutomationProperties.Name="UpdateWidthButton" Content="Update Width" Click="UpdateWidth_Click"/>
-                <Button x:Name="UpdateValueButton" AutomationProperties.Name="UpdateValueButton" Content="Update Value" Click="UpdateValue_Click"/>
-                <RepeatButton x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Hold and Change Value" Click="ChangeValue_Click" />
-                <Button x:Name="UpdatePaddingButton" AutomationProperties.Name="UpdatePaddingButton" Content="Update Padding Left and Right" Click="UpdatePadding_Click"/>
-            </StackPanel>
-
         </StackPanel>
 
-        <StackPanel Grid.Column="1" Grid.Row="1" Margin="16,0,0,0"
+        <StackPanel Style="{ThemeResource StandardGroupingStackPanel}" Grid.Row="1" Grid.Column="1" Margin="16,0,0,0">
+            <TextBlock Text="Actions" Style="{ThemeResource StandardGroupHeader}"/>
+            <Button x:Name="UpdateMinMaxButton" AutomationProperties.Name="UpdateMinMaxButton" Content="Update Min and Max" Click="UpdateMinMax_Click"/>
+            <Button x:Name="UpdateWidthButton" AutomationProperties.Name="UpdateWidthButton" Content="Update Width" Click="UpdateWidth_Click"/>
+            <Button x:Name="UpdateValueButton" AutomationProperties.Name="UpdateValueButton" Content="Update Value" Click="UpdateValue_Click"/>
+            <RepeatButton x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Hold and Change Value" Click="ChangeValue_Click" />
+            <Button x:Name="UpdatePaddingButton" AutomationProperties.Name="UpdatePaddingButton" Content="Update Padding Left and Right" Click="UpdatePadding_Click"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="2" Grid.Row="1" Margin="16,0,0,0"
                     Style="{ThemeResource StandardGroupingStackPanel}">
             <TextBlock Text="Properties" Style="{ThemeResource StandardGroupHeader}"/>
 

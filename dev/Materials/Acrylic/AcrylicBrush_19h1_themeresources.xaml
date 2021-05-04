@@ -36,15 +36,15 @@
                 BackgroundSource="Backdrop"/>
             <local:AcrylicBrush
                 x:Key="AcrylicBackgroundFillColorBaseBrush"
-                TintColor="#202020"
-                TintOpacity="0.0"
-                FallbackColor="#202020"
+                TintColor="#1C1C1C"
+                TintOpacity="0.75"
+                FallbackColor="#1C1C1C"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
                 x:Key="AcrylicInAppFillColorBaseBrush"
-                TintColor="#202020"
-                TintOpacity="0.0"
-                FallbackColor="#202020"
+                TintColor="#1C1C1C"
+                TintOpacity="0.75"
+                FallbackColor="#1C1C1C"
                 BackgroundSource="Backdrop"/>
             <local:AcrylicBrush
                 x:Key="AccentAcrylicBackgroundFillColorDefaultBrush"
@@ -101,13 +101,13 @@
                 x:Key="AcrylicBackgroundFillColorBaseBrush"
                 TintColor="#F3F3F3"
                 TintOpacity="0.0"
-                FallbackColor="#F3F3F3"
+                FallbackColor="#EEEEEE"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
                 x:Key="AcrylicInAppFillColorBaseBrush"
                 TintColor="#F3F3F3"
                 TintOpacity="0.0"
-                FallbackColor="#F3F3F3"
+                FallbackColor="#EEEEEE"
                 BackgroundSource="Backdrop"/>
             <local:AcrylicBrush
                 x:Key="AccentAcrylicBackgroundFillColorDefaultBrush"
@@ -123,15 +123,15 @@
                 BackgroundSource="Backdrop"/>
             <local:AcrylicBrush
                 x:Key="AccentAcrylicBackgroundFillColorBaseBrush"
-                TintColor="{ThemeResource SystemAccentColorLight2}"
+                TintColor="{ThemeResource SystemAccentColorLight3}"
                 TintOpacity="0.8"
-                FallbackColor="{ThemeResource SystemAccentColorLight2}"
+                FallbackColor="{ThemeResource SystemAccentColorLight3}"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
                 x:Key="AccentAcrylicInAppFillColorBaseBrush"
-                TintColor="{ThemeResource SystemAccentColorLight2}"
+                TintColor="{ThemeResource SystemAccentColorLight3}"
                 TintOpacity="0.8"
-                FallbackColor="{ThemeResource SystemAccentColorLight2}"
+                FallbackColor="{ThemeResource SystemAccentColorLight3}"
                 BackgroundSource="Backdrop"/>
         </ResourceDictionary>
 

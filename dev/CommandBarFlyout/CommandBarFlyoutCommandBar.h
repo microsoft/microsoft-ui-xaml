@@ -22,7 +22,10 @@ public:
     bool HasOpenAnimation();
     void PlayOpenAnimation();
     bool HasCloseAnimation();
+    bool HasSecondaryOpenCloseAnimations();
     void PlayCloseAnimation(std::function<void()> onCompleteFunc);
+
+    void BindOwningFlyoutPresenterToCornerRadius();
 
     void ClearShadow();
 
@@ -95,4 +98,11 @@ private:
 
     bool m_secondaryCommandsExpectedToBeVisible{ false };
     bool m_secondaryItemsRootSized{ false };
+
+    void AttachEventsToSecondaryStoryboards();
+
+    winrt::Storyboard::Completed_revoker m_expandedUpToCollapsedStoryboardRevoker{};
+    winrt::Storyboard::Completed_revoker m_expandedDownToCollapsedStoryboardRevoker{};
+    winrt::Storyboard::Completed_revoker m_collapsedToExpandedUpStoryboardRevoker{};
+    winrt::Storyboard::Completed_revoker m_collapsedToExpandedDownStoryboardRevoker{};
 };

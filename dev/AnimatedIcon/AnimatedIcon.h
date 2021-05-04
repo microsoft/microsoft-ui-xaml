@@ -32,6 +32,9 @@ public:
     static void OnAnimatedIconStatePropertyChanged(
         const winrt::DependencyObject& sender,
         const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnAncestorAnimatedIconStatePropertyChanged(
+        const winrt::DependencyObject& sender,
+        const winrt::DependencyProperty& args);
     void OnStatePropertyChanged();
 
     static winrt::DependencyProperty AnimatedIconStateProperty() { return s_StateProperty; }
@@ -44,12 +47,15 @@ public:
     winrt::hstring GetLastAnimationSegmentStart();
     winrt::hstring GetLastAnimationSegmentEnd();
 private:
+    bool ConstructAndInsertVisual();
     void TransitionAndUpdateStates(const winrt::hstring& fromState, const winrt::hstring& toState, float playbackMultiplier = 1.0f);
     void TransitionStates(const winrt::hstring& fromState, const winrt::hstring& toState, float playtbackMultiplier = 1.0f);
     void PlaySegment(float from, float to, float playbackMultiplier = 1.0f);
-    void TrySetForegroundProperty(winrt::IAnimatedVisualSource2 const& source);
+    void TrySetForegroundProperty(winrt::Color color, winrt::IAnimatedVisualSource2 const& source = nullptr);
+    void TrySetForegroundProperty(winrt::IAnimatedVisualSource2 const& source = nullptr);
     void OnAnimationCompleted(winrt::IInspectable const&, winrt::CompositionBatchCompletedEventArgs const&);
     void OnForegroundPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void OnForegroundBrushColorPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void SetRootPanelChildToFallbackIcon();
 
     tracker_ref<winrt::IAnimatedVisual> m_animatedVisual{ this };
@@ -73,7 +79,9 @@ private:
     winrt::Composition::CompositionScopedBatch m_batch{ nullptr };
 
     ScopedBatchCompleted_revoker m_batchCompletedRevoker{ };
+    PropertyChanged_revoker m_ancestorStatePropertyChangedRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedRevoker{};
+    PropertyChanged_revoker m_foregroundColorPropertyChangedRevoker{};
 
     winrt::AnimatedIconAnimationQueueBehavior m_queueBehavior{ winrt::AnimatedIconAnimationQueueBehavior::SpeedUpQueueOne };
 };

@@ -20,7 +20,7 @@
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-        <Grid>
+        <Grid x:Name="InfoBarParent">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -38,6 +38,7 @@
 
             <Grid Grid.Row="1" Margin="0,20,0,0">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
@@ -63,10 +64,21 @@
                         <ComboBoxItem Content="None" />
                         <ComboBoxItem Content="Button" />
                         <ComboBoxItem Content="Hyperlink" />
+                        <ComboBoxItem Content="RightAlignedButton" />
+                        <ComboBoxItem Content="RightAlignedHyperlink" />
                     </ComboBox>
 
-                    <Button Content="Set Foreground" Click="SetForegroundClick"/>
+                    <Button x:Name="CollpaseActionButtonAsynchronouslyButton" Content="Collapse ActionButton async" Click="CollapseActionButtonAsynchronouslyClick"/>
+                    <Button x:Name="DisableActionButtonAsynchronouslyButton" Content="Disable ActionButton async" Click="DisableActionButtonAsynchronouslyClick"/>
+                    <Button x:Name="ResetActionButtonAsynchronouslyButton" Content="Reset ActionButton async" Click="ResetActionButtonAsynchronouslyClick"/>
 
+                    <Button x:Name="AddInfoBarButton" Content="Add InfoBar" Click="AddInfoBarClick" IsEnabled="False"/>
+                    <Button x:Name="RemoveInfoBarAsynchronouslyButton" Content="Remove InfoBar async" Click="RemoveInfoBarAsynchronouslyClick"/>
+
+                    <Button Content="Set Foreground" Click="SetForegroundClick"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">
                     <CheckBox x:Name="IsOpenCheckBox" AutomationProperties.Name="IsOpenCheckBox" Content="IsOpen" IsChecked="{x:Bind TestInfoBar.IsOpen, Mode=TwoWay}"/>
 
                     <CheckBox x:Name="CancelCheckBox" AutomationProperties.Name="CancelCheckBox" Content="Cancel Close" />
@@ -80,9 +92,11 @@
                     <CheckBox x:Name="CustomBackgroundCheckBox" AutomationProperties.Name="CustomBackgroundCheckBox" Content="Custom Background Color" Checked="CustomBackgroundChanged" Unchecked="CustomBackgroundChanged"/>
                     
                     <CheckBox x:Name="CloseButtonStyleCheckBox" AutomationProperties.Name="CloseButtonStyleCheckBox" Content="Custom Close Button Style" Checked="CloseStyleChanged" Unchecked="CloseStyleChanged"/>
+
+                    <CheckBox x:Name="RemoveActionButtonOnInvokeCheckBox" AutomationProperties.Name="RemoveActionButtonOnInvokeCheckBox" Content="Remove ActionButton on invoke"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">
+                <StackPanel Grid.Column="2" Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">
                     <TextBlock>Events:</TextBlock>
                     <ListBox x:Name="EventListBox" AutomationProperties.Name="EventListBox" MinWidth="150" MaxHeight="380">
                         <ListBox.Resources>

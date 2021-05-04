@@ -15,7 +15,8 @@
     xmlns:myAnimatedvisuals="using:AnimatedVisuals"
     mc:Ignorable="d">
     <Page.Resources>
-        <SolidColorBrush x:Key="TestIconForeground" Color="#80808080"/>
+        <SolidColorBrush x:Key="TestIconForeground" Color="{StaticResource TestIconForegroundColor}"/>
+        <Color x:Key="TestIconForegroundColor">#80808080</Color>
         <Style TargetType="local:AnimatedIconHost">
             <Setter Property="Template">
                 <Setter.Value>
@@ -50,7 +51,7 @@
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>
                             <TextBlock Text="{TemplateBinding Title}"/>
-                            <ContentPresenter Height="200" Width="200" x:Name="IconPresenter" Foreground="{TemplateBinding Foreground}">
+                            <ContentPresenter Height="200" Width="200" x:Name="IconPresenter">
                                 <Border x:Name="Icon" controls:AnimatedIcon.State="Normal"/>
                             </ContentPresenter>
                             <TextBlock x:Name="StateTextBlock" HorizontalAlignment="Center"/>
@@ -119,7 +120,7 @@
                             </VisualStateManager.VisualStateGroups>
                             <CheckBox HorizontalAlignment="Right" IsChecked="{TemplateBinding IsChecked}" IsEnabled="False"/>
                             <TextBlock Text="{TemplateBinding Title}"/>
-                            <ContentPresenter Height="200" Width="200" x:Name="IconPresenter" Foreground="{TemplateBinding Foreground}">
+                            <ContentPresenter Height="200" Width="200" x:Name="IconPresenter">
                                 <Border x:Name="Icon" controls:AnimatedIcon.State="NormalOff"/>
                             </ContentPresenter>
                             <TextBlock x:Name="StateTextBlock" HorizontalAlignment="Center"/>
@@ -129,16 +130,21 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        
         <local:DoubleToStringConverter x:Key="DoubleToStringConverter"/>
+        <local:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter"/>
         
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <Grid.Resources>
             <local:DoubleToStringConverter x:Key="DoubleToStringConverter"/>
+            <local:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter"/>
         </Grid.Resources>
         <Grid>
             <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
@@ -149,11 +155,24 @@
             <Slider HorizontalAlignment="Center" Minimum="0.1" Maximum="5.0" StepFrequency="0.1" Value="1.0" ValueChanged="Slider_ValueChanged" Width="150" Grid.Row="1"/>
             <TextBlock HorizontalAlignment="Center" Text="Speed Up behavior Multiplier" Grid.Row="2"/>
             <Slider HorizontalAlignment="Center" Minimum="1.0" Maximum="15.0" StepFrequency="0.1" Value="7.0" ValueChanged="SpeedUpSlider_ValueChanged" Width="150" Grid.Row="3"/>
-            <ScrollViewer Grid.Row="4">
+            <TextBlock HorizontalAlignment="Center" Text="Foreground Color" Grid.Row="4"/>
+            <Button HorizontalAlignment="Center" Grid.Row="5">
+                <Rectangle Height="100" Width="100">
+                    <Rectangle.Fill>
+                        <SolidColorBrush Color="{Binding ElementName=ForegoundColorPicker, Path=Color}"/>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Button.Flyout>
+                    <Flyout>
+                        <controls:ColorPicker x:Name="ForegoundColorPicker"  Color="{StaticResource TestIconForegroundColor}"/>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+            <ScrollViewer Grid.Row="6">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIcon_Cut" Title="AnimatedChevronDownSmallVisualSource" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="DropDownIcon_Cut" Title="AnimatedChevronDownSmallVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
@@ -171,7 +190,7 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIcon_Queue" Title="AnimatedChevronDownSmallVisualSource" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="DropDownIcon_Queue" Title="AnimatedChevronDownSmallVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
@@ -189,7 +208,7 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIcon_SpeedUpQueue" Title="AnimatedChevronDownSmallVisualSource" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="DropDownIcon_SpeedUpQueue" Title="AnimatedChevronDownSmallVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
@@ -210,7 +229,7 @@
 
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIconNavView_Cut" Title="AnimatedChevronUpDownSmallVisualSource" Background="DarkSlateGray">
+                            <local:ToggleAnimatedIconHost x:Name="DropDownIconNavView_Cut" Title="AnimatedChevronUpDownSmallVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
@@ -228,7 +247,7 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIconNavView_Queue" Title="AnimatedChevronUpDownSmallVisualSource" Background="DarkSlateGray">
+                            <local:ToggleAnimatedIconHost x:Name="DropDownIconNavView_Queue" Title="AnimatedChevronUpDownSmallVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
@@ -246,7 +265,7 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIconNavView_SpeedUpQueue" Title="AnimatedChevronUpDownSmallVisualSource" Background="DarkSlateGray">
+                            <local:ToggleAnimatedIconHost x:Name="DropDownIconNavView_SpeedUpQueue" Title="AnimatedChevronUpDownSmallVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
@@ -267,7 +286,7 @@
 
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SideChevron_Cut" Title="AnimatedChevronRightDownSmallVisualSource" Background="DarkSlateGray">
+                            <local:ToggleAnimatedIconHost x:Name="SideChevron_Cut" Title="AnimatedChevronRightDownSmallVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
@@ -285,7 +304,7 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SideChevron_Queue" Title="AnimatedChevronRightDownSmallVisualSource" Background="DarkSlateGray">
+                            <local:ToggleAnimatedIconHost x:Name="SideChevron_Queue" Title="AnimatedChevronRightDownSmallVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
@@ -303,7 +322,7 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SideChevron_SpeedUpQueue" Title="AnimatedChevronRightDownSmallVisualSource" Background="DarkSlateGray">
+                            <local:ToggleAnimatedIconHost x:Name="SideChevron_SpeedUpQueue" Title="AnimatedChevronRightDownSmallVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
@@ -324,62 +343,14 @@
                     
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_Cut" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
-                                <local:ToggleAnimatedIconHost.IconSource>
-                                    <controls:AnimatedIconSource>
-                                        <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
-                                        </controls:AnimatedIconSource.Source>
-                                        <controls:AnimatedIconSource.FallbackIconSource>
-                                            <controls:FontIconSource Glyph="&#xE700;"/>
-                                        </controls:AnimatedIconSource.FallbackIconSource>
-                                    </controls:AnimatedIconSource>
-                                </local:ToggleAnimatedIconHost.IconSource>
-                            </local:ToggleAnimatedIconHost>
-                            <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                        <StackPanel>
-                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_Queue" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
-                                <local:ToggleAnimatedIconHost.IconSource>
-                                    <controls:AnimatedIconSource>
-                                        <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
-                                        </controls:AnimatedIconSource.Source>
-                                        <controls:AnimatedIconSource.FallbackIconSource>
-                                            <controls:FontIconSource Glyph="&#xE700;"/>
-                                        </controls:AnimatedIconSource.FallbackIconSource>
-                                    </controls:AnimatedIconSource>
-                                </local:ToggleAnimatedIconHost.IconSource>
-                            </local:ToggleAnimatedIconHost>
-                            <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                        <StackPanel>
-                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_SpeedUpQueue" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
-                                <local:ToggleAnimatedIconHost.IconSource>
-                                    <controls:AnimatedIconSource>
-                                        <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
-                                        </controls:AnimatedIconSource.Source>
-                                        <controls:AnimatedIconSource.FallbackIconSource>
-                                            <controls:FontIconSource Glyph="&#xE700;"/>
-                                        </controls:AnimatedIconSource.FallbackIconSource>
-                                    </controls:AnimatedIconSource>
-                                </local:ToggleAnimatedIconHost.IconSource>
-                            </local:ToggleAnimatedIconHost>
-                            <TextBlock Text="Speed Up Queue Behavior" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
-                        <StackPanel>
-                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SettingsIcon_Cut" Title="AnimatedSettingsVisualSource" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="HamburgerIcon_Cut" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:AnimatedSettingsVisualSource/>
+                                            <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
-                                            <controls:SymbolIconSource Symbol="Setting"/>
+                                            <controls:FontIconSource Glyph="&#xE700;"/>
                                         </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
@@ -387,14 +358,14 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SettingsIcon_Queue" Title="AnimatedSettingsVisualSource" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="HamburgerIcon_Queue" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:AnimatedSettingsVisualSource/>
+                                            <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
-                                            <controls:SymbolIconSource Symbol="Setting"/>
+                                            <controls:FontIconSource Glyph="&#xE700;"/>
                                         </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
@@ -402,14 +373,14 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SettingsIcon_SpeedUpQueue" Title="AnimatedSettingsVisualSource" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="HamburgerIcon_SpeedUpQueue" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:AnimatedSettingsVisualSource/>
+                                            <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
-                                            <controls:SymbolIconSource Symbol="Setting"/>
+                                            <controls:FontIconSource Glyph="&#xE700;"/>
                                         </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
@@ -420,7 +391,55 @@
 
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="BackIcon_Cut" Title="AnimatedBackVisualSource" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="SettingsIcon_Cut" Title="AnimatedSettingsVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
+                                <local:AnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <animatedvisuals:AnimatedSettingsVisualSource/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:SymbolIconSource Symbol="Setting"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:AnimatedIconHost.IconSource>
+                            </local:AnimatedIconHost>
+                            <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <local:AnimatedIconHost x:Name="SettingsIcon_Queue" Title="AnimatedSettingsVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
+                                <local:AnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <animatedvisuals:AnimatedSettingsVisualSource/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:SymbolIconSource Symbol="Setting"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:AnimatedIconHost.IconSource>
+                            </local:AnimatedIconHost>
+                            <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <local:AnimatedIconHost x:Name="SettingsIcon_SpeedUpQueue" Title="AnimatedSettingsVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
+                                <local:AnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <animatedvisuals:AnimatedSettingsVisualSource/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:SymbolIconSource Symbol="Setting"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:AnimatedIconHost.IconSource>
+                            </local:AnimatedIconHost>
+                            <TextBlock Text="Speed Up Queue Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
+                        <StackPanel>
+                            <local:AnimatedIconHost x:Name="BackIcon_Cut" Title="AnimatedBackVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
@@ -437,7 +456,7 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="BackIcon_Queue" Title="AnimatedBackVisualSource" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="BackIcon_Queue" Title="AnimatedBackVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
@@ -454,7 +473,7 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="BackIcon_SpeedUpQueue" Title="AnimatedBackVisualSource" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="BackIcon_SpeedUpQueue" Title="AnimatedBackVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
@@ -474,7 +493,7 @@
 
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SearchIcon_Cut" Title="AnimatedFindVisualSource" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="SearchIcon_Cut" Title="AnimatedFindVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
@@ -489,7 +508,7 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SearchIcon_Queue" Title="AnimatedFindVisualSource" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="SearchIcon_Queue" Title="AnimatedFindVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
@@ -504,7 +523,7 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}"  x:Name="SearchIcon_SpeedUpQueue" Title="AnimatedFindVisualSource" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="SearchIcon_SpeedUpQueue" Title="AnimatedFindVisualSource" Background="DarkSlateGray" Foreground="{Binding ElementName=ForegoundColorPicker, Path=Color, Converter={StaticResource ColorToSolidColorBrushConverter}}">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
@@ -524,9 +543,7 @@
                         <Slider x:Name="Slider" Minimum="0" Maximum="100" Width="100" Value="{x:Bind Mode=TwoWay, Path=SliderIcon.(controls:AnimatedIcon.State), Converter={StaticResource DoubleToStringConverter}}">
                             <Slider.Header>
                                 <controls:AnimatedIcon x:Name="SliderIcon" Height="100" Width="100" Foreground="Red">
-                                    <controls:AnimatedIcon.Source>
-                                        <myAnimatedvisuals:BrightnessSun/>
-                                    </controls:AnimatedIcon.Source>
+                                    <myAnimatedvisuals:BrightnessSun/>
                                 </controls:AnimatedIcon>
                             </Slider.Header>
                         </Slider>
@@ -538,6 +555,41 @@
                             <CheckBox x:Name="LargeAnimatedCheckbox" HorizontalAlignment="Center"/>
                         </Viewbox>
                         <TextBlock x:Name="LastTransitionTextBlock"/>
+                    </StackPanel>
+                    <StackPanel Background="Gray">
+                        <TextBlock Text="Button with animated icon child"/>
+                        <Button Width="100" Height="100">
+                            <controls:AnimatedIcon>
+                                <animatedvisuals:AnimatedFindVisualSource/>
+                            </controls:AnimatedIcon>
+                        </Button>
+                        <TextBlock Text="Button with animated icon grandchild"/>
+                        <Button Width="100" Height="100">
+                            <Border>
+                                <controls:AnimatedIcon>
+                                    <animatedvisuals:AnimatedFindVisualSource/>
+                                </controls:AnimatedIcon>
+                            </Border>
+                        </Button>
+                        <StackPanel>
+                            <StackPanel.Resources>
+                                <controls:FontIconSource x:Name="MyFontIconSource" Glyph="{Binding ElementName=boundFallback, Path=FallbackGlyph}"/>
+                            </StackPanel.Resources>
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}"  x:Name="boundFallback" Title="AnimatedFindVisualSource" Background="DarkSlateGray" FallbackGlyph="&#xE001;">
+                                <local:AnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource FallbackIconSource="{StaticResource MyFontIconSource}"/>
+                                </local:AnimatedIconHost.IconSource>
+                            </local:AnimatedIconHost>
+                            <controls:AnimatedIcon FallbackIconSource="{StaticResource MyFontIconSource}"/>
+                            <Button Content="Change FallbackGlyph" Click="ChangeFallbackGlyphButton_Click"/>
+                        </StackPanel>
+                        <StackPanel Background="Maroon">
+                            <controls:AnimatedIcon Height="100" Width="100" Foreground="Pink">
+                                <controls:AnimatedIcon.FallbackIconSource>
+                                    <controls:SymbolIconSource Symbol="AddFriend" Foreground="Purple"/>
+                                </controls:AnimatedIcon.FallbackIconSource>
+                            </controls:AnimatedIcon>
+                        </StackPanel>
                     </StackPanel>
                 </StackPanel>
             </ScrollViewer>

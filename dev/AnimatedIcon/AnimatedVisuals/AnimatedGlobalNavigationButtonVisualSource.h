@@ -10,7 +10,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedGlobalNavigationButtonVisualSource.json
 //       
 //       Input file:
-//           AnimatedGlobalNavigationButtonVisualSource.json (146400 bytes created 12:28-08:00 Feb 8 2021)
+//           AnimatedGlobalNavigationButtonVisualSource.json (52226 bytes created 11:16-08:00 Mar 5 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -22,55 +22,32 @@
 #include "common.h"
 #include "AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.g.h"
 
-// Name:        AnimatedGlobalNavigationButtonVisualSource
+// Name:        Controls_02_Hamburger
 // Frame rate:  60 fps
-// Frame count: 195
-// Duration:    3250.0 mS
-// ________________________________________________________________________________________________________________
-// |               Marker                |               Constant                | Frame |   mS   |   Progress    |
-// |_____________________________________|_______________________________________|_______|________|_______________|
-// | NormalOnToNormalOff_Start           | M_NormalOnToNormalOff_Start           |     0 |    0.0 | 0.0F          |
-// | NormalOnToNormalOff_End             | M_NormalOnToNormalOff_End             |    19 |  316.7 | 0.0976923108F |
-// | NormalOnToPointerOverOn_Start       | M_NormalOnToPointerOverOn_Start       |    20 |  333.3 | 0.102820516F  |
-// | NormalOnToPointerOverOn_End         | M_NormalOnToPointerOverOn_End         |    29 |  483.3 | 0.148974359F  |
-// | NormalOnToPressedOn_Start           | M_NormalOnToPressedOn_Start           |    30 |  500.0 | 0.154102564F  |
-// | NormalOnToPressedOn_End             | M_NormalOnToPressedOn_End             |    34 |  566.7 | 0.174615383F  |
-// | NormalOffToNormalOn_Start           | M_NormalOffToNormalOn_Start           |    35 |  583.3 | 0.179743588F  |
-// | NormalOffToNormalOn_End             | M_NormalOffToNormalOn_End             |    54 |  900.0 | 0.27717948F   |
-// | NormalOffToPointerOverOff_Start     | M_NormalOffToPointerOverOff_Start     |    55 |  916.7 | 0.282307684F  |
-// | NormalOffToPointerOverOff_End       | M_NormalOffToPointerOverOff_End       |    64 | 1066.7 | 0.328461528F  |
-// | NormalOffToPressedOff_Start         | M_NormalOffToPressedOff_Start         |    65 | 1083.3 | 0.333589733F  |
-// | NormalOffToPressedOff_End           | M_NormalOffToPressedOff_End           |    69 | 1150.0 | 0.354102552F  |
-// | PointerOverOnToPointerOverOff_Start | M_PointerOverOnToPointerOverOff_Start |    70 | 1166.7 | 0.359230757F  |
-// | PointerOverOnToPointerOverOff_End   | M_PointerOverOnToPointerOverOff_End   |    79 | 1316.7 | 0.40538463F   |
-// | PointerOverOnToNormalOn_Start       | M_PointerOverOnToNormalOn_Start       |    80 | 1333.3 | 0.410512835F  |
-// | PointerOverOnToNormalOn_End         | M_PointerOverOnToNormalOn_End         |    89 | 1483.3 | 0.456666678F  |
-// | PointerOverOnToPressedOn_Start      | M_PointerOverOnToPressedOn_Start      |    90 | 1500.0 | 0.461794883F  |
-// | PointerOverOnToPressedOn_End        | M_PointerOverOnToPressedOn_End        |    94 | 1566.7 | 0.482307702F  |
-// | PointerOverOffToPointerOverOn_Start | M_PointerOverOffToPointerOverOn_Start |    95 | 1583.3 | 0.487435907F  |
-// | PointerOverOffToPointerOverOn_End   | M_PointerOverOffToPointerOverOn_End   |   104 | 1733.3 | 0.533589721F  |
-// | PointerOverOffToNormalOff_Start     | M_PointerOverOffToNormalOff_Start     |   105 | 1750.0 | 0.538717926F  |
-// | PointerOverOffToNormalOff_End       | M_PointerOverOffToNormalOff_End       |   114 | 1900.0 | 0.584871769F  |
-// | PointerOverOffToPressedOff_Start    | M_PointerOverOffToPressedOff_Start    |   115 | 1916.7 | 0.589999974F  |
-// | PointerOverOffToPressedOff_End      | M_PointerOverOffToPressedOff_End      |   119 | 1983.3 | 0.610512793F  |
-// | PressedOnToPressedOff_Start         | M_PressedOnToPressedOff_Start         |   120 | 2000.0 | 0.615640998F  |
-// | PressedOnToPressedOff_End           | M_PressedOnToPressedOff_End           |   129 | 2150.0 | 0.661794901F  |
-// | PressedOnToPointerOverOff_Start     | M_PressedOnToPointerOverOff_Start     |   130 | 2166.7 | 0.666923106F  |
-// | PressedOnToPointerOverOff_End       | M_PressedOnToPointerOverOff_End       |   139 | 2316.7 | 0.713076949F  |
-// | PressedOnToNormalOff_Start          | M_PressedOnToNormalOff_Start          |   140 | 2333.3 | 0.718205154F  |
-// | PressedOnToNormalOff_End            | M_PressedOnToNormalOff_End            |   154 | 2566.7 | 0.790000021F  |
-// | PressedOffToPressedOn_Start         | M_PressedOffToPressedOn_Start         |   155 | 2583.3 | 0.795128226F  |
-// | PressedOffToPressedOn_End           | M_PressedOffToPressedOn_End           |   164 | 2733.3 | 0.84128207F   |
-// | PressedOffToPointerOverOn_Start     | M_PressedOffToPointerOverOn_Start     |   165 | 2750.0 | 0.846410275F  |
-// | PressedOffToPointerOverOn_End       | M_PressedOffToPointerOverOn_End       |   179 | 2983.3 | 0.918205142F  |
-// | PressedOffToNormalOn_Start          | M_PressedOffToNormalOn_Start          |   180 | 3000.0 | 0.923333347F  |
-// | PressedOffToNormalOn_End            | M_PressedOffToNormalOn_End            |   194 | 3233.3 | 0.995128214F  |
-// ----------------------------------------------------------------------------------------------------------------
+// Frame count: 80
+// Duration:    1333.3 mS
+// _____________________________________________________________________________________________
+// |           Marker           |           Constant           | Frame |   mS   |   Progress   |
+// |____________________________|______________________________|_______|________|______________|
+// | NormalToPointerOver_Start  | M_NormalToPointerOver_Start  |     0 |    0.0 | 0.0F         |
+// | NormalToPointerOver_End    | M_NormalToPointerOver_End    |     9 |  150.0 | 0.113124996F |
+// | NormalToPressed_Start      | M_NormalToPressed_Start      |    10 |  166.7 | 0.125624999F |
+// | NormalToPressed_End        | M_NormalToPressed_End        |    19 |  316.7 | 0.238124996F |
+// | PointerOverToNormal_Start  | M_PointerOverToNormal_Start  |    20 |  333.3 | 0.250625014F |
+// | PointerOverToNormal_End    | M_PointerOverToNormal_End    |    29 |  483.3 | 0.363124996F |
+// | PointerOverToPressed_Start | M_PointerOverToPressed_Start |    30 |  500.0 | 0.375625014F |
+// | PointerOverToPressed_End   | M_PointerOverToPressed_End   |    39 |  650.0 | 0.488124996F |
+// | PressedToNormal_Start      | M_PressedToNormal_Start      |    40 |  666.7 | 0.500625014F |
+// | PressedToNormal_End        | M_PressedToNormal_End        |    59 |  983.3 | 0.738125026F |
+// | PressedToPointerOver_Start | M_PressedToPointerOver_Start |    60 | 1000.0 | 0.750625014F |
+// | PressedToPointerOver_End   | M_PressedToPointerOver_End   |    79 | 1316.7 | 0.988125026F |
+// ---------------------------------------------------------------------------------------------
 // _________________________________________________________
 // | Theme property |  Accessor  | Type  |  Default value  |
 // |________________|____________|_______|_________________|
 // | Foreground     | Foreground | Color | #FF000000 Black |
 // ---------------------------------------------------------
+
 class AnimatedGlobalNavigationButtonVisualSource
     : public winrt::implementation::AnimatedGlobalNavigationButtonVisualSourceT<AnimatedGlobalNavigationButtonVisualSource>
 {
@@ -80,116 +57,44 @@ class AnimatedGlobalNavigationButtonVisualSource
 
     static winrt::Windows::Foundation::Numerics::float4 ColorAsVector4(winrt::Windows::UI::Color color);
 public:
-    // Animation duration: 3.250 seconds.
-    static constexpr int64_t c_durationTicks{ 32500000L };
+    // Animation duration: 1.333 seconds.
+    static constexpr int64_t c_durationTicks{ 13333333L };
 
-    // Marker: NormalOnToNormalOff_Start.
-    static constexpr float M_NormalOnToNormalOff_Start{ 0.0F };
+    // Marker: NormalToPointerOver_Start.
+    static constexpr float M_NormalToPointerOver_Start{ 0.0F };
 
-    // Marker: NormalOnToNormalOff_End.
-    static constexpr float M_NormalOnToNormalOff_End{ 0.0976923108F };
+    // Marker: NormalToPointerOver_End.
+    static constexpr float M_NormalToPointerOver_End{ 0.113124996F };
 
-    // Marker: NormalOnToPointerOverOn_Start.
-    static constexpr float M_NormalOnToPointerOverOn_Start{ 0.102820516F };
+    // Marker: NormalToPressed_Start.
+    static constexpr float M_NormalToPressed_Start{ 0.125624999F };
 
-    // Marker: NormalOnToPointerOverOn_End.
-    static constexpr float M_NormalOnToPointerOverOn_End{ 0.148974359F };
+    // Marker: NormalToPressed_End.
+    static constexpr float M_NormalToPressed_End{ 0.238124996F };
 
-    // Marker: NormalOnToPressedOn_Start.
-    static constexpr float M_NormalOnToPressedOn_Start{ 0.154102564F };
+    // Marker: PointerOverToNormal_Start.
+    static constexpr float M_PointerOverToNormal_Start{ 0.250625014F };
 
-    // Marker: NormalOnToPressedOn_End.
-    static constexpr float M_NormalOnToPressedOn_End{ 0.174615383F };
+    // Marker: PointerOverToNormal_End.
+    static constexpr float M_PointerOverToNormal_End{ 0.363124996F };
 
-    // Marker: NormalOffToNormalOn_Start.
-    static constexpr float M_NormalOffToNormalOn_Start{ 0.179743588F };
+    // Marker: PointerOverToPressed_Start.
+    static constexpr float M_PointerOverToPressed_Start{ 0.375625014F };
 
-    // Marker: NormalOffToNormalOn_End.
-    static constexpr float M_NormalOffToNormalOn_End{ 0.27717948F };
+    // Marker: PointerOverToPressed_End.
+    static constexpr float M_PointerOverToPressed_End{ 0.488124996F };
 
-    // Marker: NormalOffToPointerOverOff_Start.
-    static constexpr float M_NormalOffToPointerOverOff_Start{ 0.282307684F };
+    // Marker: PressedToNormal_Start.
+    static constexpr float M_PressedToNormal_Start{ 0.500625014F };
 
-    // Marker: NormalOffToPointerOverOff_End.
-    static constexpr float M_NormalOffToPointerOverOff_End{ 0.328461528F };
+    // Marker: PressedToNormal_End.
+    static constexpr float M_PressedToNormal_End{ 0.738125026F };
 
-    // Marker: NormalOffToPressedOff_Start.
-    static constexpr float M_NormalOffToPressedOff_Start{ 0.333589733F };
+    // Marker: PressedToPointerOver_Start.
+    static constexpr float M_PressedToPointerOver_Start{ 0.750625014F };
 
-    // Marker: NormalOffToPressedOff_End.
-    static constexpr float M_NormalOffToPressedOff_End{ 0.354102552F };
-
-    // Marker: PointerOverOnToPointerOverOff_Start.
-    static constexpr float M_PointerOverOnToPointerOverOff_Start{ 0.359230757F };
-
-    // Marker: PointerOverOnToPointerOverOff_End.
-    static constexpr float M_PointerOverOnToPointerOverOff_End{ 0.40538463F };
-
-    // Marker: PointerOverOnToNormalOn_Start.
-    static constexpr float M_PointerOverOnToNormalOn_Start{ 0.410512835F };
-
-    // Marker: PointerOverOnToNormalOn_End.
-    static constexpr float M_PointerOverOnToNormalOn_End{ 0.456666678F };
-
-    // Marker: PointerOverOnToPressedOn_Start.
-    static constexpr float M_PointerOverOnToPressedOn_Start{ 0.461794883F };
-
-    // Marker: PointerOverOnToPressedOn_End.
-    static constexpr float M_PointerOverOnToPressedOn_End{ 0.482307702F };
-
-    // Marker: PointerOverOffToPointerOverOn_Start.
-    static constexpr float M_PointerOverOffToPointerOverOn_Start{ 0.487435907F };
-
-    // Marker: PointerOverOffToPointerOverOn_End.
-    static constexpr float M_PointerOverOffToPointerOverOn_End{ 0.533589721F };
-
-    // Marker: PointerOverOffToNormalOff_Start.
-    static constexpr float M_PointerOverOffToNormalOff_Start{ 0.538717926F };
-
-    // Marker: PointerOverOffToNormalOff_End.
-    static constexpr float M_PointerOverOffToNormalOff_End{ 0.584871769F };
-
-    // Marker: PointerOverOffToPressedOff_Start.
-    static constexpr float M_PointerOverOffToPressedOff_Start{ 0.589999974F };
-
-    // Marker: PointerOverOffToPressedOff_End.
-    static constexpr float M_PointerOverOffToPressedOff_End{ 0.610512793F };
-
-    // Marker: PressedOnToPressedOff_Start.
-    static constexpr float M_PressedOnToPressedOff_Start{ 0.615640998F };
-
-    // Marker: PressedOnToPressedOff_End.
-    static constexpr float M_PressedOnToPressedOff_End{ 0.661794901F };
-
-    // Marker: PressedOnToPointerOverOff_Start.
-    static constexpr float M_PressedOnToPointerOverOff_Start{ 0.666923106F };
-
-    // Marker: PressedOnToPointerOverOff_End.
-    static constexpr float M_PressedOnToPointerOverOff_End{ 0.713076949F };
-
-    // Marker: PressedOnToNormalOff_Start.
-    static constexpr float M_PressedOnToNormalOff_Start{ 0.718205154F };
-
-    // Marker: PressedOnToNormalOff_End.
-    static constexpr float M_PressedOnToNormalOff_End{ 0.790000021F };
-
-    // Marker: PressedOffToPressedOn_Start.
-    static constexpr float M_PressedOffToPressedOn_Start{ 0.795128226F };
-
-    // Marker: PressedOffToPressedOn_End.
-    static constexpr float M_PressedOffToPressedOn_End{ 0.84128207F };
-
-    // Marker: PressedOffToPointerOverOn_Start.
-    static constexpr float M_PressedOffToPointerOverOn_Start{ 0.846410275F };
-
-    // Marker: PressedOffToPointerOverOn_End.
-    static constexpr float M_PressedOffToPointerOverOn_End{ 0.918205142F };
-
-    // Marker: PressedOffToNormalOn_Start.
-    static constexpr float M_PressedOffToNormalOn_Start{ 0.923333347F };
-
-    // Marker: PressedOffToNormalOn_End.
-    static constexpr float M_PressedOffToNormalOn_End{ 0.995128214F };
+    // Marker: PressedToPointerOver_End.
+    static constexpr float M_PressedToPointerOver_End{ 0.988125026F };
 
     // Theme property: Foreground.
     static inline const winrt::Windows::UI::Color c_themeForeground{ 0xFF, 0x00, 0x00, 0x00 };

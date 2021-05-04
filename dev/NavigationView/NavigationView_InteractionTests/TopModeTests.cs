@@ -513,6 +513,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // 32134869: Temporarily disabling 
         public void TopPaddingTest()
         {
             // We cannot restrict the inner framesize for this test because it interacts with the titlebar area.

@@ -7,6 +7,7 @@ parameters:
   helixType: 'test/nuget'
   test_matrix: ''
   useFrameworkPkg: false
+  taefQuery: ''
   matrix:
     Debug_x86:
       buildPlatform: 'x86'
@@ -77,6 +78,11 @@ jobs:
 
   - template: MUX-BuildProject-Steps.yml
     parameters:
+      solutionPath: test\MUXControlsReleaseTest\RuntimeComponentThatUsesMUX\RuntimeComponentThatUsesMUX.sln
+      artifactName: ${{ parameters.buildArtifactName }}
+
+  - template: MUX-BuildProject-Steps.yml
+    parameters:
       solutionPath: $(solutionPath)
       artifactName: ${{ parameters.buildArtifactName }}
 
@@ -92,6 +98,8 @@ jobs:
       testSuite: 'NugetTestSuite'
       helixType: ${{ parameters.helixType }}
       artifactName: ${{ parameters.buildArtifactName }}
+      ${{if eq(parameters.useFrameworkPkg, 'true')}}:
+        taefQuery: "(not (@NugetPkgTestsOnly = 'true'))"
       rerunPassesRequiredToAvoidFailure: 5
       ${{if ne(parameters.test_matrix, '') }}:
         matrix: ${{ parameters.test_matrix }}

@@ -21,7 +21,7 @@ static constexpr auto c_AccentAcrylicInAppFillColorBaseBrush = L"AccentAcrylicIn
 // Controls knows nothing about XamlControlsResources, but we need a way to pass the new visual flag from XamlControlsResources to Controls
 // Assume XamlControlsResources is one per Application resource, and application is per thread, 
 // so it's OK to assume one instance of XamlControlsResources per thread.
-thread_local bool s_tlsIsControlsResourcesVersion2 = true;
+static thread_local bool s_tlsIsControlsResourcesVersion2 = true;
 
 XamlControlsResources::XamlControlsResources()
 {
@@ -167,19 +167,19 @@ void XamlControlsResources::UpdateAcrylicBrushesLightTheme(const winrt::IInspect
     }
     if (const auto accentAcrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
     {
-        accentAcrylicBackgroundFillColorDefaultBrush.TintLuminosityOpacity(0.8);
+        accentAcrylicBackgroundFillColorDefaultBrush.TintLuminosityOpacity(0.9);
     }
     if (const auto accentAcrylicInAppFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicInAppFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
     {
-        accentAcrylicInAppFillColorDefaultBrush.TintLuminosityOpacity(0.8);
+        accentAcrylicInAppFillColorDefaultBrush.TintLuminosityOpacity(0.9);
     }
     if (const auto accentAcrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
     {
-        accentAcrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.8);
+        accentAcrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.9);
     }
     if (const auto accentAcrylicInAppFillColorBaseBrush = dictionary.Lookup(box_value(c_AccentAcrylicInAppFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
     {
-        accentAcrylicInAppFillColorBaseBrush.TintLuminosityOpacity(0.8);
+        accentAcrylicInAppFillColorBaseBrush.TintLuminosityOpacity(0.9);
     }
 }
 
@@ -205,11 +205,11 @@ void XamlControlsResources::UpdateAcrylicBrushesDarkTheme(const winrt::IInspecta
         }
         if (const auto acrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
         {
-            acrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.96);
+            acrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.92);
         }
         if (const auto acrylicInAppFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
         {
-            acrylicInAppFillColorBaseBrush.TintLuminosityOpacity(0.96);
+            acrylicInAppFillColorBaseBrush.TintLuminosityOpacity(0.92);
         }
         if (const auto accentAcrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
         {
@@ -359,4 +359,9 @@ void XamlControlsResources::EnsureRevealLights(winrt::UIElement const& element)
                 RevealBrush::AttachLightsToAncestor(element, false);
             });
     }
+}
+
+bool XamlControlsResources::IsUsingControlsResourcesVersion2()
+{
+    return s_tlsIsControlsResourcesVersion2;
 }

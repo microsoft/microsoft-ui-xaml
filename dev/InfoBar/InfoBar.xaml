@@ -10,6 +10,7 @@
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="CloseButtonStyle" Value="{StaticResource InfoBarCloseButtonStyle}" />
         <Setter Property="Background" Value="Transparent" />
+        <contract7Present:Setter Property="AutomationProperties.IsDialog" Value="True"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -29,7 +30,8 @@
                                 <VisualState x:Name="Error">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}"/>
-                                        <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarErrorIconGlyph}"/>
+                                        <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconBackground}"/>
+                                        <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarErrorIconGlyph}"/>
                                         <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -37,7 +39,8 @@
                                 <VisualState x:Name="Warning">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarWarningSeverityBackgroundBrush}"/>
-                                        <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarWarningIconGlyph}"/>
+                                        <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarWarningSeverityIconBackground}"/>
+                                        <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarWarningIconGlyph}"/>
                                         <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarWarningSeverityIconForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -45,7 +48,8 @@
                                 <VisualState x:Name="Success">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSuccessSeverityBackgroundBrush}"/>
-                                        <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarSuccessIconGlyph}"/>
+                                        <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarSuccessSeverityIconBackground}"/>
+                                        <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarSuccessIconGlyph}"/>
                                         <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarSuccessSeverityIconForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -54,15 +58,15 @@
                             <VisualStateGroup x:Name="IconStates">
                                 <VisualState x:Name="StandardIconVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="StandardIcon.Visibility" Value="Visible"/>
-                                        <Setter Target="UserIconBorder.Visibility" Value="Collapsed"/>
+                                        <Setter Target="UserIconBox.Visibility" Value="Collapsed"/>
+                                        <Setter Target="StandardIconArea.Visibility" Value="Visible"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                
+
                                 <VisualState x:Name="UserIconVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="UserIconBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="StandardIcon.Visibility" Value="Collapsed"/>
+                                        <Setter Target="UserIconBox.Visibility" Value="Visible"/>
+                                        <Setter Target="StandardIconArea.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 
@@ -118,22 +122,36 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <FontIcon x:Name="StandardIcon"
-                                Grid.Column="0"
-                                Visibility="Collapsed"
-                                VerticalAlignment="Top"
-                                Margin="{StaticResource InfoBarIconMargin}"
-                                FontSize="{StaticResource InfoBarIconFontSize}"
-                                Glyph="{StaticResource InfoBarInformationalIconGlyph}"
-                                Foreground="{ThemeResource InfoBarInformationalSeverityIconForeground}"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                AutomationProperties.AccessibilityView="Raw" />
+                            <Grid x:Name="StandardIconArea"
+                                Visibility="Collapsed">
+                                
+                                <TextBlock x:Name="IconBackground"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Top"
+                                    Margin="{StaticResource InfoBarIconMargin}"
+                                    FontSize="{StaticResource InfoBarIconFontSize}"
+                                    Text="{StaticResource InfoBarIconBackgroundGlyph}"
+                                    Foreground="{ThemeResource InfoBarInformationalSeverityIconBackground}"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    AutomationProperties.AccessibilityView="Raw" />
 
-                            <Border x:Name="UserIconBorder"
+                                <TextBlock x:Name="StandardIcon"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Top"
+                                    Margin="{StaticResource InfoBarIconMargin}"
+                                    FontSize="{StaticResource InfoBarIconFontSize}"
+                                    Text="{StaticResource InfoBarInformationalIconGlyph}"
+                                    Foreground="{ThemeResource InfoBarInformationalSeverityIconForeground}"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
+                            </Grid>
+
+                            <Viewbox x:Name="UserIconBox"
                                 Grid.Column="0"
                                 Visibility="Collapsed"
                                 VerticalAlignment="Top"
-                                Margin="{StaticResource InfoBarIconMargin}"
+                                MaxWidth="{ThemeResource InfoBarIconFontSize}"
+                                MaxHeight="{ThemeResource InfoBarIconFontSize}"
+                                Margin="{ThemeResource InfoBarIconMargin}"
                                 Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}" />
 
                             <primitives:InfoBarPanel
@@ -166,23 +184,12 @@
                                     primitives:InfoBarPanel.VerticalOrientationMargin="{StaticResource InfoBarActionVerticalOrientationMargin}"
                                     VerticalAlignment="Top"
                                     Content="{TemplateBinding ActionButton}">
-                                    
-                                    <ContentPresenter.Resources>
-                                        <Style TargetType="Button">
-                                            <Style.Setters>
-                                                <Setter Property="MinWidth" Value="{StaticResource InfoBarActionButtonMinWidth}"/>
-                                                <Setter Property="Padding" Value="{StaticResource InfoBarActionButtonPadding}"/>
-                                                <Setter Property="MinHeight" Value="{StaticResource InfoBarActionButtonMinHeight}"/>
-                                                <contract7Present:Setter Property="CornerRadius" Value="{StaticResource InfoBarActionButtonCornerRadius}"/>
-                                            </Style.Setters>
-                                        </Style>
 
-                                        <Style TargetType="HyperlinkButton">
+                                    <ContentPresenter.Resources>
+                                        <Style TargetType="HyperlinkButton" BasedOn="{StaticResource DefaultHyperlinkButtonStyle}">
                                             <Style.Setters>
-                                                <Setter Property="FontSize" Value="{ThemeResource InfoBarHyperlinkButtonFontSize}"/>
+                                                <Setter Property="Margin" Value="{StaticResource InfoBarHyperlinkButtonMargin}"/>
                                                 <Setter Property="Foreground" Value="{ThemeResource InfoBarHyperlinkButtonForeground}"/>
-                                                <Setter Property="Padding" Value="{StaticResource InfoBarHyperlinkButtonPadding}"/>
-                                                <Setter Property="MinHeight" Value="{ThemeResource InfoBarHyperlinkButtonMinHeight}"/>
                                             </Style.Setters>
                                         </Style>
                                     </ContentPresenter.Resources>
@@ -201,6 +208,57 @@
                                 Command="{TemplateBinding CloseButtonCommand}" 
                                 CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
                                 Style="{TemplateBinding CloseButtonStyle}">
+
+                                <Button.Resources>
+                                    <ResourceDictionary>
+                                        <ResourceDictionary.ThemeDictionaries>
+                                            <ResourceDictionary x:Key="Default">
+                                                <StaticResource x:Key="ButtonBackground" ResourceKey="AppBarButtonBackground" />
+                                                <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="AppBarButtonBackgroundPointerOver" />
+                                                <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="AppBarButtonBackgroundPressed" />
+                                                <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="AppBarButtonBackgroundDisabled" />
+                                                <StaticResource x:Key="ButtonForeground" ResourceKey="AppBarButtonForeground" />
+                                                <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="AppBarButtonForegroundPointerOver" />
+                                                <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="AppBarButtonForegroundPressed" />
+                                                <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="AppBarButtonForegroundDisabled" />
+                                                <StaticResource x:Key="ButtonBorderBrush" ResourceKey="AppBarButtonBorderBrush" />
+                                                <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="AppBarButtonBorderBrushPointerOver" />
+                                                <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="AppBarButtonBorderBrushPressed" />
+                                                <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="AppBarButtonBorderBrushDisabled" />
+                                            </ResourceDictionary>
+
+                                            <ResourceDictionary x:Key="HighContrast">
+                                                <StaticResource x:Key="ButtonBackground" ResourceKey="AppBarButtonBackground" />
+                                                <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="AppBarButtonBackgroundPointerOver" />
+                                                <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="AppBarButtonBackgroundPressed" />
+                                                <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="AppBarButtonBackgroundDisabled" />
+                                                <StaticResource x:Key="ButtonForeground" ResourceKey="AppBarButtonForeground" />
+                                                <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="AppBarButtonForegroundPointerOver" />
+                                                <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="AppBarButtonForegroundPressed" />
+                                                <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="AppBarButtonForegroundDisabled" />
+                                                <StaticResource x:Key="ButtonBorderBrush" ResourceKey="AppBarButtonBorderBrush" />
+                                                <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="AppBarButtonBorderBrushPointerOver" />
+                                                <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="AppBarButtonBorderBrushPressed" />
+                                                <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="AppBarButtonBorderBrushDisabled" />
+                                            </ResourceDictionary>
+
+                                            <ResourceDictionary x:Key="Light">
+                                                <StaticResource x:Key="ButtonBackground" ResourceKey="AppBarButtonBackground" />
+                                                <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="AppBarButtonBackgroundPointerOver" />
+                                                <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="AppBarButtonBackgroundPressed" />
+                                                <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="AppBarButtonBackgroundDisabled" />
+                                                <StaticResource x:Key="ButtonForeground" ResourceKey="AppBarButtonForeground" />
+                                                <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="AppBarButtonForegroundPointerOver" />
+                                                <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="AppBarButtonForegroundPressed" />
+                                                <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="AppBarButtonForegroundDisabled" />
+                                                <StaticResource x:Key="ButtonBorderBrush" ResourceKey="AppBarButtonBorderBrush" />
+                                                <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="AppBarButtonBorderBrushPointerOver" />
+                                                <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="AppBarButtonBorderBrushPressed" />
+                                                <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="AppBarButtonBorderBrushDisabled" />
+                                            </ResourceDictionary>
+                                        </ResourceDictionary.ThemeDictionaries>
+                                    </ResourceDictionary>
+                                </Button.Resources>
 
                                 <Viewbox Width="{StaticResource InfoBarCloseButtonGlyphSize}"
                                     Height="{StaticResource InfoBarCloseButtonGlyphSize}"

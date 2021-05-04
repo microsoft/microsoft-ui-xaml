@@ -144,6 +144,21 @@ namespace MUXControlsTestApp
             ShowFlyoutAt(Flyout7, FlyoutTarget7);
         }
 
+        private void OnFlyoutTarget8Click(object sender, RoutedEventArgs e)
+        {
+            ShowFlyoutAt(Flyout8, FlyoutTarget8);
+        }
+
+        private void OnFlyoutTarget9Click(object sender, RoutedEventArgs e)
+        {
+            ShowFlyoutAt(Flyout9, FlyoutTarget9);
+        }
+
+        private void OnFlyoutTarget10Click(object sender, RoutedEventArgs e)
+        {
+            ShowFlyoutAt(Flyout10, FlyoutTarget10);
+        }
+
         private void ShowFlyoutAt(FlyoutBase flyout, FrameworkElement targetElement, FlyoutShowMode showMode = FlyoutShowMode.Transient)
         {
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
