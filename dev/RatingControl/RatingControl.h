@@ -112,7 +112,7 @@ public:
     void OnPreviewKeyUp(winrt::KeyRoutedEventArgs const& e);
 
 private:
-
+    bool ShouldEnableAnimation();
     void OnFocusEngaged(const winrt::Control& sender, const winrt::FocusEngagedEventArgs& args);
     void OnFocusDisengaged(const winrt::Control& sender, const winrt::FocusDisengagedEventArgs& args);
 
