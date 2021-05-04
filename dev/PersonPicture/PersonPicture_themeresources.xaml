@@ -10,7 +10,8 @@
             <SolidColorBrush x:Key="PersonPictureEllipseBadgeForegroundThemeBrush" Color="{StaticResource SystemBaseHighColor}"/>
             <SolidColorBrush x:Key="PersonPictureEllipseBadgeFillThemeBrush" Color="{StaticResource SystemChromeDisabledHighColor}"/>
             <SolidColorBrush x:Key="PersonPictureEllipseBadgeStrokeThemeBrush" Color="{StaticResource SystemListMediumColor}"/>
-            <SolidColorBrush x:Key="PersonPictureEllipseFillThemeBrush" Color="{StaticResource SystemBaseMediumColor}"/>
+            <StaticResource x:Key="PersonPictureEllipseFillThemeBrush" ResourceKey="ControlAltFillColorQuarternary" />
+            <StaticResource x:Key="PersonPictureEllipseFillStrokeBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <x:Double x:Key="PersonPictureEllipseBadgeStrokeOpacity">0.8</x:Double>
             <x:Double x:Key="PersonPictureEllipseBadgeImageSourceStrokeOpacity">1.0</x:Double>
             <x:Double x:Key="PersonPictureEllipseStrokeThickness">0</x:Double>
@@ -22,7 +23,8 @@
             <SolidColorBrush x:Key="PersonPictureEllipseBadgeForegroundThemeBrush" Color="{StaticResource SystemBaseHighColor}"/>
             <SolidColorBrush x:Key="PersonPictureEllipseBadgeFillThemeBrush" Color="{StaticResource SystemChromeDisabledHighColor}"/>
             <SolidColorBrush x:Key="PersonPictureEllipseBadgeStrokeThemeBrush" Color="{StaticResource SystemListMediumColor}"/>
-            <SolidColorBrush x:Key="PersonPictureEllipseFillThemeBrush" Color="{StaticResource SystemBaseMediumColor}"/>
+            <StaticResource x:Key="PersonPictureEllipseFillThemeBrush" ResourceKey="ControlAltFillColorQuarternary" />
+            <StaticResource x:Key="PersonPictureEllipseFillStrokeBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <x:Double x:Key="PersonPictureEllipseBadgeStrokeOpacity">0.8</x:Double>
             <x:Double x:Key="PersonPictureEllipseBadgeImageSourceStrokeOpacity">1.0</x:Double>
             <x:Double x:Key="PersonPictureEllipseStrokeThickness">0</x:Double>
@@ -34,7 +36,8 @@
             <SolidColorBrush x:Key="PersonPictureEllipseBadgeForegroundThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}"/>
             <SolidColorBrush x:Key="PersonPictureEllipseBadgeFillThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}"/>
             <SolidColorBrush x:Key="PersonPictureEllipseBadgeStrokeThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}"/>
-            <SolidColorBrush x:Key="PersonPictureEllipseFillThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}"/>
+            <StaticResource x:Key="PersonPictureEllipseFillThemeBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="PersonPictureEllipseFillStrokeBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <x:Double x:Key="PersonPictureEllipseBadgeStrokeOpacity">1.0</x:Double>
             <x:Double x:Key="PersonPictureEllipseBadgeImageSourceStrokeOpacity">1.0</x:Double>
             <x:Double x:Key="PersonPictureEllipseStrokeThickness">1</x:Double>

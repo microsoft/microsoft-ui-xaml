@@ -11,7 +11,7 @@
         <Setter Property="Width" Value="96" />
         <Setter Property="Height" Value="96" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-        <Setter Property="FontWeight" Value="SemiLight" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
         <Setter Property="Template">
@@ -67,7 +67,7 @@
 
                         <Ellipse
                             Fill="{ThemeResource PersonPictureEllipseFillThemeBrush}"
-                            Stroke="{ThemeResource SystemColorButtonTextColor}"
+                            Stroke="{ThemeResource PersonPictureEllipseFillStrokeBrush}"
                             StrokeThickness="{ThemeResource PersonPictureEllipseStrokeThickness}"
                             Width="{TemplateBinding Width}"
                             Height="{TemplateBinding Height}" />
