@@ -135,7 +135,7 @@ namespace SystemBackdropComponentInternal
             {
                 m_dispatcherQueue.TryEnqueue([&]()
                     {
-                        bool isHighContrast = m_accessibilitySettings.HighContrast();
+                        const bool isHighContrast = m_accessibilitySettings.HighContrast();
                         m_policy->SetHighContrastMode(isHighContrast);
 
                         // Controller needs to know high contrast is active to pick the system level fallback color.
