@@ -624,7 +624,7 @@
         </Setter>
     </Style>
 
-    <Style x:Key="CommandBarFlyoutCommandBarOverflowPresenterStyleRS4" TargetType="CommandBarOverflowPresenter">
+    <contract7NotPresent:Style x:Key="CommandBarFlyoutCommandBarOverflowPresenterStyleRS4" TargetType="CommandBarOverflowPresenter">
         <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutButtonBackground}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="MinWidth" Value="136" />
@@ -665,7 +665,7 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-    </Style>
+    </contract7NotPresent:Style>
 
     <Style x:Key="CommandBarFlyoutEllipsisButtonStyle" TargetType="Button" BasedOn="{StaticResource EllipsisButton}">
         <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackground}" />
