@@ -205,7 +205,7 @@
                                 Content="{TemplateBinding Content}"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                LineHeight="{ThemeResource TreeViewItemContentLineHeight}"          
+                                MinHeight="{ThemeResource TreeViewItemContentHeight}"          
                                 Margin="{TemplateBinding Padding}" />
                         </Grid>
                     </Grid>
