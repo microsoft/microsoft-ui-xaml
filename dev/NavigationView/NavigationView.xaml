@@ -135,11 +135,6 @@
                                         <Setter Target="RootSplitView.BorderThickness" Value="0" />
                                         <Setter Target="ShadowCaster.Opacity" Value="0" />
                                         <Setter Target="RootSplitView.PaneBackground" Value="{ThemeResource NavigationViewExpandedPaneBackground}" />
-                                        <Setter Target="ContentGrid.CornerRadius" Value="8,0,0,0" />
-                                        <Setter Target="ContentGrid.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
-                                        <Setter Target="ContentGrid.BorderThickness" Value="1,1,0,0" />
-                                        <Setter Target="HeaderContent.Margin" Value="{ThemeResource NavigationViewHeaderMarginMinusBorder}" />
-                                        <Setter Target="ContentPresenter.Margin" Value="{ThemeResource NavigationViewContentPresenterMarginMinusBorder}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -619,8 +614,11 @@
                                 <SplitView.Content>
                                     <Grid
                                         x:Name="ContentGrid"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1,1,0,0"
                                         Background="{ThemeResource NavigationViewContentBackground}"
-                                        Margin="{ThemeResource NavigationViewContentMargin}">
+                                        Margin="{ThemeResource NavigationViewContentMargin}"
+                                        contract7Present:CornerRadius="8,0,0,0">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
