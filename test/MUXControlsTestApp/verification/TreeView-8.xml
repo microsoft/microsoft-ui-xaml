@@ -147,7 +147,7 @@
                       FocusVisualPrimaryThickness=2,2,2,2
                       FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
-                      RenderSize=400,31
+                      RenderSize=400,32
                     [Windows.UI.Xaml.Controls.Grid]
                         Padding=0,3,0,3
                         CornerRadius=8,8,8,8
@@ -161,7 +161,7 @@
                         FocusVisualPrimaryThickness=2,2,2,2
                         FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
-                        RenderSize=392,27
+                        RenderSize=392,28
                       [Windows.UI.Xaml.Shapes.Rectangle]
                           StrokeThickness=1
                           Width=3
@@ -187,7 +187,7 @@
                           FocusVisualPrimaryThickness=2,2,2,2
                           FocusVisualPrimaryBrush=#E4000000
                           Visibility=Visible
-                          RenderSize=390,19
+                          RenderSize=390,20
                         [Windows.UI.Xaml.Controls.Grid]
                             Padding=0,0,0,0
                             CornerRadius=0,0,0,0
@@ -200,7 +200,7 @@
                             FocusVisualPrimaryThickness=2,2,2,2
                             FocusVisualPrimaryBrush=#E4000000
                             Visibility=Visible
-                            RenderSize=0,19
+                            RenderSize=0,20
                           [Windows.UI.Xaml.Controls.CheckBox]
                               Padding=8,5,0,0
                               Foreground=#E4000000
@@ -259,7 +259,7 @@
                             FocusVisualPrimaryThickness=2,2,2,2
                             FocusVisualPrimaryBrush=#E4000000
                             Visibility=Visible
-                            RenderSize=40,19
+                            RenderSize=40,20
                           [Windows.UI.Xaml.Controls.TextBlock]
                               Padding=2,2,2,2
                               Foreground=#E4000000
@@ -292,13 +292,14 @@
                             BorderBrush=[NULL]
                             Background=[NULL]
                             Name=ContentPresenter
+                            MinHeight=20
                             Margin=0,0,0,0
                             FocusVisualSecondaryThickness=1,1,1,1
                             FocusVisualSecondaryBrush=#B3FFFFFF
                             FocusVisualPrimaryThickness=2,2,2,2
                             FocusVisualPrimaryBrush=#E4000000
                             Visibility=Visible
-                            RenderSize=350,19
+                            RenderSize=350,20
                           [Windows.UI.Xaml.Controls.TextBlock]
                               Padding=0,0,0,0
                               Foreground=#E4000000

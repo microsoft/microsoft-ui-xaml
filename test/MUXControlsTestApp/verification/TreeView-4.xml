@@ -286,6 +286,7 @@
                             BorderBrush=[NULL]
                             Background=[NULL]
                             Name=ContentPresenter
+                            MinHeight=20
                             Margin=0,0,0,0
                             FocusVisualSecondaryThickness=1,1,1,1
                             FocusVisualSecondaryBrush=#B3FFFFFF
