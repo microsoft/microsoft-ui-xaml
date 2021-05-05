@@ -10,13 +10,7 @@ struct MicaController : winrt::implementation::MicaControllerT<MicaController>, 
     MicaController() = default;
     ~MicaController();
 
-#if NEVER
-    bool SetTarget(Windows::UI::WindowId const& windowId, Windows::UI::Composition::CompositionTarget const& desktopWindowTarget);
-    bool SetTarget(Windows::UI::Core::CoreWindow const& coreWindow, Windows::UI::Composition::CompositionTarget const& compositionTarget);
-#endif
     bool SetTarget(winrt::Windows::UI::Xaml::Window const& xamlWindow);
-
-    void SniffWindowMessage(uint32_t message, uint64_t wparam, int64_t lparam);
 
 
     // Property getters.
@@ -38,7 +32,7 @@ struct MicaController : winrt::implementation::MicaControllerT<MicaController>, 
     void UpdateTheme(winrt::Windows::UI::Xaml::ElementTheme theme) override;
 
 private:
-    bool IsMicaSupportedOnCurrentOS() const;
+    bool IsMicaSupported() const;
     void Crossfade(const winrt::Windows::UI::Composition::CompositionBrush& newBrush);
     void Update();
     void UpdateSystemBackdropBrush(const winrt::CompositionBrush& brush);

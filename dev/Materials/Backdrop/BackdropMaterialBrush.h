@@ -4,15 +4,14 @@
 #pragma once
 
 #include "BackdropMaterialBrush.g.h"
-//#include "BackdropMaterialBrush.properties.h"
 
 #include "MicaController.h"
 
 class BackdropMaterialBrush :
     public ReferenceTracker<BackdropMaterialBrush, winrt::implementation::BackdropMaterialBrushT>
-    //public BackdropMaterialBrushProperties
 {
 public:
+    // IXamlCompositionBrushOverrides
     void OnConnected();
     void OnDisconnected();
 

@@ -7,7 +7,7 @@ namespace SystemBackdropComponentInternal
 {
     void BaseWindowHandler::ActivateOrDeactivateController()
     {
-        // This method call back into the window handler in high contrast mode to retrieve the system backdrop color.
+        // This method calls back into the window handler in high contrast mode to retrieve the system backdrop color.
         // Hence we cannot call this method during construction.
         if (m_policy->IsActive())
         {
@@ -106,72 +106,6 @@ namespace SystemBackdropComponentInternal
         }
     }
 
-#if NEVER
-    Win32HwndHandler::Win32HwndHandler(ISystemBackdropController* owningController, winrt::Windows::UI::WindowId const& windowId) :
-        BaseWindowHandler(owningController),
-        m_hwnd(reinterpret_cast<HWND>(windowId.Value))
-    {
-        InitializePolicy();
-    }
-
-    void Win32HwndHandler::InitializePolicy()
-    {
-        BaseWindowHandler::InitializePolicy();
-
-        // Check high contrast.
-        HIGHCONTRAST highContrast;
-        highContrast.cbSize = sizeof(HIGHCONTRAST);
-        User32Interop::SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(HIGHCONTRAST), &highContrast, 0);
-        if (highContrast.dwFlags & HCF_HIGHCONTRASTON)
-        {
-            m_policy->SetHighContrastMode(true);
-
-            // Controller needs to know high contrast is active to pick the system level fallback color.
-            m_controller->SetHighContrast(true);
-        }
-    }
-
-    void Win32HwndHandler::SniffWindowMessage(const UINT message, const WPARAM wparam, const LPARAM /* lparam */)
-    {
-        if (WM_ACTIVATE == message)
-        {
-            switch (LOWORD(wparam))
-            {
-            case WA_INACTIVE:
-                m_policy->SetWindowNotInFocus(true);
-                break;
-            case WA_ACTIVE:
-            case WA_CLICKACTIVE:
-                m_policy->SetWindowNotInFocus(false);
-                break;
-            }
-        }
-
-        if (WM_SYSCOLORCHANGE == message)
-        {
-            // Handle high contrast.
-            HIGHCONTRAST highContrast;
-            highContrast.cbSize = sizeof(HIGHCONTRAST);
-            User32Interop::SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(HIGHCONTRAST), &highContrast, 0);
-            if (highContrast.dwFlags & HCF_HIGHCONTRASTON)
-            {
-                m_policy->SetHighContrastMode(true);
-
-                // Controller needs to know high contrast is active to pick the system level fallback color.
-                m_controller->SetHighContrast(true);
-            }
-            else
-            {
-                m_policy->SetHighContrastMode(false);
-
-                // Controller needs to know high contrast is deactivated to pick the app defined fallback color.
-                m_controller->SetHighContrast(false);
-            }
-        }
-
-        ActivateOrDeactivateController();
-    }
-#endif
 
     CoreWindowHandler::CoreWindowHandler(ISystemBackdropController* owningController, winrt::Windows::UI::Core::CoreWindow const& coreWindow) :
         BaseWindowHandler(owningController),
@@ -201,20 +135,11 @@ namespace SystemBackdropComponentInternal
             {
                 m_dispatcherQueue.TryEnqueue([&]()
                     {
-                        if (m_accessibilitySettings.HighContrast())
-                        {
-                            m_policy->SetHighContrastMode(true);
+                        bool isHighContrast = m_accessibilitySettings.HighContrast();
+                        m_policy->SetHighContrastMode(isHighContrast);
 
-                            // Controller needs to know high contrast is active to pick the system level fallback color.
-                            m_controller->SetHighContrast(true);
-                        }
-                        else
-                        {
-                            m_policy->SetHighContrastMode(false);
-
-                            // Controller needs to know high contrast is deactivated to pick the app defined fallback color.
-                            m_controller->SetHighContrast(false);
-                        }
+                        // Controller needs to know high contrast is active to pick the system level fallback color.
+                        m_controller->SetHighContrast(isHighContrast);
 
                         ActivateOrDeactivateController();
                     });

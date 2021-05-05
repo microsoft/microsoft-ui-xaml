@@ -11,6 +11,8 @@ thread_local winrt::com_ptr<MicaController> BackdropMaterialBrush::m_micaControl
 
 void BackdropMaterialBrush::CreateOrDestroyMicaController()
 {
+    // If we are connecting the first BackdropMaterialBrush on this thread, create and configure the MicaController.
+    // Or if we're disconnecting the last one, clean up the shared MicaController.
     if (m_connectedBrushCount > 0 && !m_micaController)
     {
         auto currentWindow = winrt::Window::Current();
@@ -29,6 +31,7 @@ void BackdropMaterialBrush::CreateOrDestroyMicaController()
 
 void BackdropMaterialBrush::OnConnected()
 {
+    // Track whether we're connected and update the number of connected BackdropMaterialBrush on this thread.
     if (!m_connected)
     {
         m_connected = true;

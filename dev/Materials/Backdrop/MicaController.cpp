@@ -15,69 +15,16 @@ MicaController::~MicaController()
     }
 }
 
-#if NEVER
-bool MicaController::SetTarget(Windows::UI::WindowId const& windowId, Windows::UI::Composition::CompositionTarget const& desktopWindowTarget)
-{
-    m_target = desktopWindowTarget.try_as<winrt::ICompositionSupportsSystemBackdrop>();
-    m_compositor = desktopWindowTarget.Compositor();
-
-    WINRT_ASSERT(m_compositor != nullptr);
-
-    // Immediately check if the current OS can support the Mica APIs.
-    if (IsMicaSupportedOnCurrentOS())
-    {
-        m_isMicaSupported = true;
-    }
-    else
-    {
-        return false;
-    }
-
-    m_windowHandler = std::make_unique<SystemBackdropComponentInternal::Win32HwndHandler>(this, windowId);
-
-    // Ensure we are in the correct policy state only *after* creating the appropriate WindowHandler.
-    // If we start in high contrast mode, the controller will query the window handler for the correct system fallback color.
-    m_windowHandler->ActivateOrDeactivateController();
-
-    return true;
-}
-    
-bool MicaController::SetTarget(Windows::UI::Core::CoreWindow const& coreWindow, Windows::UI::Composition::CompositionTarget const& compositionTarget)
-{
-    m_target = compositionTarget.try_as<winrt::ICompositionSupportsSystemBackdrop>();
-    m_compositor = compositionTarget.Compositor();
-
-    WINRT_ASSERT(m_compositor != nullptr);
-
-    // Immediately check if the current OS can support the Mica APIs.
-    if (IsMicaSupportedOnCurrentOS())
-    {
-        m_isMicaSupported = true;
-    }
-    else
-    {
-        return false;
-    }
-
-    m_windowHandler = std::make_unique<SystemBackdropComponentInternal::CoreWindowHandler>(this, coreWindow);
-
-    // Ensure we are in the correct policy state only *after* creating the appropriate WindowHandler.
-    // If we start in high contrast mode, the controller will query the window handler for the correct system fallback color.
-    m_windowHandler->ActivateOrDeactivateController();
-        
-    return true;
-}
-#endif
 
 bool MicaController::SetTarget(winrt::Windows::UI::Xaml::Window const& xamlWindow)
 {
     m_target = xamlWindow.try_as<winrt::ICompositionSupportsSystemBackdrop>();
     m_compositor = xamlWindow.Compositor();
 
-    WINRT_ASSERT(m_compositor != nullptr);
+    WINRT_ASSERT(m_compositor);
 
     // Immediately check if the current OS can support the Mica APIs.
-    if (IsMicaSupportedOnCurrentOS())
+    if (IsMicaSupported())
     {
         m_isMicaSupported = true;
     }
@@ -95,26 +42,6 @@ bool MicaController::SetTarget(winrt::Windows::UI::Xaml::Window const& xamlWindo
     return true;
 }
 
-#if NEVER
-void MicaController::SniffWindowMessage(uint32_t message, uint64_t wparam, int64_t lparam)
-{
-    if (m_target == nullptr)
-    {
-        // Nothing to do if no target is set.
-        return;
-    }
-
-    SystemBackdropComponentInternal::Win32HwndHandler* hwndHandler = dynamic_cast<SystemBackdropComponentInternal::Win32HwndHandler*>(m_windowHandler.get());
-    if (hwndHandler == nullptr)
-    {
-        // The controller is not being used in a legacy Win32 Hwnd, do nothing.
-        return;
-    }
-
-    hwndHandler->SniffWindowMessage(message, (WPARAM)wparam, (LPARAM)lparam);
-}
-#endif
-        
 void MicaController::TintColor(winrt::Windows::UI::Color const& value)
 {
     m_tintColor = value;
@@ -177,7 +104,7 @@ void MicaController::Deactivate()
 {
     if (!m_wasHighContrastOnLastDeactivation && !m_isHighContrast && !m_isActive && !m_isFirstRun && !m_propertyUpdated)
     {
-        // Already in the appopriate fallback state, return.
+        // Already in the appropriate fallback state, return.
         return;
     }
 
@@ -218,13 +145,13 @@ void MicaController::UpdateTheme(winrt::Windows::UI::Xaml::ElementTheme theme)
     }
 }
 
-bool MicaController::IsMicaSupportedOnCurrentOS() const
+bool MicaController::IsMicaSupported() const
 {
-    WINRT_ASSERT(m_compositor != nullptr);
+    WINRT_ASSERT(m_compositor);
 
     return (m_target &&
-        (m_compositor.try_as<winrt::ICompositorWithBlurredWallpaperBackdropBrush>() != nullptr) &&
-        (m_compositor.TryCreateBlurredWallpaperBackdropBrush() != nullptr));
+        m_compositor.try_as<winrt::ICompositorWithBlurredWallpaperBackdropBrush>() &&
+        m_compositor.TryCreateBlurredWallpaperBackdropBrush());
 }
 
 void MicaController::Crossfade(const winrt::Windows::UI::Composition::CompositionBrush& newBrush)
