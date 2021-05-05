@@ -7,6 +7,8 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract13Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,13)"
     mc:Ignorable="d">
 
@@ -111,6 +113,33 @@
                             </MenuFlyout>
                         </AppBarButton.Flyout>
                     </AppBarButton>
+                    <contract7Present:AppBarElementContainer IsTabStop="False" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="Purple">
+                        <controls:SplitButton HorizontalAlignment="Stretch">
+                            <Grid Margin="0,0,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    FontSize="16"
+                                    Text="&#xE7AC;"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,10,0"
+                                    IsTextScaleFactorEnabled="False"
+                                    AutomationProperties.AccessibilityView="Raw"/>
+                                <TextBlock Grid.Column="1" Text="Open"/>
+                            </Grid>
+                            <controls:SplitButton.Flyout>
+                                <MenuFlyout Placement="RightEdgeAlignedTop">
+                                    <MenuFlyoutItem Text="Visual Studio"/>
+                                    <MenuFlyoutItem Text="Visual Studio Code"/>
+                                    <MenuFlyoutItem Text="Notepad"/>
+                                </MenuFlyout>
+                            </controls:SplitButton.Flyout>
+                        </controls:SplitButton>
+                    </contract7Present:AppBarElementContainer>
                     <AppBarButton x:Name="UndoButton5" AutomationProperties.AutomationId="UndoButton5" Label="Undo" Icon="Undo" Click="OnElementClicked" />
                     <AppBarButton x:Name="RedoButton5" AutomationProperties.AutomationId="RedoButton5" Label="Redo" Icon="Redo" Click="OnElementClicked" />
                     <AppBarButton x:Name="SelectAllButton5" AutomationProperties.AutomationId="SelectAllButton5" Label="Select all" Click="OnElementClicked" />

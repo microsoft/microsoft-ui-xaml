@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls.Primitives"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:contract4Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,4)"
     xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
     xmlns:contract6NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,6)"
@@ -248,6 +249,14 @@
                                 <VisualState x:Name="KeyboardAcceleratorTextVisible">
                                     <VisualState.Setters>
                                         <Setter Target="KeyboardAcceleratorTextLabel.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="FlyoutStates">
+                                <VisualState x:Name="NoFlyout" />
+                                <VisualState x:Name="HasFlyout">
+                                    <VisualState.Setters>
+                                        <Setter Target="SubItemChevron.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -602,6 +611,10 @@
                                 <VisualState x:Name="FullWidthOpenUp" />
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
+                        <Grid.Resources>
+                            <Style TargetType="controls:SplitButton" BasedOn="{StaticResource SplitButtonCommandBarFlyoutMenuStyle}"/>
+                            <Style TargetType="controls:ToggleSplitButton" BasedOn="{StaticResource SplitButtonCommandBarFlyoutMenuStyle}"/>
+                        </Grid.Resources>
                         <Border
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
