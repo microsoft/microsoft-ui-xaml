@@ -38,6 +38,11 @@
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\LayoutCycleRepro.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Samples\LayoutSamples\NonVirtualLayoutPages\CircleLayoutSamplePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -112,6 +117,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)LCView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)RepeaterTestUIPage.xaml.cs">
@@ -132,6 +141,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Samples\BasicDemo.xaml.cs">
       <DependentUpon>BasicDemo.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\LayoutCycleRepro.xaml.cs">
+      <DependentUpon>LayoutCycleRepro.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Samples\LayoutSamples\NonVirtualLayoutPages\CircleLayout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\Defaults.xaml.cs">
@@ -205,6 +217,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Samples\ItemsSourceSamples\ResetableCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\UniformGridLayoutDemo.cs">
       <DependentUpon>UniformGridLayoutDemo.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)LCView.xaml.cs">
+      <DependentUpon>LCView.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

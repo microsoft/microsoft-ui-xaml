@@ -238,7 +238,7 @@ void ViewportManagerDownLevel::ResetScrollers()
 void ViewportManagerDownLevel::OnCacheBuildActionCompleted()
 {
     m_cacheBuildAction.set(nullptr);
-    m_owner->InvalidateMeasure();
+    m_owner->InvalidateMeasureWithGuard();
 }
 
 void ViewportManagerDownLevel::OnViewportChanged(const winrt::IRepeaterScrollingSurface&, const bool isFinal)
@@ -466,7 +466,7 @@ void ViewportManagerDownLevel::TryInvalidateMeasure()
         // we don't invalidate measure in UpdateViewport if the view is changing to
         // avoid layout cycles.
         REPEATER_TRACE_INFO(L"%ls: \tInvalidating measure due to viewport change. \n", GetLayoutId().data());
-        m_owner->InvalidateMeasure();
+        m_owner->InvalidateMeasureWithGuard();
     }
 }
 

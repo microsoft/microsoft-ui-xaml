@@ -24,6 +24,11 @@ namespace MUXControlsTestApp
         {
             this.InitializeComponent();
 
+            layoutCycleRepro.Click += delegate
+            {
+                Frame.NavigateWithoutAnimation(typeof(LayoutCycleRepro));
+            };
+
             defaultDemo.Click += delegate 
             {
                 Frame.NavigateWithoutAnimation(typeof(Defaults));

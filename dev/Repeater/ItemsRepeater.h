@@ -23,6 +23,8 @@ public:
     ItemsRepeater();
     ~ItemsRepeater();
 
+    static constexpr uint8_t s_maxLayoutIterations = 60u;
+
     static winrt::Point ClearedElementsArrangePosition;
     // A convention we use in the ItemsRepeater codebase for an invalid Rect value.
     static winrt::Rect InvalidRect;
@@ -76,7 +78,6 @@ public:
     int GetElementIndexImpl(const winrt::UIElement& element);
     winrt::UIElement GetElementFromIndexImpl(int index);
 
-
     winrt::UIElement GetOrCreateElementImpl(int index);
 
     static winrt::com_ptr<VirtualizationInfo> TryGetVirtualizationInfo(const winrt::UIElement& element);
@@ -91,6 +92,8 @@ public:
     winrt::UIElement MadeAnchor() const { return m_viewportManager->MadeAnchor(); }
     winrt::Point LayoutOrigin() const { return m_layoutOrigin; }
     void LayoutOrigin(winrt::Point value) { m_layoutOrigin = value; }
+
+    void InvalidateMeasureWithGuard();
 
     // Pinning APIs
     void PinElement(winrt::UIElement const& element);
@@ -120,6 +123,7 @@ public:
 private:
     void OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/);
     void OnUnloaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/);
+    void OnLayoutUpdated(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/);
 
     void OnDataSourcePropertyChanged(const winrt::ItemsSourceView& oldValue, const winrt::ItemsSourceView& newValue);
     void OnItemTemplateChanged(const winrt::IElementFactory& oldValue, const winrt::IElementFactory& newValue);
@@ -169,6 +173,9 @@ private:
     // events. We keep these counters to detect out-of-sync unloaded events and take action to rectify.
     int _loadedCounter{};
     int _unloadedCounter{};
+
+    uint8_t m_measureCounter{ 0u };
+    bool m_measureSkipped{ false };
 
     // Bug in framework's reference tracking causes crash during
     // UIAffinityQueue cleanup. To avoid that bug, take a strong ref

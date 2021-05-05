@@ -42,6 +42,7 @@ ItemsRepeater::ItemsRepeater()
 
     Loaded({ this, &ItemsRepeater::OnLoaded });
     Unloaded({ this, &ItemsRepeater::OnUnloaded });
+    LayoutUpdated({ this, &ItemsRepeater::OnLayoutUpdated });
 
     // Initialize the cached layout to the default value
     auto layout = Layout().as<winrt::VirtualizingLayout>();
@@ -94,6 +95,17 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
     if (IsProcessingCollectionChange())
     {
         throw winrt::hresult_error(E_FAIL, L"Cannot run layout in the middle of a collection change.");
+    }
+
+    m_measureCounter++;
+
+    if (m_measureCounter > s_maxLayoutIterations)
+    {
+        m_measureSkipped = true;
+
+        const winrt::Rect layoutExtent = m_viewportManager->GetLayoutExtent();
+        const winrt::Size desiredSize{ layoutExtent.Width - layoutExtent.X, layoutExtent.Height - layoutExtent.Y };
+        return desiredSize;
     }
 
     m_viewportManager->OnOwnerMeasuring();
@@ -337,7 +349,7 @@ winrt::UIElement ItemsRepeater::GetOrCreateElementImpl(int index)
     }
 
     m_viewportManager->OnMakeAnchor(element, isAnchorOutsideRealizedRange);
-    InvalidateMeasure();
+    InvalidateMeasureWithGuard();
 
     return element;
 }
@@ -491,7 +503,7 @@ void ItemsRepeater::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt:
     // layout pass during which we will hookup new scrollers.
     if (_loadedCounter > _unloadedCounter)
     {
-        InvalidateMeasure();
+        InvalidateMeasureWithGuard();
         m_viewportManager->ResetScrollers();
     }
     ++_loadedCounter;
@@ -499,11 +511,25 @@ void ItemsRepeater::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt:
 
 void ItemsRepeater::OnUnloaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
+    m_measureCounter = 0u;
+    m_measureSkipped = false;
+
     ++_unloadedCounter;
     // Only reset the scrollers if this unload event is in-sync.
     if (_unloadedCounter == _loadedCounter)
     {
         m_viewportManager->ResetScrollers();
+    }
+}
+
+void ItemsRepeater::OnLayoutUpdated(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
+{
+    m_measureCounter = 0u;
+
+    if (m_measureSkipped)
+    {
+        m_measureSkipped = false;
+        //InvalidateMeasure();
     }
 }
 
@@ -520,8 +546,6 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
     {
         m_itemsSourceViewChanged.revoke();
     }
-
-   
 
     if (newValue)
     {
@@ -562,7 +586,7 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
             Children().Clear();
         }
 
-        InvalidateMeasure();
+        InvalidateMeasureWithGuard();
     }
 }
 
@@ -651,7 +675,7 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
         }
     }
 
-    InvalidateMeasure();
+    InvalidateMeasureWithGuard();
 }
 
 void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::Layout& newValue)
@@ -700,7 +724,7 @@ void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::
 
     bool isVirtualizingLayout = newValue != nullptr && newValue.try_as<winrt::VirtualizingLayout>() != nullptr;
     m_viewportManager->OnLayoutChanged(isVirtualizingLayout);
-    InvalidateMeasure();
+    InvalidateMeasureWithGuard();
 }
 
 void ItemsRepeater::OnAnimatorChanged(const winrt::ElementAnimator& /* oldValue */, const winrt::ElementAnimator& newValue)
@@ -745,14 +769,20 @@ void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, 
         else
         {
             // NonVirtualizingLayout
-            InvalidateMeasure();
+            InvalidateMeasureWithGuard();
         }
     }
 }
 
+void ItemsRepeater::InvalidateMeasureWithGuard()
+{
+    //if (m_measureCounter <= s_maxLayoutIterations)
+        InvalidateMeasure();
+}
+
 void ItemsRepeater::InvalidateMeasureForLayout(winrt::Layout const&, winrt::IInspectable const&)
 {
-    InvalidateMeasure();
+    InvalidateMeasureWithGuard();
 }
 
 void ItemsRepeater::InvalidateArrangeForLayout(winrt::Layout const&, winrt::IInspectable const&)

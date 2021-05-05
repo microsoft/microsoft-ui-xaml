@@ -379,7 +379,7 @@ void ViewportManagerWithPlatformFeatures::OnCacheBuildActionCompleted()
     m_cacheBuildAction.set(nullptr);
     if (!m_managingViewportDisabled)
     {
-        m_owner->InvalidateMeasure();
+        m_owner->InvalidateMeasureWithGuard();
     }
 }
 
@@ -517,7 +517,7 @@ void ViewportManagerWithPlatformFeatures::TryInvalidateMeasure()
         // we don't invalidate measure in UpdateViewport if the view is changing to
         // avoid layout cycles.
         REPEATER_TRACE_INFO(L"%ls: \tInvalidating measure due to viewport change. \n", GetLayoutId().data());
-        m_owner->InvalidateMeasure();
+        m_owner->InvalidateMeasureWithGuard();
     }
 }
 
