@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{99AF040E-B77B-487D-9CC8-3334E1F1162A}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);MATERIALS_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Generated\BackdropMateriaBrush.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BackdropMaterialBrush.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropBrushFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MicaController.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropPolicyStateMachine.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropWindowHandler.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)BackdropMaterialBrush.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropBrushFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MicaController.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropController.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropPolicyState.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropPolicyStateMachine.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropWindowHandler.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)BackdropMaterialBrush.idl" />
+  </ItemGroup>
+</Project>

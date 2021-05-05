@@ -1,0 +1,27 @@
+﻿namespace MU_XM_NAMESPACE
+{
+    [MUX_PUBLIC]
+    [webhosthidden]
+    unsealed runtimeclass BackdropMaterialBrush : Windows.UI.Xaml.Media.XamlCompositionBrushBase
+    {
+        BackdropMaterialBrush();
+    }
+}
+
+namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+    [webhosthidden]
+    [default_interface]
+    [MUX_INTERNAL]
+    runtimeclass MicaController
+    {
+        MicaController();
+
+        Boolean SetTarget(Windows.UI.Xaml.Window xamlWindow);
+
+        Windows.UI.Color TintColor;
+        Single TintOpacity;
+        Single LuminosityOpacity;
+        Windows.UI.Color FallbackColor;
+    }
+}
