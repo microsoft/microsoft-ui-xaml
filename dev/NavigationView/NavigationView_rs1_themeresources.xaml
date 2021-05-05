@@ -269,7 +269,9 @@
     <Thickness x:Key="NavigationViewPaneContentGridMargin">0,4</Thickness>
     <Thickness x:Key="TopNavigationViewTopNavGridMargin">4,0</Thickness>
     <Thickness x:Key="NavigationViewHeaderMargin">56,44,0,0</Thickness>
+    <Thickness x:Key="NavigationViewHeaderMarginMinusBorder">55,43,0,0</Thickness>
     <Thickness x:Key="NavigationViewContentPresenterMargin">48,12,0,0</Thickness>
+    <Thickness x:Key="NavigationViewContentPresenterMarginMinusBorder">47,12,0,0</Thickness>
     <Thickness x:Key="NavigationViewContentMargin">0</Thickness>
     <Thickness x:Key="NavigationViewPaneTitlePresenterMargin">8,4,0,0</Thickness>
     <Thickness x:Key="NavigationViewItemMargin">0</Thickness>

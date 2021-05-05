@@ -138,6 +138,8 @@
                                         <Setter Target="ContentGrid.CornerRadius" Value="8,0,0,0" />
                                         <Setter Target="ContentGrid.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
                                         <Setter Target="ContentGrid.BorderThickness" Value="1,1,0,0" />
+                                        <Setter Target="HeaderContent.Margin" Value="{ThemeResource NavigationViewHeaderMarginMinusBorder}" />
+                                        <Setter Target="ContentPresenter.Margin" Value="{ThemeResource NavigationViewContentPresenterMarginMinusBorder}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -649,6 +651,7 @@
                                             Style="{StaticResource NavigationViewTitleHeaderContentControlTextStyle}"/>
 
                                         <ContentPresenter
+                                            x:Name="ContentPresenter"
                                             AutomationProperties.LandmarkType="Main"
                                             Grid.Row="2"
                                             Grid.ColumnSpan="2"
