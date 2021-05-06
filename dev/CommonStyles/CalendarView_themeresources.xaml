@@ -98,7 +98,6 @@
         <Setter Property="Padding" Value="0, 0, 0, 4" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="-2" />
-        <contract7Present:Setter Property="CornerRadius" Value="5" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CalendarViewDayItem" />

@@ -37,7 +37,7 @@
                 x:Name="selectionMode"
                 Margin="0,10,0,0"
                 Header="SelectionMode"
-                SelectedValue="Multiple"
+                SelectedValue="Single"
                 SelectionChanged="SelectionMode_SelectionChanged">
                 <x:String>None</x:String>
                 <x:String>Single</x:String>

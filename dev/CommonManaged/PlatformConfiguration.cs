@@ -22,7 +22,6 @@ namespace Common
         Redstone4 = 6,
         Redstone5 = 7,
         NineteenH1 = 8,
-        TwentyOneH1 = 13,
         TwentyOneH2 = 14
     }
 
