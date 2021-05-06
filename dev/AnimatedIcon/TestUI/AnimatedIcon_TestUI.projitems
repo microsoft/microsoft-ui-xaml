@@ -21,6 +21,7 @@
       <DependentUpon>AnimatedIconPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)BrightnessSun.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ColorToSolidColorBrushConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DoubleToStringConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MockIRichAnimatedIconSource.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToggleAnimatedIconHost.cs" />
