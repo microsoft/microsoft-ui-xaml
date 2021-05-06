@@ -482,7 +482,7 @@
                             AutomationProperties.AccessibilityView="Raw" />
                         <Grid
                             Grid.Row="1"
-                            HorizontalAlignment="Left"-
+                            HorizontalAlignment="Left"
                             VerticalAlignment="Top">
 
                             <Grid.RowDefinitions>
