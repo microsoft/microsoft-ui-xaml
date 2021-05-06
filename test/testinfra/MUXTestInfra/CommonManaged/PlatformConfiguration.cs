@@ -26,8 +26,7 @@ namespace Common
         Redstone3 = 5,
         Redstone4 = 6,
         Redstone5 = 7,
-        NineteenH1 = 8,
-        TwentyOneH2 = 14
+        NineteenH1 = 8
     }
 
     public class PlatformConfiguration

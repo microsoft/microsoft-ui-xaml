@@ -316,7 +316,7 @@ namespace MUXControlsTestApp
                     return null;
                 default:
 #if USE_INSIDER_SDK
-                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH2))
+                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
                     {
                         switch (brushPropertyName.SelectedIndex)
                         {
@@ -476,7 +476,7 @@ namespace MUXControlsTestApp
                     break;
 #if USE_INSIDER_SDK
                 default:
-                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH2))
+                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
                     {
                         switch (brushPropertyName.SelectedIndex)
                         {
