@@ -215,6 +215,7 @@
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="ManipulationMode" Value="System,TranslateX" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <Setter Property="MinWidth" Value="{StaticResource ToggleSwitchThemeMinWidth}"/>
         <Setter Property="FocusVisualMargin" Value="-7,-3,-7,-3" />
         <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}"/>
         <Setter Property="Template">
@@ -557,7 +558,6 @@
                             AutomationProperties.AccessibilityView="Raw" />
                         <Grid
                             Grid.Row="1"
-                            MinWidth="{StaticResource ToggleSwitchThemeMinWidth}"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Top">
 
