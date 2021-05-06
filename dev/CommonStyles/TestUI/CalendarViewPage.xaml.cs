@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Common;
 using System;
 using System.Collections.Generic;
 using Windows.Globalization;
@@ -41,16 +42,6 @@ namespace MUXControlsTestApp
 
             PageCalendar.CalendarViewDayItemChanging += CalendarView_CalendarViewDayItemChanging;
             PageCalendar2.CalendarViewDayItemChanging += CalendarView_CalendarViewDayItemChanging;
-
-            Loaded += CalendarViewPage_Loaded;
-        }
-
-        private void CalendarViewPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            SetDayItemMargin_Click(null, null);
-            SetMonthYearItemMargin_Click(null, null);
-            SetFirstOfMonthLabelMargin_Click(null, null);
-            SetFirstOfYearDecadeLabelMargin_Click(null, null);
         }
 
         private void CalendarView_CalendarViewDayItemChanging(CalendarView sender, CalendarViewDayItemChangingEventArgs args)
@@ -157,68 +148,68 @@ namespace MUXControlsTestApp
         {
             string[] thicknessParts = dayItemMargin.Text.Split(',');
 
-            PageCalendar.Tag = 20; // Set DayItemMargin
-            PageCalendar.Tag = float.Parse(thicknessParts[0]);
-            PageCalendar.Tag = float.Parse(thicknessParts[1]);
-            PageCalendar.Tag = float.Parse(thicknessParts[2]);
-            PageCalendar.Tag = float.Parse(thicknessParts[3]);
+            PageCalendar.DayItemMargin = new Thickness(
+                float.Parse(thicknessParts[0],
+                float.Parse(thicknessParts[1],
+                float.Parse(thicknessParts[2],
+                float.Parse(thicknessParts[3]);
 
-            PageCalendar2.Tag = 20; // Set DayItemMargin
-            PageCalendar2.Tag = float.Parse(thicknessParts[0]);
-            PageCalendar2.Tag = float.Parse(thicknessParts[1]);
-            PageCalendar2.Tag = float.Parse(thicknessParts[2]);
-            PageCalendar2.Tag = float.Parse(thicknessParts[3]);
+            PageCalendar2.DayItemMargin = new Thickness(
+                float.Parse(thicknessParts[0],
+                float.Parse(thicknessParts[1],
+                float.Parse(thicknessParts[2],
+                float.Parse(thicknessParts[3]);
         }
 
         private void SetMonthYearItemMargin_Click(object sender, RoutedEventArgs e)
         {
             string[] thicknessParts = monthYearItemMargin.Text.Split(',');
 
-            PageCalendar.Tag = 21; // Set MonthYearItemMargin
-            PageCalendar.Tag = float.Parse(thicknessParts[0]);
-            PageCalendar.Tag = float.Parse(thicknessParts[1]);
-            PageCalendar.Tag = float.Parse(thicknessParts[2]);
-            PageCalendar.Tag = float.Parse(thicknessParts[3]);
+            PageCalendar.MonthYearItemMargin = new Thickness(
+                float.Parse(thicknessParts[0],
+                float.Parse(thicknessParts[1],
+                float.Parse(thicknessParts[2],
+                float.Parse(thicknessParts[3]);
 
-            PageCalendar2.Tag = 21; // Set MonthYearItemMargin
-            PageCalendar2.Tag = float.Parse(thicknessParts[0]);
-            PageCalendar2.Tag = float.Parse(thicknessParts[1]);
-            PageCalendar2.Tag = float.Parse(thicknessParts[2]);
-            PageCalendar2.Tag = float.Parse(thicknessParts[3]);
+            PageCalendar2.MonthYearItemMargin = new Thickness(
+                float.Parse(thicknessParts[0],
+                float.Parse(thicknessParts[1],
+                float.Parse(thicknessParts[2],
+                float.Parse(thicknessParts[3]);
         }
 
         private void SetFirstOfMonthLabelMargin_Click(object sender, RoutedEventArgs e)
         {
             string[] thicknessParts = firstOfMonthLabelMargin.Text.Split(',');
 
-            PageCalendar.Tag = 22; // Set FirstOfMonthLabelMargin
-            PageCalendar.Tag = float.Parse(thicknessParts[0]);
-            PageCalendar.Tag = float.Parse(thicknessParts[1]);
-            PageCalendar.Tag = float.Parse(thicknessParts[2]);
-            PageCalendar.Tag = float.Parse(thicknessParts[3]);
+            PageCalendar.FirstOfMonthLabelMargin = new Thickness(
+                float.Parse(thicknessParts[0],
+                float.Parse(thicknessParts[1],
+                float.Parse(thicknessParts[2],
+                float.Parse(thicknessParts[3]);
 
-            PageCalendar2.Tag = 22; // Set FirstOfMonthLabelMargin
-            PageCalendar2.Tag = float.Parse(thicknessParts[0]);
-            PageCalendar2.Tag = float.Parse(thicknessParts[1]);
-            PageCalendar2.Tag = float.Parse(thicknessParts[2]);
-            PageCalendar2.Tag = float.Parse(thicknessParts[3]);
+            PageCalendar2.FirstOfMonthLabelMargin = new Thickness(
+                float.Parse(thicknessParts[0],
+                float.Parse(thicknessParts[1],
+                float.Parse(thicknessParts[2],
+                float.Parse(thicknessParts[3]);
         }
 
         private void SetFirstOfYearDecadeLabelMargin_Click(object sender, RoutedEventArgs e)
         {
             string[] thicknessParts = firstOfYearDecadeLabelMargin.Text.Split(',');
 
-            PageCalendar.Tag = 23; // Set FirstOfYearDecadeLabelMargin
-            PageCalendar.Tag = float.Parse(thicknessParts[0]);
-            PageCalendar.Tag = float.Parse(thicknessParts[1]);
-            PageCalendar.Tag = float.Parse(thicknessParts[2]);
-            PageCalendar.Tag = float.Parse(thicknessParts[3]);
+            PageCalendar.FirstOfYearDecadeLabelMargin = new Thickness(
+                float.Parse(thicknessParts[0],
+                float.Parse(thicknessParts[1],
+                float.Parse(thicknessParts[2],
+                float.Parse(thicknessParts[3]);
 
-            PageCalendar2.Tag = 23; // Set FirstOfYearDecadeLabelMargin
-            PageCalendar2.Tag = float.Parse(thicknessParts[0]);
-            PageCalendar2.Tag = float.Parse(thicknessParts[1]);
-            PageCalendar2.Tag = float.Parse(thicknessParts[2]);
-            PageCalendar2.Tag = float.Parse(thicknessParts[3]);
+            PageCalendar2.FirstOfYearDecadeLabelMargin = new Thickness(
+                float.Parse(thicknessParts[0],
+                float.Parse(thicknessParts[1],
+                float.Parse(thicknessParts[2],
+                float.Parse(thicknessParts[3]);
         }
 
         private void GetDayItemFontSize_Click(object sender, RoutedEventArgs e)
@@ -228,8 +219,7 @@ namespace MUXControlsTestApp
 
         private void SetDayItemFontSize_Click(object sender, RoutedEventArgs e)
         {
-            PageCalendar.DayItemFontSize = double.Parse(dayItemFontSize.Text);
-            PageCalendar2.DayItemFontSize = double.Parse(dayItemFontSize.Text);
+            PageCalendar2.DayItemFontSize = PageCalendar.DayItemFontSize = double.Parse(dayItemFontSize.Text);
         }
 
         private void GetMonthYearItemFontSize_Click(object sender, RoutedEventArgs e)
@@ -239,8 +229,7 @@ namespace MUXControlsTestApp
 
         private void SetMonthYearItemFontSize_Click(object sender, RoutedEventArgs e)
         {
-            PageCalendar.MonthYearItemFontSize = double.Parse(monthYearItemFontSize.Text);
-            PageCalendar2.MonthYearItemFontSize = double.Parse(monthYearItemFontSize.Text);
+            PageCalendar2.MonthYearItemFontSize = PageCalendar.MonthYearItemFontSize = double.Parse(monthYearItemFontSize.Text);
         }
 
         private void GetFirstOfMonthLabelFontSize_Click(object sender, RoutedEventArgs e)
@@ -250,8 +239,7 @@ namespace MUXControlsTestApp
 
         private void SetFirstOfMonthLabelFontSize_Click(object sender, RoutedEventArgs e)
         {
-            PageCalendar.FirstOfMonthLabelFontSize = double.Parse(firstOfMonthLabelFontSize.Text);
-            PageCalendar2.FirstOfMonthLabelFontSize = double.Parse(firstOfMonthLabelFontSize.Text);
+            PageCalendar2.FirstOfMonthLabelFontSize = PageCalendar.FirstOfMonthLabelFontSize = double.Parse(firstOfMonthLabelFontSize.Text);
         }
 
         private void GetFirstOfYearDecadeLabelFontSize_Click(object sender, RoutedEventArgs e)
@@ -261,23 +249,18 @@ namespace MUXControlsTestApp
 
         private void SetFirstOfYearDecadeLabelFontSize_Click(object sender, RoutedEventArgs e)
         {
-            PageCalendar.FirstOfYearDecadeLabelFontSize = double.Parse(firstOfYearDecadeLabelFontSize.Text);
-            PageCalendar2.FirstOfYearDecadeLabelFontSize = double.Parse(firstOfYearDecadeLabelFontSize.Text);
+            PageCalendar2.FirstOfYearDecadeLabelFontSize = PageCalendar.FirstOfYearDecadeLabelFontSize = double.Parse(firstOfYearDecadeLabelFontSize.Text);
         }
 
         private void SetCalendarItemCornerRadius_Click(object sender, RoutedEventArgs e)
         {
-            PageCalendar.Tag = 24; // Set CalendarItemCornerRadius
-            PageCalendar.Tag = float.Parse(calendarItemCornerRadius.Text);
-
-            PageCalendar2.Tag = 24; // Set CalendarItemCornerRadius
-            PageCalendar2.Tag = float.Parse(calendarItemCornerRadius.Text);
+            PageCalendar2.CalendarItemCornerRadius = PageCalendar.CalendarItemCornerRadius = new CornerRadius(double.Parse(calendarItemCornerRadius.Text));
         }
 
         private void ResetCalendarItemCornerRadius_Click(object sender, RoutedEventArgs e)
         {
-            PageCalendar.Tag = 25; // Reset CalendarItemCornerRadius
-            PageCalendar2.Tag = 25; // Reset CalendarItemCornerRadius
+            PageCalendar.ClearValue(CalendarView.CalendarItemCornerRadiusProperty);
+            PageCalendar2.ClearValue(CalendarView.CalendarItemCornerRadiusProperty);
         }
 
         private void GetCalendarItemBorderThickness_Click(object sender, RoutedEventArgs e)
@@ -332,9 +315,8 @@ namespace MUXControlsTestApp
                 case 36: // CalendarViewDayItem.Background
                     return null;
                 default:
-/*
 #if USE_INSIDER_SDK
-                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.NineteenH1))
+                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH2))
                     {
                         switch (brushPropertyName.SelectedIndex)
                         {
@@ -376,10 +358,11 @@ namespace MUXControlsTestApp
                                 return PageCalendar.TodayPressedBackground;
                             case 35: // TodaySelectedInnerBorderBrush
                                 return PageCalendar.TodaySelectedInnerBorderBrush;
+                            default:
+                                return null;
                         }
                     }
 #endif // USE_INSIDER_SDK
-*/
                     return null;
             }
         }
@@ -491,10 +474,9 @@ namespace MUXControlsTestApp
                     SetBackgrounds(PageCalendar, solidColorBrush);
                     SetBackgrounds(PageCalendar2, solidColorBrush);
                     break;
-/*
 #if USE_INSIDER_SDK
                 default:
-                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.NineteenH1))
+                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH2))
                     {
                         switch (brushPropertyName.SelectedIndex)
                         {
@@ -537,7 +519,7 @@ namespace MUXControlsTestApp
                             case 28: // TodayBackground
                                 PageCalendar.TodayBackground = solidColorBrush;
                                 break;
-                            case 28: // TodayBlackoutBackground
+                            case 29: // TodayBlackoutBackground
                                 PageCalendar.TodayBlackoutBackground = solidColorBrush;
                                 break;
                             case 30: // TodayBlackoutForeground
@@ -559,108 +541,6 @@ namespace MUXControlsTestApp
                     }
                     break;
 #endif // USE_INSIDER_SDK
-*/
-                case 1: // BlackoutBackground
-                case 3: // BlackoutStrikethroughBrush
-                case 7: // CalendarItemDisabledBackground
-                case 9: // CalendarItemHoverBackground
-                case 10: // CalendarItemPressedBackground
-                case 11: // DisabledForeground
-                case 16: // OutOfScopeHoverForeground
-                case 17: // OutOfScopePressedForeground
-                case 21: // SelectedDisabledBorderBrush
-                case 22: // SelectedDisabledForeground
-                case 25: // SelectedHoverForeground
-                case 27: // SelectedPressedForeground
-                case 28: // TodayBackground
-                case 29: // TodayBlackoutBackground
-                case 30: // TodayBlackoutForeground
-                case 31: // TodayDisabledBackground
-                case 33: // TodayHoverBackground
-                case 34: // TodayPressedBackground
-                case 35: // TodaySelectedInnerBorderBrush
-                    switch (brushPropertyName.SelectedIndex)
-                    {
-                        case 1: // BlackoutBackground
-                            PageCalendar.Tag = 1;
-                            PageCalendar2.Tag = 1;
-                            break;
-                        case 3: // BlackoutStrikethroughBrush
-                            PageCalendar.Tag = 2;
-                            PageCalendar2.Tag = 2;
-                            break;
-                        case 7: // CalendarItemDisabledBackground
-                            PageCalendar.Tag = 3;
-                            PageCalendar2.Tag = 3;
-                            break;
-                        case 9: // CalendarItemHoverBackground
-                            PageCalendar.Tag = 4;
-                            PageCalendar2.Tag = 4;
-                            break;
-                        case 10: // CalendarItemPressedBackground
-                            PageCalendar.Tag = 5;
-                            PageCalendar2.Tag = 5;
-                            break;
-                        case 11: // DisabledForeground
-                            PageCalendar.Tag = 6;
-                            PageCalendar2.Tag = 6;
-                            break;
-                        case 16: // OutOfScopeHoverForeground
-                            PageCalendar.Tag = 7;
-                            PageCalendar2.Tag = 7;
-                            break;
-                        case 17: // OutOfScopePressedForeground
-                            PageCalendar.Tag = 8;
-                            PageCalendar2.Tag = 8;
-                            break;
-                        case 21: // SelectedDisabledBorderBrush
-                            PageCalendar.Tag = 9;
-                            PageCalendar2.Tag = 9;
-                            break;
-                        case 22: // SelectedDisabledForeground
-                            PageCalendar.Tag = 10;
-                            PageCalendar2.Tag = 10;
-                            break;
-                        case 25: // SelectedHoverForeground
-                            PageCalendar.Tag = 11;
-                            PageCalendar2.Tag = 11;
-                            break;
-                        case 27: // SelectedPressedForeground
-                            PageCalendar.Tag = 12;
-                            PageCalendar2.Tag = 12;
-                            break;
-                        case 28: // TodayBackground
-                            PageCalendar.Tag = 13;
-                            PageCalendar2.Tag = 13;
-                            break;
-                        case 29: // TodayBlackoutBackground
-                            PageCalendar.Tag = 14;
-                            PageCalendar2.Tag = 14;
-                            break;
-                        case 30: // TodayBlackoutForeround
-                            PageCalendar.Tag = 15;
-                            PageCalendar2.Tag = 15;
-                            break;
-                        case 31: // TodayDisabledBackground
-                            PageCalendar.Tag = 16;
-                            PageCalendar2.Tag = 16;
-                            break;
-                        case 33: // TodayHoverBackground
-                            PageCalendar.Tag = 17;
-                            PageCalendar2.Tag = 17;
-                            break;
-                        case 34: // TodayPressedBackground
-                            PageCalendar.Tag = 18;
-                            PageCalendar2.Tag = 18;
-                            break;
-                        case 35: // TodaySelectedInnerBorderBrush
-                            PageCalendar.Tag = 19;
-                            PageCalendar2.Tag = 19;
-                            break;
-                    }
-                    PageCalendar.Tag = solidColorBrush;
-                    PageCalendar2.Tag = solidColorBrush;
-                    break;
             }
         }
 
@@ -672,73 +552,7 @@ namespace MUXControlsTestApp
             {
                 Brush brush = GetBrushFromIndex();
 
-                if (brush == null)
-                {
-                    switch (brushPropertyName.SelectedIndex)
-                    {
-                        case 1: // BlackoutBackground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#00FFFFFF";
-                            break;
-                        case 3: // BlackoutStrikethroughBrush
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#72000000";
-                            break;
-                        case 7: // CalendarItemDisabledBackground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#00FFFFFF";
-                            break;
-                        case 9: // CalendarItemHoverBackground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#0A000000";
-                            break;
-                        case 10: // CalendarItemPressedBackground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#06000000";
-                            break;
-                        case 11: // DisabledForeground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#5C000000";
-                            break;
-                        case 16: // OutOfScopeHoverForeground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#9B000000";
-                            break;
-                        case 17: // OutOfScopePressedForeground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#72000000";
-                            break;
-                        case 21: // SelectedDisabledBorderBrush
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#37000000";
-                            break;
-                        case 22: // SelectedDisabledForeground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#5C000000";
-                            break;
-                        case 25: // SelectedHoverForeground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#xFF003E92";
-                            break;
-                        case 27: // SelectedPressedForeground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF005FB7";
-                            break;
-                        case 28: // TodayBackground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF0067C0";
-                            break;
-                        case 29: // TodayBlackoutBackground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF0078D4";
-                            break;
-                        case 30: // TodayBlackoutForeground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FFFFFFFF";
-                            break;
-                        case 31: // TodayDisabledBackground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#37000000";
-                            break;
-                        case 33: // TodayHoverBackground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF003E92";
-                            break;
-                        case 34: // TodayPressedBackground
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FF0078D4";
-                            break;
-                        case 35: // TodaySelectedInnerBorderBrush
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "#FFFFFFFF";
-                            break;
-                        default:
-                            _defaultBrushColors[brushPropertyName.SelectedIndex] = "N/A";
-                            break;
-                    }
-                }
-                else
+                if (brush != null)
                 {
                     _defaultBrushColors[brushPropertyName.SelectedIndex] = GetBrushColorString(brush);
                 }

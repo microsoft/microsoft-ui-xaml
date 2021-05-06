@@ -69,7 +69,8 @@ void XamlControlsResources::UpdateSource()
             const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
             const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
-            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher() && SharedHelpers::IsSelectionIndicatorModeAvailable();
+            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher();
+            const bool is21H2OrHigher = SharedHelpers::Is21H2OrHigher();
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
@@ -89,7 +90,11 @@ void XamlControlsResources::UpdateSource()
 
             hstring releasePrefix;
 
-            if (is21H1OrHigher)
+            if (is21H2OrHigher)
+            {
+                releasePrefix = L"21h2_";
+            }
+            else if (is21H1OrHigher)
             {
                 releasePrefix = L"21h1_";
             }
@@ -244,7 +249,8 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
             const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
-            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher() && SharedHelpers::IsSelectionIndicatorModeAvailable();
+            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher();
+            const bool is21H2OrHigher = SharedHelpers::Is21H2OrHigher();
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
@@ -254,7 +260,11 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             
             if (isInFrameworkPackage)
             {
-                if (is21H1OrHigher)
+                if (is21H2OrHigher)
+                {
+                    releasePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h2_";
+                }
+                else if (is21H1OrHigher)
                 {
                     releasePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
                 }
@@ -281,7 +291,11 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             }
             else if (isInCBSPackage)
             {
-                if (is21H1OrHigher)
+                if (is21H2OrHigher)
+                {
+                    releasePrefix = L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h2_";
+                }
+                else if (is21H1OrHigher)
                 {
                     releasePrefix = L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
                 }
@@ -297,7 +311,11 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             }
             else
             {
-                if (is21H1OrHigher)
+                if (is21H2OrHigher)
+                {
+                    releasePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h2_";
+                }
+                else if (is21H1OrHigher)
                 {
                     releasePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
                 }

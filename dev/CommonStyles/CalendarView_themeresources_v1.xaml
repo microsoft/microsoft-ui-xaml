@@ -108,6 +108,8 @@
 
     <Style TargetType="CalendarView" BasedOn="{StaticResource CalendarViewRevealStyle}" />
 
+    <Style x:Key="DefaultCalendarViewStyle" TargetType="CalendarView" BasedOn="{StaticResource CalendarViewRevealStyle}" />
+
     <Style x:Key="CalendarViewRevealStyle" TargetType="CalendarView">
         <Setter Property="FocusBorderBrush" Value="{ThemeResource CalendarViewFocusBorderBrush}" />
         <Setter Property="SelectedHoverBorderBrush" Value="{ThemeResource CalendarViewSelectedHoverBorderBrush}" />

@@ -16,7 +16,8 @@ namespace CustomTasks
             { "RS4", 6 },
             { "RS5", 7 },
             { "19H1", 8},
-            { "21H1", 13}
+            { "21H1", 13},
+            { "21H2", 14}
         };
 
         static List<string> BuildNamespaceToBeRemoved(int apiVersion)

@@ -28,8 +28,8 @@
     <MinSDKVersionRequiredForRS4ThemeResource>$(SDKVersionRS4)</MinSDKVersionRequiredForRS4ThemeResource>
     <MinSDKVersionRequiredForRS5ThemeResource>$(SDKVersion19H1)</MinSDKVersionRequiredForRS5ThemeResource>
     <MinSDKVersionRequiredFor19H1ThemeResource>$(SDKVersion19H1)</MinSDKVersionRequiredFor19H1ThemeResource>
-    <MinSDKVersionRequiredFor21H1ThemeResource Condition="'$(UseInsiderSDK)' != 'true'">$(SDKVersion19H1)</MinSDKVersionRequiredFor21H1ThemeResource>
-    <MinSDKVersionRequiredFor21H1ThemeResource Condition="'$(UseInsiderSDK)' == 'true'">$(SDKVersionInsider)</MinSDKVersionRequiredFor21H1ThemeResource>
+    <MinSDKVersionRequiredFor21H2ThemeResource Condition="'$(UseInsiderSDK)' != 'true'">$(SDKVersion19H1)</MinSDKVersionRequiredFor21H2ThemeResource>
+    <MinSDKVersionRequiredFor21H2ThemeResource Condition="'$(UseInsiderSDK)' == 'true'">$(SDKVersionInsider)</MinSDKVersionRequiredFor21H2ThemeResource>
   </PropertyGroup>
 
   <PropertyGroup>

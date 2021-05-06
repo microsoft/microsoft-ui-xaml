@@ -163,9 +163,9 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)GridViewItem_themeresources_21h1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)GridViewItem_themeresources_21h2.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
-      <Version>21H1</Version>
+      <Version>21H2</Version>
       <Type>ThemeResources</Type>
       <RequireInsiderSDK>true</RequireInsiderSDK>
     </Page>
@@ -174,9 +174,9 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_21h1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_21h2.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
-      <Version>21H1</Version>
+      <Version>21H2</Version>
       <Type>ThemeResources</Type>
       <RequireInsiderSDK>true</RequireInsiderSDK>
     </Page>
@@ -280,9 +280,9 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)CalendarView_themeresources_21h1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)CalendarView_themeresources_21h2.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
-      <Version>21H1</Version>
+      <Version>21H2</Version>
       <Type>ThemeResources</Type>
       <RequireInsiderSDK>true</RequireInsiderSDK>
     </Page>

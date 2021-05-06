@@ -43,12 +43,12 @@
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)CommandBarFlyoutOS_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
-      <Version>21H1</Version>
+      <Version>21H2</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)CommandBarFlyoutOS_themeresources_v1.xaml">
       <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
-      <Version>21H1</Version>
+      <Version>21H2</Version>
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>

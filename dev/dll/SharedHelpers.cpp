@@ -38,6 +38,11 @@ bool SharedHelpers::IsInDesignModeV2()
 }
 
 // logical helpers
+bool SharedHelpers::Is21H2OrHigher()
+{
+    return IsAPIContractV14Available();
+}
+
 bool SharedHelpers::Is21H1OrHigher()
 {
     return IsAPIContractV13Available();
@@ -220,12 +225,6 @@ bool SharedHelpers::IsCompositionRadialGradientBrushAvailable()
     return s_isAvailable;
 }
 
-bool SharedHelpers::IsSelectionIndicatorModeAvailable()
-{
-    static bool s_isSelectionIndicatorModeAvailable = winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Controls.Primitives.ListViewItemPresenterSelectionIndicatorMode");
-    return s_isSelectionIndicatorModeAvailable;
-}
-
 template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
 {
     static bool isAPIContractVxAvailableInitialized = false;
@@ -240,6 +239,11 @@ template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
 }
 
 // base helpers
+bool SharedHelpers::IsAPIContractV14Available()
+{
+    return IsAPIContractVxAvailable<14>();
+}
+
 bool SharedHelpers::IsAPIContractV13Available()
 {
     return IsAPIContractVxAvailable<13>();

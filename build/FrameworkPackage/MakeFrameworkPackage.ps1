@@ -38,7 +38,7 @@ function ExecuteMakePri
     if ($LastExitCode -ne 0) { Exit 1 }
 }
 
-# only keep 21h1 themeresources, and set othe themeresources to " "
+# only keep 21h2 themeresources, and set other themeresources to " "
 # I didn't set it to "" because "" will change the `makepri dump` layout, but " " will not.
 function RepackCBSResourcesPri
 {
@@ -66,7 +66,7 @@ function RepackCBSResourcesPri
         "19h1_generic_v1.xbf", "rs5_generic_v1.xbf", "rs4_generic_v1.xbf", "rs4_generic_v1.xbf", "rs3_generic_v1.xbf", "rs2_generic_v1.xbf",
         "19h1_compact_themeresources.xbf", "rs5_compact_themeresources.xbf", "rs4_compact_themeresources.xbf", "rs3_compact_themeresources.xbf", "rs2_compact_themeresources.xbf",
         "19h1_compact_themeresources_v1.xbf", "rs5_compact_themeresources_v1.xbf", "rs4_compact_themeresources_v1.xbf", "rs3_compact_themeresources_V1.xbf", "rs2_compact_themeresources_v1.xbf",
-        "21h1_compact_themeresources_v1.xbf", "21h1_compact_themeresources.xbf"
+        "21h2_compact_themeresources_v1.xbf", "21h2_compact_themeresources.xbf"
         )
     
     foreach($name in $namesToBeChanged) { 
