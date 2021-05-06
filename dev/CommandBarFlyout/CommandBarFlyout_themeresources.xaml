@@ -624,19 +624,7 @@
         </Setter>
     </Style>
 
-    <contract7NotPresent:Style x:Key="CommandBarFlyoutCommandBarOverflowPresenterStyleRS4" TargetType="CommandBarOverflowPresenter">
-        <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutButtonBackground}" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="MinWidth" Value="136" />
-        <Setter Property="MaxWidth" Value="440" />
-        <Setter Property="MaxHeight" Value="480" />
-        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
-        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
-        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-        <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
-        <Setter Property="AllowFocusOnInteraction" Value="False" />
-        <Setter Property="TabNavigation" Value="Once" />
+    <contract7NotPresent:Style x:Key="CommandBarFlyoutCommandBarOverflowPresenterStyleRS4" TargetType="CommandBarOverflowPresenter" BasedOn="{StaticResource CommandBarFlyoutCommandBarOverflowPresenterStyle}">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CommandBarOverflowPresenter">
