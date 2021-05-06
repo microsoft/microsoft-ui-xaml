@@ -66,7 +66,7 @@ clicks/taps the current date:
 
 ### Showcasing the `TodaySelectedInnerBorderBrush` property - current date is selected
 
-The example sets the color to be used on the inner border for the current date:
+The example sets the color to be used on the inner border for the current date when it is selected:
 
 ```xml
 <CalendarView TodaySelectedInnerBorderBrush='{StaticResource TextOnAccentFillColorPrimaryBrush}'/>
@@ -89,7 +89,7 @@ _Spec note: how to set a blackout date isn't documented very well,
 
 ### Showcasing the TodayBlackoutBackground and TodayBlackoutForeground properties
 
-`TodayBlackoutBackground` takes precedence over the `BlackoutForeground` value.
+`TodayBlackoutForeground` takes precedence over the `BlackoutForeground` value, and `TodayBlackoutBackground` takes precedence over the `BlackoutBackground` value.
 
 ```xml
 <CalendarView TodayBlackoutBackground='{StaticResource AccentFillColorTertiaryBrush}' TodayBlackoutForeground='{StaticResource TextOnAccentFillColorPrimaryBrush}' />
@@ -151,6 +151,7 @@ The `CalendarItemHoverBackground`, `CalendarItemPressedBackground` properties of
 [Brush](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Media.Brush)
 are used to customize the background rendering of items in any of the `CalendarView's`
 [DisplayModes](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.CalendarDatePicker.DisplayMode).
+The current date in the month view uses the `TodayHoverBackground` and `TodayPressedBackground` brushes though.
 
 ### Showcasing the CalendarItemHoverBackground property - February is hovered
 
@@ -354,6 +355,7 @@ Gets or sets a brush that provides the foreground of a calendar item while it's 
 `public Windows.UI.Xaml.Media.Brush BlackoutStrikethroughBrush { get; set; }`
 
 Gets or sets a brush for the strikethrough line over calendar items while they are blacked out.
+The strikethrough line for the current date uses the `CalendarView.TodayBlackoutForeground` brush though.
 
 ## CalendarView.SelectedDisabledBorderBrush
 
@@ -433,6 +435,7 @@ Gets or sets a brush that provides the background of the calendar item for the c
 `public Windows.UI.Xaml.Media.Brush TodayBlackoutForeground { get; set; }`
 
 Gets or sets a brush that provides the foreground of the calendar item for the current date while it's blacked out.
+It is also used for its strikethrough line.
 
 ## CalendarView.TodayHoverBackground
 
