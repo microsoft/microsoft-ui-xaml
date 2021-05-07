@@ -111,7 +111,7 @@ void TabView::OnApplyTemplate()
             m_listViewAllowDropPropertyChangedRevoker = RegisterPropertyChanged(listView, winrt::UIElement::AllowDropProperty(), { this, &TabView::OnListViewDraggingPropertyChanged });
         }
         return listView;
-        }());
+    }());
 
     m_addButton.set([this, controlProtected]() {
         auto addButton = GetTemplateChildT<winrt::Button>(L"AddButton", controlProtected);
@@ -242,9 +242,9 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
                         {
                             // Without TrySetNewFocusedElement, we cannot set focus while it is changing.
                             m_dispatcherHelper.RunAsync([next]()
-                                {
-                                    SetFocus(next, winrt::FocusState::Programmatic);
-                                });
+                            {
+                                SetFocus(next, winrt::FocusState::Programmatic);
+                            });
                         }
                         args.Handled(true);
                     }
@@ -511,9 +511,9 @@ void TabView::OnTabStripPointerExited(const winrt::IInspectable& sender, const w
     if (m_updateTabWidthOnPointerLeave)
     {
         auto scopeGuard = gsl::finally([this]()
-            {
-                m_updateTabWidthOnPointerLeave = false;
-            });
+        {
+            m_updateTabWidthOnPointerLeave = false;
+        });
         UpdateTabWidths();
     }
 }
@@ -538,7 +538,7 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
                 m_scrollDecreaseClickRevoker = decreaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollDecreaseClick });
             }
             return decreaseButton;
-            }());
+        }());
 
         m_scrollIncreaseButton.set([this, scrollViewer]() {
             const auto increaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>();
@@ -556,7 +556,7 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
                 m_scrollIncreaseClickRevoker = increaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollIncreaseClick });
             }
             return increaseButton;
-            }());
+        }());
 
         m_scrollViewerViewChangedRevoker = scrollViewer.ViewChanged(winrt::auto_revoke, { this, &TabView::OnScrollViewerViewChanged });
     }
@@ -804,9 +804,9 @@ void TabView::UpdateTabContent()
                 // move focus later.
                 bool shouldMoveFocusToNewTab = false;
                 auto revoker = tabContentPresenter.LosingFocus(winrt::auto_revoke, [&shouldMoveFocusToNewTab](const winrt::IInspectable&, const winrt::LosingFocusEventArgs& args)
-                    {
-                        shouldMoveFocusToNewTab = true;
-                    });
+                {
+                    shouldMoveFocusToNewTab = true;
+                });
 
                 tabContentPresenter.Content(tvi.Content());
                 tabContentPresenter.ContentTemplate(tvi.ContentTemplate());
