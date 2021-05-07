@@ -183,7 +183,7 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <Thickness x:Key="TabViewHeaderPadding">4,0,4,0</Thickness>
+    <Thickness x:Key="TabViewHeaderPadding">4,8,4,0</Thickness>
     <Thickness x:Key="TabViewItemHeaderPadding">8,3,4,3</Thickness>
     <Thickness x:Key="TabViewSelectedItemHeaderPadding">9,3,5,4</Thickness>
 

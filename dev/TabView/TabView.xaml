@@ -742,7 +742,7 @@
                         ContentTemplate="{TemplateBinding ContentTemplate}"
                         ContentTransitions="{TemplateBinding ContentTransitions}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{ThemeResource TabViewItemButtonCornerRadius}"
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                         FontSize="{TemplateBinding FontSize}"
                         FontFamily="{TemplateBinding FontFamily}"
                         FontWeight="{TemplateBinding FontWeight}"

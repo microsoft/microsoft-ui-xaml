@@ -74,6 +74,7 @@ private:
     bool m_isDragging = false;
     bool m_isPointerOver = false;
 
+    void UpdateShadow();
     winrt::IInspectable m_shadow{ nullptr };
 
     winrt::weak_ref<winrt::TabView> m_parentTabView{ nullptr };

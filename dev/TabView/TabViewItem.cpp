@@ -7,6 +7,7 @@
 #include "TabViewItem.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
+#include "XamlControlsResources.h"
 #include "SharedHelpers.h"
 
 static constexpr auto c_overlayCornerRadiusKey = L"OverlayCornerRadius"sv;
@@ -63,6 +64,26 @@ void TabViewItem::OnApplyTemplate()
 
     if (tabView)
     {
+        if (SharedHelpers::IsThemeShadowAvailable())
+        {
+            if (internalTabView)
+            {
+                winrt::ThemeShadow shadow;
+                if (!SharedHelpers::Is21H1OrHigher())
+                {
+                    shadow.Receivers().Append(internalTabView->GetShadowReceiver());
+                }
+                m_shadow = shadow;
+
+                double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
+
+                const auto currentTranslation = Translation();
+                const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
+                Translation(translation);
+
+                UpdateShadow();
+            }
+        }
         m_tabDragStartingRevoker = tabView.TabDragStarting(winrt::auto_revoke, { this, &TabViewItem::OnTabDragStarting });
         m_tabDragCompletedRevoker = tabView.TabDragCompleted(winrt::auto_revoke, { this, &TabViewItem::OnTabDragCompleted });
     }
@@ -91,23 +112,47 @@ void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sen
 
     if (IsSelected())
     {
+        SetValue(winrt::Canvas::ZIndexProperty(), box_value(20));
         StartBringIntoView();
     }
+    else
+    {
+        SetValue(winrt::Canvas::ZIndexProperty(), box_value(0));
+    }
 
+    UpdateShadow();
     UpdateWidthModeVisualState();
 
     UpdateCloseButton();
+}
+
+void TabViewItem::UpdateShadow()
+{
+    
+    if (SharedHelpers::IsThemeShadowAvailable() && !XamlControlsResources::IsUsingControlsResourcesVersion2())
+    {
+        if (IsSelected() && !m_isDragging )
+        {
+            Shadow(m_shadow.as<winrt::ThemeShadow>());
+        }
+        else
+        {
+            Shadow(nullptr);
+        }
+    }
 }
 
 
 void TabViewItem::OnTabDragStarting(const winrt::IInspectable& sender, const winrt::TabViewTabDragStartingEventArgs& args)
 {
     m_isDragging = true;
+    UpdateShadow();
 }
 
 void TabViewItem::OnTabDragCompleted(const winrt::IInspectable& sender, const winrt::TabViewTabDragCompletedEventArgs& args)
 {
     m_isDragging = false;
+    UpdateShadow();
 }
 
 winrt::AutomationPeer TabViewItem::OnCreateAutomationPeer()

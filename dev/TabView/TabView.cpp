@@ -87,6 +87,11 @@ void TabView::OnApplyTemplate()
         m_tabStripPointerExitedRevoker = containerGrid.PointerExited(winrt::auto_revoke, { this,&TabView::OnTabStripPointerExited });
     }
 
+    if (!SharedHelpers::Is21H1OrHigher())
+    {
+        m_shadowReceiver.set(GetTemplateChildT<winrt::Grid>(L"ShadowReceiver", controlProtected));
+    }
+
     m_listView.set([this, controlProtected]() {
         auto listView = GetTemplateChildT<winrt::ListView>(L"TabListView", controlProtected);
         if (listView)
@@ -129,7 +134,27 @@ void TabView::OnApplyTemplate()
             m_addButtonClickRevoker = addButton.Click(winrt::auto_revoke, { this, &TabView::OnAddButtonClick });
         }
         return addButton;
-        }());
+    }());
+
+    if (SharedHelpers::IsThemeShadowAvailable())
+    {
+        if (!SharedHelpers::Is21H1OrHigher())
+        {
+            if (auto shadowCaster = GetTemplateChildT<winrt::Grid>(L"ShadowCaster", controlProtected))
+            {
+                winrt::ThemeShadow shadow;
+                shadow.Receivers().Append(GetShadowReceiver());
+
+                double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
+
+                const auto currentTranslation = shadowCaster.Translation();
+                const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
+                shadowCaster.Translation(translation);
+
+                shadowCaster.Shadow(shadow);
+            }
+        }
+    }
 
     UpdateListViewItemContainerTransitions();
 }
@@ -341,6 +366,7 @@ void TabView::UnhookEventsAndClearFields()
     m_addButtonColumn.set(nullptr);
     m_rightContentColumn.set(nullptr);
     m_tabContainerGrid.set(nullptr);
+    m_shadowReceiver.set(nullptr);
     m_listView.set(nullptr);
     m_addButton.set(nullptr);
     m_itemsPresenter.set(nullptr);
@@ -612,7 +638,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
         if (selectedIndex != listViewInnerSelectedIndex && listViewInnerSelectedIndex != -1)
         {
             SelectedIndex(listViewInnerSelectedIndex);
-            selectedIndex = SelectedIndex();
+            selectedIndex = listViewInnerSelectedIndex;
         }
 
         if (args.CollectionChange() == winrt::CollectionChange::ItemRemoved)

@@ -12,6 +12,9 @@
 #include "TabViewTabDragCompletedEventArgs.g.h"
 #include "DispatcherHelper.h"
 
+static constexpr double c_tabShadowDepth = 16.0;
+static constexpr wstring_view c_tabViewShadowDepthName{ L"TabViewShadowDepth"sv };
+
 
 class TabViewTabCloseRequestedEventArgs :
     public winrt::implementation::TabViewTabCloseRequestedEventArgsT<TabViewTabCloseRequestedEventArgs>
@@ -112,6 +115,8 @@ public:
 
     void RequestCloseTab(winrt::TabViewItem const& item);
 
+    winrt::UIElement GetShadowReceiver() { return m_shadowReceiver.get(); }
+
     winrt::hstring GetTabCloseButtonTooltipText() { return m_tabCloseButtonTooltipText; }
     void SetTabSeparatorOpacity(int index, int opacityValue);
     void SetTabSeparatorOpacity(int index);
@@ -174,6 +179,8 @@ private:
     tracker_ref<winrt::RepeatButton> m_scrollIncreaseButton{ this };
     tracker_ref<winrt::Button> m_addButton{ this };
     tracker_ref<winrt::ItemsPresenter> m_itemsPresenter{ this };
+
+    tracker_ref<winrt::Grid> m_shadowReceiver{ this };
 
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::ListView::PointerExited_revoker m_tabStripPointerExitedRevoker{};
