@@ -21,7 +21,7 @@ static constexpr auto c_AccentAcrylicInAppFillColorBaseBrush = L"AccentAcrylicIn
 // Controls knows nothing about XamlControlsResources, but we need a way to pass the new visual flag from XamlControlsResources to Controls
 // Assume XamlControlsResources is one per Application resource, and application is per thread, 
 // so it's OK to assume one instance of XamlControlsResources per thread.
-thread_local bool s_tlsIsControlsResourcesVersion2 = true;
+static thread_local bool s_tlsIsControlsResourcesVersion2 = true;
 
 XamlControlsResources::XamlControlsResources()
 {
@@ -359,4 +359,9 @@ void XamlControlsResources::EnsureRevealLights(winrt::UIElement const& element)
                 RevealBrush::AttachLightsToAncestor(element, false);
             });
     }
+}
+
+bool XamlControlsResources::IsUsingControlsResourcesVersion2()
+{
+    return s_tlsIsControlsResourcesVersion2;
 }
