@@ -23,7 +23,7 @@ public:
     ItemsRepeater();
     ~ItemsRepeater();
 
-    static constexpr uint8_t s_maxLayoutIterations = 60u;
+    static constexpr uint8_t s_maxLayoutIterations = 70u; // 59u;
 
     static winrt::Point ClearedElementsArrangePosition;
     // A convention we use in the ItemsRepeater codebase for an invalid Rect value.

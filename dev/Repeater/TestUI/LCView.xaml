@@ -14,19 +14,35 @@
         </Grid.RowDefinitions>
 
         <TextBlock Text="{x:Bind ViewModel.Text, Mode=OneWay}" />
-        <controls:ItemsRepeater
+        <ListView
+            x:Name="SubItems"
+            Grid.Row="1"
+            x:Load="{x:Bind ViewModel.HasItems, Mode=OneWay}"
+            ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <TextBlock Text="{x:Bind}" Height="2"/>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <!--<controls:ItemsRepeater
             x:Name="SubItems"
             Grid.Row="1"
             x:Load="{x:Bind ViewModel.HasItems, Mode=OneWay}"
             ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}">
             <controls:ItemsRepeater.Layout>
-                <controls:StackLayout Orientation="Vertical"/>
+                <controls:StackLayout Orientation="Vertical" DisableVirtualization="True"/>
             </controls:ItemsRepeater.Layout>
             <controls:ItemsRepeater.ItemTemplate>
                 <DataTemplate x:DataType="x:String">
                     <TextBlock Text="{x:Bind}" />
                 </DataTemplate>
             </controls:ItemsRepeater.ItemTemplate>
-        </controls:ItemsRepeater>
+        </controls:ItemsRepeater>-->
     </Grid>
 </UserControl>
