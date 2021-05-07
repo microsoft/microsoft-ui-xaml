@@ -403,72 +403,55 @@ namespace MUXControlsTestApp
             switch (brushPropertyName.SelectedIndex)
             {
                 case 0: // Background
-                    PageCalendar.Background = solidColorBrush;
-                    PageCalendar2.Background = solidColorBrush;
+                    PageCalendar.Background = PageCalendar2.Background = solidColorBrush;
                     break;
                 case 2: // BlackoutForeground
-                    PageCalendar.BlackoutForeground = solidColorBrush;
-                    PageCalendar2.BlackoutForeground = solidColorBrush;
+                    PageCalendar.BlackoutForeground = PageCalendar2.BlackoutForeground = solidColorBrush;
                     break;
                 case 4: // BorderBrush
-                    PageCalendar.BorderBrush = solidColorBrush;
-                    PageCalendar2.BorderBrush = solidColorBrush;
+                    PageCalendar.BorderBrush = PageCalendar2.BorderBrush = solidColorBrush;
                     break;
                 case 5: // CalendarItemBorderBrush
-                    PageCalendar.CalendarItemBorderBrush = solidColorBrush;
-                    PageCalendar2.CalendarItemBorderBrush = solidColorBrush;
+                    PageCalendar.CalendarItemBorderBrush = PageCalendar2.CalendarItemBorderBrush = solidColorBrush;
                     break;
                 case 6: // CalendarItemBackground
-                    PageCalendar.CalendarItemBackground = solidColorBrush;
-                    PageCalendar2.CalendarItemBackground = solidColorBrush;
+                    PageCalendar.CalendarItemBackground = PageCalendar2.CalendarItemBackground = solidColorBrush;
                     break;
                 case 8: // CalendarItemForeground
-                    PageCalendar.CalendarItemForeground = solidColorBrush;
-                    PageCalendar2.CalendarItemForeground = solidColorBrush;
+                    PageCalendar.CalendarItemForeground = PageCalendar2.CalendarItemForeground = solidColorBrush;
                     break;
                 case 12: // Foreground
-                    PageCalendar.Foreground = solidColorBrush;
-                    PageCalendar2.Foreground = solidColorBrush;
+                    PageCalendar.Foreground = PageCalendar2.Foreground = solidColorBrush;
                     break;
                 case 13: // HoverBorderBrush
-                    PageCalendar.HoverBorderBrush = solidColorBrush;
-                    PageCalendar2.HoverBorderBrush = solidColorBrush;
+                    PageCalendar.HoverBorderBrush = PageCalendar2.HoverBorderBrush = solidColorBrush;
                     break;
                 case 14: // OutOfScopeBackground
-                    PageCalendar.OutOfScopeBackground = solidColorBrush;
-                    PageCalendar2.OutOfScopeBackground = solidColorBrush;
+                    PageCalendar.OutOfScopeBackground = PageCalendar2.OutOfScopeBackground = solidColorBrush;
                     break;
                 case 15: // OutOfScopeForeground
-                    PageCalendar.OutOfScopeForeground = solidColorBrush;
-                    PageCalendar2.OutOfScopeForeground = solidColorBrush;
+                    PageCalendar.OutOfScopeForeground = PageCalendar2.OutOfScopeForeground = solidColorBrush;
                     break;
                 case 18: // PressedBorderBrush
-                    PageCalendar.PressedBorderBrush = solidColorBrush;
-                    PageCalendar2.PressedBorderBrush = solidColorBrush;
+                    PageCalendar.PressedBorderBrush = PageCalendar2.PressedBorderBrush = solidColorBrush;
                     break;
                 case 19: // PressedForeground
-                    PageCalendar.PressedForeground = solidColorBrush;
-                    PageCalendar2.PressedForeground = solidColorBrush;
+                    PageCalendar.PressedForeground = PageCalendar2.PressedForeground = solidColorBrush;
                     break;
                 case 20: // SelectedBorderBrush
-                    PageCalendar.SelectedBorderBrush = solidColorBrush;
-                    PageCalendar2.SelectedBorderBrush = solidColorBrush;
+                    PageCalendar.SelectedBorderBrush = PageCalendar2.SelectedBorderBrush = solidColorBrush;
                     break;
                 case 23: // SelectedForeground
-                    PageCalendar.SelectedForeground = solidColorBrush;
-                    PageCalendar2.SelectedForeground = solidColorBrush;
+                    PageCalendar.SelectedForeground = PageCalendar2.SelectedForeground = solidColorBrush;
                     break;
                 case 24: // SelectedHoverBorderBrush
-                    PageCalendar.SelectedHoverBorderBrush = solidColorBrush;
-                    PageCalendar2.SelectedHoverBorderBrush = solidColorBrush;
+                    PageCalendar.SelectedHoverBorderBrush = PageCalendar2.SelectedHoverBorderBrush = solidColorBrush;
                     break;
                 case 26: // SelectedPressedBorderBrush
-                    PageCalendar.SelectedPressedBorderBrush = solidColorBrush;
-                    PageCalendar2.SelectedPressedBorderBrush = solidColorBrush;
+                    PageCalendar.SelectedPressedBorderBrush = PageCalendar2.SelectedPressedBorderBrush = solidColorBrush;
                     break;
                 case 32: // TodayForeground
-                    PageCalendar.TodayForeground = solidColorBrush;
-                    PageCalendar2.TodayForeground = solidColorBrush;
+                    PageCalendar.TodayForeground = PageCalendar2.TodayForeground = solidColorBrush;
                     break;
                 case 36: // CalendarViewDayItem.Background
                     SetBackgrounds(PageCalendar, solidColorBrush);
@@ -481,61 +464,61 @@ namespace MUXControlsTestApp
                         switch (brushPropertyName.SelectedIndex)
                         {
                             case 1: // BlackoutBackground
-                                PageCalendar.BlackoutBackground = solidColorBrush;
+                                PageCalendar.BlackoutBackground = PageCalendar2.BlackoutBackground = solidColorBrush;
                                 break;
                             case 3: // BlackoutStrikethroughBrush
-                                PageCalendar.BlackoutStrikethroughBrush = solidColorBrush;
+                                PageCalendar.BlackoutStrikethroughBrush = PageCalendar2.BlackoutStrikethroughBrush = solidColorBrush;
                                 break;
                             case 7: // CalendarItemDisabledBackground
-                                PageCalendar.CalendarItemDisabledBackground = solidColorBrush;
+                                PageCalendar.CalendarItemDisabledBackground = PageCalendar2.CalendarItemDisabledBackground = solidColorBrush;
                                 break;
                             case 9: // CalendarItemHoverBackground
-                                PageCalendar.CalendarItemHoverBackground = solidColorBrush;
+                                PageCalendar.CalendarItemHoverBackground = PageCalendar2.CalendarItemHoverBackground = solidColorBrush;
                                 break;
                             case 10: // CalendarItemPressedBackground
-                                PageCalendar.CalendarItemPressedBackground = solidColorBrush;
+                                PageCalendar.CalendarItemPressedBackground = PageCalendar2.CalendarItemPressedBackground = solidColorBrush;
                                 break;
                             case 11: // DisabledForeground
-                                PageCalendar.DisabledForeground = solidColorBrush;
+                                PageCalendar.DisabledForeground = PageCalendar2.DisabledForeground = solidColorBrush;
                                 break;
                             case 16: // OutOfScopeHoverForeground
-                                PageCalendar.OutOfScopeHoverForeground = solidColorBrush;
+                                PageCalendar.OutOfScopeHoverForeground = PageCalendar2.OutOfScopeHoverForeground = solidColorBrush;
                                 break;
                             case 17: // OutOfScopePressedForeground
-                                PageCalendar.OutOfScopePressedForeground = solidColorBrush;
+                                PageCalendar.OutOfScopePressedForeground = PageCalendar2.OutOfScopePressedForeground = solidColorBrush;
                                 break;
                             case 21: // SelectedDisabledBorderBrush
-                                PageCalendar.SelectedDisabledBorderBrush = solidColorBrush;
+                                PageCalendar.SelectedDisabledBorderBrush = PageCalendar2.SelectedDisabledBorderBrush = solidColorBrush;
                                 break;
                             case 22: // SelectedDisabledForeground
-                                PageCalendar.SelectedDisabledForeground = solidColorBrush;
+                                PageCalendar.SelectedDisabledForeground = PageCalendar2.SelectedDisabledForeground = solidColorBrush;
                                 break;
                             case 25: // SelectedHoverForeground
-                                PageCalendar.SelectedHoverForeground = solidColorBrush;
+                                PageCalendar.SelectedHoverForeground = PageCalendar2.SelectedHoverForeground = solidColorBrush;
                                 break;
                             case 27: // SelectedPressedForeground
-                                PageCalendar.SelectedPressedForeground = solidColorBrush;
+                                PageCalendar.SelectedPressedForeground = PageCalendar2.SelectedPressedForeground = solidColorBrush;
                                 break;
                             case 28: // TodayBackground
-                                PageCalendar.TodayBackground = solidColorBrush;
+                                PageCalendar.TodayBackground = PageCalendar2.TodayBackground = solidColorBrush;
                                 break;
                             case 29: // TodayBlackoutBackground
-                                PageCalendar.TodayBlackoutBackground = solidColorBrush;
+                                PageCalendar.TodayBlackoutBackground = PageCalendar2.TodayBlackoutBackground = solidColorBrush;
                                 break;
                             case 30: // TodayBlackoutForeground
-                                PageCalendar.TodayBlackoutForeground = solidColorBrush;
+                                PageCalendar.TodayBlackoutForeground = PageCalendar2.TodayBlackoutForeground = solidColorBrush;
                                 break;
                             case 31: // TodayDisabledBackground
-                                PageCalendar.TodayDisabledBackground = solidColorBrush;
+                                PageCalendar.TodayDisabledBackground = PageCalendar2.TodayDisabledBackground = solidColorBrush;
                                 break;
                             case 33: // TodayHoverBackground
-                                PageCalendar.TodayHoverBackground = solidColorBrush;
+                                PageCalendar.TodayHoverBackground = PageCalendar2.TodayHoverBackground = solidColorBrush;
                                 break;
                             case 34: // TodayPressedBackground
-                                PageCalendar.TodayPressedBackground = solidColorBrush;
+                                PageCalendar.TodayPressedBackground = PageCalendar2.TodayPressedBackground = solidColorBrush;
                                 break;
                             case 35: // TodaySelectedInnerBorderBrush
-                                PageCalendar.TodaySelectedInnerBorderBrush = solidColorBrush;
+                                PageCalendar.TodaySelectedInnerBorderBrush = PageCalendar2.TodaySelectedInnerBorderBrush = solidColorBrush;
                                 break;
                         }
                     }
