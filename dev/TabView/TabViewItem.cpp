@@ -220,7 +220,7 @@ void TabViewItem::RequestClose()
     {
         if (auto internalTabView = winrt::get_self<TabView>(tabView))
         {
-            internalTabView->RequestCloseTab(*this);
+            internalTabView->RequestCloseTab(*this, false);
         }
     }
 }

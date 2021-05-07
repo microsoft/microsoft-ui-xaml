@@ -806,6 +806,40 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void VerifySizingBehaviorOnTabCloseComingFromCtrlF4()
+        {
+            int pixelTolerance = 10;
+
+            using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTabClosingBehaviorButton" }))
+            {
+
+                Log.Comment("Verifying sizing behavior when closing a tab using Ctrl+F4");
+                CloseTabAndVerifyWidth("Tab 1", 500, "True;False;");
+
+                CloseTabAndVerifyWidth("Tab 2", 500, "True;False;");
+            }
+
+            void CloseTabAndVerifyWidth(string tabName, int expectedValue, string expectedScrollbuttonStates)
+            {
+                Log.Comment("Closing tab:" + tabName);
+                FindElement.ByName(tabName).Click();
+                KeyboardHelper.PressKey(Key.F4,ModifierKey.Control);
+                Wait.ForIdle();
+                Log.Comment("Verifying TabView width");
+                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - expectedValue) < pixelTolerance);
+                Verify.AreEqual(expectedScrollbuttonStates, FindElement.ByName("ScrollButtonStatus").GetText());
+
+            }
+
+            double GetActualTabViewWidth()
+            {
+                var tabviewWidth = new TextBlock(FindElement.ByName("TabViewWidth"));
+
+                return Double.Parse(tabviewWidth.GetText());
+            }
+        }
+
+        [TestMethod]
         public void VerifyHeaderSizeWhenClosingLastTab()
         {
             using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTabClosingBehaviorButton" }))
