@@ -775,6 +775,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 CloseTabAndVerifyWidth("Tab 5", 500, "False;False;");
 
+                readTabViewWidthButton.Click();
+                Wait.ForIdle();
+
                 CloseTabAndVerifyWidth("Tab 4", 500, "False;False;");
 
                 Log.Comment("Leaving the pointer exited area");
