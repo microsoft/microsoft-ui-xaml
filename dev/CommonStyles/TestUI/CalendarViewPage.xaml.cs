@@ -149,16 +149,16 @@ namespace MUXControlsTestApp
             string[] thicknessParts = dayItemMargin.Text.Split(',');
 
             PageCalendar.DayItemMargin = new Thickness(
-                float.Parse(thicknessParts[0],
-                float.Parse(thicknessParts[1],
-                float.Parse(thicknessParts[2],
-                float.Parse(thicknessParts[3]);
+                float.Parse(thicknessParts[0]),
+                float.Parse(thicknessParts[1]),
+                float.Parse(thicknessParts[2]),
+                float.Parse(thicknessParts[3]));
 
             PageCalendar2.DayItemMargin = new Thickness(
-                float.Parse(thicknessParts[0],
-                float.Parse(thicknessParts[1],
-                float.Parse(thicknessParts[2],
-                float.Parse(thicknessParts[3]);
+                float.Parse(thicknessParts[0]),
+                float.Parse(thicknessParts[1]),
+                float.Parse(thicknessParts[2]),
+                float.Parse(thicknessParts[3]));
         }
 
         private void SetMonthYearItemMargin_Click(object sender, RoutedEventArgs e)
@@ -166,16 +166,16 @@ namespace MUXControlsTestApp
             string[] thicknessParts = monthYearItemMargin.Text.Split(',');
 
             PageCalendar.MonthYearItemMargin = new Thickness(
-                float.Parse(thicknessParts[0],
-                float.Parse(thicknessParts[1],
-                float.Parse(thicknessParts[2],
-                float.Parse(thicknessParts[3]);
+                float.Parse(thicknessParts[0]),
+                float.Parse(thicknessParts[1]),
+                float.Parse(thicknessParts[2]),
+                float.Parse(thicknessParts[3]));
 
             PageCalendar2.MonthYearItemMargin = new Thickness(
-                float.Parse(thicknessParts[0],
-                float.Parse(thicknessParts[1],
-                float.Parse(thicknessParts[2],
-                float.Parse(thicknessParts[3]);
+                float.Parse(thicknessParts[0]),
+                float.Parse(thicknessParts[1]),
+                float.Parse(thicknessParts[2]),
+                float.Parse(thicknessParts[3]));
         }
 
         private void SetFirstOfMonthLabelMargin_Click(object sender, RoutedEventArgs e)
@@ -183,16 +183,16 @@ namespace MUXControlsTestApp
             string[] thicknessParts = firstOfMonthLabelMargin.Text.Split(',');
 
             PageCalendar.FirstOfMonthLabelMargin = new Thickness(
-                float.Parse(thicknessParts[0],
-                float.Parse(thicknessParts[1],
-                float.Parse(thicknessParts[2],
-                float.Parse(thicknessParts[3]);
+                float.Parse(thicknessParts[0]),
+                float.Parse(thicknessParts[1]),
+                float.Parse(thicknessParts[2]),
+                float.Parse(thicknessParts[3]));
 
             PageCalendar2.FirstOfMonthLabelMargin = new Thickness(
-                float.Parse(thicknessParts[0],
-                float.Parse(thicknessParts[1],
-                float.Parse(thicknessParts[2],
-                float.Parse(thicknessParts[3]);
+                float.Parse(thicknessParts[0]),
+                float.Parse(thicknessParts[1]),
+                float.Parse(thicknessParts[2]),
+                float.Parse(thicknessParts[3]));
         }
 
         private void SetFirstOfYearDecadeLabelMargin_Click(object sender, RoutedEventArgs e)
@@ -200,16 +200,16 @@ namespace MUXControlsTestApp
             string[] thicknessParts = firstOfYearDecadeLabelMargin.Text.Split(',');
 
             PageCalendar.FirstOfYearDecadeLabelMargin = new Thickness(
-                float.Parse(thicknessParts[0],
-                float.Parse(thicknessParts[1],
-                float.Parse(thicknessParts[2],
-                float.Parse(thicknessParts[3]);
+                float.Parse(thicknessParts[0]),
+                float.Parse(thicknessParts[1]),
+                float.Parse(thicknessParts[2]),
+                float.Parse(thicknessParts[3]));
 
             PageCalendar2.FirstOfYearDecadeLabelMargin = new Thickness(
-                float.Parse(thicknessParts[0],
-                float.Parse(thicknessParts[1],
-                float.Parse(thicknessParts[2],
-                float.Parse(thicknessParts[3]);
+                float.Parse(thicknessParts[0]),
+                float.Parse(thicknessParts[1]),
+                float.Parse(thicknessParts[2]),
+                float.Parse(thicknessParts[3]));
         }
 
         private void GetDayItemFontSize_Click(object sender, RoutedEventArgs e)
