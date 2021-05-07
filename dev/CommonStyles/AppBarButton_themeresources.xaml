@@ -341,7 +341,7 @@
 
                         </VisualStateManager.VisualStateGroups>
                         <Border x:Name="AppBarButtonInnerBorder"                                       
-                                Margin="{StaticResource AppBarButtonInnerBorderMargin}"
+                                Margin="{ThemeResource AppBarButtonInnerBorderMargin}"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
