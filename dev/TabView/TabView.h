@@ -17,6 +17,7 @@
 static constexpr double c_tabShadowDepth = 16.0;
 static constexpr wstring_view c_tabViewShadowDepthName{ L"TabViewShadowDepth"sv };
 
+
 class TabViewTabCloseRequestedEventArgs :
     public winrt::implementation::TabViewTabCloseRequestedEventArgsT<TabViewTabCloseRequestedEventArgs>
 {
@@ -30,6 +31,7 @@ private:
     winrt::IInspectable m_item{};
     winrt::TabViewItem m_tab{};
 };
+
 
 class TabViewTabDroppedOutsideEventArgs :
     public winrt::implementation::TabViewTabDroppedOutsideEventArgsT<TabViewTabDroppedOutsideEventArgs>
@@ -97,6 +99,7 @@ public:
     // From ListView
     winrt::DependencyObject ContainerFromItem(winrt::IInspectable const& item);
     winrt::DependencyObject ContainerFromIndex(int index);
+    int IndexFromContainer(winrt::DependencyObject const& container);
     winrt::IInspectable ItemFromContainer(winrt::DependencyObject const& container);
 
     // Control
@@ -117,6 +120,8 @@ public:
     winrt::UIElement GetShadowReceiver() { return m_shadowReceiver.get(); }
 
     winrt::hstring GetTabCloseButtonTooltipText() { return m_tabCloseButtonTooltipText; }
+    void SetTabSeparatorOpacity(int index, int opacityValue);
+    void SetTabSeparatorOpacity(int index);
 
 private:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -146,7 +151,7 @@ private:
     void UpdateSelectedItem();
     void UpdateSelectedIndex();
 
-    void UpdateTabWidths(bool shouldUpdateWidths=true, bool fillAllAvailableSpace=true);
+    void UpdateTabWidths(bool shouldUpdateWidths = true, bool fillAllAvailableSpace = true);
 
     void UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
     void UpdateListViewItemContainerTransitions();
