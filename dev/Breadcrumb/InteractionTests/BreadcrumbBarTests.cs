@@ -584,8 +584,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             UIObject anchor = RetrieveRTLCheckBox();
             FocusHelper.SetFocus(anchor);
 
-            // For RS2 we need two Tab if the ellipsis is onscreen and 3 if it's not
-            KeyboardHelper.PressKey(Key.Tab);
+            // For RS2 we need ony Tab key stroke if the ellipsis is onscreen and 2 if it's not
             KeyboardHelper.PressKey(Key.Tab);
 
             if (!isEllipsisVisible)
@@ -614,8 +613,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             UIObject anchor = RetrieveRTLCheckBox();
             FocusHelper.SetFocus(anchor);
 
-            // For RS2 we need two Tab if the ellipsis is onscreen and 3 if it's not
-            KeyboardHelper.PressKey(Key.Tab);
+            // For RS3 we need only one Tab key stroke
             KeyboardHelper.PressKey(Key.Tab);
 
             if (!isEllipsisVisible)
