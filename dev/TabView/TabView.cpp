@@ -835,7 +835,7 @@ void TabView::UpdateTabContent()
     }
 }
 
-void TabView::RequestCloseTab(winrt::TabViewItem const& container)
+void TabView::RequestCloseTab(winrt::TabViewItem const& container, bool updateTabWidths)
 {
     if (auto&& listView = m_listView.get())
     {
@@ -848,7 +848,7 @@ void TabView::RequestCloseTab(winrt::TabViewItem const& container)
             internalTabViewItem->RaiseRequestClose(*args);
         }
     }
-    UpdateTabWidths(false);
+    UpdateTabWidths(updateTabWidths);
 }
 
 void TabView::OnScrollDecreaseClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
@@ -1133,7 +1133,7 @@ bool TabView::RequestCloseCurrentTab()
         if (selectedTab.IsClosable())
         {
             // Close the tab on ctrl + F4
-            RequestCloseTab(selectedTab);
+            RequestCloseTab(selectedTab, true);
             handled = true;
         }
     }
