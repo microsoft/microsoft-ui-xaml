@@ -11,7 +11,7 @@ Checking-in the localized .resw files requires some manual steps. The plan is to
 2. Each run of MUX-LocalizationHandoff retrieves the latest localized files and publishes them as a build artifact under 'LocalizationDrop'
 3. Download & unzip this artifact (either from a pipeline run that happened after the reciept of the aforementioned email or from a manually scheduled pipeline run).
 4. Run the script `build\Localization\CopyBackLocalizedFiles.ps1`. Either place the downloaded folder under `\BuildOutput\` or specify its location using /`-LocalizedFilesLocation`.
-5. Check-in the changes to master
+5. Check-in the changes to main
 
 ## If you're doing this for a new control
 Make sure that your Resources.resw file is located in *ControlName*\Strings\en-us because the localization process will create sibling directories for all other languages.

@@ -5,7 +5,7 @@
 
     <Style x:Key="NavigationBackButtonNormalStyle" TargetType="Button">
         <Setter Property="Background" Value="{ThemeResource NavigationViewBackButtonBackground}" />
-        <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
         <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
         <Setter Property="FontSize" Value="16" />
         <Setter Property="Height" Value="{ThemeResource NavigationBackButtonHeight}" />

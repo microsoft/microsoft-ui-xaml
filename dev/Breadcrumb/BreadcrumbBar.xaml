@@ -389,6 +389,7 @@
     
     <Style TargetType="local:BreadcrumbBar">
         <Setter Property="AutomationProperties.LandmarkType" Value="Navigation"/>
+        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:BreadcrumbBar">

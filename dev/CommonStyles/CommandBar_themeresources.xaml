@@ -7,6 +7,7 @@
   xmlns:contract8Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,8)"
   xmlns:contract12Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,12)"
   xmlns:contract12NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,12)"  
+  xmlns:local="using:Microsoft.UI.Xaml.Controls"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
@@ -112,6 +113,7 @@
                 <ControlTemplate TargetType="CommandBar">
                     <Grid x:Name="LayoutRoot">
                         <Grid.Resources>
+                            <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Collapsed</Visibility>
                             <Storyboard x:Key="OverlayOpeningAnimation">
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
                                     <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
@@ -124,6 +126,8 @@
                                     <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="0" />
                                 </DoubleAnimationUsingKeyFrames>
                             </Storyboard>
+                            <Style TargetType="local:SplitButton" BasedOn="{StaticResource SplitButtonCommandBarStyle}"/>
+                            <Style TargetType="local:ToggleSplitButton" BasedOn="{StaticResource SplitButtonCommandBarStyle}"/>
                         </Grid.Resources>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -137,7 +141,7 @@
                                 </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="DisplayModeStates">
-                                <VisualStateGroup.Transitions>
+                                <contract8Present:VisualStateGroup.Transitions>
                                     <VisualTransition From="CompactClosed" To="CompactOpenUp" GeneratedDuration="{StaticResource ControlNormalAnimationDuration}">
                                         <Storyboard>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Background">
@@ -572,7 +576,7 @@
                                             </DoubleAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualTransition>
-                                </VisualStateGroup.Transitions>
+                                </contract8Present:VisualStateGroup.Transitions>
                                 <VisualState x:Name="CompactClosed" />
                                 <VisualState x:Name="CompactOpenUp">
                                     <Storyboard>

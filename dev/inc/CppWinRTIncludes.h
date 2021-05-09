@@ -188,6 +188,7 @@ namespace winrt
     // using namespace ::winrt::Windows::UI::Xaml::Controls;
     using AppBar = winrt::Windows::UI::Xaml::Controls::AppBar;
     using AppBarButton = winrt::Windows::UI::Xaml::Controls::AppBarButton;
+    using AppBarSeparator = winrt::Windows::UI::Xaml::Controls::AppBarSeparator;
     using AppBarToggleButton = winrt::Windows::UI::Xaml::Controls::AppBarToggleButton;
     using AutoSuggestBox = winrt::Windows::UI::Xaml::Controls::AutoSuggestBox;
     using BitmapIcon = winrt::Windows::UI::Xaml::Controls::BitmapIcon;
