@@ -35,7 +35,7 @@
             <StaticResource x:Key="TreeViewItemCheckBoxBorderSelected" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TreeViewItemCheckGlyphSelected" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TreeViewItemSelectionIndicatorForeground" ResourceKey="AccentFillColorDefaultBrush" />
-            <Thickness x:Key="TreeViewItemBorderThemeThickness">1</Thickness>
+            <Thickness x:Key="TreeViewItemBorderThemeThickness">0</Thickness>
             <Thickness x:Key="TreeViewItemPresenterMargin">4,2</Thickness>
             <Thickness x:Key="TreeViewItemPresenterPadding">0,3,0,5</Thickness>
             <x:Double x:Key="TreeViewItemMinHeight">28</x:Double>
@@ -71,7 +71,7 @@
             <StaticResource x:Key="TreeViewItemCheckBoxBorderSelected" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TreeViewItemCheckGlyphSelected" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TreeViewItemSelectionIndicatorForeground" ResourceKey="AccentFillColorDefaultBrush" />
-            <Thickness x:Key="TreeViewItemBorderThemeThickness">1</Thickness>
+            <Thickness x:Key="TreeViewItemBorderThemeThickness">0</Thickness>
             <Thickness x:Key="TreeViewItemPresenterMargin">4,2</Thickness>
             <Thickness x:Key="TreeViewItemPresenterPadding">0,3,0,5</Thickness>
             <x:Double x:Key="TreeViewItemMinHeight">28</x:Double>
@@ -107,7 +107,7 @@
             <SolidColorBrush x:Key="TreeViewItemCheckBoxBorderSelected" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="TreeViewItemCheckGlyphSelected" Color="{ThemeResource SystemColorWindowTextColor}" />
             <StaticResource x:Key="TreeViewItemSelectionIndicatorForeground" ResourceKey="SystemColorHighlightTextColor" />
-            <Thickness x:Key="TreeViewItemBorderThemeThickness">1</Thickness>
+            <Thickness x:Key="TreeViewItemBorderThemeThickness">0</Thickness>
             <Thickness x:Key="TreeViewItemPresenterMargin">4,2</Thickness>
             <Thickness x:Key="TreeViewItemPresenterPadding">0,3,0,5</Thickness>
             <x:Double x:Key="TreeViewItemMinHeight">28</x:Double>

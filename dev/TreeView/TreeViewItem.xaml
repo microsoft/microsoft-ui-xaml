@@ -95,7 +95,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="MultiSelectCheckBox.Visibility" Value="Visible" />
                                         <Setter Target="ExpandCollapseChevron.Padding" Value="0,0,14,0" />
-                                        <Setter Target="ContentPresenterGrid.Padding" Value="0,-1" />
+                                        <Setter Target="ContentPresenterGrid.Padding" Value="0" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="TreeViewMultiSelectEnabledSelected">
@@ -103,7 +103,7 @@
                                         <Setter Target="MultiSelectCheckBox.Visibility" Value="Visible" />
                                         <Setter Target="MultiSelectGrid.Background" Value="{ThemeResource TreeViewItemBackgroundSelected}" />
                                         <Setter Target="ExpandCollapseChevron.Padding" Value="0,0,14,0" />
-                                        <Setter Target="ContentPresenterGrid.Padding" Value="0,-1" />
+                                        <Setter Target="ContentPresenterGrid.Padding" Value="0" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
