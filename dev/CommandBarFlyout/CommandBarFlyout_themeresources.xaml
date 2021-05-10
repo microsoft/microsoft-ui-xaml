@@ -733,12 +733,12 @@
                                                                     Storyboard.TargetProperty="Opacity"
                                                                     From="0"
                                                                     To="1"
-                                                                    Duration="0:0:0.087" />
+                                                                    Duration="{StaticResource ControlFasterAnimationDuration}" />
                                 <DoubleAnimation Storyboard.TargetName="OverflowContentRoot"
                                                                     Storyboard.TargetProperty="Opacity"
                                                                     From="0"
                                                                     To="1"
-                                                                    Duration="0:0:0.087" />
+                                                                    Duration="{StaticResource ControlFasterAnimationDuration}" />
                             </contract7Present:Storyboard>
 
                             <contract7Present:Storyboard x:Name="ClosingStoryboard" FillBehavior="Stop">
@@ -746,12 +746,12 @@
                                                                     Storyboard.TargetProperty="Opacity"
                                                                     From="1"
                                                                     To="0"
-                                                                    Duration="0:0:0.087" />
+                                                                    Duration="{StaticResource ControlFasterAnimationDuration}" />
                                 <DoubleAnimation Storyboard.TargetName="OverflowContentRoot"
                                                                     Storyboard.TargetProperty="Opacity"
                                                                     From="1"
                                                                     To="0"
-                                                                    Duration="0:0:0.087" />
+                                                                    Duration="{StaticResource ControlFasterAnimationDuration}" />
                             </contract7Present:Storyboard>
                         </Grid.Resources>
                         <VisualStateManager.VisualStateGroups>

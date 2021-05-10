@@ -19,7 +19,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
         {
             COMMANDBARFLYOUT_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
-            UpdateUI();
+            UpdateUI(!m_commandBarFlyoutIsOpening);
 
             // Programmatically focus the first primary command if any, else programmatically focus the first secondary command if any.
             auto commands = PrimaryCommands().Size() > 0 ? PrimaryCommands() : (SecondaryCommands().Size() > 0 ? SecondaryCommands() : nullptr);
@@ -67,7 +67,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
         {
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-            UpdateUI();
+            UpdateUI(!m_commandBarFlyoutIsOpening);
         }
     });
 
@@ -108,7 +108,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
             UpdateFlowsFromAndFlowsTo();
-            UpdateUI();
+            UpdateUI(!m_commandBarFlyoutIsOpening);
         });
 
     // Since we own these vectors, we don't need to cache the event tokens -
@@ -120,7 +120,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
             UpdateFlowsFromAndFlowsTo();
-            UpdateUI();
+            UpdateUI(!m_commandBarFlyoutIsOpening);
         }
     });
 
@@ -131,7 +131,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 
             m_secondaryItemsRootSized = false;
             UpdateFlowsFromAndFlowsTo();
-            UpdateUI();
+            UpdateUI(!m_commandBarFlyoutIsOpening);
         }
     });
 }
@@ -195,7 +195,7 @@ void CommandBarFlyoutCommandBar::AttachEventHandlers()
             [this](auto const&, auto const&)
             {
                 m_secondaryItemsRootSized = true;
-                UpdateUI();
+                UpdateUI(!m_commandBarFlyoutIsOpening);
             }
         });
 

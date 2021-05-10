@@ -32,6 +32,8 @@ public:
     // IControlOverrides / IControlOverridesHelper
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 
+    bool m_commandBarFlyoutIsOpening{ false };
+
 private:
     void AttachEventHandlers();
     void DetachEventHandlers();
