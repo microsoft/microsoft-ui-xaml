@@ -729,38 +729,29 @@
                                  because we aren't able to suppress the default flyout open/close animations
                                  on earlier versions of the OS than that. -->
                             <contract7Present:Storyboard x:Name="OpeningStoryboard" FillBehavior="Stop">
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OuterContentRootClipTransform" Storyboard.TargetProperty="X">
-                                    <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationStartPosition}" />
-                                    <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationEndPosition}" />
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRootClipTransform" Storyboard.TargetProperty="X">
-                                    <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationStartPosition}" />
-                                    <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationEndPosition}" />
-                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimation Storyboard.TargetName="LayoutRoot"
+                                                                    Storyboard.TargetProperty="Opacity"
+                                                                    From="0"
+                                                                    To="1"
+                                                                    Duration="0:0:0.087" />
+                                <DoubleAnimation Storyboard.TargetName="OverflowContentRoot"
+                                                                    Storyboard.TargetProperty="Opacity"
+                                                                    From="0"
+                                                                    To="1"
+                                                                    Duration="0:0:0.087" />
                             </contract7Present:Storyboard>
-                            <!-- The closing animation plays the opening animation in reverse and then snaps to a position where
-                                 the clip will fully hide the flyout, in preparation for closing the flyout.
-                                 As such, it's expected and normal that we use OpenAnimation* template settings properties
-                                 in the closing animation. -->
-                            <contract7Present:Storyboard x:Name="ClosingStoryboard">
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OuterContentRootClipTransform" Storyboard.TargetProperty="X">
-                                    <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationEndPosition}" />
-                                    <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationStartPosition}" />
-                                    <DiscreteDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationAfterDuration}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CloseAnimationEndPosition}" />
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRootClipTransform" Storyboard.TargetProperty="X">
-                                    <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationEndPosition}" />
-                                    <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationStartPosition}" />
-                                    <DiscreteDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationAfterDuration}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CloseAnimationEndPosition}" />
-                                </DoubleAnimationUsingKeyFrames>
-                                <!-- When closing in AlwaysExpanded, the IsOpen() call causes us to not go back to the Default visual state. This presents a
-                                     problem with drop shadows, as it relies on the transitions between visual states to show/hide itself during animations. So,
-                                     we'll set it to null here in order to guarantee that when all is said and done and the whole flyout is closing, the shadow
-                                     is set to null. We may be messing with the shadow in multiple places, but when the ClosingStoryboard is played, it's the last to play.
-                                     So when the flyout is closed it will always win out. -->
-                                <contract12Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRoot" Storyboard.TargetProperty="Shadow">
-                                    <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Null}"/>
-                                </contract12Present:ObjectAnimationUsingKeyFrames>
+
+                            <contract7Present:Storyboard x:Name="ClosingStoryboard" FillBehavior="Stop">
+                                <DoubleAnimation Storyboard.TargetName="LayoutRoot"
+                                                                    Storyboard.TargetProperty="Opacity"
+                                                                    From="1"
+                                                                    To="0"
+                                                                    Duration="0:0:0.087" />
+                                <DoubleAnimation Storyboard.TargetName="OverflowContentRoot"
+                                                                    Storyboard.TargetProperty="Opacity"
+                                                                    From="1"
+                                                                    To="0"
+                                                                    Duration="0:0:0.087" />
                             </contract7Present:Storyboard>
                         </Grid.Resources>
                         <VisualStateManager.VisualStateGroups>
@@ -1158,22 +1149,15 @@
                             MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentWidth}"
                             Height="{TemplateBinding Height}"
                             contract4Present:XYFocusKeyboardNavigation="Enabled">
-                            <Grid.Clip>
-                                <RectangleGeometry x:Name="OuterContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ContentClipRect}">
-                                    <RectangleGeometry.Transform>
-                                        <TranslateTransform x:Name="OuterContentRootClipTransform" />
-                                    </RectangleGeometry.Transform>
-                                </RectangleGeometry>
-                            </Grid.Clip>
                             <Grid x:Name="ContentRoot"
                                     Background="{TemplateBinding Background}">
                                 <Grid.Clip>
                                     <RectangleGeometry x:Name="ContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ContentClipRect}">
                                         <RectangleGeometry.Transform>
-                                            <!-- If you have a value set by a binding and then animate that value,
+                                             <!-- If you have a value set by a binding and then animate that value,
                                                  the animation will clear the binding.  Because of that, we need to have
                                                  two translate transforms - one that we bind to a property,
-                                                 and another that we can animate. -->
+                                                 and another that we can animate. --> 
                                             <TransformGroup>
                                                 <TranslateTransform X="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionDelta}" />
                                                 <TranslateTransform x:Name="ContentRootClipTransform" />
@@ -1227,13 +1211,6 @@
                                         x:Name="OuterOverflowContentRoot"
                                         RequestedTheme="{TemplateBinding ActualTheme}"
                                         Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}">
-                                        <Grid.Clip>
-                                            <RectangleGeometry x:Name="OuterOverflowContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OverflowContentClipRect}">
-                                                <RectangleGeometry.Transform>
-                                                    <TranslateTransform x:Name="OuterOverflowContentRootClipTransform" />
-                                                </RectangleGeometry.Transform>
-                                            </RectangleGeometry>
-                                        </Grid.Clip>
                                         <Grid.RenderTransform>
                                             <TranslateTransform
                                                 x:Name="OverflowContentRootTransform"
@@ -1248,10 +1225,10 @@
                                             <Grid.Clip>
                                                 <RectangleGeometry x:Name="OverflowContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OverflowContentClipRect}">
                                                     <RectangleGeometry.Transform>
-                                                        <!-- If you have a value set by a binding and then animate that value,
+                                                         <!-- If you have a value set by a binding and then animate that value,
                                                              the animation will clear the binding.  Because of that, we need to have
                                                              two translate transforms - one that we bind to a property,
-                                                             and another that we can animate. -->
+                                                             and another that we can animate. --> 
                                                         <TransformGroup>
                                                             <TranslateTransform X="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionDelta}" />
                                                             <TranslateTransform x:Name="OverflowContentRootClipTransform" />

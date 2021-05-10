@@ -127,22 +127,27 @@ CommandBarFlyout::CommandBarFlyout()
 
             if (auto commandBar = m_commandBar.get())
             {
-                // If we don't have IFlyoutBase5 available, then we assume a standard show mode.
-                if (!thisAsFlyoutBase5 || thisAsFlyoutBase5.ShowMode() == winrt::FlyoutShowMode::Standard)
-                {
-                    commandBar.IsOpen(true);
-                }
+                SharedHelpers::QueueCallbackForCompositionRendering(
+                    [strongThis = get_strong(), thisAsFlyoutBase5, commandBar]
+                    {
+                        // If we don't have IFlyoutBase5 available, then we assume a standard show mode.
+                        if (!thisAsFlyoutBase5 || thisAsFlyoutBase5.ShowMode() == winrt::FlyoutShowMode::Standard)
+                        {
+                            commandBar.IsOpen(true);
+                        }
 
-                // When CommandBarFlyout is in AlwaysOpen state, don't show the overflow button
-                if (AlwaysExpanded())
-                {
-                    commandBar.IsOpen(true);
-                    commandBar.OverflowButtonVisibility(winrt::Windows::UI::Xaml::Controls::CommandBarOverflowButtonVisibility::Collapsed);
-                }
-                else
-                {
-                    commandBar.OverflowButtonVisibility(winrt::Windows::UI::Xaml::Controls::CommandBarOverflowButtonVisibility::Auto);
-                }
+                        // When CommandBarFlyout is in AlwaysOpen state, don't show the overflow button
+                        if (strongThis->AlwaysExpanded())
+                        {
+                            commandBar.IsOpen(true);
+                            commandBar.OverflowButtonVisibility(winrt::Windows::UI::Xaml::Controls::CommandBarOverflowButtonVisibility::Collapsed);
+                        }
+                        else
+                        {
+                            commandBar.OverflowButtonVisibility(winrt::Windows::UI::Xaml::Controls::CommandBarOverflowButtonVisibility::Auto);
+                        }
+                    }
+                );
             }
 
             if (m_primaryCommands.Size() > 0)
@@ -185,9 +190,6 @@ CommandBarFlyout::CommandBarFlyout()
                         });
                 }
 
-                // Close commandbar and thus other associated flyouts
-                commandBar->IsOpen(false);
-
                 //CommandBarFlyoutCommandBar.Closed will be called when
                 //clicking the more (...) button, we clear the translations
                 //here
@@ -196,8 +198,7 @@ CommandBarFlyout::CommandBarFlyout()
         }
     });
 
-    // If we didn't close the CommandBar in the Closing event, we want to do it here,
-    // in order to ensure that we're always starting from a known state when opening the flyout.
+    // Close the CommandBar in order to ensure that we're always starting from a known state when opening the flyout.
     Closed({
         [this](auto const&, auto const&)
         {
