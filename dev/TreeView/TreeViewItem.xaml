@@ -16,7 +16,7 @@
         <Setter Property="BorderThickness" Value="{ThemeResource TreeViewItemBorderThemeThickness}"/>
         <Setter Property="GlyphBrush" Value="{ThemeResource TreeViewItemForeground}"/>
         <Setter Property="MinHeight" Value="{ThemeResource TreeViewItemMinHeight}"/>
-        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TreeViewItem">
@@ -27,7 +27,7 @@
                         Margin="{ThemeResource TreeViewItemPresenterMargin}"
                         Padding="{ThemeResource TreeViewItemPresenterPadding}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal"/>
@@ -142,7 +142,7 @@
                                             Width="32"
                                             MinWidth="32"
                                             MinHeight="{ThemeResource TreeViewItemMultiSelectCheckBoxMinHeight}"
-                                            Margin="12,0,0,0"
+                                            Margin="10,0,0,0"
                                             VerticalAlignment="Center"
                                             Visibility="Collapsed"
                                             IsTabStop="False"
@@ -176,9 +176,11 @@
                                 Opacity="{TemplateBinding GlyphOpacity}"
                                 Background="Transparent">
                                 <TextBlock Foreground="{TemplateBinding GlyphBrush}"
-                                    Width="12" Height="12"
+                                    Width="12"
+                                    Height="12"
                                     Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.CollapsedGlyphVisibility}"
-                                    FontSize="{TemplateBinding GlyphSize}" Text="{TemplateBinding CollapsedGlyph}"
+                                    FontSize="{TemplateBinding GlyphSize}"
+                                    Text="{TemplateBinding CollapsedGlyph}"
                                     FontFamily="{StaticResource SymbolThemeFontFamily}"
                                     Padding="2"       
                                     VerticalAlignment="Center"
@@ -186,7 +188,8 @@
                                     IsTextScaleFactorEnabled="False"
                                     IsHitTestVisible="False"/>
                                 <TextBlock Foreground="{TemplateBinding GlyphBrush}"
-                                    Width="12" Height="12"
+                                    Width="12"
+                                    Height="12"
                                     Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.ExpandedGlyphVisibility}" 
                                     FontSize="{TemplateBinding GlyphSize}"
                                     Text="{TemplateBinding ExpandedGlyph}"
