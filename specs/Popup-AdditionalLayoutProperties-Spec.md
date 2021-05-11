@@ -66,7 +66,7 @@ class Popup
     PopupPlacementMode DesiredPlacement { get; set; }
     PopupPlacementMode ActualPlacement { get; }
     
-    public event System.EventHandler<object> PlacementChanged;
+    public event System.EventHandler<object> ActualPlacementChanged;
 }
 ```
 
@@ -89,10 +89,10 @@ secondary commands Popup, and how to respond to the event raised when XAML place
 void OnApplyTemplate()
 {
     m_overflowPopup = GetTemplateChild("OverflowPopup");
-    m_overflowPopup.PlacementChanged += OnOverflowPopupPlacementChanged;
+    m_overflowPopup.ActualPlacementChanged += OnOverflowPopupActualPlacementChanged;
 }
 
-void OnOverflowPopupPlacementChanged(object sender, object args)
+void OnOverflowPopupActualPlacementChanged(object sender, object args)
 {
     UpdateVisualState(useTransitions: false);
 }
@@ -115,12 +115,12 @@ void UpdateVisualState(bool useTransitions)
 Use this property to describe which element the `Popup` should be positioned relative to.
 Defaults to `null`.
 
-If this is `null`, then `DesiredPlacement` is ignored, `ActualPlacement` is always `None`, and
-`PlacementChanged` is never raised.  If the `Popup` is in the visual tree, `PlacementTarget` will override what its
+If this is `null`, then `DesiredPlacement` is ignored, `ActualPlacement` is always `Auto`, and
+`ActualPlacementChanged` is never raised.  If the `Popup` is in the visual tree, `PlacementTarget` will override what its
 position would otherwise be set to by layout.  Setting `PlacementTarget` to an element under a different XAML root than
 `Popup.XamlRoot` is invalid and will throw an `ArgumentException`.
 
-Ignored if `DesiredPlacement` is `None`.
+Ignored if `DesiredPlacement` is `Auto`.
 
 _Spec note: this property is analogous to the
 [FlyoutBase.Target](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.FlyoutBase.Target)
@@ -129,10 +129,10 @@ property, but `Popup.Target` looked confusing, so we added the `Placement` prefi
 ## Popup.DesiredPlacement property
 
 Use this property to describe how you would ideally like the `Popup`
-positioned relative to `PlacementTarget`.  Defaults to `None`.
+positioned relative to `PlacementTarget`.  Defaults to `Auto`.
 
-If this is `None`, then `PlacementTarget` is ignored,
-`ActualPlacement` is always `None` and `PlacementChanged` is never raised. 
+If this is `Auto`, then `PlacementTarget` is ignored,
+`ActualPlacement` is always `Auto` and `ActualPlacementChanged` is never raised. 
 If both `DesiredPlacement` and `PlacementTarget` are set and `HorizontalOffset` and/or `VerticalOffset`
 are also set, then the latter two properties will offset the `Popup` from where it would have been
 placed by `DesiredPlacement` and `PlacementTarget` alone.
@@ -142,9 +142,9 @@ Ignored if `PlacementTarget` is null.
 ## Popup.ActualPlacement property
 
 Use this read-only property to determine where the popup was positioned.
-Will always be `None` if either `PlacementTarget` and `DesiredPlacement` are not set.
+Will always be `Auto` if either `PlacementTarget` and `DesiredPlacement` are not set.
 
-## Popup.PlacementChanged event
+## Popup.ActualPlacementChanged event
 
 Raised whenever XAML changes the value of `ActualPlacement`,
 which allows apps to respond to where a `Popup` was placed.
@@ -166,7 +166,7 @@ if they want something full-screen._
 ```csharp
 enum PopupPlacementMode
 {
-    None,
+    Auto,
     Top,
     Bottom,
     Left,
@@ -194,7 +194,7 @@ namespace Windows.UI.Xaml.Controls.Primitives
     [webhosthidden]
     enum PopupPlacementMode
     {
-        None,
+        Auto,
         Top,
         Bottom,
         Left,
@@ -216,7 +216,7 @@ namespace Windows.UI.Xaml.Controls.Primitives
         Windows.UI.Xaml.Controls.Primitives.PopupPlacementMode DesiredPlacement;
         Windows.UI.Xaml.Controls.Primitives.PopupPlacementMode ActualPlacement { get; };
         
-        event Windows.Foundation.EventHandler<Object> PlacementChanged;
+        event Windows.Foundation.EventHandler<Object> ActualPlacementChanged;
         
         static Windows.UI.Xaml.DependencyProperty PlacementTargetProperty{ get; };
         static Windows.UI.Xaml.DependencyProperty DesiredPlacementProperty{ get; };
