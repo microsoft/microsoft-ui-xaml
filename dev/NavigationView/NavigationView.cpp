@@ -5312,14 +5312,13 @@ void NavigationView::Collapse(const winrt::NavigationViewItem& item)
 
 bool NavigationView::DoesNavigationViewItemHaveChildren(const winrt::NavigationViewItem& nvi)
 {
-    if (const auto sourceView = winrt::make<InspectingDataSource>(nvi.MenuItemsSource()))
-    {
-        return sourceView.Count() > 0;
+    if (nvi.MenuItemsSource()) {
+        if (const auto sourceView = winrt::make<InspectingDataSource>(nvi.MenuItemsSource()))
+        {
+            return sourceView.Count() > 0;
+        }
     }
-    else
-    {
-        return nvi.MenuItems().Size() > 0 || nvi.HasUnrealizedChildren();
-    }
+    return nvi.MenuItems().Size() > 0 || nvi.HasUnrealizedChildren();
 }
 
 void NavigationView::ToggleIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi)
