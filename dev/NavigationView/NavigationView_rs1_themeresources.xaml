@@ -58,6 +58,7 @@
             <StaticResource x:Key="NavigationViewItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorSecondaryBrush" />
 
             <StaticResource x:Key="NavigationViewItemSeparatorForeground" ResourceKey="DividerStrokeColorDefaultBrush" />
+            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="TextFillColorSecondaryBrush"/>
 
             <StaticResource x:Key="NavigationViewSelectionIndicatorForeground" ResourceKey="AccentFillColorDefaultBrush" />
 
@@ -80,7 +81,6 @@
             <StaticResource x:Key="NavigationViewButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="TextFillColorPrimaryBrush"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -129,6 +129,7 @@
             <StaticResource x:Key="NavigationViewItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorSecondaryBrush" />
 
             <StaticResource x:Key="NavigationViewItemSeparatorForeground" ResourceKey="DividerStrokeColorDefaultBrush" />
+            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="TextFillColorSecondaryBrush"/>
 
             <StaticResource x:Key="NavigationViewSelectionIndicatorForeground" ResourceKey="AccentFillColorDefaultBrush" />
 
@@ -151,7 +152,6 @@
             <StaticResource x:Key="NavigationViewButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="TextFillColorPrimaryBrush"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -200,6 +200,7 @@
             <StaticResource x:Key="NavigationViewItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
 
             <StaticResource x:Key="NavigationViewItemSeparatorForeground" ResourceKey="SystemControlForegroundBaseLowBrush" />
+            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
 
             <StaticResource x:Key="NavigationViewSelectionIndicatorForeground" ResourceKey="SystemColorHighlightTextColor" />
             
@@ -222,7 +223,6 @@
             <StaticResource x:Key="NavigationViewButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="NavigationViewButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
