@@ -423,7 +423,7 @@ void PipsPager::OnNumberOfPagesChanged()
 {
     const int numberOfPages = NumberOfPages();
     const int selectedPageIndex = SelectedPageIndex();
-    UpdateSizeOfSetForElements(numberOfPages);
+    UpdateSizeOfSetForElements(numberOfPages, m_pipsPagerItems.Size());
     UpdatePipsItems(numberOfPages, MaxVisiblePips());
     SetScrollViewerMaxSize();
     if (SelectedPageIndex() > numberOfPages - 1 && numberOfPages > -1)
@@ -755,10 +755,10 @@ winrt::AutomationPeer PipsPager::OnCreateAutomationPeer()
     return winrt::make<PipsPagerAutomationPeer>(*this);
 }
 
-void PipsPager::UpdateSizeOfSetForElements(const int numberOfPages) {
+void PipsPager::UpdateSizeOfSetForElements(const int numberOfPages, const int numberOfItems) {
     if (auto const repeater = m_pipsPagerRepeater.get())
     {
-        for (int i = 0; i < numberOfPages; i++)
+        for (int i = 0; i < numberOfItems; i++)
         {
             if (auto const pip = repeater.TryGetElement(i))
             {
