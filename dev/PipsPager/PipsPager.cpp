@@ -365,11 +365,19 @@ void PipsPager::OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRepea
     {
         auto const index = args.Index();
         auto const style = index == SelectedPageIndex() ? SelectedPipStyle() : NormalPipStyle();
+        auto const numberOfPages = NumberOfPages();
         ApplyStyleToPipAndUpdateOrientation(element, style);
 
         winrt::AutomationProperties::SetName(element, ResourceAccessor::GetLocalizedStringResource(SR_PipsPagerPageText) + L" " + winrt::to_hstring(index + 1));
         winrt::AutomationProperties::SetPositionInSet(element, index + 1);
-        winrt::AutomationProperties::SetSizeOfSet(element, NumberOfPages());
+        if (numberOfPages > 0)
+        {
+            winrt::AutomationProperties::SetSizeOfSet(element, NumberOfPages());
+        }
+        else
+        {
+            element.ClearValue(winrt::AutomationProperties::SizeOfSetProperty());
+        }
 
         if (const auto pip = element.try_as<winrt::ButtonBase>())
         {
@@ -754,7 +762,14 @@ void PipsPager::UpdateSizeOfSetForElements(const int numberOfPages) {
         {
             if (auto const pip = repeater.TryGetElement(i))
             {
-                winrt::AutomationProperties::SetSizeOfSet(pip, numberOfPages);
+                if (numberOfPages > 0)
+                {
+                    winrt::AutomationProperties::SetSizeOfSet(pip, numberOfPages);
+                }
+                else
+                {
+                    pip.ClearValue(winrt::AutomationProperties::SizeOfSetProperty());
+                }
             }
         }
     }
