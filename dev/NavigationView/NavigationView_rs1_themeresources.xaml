@@ -1070,7 +1070,7 @@
                                 x:Name="IconBox" 
                                 Height="16"
                                 Width="16"
-                                Margin="16,0,0,0"
+                                Margin="12,0,0,0"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Center">
                                 <ContentPresenter 
