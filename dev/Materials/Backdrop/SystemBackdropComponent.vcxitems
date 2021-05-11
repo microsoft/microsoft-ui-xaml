@@ -15,15 +15,15 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Generated\BackdropMateriaBrush.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)BackdropMaterialBrush.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Generated\BackdropMaterial.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BackdropMaterial.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropBrushFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MicaController.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropPolicyStateMachine.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropWindowHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)BackdropMaterialBrush.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BackdropMaterial.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropBrushFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MicaController.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropController.h" />
@@ -32,6 +32,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropWindowHandler.h" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="$(MSBuildThisFileDirectory)BackdropMaterialBrush.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)BackdropMaterial.idl" />
   </ItemGroup>
 </Project>

@@ -15,7 +15,6 @@
             <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
             <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
             <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
-            <SolidColorBrush x:Key="BaseLayerBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
@@ -25,7 +24,6 @@
             <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
             <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
             <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
-            <SolidColorBrush x:Key="BaseLayerBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
@@ -35,7 +33,6 @@
             <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
             <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
             <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
-            <SolidColorBrush x:Key="BaseLayerBrush" Color="{StaticResource SystemColorWindowColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
    

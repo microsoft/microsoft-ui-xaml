@@ -1,0 +1,31 @@
+﻿namespace MU_XC_NAMESPACE
+{
+    [MUX_PUBLIC]
+    [webhosthidden]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    runtimeclass BackdropMaterial : Windows.UI.Xaml.DependencyObject
+    {
+        [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnApplyToRootOrPageBackgroundChanged")]
+        static Windows.UI.Xaml.DependencyProperty ApplyToRootOrPageBackgroundProperty { get; };
+        static void SetApplyToRootOrPageBackground(Windows.UI.Xaml.Controls.Control element, Boolean value);
+        static Boolean GetApplyToRootOrPageBackground(Windows.UI.Xaml.Controls.Control element);
+    }
+}
+
+namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+    [webhosthidden]
+    [default_interface]
+    [MUX_INTERNAL]
+    runtimeclass MicaController
+    {
+        MicaController();
+
+        Boolean SetTarget(Windows.UI.Xaml.Window xamlWindow);
+
+        Windows.UI.Color TintColor;
+        Single TintOpacity;
+        Single LuminosityOpacity;
+        Windows.UI.Color FallbackColor;
+    }
+}

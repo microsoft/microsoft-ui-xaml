@@ -22,14 +22,14 @@
             <Setter.Value>
                 <ControlTemplate TargetType="utils:TestFrame">
                     <Viewbox x:Name="RootViewbox" Stretch="None">
-                        <Grid x:Name="RootGrid">
+                        <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="0"/>
                                 <RowDefinition />
                             </Grid.RowDefinitions>
 
-                            <Grid x:Name="TestFrameBar" VerticalAlignment="Top" HorizontalAlignment="Stretch" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+                            <Grid x:Name="TestFrameBar" VerticalAlignment="Top" HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition />
