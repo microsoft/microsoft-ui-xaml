@@ -91,7 +91,7 @@ namespace MUXControlsTestApp.Samples
 
         private void SetScrollViewerHorizontalOffsetButtonClick(object sender, RoutedEventArgs e)
         {
-            ScrollViewer.ChangeView(double.Parse(ScrollViewerHorizontalOffset.Text), null, null);
+            ScrollViewer.ChangeView(double.Parse(ScrollViewerHorizontalOffset.Text), null, null, true);
         }
 
         private void GetScrollViewerVerticalOffsetButtonClick(object sender, RoutedEventArgs e)
@@ -101,7 +101,7 @@ namespace MUXControlsTestApp.Samples
 
         private void SetScrollViewerVerticalOffsetButtonClick(object sender, RoutedEventArgs e)
         {
-            ScrollViewer.ChangeView(null, double.Parse(ScrollViewerVerticalOffset.Text), null);
+            ScrollViewer.ChangeView(null, double.Parse(ScrollViewerVerticalOffset.Text), null, true);
         }
 
         private void CmbUniformGridLayoutItemsStretch_SelectionChanged(object sender, SelectionChangedEventArgs e)
