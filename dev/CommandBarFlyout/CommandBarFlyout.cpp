@@ -198,6 +198,11 @@ CommandBarFlyout::CommandBarFlyout()
                             m_isClosingAfterCloseAnimation = false;
                         });
                 }
+                else
+                {
+                    // If we don't have an animation, close the command bar and thus it's subflyouts.
+                    commandBar->IsOpen(false);
+                }
 
                 //CommandBarFlyoutCommandBar.Closed will be called when
                 //clicking the more (...) button, we clear the translations
