@@ -365,19 +365,11 @@ void PipsPager::OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRepea
     {
         auto const index = args.Index();
         auto const style = index == SelectedPageIndex() ? SelectedPipStyle() : NormalPipStyle();
-        auto const numberOfPages = NumberOfPages();
         ApplyStyleToPipAndUpdateOrientation(element, style);
 
         winrt::AutomationProperties::SetName(element, ResourceAccessor::GetLocalizedStringResource(SR_PipsPagerPageText) + L" " + winrt::to_hstring(index + 1));
         winrt::AutomationProperties::SetPositionInSet(element, index + 1);
-        if (numberOfPages > 0)
-        {
-            winrt::AutomationProperties::SetSizeOfSet(element, NumberOfPages());
-        }
-        else
-        {
-            element.ClearValue(winrt::AutomationProperties::SizeOfSetProperty());
-        }
+        winrt::AutomationProperties::SetSizeOfSet(element, NumberOfPages());
 
         if (const auto pip = element.try_as<winrt::ButtonBase>())
         {
@@ -755,6 +747,9 @@ winrt::AutomationPeer PipsPager::OnCreateAutomationPeer()
     return winrt::make<PipsPagerAutomationPeer>(*this);
 }
 
+// Number of items is passed to ensure that in case we're
+// in infinite mode (numberOfPages = - 1), we will correctly
+// iterate over all the pips.
 void PipsPager::UpdateSizeOfSetForElements(const int numberOfPages, const int numberOfItems) {
     if (auto const repeater = m_pipsPagerRepeater.get())
     {
@@ -762,14 +757,7 @@ void PipsPager::UpdateSizeOfSetForElements(const int numberOfPages, const int nu
         {
             if (auto const pip = repeater.TryGetElement(i))
             {
-                if (numberOfPages > 0)
-                {
-                    winrt::AutomationProperties::SetSizeOfSet(pip, numberOfPages);
-                }
-                else
-                {
-                    pip.ClearValue(winrt::AutomationProperties::SizeOfSetProperty());
-                }
+                winrt::AutomationProperties::SetSizeOfSet(pip, numberOfPages);
             }
         }
     }
