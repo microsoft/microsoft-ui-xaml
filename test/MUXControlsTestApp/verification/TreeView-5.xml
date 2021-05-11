@@ -131,7 +131,7 @@
                       GlyphBrush=#E4000000
                       Padding=0,0,0,0
                       Foreground=#E4000000
-                      BorderThickness=1,1,1,1
+                      BorderThickness=0,0,0,0
                       BorderBrush=#00FFFFFF
                       Background=#00FFFFFF
                       MinWidth=88
@@ -142,11 +142,11 @@
                       FocusVisualPrimaryThickness=2,2,2,2
                       FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
-                      RenderSize=400,34
+                      RenderSize=400,32
                     [Windows.UI.Xaml.Controls.Grid]
                         Padding=0,3,0,5
                         CornerRadius=4,4,4,4
-                        BorderThickness=1,1,1,1
+                        BorderThickness=0,0,0,0
                         BorderBrush=#00FFFFFF
                         Background=#00FFFFFF
                         Name=ContentPresenterGrid
@@ -156,7 +156,7 @@
                         FocusVisualPrimaryThickness=2,2,2,2
                         FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
-                        RenderSize=392,30
+                        RenderSize=392,28
                       [Windows.UI.Xaml.Shapes.Rectangle]
                           StrokeThickness=1
                           Width=3
@@ -182,7 +182,7 @@
                           FocusVisualPrimaryThickness=2,2,2,2
                           FocusVisualPrimaryBrush=#E4000000
                           Visibility=Visible
-                          RenderSize=390,20
+                          RenderSize=392,20
                         [Windows.UI.Xaml.Controls.Grid]
                             Padding=0,0,0,0
                             CornerRadius=0,0,0,0
@@ -293,7 +293,7 @@
                             FocusVisualPrimaryThickness=2,2,2,2
                             FocusVisualPrimaryBrush=#E4000000
                             Visibility=Visible
-                            RenderSize=350,20
+                            RenderSize=352,20
                           [Windows.UI.Xaml.Controls.TextBlock]
                               Padding=0,0,0,0
                               Foreground=#E4000000
