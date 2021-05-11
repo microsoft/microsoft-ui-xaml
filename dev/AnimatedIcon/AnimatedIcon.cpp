@@ -27,7 +27,9 @@ AnimatedIcon::AnimatedIcon()
 void AnimatedIcon::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
-    OnSourcePropertyChanged(nullptr);
+    // Construct the visual from the Source property in on apply template so that it participates
+    // in the initial measure for the object.
+    ConstructAndInsertVisual();
     auto const panel = winrt::VisualTreeHelper::GetChild(*this, 0).as<winrt::Panel>();
     m_rootPanel.set(panel);
     m_currentState = GetState(*this);
@@ -46,15 +48,12 @@ void AnimatedIcon::OnApplyTemplate()
                 path.Visibility(winrt::Visibility::Collapsed);
             }
         }
-        OnFallbackIconSourcePropertyChanged(nullptr);
         if (auto const visual = m_animatedVisual.get())
         {
             winrt::ElementCompositionPreview::SetElementChildVisual(panel, visual.RootVisual());
         }
-        if (auto const source = Source())
-        {
-            TrySetForegroundProperty(source);
-        }
+
+        TrySetForegroundProperty();
     }
 }
 
@@ -90,6 +89,11 @@ void AnimatedIcon::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs c
     {
         m_ancestorStatePropertyChangedRevoker = RegisterPropertyChanged(ancestorWithState, property, { this, &AnimatedIcon::OnAncestorAnimatedIconStatePropertyChanged });
     }
+
+    // Wait until loaded to apply the fallback icon source property because we need the icon source
+    // properties to be set before we create the icon element from it.  If those poperties are bound in,
+    // they will not have been set during OnApplyTemplate.
+    OnFallbackIconSourcePropertyChanged(nullptr);
 }
 
 winrt::Size AnimatedIcon::MeasureOverride(winrt::Size const& availableSize)
@@ -159,11 +163,10 @@ winrt::Size AnimatedIcon::ArrangeOverride(winrt::Size const& finalSize)
             std::min(finalSize.Height / scale.y, visualSize.y)
         };
         const auto offset = (finalSize - (visualSize * scale)) / 2;
-        const auto z = 0.0F;
         const auto rootVisual = visual.RootVisual();
-        rootVisual.Offset({ offset, z });
+        rootVisual.Offset({ offset, 0.0f });
         rootVisual.Size(arrangedSize);
-        rootVisual.Scale({ scale, z });
+        rootVisual.Scale({ scale, 1.0f });
         return finalSize;
     }
     else
@@ -435,6 +438,14 @@ void AnimatedIcon::PlaySegment(float from, float to, float playbackMultiplier)
 
 void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
 {
+    if(!ConstructAndInsertVisual())
+    {
+        SetRootPanelChildToFallbackIcon();
+    }
+}
+
+bool AnimatedIcon::ConstructAndInsertVisual()
+{
     auto const visual = [this]()
     {
         if (auto const source = Source())
@@ -478,12 +489,13 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
         auto const progressAnimation = compositor.CreateExpressionAnimation(expression);
         progressAnimation.SetReferenceParameter(L"_", m_progressPropertySet);
         visual.Properties().StartAnimation(s_progressPropertyName, progressAnimation);
+
+        return true;
     }
-    // If we were previously able to display primary content and now cannot, use the fallback icon.
-    else if (m_canDisplayPrimaryContent)
+    else
     {
         m_canDisplayPrimaryContent = false;
-        SetRootPanelChildToFallbackIcon();
+        return false;
     }
 }
 
@@ -515,17 +527,33 @@ void AnimatedIcon::SetRootPanelChildToFallbackIcon()
 
 void AnimatedIcon::OnForegroundPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
-    TrySetForegroundProperty(Source());
+    m_foregroundColorPropertyChangedRevoker.revoke();
+    if (auto const foregroundSolidColorBrush = Foreground().try_as<winrt::SolidColorBrush>())
+    {
+        m_foregroundColorPropertyChangedRevoker = RegisterPropertyChanged(foregroundSolidColorBrush, winrt::SolidColorBrush::ColorProperty(), { this, &AnimatedIcon::OnForegroundBrushColorPropertyChanged });
+        TrySetForegroundProperty(foregroundSolidColorBrush.Color());
+    }
+}
+
+void AnimatedIcon::OnForegroundBrushColorPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+    TrySetForegroundProperty(sender.GetValue(args).as<winrt::Color>());
 }
 
 void AnimatedIcon::TrySetForegroundProperty(winrt::IAnimatedVisualSource2 const& source)
 {
-    if (source)
+    if (auto const foregroundSolidColorBrush = Foreground().try_as<winrt::SolidColorBrush>())
     {
-        if (auto const ForegroundSolidColorBrush = Foreground().try_as<winrt::SolidColorBrush>())
-        {
-            source.SetColorProperty(s_foregroundPropertyName, ForegroundSolidColorBrush.Color());
-        }
+        TrySetForegroundProperty(foregroundSolidColorBrush.Color(), source);
+    }
+}
+
+void AnimatedIcon::TrySetForegroundProperty(winrt::Color color, winrt::IAnimatedVisualSource2 const& source)
+{
+    auto const localSource = source ? source : Source();
+    if (localSource)
+    {
+        localSource.SetColorProperty(s_foregroundPropertyName, color);
     }
 }
 

@@ -79,9 +79,9 @@
             <Color x:Key="CardBackgroundFillColorDefault">#0DFFFFFF</Color>
             <Color x:Key="CardBackgroundFillColorSecondary">#08FFFFFF</Color>
 
-            <Color x:Key="SmokeFillColorDefault">#332C2C2C</Color>
+            <Color x:Key="SmokeFillColorDefault">#4D000000</Color>
 
-            <Color x:Key="LayerFillColorDefault">#09FFFFFF</Color>
+            <Color x:Key="LayerFillColorDefault">#4C3A3A3A</Color>
             <Color x:Key="LayerFillColorAlt">#0DFFFFFF</Color>
             <Color x:Key="LayerOnAcrylicFillColorDefault">#09FFFFFF</Color>
             <Color x:Key="LayerOnAccentAcrylicFillColorDefault">#09FFFFFF</Color>
@@ -247,7 +247,7 @@
             <!-- Colors -->
 
             <Color x:Key="TextFillColorPrimary">#E4000000</Color>
-            <Color x:Key="TextFillColorSecondary">#93000000</Color>
+            <Color x:Key="TextFillColorSecondary">#9E000000</Color>
             <Color x:Key="TextFillColorTertiary">#72000000</Color>
             <Color x:Key="TextFillColorDisabled">#5C000000</Color>
             <Color x:Key="TextFillColorInverse">#FFFFFF</Color>
@@ -317,7 +317,7 @@
             <Color x:Key="CardBackgroundFillColorDefault">#B3FFFFFF</Color>
             <Color x:Key="CardBackgroundFillColorSecondary">#80F6F6F6</Color>
 
-            <Color x:Key="SmokeFillColorDefault">#4DFFFFFF</Color>
+            <Color x:Key="SmokeFillColorDefault">#4D000000</Color>
 
             <Color x:Key="LayerFillColorDefault">#80FFFFFF</Color>
             <Color x:Key="LayerFillColorAlt">#FFFFFF</Color>

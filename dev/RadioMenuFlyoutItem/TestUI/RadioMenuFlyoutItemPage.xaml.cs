@@ -44,23 +44,36 @@ namespace MUXControlsTestApp
             // register all RadioMenuFlyoutItems
             foreach (MenuFlyoutItemBase item in ButtonMenuFlyout.Items)
             {
-                if (item is RadioMenuFlyoutItem)
-                {
-                    RadioMenuFlyoutItem radioItem = item as RadioMenuFlyoutItem;
+                RegisterItem(item);
+            }
+            foreach(MenuFlyoutItemBase item in ButtonSubMenuFlyout.Items)
+            {
+                RegisterItem(item);
+            }
+            foreach (MenuFlyoutItemBase item in RadioSubMenu.Items)
+            {
+                RegisterItem(item);
+            }
+        }
 
-                    radioItem.RegisterPropertyChangedCallback(RadioMenuFlyoutItem.IsCheckedProperty, new DependencyPropertyChangedCallback(IsCheckedChanged));
+        private void RegisterItem(MenuFlyoutItemBase item)
+        {
+            if (item is RadioMenuFlyoutItem)
+            {
+                RadioMenuFlyoutItem radioItem = item as RadioMenuFlyoutItem;
 
-                    TextBlock nameText = new TextBlock();
-                    nameText.Text = radioItem.Text;
-                    ItemNames.Children.Add(nameText);
+                radioItem.RegisterPropertyChangedCallback(RadioMenuFlyoutItem.IsCheckedProperty, new DependencyPropertyChangedCallback(IsCheckedChanged));
 
-                    TextBlock stateText = new TextBlock();
-                    AutomationProperties.SetName(stateText, radioItem.Text + "State");
-                    UpdateTextState(radioItem, stateText);
-                    ItemStates.Children.Add(stateText);
+                TextBlock nameText = new TextBlock();
+                nameText.Text = radioItem.Text;
+                ItemNames.Children.Add(nameText);
 
-                    itemStates.Add(radioItem.Text, stateText);
-                }
+                TextBlock stateText = new TextBlock();
+                AutomationProperties.SetName(stateText, radioItem.Text + "State");
+                UpdateTextState(radioItem, stateText);
+                ItemStates.Children.Add(stateText);
+
+                itemStates.Add(radioItem.Text, stateText);
             }
         }
 

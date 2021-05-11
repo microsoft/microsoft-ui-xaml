@@ -144,6 +144,11 @@ CommandBarFlyout::CommandBarFlyout()
                     commandBar.OverflowButtonVisibility(winrt::Windows::UI::Xaml::Controls::CommandBarOverflowButtonVisibility::Auto);
                 }
             }
+
+            if (m_primaryCommands.Size() > 0)
+            {
+                AddDropShadow();
+            }
         }
     });
 
@@ -165,6 +170,8 @@ CommandBarFlyout::CommandBarFlyout()
         {
             if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
             {
+                RemoveDropShadow();
+
                 if (!m_isClosingAfterCloseAnimation && commandBar->HasCloseAnimation())
                 {
                     args.Cancel(true);
@@ -177,6 +184,7 @@ CommandBarFlyout::CommandBarFlyout()
                             m_isClosingAfterCloseAnimation = false;
                         });
                 }
+
                 // Close commandbar and thus other associated flyouts
                 commandBar->IsOpen(false);
 
@@ -224,18 +232,6 @@ winrt::Control CommandBarFlyout::CreatePresenter()
 {
     auto commandBar = winrt::make_self<CommandBarFlyoutCommandBar>();
 
-    m_commandBarOpenedRevoker = commandBar->Opened(winrt::auto_revoke, {
-        [this](auto const&, auto const&)
-        {
-            if (winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this)
-            {
-                // If we open the CommandBar, then we should no longer be in a transient show mode -
-                // we now know that the user wants to interact with us.
-                thisAsFlyoutBase5.ShowMode(winrt::FlyoutShowMode::Standard);
-            }
-        }
-    });
-
     SharedHelpers::CopyVector(m_primaryCommands, commandBar->PrimaryCommands());
     SharedHelpers::CopyVector(m_secondaryCommands, commandBar->SecondaryCommands());
 
@@ -252,24 +248,69 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     presenter.BorderThickness(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Padding(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Content(*commandBar);
-    // Clear the default CornerRaius(4) on FlyoutPresenter, CommandBarFlyout will do its own handling.
-    if (winrt::IControl7 presenterControl7 = presenter)
+
+    // Disable the default shadow, as we'll be providing our own shadow.
+    if (winrt::IFlyoutPresenter2 presenter2 = presenter)
     {
-        presenterControl7.CornerRadius({ 0 });
+        presenter2.IsDefaultShadowEnabled(false);
     }
 
-    if (!SharedHelpers::Is21H1OrHigher())
-    {
-        // This logic applies to projected shadows, which are the default on < 21H1.
-        // When on 21H1 or higher, drop shadows are the default and need to be applied higher up
-        // in the tree to avoid being clipped away.  The default shadow works great for this.
-        // For < 21H1, we will provide our own shadow, not the one that FlyoutPresenter has by default.
-        // We need to specifically target the CommandBar for the shadow, not the default node far
-        // above that.
-        if (winrt::IFlyoutPresenter2 presenter2 = presenter)
+    m_presenter.set(presenter);
+
+    m_commandBarOpenedRevoker = commandBar->Opened(winrt::auto_revoke, {
+        [this](auto const&, auto const&)
         {
-            presenter2.IsDefaultShadowEnabled(false);
+            if (const winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this)
+            {
+                // If we open the CommandBar, then we should no longer be in a transient show mode -
+                // we now know that the user wants to interact with us.
+                thisAsFlyoutBase5.ShowMode(winrt::FlyoutShowMode::Standard);
+            }
         }
+    });
+
+    if (SharedHelpers::Is21H1OrHigher())
+    {
+        // Since DropShadows don't play well with the entrance animation for the presenter,
+        // we'll need to fade it in. This name helps us locate the element to set the fade in
+        // flag in the OS code.
+        presenter.Name(L"DropShadowFadeInTarget");
+
+        // We'll need to remove the presenter's drop shadow on the commandBar's Opening/Closing
+        // because we need it to disappear during its expand/shrink animation when the Overflow is opened.
+        // It will be re-added once the storyboard for the overflow animations are completed.
+        // That code can be found inside CommandBarFlyoutCommandBar.
+        m_commandBarOpeningRevoker = commandBar->Opening(winrt::auto_revoke, {
+            [this, presenter](auto const&, auto const&)
+            {
+                if (const auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
+                {
+                    if (commandBar->HasSecondaryOpenCloseAnimations())
+                    {
+                        // We'll only need to do the mid-animation remove/add when the "..." button is
+                        // pressed to open/close the overflow. This means we shouldn't do it for AlwaysExpanded
+                        // and if there's nothing in the overflow.
+                        if (!AlwaysExpanded() && m_secondaryCommands.Size() > 0)
+                        {
+                            RemoveDropShadow();
+                        }
+                    }
+                }
+            }
+            });
+
+        m_commandBarClosingRevoker = commandBar->Closing(winrt::auto_revoke, {
+            [this](auto const&, auto const&)
+            {
+                if (const auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
+                {
+                    if (commandBar->HasSecondaryOpenCloseAnimations())
+                    {
+                        RemoveDropShadow();
+                    }
+                }
+            }
+            });
     }
 
     commandBar->SetOwningFlyout(*this);
@@ -302,4 +343,32 @@ void CommandBarFlyout::SetSecondaryCommandsToCloseWhenExecuted()
             m_secondaryToggleButtonUncheckedRevokerByIndexMap[i] = toggleButton.Unchecked(winrt::auto_revoke, closeFlyoutFunc);
         }
     }
+}
+
+void CommandBarFlyout::AddDropShadow()
+{
+    if (SharedHelpers::Is21H1OrHigher())
+    {
+        if (auto&& presenter = m_presenter.get())
+        {
+            winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
+            presenter.Shadow(shadow);
+        }
+    }
+}
+
+void CommandBarFlyout::RemoveDropShadow()
+{
+    if (SharedHelpers::Is21H1OrHigher())
+    {
+        if (auto&& presenter = m_presenter.get())
+        {
+            presenter.Shadow(nullptr);
+        }
+    }
+}
+
+tracker_ref<winrt::FlyoutPresenter> CommandBarFlyout::GetPresenter()
+{
+    return m_presenter;
 }

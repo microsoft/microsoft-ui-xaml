@@ -50,6 +50,7 @@ namespace MUXControls.ReleaseTest
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Issue #4899: Test MUXControls.ReleaseTest.RepeaterNoCrashTest is unreliable 
         public void RepeaterNoCrashTest()
         {
             var button = new Button(FindElement.ByName("AddItemsButton"));

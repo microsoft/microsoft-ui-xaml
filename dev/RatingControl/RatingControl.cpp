@@ -6,6 +6,7 @@
 #include "RatingControl.h"
 #include "RatingControlAutomationPeer.h"
 #include "RuntimeProfiler.h"
+#include "XamlControlsResources.h"
 
 #include <RatingItemFontInfo.h>
 #include <RatingItemImageInfo.h>
@@ -543,7 +544,7 @@ void RatingControl::SetRatingTo(double newRating, bool originatedFromMouse)
             Value(c_noValueSetSentinel);
         }
 
-        if (SharedHelpers::IsRS1OrHigher() && IsFocusEngaged() && SharedHelpers::IsAnimationsEnabled())
+        if (SharedHelpers::IsRS1OrHigher() && IsFocusEngaged() && ShouldEnableAnimation())
         {
             const double focalPoint = CalculateStarCenter((int)(ratingValue - 1.0));
             m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", static_cast<float>(focalPoint));
@@ -763,7 +764,7 @@ void RatingControl::OnPointerMovedOverBackgroundStackPanel(const winrt::IInspect
     {
         const auto point = args.GetCurrentPoint(m_backgroundStackPanel.get());
         const float xPosition = point.Position().X;
-        if (SharedHelpers::IsAnimationsEnabled())
+        if (ShouldEnableAnimation())
         {
             m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", xPosition);
             auto deviceType = args.Pointer().PointerDeviceType();
@@ -1033,6 +1034,12 @@ void RatingControl::OnPreviewKeyUp(winrt::KeyRoutedEventArgs const& eventArgs)
     }
 }
 
+bool RatingControl::ShouldEnableAnimation()
+{
+    // In ControlsResourceVersion2, animation is disabled.
+    return !XamlControlsResources::IsUsingControlsResourcesVersion2() && SharedHelpers::IsAnimationsEnabled();
+}
+
 void RatingControl::OnFocusEngaged(const winrt::Control& /*sender*/, const winrt::FocusEngagedEventArgs& /*args*/)
 {
     if (!IsReadOnly())
@@ -1090,7 +1097,7 @@ void RatingControl::EnterGamepadEngagementMode()
         winrt::ElementSoundPlayer::Play(winrt::ElementSoundKind::Invoke);
     }
     
-    if (SharedHelpers::IsAnimationsEnabled())
+    if (ShouldEnableAnimation())
     {
         const double focalPoint = CalculateStarCenter((int)(currentValue - 1.0));
         m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", static_cast<float>(focalPoint));
