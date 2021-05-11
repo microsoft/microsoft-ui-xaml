@@ -532,25 +532,25 @@
                                                         <ResourceDictionary.ThemeDictionaries>
                                                             <ResourceDictionary x:Key="Default">
                                                                 <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="NavigationViewItemBackgroundPointerOver" />
-                                                                <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="NavigationViewItemBackgroundPressed" />
-                                                                <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="NavigationViewItemBackgroundDisabled" />
-                                                                <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="NavigationViewItemForegroundPointerOver" />
-                                                                <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="NavigationViewItemForegroundPressed" />
-                                                                <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="NavigationViewItemForegroundDisabled" />
-                                                                <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="NavigationViewItemBorderBrushPointerOver" />
-                                                                <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="NavigationViewItemBorderBrushPressed" />
-                                                                <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="NavigationViewItemBorderBrushDisabled" />
+                                                    <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="NavigationViewItemBackgroundPressed" />
+                                                    <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="NavigationViewItemBackgroundDisabled" />
+                                                    <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="NavigationViewItemForegroundPointerOver" />
+                                                    <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="NavigationViewItemForegroundPressed" />
+                                                    <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="NavigationViewItemForegroundDisabled" />
+                                                    <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="NavigationViewItemBorderBrushPointerOver" />
+                                                    <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="NavigationViewItemBorderBrushPressed" />
+                                                    <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="NavigationViewItemBorderBrushDisabled" />
                                                             </ResourceDictionary>
                                                             <ResourceDictionary x:Key="Light">
                                                                 <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="NavigationViewItemBackgroundPointerOver" />
-                                                                <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="NavigationViewItemBackgroundPressed" />
-                                                                <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="NavigationViewItemBackgroundDisabled" />
-                                                                <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="NavigationViewItemForegroundPointerOver" />
-                                                                <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="NavigationViewItemForegroundPressed" />
-                                                                <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="NavigationViewItemForegroundDisabled" />
-                                                                <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="NavigationViewItemBorderBrushPointerOver" />
-                                                                <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="NavigationViewItemBorderBrushPressed" />
-                                                                <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="NavigationViewItemBorderBrushDisabled" />
+                                                    <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="NavigationViewItemBackgroundPressed" />
+                                                    <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="NavigationViewItemBackgroundDisabled" />
+                                                    <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="NavigationViewItemForegroundPointerOver" />
+                                                    <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="NavigationViewItemForegroundPressed" />
+                                                    <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="NavigationViewItemForegroundDisabled" />
+                                                    <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="NavigationViewItemBorderBrushPointerOver" />
+                                                    <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="NavigationViewItemBorderBrushPressed" />
+                                                    <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="NavigationViewItemBorderBrushDisabled" />
                                                             </ResourceDictionary>
                                                         </ResourceDictionary.ThemeDictionaries>
                                                     </ResourceDictionary>
