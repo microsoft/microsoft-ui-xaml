@@ -8,9 +8,48 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,5)"
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-        <MediaPlayerElement Source="ms-appx:///Assets/ladybug.wmv" MaxWidth="400" MaxHeight="225" AutoPlay="True" AreTransportControlsEnabled="True" />
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Orientation="Vertical" contract5Present:Spacing="4" Background="{ThemeResource SystemControlBackgroundBaseLowBrush}" Padding="12">
+            <CheckBox x:Name="IsCompactCheckBox" AutomationProperties.Name="IsCompactCheckBox" IsChecked="False" Content="IsCompact" />
+            <CheckBox x:Name="IsSeekBarVisibleCheckBox" AutomationProperties.Name="IsSeekBarVisibleCheckBox" IsChecked="True" Content="IsSeekBarVisisble" />
+            <CheckBox x:Name="IsFastForwardButtonVisibleCheckBox" AutomationProperties.Name="IsFastForwardButtonVisibleCheckBox" IsChecked="False" Content="IsFastForwardButtonVisible" />
+            <CheckBox x:Name="IsFastRewindButtonVisibleCheckBox" AutomationProperties.Name="IsFastRewindButtonVisibleCheckBox" IsChecked="False" Content="IsFastRewindButtonVisible" />
+            <CheckBox x:Name="IsStopButtonVisibleCheckBox" AutomationProperties.Name="IsStopButtonVisibleCheckBox" IsChecked="False" Content="IsStopButtonVisible" />
+            <CheckBox x:Name="IsVolumeButtonVisibleCheckBox" AutomationProperties.Name="IsVolumeButtonVisibleCheckBox" IsChecked="True" Content="IsVolumeButtonVisible" />
+            <CheckBox x:Name="IsFullWindowButtonVisibleCheckBox" AutomationProperties.Name="IsFullWindowButtonVisibleCheckBox" IsChecked="True" Content="IsFullWindowButtonVisible" />
+            <CheckBox x:Name="IsPlaybackRateButtonVisibleCheckBox" AutomationProperties.Name="IsPlaybackRateButtonVisibleCheckBox" IsChecked="False" Content="IsPlaybackRateButtonVisible" />
+            <CheckBox x:Name="IsZoomButtonVisibleCheckBox" AutomationProperties.Name="IsZoomButtonVisibleCheckBox" IsChecked="True" Content="IsZoomButtonVisisble" />
+        </StackPanel>
+
+        <Grid Grid.Column="1">
+            <MediaPlayerElement
+                Source="ms-appx:///Assets/ladybug.wmv"
+                MaxWidth="1000"
+                MaxHeight="1000"
+                AutoPlay="False"
+                AreTransportControlsEnabled="True">
+                <MediaPlayerElement.TransportControls>
+                    <MediaTransportControls
+                        IsCompact="{x:Bind IsCompactCheckBox.IsChecked.Value, Mode=OneWay}"
+                        IsSeekBarVisible="{x:Bind IsSeekBarVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
+                        IsFastForwardButtonVisible="{x:Bind IsFastForwardButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
+                        IsFastRewindButtonVisible="{x:Bind IsFastRewindButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
+                        IsStopButtonVisible="{x:Bind IsStopButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
+                        IsVolumeButtonVisible="{x:Bind IsVolumeButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
+                        IsFullWindowButtonVisible="{x:Bind IsFullWindowButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
+                        IsPlaybackRateButtonVisible="{x:Bind IsPlaybackRateButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
+                        IsZoomButtonVisible="{x:Bind IsZoomButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}" />
+                </MediaPlayerElement.TransportControls>
+            </MediaPlayerElement>
+        </Grid>
     </Grid>
 </local:TestPage>
