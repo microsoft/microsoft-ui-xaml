@@ -145,7 +145,7 @@
     <Import Project="..\Breadcrumb\Breadcrumb.vcxitems" Label="Shared" Condition="$(FeatureBreadcrumbEnabled) == 'true' Or $(FeatureBreadcrumbEnabled) == 'productOnly'" />
     <Import Project="..\PipsPager\PipsPager.vcxitems" Label="Shared" Condition="$(FeaturePipsPagerEnabled) == 'true' Or $(FeaturePipsPagerEnabled) == 'productOnly'" />
     <Import Project="..\ImageIcon\ImageIcon.vcxitems" Label="Shared" Condition="$(FeatureImageIconEnabled) == 'true' Or $(FeatureImageIconEnabled) == 'productOnly'" />
-    <Import Project="..\AnimatedIcon\AnimatedIcon.vcxitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true' Or $(FeatureAnimatedIconEnabled) == 'productOnly'"/>
+    <Import Project="..\AnimatedIcon\AnimatedIcon.vcxitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true' Or $(FeatureAnimatedIconEnabled) == 'productOnly'" />
     <Import Project="..\MonochromaticOverlayPresenter\MonochromaticOverlayPresenter.vcxitems" Label="Shared" Condition="$(FeatureMonochromaticOverlayPresenterEnabled) == 'true' Or $(FeatureMonochromaticOverlayPresenterEnabled) == 'productOnly'" />
   </ImportGroup>
   <ItemGroup>
@@ -614,8 +614,8 @@
     <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets')" />
     <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets')" />
     <Import Condition="'$(PGOBuildMode)' == 'Optimize'" Project="..\..\packages\$(PGODatabaseId).$(PGODatabaseVersion)\build\PGO.targets" />
-    <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.71\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.71\build\native\MUXCustomBuildTasks.targets')" />
     <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.72\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.72\build\native\MUXCustomBuildTasks.targets')" />
   </ImportGroup>
   <PropertyGroup>
     <MergedWinmdDirectory>$(OutDir)Merged</MergedWinmdDirectory>
@@ -789,8 +789,8 @@
       <Output ItemName="GeneratedXamlPagesFiles" TaskParameter="GeneratedXamlPagesFiles" />
     </CompileXaml>
     <ItemGroup>
-      <FileWrites Include="@(PageRequiringCustomCompilation -&gt; '$(GeneratedFilesDir)Themes\%(Filename).xaml')" />
-      <FileWrites Include="@(PageRequiringCustomCompilation -&gt; '$(GeneratedFilesDir)Themes\%(Filename).xbf')" />
+      <FileWrites Include="@(PageRequiringCustomCompilation -> '$(GeneratedFilesDir)Themes\%(Filename).xaml')" />
+      <FileWrites Include="@(PageRequiringCustomCompilation -> '$(GeneratedFilesDir)Themes\%(Filename).xbf')" />
       <FileWrites Include="$(XamlSavedStateFilePath)" />
       <FileWrites Condition="'$(XamlRootsLog)' != ''" Include="$(XamlRootsLog)" />
     </ItemGroup>
@@ -869,9 +869,9 @@
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets'))" />
-    <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.71\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.71\build\native\MUXCustomBuildTasks.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.72\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.72\build\native\MUXCustomBuildTasks.targets'))" />
   </Target>
   <Target Name="RunBinSkim" AfterTargets="AfterBuild" Condition="'$(Configuration)'=='Release'">
     <PropertyGroup>

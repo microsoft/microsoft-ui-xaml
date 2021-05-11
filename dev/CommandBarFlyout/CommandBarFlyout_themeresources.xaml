@@ -8,7 +8,8 @@
     xmlns:contract6NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,6)"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
-    xmlns:contract12Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,12)">
+    xmlns:contract12Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,12)"
+    xmlns:contract14NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,14)">
     
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
@@ -835,9 +836,9 @@
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Width">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}" />
                                             </ObjectAnimationUsingKeyFrames>
-                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OverflowContentRootTransform" Storyboard.TargetProperty="Y">
+                                            <contract14NotPresent:DoubleAnimationUsingKeyFrames Storyboard.TargetName="OverflowContentRootTransform" Storyboard.TargetProperty="Y">
                                                 <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpOverflowVerticalPosition}" />
-                                            </DoubleAnimationUsingKeyFrames>
+                                            </contract14NotPresent:DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MoreButtonTransform" Storyboard.TargetProperty="X">
                                                 <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionMoreButtonAnimationStartPosition}" />
                                                 <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="0" />
@@ -876,9 +877,9 @@
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Width">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}" />
                                             </ObjectAnimationUsingKeyFrames>
-                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OverflowContentRootTransform" Storyboard.TargetProperty="Y">
+                                            <contract14NotPresent:DoubleAnimationUsingKeyFrames Storyboard.TargetName="OverflowContentRootTransform" Storyboard.TargetProperty="Y">
                                                 <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpOverflowVerticalPosition}" />
-                                            </DoubleAnimationUsingKeyFrames>
+                                            </contract14NotPresent:DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MoreButtonTransform" Storyboard.TargetProperty="X">
                                                 <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
                                                 <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionMoreButtonAnimationStartPosition}" />
@@ -972,7 +973,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="MoreButtonTransform.X" Value="0" />
                                         <Setter Target="ContentRootClipTransform.X" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionAnimationEndPosition}" />
-                                        <Setter Target="OverflowContentRootTransform.Y" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpOverflowVerticalPosition}" />
+                                        <contract14NotPresent:Setter Target="OverflowContentRootTransform.Y" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpOverflowVerticalPosition}" />
                                         <Setter Target="OverflowContentRootClipTransform.X" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionAnimationEndPosition}" />
                                         <Setter Target="OverflowContentRootClipTransform.Y" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpAnimationEndPosition}" />
                                     </VisualState.Setters>
@@ -1073,7 +1074,7 @@
                                             </contract7NotPresent:ObjectAnimationUsingKeyFrames>
                                             <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryItemsRoot" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
-                                                <DiscreteObjectKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
+                                                <DiscreteObjectKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
                                             </contract7Present:ObjectAnimationUsingKeyFrames>
                                             <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryItemsRoot" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
@@ -1258,7 +1259,7 @@
                                             Glyph="&#xE10C;" />
                                     </Button>
                                 </Grid>
-                                <Popup x:Name="OverflowPopup">
+                                <Popup x:Name="OverflowPopup" ShouldConstrainToRootBounds="False">
                                     <Grid
                                         x:Name="OuterOverflowContentRoot"
                                         RequestedTheme="{TemplateBinding ActualTheme}"
@@ -1273,7 +1274,7 @@
                                         <Grid.RenderTransform>
                                             <TranslateTransform
                                                 x:Name="OverflowContentRootTransform"
-                                                Y="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandDownOverflowVerticalPosition}" />
+                                                contract14NotPresent:Y="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandDownOverflowVerticalPosition}" />
                                         </Grid.RenderTransform>
                                         <Grid x:Name="OverflowContentRoot" HorizontalAlignment="Stretch" Background="{TemplateBinding Background}">
                                             <Grid.RowDefinitions>
