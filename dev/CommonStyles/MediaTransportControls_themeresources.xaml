@@ -437,6 +437,7 @@
                                         <Setter Target="TimeTextGrid.Visibility" Value="Collapsed" />
                                         <Setter Target="MediaTransportControls_Command_Border.(Grid.Column)" Value="2" />
                                         <Setter Target="MediaTransportControls_Command_Border.(Grid.Row)" Value="1" />
+                                        <Setter Target="ControlPanelGrid.Height" Value="48" />
                                         <Setter Target="MediaControlsCommandBar.Margin" Value="0" />
                                         <Setter Target="PlayPauseButton.Visibility" Value="Collapsed" />
                                     </VisualState.Setters>

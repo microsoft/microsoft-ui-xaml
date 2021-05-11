@@ -33,8 +33,8 @@
         <Grid Grid.Column="1">
             <MediaPlayerElement
                 Source="ms-appx:///Assets/ladybug.wmv"
-                MaxWidth="1000"
-                MaxHeight="1000"
+                MaxWidth="750"
+                MaxHeight="750"
                 AutoPlay="False"
                 AreTransportControlsEnabled="True">
                 <MediaPlayerElement.TransportControls>
