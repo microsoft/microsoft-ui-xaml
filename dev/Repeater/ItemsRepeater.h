@@ -23,6 +23,10 @@ public:
     ItemsRepeater();
     ~ItemsRepeater();
 
+    // StackLayout measurements are shortcut when m_stackLayoutMeasureCounter reaches this value
+    // to prevent a layout cycle exception.
+    static constexpr uint8_t s_maxStackLayoutIterations = 60u;
+
     static winrt::Point ClearedElementsArrangePosition;
     // A convention we use in the ItemsRepeater codebase for an invalid Rect value.
     static winrt::Rect InvalidRect;
@@ -120,6 +124,7 @@ public:
 private:
     void OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/);
     void OnUnloaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/);
+    void OnLayoutUpdated(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/);
 
     void OnDataSourcePropertyChanged(const winrt::ItemsSourceView& oldValue, const winrt::ItemsSourceView& newValue);
     void OnItemTemplateChanged(const winrt::IElementFactory& oldValue, const winrt::IElementFactory& newValue);
@@ -169,6 +174,10 @@ private:
     // events. We keep these counters to detect out-of-sync unloaded events and take action to rectify.
     int _loadedCounter{};
     int _unloadedCounter{};
+
+    // Used to avoid layout cycles with StackLayout layouts where variable sized children prevent
+    // the ItemsRepeater's layout to settle.
+    uint8_t m_stackLayoutMeasureCounter{ 0u };
 
     // Bug in framework's reference tracking causes crash during
     // UIAffinityQueue cleanup. To avoid that bug, take a strong ref

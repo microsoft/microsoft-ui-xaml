@@ -15,6 +15,7 @@ public:
     virtual winrt::Rect GetLayoutRealizationWindow() const = 0;
 
     virtual void SetLayoutExtent(winrt::Rect extent) = 0;
+    virtual winrt::Rect GetLayoutExtent() const = 0;
     virtual winrt::Point GetOrigin() const = 0;
 
     virtual void OnLayoutChanged(bool isVirtualizing) = 0;

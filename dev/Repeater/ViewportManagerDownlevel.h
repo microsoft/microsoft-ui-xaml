@@ -28,6 +28,7 @@ public:
     winrt::Rect GetLayoutRealizationWindow() const override;
 
     void SetLayoutExtent(winrt::Rect extent) override;
+    winrt::Rect GetLayoutExtent() const override { return m_layoutExtent; }
     winrt::Point GetOrigin() const override{ return winrt::Point(m_layoutExtent.X, m_layoutExtent.Y); }
 
     void OnLayoutChanged(bool isVirtualizing) override;
