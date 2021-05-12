@@ -41,6 +41,8 @@ namespace TestAppCX
         void UpdateTitleBar(CoreApplicationViewTitleBar^ coreTitleBar);
 
         void TitleBarForegroundPropertyChanged(DependencyObject^ object, DependencyProperty^ dp);
+
+        void OnLoaded(Object^ object, RoutedEventArgs^ args);
     private:
         void ToggleTheme(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
 

@@ -27,6 +27,13 @@ using namespace Windows::UI::Xaml::Navigation;
 BackdropMaterialTestPage::BackdropMaterialTestPage()
 {
 	InitializeComponent();
+
+    Loaded += ref new RoutedEventHandler(this, &BackdropMaterialTestPage::OnLoaded);
+}
+
+void BackdropMaterialTestPage::OnLoaded(Object^ object, RoutedEventArgs^ args)
+{
+    TintOpacitySlider->Value = Microsoft::UI::Private::Controls::BackdropMaterialTestApi::TintOpacity;
 }
 
 void BackdropMaterialTestPage::OnNavigatedTo(NavigationEventArgs^ e)
@@ -119,4 +126,7 @@ void BackdropMaterialTestPage::OnActivated(CoreWindow^ sender, WindowActivatedEv
     {
         VisualStateManager::GoToState(this, "Inactive", true);
     }
+
+    auto opacity = Microsoft::UI::Private::Controls::BackdropMaterialTestApi::TintOpacity;
+    TintOpacitySlider->Value = opacity;
 }
