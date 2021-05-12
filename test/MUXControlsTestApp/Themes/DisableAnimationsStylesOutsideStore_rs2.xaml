@@ -46,6 +46,7 @@
                                         <contract14NotPresent:Setter Target="OverflowContentRootTransform.Y" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpOverflowVerticalPosition}" />
                                         <Setter Target="OverflowContentRootClipTransform.X" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionAnimationEndPosition}" />
                                         <Setter Target="OverflowContentRootClipTransform.Y" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpAnimationEndPosition}" />
+                                        <Setter Target="PrimaryItemsRoot.VerticalAlignment" Value="Bottom" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ExpandedDown">
@@ -54,6 +55,7 @@
                                         <Setter Target="ContentRootClipTransform.X" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionAnimationEndPosition}" />
                                         <Setter Target="OverflowContentRootClipTransform.X" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionAnimationEndPosition}" />
                                         <Setter Target="OverflowContentRootClipTransform.Y" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandDownAnimationEndPosition}" />
+                                        <Setter Target="PrimaryItemsRoot.VerticalAlignment" Value="Top" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -66,7 +68,9 @@
                                 </VisualState>
                                 <VisualState x:Name="SecondaryCommandsOnly">
                                     <VisualState.Setters>
-                                        <Setter Target="PrimaryItemsRoot.Visibility" Value="Collapsed" />
+                                        <Setter Target="PrimaryItemsRoot.Opacity" Value="0" />
+                                        <Setter Target="PrimaryItemsRoot.IsHitTestVisible" Value="False" />
+                                        <Setter Target="PrimaryItemsRoot.Height" Value="0" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>

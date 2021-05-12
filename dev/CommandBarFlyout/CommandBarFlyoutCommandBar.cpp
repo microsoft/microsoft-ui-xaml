@@ -165,7 +165,7 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
     {
         if (auto overflowPopup4 = overflowPopup.try_as<winrt::IPopup4>())
         {
-            overflowPopup4.PlacementTarget(*this);
+            overflowPopup4.PlacementTarget(m_primaryItemsRoot.get());
             overflowPopup4.DesiredPlacement(winrt::PopupPlacementMode::BottomEdgeAlignedLeft);
         }
     }
