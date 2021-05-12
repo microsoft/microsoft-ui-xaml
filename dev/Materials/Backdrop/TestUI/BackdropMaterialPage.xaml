@@ -5,18 +5,31 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:mupc="using:Microsoft.UI.Private.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    AutomationProperties.Name="BackdropMaterialPage"
-    muxc:BackdropMaterial.ApplyToRootOrPageBackground="true">
+    AutomationProperties.Name="BackdropMaterialPage">
 
     <Grid BorderThickness="1" Margin="10">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
+        <StackPanel>
+            <TextBlock Text="TintColor:"/>
+            <ColorPicker Color="{x:Bind mupc:BackdropMaterialTestApi.TintColor, Mode=TwoWay}" IsColorChannelTextInputVisible="false"/>
+            <Slider Header="TintOpacity" Value="{x:Bind mupc:BackdropMaterialTestApi.TintOpacity, Mode=TwoWay}" Minimum="0" Maximum="1" SmallChange="0.01" LargeChange="0.1" StepFrequency="0.01"/>
+            <Slider Header="LuminosityOpacity" Value="{x:Bind mupc:BackdropMaterialTestApi.LuminosityOpacity, Mode=TwoWay}" Minimum="0" Maximum="1" SmallChange="0.01" LargeChange="0.1" StepFrequency="0.01"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1">
+
+            <Button AutomationProperties.Name="ReportBrushes" Click="ReportBrushes" Content="Report Brushes"/>
+            <Button AutomationProperties.Name="DisableBackdrop" Click="DisableBackdrop" Content="Disable Backdrop"/>
+            <Button AutomationProperties.Name="EnableBackdrop" Click="EnableBackdrop" Content="Enable Backdrop"/>
+            <TextBox Header="Test Output:" IsReadOnly="true" x:Name="TestOutput" AutomationProperties.Name="TestOutput" TextWrapping="Wrap"/>
+        </StackPanel>
     </Grid>
 </local:TestPage>

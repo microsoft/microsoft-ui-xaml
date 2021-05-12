@@ -29,6 +29,9 @@
                                 <RowDefinition />
                             </Grid.RowDefinitions>
 
+                            <!-- Element to track the "correct" theme to restore after the BackdropMaterial test runs -->
+                            <Grid x:Name="BackupThemeBackground"  Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Visibility="Collapsed"/>
+
                             <Grid x:Name="TestFrameBar" VerticalAlignment="Top" HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />

@@ -2,8 +2,9 @@
 {
     [MUX_PUBLIC]
     [webhosthidden]
+    [default_interface]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    runtimeclass BackdropMaterial : Windows.UI.Xaml.DependencyObject
+    unsealed runtimeclass BackdropMaterial : Windows.UI.Xaml.DependencyObject
     {
         [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnApplyToRootOrPageBackgroundChanged")]
         static Windows.UI.Xaml.DependencyProperty ApplyToRootOrPageBackgroundProperty { get; };
@@ -27,5 +28,24 @@ namespace MU_PRIVATE_CONTROLS_NAMESPACE
         Single TintOpacity;
         Single LuminosityOpacity;
         Windows.UI.Color FallbackColor;
+    }
+
+    [MUX_INTERNAL]
+    [default_interface]
+    runtimeclass BackdropMaterialState
+    {
+
+    }
+
+    [MUX_INTERNAL]
+    [webhosthidden]
+    [default_interface]
+    runtimeclass BackdropMaterialTestApi
+    {
+        static Boolean IsBackdropMaterialActive { get; };
+        static Windows.UI.Color TintColor;
+        static Single TintOpacity;
+        static Single LuminosityOpacity;
+        static Windows.UI.Color FallbackColor;
     }
 }

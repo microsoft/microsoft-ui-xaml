@@ -47,6 +47,11 @@ void BackdropMaterial::OnApplyToRootOrPageBackgroundChanged(const winrt::Depende
         }
         else
         {
+            if (auto state = winrt::get_self<BackdropMaterialState>(control.GetValue(s_StateProperty).try_as<winrt::IBackdropMaterialState>()))
+            {
+                state->Dispose();
+            }
+
             control.ClearValue(s_StateProperty);
         }
     }
@@ -103,8 +108,17 @@ BackdropMaterial::BackdropMaterialState::BackdropMaterialState(winrt::Control co
 
 BackdropMaterial::BackdropMaterialState::~BackdropMaterialState()
 {
-    m_connectedBrushCount--;
-    CreateOrDestroyMicaController();
+    Dispose();
+}
+
+void BackdropMaterial::BackdropMaterialState::Dispose()
+{
+    if (!m_isDisposed)
+    {
+        m_isDisposed = true;
+        m_connectedBrushCount--;
+        CreateOrDestroyMicaController();
+    }
 }
 
 void BackdropMaterial::BackdropMaterialState::UpdateFallbackBrush()

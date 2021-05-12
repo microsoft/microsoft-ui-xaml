@@ -44,7 +44,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
 
         [TestMethod]
-        public void VerifyFallback()
+        public void VerifySetupAndFallback()
         {
             using (var setup = new TestSetupHelper(new[] { "BackdropMaterial" }))
             {

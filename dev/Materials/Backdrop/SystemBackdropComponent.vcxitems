@@ -17,6 +17,7 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Generated\BackdropMaterial.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BackdropMaterial.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BackdropMaterialTestApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropBrushFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MicaController.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropPolicyStateMachine.cpp" />

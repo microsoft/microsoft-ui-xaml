@@ -8,6 +8,7 @@
 
 #include "pch.h"
 #include "MainPage.xaml.h"
+#include "BackdropMaterialTestPage.xaml.h"
 
 using namespace TestAppCX;
 
@@ -69,7 +70,9 @@ void App::OnLaunched(Windows::ApplicationModel::Activation::LaunchActivatedEvent
                 // configuring the new page by passing required information as a navigation
                 // parameter
                 RootFrame->Navigate(TypeName(MainPage::typeid), e->Arguments);
+                RootFrame->Navigate(TypeName(BackdropMaterialTestPage::typeid), e->Arguments);
             }
+
             // Place the frame in the current Window
             Window::Current->Content = RootFrame;
             // Ensure the current window is active
