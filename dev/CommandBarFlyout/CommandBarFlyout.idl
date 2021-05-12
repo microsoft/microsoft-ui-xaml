@@ -25,38 +25,3 @@ unsealed runtimeclass TextCommandBarFlyout : CommandBarFlyout
 };
 
 }
-
-namespace MU_XCP_NAMESPACE
-{
-    // Needed so we can access this enum and interface until they ship in the official SDK.
-    [MUX_INTERNAL]
-    [webhosthidden]
-    enum PopupPlacementMode
-    {
-        Auto,
-        Top,
-        Bottom,
-        Left,
-        Right,
-        TopEdgeAlignedLeft,
-        TopEdgeAlignedRight,
-        BottomEdgeAlignedLeft,
-        BottomEdgeAlignedRight,
-        LeftEdgeAlignedTop,
-        LeftEdgeAlignedBottom,
-        RightEdgeAlignedTop,
-        RightEdgeAlignedBottom,
-    };
-
-    [MUX_INTERNAL]
-    [webhosthidden]
-    [uuid(0909bd79-eda7-57a4-82d8-9a47fc950a1d)]
-    interface IPopup4
-    {
-        Windows.UI.Xaml.FrameworkElement PlacementTarget;
-        Microsoft.UI.Xaml.Controls.Primitives.PopupPlacementMode DesiredPlacement;
-        Microsoft.UI.Xaml.Controls.Primitives.PopupPlacementMode ActualPlacement{ get; };
-
-        event Windows.Foundation.EventHandler<Object> ActualPlacementChanged;
-    };
-}
