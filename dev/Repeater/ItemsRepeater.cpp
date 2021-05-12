@@ -101,7 +101,7 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
 
     if (layout)
     {
-        auto const stackLayout = layout.as<winrt::StackLayout>();
+        auto const stackLayout = layout.try_as<winrt::StackLayout>();
 
         if (stackLayout && ++m_stackLayoutMeasureCounter >= s_maxStackLayoutIterations)
         {
