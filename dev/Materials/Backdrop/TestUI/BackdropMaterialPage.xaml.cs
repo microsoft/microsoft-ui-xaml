@@ -80,7 +80,7 @@ namespace MUXControlsTestApp
 
             var sb = new StringBuilder();
             sb.AppendLine($"TestFrame.Background = {frameBackground?.Color.ToString() ?? "null"}");
-            sb.AppendLine($"Window.Backdrop = {backdropBrush?.SystemBackdrop.ToString() ?? "null"}");
+            sb.AppendLine($"Window.Backdrop = {backdropBrush?.SystemBackdrop?.ToString() ?? "null"}");
             TestOutput.Text = sb.ToString();
         }
     }

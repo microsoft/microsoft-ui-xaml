@@ -48,7 +48,62 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper(new[] { "BackdropMaterial" }))
             {
+                var reportBrushes = FindElement.ByName<Button>("ReportBrushes");
+                var disableBackdrop = FindElement.ByName<Button>("DisableBackdrop");
+                var enableBackdrop = FindElement.ByName<Button>("EnableBackdrop");
+                var testOutput = FindElement.ByName<Edit>("TestOutput");
+                var toggleTheme = FindElement.ByName<Button>("__ToggleThemeButton");
 
+                // TODO: handle downlevel
+
+                // Light theme
+
+                // Test dark theme enabled
+                Log.Comment("Clicking ReportBrushes");
+                reportBrushes.InvokeAndWait();
+
+                var testOutput = testOutput.Value;
+
+                // TODO: check for light theme value
+
+                Log.Comment("Disable backdrop and check fallback");
+                disableBackdrop.InvokeAndWait();
+                reportBrushes.InvokeAndWait();
+                testOutput = testOutput.Value;
+
+                // TODO: verify
+
+                Log.Comment("Enable backdrop and check fallback");
+                enableBackdrop.InvokeAndWait();
+                reportBrushes.InvokeAndWait();
+                testOutput = testOutput.Value;
+
+                // Dark theme
+
+                Log.Comment("Toggle theme and check again");
+                toggleTheme.InvokeAndWait();
+                reportBrushes.InvokeAndWait();
+                testOutput = testOutput.Value;
+
+                // TODO: verify
+
+                Log.Comment("Disable backdrop and check fallback");
+                disableBackdrop.InvokeAndWait();
+                reportBrushes.InvokeAndWait();
+                testOutput = testOutput.Value;
+
+                // TODO: verify
+
+                Log.Comment("Enable backdrop and check fallback");
+                enableBackdrop.InvokeAndWait();
+                reportBrushes.InvokeAndWait();
+                testOutput = testOutput.Value;
+
+                // TODO: verify
+
+                // Put the theme back
+                Log.Comment("Restoring theme");
+                toggleTheme.InvokeAndWait();
             }
         }
     }
