@@ -31,7 +31,7 @@ public:
     }
     static float TintOpacity()
     {
-        return GetMicaController()->TintOpacity();
+        return GetMicaController() ? GetMicaController()->TintOpacity() : 0.0f;
     }
     static void TintOpacity(float value)
     {
@@ -42,7 +42,7 @@ public:
     }
     static float LuminosityOpacity()
     {
-        return GetMicaController()->LuminosityOpacity();
+        return GetMicaController() ? GetMicaController()->LuminosityOpacity() : 0.0f;
     }
     static void LuminosityOpacity(float value)
     {

@@ -146,7 +146,7 @@ void MicaController::UpdateTheme(winrt::Windows::UI::Xaml::ElementTheme theme)
 
         case winrt::Windows::UI::Xaml::ElementTheme::Dark:
             m_tintColor = sc_darkThemeColor;
-            m_tintOpacity = sc_lightDarkTintOpacity;
+            m_tintOpacity = sc_darkThemeTintOpacity;
             m_luminosityOpacity = 1.0f;
             break;
         }

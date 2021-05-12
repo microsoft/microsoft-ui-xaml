@@ -46,13 +46,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void VerifySetupAndFallback()
         {
-            using (var setup = new TestSetupHelper(new[] { "BackdropMaterial" }))
+            using (var setup = new TestSetupHelper(new[] { "BackdropMaterial Tests" }))
             {
                 var reportBrushes = FindElement.ByName<Button>("ReportBrushes");
                 var disableBackdrop = FindElement.ByName<Button>("DisableBackdrop");
                 var enableBackdrop = FindElement.ByName<Button>("EnableBackdrop");
                 var testOutput = FindElement.ByName<Edit>("TestOutput");
-                var toggleTheme = FindElement.ByName<Button>("__ToggleThemeButton");
+                var toggleTheme = FindElement.ById<Button>("__ToggleThemeButton");
 
                 // TODO: handle downlevel
 
@@ -62,44 +62,66 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Clicking ReportBrushes");
                 reportBrushes.InvokeAndWait();
 
-                var testOutput = testOutput.Value;
-
-                // TODO: check for light theme value
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
+                {
+                    Verify.AreEqual("TestFrame.Background = #00000000,Window.Backdrop = Windows.UI.Composition.CompositionEffectBrush", testOutput.Value);
+                }
+                else
+                {
+                    Verify.AreEqual("TestFrame.Background = #FFF3F3F3,Window.Backdrop = null", testOutput.Value);
+                }
 
                 Log.Comment("Disable backdrop and check fallback");
                 disableBackdrop.InvokeAndWait();
                 reportBrushes.InvokeAndWait();
-                testOutput = testOutput.Value;
 
-                // TODO: verify
+                Verify.AreEqual("TestFrame.Background = #FFF3F3F3,Window.Backdrop = null", testOutput.Value);
 
                 Log.Comment("Enable backdrop and check fallback");
                 enableBackdrop.InvokeAndWait();
                 reportBrushes.InvokeAndWait();
-                testOutput = testOutput.Value;
+
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
+                {
+                    Verify.AreEqual("TestFrame.Background = #00000000,Window.Backdrop = Windows.UI.Composition.CompositionEffectBrush", testOutput.Value);
+                }
+                else
+                {
+                    Verify.AreEqual("TestFrame.Background = #FFF3F3F3,Window.Backdrop = null", testOutput.Value);
+                }
 
                 // Dark theme
 
                 Log.Comment("Toggle theme and check again");
                 toggleTheme.InvokeAndWait();
                 reportBrushes.InvokeAndWait();
-                testOutput = testOutput.Value;
 
-                // TODO: verify
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
+                {
+                    Verify.AreEqual("TestFrame.Background = #00000000,Window.Backdrop = Windows.UI.Composition.CompositionEffectBrush", testOutput.Value);
+                }
+                else
+                {
+                    Verify.AreEqual("TestFrame.Background = #FF202020,Window.Backdrop = null", testOutput.Value);
+                }
 
                 Log.Comment("Disable backdrop and check fallback");
                 disableBackdrop.InvokeAndWait();
                 reportBrushes.InvokeAndWait();
-                testOutput = testOutput.Value;
-
-                // TODO: verify
+                Verify.AreEqual("TestFrame.Background = #FF202020,Window.Backdrop = null", testOutput.Value);
 
                 Log.Comment("Enable backdrop and check fallback");
                 enableBackdrop.InvokeAndWait();
                 reportBrushes.InvokeAndWait();
-                testOutput = testOutput.Value;
 
-                // TODO: verify
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
+                {
+                    Verify.AreEqual("TestFrame.Background = #00000000,Window.Backdrop = Windows.UI.Composition.CompositionEffectBrush", testOutput.Value);
+                }
+                else
+                {
+                    Verify.AreEqual("TestFrame.Background = #FF202020,Window.Backdrop = null", testOutput.Value);
+                }
 
                 // Put the theme back
                 Log.Comment("Restoring theme");
