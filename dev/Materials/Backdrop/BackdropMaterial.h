@@ -25,6 +25,8 @@ public:
 
 private:
 
+    // This object gets attached to the target of the ApplyToRootOrPageBackground property to track additional
+    // state that needs to be cleaned up if that target ever goes away.
     struct BackdropMaterialState : winrt::implementation::BackdropMaterialStateT<BackdropMaterialState>
     {
         BackdropMaterialState(winrt::Control const& target);

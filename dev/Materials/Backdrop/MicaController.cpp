@@ -139,14 +139,14 @@ void MicaController::UpdateTheme(winrt::Windows::UI::Xaml::ElementTheme theme)
         switch (theme)
         {
         case winrt::Windows::UI::Xaml::ElementTheme::Light:
-            m_tintColor = winrt::Windows::UI::ColorHelper::FromArgb(255, 243, 243, 243);
-            m_tintOpacity = 0.65f;
+            m_tintColor = sc_lightThemeColor;
+            m_tintOpacity = sc_lightThemeTintOpacity;
             m_luminosityOpacity = 1.0f;
             break;
 
         case winrt::Windows::UI::Xaml::ElementTheme::Dark:
-            m_tintColor = winrt::Windows::UI::ColorHelper::FromArgb(255, 32, 32, 32);
-            m_tintOpacity = 0.8f;
+            m_tintColor = sc_darkThemeColor;
+            m_tintOpacity = sc_lightDarkTintOpacity;
             m_luminosityOpacity = 1.0f;
             break;
         }

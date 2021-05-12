@@ -152,11 +152,11 @@ void BackdropMaterial::BackdropMaterialState::UpdateFallbackBrush()
 
                 if (theme == winrt::ElementTheme::Dark)
                 {
-                    return winrt::Color{ 255, 32, 32, 32 };
+                    return MicaController::sc_darkThemeColor;
                 }
                 else
                 {
-                    return winrt::Color{ 255, 243, 243, 243 };
+                    return MicaController::sc_lightThemeColor;
                 }
             }();
 

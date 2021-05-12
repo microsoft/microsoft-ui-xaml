@@ -31,6 +31,12 @@ struct MicaController : winrt::implementation::MicaControllerT<MicaController>, 
     void SetHighContrast(bool isHighContrast) override { m_isHighContrast = isHighContrast; }
     void UpdateTheme(winrt::Windows::UI::Xaml::ElementTheme theme) override;
 
+    static constexpr auto sc_darkThemeColor = winrt::Color{ 255, 32, 32, 32 };
+    static constexpr auto sc_lightDarkTintOpacity = 0.8f;
+
+    static constexpr auto sc_lightThemeColor = winrt::Color{ 255, 243, 243, 243 };
+    static constexpr auto sc_lightThemeTintOpacity = 0.65f;
+
 private:
     bool IsMicaSupported() const;
     void Crossfade(const winrt::Windows::UI::Composition::CompositionBrush& newBrush);
