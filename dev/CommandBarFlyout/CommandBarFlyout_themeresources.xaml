@@ -989,6 +989,9 @@
                                         <contract14NotPresent:Setter Target="OverflowContentRootTransform.Y" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpOverflowVerticalPosition}" />
                                         <Setter Target="OverflowContentRootClipTransform.X" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionAnimationEndPosition}" />
                                         <Setter Target="OverflowContentRootClipTransform.Y" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpAnimationEndPosition}" />
+                                        <!-- We're using PrimaryItemsRoot as the anchor for the overflow popup, so when we're showing that
+                                             popup, we'll align PrimaryItemsRoot against the side that we're opening against to ensure that
+                                             the popup is placed in the expected location. -->
                                         <Setter Target="PrimaryItemsRoot.VerticalAlignment" Value="Bottom" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1011,6 +1014,8 @@
                                 </VisualState>
                                 <VisualState x:Name="SecondaryCommandsOnly">
                                     <VisualState.Setters>
+                                        <!-- We'll use PrimaryItemsRoot as the anchor for the overflow popup, so to be able to do that
+                                             we can't set it to be collapsed.  Instead, we'll just hide it and make it not hit-testable. -->
                                         <Setter Target="PrimaryItemsRoot.Opacity" Value="0" />
                                         <Setter Target="PrimaryItemsRoot.IsHitTestVisible" Value="False" />
                                         <Setter Target="PrimaryItemsRoot.Height" Value="0" />
