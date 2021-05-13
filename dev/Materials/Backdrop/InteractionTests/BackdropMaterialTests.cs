@@ -90,42 +90,46 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.AreEqual("TestFrame.Background = #FFF3F3F3,Window.Backdrop = null", testOutput.Value);
                 }
 
-                // Dark theme
-
-                Log.Comment("Toggle theme and check again");
-                toggleTheme.InvokeAndWait();
-                reportBrushes.InvokeAndWait();
-
-                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
+                // ActualTheme change monitoring only works on RS3+
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
                 {
-                    Verify.AreEqual("TestFrame.Background = #00000000,Window.Backdrop = Windows.UI.Composition.CompositionEffectBrush", testOutput.Value);
-                }
-                else
-                {
+                    // Dark theme
+
+                    Log.Comment("Toggle theme and check again");
+                    toggleTheme.InvokeAndWait();
+                    reportBrushes.InvokeAndWait();
+
+                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
+                    {
+                        Verify.AreEqual("TestFrame.Background = #00000000,Window.Backdrop = Windows.UI.Composition.CompositionEffectBrush", testOutput.Value);
+                    }
+                    else
+                    {
+                        Verify.AreEqual("TestFrame.Background = #FF202020,Window.Backdrop = null", testOutput.Value);
+                    }
+
+                    Log.Comment("Disable backdrop and check fallback");
+                    disableBackdrop.InvokeAndWait();
+                    reportBrushes.InvokeAndWait();
                     Verify.AreEqual("TestFrame.Background = #FF202020,Window.Backdrop = null", testOutput.Value);
+
+                    Log.Comment("Enable backdrop and check fallback");
+                    enableBackdrop.InvokeAndWait();
+                    reportBrushes.InvokeAndWait();
+
+                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
+                    {
+                        Verify.AreEqual("TestFrame.Background = #00000000,Window.Backdrop = Windows.UI.Composition.CompositionEffectBrush", testOutput.Value);
+                    }
+                    else
+                    {
+                        Verify.AreEqual("TestFrame.Background = #FF202020,Window.Backdrop = null", testOutput.Value);
+                    }
+
+                    // Put the theme back
+                    Log.Comment("Restoring theme");
+                    toggleTheme.InvokeAndWait();
                 }
-
-                Log.Comment("Disable backdrop and check fallback");
-                disableBackdrop.InvokeAndWait();
-                reportBrushes.InvokeAndWait();
-                Verify.AreEqual("TestFrame.Background = #FF202020,Window.Backdrop = null", testOutput.Value);
-
-                Log.Comment("Enable backdrop and check fallback");
-                enableBackdrop.InvokeAndWait();
-                reportBrushes.InvokeAndWait();
-
-                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
-                {
-                    Verify.AreEqual("TestFrame.Background = #00000000,Window.Backdrop = Windows.UI.Composition.CompositionEffectBrush", testOutput.Value);
-                }
-                else
-                {
-                    Verify.AreEqual("TestFrame.Background = #FF202020,Window.Backdrop = null", testOutput.Value);
-                }
-
-                // Put the theme back
-                Log.Comment("Restoring theme");
-                toggleTheme.InvokeAndWait();
             }
         }
     }

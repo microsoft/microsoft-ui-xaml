@@ -27,7 +27,7 @@ private:
 
     // This object gets attached to the target of the ApplyToRootOrPageBackground property to track additional
     // state that needs to be cleaned up if that target ever goes away.
-    struct BackdropMaterialState : winrt::implementation::BackdropMaterialStateT<BackdropMaterialState>
+    struct BackdropMaterialState : winrt::DependencyObjectT<BackdropMaterialState, winrt::IBackdropMaterialState>
     {
         BackdropMaterialState(winrt::Control const& target);
         ~BackdropMaterialState();
@@ -44,8 +44,10 @@ private:
 
         void UpdateFallbackBrush();
 
+        DispatcherHelper m_dispatcherHelper{ *this };
         winrt::weak_ref<winrt::Control> m_target;
         winrt::FrameworkElement::ActualThemeChanged_revoker m_themeChangedRevoker;
+        winrt::UISettings::ColorValuesChanged_revoker m_colorValuesChangedRevoker;
         winrt::UISettings m_uiSettings{};
         winrt::AccessibilitySettings::HighContrastChanged_revoker m_highContrastChangedRevoker;
         bool m_isHighContrast{};

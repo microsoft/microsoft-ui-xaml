@@ -87,7 +87,7 @@ BackdropMaterial::BackdropMaterialState::BackdropMaterialState(winrt::Control co
 
     // Normally QI would be fine, but .NET is lying about implementing this interface (e.g. C# TestFrame derives from Frame and this QI
     // returns success even on RS2, but it's not implemented by XAML until RS3).
-    if (SharedHelpers::IsRS3OrHigher()) 
+    if (SharedHelpers::IsRS3OrHigher())
     {
         if (auto targetThemeChanged = target.try_as<winrt::IFrameworkElement6>())
         {
@@ -98,14 +98,23 @@ BackdropMaterial::BackdropMaterialState::BackdropMaterialState(winrt::Control co
         }
     }
 
+    m_colorValuesChangedRevoker = m_uiSettings.ColorValuesChanged(winrt::auto_revoke, [this](auto&&, auto&&)
+        {
+            m_dispatcherHelper.RunAsync([strongThis = get_strong()]() {
+                strongThis->UpdateFallbackBrush();
+            });
+        });
+
     // Listen for High Contrast changes
     auto accessibilitySettings = winrt::AccessibilitySettings();
     m_isHighContrast = accessibilitySettings.HighContrast();
     m_highContrastChangedRevoker = accessibilitySettings.HighContrastChanged(winrt::auto_revoke,
         [this, accessibilitySettings](auto& sender, auto& args)
         {
-            m_isHighContrast = accessibilitySettings.HighContrast();
-            UpdateFallbackBrush();
+            m_dispatcherHelper.RunAsync([strongThis = get_strong(), accessibilitySettings]() {
+                strongThis->m_isHighContrast = accessibilitySettings.HighContrast();
+                strongThis->UpdateFallbackBrush();
+            });
         });
 
     UpdateFallbackBrush();
