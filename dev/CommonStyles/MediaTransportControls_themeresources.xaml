@@ -197,7 +197,7 @@
                                         <Setter Target="ControlPanelGrid.Height" Value="48" />
                                         <Setter Target="MediaControlsCommandBar.Margin" Value="0" />
                                         <Setter Target="PlayPauseButton.Visibility" Value="Collapsed" />
-                                        <Setter Target="ProgressSlider.Margin" Value="12,0,8,0" />
+                                        <Setter Target="ProgressSlider.Margin" Value="12,-1,8,1" />
                                         <Setter Target="ControlPanelGrid.Padding" Value="3" />
                                     </VisualState.Setters> 
                                 </VisualState>
@@ -282,7 +282,7 @@
                                             <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
                                         <Slider x:Name="ProgressSlider"
-                                                Margin ="7,3,7,0"
+                                                Margin ="7,2,7,1"
                                                 MinWidth="80"
                                                 Height="{ThemeResource MediaTransportControlsSliderHeight}"
                                                 VerticalAlignment="Center"
@@ -330,12 +330,12 @@
                                                             <Slider x:Name="VolumeSlider"
                                                                     Value="50"
                                                                     IsThumbToolTipEnabled="False"
-                                                                    
+                                                                    Height="{ThemeResource MediaTransportControlsSliderHeight}"
                                                                     Width="{ThemeResource MediaTransportControlsSliderWidth}"
                                                                     VerticalAlignment="Center"
                                                                     HorizontalAlignment="Center"
                                                                     Margin="12,0,8,0" />
-                                                            <TextBlock x:Name="VolumeValue" Style="{StaticResource MediaTextBlockStyle}" Text="{Binding ElementName=VolumeSlider,Path=Value}" HorizontalAlignment="Center" VerticalAlignment="Center" Width="24" Margin="16,0,8,0" />
+                                                            <TextBlock x:Name="VolumeValue" Style="{StaticResource MediaTextBlockStyle}" Text="{Binding ElementName=VolumeSlider,Path=Value}" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Right" Width="24" Margin="8,0,16,0" />
                                                         </StackPanel>
                                                     </Flyout>
                                                 </AppBarButton.Flyout>
