@@ -19,7 +19,7 @@
 
         <StackPanel>
             <TextBlock Text="TintColor:"/>
-            <ColorPicker Color="{x:Bind mupc:BackdropMaterialTestApi.TintColor, Mode=TwoWay}" IsColorChannelTextInputVisible="false"/>
+            <muxc:ColorPicker Color="{x:Bind mupc:BackdropMaterialTestApi.TintColor, Mode=TwoWay}" IsColorChannelTextInputVisible="false"/>
             <Slider Header="TintOpacity" Value="{x:Bind mupc:BackdropMaterialTestApi.TintOpacity, Mode=TwoWay}" Minimum="0" Maximum="1" SmallChange="0.01" LargeChange="0.1" StepFrequency="0.01"/>
             <Slider Header="LuminosityOpacity" Value="{x:Bind mupc:BackdropMaterialTestApi.LuminosityOpacity, Mode=TwoWay}" Minimum="0" Maximum="1" SmallChange="0.01" LargeChange="0.1" StepFrequency="0.01"/>
         </StackPanel>

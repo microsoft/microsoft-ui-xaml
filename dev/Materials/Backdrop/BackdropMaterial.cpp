@@ -85,12 +85,17 @@ BackdropMaterial::BackdropMaterialState::BackdropMaterialState(winrt::Control co
     m_connectedBrushCount++;
     CreateOrDestroyMicaController();
 
-    if (auto targetThemeChanged = target.try_as<winrt::IFrameworkElement6>())
+    // Normally QI would be fine, but .NET is lying about implementing this interface (e.g. C# TestFrame derives from Frame and this QI
+    // returns success even on RS2, but it's not implemented by XAML until RS3).
+    if (SharedHelpers::IsRS3OrHigher()) 
     {
-        m_themeChangedRevoker = targetThemeChanged.ActualThemeChanged(winrt::auto_revoke, [this](auto&&, auto&&)
-            {
-                UpdateFallbackBrush();
-            });
+        if (auto targetThemeChanged = target.try_as<winrt::IFrameworkElement6>())
+        {
+            m_themeChangedRevoker = targetThemeChanged.ActualThemeChanged(winrt::auto_revoke, [this](auto&&, auto&&)
+                {
+                    UpdateFallbackBrush();
+                });
+        }
     }
 
     // Listen for High Contrast changes
@@ -129,9 +134,13 @@ void BackdropMaterial::BackdropMaterialState::UpdateFallbackBrush()
         {
             // When not using mica, use the theme and high contrast states to determine the fallback color.
             const auto theme = [=]() {
-                if (auto targetTheme = target.try_as<winrt::IFrameworkElement6>())
+                // See other IsRS3OrHigher usage for comment explaining why the version check and QI.
+                if (SharedHelpers::IsRS3OrHigher())
                 {
-                    return targetTheme.ActualTheme();
+                    if (auto targetTheme = target.try_as<winrt::IFrameworkElement6>())
+                    {
+                        return targetTheme.ActualTheme();
+                    }
                 }
 
                 const auto value = m_uiSettings.GetColorValue(winrt::UIColorType::Background);
