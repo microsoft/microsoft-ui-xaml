@@ -1329,7 +1329,7 @@
                                       RenderSize=0,0
                               [Microsoft.UI.Xaml.Controls.NavigationViewItemHeader]
                                   Padding=0,0,0,0
-                                  Foreground=#E4000000
+                                  Foreground=#9E000000
                                   BorderThickness=0,0,0,0
                                   BorderBrush=[NULL]
                                   Background=[NULL]
@@ -1372,7 +1372,7 @@
                                       RenderSize=49,40
                                     [Windows.UI.Xaml.Controls.TextBlock]
                                         Padding=0,0,0,0
-                                        Foreground=#E4000000
+                                        Foreground=#9E000000
                                         Name=HeaderText
                                         Margin=0,-1,0,-1
                                         FocusVisualSecondaryThickness=1,1,1,1
@@ -2976,7 +2976,7 @@
                                       RenderSize=0,0
                               [Microsoft.UI.Xaml.Controls.NavigationViewItemHeader]
                                   Padding=0,0,0,0
-                                  Foreground=#E4000000
+                                  Foreground=#9E000000
                                   BorderThickness=0,0,0,0
                                   BorderBrush=[NULL]
                                   Background=[NULL]
@@ -3019,7 +3019,7 @@
                                       RenderSize=53,40
                                     [Windows.UI.Xaml.Controls.TextBlock]
                                         Padding=0,0,0,0
-                                        Foreground=#E4000000
+                                        Foreground=#9E000000
                                         Name=HeaderText
                                         Margin=0,-1,0,-1
                                         FocusVisualSecondaryThickness=1,1,1,1
