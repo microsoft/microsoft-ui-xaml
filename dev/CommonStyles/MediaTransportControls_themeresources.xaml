@@ -440,7 +440,9 @@
                                         <Setter Target="ControlPanelGrid.Height" Value="48" />
                                         <Setter Target="MediaControlsCommandBar.Margin" Value="0" />
                                         <Setter Target="PlayPauseButton.Visibility" Value="Collapsed" />
-                                    </VisualState.Setters>
+                                        <Setter Target="ProgressSlider.Margin" Value="12,0,8,0" />
+                                        <Setter Target="ControlPanelGrid.Padding" Value="3" />
+                                    </VisualState.Setters> 
                                 </VisualState>
                             </VisualStateGroup>
                             <!-- PlayPause states -->
@@ -532,6 +534,10 @@
                                 </Border>
                                 <Border x:Name="LeftSidePlayBorder" Grid.Column="0" Grid.Row="1" Visibility="Collapsed">
                                     <AppBarButton x:Name="PlayPauseButtonOnLeft" Margin="0" VerticalAlignment="Center" Style="{StaticResource AppBarButtonStyle}">
+                                        <AppBarButton.Resources>
+                                            <Thickness x:Key="AppBarButtonInnerBorderMargin">5</Thickness>
+                                            <Thickness x:Key="AppBarButtonContentViewboxCollapsedMargin">0,12</Thickness>
+                                        </AppBarButton.Resources>
                                         <AppBarButton.Icon>
                                             <SymbolIcon x:Name="PlayPauseSymbolLeft" Symbol="Play" />
                                         </AppBarButton.Icon>
