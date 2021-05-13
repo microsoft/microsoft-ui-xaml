@@ -70,6 +70,7 @@ void App::OnLaunched(Windows::ApplicationModel::Activation::LaunchActivatedEvent
                 // parameter
                 RootFrame->Navigate(TypeName(MainPage::typeid), e->Arguments);
             }
+
             // Place the frame in the current Window
             Window::Current->Content = RootFrame;
             // Ensure the current window is active

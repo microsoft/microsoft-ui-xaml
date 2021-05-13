@@ -17,6 +17,7 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\DropDownButton\TestUI\DropDownButton_TestUI.projitems" Label="Shared" Condition="$(FeatureDropDownButtonEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Lights\ApiTests\Lights_ApiTests\Lights_ApiTests.projitems" Condition="$(FeatureLightsEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Materials\Acrylic\TestUI\AcrylicBrush_TestUI.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Materials\Backdrop\TestUI\BackdropMaterial_TestUI.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Materials\Reveal\TestUI\Reveal_TestUI.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\MenuBar\MenuBar_TestUI\MenuBar_TestUI.projitems" Label="Shared" Condition="$(FeatureMenuBarEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\NavigationView\TestUI\NavigationView_TestUI.projitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true'" />

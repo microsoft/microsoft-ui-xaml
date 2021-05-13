@@ -17,6 +17,7 @@
   <Import Project="..\..\dev\TreeView\InteractionTests\TreeView_InteractionTests.projitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true'" />
   <Import Project="..\..\dev\NavigationView\NavigationView_InteractionTests\NavigationView_InteractionTests.projitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true'" />
   <Import Project="..\..\dev\Materials\Acrylic\InteractionTests\AcrylicBrush_InteractionTests.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
+  <Import Project="..\..\dev\Materials\Backdrop\InteractionTests\BackdropMaterial_InteractionTests.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
   <Import Project="..\..\dev\Materials\Reveal\InteractionTests\Reveal_InteractionTests\Reveal_InteractionTests.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
   <Import Project="..\..\dev\SwipeControl\SwipeControl_InteractionTests\SwipeControl_InteractionTests.projitems" Label="Shared" Condition="$(FeatureSwipeControlEnabled) == 'true'" />
   <Import Project="..\..\dev\PullToRefresh\RefreshContainer\InteractionTests\RefreshContainer_InteractionTests.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />

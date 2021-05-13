@@ -13,7 +13,7 @@
         <local:NavigateToTestCommand x:Key="NavigateToTestCommand" Frame="{x:Bind Frame}"/>
     </Page.Resources>
 
-    <Grid Background="{ThemeResource BaseLayerBrush}">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>

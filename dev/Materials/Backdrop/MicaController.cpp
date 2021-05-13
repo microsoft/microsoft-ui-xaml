@@ -44,36 +44,48 @@ bool MicaController::SetTarget(winrt::Windows::UI::Xaml::Window const& xamlWindo
 
 void MicaController::TintColor(winrt::Windows::UI::Color const& value)
 {
-    m_tintColor = value;
-        
-    if (!m_isExplicitFallbackColorSet)
+    if (m_tintColor != value)
     {
-        m_fallbackColor = value;
-    }
+        m_tintColor = value;
 
-    m_customColors = true;
-    Update();
+        if (!m_isExplicitFallbackColorSet)
+        {
+            m_fallbackColor = value;
+        }
+
+        m_customColors = true;
+        Update();
+    }
 }
 void MicaController::TintOpacity(float value)
 {
-    m_tintOpacity = value;
-    m_customColors = true;
-    Update();
+    if (m_tintOpacity != value)
+    {
+        m_tintOpacity = value;
+        m_customColors = true;
+        Update();
+    }
 }
 
 void MicaController::LuminosityOpacity(float value)
 {
-    m_luminosityOpacity = value;
-    m_customColors = true;
-    Update();
+    if (m_luminosityOpacity != value)
+    {
+        m_luminosityOpacity = value;
+        m_customColors = true;
+        Update();
+    }
 }
     
 void MicaController::FallbackColor(winrt::Windows::UI::Color const& value)
 {
-    m_fallbackColor = value;
-    m_isExplicitFallbackColorSet = true;
-    m_customColors = true;
-    Update();
+    if (m_fallbackColor != value)
+    {
+        m_fallbackColor = value;
+        m_isExplicitFallbackColorSet = true;
+        m_customColors = true;
+        Update();
+    }
 }
 
 void MicaController::Activate()
@@ -127,14 +139,14 @@ void MicaController::UpdateTheme(winrt::Windows::UI::Xaml::ElementTheme theme)
         switch (theme)
         {
         case winrt::Windows::UI::Xaml::ElementTheme::Light:
-            m_tintColor = winrt::Windows::UI::ColorHelper::FromArgb(255, 243, 243, 243);
-            m_tintOpacity = 0.65f;
+            m_tintColor = sc_lightThemeColor;
+            m_tintOpacity = sc_lightThemeTintOpacity;
             m_luminosityOpacity = 1.0f;
             break;
 
         case winrt::Windows::UI::Xaml::ElementTheme::Dark:
-            m_tintColor = winrt::Windows::UI::ColorHelper::FromArgb(255, 32, 32, 32);
-            m_tintOpacity = 0.8f;
+            m_tintColor = sc_darkThemeColor;
+            m_tintOpacity = sc_darkThemeTintOpacity;
             m_luminosityOpacity = 1.0f;
             break;
         }
