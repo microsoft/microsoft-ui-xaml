@@ -127,6 +127,22 @@ CommandBarFlyout::CommandBarFlyout()
 
             if (auto commandBar = m_commandBar.get())
             {
+                // If we are in AlwaysExpanded mode then we want to make sure we open in Standard ShowMode
+                // Otherwise the timing on the creation of the two drops shows is such that the primary items
+                // draw their shadow on top of the secondary items.
+                // When CommandBarFlyout is in AlwaysOpen state, don't show the overflow button
+                if (AlwaysExpanded())
+                {
+                    commandBar.OverflowButtonVisibility(winrt::Windows::UI::Xaml::Controls::CommandBarOverflowButtonVisibility::Collapsed);
+                    if (thisAsFlyoutBase5)
+                    {
+                        thisAsFlyoutBase5.ShowMode(winrt::FlyoutShowMode::Standard);
+                    }
+                }
+                else
+                {
+                    commandBar.OverflowButtonVisibility(winrt::Windows::UI::Xaml::Controls::CommandBarOverflowButtonVisibility::Auto);
+                }
                 SharedHelpers::QueueCallbackForCompositionRendering(
                     [strongThis = get_strong(), thisAsFlyoutBase5, commandBar]
                     {
@@ -142,17 +158,6 @@ CommandBarFlyout::CommandBarFlyout()
                             if (!thisAsFlyoutBase5 || thisAsFlyoutBase5.ShowMode() == winrt::FlyoutShowMode::Standard)
                             {
                                 commandBar.IsOpen(true);
-                            }
-
-                            // When CommandBarFlyout is in AlwaysOpen state, don't show the overflow button
-                            if (strongThis->AlwaysExpanded())
-                            {
-                                commandBar.IsOpen(true);
-                                commandBar.OverflowButtonVisibility(winrt::Windows::UI::Xaml::Controls::CommandBarOverflowButtonVisibility::Collapsed);
-                            }
-                            else
-                            {
-                                commandBar.OverflowButtonVisibility(winrt::Windows::UI::Xaml::Controls::CommandBarOverflowButtonVisibility::Auto);
                             }
                         }
                     }
@@ -204,10 +209,11 @@ CommandBarFlyout::CommandBarFlyout()
                     commandBar->IsOpen(false);
                 }
 
-                //CommandBarFlyoutCommandBar.Closed will be called when
-                //clicking the more (...) button, we clear the translations
-                //here
-                commandBar->ClearShadow();
+                //Drop shadows do not play nicely with clip animations, if we are using both, clear the shadow
+                if (SharedHelpers::Is21H1OrHigher() && commandBar->OpenAnimationKind() == CommandBarFlyoutOpenCloseAnimationKind::Clip)
+                {
+                    commandBar->ClearShadow();
+                }
             }
         }
     });
@@ -286,10 +292,13 @@ winrt::Control CommandBarFlyout::CreatePresenter()
 
     if (SharedHelpers::Is21H1OrHigher())
     {
-        // Since DropShadows don't play well with the entrance animation for the presenter,
+        // Since DropShadows don't play well with clip entrance animations for the presenter,
         // we'll need to fade it in. This name helps us locate the element to set the fade in
         // flag in the OS code.
-        presenter.Name(L"DropShadowFadeInTarget");
+        if (commandBar->OpenAnimationKind() == CommandBarFlyoutOpenCloseAnimationKind::Clip)
+        {
+            presenter.Name(L"DropShadowFadeInTarget");
+        }
 
         // We'll need to remove the presenter's drop shadow on the commandBar's Opening/Closing
         // because we need it to disappear during its expand/shrink animation when the Overflow is opened.
@@ -305,7 +314,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
                         // We'll only need to do the mid-animation remove/add when the "..." button is
                         // pressed to open/close the overflow. This means we shouldn't do it for AlwaysExpanded
                         // and if there's nothing in the overflow.
-                        if (!AlwaysExpanded() && m_secondaryCommands.Size() > 0)
+                        if (m_secondaryCommands.Size() > 0)
                         {
                             RemoveDropShadow();
                         }

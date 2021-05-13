@@ -148,9 +148,24 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
     m_primaryItemsRoot.set(GetTemplateChildT<winrt::FrameworkElement>(L"PrimaryItemsRoot", thisAsControlProtected));
     m_secondaryItemsRoot.set(GetTemplateChildT<winrt::FrameworkElement>(L"OverflowContentRoot", thisAsControlProtected));
     m_moreButton.set(GetTemplateChildT<winrt::ButtonBase>(L"MoreButton", thisAsControlProtected));
-    m_openingStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"OpeningStoryboard", thisAsControlProtected));
-    m_closingStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"ClosingStoryboard", thisAsControlProtected));
-
+    m_openingStoryboard.set([this, thisAsControlProtected]()
+        {
+            if (auto const opacityStoryBoard = GetTemplateChildT<winrt::Storyboard>(L"OpeningOpacityStoryboard", thisAsControlProtected))
+            {
+                m_openAnimationKind = CommandBarFlyoutOpenCloseAnimationKind::Opacity;
+                return opacityStoryBoard;
+            }
+            m_openAnimationKind = CommandBarFlyoutOpenCloseAnimationKind::Clip;
+            return GetTemplateChildT<winrt::Storyboard>(L"OpeningStoryboard", thisAsControlProtected);
+        }());
+    m_closingStoryboard.set([this, thisAsControlProtected]()
+        {
+            if (auto const opacityStoryBoard = GetTemplateChildT<winrt::Storyboard>(L"ClosingOpacityStoryboard", thisAsControlProtected))
+            {
+                return opacityStoryBoard;
+            }
+            return GetTemplateChildT<winrt::Storyboard>(L"ClosingStoryboard", thisAsControlProtected);
+        }());
     if (auto moreButton = m_moreButton.get())
     {
         // Initially only the first focusable primary and secondary commands
@@ -501,7 +516,7 @@ void CommandBarFlyoutCommandBar::UpdateUI(
     UpdateTemplateSettings();
     UpdateVisualState(useTransitions);
 
-    UpdateShadow();
+    UpdateProjectedShadow();
 }
 
 void CommandBarFlyoutCommandBar::UpdateVisualState(
@@ -572,15 +587,18 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
         {
             if (shouldExpandUp)
             {
+                winrt::VisualStateManager::GoToState(*this, L"NoOuterOverflowContentRootShadow", useTransitions);
                 winrt::VisualStateManager::GoToState(*this, L"ExpandedUpWithPrimaryCommands", useTransitions);
             }
             else
             {
+                winrt::VisualStateManager::GoToState(*this, L"OuterOverflowContentRootShadow", useTransitions);
                 winrt::VisualStateManager::GoToState(*this, L"ExpandedDownWithPrimaryCommands", useTransitions);
             }
         }
         else
         {
+            winrt::VisualStateManager::GoToState(*this, L"OuterOverflowContentRootShadow", useTransitions);
             if (shouldExpandUp)
             {
                 winrt::VisualStateManager::GoToState(*this, L"ExpandedUpWithoutPrimaryCommands", useTransitions);
@@ -593,6 +611,7 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
     }
     else
     {
+        winrt::VisualStateManager::GoToState(*this, L"NoOuterOverflowContentRootShadow", useTransitions);
         winrt::VisualStateManager::GoToState(*this, L"Default", useTransitions);
         winrt::VisualStateManager::GoToState(*this, L"Collapsed", useTransitions);
     }
@@ -1136,64 +1155,71 @@ void CommandBarFlyoutCommandBar::EnsureTabStopUniqueness(
     }
 }
 
-void CommandBarFlyoutCommandBar::UpdateShadow()
-{
-    if (PrimaryCommands().Size() > 0)
-    {
-        AddShadow();
-    }
-    else if (PrimaryCommands().Size() == 0)
-    {
-        ClearShadow();
-    }
-}
-
-void CommandBarFlyoutCommandBar::AddShadow()
+void CommandBarFlyoutCommandBar::UpdateProjectedShadow()
 {
     if (SharedHelpers::IsThemeShadowAvailable() && !SharedHelpers::Is21H1OrHigher())
     {
-        //This logic applies to projected shadows, which are the default on < 21H1.
-        //See additional notes in CommandBarFlyout::CreatePresenter().
-        //Apply Shadow on the Grid named "ContentRoot", this is the first element below
-        //the clip animation of the commandBar. This guarantees that shadow respects the 
-        //animation
-        winrt::IControlProtected thisAsControlProtected = *this;
-        auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
-
-        if (winrt::IUIElement10 grid_uiElement10 = grid)
+        if (PrimaryCommands().Size() > 0)
         {
-            if (!grid_uiElement10.Shadow())
-            {
-                winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
-                grid_uiElement10.Shadow(shadow);
-
-                const auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 32.0f };
-                grid.Translation(translation);
-            }
+            AddProjectedShadow();
+        }
+        else if (PrimaryCommands().Size() == 0)
+        {
+            ClearProjectedShadow();
         }
     }
 }
+
+void CommandBarFlyoutCommandBar::AddProjectedShadow()
+{
+    //This logic applies to projected shadows, which are the default on < 21H1.
+    //See additional notes in CommandBarFlyout::CreatePresenter().
+    //Apply Shadow on the Grid named "ContentRoot", this is the first element below
+    //the clip animation of the commandBar. This guarantees that shadow respects the 
+    //animation
+    winrt::IControlProtected thisAsControlProtected = *this;
+    auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
+
+    if (winrt::IUIElement10 grid_uiElement10 = grid)
+    {
+        if (!grid_uiElement10.Shadow())
+        {
+            winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
+            grid_uiElement10.Shadow(shadow);
+
+            const auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 32.0f };
+            grid.Translation(translation);
+        }
+    }
+}
+
+void CommandBarFlyoutCommandBar::ClearProjectedShadow()
+{
+    // This logic applies to projected shadows, which are the default on < 21H1.
+    // See additional notes in CommandBarFlyout::CreatePresenter().
+    winrt::IControlProtected thisAsControlProtected = *this;
+    auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
+    if (winrt::IUIElement10 grid_uiElement10 = grid)
+    {
+        if (grid_uiElement10.Shadow())
+        {
+            grid_uiElement10.Shadow(nullptr);
+
+            //Undo the elevation
+            const auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 0.0f };
+            grid.Translation(translation);
+        }
+    }
+}
+
 
 void CommandBarFlyoutCommandBar::ClearShadow()
 {
     if (SharedHelpers::IsThemeShadowAvailable() && !SharedHelpers::Is21H1OrHigher())
     {
-        // This logic applies to projected shadows, which are the default on < 21H1.
-        // See additional notes in CommandBarFlyout::CreatePresenter().
-        winrt::IControlProtected thisAsControlProtected = *this;
-        auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
-        if (winrt::IUIElement10 grid_uiElement10 = grid)
-        {
-            if (grid_uiElement10.Shadow())
-            {
-                grid_uiElement10.Shadow(nullptr);
-
-                //Undo the elevation
-                const auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 0.0f };
-                grid.Translation(translation);
-            }
-        }
+        ClearProjectedShadow();
     }
+    winrt::VisualStateManager::GoToState(*this, L"NoOuterOverflowContentRootShadow", true/*useTransitions*/);
 }
 
 bool CommandBarFlyoutCommandBar::HasSecondaryOpenCloseAnimations()

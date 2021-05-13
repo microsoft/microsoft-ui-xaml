@@ -7,6 +7,12 @@
 #include "CommandBarFlyoutCommandBar.properties.h"
 #include "CommandBarFlyoutTrace.h"
 
+enum class CommandBarFlyoutOpenCloseAnimationKind
+{
+    Opacity,
+    Clip
+};
+
 class CommandBarFlyoutCommandBar :
     public ReferenceTracker<CommandBarFlyoutCommandBar, winrt::implementation::CommandBarFlyoutCommandBarT>,
     public CommandBarFlyoutCommandBarProperties
@@ -20,6 +26,7 @@ public:
     void SetOwningFlyout(winrt::CommandBarFlyout const& owningFlyout);
 
     bool HasOpenAnimation();
+    CommandBarFlyoutOpenCloseAnimationKind OpenAnimationKind() { return m_openAnimationKind; };
     void PlayOpenAnimation();
     bool HasCloseAnimation();
     bool HasSecondaryOpenCloseAnimations();
@@ -65,8 +72,9 @@ private:
         winrt::IObservableVector<winrt::ICommandBarElement> const& commands,
         winrt::Control const& moreButton);
 
-    void AddShadow();
-    void UpdateShadow();
+    void AddProjectedShadow();
+    void UpdateProjectedShadow();
+    void ClearProjectedShadow();
 
     tracker_ref<winrt::FrameworkElement> m_primaryItemsRoot{ this };
     tracker_ref<winrt::FrameworkElement> m_secondaryItemsRoot{ this };
@@ -84,6 +92,7 @@ private:
     tracker_ref<winrt::FrameworkElement> m_currentPrimaryItemsEndElement{ this };
     tracker_ref<winrt::FrameworkElement> m_currentSecondaryItemsStartElement{ this };
 
+    CommandBarFlyoutOpenCloseAnimationKind m_openAnimationKind{ CommandBarFlyoutOpenCloseAnimationKind::Clip };
     tracker_ref<winrt::Storyboard> m_openingStoryboard{ this };
     tracker_ref<winrt::Storyboard> m_closingStoryboard{ this };
     winrt::Storyboard::Completed_revoker m_openingStoryboardCompletedRevoker{};
