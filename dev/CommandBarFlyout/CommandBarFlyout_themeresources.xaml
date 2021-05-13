@@ -77,7 +77,7 @@
             <StaticResource x:Key="CommandBarFlyoutBackground" ResourceKey="SystemControlBackgroundBaseLowBrush"/>
             <StaticResource x:Key="CommandBarFlyoutForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
             <StaticResource x:Key="CommandBarFlyoutBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackground" ResourceKey="SystemControlForegroundTransparentBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackground" ResourceKey="SystemControlTransparentBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush"/>
@@ -730,9 +730,9 @@
     </Style>
 
     <Style x:Key="DefaultCommandBarFlyoutCommandBarStyle" TargetType="local:CommandBarFlyoutCommandBar">
-        <Setter Property="Background" Value="{ThemeResource AcrylicInAppFillColorDefaultBrush}" />
-        <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource SystemControlTransientBorderBrush}" />
+        <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource CommandBarFlyoutForeground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CommandBarFlyoutBorderBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource CommandBarFlyoutBorderThemeThickness}" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="VerticalAlignment" Value="Top" />
