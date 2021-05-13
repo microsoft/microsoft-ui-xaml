@@ -39,6 +39,51 @@
                     </Button.Flyout>
                 </Button>
 
+
+                <Button AutomationProperties.Name="SubMenuFlyoutButton" Content="I have a sub menu" Margin="12">
+                    <Button.Flyout>
+                        <MenuFlyout x:Name="ButtonSubMenuFlyout">
+                            <MenuFlyoutItem Text="No Icon"/>
+
+                            <MenuFlyoutSeparator />
+
+                            <controls:RadioMenuFlyoutItem GroupName="SortGroup" AutomationProperties.Name="NameItem" Text="Name" IsChecked="true"/>
+                            <controls:RadioMenuFlyoutItem GroupName="SortGroup" AutomationProperties.Name="DateItem" Text="Date"/>
+                            <controls:RadioMenuFlyoutItem GroupName="SortGroup" AutomationProperties.Name="SizeItem" Text="Size"/>
+
+                            <MenuFlyoutSubItem x:Name="RadioSubMenu" AutomationProperties.Name="RadioSubMenu" Text="Other" Style="{StaticResource RadioMenuFlyoutSubItemStyle}">
+                                <controls:RadioMenuFlyoutItem GroupName="SortGroup" AutomationProperties.Name="AlbumNameItem" Text="Album Name"/>
+                                <controls:RadioMenuFlyoutItem GroupName="SortGroup" AutomationProperties.Name="ArtistNameItem" Text="Artist Name"/>
+                                <controls:RadioMenuFlyoutItem GroupName="SortGroup" AutomationProperties.Name="GenreItem" Text="Genre"/>
+                            </MenuFlyoutSubItem>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+
+                <Button AutomationProperties.Name="IconSubMenuFlyoutButton" Content="I have a sub menu with icons" Margin="12">
+                    <Button.Flyout>
+                        <MenuFlyout x:Name="ButtonIconSubMenuFlyout">
+                            <MenuFlyoutItem Text="Has Icon" Icon="Save"/>
+
+                            <MenuFlyoutSeparator />
+                            
+                            <controls:RadioMenuFlyoutItem GroupName="AnotherSortGroup" AutomationProperties.Name="AnotherNameItem" Icon="People" Text="Name" IsChecked="true"/>
+                            <controls:RadioMenuFlyoutItem GroupName="AnotherSortGroup" AutomationProperties.Name="AnotherDateItem" Text="Date"/>
+                            <controls:RadioMenuFlyoutItem GroupName="AnotherSortGroup" AutomationProperties.Name="AnotherSizeItem" Text="Size"/>
+
+                            <MenuFlyoutSubItem Text="Other" Style="{StaticResource RadioMenuFlyoutSubItemStyle}">
+                                <controls:RadioMenuFlyoutItem GroupName="AnotherSortGroup" AutomationProperties.Name="AnotherAlbumNameItem" Text="Album Name"/>
+                                <controls:RadioMenuFlyoutItem GroupName="AnotherSortGroup" AutomationProperties.Name="AnotherArtistNameItem" Text="Artist Name"/>
+                                <controls:RadioMenuFlyoutItem GroupName="AnotherSortGroup" AutomationProperties.Name="AnotherGenreItem" Text="Genre"/>
+                            </MenuFlyoutSubItem>
+
+                            <MenuFlyoutSubItem Text="More" Icon="People" Style="{StaticResource RadioMenuFlyoutSubItemStyle}">
+                                <controls:RadioMenuFlyoutItem GroupName="AnotherSortGroup" AutomationProperties.Name="OneMoreThing" Text="One More"/>
+                            </MenuFlyoutSubItem>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+
                 <Button Content="I have icons" Margin="12">
                     <Button.Flyout>
                         <MenuFlyout>
@@ -61,11 +106,9 @@
                 </Button>
             </StackPanel>
 
-            <StackPanel x:Name="InfoGrid" Margin="12,0,0,0" Style="{ThemeResource StandardGroupingStackPanel}"
+            <StackPanel x:Name="InfoGrid" Margin="12,0,0,0" Style="{ThemeResource StandardGroupingStackPanel}" Orientation="Horizontal"
                         MinWidth="250" VerticalAlignment="Top">
-                <TextBlock Text="Status" Style="{ThemeResource StandardGroupHeader}"/>
-
-                <StackPanel x:Name="ItemNames"/>
+                <StackPanel x:Name="ItemNames" Margin="0,0,12,0"/>
 
                 <StackPanel x:Name="ItemStates" Grid.Column="1"/>
             </StackPanel>

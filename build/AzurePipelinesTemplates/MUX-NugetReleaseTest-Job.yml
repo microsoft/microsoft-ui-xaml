@@ -98,7 +98,8 @@ jobs:
       testSuite: 'NugetTestSuite'
       helixType: ${{ parameters.helixType }}
       artifactName: ${{ parameters.buildArtifactName }}
-      taefQuery: ${{ parameters.taefQuery }}
+      ${{if eq(parameters.useFrameworkPkg, 'true')}}:
+        taefQuery: "(not (@NugetPkgTestsOnly = 'true'))"
       rerunPassesRequiredToAvoidFailure: 5
       ${{if ne(parameters.test_matrix, '') }}:
         matrix: ${{ parameters.test_matrix }}

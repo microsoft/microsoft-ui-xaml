@@ -17,7 +17,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Padding="12" Background="{ThemeResource SystemChromeMediumLowColor}" Width="250">
+            <StackPanel Padding="12" Width="250">
                 <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
                 <CheckBox x:Name="IsClosableCheckBox" AutomationProperties.Name="IsClosableCheckBox" Checked="IsClosableCheckBox_CheckChanged" Unchecked="IsClosableCheckBox_CheckChanged" IsChecked="True" Content="IsClosable on first tab"/>
                 <CheckBox x:Name="HandleTabCloseRequestedCheckBox" AutomationProperties.Name="HandleTabCloseRequestedCheckBox" Content="Handle TabView tab close" IsChecked="True"/>
@@ -141,8 +141,8 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Middle" Margin="6,3,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="2" Text="Right" Margin="6,3,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="Middle" Margin="6,3,6,0" VerticalAlignment="Center" FontSize="14"/>
+                            <TextBlock Grid.Column="2" Text="Right" Margin="6,3,6,0" VerticalAlignment="Center" FontSize="14"/>
                         </Grid>
                     </controls:TabView.TabStripFooter>
 
@@ -151,7 +151,7 @@
                             <controls:SymbolIconSource Symbol="Home"/>
                         </controls:TabViewItem.IconSource>
 
-                        <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
+                        <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
                             <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
                             <StackPanel Orientation="Horizontal">
                                 <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton"

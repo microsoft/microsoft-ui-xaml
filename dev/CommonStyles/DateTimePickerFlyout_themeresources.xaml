@@ -69,8 +69,9 @@
 
     <Thickness x:Key="LoopingSelectorItemMargin">4,2,4,2</Thickness>
     <Thickness x:Key="LoopingSelectorUpDownButtonMargin">4</Thickness>
-
-    <!-- This style covers the accept/cancel/up/down buttons-->
+    <x:Double  x:Key="LoopingSelectorUpDownButtonScalePressed">0.875</x:Double>
+ 
+    <!-- This style covers the accept/cancel buttons-->
     <Style x:Key="DateTimePickerFlyoutButtonStyle" TargetType="ButtonBase">
         <Setter Property="Background" Value="{ThemeResource DateTimePickerFlyoutButtonBackground}" />
         <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
@@ -138,6 +139,81 @@
         </Setter>
     </Style>
 
+    <Style x:Key="DateTimePickerFlyoutLoopingSelectorNavigationButtonStyle" TargetType="ButtonBase" BasedOn="{StaticResource DateTimePickerFlyoutButtonStyle}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ButtonBase">
+                    <Grid
+                        Background="{TemplateBinding Background}">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+
+                                <VisualState x:Name="PointerOver">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DateTimePickerFlyoutButtonBackgroundPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder" Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DateTimePickerFlyoutButtonBorderBrushPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DateTimePickerFlyoutButtonForegroundPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+
+                                <VisualState x:Name="Pressed">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DateTimePickerFlyoutButtonBackgroundPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder" Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DateTimePickerFlyoutButtonBorderBrushPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DateTimePickerFlyoutButtonForegroundPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX" RepeatBehavior="Forever">
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource LoopingSelectorUpDownButtonScalePressed}"/>
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource LoopingSelectorUpDownButtonScalePressed}"/>
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY" RepeatBehavior="Forever">
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource LoopingSelectorUpDownButtonScalePressed}"/>
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource LoopingSelectorUpDownButtonScalePressed}"/>
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Border
+                            x:Name="RootBorder"
+                            contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                            BorderBrush="{ThemeResource DateTimePickerFlyoutButtonBorderBrush}"
+                            BorderThickness="{ThemeResource DateTimeFlyoutButtonBorderThickness}"
+                            Padding="{TemplateBinding Padding}"
+                            AutomationProperties.AccessibilityView="Raw"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            contract7NotPresent:CornerRadius="{TemplateBinding ControlCornerRadius}">
+                            <TextBlock
+                                x:Name="Content"
+                                FontSize="{TemplateBinding FontSize}"
+                                FontFamily="{TemplateBinding FontFamily}"
+                                Text="{TemplateBinding Content}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                RenderTransformOrigin="0.5, 0.5">
+                                <TextBlock.RenderTransform>
+                                    <ScaleTransform x:Name="ScaleTransform" ScaleY="1" ScaleX="1" />
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Default style for Windows.UI.Xaml.Controls.Primitives.LoopingSelector -->
     <Style TargetType="LoopingSelector" BasedOn="{StaticResource DefaultLoopingSelectorStyle}" />
 
@@ -195,7 +271,7 @@
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Top"
                             Visibility="Collapsed"
-                            Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
+                            Style="{StaticResource DateTimePickerFlyoutLoopingSelectorNavigationButtonStyle}"
                             Background="{ThemeResource LoopingSelectorUpDownButtonBackground}"
                             Margin="{StaticResource LoopingSelectorUpDownButtonMargin}"
                             IsTabStop="False" />
@@ -208,7 +284,7 @@
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Bottom"
                             Visibility="Collapsed"
-                            Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
+                            Style="{StaticResource DateTimePickerFlyoutLoopingSelectorNavigationButtonStyle}"
                             Background="{ThemeResource LoopingSelectorUpDownButtonBackground}"
                             Margin="{StaticResource LoopingSelectorUpDownButtonMargin}"
                             IsTabStop="False" />    
