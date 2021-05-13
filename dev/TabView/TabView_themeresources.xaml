@@ -35,8 +35,8 @@
             <StaticResource x:Key="TabViewScrollButtonBackgroundPointerOver"                ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="TabViewScrollButtonBackgroundDisabled"                   ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TabViewScrollButtonForeground"                           ResourceKey="TextFillColorSecondaryBrush" />
-            <StaticResource x:Key="TabViewScrollButtonForegroundPointerOver"                ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TabViewScrollButtonForegroundPressed"                    ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="TabViewScrollButtonForegroundPointerOver"                ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TabViewScrollButtonForegroundDisabled"                   ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="TabViewItemSeparator"                                    ResourceKey="DividerStrokeColorDefaultBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonBackground"                  ResourceKey="SubtleFillColorTransparentBrush" />
@@ -100,8 +100,9 @@
             <StaticResource x:Key="TabViewScrollButtonBackgroundPressed"                    ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="TabViewScrollButtonBackgroundPointerOver"                ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="TabViewScrollButtonBackgroundDisabled"                   ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="TabViewScrollButtonForegroundPointerOver"                ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="TabViewScrollButtonForeground"                           ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TabViewScrollButtonForegroundPressed"                    ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="TabViewScrollButtonForegroundPointerOver"                ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TabViewScrollButtonForegroundDisabled"                   ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="TabViewItemSeparator"                                    ResourceKey="DividerStrokeColorDefaultBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonBackground"                  ResourceKey="SubtleFillColorTransparentBrush" />
@@ -166,8 +167,8 @@
             <StaticResource x:Key="TabViewScrollButtonBackgroundPointerOver"                ResourceKey="SystemControlHighlightChromeHighBrush" />
             <StaticResource x:Key="TabViewScrollButtonBackgroundDisabled"                   ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="TabViewScrollButtonForeground"                           ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <StaticResource x:Key="TabViewScrollButtonForegroundPointerOver"                ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="TabViewScrollButtonForegroundPressed"                    ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="TabViewScrollButtonForegroundPointerOver"                ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="TabViewScrollButtonForegroundDisabled"                   ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="TabViewItemSeparator"                                    ResourceKey="SystemControlForegroundBaseLowBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonBackground"                  ResourceKey="SystemControlBackgroundBaseLowBrush" />
