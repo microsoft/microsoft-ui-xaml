@@ -195,7 +195,6 @@
                                 VerticalAlignment="Bottom">
                                 <RepeatButton x:Name="ScrollDecreaseButton"
                                     AutomationProperties.AccessibilityView="Raw"
-                                    Background="{ThemeResource TabViewScrollButtonBackground}"
                                     Delay="50"
                                     Interval="100"
                                     HighContrastAdjustment="None"
