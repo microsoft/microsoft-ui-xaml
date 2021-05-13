@@ -159,7 +159,7 @@
                                         <Setter Target="IndeterminateProgressBarIndicator.Opacity" Value="0" />
                                         <Setter Target="DeterminateProgressBarIndicator.Opacity" Value="0" />
                                         <Setter Target="IndeterminateProgressBarIndicator2.Opacity" Value="1" />
-                                        <Setter Target="ProgressBarTrack.Opacity" Value="1" />
+                                        <Setter Target="ProgressBarTrack.Opacity" Value="0" />
                                     </VisualState.Setters>
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames
@@ -189,7 +189,7 @@
                                         <Setter Target="IndeterminateProgressBarIndicator.Opacity" Value="0" />
                                         <Setter Target="DeterminateProgressBarIndicator.Opacity" Value="0" />
                                         <Setter Target="IndeterminateProgressBarIndicator2.Opacity" Value="1" />
-                                        <Setter Target="ProgressBarTrack.Opacity" Value="1" />
+                                        <Setter Target="ProgressBarTrack.Opacity" Value="0" />
                                     </VisualState.Setters>
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames

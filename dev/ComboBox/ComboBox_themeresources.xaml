@@ -7,6 +7,8 @@
   xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,5)"
   xmlns:contract5NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,5)"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+  xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
   xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
@@ -156,8 +158,8 @@
             <StaticResource x:Key="ComboBoxForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="ComboBoxForegroundPressed" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="ComboBoxForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="ComboBoxForegroundFocused" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="ComboBoxForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="ComboBoxForegroundFocused" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="ComboBoxForegroundFocusedPressed" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="ComboBoxHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="ComboBoxHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="ComboBoxPlaceHolderForeground" ResourceKey="SystemControlPageTextBaseMediumBrush" />
@@ -172,8 +174,8 @@
             <StaticResource x:Key="ComboBoxBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
             <StaticResource x:Key="ComboBoxDropDownGlyphForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
             <StaticResource x:Key="ComboBoxDropDownGlyphForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="ComboBoxDropDownGlyphForegroundFocused" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
-            <StaticResource x:Key="ComboBoxDropDownGlyphForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
+            <StaticResource x:Key="ComboBoxDropDownGlyphForegroundFocused" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="ComboBoxDropDownGlyphForegroundFocusedPressed" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="ComboBoxDropDownForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <contract7NotPresent:StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <contract7NotPresent:StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />
@@ -357,7 +359,7 @@
     <Thickness x:Key="ComboBoxDropdownContentMargin">0,4</Thickness>
     <Thickness x:Key="ComboBoxTopHeaderMargin">0,0,0,8</Thickness>
     <Thickness x:Key="ComboBoxPadding">12,5,0,7</Thickness>
-    <Thickness x:Key="ComboBoxEditableTextPadding">11,5,32,6</Thickness>
+    <Thickness x:Key="ComboBoxEditableTextPadding">11,5,38,6</Thickness>
 
     <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">7</CornerRadius>
     <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4</CornerRadius>
@@ -446,6 +448,9 @@
                                             <contract5Present:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource ComboBoxPlaceHolderForegroundPointerOver}}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
+                                    <VisualState.Setters>
+                                        <Setter Target="DropDownGlyph.(local:AnimatedIcon.State)" Value="PointerOver"/>
+                                    </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <Storyboard>
@@ -463,6 +468,9 @@
                                             <contract5Present:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource ComboBoxPlaceHolderForegroundPressed}}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
+                                    <VisualState.Setters>
+                                        <Setter Target="DropDownGlyph.(local:AnimatedIcon.State)" Value="Pressed"/>
+                                    </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <Storyboard>
@@ -581,7 +589,6 @@
                                     <VisualState.Setters>
                                         <Setter Target="DropDownGlyph.Foreground" Value="{ThemeResource ComboBoxEditableDropDownGlyphForeground}" />
                                         <Setter Target="DropDownOverlay.Background" Value="{ThemeResource ComboBoxFocusedDropDownBackgroundPointerPressed}" />
-                                        <Setter Target="DropDownOverlay.Margin" Value="0,2,2,2" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="TextBoxOverlayPointerOver">
@@ -604,7 +611,7 @@
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="32" />
+                            <ColumnDefinition Width="38" />
                         </Grid.ColumnDefinitions>
                         <ContentPresenter x:Name="HeaderContentPresenter"
                             Grid.Row="0"
@@ -691,26 +698,35 @@
                             Grid.Row="1"
                             Grid.Column="1"
                             Background="Transparent"
-                            Margin="-4,4,4,4"
+                            Margin="4,4,4,4"
                             Visibility="Collapsed"
                             contract7Present:CornerRadius="{StaticResource ComboBoxDropDownButtonBackgroundCornerRadius}"
                             contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                             Width="30"
                             HorizontalAlignment="Right"
                             x:Load="False" />
-                        <FontIcon x:Name="DropDownGlyph"
+                        <controls:AnimatedIcon x:Name="DropDownGlyph"
+                            controls:AnimatedIcon.State="Normal"
                             MinHeight="{ThemeResource ComboBoxMinHeight}"
                             Grid.Row="1"
                             Grid.Column="1"
                             IsHitTestVisible="False"
-                            Margin="0,0,14,0"
+                            Margin="0,0,12,0"
                             Foreground="{ThemeResource ComboBoxDropDownGlyphForeground}"
-                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                            FontSize="12"
-                            Glyph="&#xE0E5;"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            AutomationProperties.AccessibilityView="Raw" />
+                            AutomationProperties.AccessibilityView="Raw"
+                            Width="16"
+                            Height="16">
+                            <animatedVisuals:AnimatedChevronDownSmallVisualSource/>
+                            <controls:AnimatedIcon.FallbackIconSource>
+                                <controls:FontIconSource 
+                                    Foreground="{ThemeResource ComboBoxDropDownGlyphForeground}"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    FontSize="12"
+                                    Glyph="&#xE0E5;"/>
+                            </controls:AnimatedIcon.FallbackIconSource>
+                        </controls:AnimatedIcon>
                         <contract7Present:ContentPresenter x:Name="DescriptionPresenter"
                             Grid.Row="2"
                             Grid.Column="0"

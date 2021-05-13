@@ -128,6 +128,8 @@
     <x:String x:Key="PipsPagerSelectedGlyphFontSize">6</x:String>
     <x:String x:Key="PipsPagerNormalGlyphFontSize">4</x:String>
 
+    <x:Double x:Key="PipsPagerNavigationButtonScalePressed">0.875</x:Double>
+
     <Style x:Key="PipsPagerNavigationButtonBaseStyle" TargetType="Button">
         <Setter Property="Background" Value="{ThemeResource PipsPagerNavigationButtonBackground}"/>
         <Setter Property="Foreground" Value="{ThemeResource PipsPagerNavigationButtonForeground}" />
@@ -180,6 +182,14 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PipsPagerNavigationButtonForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX" RepeatBehavior="Forever">
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource PipsPagerNavigationButtonScalePressed}"/>
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource PipsPagerNavigationButtonScalePressed}"/>
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY" RepeatBehavior="Forever">
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource PipsPagerNavigationButtonScalePressed}"/>
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource PipsPagerNavigationButtonScalePressed}"/>
+                                        </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
@@ -206,7 +216,12 @@
                             Foreground="{TemplateBinding Foreground}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            AutomationProperties.AccessibilityView="Raw" />
+                            AutomationProperties.AccessibilityView="Raw"
+                            RenderTransformOrigin="0.5, 0.5">
+                            <FontIcon.RenderTransform>
+                                <ScaleTransform x:Name="ScaleTransform" ScaleY="1" ScaleX="1" />
+                            </FontIcon.RenderTransform>
+                        </FontIcon>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
