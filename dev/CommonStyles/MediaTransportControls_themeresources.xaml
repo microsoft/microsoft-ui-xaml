@@ -100,6 +100,9 @@
                                 <Setter Property="Padding" Value="0" />
                                 <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
                             </Style>
+                            
+                            <Style x:Key="MediaSliderStyle" TargetType="Slider" BasedOn="{StaticResource DefaultSliderStyle}" />
+                            <Style x:Key="MediaControlAppBarButtonStyle" TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}" />
                         </Grid.Resources>
                         <VisualStateManager.VisualStateGroups>
                             <!-- ControlPanel Visibility states -->
