@@ -35,6 +35,7 @@ public:
     void BindOwningFlyoutPresenterToCornerRadius();
 
     void ClearShadow();
+    void SetPresenter(winrt::FlyoutPresenter const& presenter);
 
     // IControlOverrides / IControlOverridesHelper
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
@@ -51,6 +52,8 @@ private:
     void UpdateTemplateSettings();
     void EnsureAutomationSetCountAndPosition();
     void EnsureFocusedPrimaryCommand();
+
+    void SetPresenterName(winrt::FlyoutPresenter const& presenter);
 
     static bool IsControlFocusable(
         winrt::Control const& control,
@@ -93,6 +96,7 @@ private:
     tracker_ref<winrt::FrameworkElement> m_currentSecondaryItemsStartElement{ this };
 
     CommandBarFlyoutOpenCloseAnimationKind m_openAnimationKind{ CommandBarFlyoutOpenCloseAnimationKind::Clip };
+    weak_ref<winrt::FlyoutPresenter> m_flyoutPresenter{};
     tracker_ref<winrt::Storyboard> m_openingStoryboard{ this };
     tracker_ref<winrt::Storyboard> m_closingStoryboard{ this };
     winrt::Storyboard::Completed_revoker m_openingStoryboardCompletedRevoker{};

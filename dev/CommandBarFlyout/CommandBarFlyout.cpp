@@ -295,10 +295,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
         // Since DropShadows don't play well with clip entrance animations for the presenter,
         // we'll need to fade it in. This name helps us locate the element to set the fade in
         // flag in the OS code.
-        if (commandBar->OpenAnimationKind() == CommandBarFlyoutOpenCloseAnimationKind::Clip)
-        {
-            presenter.Name(L"DropShadowFadeInTarget");
-        }
+        commandBar->SetPresenter(presenter);
 
         // We'll need to remove the presenter's drop shadow on the commandBar's Opening/Closing
         // because we need it to disappear during its expand/shrink animation when the Overflow is opened.

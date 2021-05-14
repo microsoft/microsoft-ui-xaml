@@ -191,6 +191,7 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
     AttachEventHandlers();
     UpdateFlowsFromAndFlowsTo();
     UpdateUI(false /* useTransitions */);
+    SetPresenterName(m_flyoutPresenter.get());
 }
 
 void CommandBarFlyoutCommandBar::SetOwningFlyout(
@@ -1220,6 +1221,27 @@ void CommandBarFlyoutCommandBar::ClearShadow()
         ClearProjectedShadow();
     }
     winrt::VisualStateManager::GoToState(*this, L"NoOuterOverflowContentRootShadow", true/*useTransitions*/);
+}
+
+
+void CommandBarFlyoutCommandBar::SetPresenter(winrt::FlyoutPresenter const& presenter)
+{
+    m_flyoutPresenter = winrt::make_weak(presenter);
+}
+
+void CommandBarFlyoutCommandBar::SetPresenterName(winrt::FlyoutPresenter const& presenter)
+{
+    if (presenter)
+    {
+        if (OpenAnimationKind() == CommandBarFlyoutOpenCloseAnimationKind::Clip)
+        {
+            presenter.Name(L"DropShadowFadeInTarget");
+        }
+        else
+        {
+            presenter.Name(L"");
+        }
+    }
 }
 
 bool CommandBarFlyoutCommandBar::HasSecondaryOpenCloseAnimations()

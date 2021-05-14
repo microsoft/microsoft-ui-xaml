@@ -746,12 +746,12 @@
                                                                     Storyboard.TargetProperty="Opacity"
                                                                     From="1"
                                                                     To="0"
-                                                                    Duration="0:0:3" />
+                                                                    Duration="{StaticResource ControlFasterAnimationDuration}" />
                                 <DoubleAnimation Storyboard.TargetName="OverflowPopup"
                                                                     Storyboard.TargetProperty="Opacity"
                                                                     From="1"
                                                                     To="0"
-                                                                    Duration="0:0:3" />
+                                                                    Duration="{StaticResource ControlFasterAnimationDuration}" />
                             </contract7Present:Storyboard>
                         </Grid.Resources>
                         <VisualStateManager.VisualStateGroups>
