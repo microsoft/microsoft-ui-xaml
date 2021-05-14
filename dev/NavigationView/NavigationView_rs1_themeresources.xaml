@@ -165,8 +165,8 @@
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="{ThemeResource SystemChromeMediumColor}" />
             <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="{ThemeResource SystemChromeMediumHighColor|" />
-            <SolidColorBrush x:Key="NavigationViewContentBackground" Color="{ThemeResource SystemChromeMediumColor}" />
+            <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="{ThemeResource SystemChromeMediumHighColor}" />
+            <SolidColorBrush x:Key="NavigationViewContentBackground" Color="{ThemeResource SystemColorWindowColor}" />
 
             <StaticResource x:Key="NavigationViewItemBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="NavigationViewItemBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
