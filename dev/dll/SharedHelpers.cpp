@@ -40,7 +40,7 @@ bool SharedHelpers::IsInDesignModeV2()
 // logical helpers
 bool SharedHelpers::Is21H1OrHigher()
 {
-    return IsAPIContractV13Available();
+    return IsAPIContractV14Available();
 }
 
 bool SharedHelpers::IsVanadiumOrHigher()
@@ -240,9 +240,9 @@ template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
 }
 
 // base helpers
-bool SharedHelpers::IsAPIContractV13Available()
+bool SharedHelpers::IsAPIContractV14Available()
 {
-    return IsAPIContractVxAvailable<13>();
+    return IsAPIContractVxAvailable<14>();
 }
 
 bool SharedHelpers::IsAPIContractV9Available()

@@ -79,7 +79,7 @@ namespace Common
         public static bool IsOsVersion(OSVersion version)
         {
             // We can determine the OS version by checking for the presence of the Universal contract
-            // corresonding to that version and the absense of the contract version corresonding to
+            // corresponding to that version and the absense of the contract version corresponding to
             // the next OS version.
             return ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", (ushort)version) &&
                 ((version == MaxOSVersion) || !ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", (ushort)(version + 1)));
@@ -88,7 +88,7 @@ namespace Common
         public static bool IsOsVersionGreaterThan(OSVersion version)
         {
             // We can determine that the OS version is greater than the specified version by checking for
-            // the presence of the Universal contract corresonding to the next version.
+            // the presence of the Universal contract corresponding to the next version.
             return ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", (ushort)(version + 1));
         }
 
