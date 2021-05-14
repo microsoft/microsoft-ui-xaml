@@ -362,6 +362,7 @@
                             <local:AnimatedIcon x:Name="Icon"
                                                 Width="16"
                                                 Height="16"
+                                                Foreground="{TemplateBinding Foreground}"
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                                 AutomationProperties.AccessibilityView="Raw"
