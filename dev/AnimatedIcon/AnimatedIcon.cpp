@@ -20,8 +20,10 @@ AnimatedIcon::AnimatedIcon()
     m_progressPropertySet = winrt::Window::Current().Compositor().CreatePropertySet();
     m_progressPropertySet.InsertScalar(s_progressPropertyName, 0);
     Loaded({ this, &AnimatedIcon::OnLoaded });
+    SizeChanged({ this, &AnimatedIcon::OnSizeChanged });
 
     RegisterPropertyChangedCallback(winrt::IconElement::ForegroundProperty(), { this, &AnimatedIcon::OnForegroundPropertyChanged});
+    RegisterPropertyChangedCallback(winrt::FrameworkElement::FlowDirectionProperty(), { this, &AnimatedIcon::OnFlowDirectionPropertyChanged });
 }
 
 void AnimatedIcon::OnApplyTemplate()
@@ -94,6 +96,15 @@ void AnimatedIcon::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs c
     // properties to be set before we create the icon element from it.  If those poperties are bound in,
     // they will not have been set during OnApplyTemplate.
     OnFallbackIconSourcePropertyChanged(nullptr);
+}
+
+void AnimatedIcon::OnSizeChanged(winrt::IInspectable const&, winrt::SizeChangedEventArgs const&)
+{
+    if (auto const scaleTransform = m_scaleTransform.get())
+    {
+        scaleTransform.CenterX(ActualWidth() / 2);
+        scaleTransform.CenterY(ActualHeight() / 2);
+    }
 }
 
 winrt::Size AnimatedIcon::MeasureOverride(winrt::Size const& availableSize)
@@ -444,6 +455,33 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
     }
 }
 
+void AnimatedIcon::UpdateMirrorTransform()
+{
+    auto const scaleTransform = [this]()
+    {
+        if (!m_scaleTransform)
+        {
+            // Initialize the scale transform that will be used for mirroring and the
+            // render transform origin as center in order to have the icon mirrored in place.
+            winrt::Windows::UI::Xaml::Media::ScaleTransform scaleTransform;
+            scaleTransform.CenterX(ActualWidth() / 2);
+            scaleTransform.CenterY(ActualHeight() / 2);
+
+            RenderTransform(scaleTransform);
+            m_scaleTransform.set(scaleTransform);
+            return scaleTransform;
+        }
+        return m_scaleTransform.get();
+    }();
+
+    scaleTransform.ScaleX(FlowDirection() == winrt::FlowDirection::RightToLeft && !MirroredWhenRightToLeft() && m_canDisplayPrimaryContent ? -1.0f : 1.0f);
+}
+
+void AnimatedIcon::OnMirroredWhenRightToLeftPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
+{
+    UpdateMirrorTransform();
+}
+
 bool AnimatedIcon::ConstructAndInsertVisual()
 {
     auto const visual = [this]()
@@ -497,6 +535,8 @@ bool AnimatedIcon::ConstructAndInsertVisual()
         m_canDisplayPrimaryContent = false;
         return false;
     }
+
+    UpdateMirrorTransform();
 }
 
 void AnimatedIcon::OnFallbackIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
@@ -533,6 +573,11 @@ void AnimatedIcon::OnForegroundPropertyChanged(const winrt::DependencyObject& se
         m_foregroundColorPropertyChangedRevoker = RegisterPropertyChanged(foregroundSolidColorBrush, winrt::SolidColorBrush::ColorProperty(), { this, &AnimatedIcon::OnForegroundBrushColorPropertyChanged });
         TrySetForegroundProperty(foregroundSolidColorBrush.Color());
     }
+}
+
+void AnimatedIcon::OnFlowDirectionPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+    UpdateMirrorTransform();
 }
 
 void AnimatedIcon::OnForegroundBrushColorPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)

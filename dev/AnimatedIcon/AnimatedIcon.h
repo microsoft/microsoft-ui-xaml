@@ -21,14 +21,16 @@ public:
     // IFrameworkElement
     void OnApplyTemplate();
     void OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&);
+    void OnSizeChanged(winrt::IInspectable const&, winrt::SizeChangedEventArgs const&);
     void OnLayoutUpdatedAfterStateChanged(winrt::IInspectable const& sender, winrt::IInspectable const& args);
 
     // FrameworkElement overrides
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
     winrt::Size ArrangeOverride(winrt::Size const& finalSize);
 
-    void OnSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnFallbackIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&);
+    void OnFallbackIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&);
+    void OnMirroredWhenRightToLeftPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&);
     static void OnAnimatedIconStatePropertyChanged(
         const winrt::DependencyObject& sender,
         const winrt::DependencyPropertyChangedEventArgs& args);
@@ -55,11 +57,14 @@ private:
     void TrySetForegroundProperty(winrt::IAnimatedVisualSource2 const& source = nullptr);
     void OnAnimationCompleted(winrt::IInspectable const&, winrt::CompositionBatchCompletedEventArgs const&);
     void OnForegroundPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void OnFlowDirectionPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnForegroundBrushColorPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void SetRootPanelChildToFallbackIcon();
+    void UpdateMirrorTransform();
 
     tracker_ref<winrt::IAnimatedVisual> m_animatedVisual{ this };
     tracker_ref<winrt::Panel> m_rootPanel{ this };
+    tracker_ref<winrt::Windows::UI::Xaml::Media::ScaleTransform> m_scaleTransform{ this };
 
     winrt::hstring m_currentState{ L"" };
     winrt::hstring m_previousState{ L"" };
