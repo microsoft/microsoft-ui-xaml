@@ -14,19 +14,23 @@
         x:Name="NavView"
         AutomationProperties.Name="NavView"
         PaneTitle="NavView PaneFooter Test"
-        PaneDisplayMode="Top"
+        PaneDisplayMode="LeftCompact"
         IsSettingsVisible="False"
         >
 
         <StackPanel>
             <Button x:Name="FlipOrientation" AutomationProperties.Name="FlipOrientationButton" Content="Flip Orientation" Margin="0,0,2,0" Click="FlipOrientation_Click"/>
 
-            <ComboBox x:Name="CompactPaneLength" Header="Compact Pane Length" SelectionChanged="CompactPaneLength_SelectionChanged"  Margin="5">
+            <ComboBox x:Name="CompactPaneLength" AutomationProperties.Name="CompactPaneLengthComboBox" Header="Compact Pane Length" SelectionChanged="CompactPaneLength_SelectionChanged"  Margin="5">
                 <ComboBoxItem Content="0" Tag="0"/>
                 <ComboBoxItem Content="40" Tag="40"/>
-                <ComboBoxItem Content="48" Tag="48"/>
+                <ComboBoxItem Content="48" Tag="48" IsSelected="True"/>
                 <ComboBoxItem Content="96" Tag="96"/>
             </ComboBox>
+
+            <TextBlock x:Name="PaneFooterNavViewItemWidth" AutomationProperties.Name="PaneFooterNavViewItemWidth" />
+
+            <Button x:Name="GetNavViewItemWidth" AutomationProperties.Name="GetNavViewItemWidth" Content="Get NavView Item Width" Margin="0,0,2,0" Click="GetNavViewItemWidth_Click" />
         </StackPanel>
 
         <muxc:NavigationView.AutoSuggestBox>
@@ -36,10 +40,11 @@
         <muxc:NavigationView.PaneFooter>
             <StackPanel Background="Plum">
                 <Button x:Name="PaneFooterButton" AutomationProperties.Name="PaneFooterButton" Content="PaneFooter Button" Margin="4"/>
-                <muxc:NavigationViewItem x:Name="PaneFooterNavigationViewItem"
-                                                    AutomationProperties.Name="PaneFooterNavigationViewItem"
-                                                    Content="NVI"
-                                                    Icon="Accept"/>
+                <muxc:NavigationViewItem
+                    x:Name="PaneFooterNavigationViewItem"
+                    AutomationProperties.Name="PaneFooterNavigationViewItem"
+                    Content="NVI"
+                    Icon="Accept"/>
             </StackPanel>
         </muxc:NavigationView.PaneFooter>
     </muxc:NavigationView>

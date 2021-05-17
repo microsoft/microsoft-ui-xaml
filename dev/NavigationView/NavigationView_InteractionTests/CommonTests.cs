@@ -1788,5 +1788,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 }
             }
         }
+
+        [TestMethod]
+        public void VerifyNavigationViewItemInPaneFooterHasTemplateSettingBindings()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "PaneFooterTestPage" }))
+            {
+                var paneFooterNavigationViewItem = FindElement.ByName("PaneFooterNavigationViewItem");
+                UIObject compactPaneLengthComboBox = FindElement.ByName("CompactPaneLengthComboBox");
+
+                paneFooterNavigationViewItem.
+            }
+        }
     }
 }
