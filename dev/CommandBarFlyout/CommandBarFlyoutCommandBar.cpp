@@ -1231,6 +1231,9 @@ void CommandBarFlyoutCommandBar::SetPresenter(winrt::FlyoutPresenter const& pres
 
 void CommandBarFlyoutCommandBar::SetPresenterName(winrt::FlyoutPresenter const& presenter)
 {
+    // Since DropShadows don't play well with clip entrance animations for the presenter,
+    // we'll need to fade it in. This name helps us locate the element to set the fade in
+    // flag in the OS code.
     if (presenter)
     {
         if (OpenAnimationKind() == CommandBarFlyoutOpenCloseAnimationKind::Clip)

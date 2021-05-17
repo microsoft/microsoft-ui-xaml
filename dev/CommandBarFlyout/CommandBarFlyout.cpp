@@ -189,7 +189,11 @@ CommandBarFlyout::CommandBarFlyout()
         {
             if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
             {
-                RemoveDropShadow();
+                //Drop shadows do not play nicely with clip animations, if we are using both, clear the shadow
+                if (commandBar->OpenAnimationKind() == CommandBarFlyoutOpenCloseAnimationKind::Clip)
+                {
+                    RemoveDropShadow();
+                }
 
                 if (!m_isClosingAfterCloseAnimation && commandBar->HasCloseAnimation())
                 {
@@ -292,9 +296,6 @@ winrt::Control CommandBarFlyout::CreatePresenter()
 
     if (SharedHelpers::Is21H1OrHigher())
     {
-        // Since DropShadows don't play well with clip entrance animations for the presenter,
-        // we'll need to fade it in. This name helps us locate the element to set the fade in
-        // flag in the OS code.
         commandBar->SetPresenter(presenter);
 
         // We'll need to remove the presenter's drop shadow on the commandBar's Opening/Closing
