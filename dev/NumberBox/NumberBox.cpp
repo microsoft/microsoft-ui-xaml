@@ -172,18 +172,6 @@ void NumberBox::OnApplyTemplate()
             }
 
             m_textBoxKeyUpRevoker = textBox.KeyUp(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyUp });
-
-            // Listen to NumberBox::CornerRadius changes so that we can enfore the T-rule for the textbox in SpinButtonPlacementMode::Inline.
-            // We need to explicitly go to the corresponding visual state each time the NumberBox' CornerRadius is changed in order for the new
-            // corner radius values to be filtered correctly.
-            // If we only go to the SpinButtonsVisible visual state whenever the SpinButtonPlacementMode is changed to Inline, all subsequent
-            // corner radius changes would apply to all four textbox corners (this can be easily seen in the CornerRadius test page of the MUXControlsTestApp).
-            // This will break the T-rule in the Inline SpinButtonPlacementMode.
-            if (SharedHelpers::IsControlCornerRadiusAvailable())
-            {
-                m_cornerRadiusChangedRevoker = RegisterPropertyChanged(*this,
-                    winrt::Control::CornerRadiusProperty(), { this, &NumberBox::OnCornerRadiusPropertyChanged });
-            }  
         }
         return textBox;
     }());
@@ -235,15 +223,6 @@ void NumberBox::OnApplyTemplate()
     else
     {
         UpdateTextToValue();
-    }
-}
-
-void NumberBox::OnCornerRadiusPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
-{
-    if (this->SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline)
-    {
-        // Enforce T-rule for the textbox in Inline SpinButtonPlacementMode.
-        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsVisible", false);
     }
 }
 
@@ -643,18 +622,21 @@ void NumberBox::UpdateTextToValue()
 void NumberBox::UpdateSpinButtonPlacement()
 {
     const auto spinButtonMode = SpinButtonPlacementMode();
+    auto state = L"SpinButtonsCollapsed";
 
     if (spinButtonMode == winrt::NumberBoxSpinButtonPlacementMode::Inline)
     {
-        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsVisible", false);
+        state = L"SpinButtonsVisible";
     }
     else if (spinButtonMode == winrt::NumberBoxSpinButtonPlacementMode::Compact)
     {
-        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsPopup", false);
+        state = L"SpinButtonsPopup";
     }
-    else
+
+    winrt::VisualStateManager::GoToState(*this, state, false);
+    if (const auto textbox = m_textBox.get())
     {
-        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsCollapsed", false);
+        winrt::VisualStateManager::GoToState(textbox, state, false);
     }
 }
 
