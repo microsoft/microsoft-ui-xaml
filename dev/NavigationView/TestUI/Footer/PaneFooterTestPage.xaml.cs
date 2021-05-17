@@ -26,5 +26,10 @@ namespace MUXControlsTestApp
             var tag = Convert.ToDouble(((sender as ComboBox).SelectedItem as ComboBoxItem).Tag);
             NavView.CompactPaneLength = tag;
         }
+
+        private void GetNavViewItemWidth_Click(object sender, RoutedEventArgs e)
+        {
+            PaneFooterNavViewItemWidth.Text = PaneFooterNavigationViewItem.ActualWidth.ToString();
+        }
     }
 }

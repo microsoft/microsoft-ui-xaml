@@ -16,6 +16,7 @@ void NavigationViewItemBase::OnApplyTemplate()
 
 void NavigationViewItemBase::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
+    // If the NavViewItem is not prepared in an ItemPresenter it will be missing a reference to NavigationView, so adding that here.
     if (!m_navigationView.get())
     {
         SetNavigationViewParent(SharedHelpers::GetAncestorOfType<winrt::NavigationView>(*this));
