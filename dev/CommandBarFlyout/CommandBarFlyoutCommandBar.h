@@ -67,9 +67,11 @@ private:
     void UpdateShadow();
 
     tracker_ref<winrt::FrameworkElement> m_primaryItemsRoot{ this };
+    tracker_ref<winrt::Popup> m_overflowPopup{ this };
     tracker_ref<winrt::FrameworkElement> m_secondaryItemsRoot{ this };
     tracker_ref<winrt::ButtonBase> m_moreButton{ this };
     weak_ref<winrt::CommandBarFlyout> m_owningFlyout{ nullptr };
+    winrt::IPopup4::ActualPlacementChanged_revoker m_overflowPopupActualPlacementChangedRevoker{};
     RoutedEventHandler_revoker m_keyDownRevoker{};
     winrt::UIElement::PreviewKeyDown_revoker m_secondaryItemsRootPreviewKeyDownRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_secondaryItemsRootSizeChangedRevoker{};
