@@ -360,6 +360,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     SetHeroContent(HeroContentOptions.NoContent);
 
+                    // Wait for a second to ensure layout has updated and target bounds will be accurate
+                    Wait.ForMilliseconds(1000);
+
                     var targetRect = GetTargetBounds();
 
                     // All positions are valid
@@ -534,6 +537,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     elements.GetPageRTLCheckbox().Check();
 
                     SetHeroContent(HeroContentOptions.NoContent);
+
+                    // Wait for a second to ensure layout has updated and target bounds will be accurate
+                    Wait.ForMilliseconds(1000);
 
                     var targetRect = GetTargetBounds();
 
