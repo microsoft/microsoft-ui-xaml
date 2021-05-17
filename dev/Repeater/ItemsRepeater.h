@@ -25,6 +25,8 @@ public:
 
     // StackLayout measurements are shortcut when m_stackLayoutMeasureCounter reaches this value
     // to prevent a layout cycle exception.
+    // The XAML Framework's iteration limit is 250, but that limit has been reached in practice
+    // with this value as small as 61. It was never reached with 60. 
     static constexpr uint8_t s_maxStackLayoutIterations = 60u;
 
     static winrt::Point ClearedElementsArrangePosition;

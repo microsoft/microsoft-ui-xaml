@@ -105,6 +105,7 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
 
         if (stackLayout && ++m_stackLayoutMeasureCounter >= s_maxStackLayoutIterations)
         {
+            REPEATER_TRACE_INFO(L"MeasureOverride shortcut - %d\n", m_stackLayoutMeasureCounter);
             // Shortcut the apparent layout cycle by returning the previous desired size.
             // This can occur when children have variable sizes that prevent the ItemsPresenter's desired size from settling.
             const winrt::Rect layoutExtent = m_viewportManager->GetLayoutExtent();
