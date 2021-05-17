@@ -43,13 +43,13 @@ void NavigationViewItemPresenter::OnApplyTemplate()
 
 
         // We probably switched displaymode, so restore width now, otherwise the next time we will restore is when the CompactPaneLength changes
-        /*if(const auto& navigationView = navigationViewItem->GetNavigationView())
+        if(const auto& navigationView = navigationViewItem->GetNavigationView())
         {
             if (navigationView.PaneDisplayMode() != winrt::NavigationViewPaneDisplayMode::Top)
-            {*/
+            {
                 UpdateCompactPaneLength(m_compactPaneLengthValue, true);
-           /* }
-        }*/
+            }
+        }
     }
 
     m_chevronExpandedStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_expandCollapseRotateExpandedStoryboard, *this));

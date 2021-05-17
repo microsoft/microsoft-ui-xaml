@@ -26,6 +26,8 @@ public:
     // IFrameworkElementOverrides
     void OnApplyTemplate() override;
 
+    void OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&);
+
     // Property change callbacks
     void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
