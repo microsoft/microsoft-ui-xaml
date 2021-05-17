@@ -114,7 +114,7 @@
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             AutomationProperties.AccessibilityView="Raw" />
 
-                        <local:AnimatedIcon x:Name="ChevronIcon" Grid.Column="1" Margin="8,0,0,0" AutomationProperties.AccessibilityView="Raw" local:AnimatedIcon.State="Normal" Width="12" Height="12">
+                        <local:AnimatedIcon x:Name="ChevronIcon" Grid.Column="1" Margin="8,0,0,0" AutomationProperties.AccessibilityView="Raw" local:AnimatedIcon.State="Normal" Width="12" Height="12" Foreground="{ThemeResource DropDownButtonForegroundSecondary}">
                             <animatedvisuals:AnimatedChevronDownSmallVisualSource/>
                             <local:AnimatedIcon.FallbackIconSource>
                                 <local:FontIconSource

@@ -29,6 +29,7 @@
 #include <ItemsRepeater.common.h>
 #include "NavigationViewItemExpandingEventArgs.h"
 #include "NavigationViewItemCollapsedEventArgs.h"
+#include "InspectingDataSource.h"
 
 // General items
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
@@ -5313,7 +5314,13 @@ void NavigationView::Collapse(const winrt::NavigationViewItem& item)
 
 bool NavigationView::DoesNavigationViewItemHaveChildren(const winrt::NavigationViewItem& nvi)
 {
-    return nvi.MenuItems().Size() > 0 || nvi.MenuItemsSource() != nullptr || nvi.HasUnrealizedChildren();
+    if (nvi.MenuItemsSource()) {
+        if (const auto sourceView = winrt::make<InspectingDataSource>(nvi.MenuItemsSource()))
+        {
+            return sourceView.Count() > 0;
+        }
+    }
+    return nvi.MenuItems().Size() > 0 || nvi.HasUnrealizedChildren();
 }
 
 void NavigationView::ToggleIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi)

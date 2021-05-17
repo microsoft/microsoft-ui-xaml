@@ -24,6 +24,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\OrientationBasedMeasures.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\RecyclingViewGeneratorDerived.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Mocks\MockItemsSource.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Mocks\MockStackLayout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Mocks\MockViewGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Mocks\MockVirtualizingLayout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\SharedHelpers.cs" />

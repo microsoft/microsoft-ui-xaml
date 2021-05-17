@@ -6,7 +6,9 @@
     xmlns:contract4Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,4)"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
-    xmlns:contract13Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,13)">
+    xmlns:contract8Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,8)"
+    xmlns:contract13Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,13)"
+    xmlns:contract14NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,14)">
     
     <!-- This is the same as the template in CommandBarFlyout_themeresources.xaml, except its animations have been removed.
          Any changes to the style in the above file should also be made here. -->
@@ -41,9 +43,10 @@
                                     <VisualState.Setters>
                                         <Setter Target="MoreButtonTransform.X" Value="0" />
                                         <Setter Target="ContentRootClipTransform.X" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionAnimationEndPosition}" />
-                                        <Setter Target="OverflowContentRootTransform.Y" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpOverflowVerticalPosition}" />
+                                        <contract14NotPresent:Setter Target="OverflowContentRootTransform.Y" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpOverflowVerticalPosition}" />
                                         <Setter Target="OverflowContentRootClipTransform.X" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionAnimationEndPosition}" />
                                         <Setter Target="OverflowContentRootClipTransform.Y" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpAnimationEndPosition}" />
+                                        <Setter Target="PrimaryItemsRoot.VerticalAlignment" Value="Bottom" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ExpandedDown">
@@ -52,6 +55,7 @@
                                         <Setter Target="ContentRootClipTransform.X" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionAnimationEndPosition}" />
                                         <Setter Target="OverflowContentRootClipTransform.X" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionAnimationEndPosition}" />
                                         <Setter Target="OverflowContentRootClipTransform.Y" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandDownAnimationEndPosition}" />
+                                        <Setter Target="PrimaryItemsRoot.VerticalAlignment" Value="Top" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -64,7 +68,9 @@
                                 </VisualState>
                                 <VisualState x:Name="SecondaryCommandsOnly">
                                     <VisualState.Setters>
-                                        <Setter Target="PrimaryItemsRoot.Visibility" Value="Collapsed" />
+                                        <Setter Target="PrimaryItemsRoot.Opacity" Value="0" />
+                                        <Setter Target="PrimaryItemsRoot.IsHitTestVisible" Value="False" />
+                                        <Setter Target="PrimaryItemsRoot.Height" Value="0" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -190,7 +196,7 @@
                                             Glyph="&#xE10C;" />
                                     </Button>
                                 </Grid>
-                                <Popup x:Name="OverflowPopup">
+                                <Popup x:Name="OverflowPopup" contract8Present:ShouldConstrainToRootBounds="False">
                                     <Grid
                                         x:Name="OuterOverflowContentRoot"
                                         Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}">
@@ -204,7 +210,7 @@
                                         <Grid.RenderTransform>
                                             <TranslateTransform
                                                 x:Name="OverflowContentRootTransform"
-                                                Y="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandDownOverflowVerticalPosition}" />
+                                                contract14NotPresent:Y="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandDownOverflowVerticalPosition}" />
                                         </Grid.RenderTransform>
                                         <Grid x:Name="OverflowContentRoot" HorizontalAlignment="Stretch" Background="{TemplateBinding Background}">
                                             <Grid.RowDefinitions>
