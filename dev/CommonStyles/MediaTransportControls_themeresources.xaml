@@ -15,6 +15,8 @@
             <StaticResource x:Key="MediaTransportControlsFillMediaText" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MediaTransportControlsBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <Thickness x:Key="MediaTransportControlsMargin">12</Thickness>
+            <Thickness x:Key="MediaTransportControlsProgressSliderMargin">7,2,7,1</Thickness>
+            <Thickness x:Key="MediaTransportControlsProgressSliderCompactMargin">12,-1,8,1</Thickness>
             <x:Double x:Key="MediaTransportControlsBorderThickness">1</x:Double>
             <x:Double x:Key="MediaTransportControlsAppBarButtonHeight">40</x:Double>
             <x:Double x:Key="MediaTransportControlsAppBarButtonWidth">40</x:Double>
@@ -30,6 +32,8 @@
             <StaticResource x:Key="MediaTransportControlsFillMediaText" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="MediaTransportControlsBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <Thickness x:Key="MediaTransportControlsMargin">12</Thickness>
+            <Thickness x:Key="MediaTransportControlsProgressSliderMargin">7,2,7,1</Thickness>
+            <Thickness x:Key="MediaTransportControlsProgressSliderCompactMargin">12,-1,8,1</Thickness>
             <x:Double x:Key="MediaTransportControlsBorderThickness">1</x:Double>
             <x:Double x:Key="MediaTransportControlsAppBarButtonHeight">40</x:Double>
             <x:Double x:Key="MediaTransportControlsAppBarButtonWidth">40</x:Double>
@@ -45,6 +49,8 @@
             <StaticResource x:Key="MediaTransportControlsFillMediaText" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="MediaTransportControlsBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <Thickness x:Key="MediaTransportControlsMargin">12</Thickness>
+            <Thickness x:Key="MediaTransportControlsProgressSliderMargin">7,2,7,1</Thickness>
+            <Thickness x:Key="MediaTransportControlsProgressSliderCompactMargin">12,-1,8,1</Thickness>
             <x:Double x:Key="MediaTransportControlsBorderThickness">1</x:Double>
             <x:Double x:Key="MediaTransportControlsAppBarButtonHeight">40</x:Double>
             <x:Double x:Key="MediaTransportControlsAppBarButtonWidth">40</x:Double>
@@ -200,7 +206,7 @@
                                         <Setter Target="ControlPanelGrid.Height" Value="48" />
                                         <Setter Target="MediaControlsCommandBar.Margin" Value="0" />
                                         <Setter Target="PlayPauseButton.Visibility" Value="Collapsed" />
-                                        <Setter Target="ProgressSlider.Margin" Value="12,-1,8,1" />
+                                        <Setter Target="ProgressSlider.Margin" Value="{ThemeResource MediaTransportControlsProgressSliderCompactMargin}" />
                                         <Setter Target="ControlPanelGrid.Padding" Value="3" />
                                     </VisualState.Setters> 
                                 </VisualState>
