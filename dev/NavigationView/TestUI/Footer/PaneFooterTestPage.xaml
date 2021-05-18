@@ -14,7 +14,8 @@
         x:Name="NavView"
         AutomationProperties.Name="NavView"
         PaneTitle="NavView PaneFooter Test"
-        PaneDisplayMode="LeftCompact"
+        PaneDisplayMode="Left"
+        IsPaneOpen="False"
         IsSettingsVisible="False"
         >
 

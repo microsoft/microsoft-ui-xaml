@@ -1794,10 +1794,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "PaneFooterTestPage" }))
             {
-                var paneFooterNavigationViewItem = FindElement.ByName("PaneFooterNavigationViewItem");
-                UIObject compactPaneLengthComboBox = FindElement.ByName("CompactPaneLengthComboBox");
+                TextBlock paneFooterNavViewItemWidthTextBlock = new TextBlock(FindElement.ByName("PaneFooterNavViewItemWidth"));
+                ComboBox compactPaneLengthComboBox = new ComboBox(FindElement.ByName("CompactPaneLengthComboBox"));
+                UIObject getNavViewItemWidth = FindElement.ByName("GetNavViewItemWidth");
 
-                paneFooterNavigationViewItem.
+                getNavViewItemWidth.Click();
+
+                Log.Comment("Verify NavigationViewItem in PaneFooter has the correct width from templateSettings bindings");
+                Verify.AreEqual("48", paneFooterNavViewItemWidthTextBlock.DocumentText);
+
+                Log.Comment("Change CompactPaneLength to 40px");
+                compactPaneLengthComboBox.SelectItemByName("40");
+                Wait.ForIdle();
+                getNavViewItemWidth.Click();
+                Wait.ForIdle();
+
+                Verify.AreEqual("40", paneFooterNavViewItemWidthTextBlock.DocumentText);
+
+                Log.Comment("Change CompactPaneLength to 96px");
+                compactPaneLengthComboBox.SelectItemByName("96");
+                Wait.ForIdle();
+                getNavViewItemWidth.Click();
+                Wait.ForIdle();
+
+                Verify.AreEqual("96", paneFooterNavViewItemWidthTextBlock.DocumentText);
             }
         }
     }
