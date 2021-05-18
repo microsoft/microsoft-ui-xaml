@@ -189,11 +189,10 @@ CommandBarFlyout::CommandBarFlyout()
         {
             if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
             {
-                //Drop shadows do not play nicely with clip animations, if we are using both, clear the shadow
-                if (commandBar->OpenAnimationKind() == CommandBarFlyoutOpenCloseAnimationKind::Clip)
-                {
-                    RemoveDropShadow();
-                }
+                // We are not able to fade this shadow out with the V2 default opacity closing animition.
+                // Additionally we drop shadows doing play well with the clip animation of the V1 style.
+                // So we need to remove it in all cases.
+                RemoveDropShadow();
 
                 if (!m_isClosingAfterCloseAnimation && commandBar->HasCloseAnimation())
                 {
