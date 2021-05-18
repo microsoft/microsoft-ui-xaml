@@ -143,9 +143,19 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
     __super::OnApplyTemplate();
     DetachEventHandlers();
 
+    if (auto& overflowPopup = m_overflowPopup.get())
+    {
+        if (auto overflowPopup4 = overflowPopup.try_as<winrt::IPopup4>())
+        {
+            overflowPopup4.PlacementTarget(nullptr);
+            overflowPopup4.DesiredPlacement(winrt::PopupPlacementMode::Auto);
+        }
+    }
+
     winrt::IControlProtected thisAsControlProtected = *this;
 
     m_primaryItemsRoot.set(GetTemplateChildT<winrt::FrameworkElement>(L"PrimaryItemsRoot", thisAsControlProtected));
+    m_overflowPopup.set(GetTemplateChildT<winrt::Popup>(L"OverflowPopup", thisAsControlProtected));
     m_secondaryItemsRoot.set(GetTemplateChildT<winrt::FrameworkElement>(L"OverflowContentRoot", thisAsControlProtected));
     m_moreButton.set(GetTemplateChildT<winrt::ButtonBase>(L"MoreButton", thisAsControlProtected));
     m_openingStoryboard.set([this, thisAsControlProtected]()
@@ -166,7 +176,17 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
             }
             return GetTemplateChildT<winrt::Storyboard>(L"ClosingStoryboard", thisAsControlProtected);
         }());
-    if (auto moreButton = m_moreButton.get())
+
+    if (auto& overflowPopup = m_overflowPopup.get())
+    {
+        if (auto overflowPopup4 = overflowPopup.try_as<winrt::IPopup4>())
+        {
+            overflowPopup4.PlacementTarget(m_primaryItemsRoot.get());
+            overflowPopup4.DesiredPlacement(winrt::PopupPlacementMode::BottomEdgeAlignedLeft);
+        }
+    }
+
+    if (auto& moreButton = m_moreButton.get())
     {
         // Initially only the first focusable primary and secondary commands
         // keep their IsTabStop set to True.
@@ -203,6 +223,20 @@ void CommandBarFlyoutCommandBar::SetOwningFlyout(
 void CommandBarFlyoutCommandBar::AttachEventHandlers()
 {
     COMMANDBARFLYOUT_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    if (auto overflowPopup = m_overflowPopup.get())
+    {
+        if (auto overflowPopup4 = overflowPopup.try_as<winrt::IPopup4>())
+        {
+            m_overflowPopupActualPlacementChangedRevoker = overflowPopup4.ActualPlacementChanged(winrt::auto_revoke,
+            {
+                [this](auto const&, auto const&)
+                {
+                    UpdateUI();
+                }
+            });
+        }
+    }
 
     if (auto secondaryItemsRoot = m_secondaryItemsRoot.get())
     {
@@ -535,19 +569,31 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
         }
 
         bool shouldExpandUp = false;
+        bool hadActualPlacement = false;
+
+        if (auto overflowPopup = m_overflowPopup.get())
+        {
+            if (auto overflowPopup4 = overflowPopup.try_as<winrt::IPopup4>())
+            {
+                // If we have a value set for ActualPlacement, then we'll directly use that -
+                // that tells us where our popup's been placed, so we don't need to try to
+                // infer where it should go.
+                if (overflowPopup4.ActualPlacement() != winrt::PopupPlacementMode::Auto)
+                {
+                    hadActualPlacement = true;
+                    shouldExpandUp =
+                        overflowPopup4.ActualPlacement() == winrt::PopupPlacementMode::TopEdgeAlignedLeft ||
+                        overflowPopup4.ActualPlacement() == winrt::PopupPlacementMode::TopEdgeAlignedRight;
+                }
+            }
+        }
 
         // If there isn't enough space to display the overflow below the command bar,
         // and if there is enough space above, then we'll display it above instead.
-        if (auto window = winrt::Window::Current() && m_secondaryItemsRoot)
+        if (auto window = winrt::Window::Current() && !hadActualPlacement && m_secondaryItemsRoot)
         {
             double availableHeight = -1;
-            bool isConstrainedToRootBounds = true;
             const auto controlBounds = TransformToVisual(nullptr).TransformBounds({ 0, 0, static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()) });
-            
-            if (winrt::IFlyoutBase6 owningFlyoutAsFlyoutBase6 = m_owningFlyout.get())
-            {
-                isConstrainedToRootBounds = owningFlyoutAsFlyoutBase6.IsConstrainedToRootBounds();
-            }
 
             try
             {
