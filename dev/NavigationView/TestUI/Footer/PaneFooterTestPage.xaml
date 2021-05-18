@@ -15,7 +15,7 @@
         AutomationProperties.Name="NavView"
         PaneTitle="NavView PaneFooter Test"
         PaneDisplayMode="Left"
-        IsPaneOpen="False"
+        IsPaneOpen="True"
         IsSettingsVisible="False"
         >
 
@@ -31,7 +31,7 @@
 
             <TextBlock x:Name="PaneFooterNavViewItemWidth" AutomationProperties.Name="PaneFooterNavViewItemWidth" />
 
-            <Button x:Name="GetNavViewItemWidth" AutomationProperties.Name="GetNavViewItemWidth" Content="Get NavView Item Width" Margin="0,0,2,0" Click="GetNavViewItemWidth_Click" />
+            <Button x:Name="GetIconColumnWidth" AutomationProperties.Name="GetIconColumnWidth" Content="Get Icon Column Width" Margin="0,0,2,0" Click="GetIconColumnWidth_Click" />
         </StackPanel>
 
         <muxc:NavigationView.AutoSuggestBox>
