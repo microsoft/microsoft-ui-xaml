@@ -118,11 +118,19 @@ void XamlControlsResources::UpdateSource()
         }()
     };
 
-    // Because of Compact, UpdateSource may be executed twice, but there is a bug in XAML and manually clear theme dictionaries here:
-    // Prior to RS5, when ResourceDictionary.Source property is changed, XAML forgot to clear ThemeDictionaries.
-    ThemeDictionaries().Clear();
+    // Because of Compact, UpdateSource may be executed twice, so we need to add this as a merged dictionary -
+    // calling Application.LoadComponent on the same element will throw an exception.
+    winrt::ResourceDictionary dictionary;
+    winrt::Application::LoadComponent(dictionary, uri, winrt::ComponentResourceLocation::Nested);
 
-    Source(uri);
+    uint32_t existingDictionaryIndex = 0;
+    if (m_xamlControlsResourcesDictionary && MergedDictionaries().IndexOf(m_xamlControlsResourcesDictionary.get(), existingDictionaryIndex))
+    {
+        MergedDictionaries().RemoveAt(existingDictionaryIndex);
+    }
+
+    m_xamlControlsResourcesDictionary.set(dictionary);
+    MergedDictionaries().InsertAt(0, m_xamlControlsResourcesDictionary.get());
 
     // Hacky workaround for a XAML compiler bug:
     // Assigning nullable primitive types from XAML fails with disabled XAML metadata reflection on older versions.
@@ -131,8 +139,8 @@ void XamlControlsResources::UpdateSource()
     // Since something must go horribly wrong for those lookups to fail, we just assume they exist.
     if (SharedHelpers::Is19H1OrHigher())
     {
-        UpdateAcrylicBrushesDarkTheme(ThemeDictionaries().Lookup(box_value(L"Default")));
-        UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
+        UpdateAcrylicBrushesDarkTheme(m_xamlControlsResourcesDictionary.get().ThemeDictionaries().Lookup(box_value(L"Default")));
+        UpdateAcrylicBrushesLightTheme(m_xamlControlsResourcesDictionary.get().ThemeDictionaries().Lookup(box_value(L"Light")));
     }
 
     s_tlsIsControlsResourcesVersion2 = useControlsResourcesVersion2;

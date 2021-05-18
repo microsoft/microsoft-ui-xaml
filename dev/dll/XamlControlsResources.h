@@ -21,4 +21,6 @@ public:
 private:
     void UpdateSource();
     bool IsControlsResourcesVersion2();
+
+    tracker_ref<winrt::ResourceDictionary> m_xamlControlsResourcesDictionary{ this };
 };
