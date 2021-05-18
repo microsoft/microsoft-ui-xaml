@@ -214,6 +214,8 @@ void NumberBox::OnApplyTemplate()
 
     UpdateVisualStateForIsEnabledChange();
 
+    ReevaluateForwardedUIAName();
+
     if (ReadLocalValue(s_ValueProperty) == winrt::DependencyProperty::UnsetValue()
         && ReadLocalValue(s_TextProperty) != winrt::DependencyProperty::UnsetValue())
     {
