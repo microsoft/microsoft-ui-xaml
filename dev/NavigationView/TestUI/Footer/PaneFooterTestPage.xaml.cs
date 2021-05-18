@@ -29,7 +29,7 @@ namespace MUXControlsTestApp
 
         private void GetNavViewItemWidth_Click(object sender, RoutedEventArgs e)
         {
-            PaneFooterNavViewItemWidth.Text = PaneFooterNavigationViewItem.ActualWidth.ToString();
+            PaneFooterNavViewItemWidth.Text = PaneFooterNavigationViewItem.CompactPaneLength.ToString();
         }
     }
 }
