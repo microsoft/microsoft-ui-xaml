@@ -87,6 +87,7 @@
 
                         <!-- We don't want this to take space on the second row in case the user isn't using tab content. -->
                         <Grid x:Name="ShadowCaster"
+                            Visibility="Collapsed"
                             Grid.Row="0"
                             Height="10"
                             Margin="0,0,0,-10"
