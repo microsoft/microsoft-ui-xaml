@@ -29,8 +29,19 @@ TextCommandBarFlyout::TextCommandBarFlyout()
             // We'll just close the flyout in that case - nothing should be opening us
             // in this state anyway, but this makes sure we don't have a light-dismiss layer
             // with nothing visible to light dismiss.
+
+            winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this;
+            auto const showModeIsStandard = [thisAsFlyoutBase5]()
+            {
+                if (thisAsFlyoutBase5)
+                {
+                    return thisAsFlyoutBase5.ShowMode() == winrt::FlyoutShowMode::Standard;
+                }
+                return true;
+            }();
+
             if (PrimaryCommands().Size() == 0 &&
-                (SecondaryCommands().Size() == 0 || !m_commandBar.get().IsOpen()))
+                (SecondaryCommands().Size() == 0 || (!m_commandBar.get().IsOpen() && !showModeIsStandard)))
             {
                 Hide();
             }
