@@ -1,7 +1,7 @@
 ﻿using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-
+using Windows.UI.Xaml.Media;
 using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
 
 namespace MUXControlsTestApp
@@ -27,9 +27,16 @@ namespace MUXControlsTestApp
             NavView.CompactPaneLength = tag;
         }
 
-        private void GetNavViewItemWidth_Click(object sender, RoutedEventArgs e)
+        private void GetIconColumnWidth_Click(object sender, RoutedEventArgs e)
         {
-            PaneFooterNavViewItemWidth.Text = PaneFooterNavigationViewItem.CompactPaneLength.ToString();
+            var NVIRootGrid = VisualTreeHelper.GetChild(PaneFooterNavigationViewItem, 0);
+            var navigationViewItemPresenter = VisualTreeHelper.GetChild(NVIRootGrid, 0);
+            var layoutRoot = VisualTreeHelper.GetChild(navigationViewItemPresenter, 0);
+            var presenterContentRootGrid = VisualTreeHelper.GetChild(layoutRoot, 0);
+            var contentGrid = VisualTreeHelper.GetChild(presenterContentRootGrid, 1);
+            var iconColumn = VisualTreeHelper.GetChild(contentGrid, 0);
+
+            PaneFooterNavViewItemWidth.Text = (iconColumn as Border).ActualWidth.ToString();
         }
     }
 }
