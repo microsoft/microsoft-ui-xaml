@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedAcceptVisualSource.json
 //       
 //       Input file:
-//           AnimatedAcceptVisualSource.json (27378 bytes created 11:16-08:00 Mar 5 2021)
+//           AnimatedAcceptVisualSource.json (22496 bytes created 11:36-07:00 May 14 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -21,7 +21,7 @@
 // ____________________________________
 // |       Object stats       | Count |
 // |__________________________|_______|
-// | All CompositionObjects   |   265 |
+// | All CompositionObjects   |   305 |
 // |--------------------------+-------|
 // | Expression animators     |    30 |
 // | KeyFrame animators       |    29 |
@@ -33,7 +33,7 @@
 // | ExpressionAnimations     |     2 |
 // | PathKeyFrameAnimations   |     - |
 // |--------------------------+-------|
-// | ContainerVisuals         |    24 |
+// | ContainerVisuals         |    43 |
 // | ShapeVisuals             |    15 |
 // |--------------------------+-------|
 // | ContainerShapes          |     - |
@@ -76,6 +76,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 }
 #include "AnimatedVisuals\AnimatedAcceptVisualSource.g.cpp"
 
+
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
     ::ABI::Windows::Graphics::IGeometrySource2DInterop>
@@ -104,8 +105,8 @@ public:
     }
 };
 class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<AnimatedAcceptVisualSource_AnimatedVisual,
-    winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
-    IClosable>
+        winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
+        IClosable>
 {
     winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
     static constexpr int64_t c_durationTicks{ 26666666L };
@@ -114,7 +115,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     CompositionPropertySet const _themeProperties{ nullptr };
     CompositionColorBrush _themeColor_Foreground{ nullptr };
     CompositionPath _path{ nullptr };
-    CompositionPathGeometry _pathGeometry_08{ nullptr };
+    CompositionPathGeometry _pathGeometry_09{ nullptr };
     ContainerVisual _root{ nullptr };
     CubicBezierEasingFunction _cubicBezierEasingFunction_0{ nullptr };
     CubicBezierEasingFunction _cubicBezierEasingFunction_1{ nullptr };
@@ -357,8 +358,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - - - PreComp layer: Indeterminate State
-    // - - - Transforms for Indeterminate State Scale(1,1,0)
+    // - - - - - PreComp layer: Indeterminate State
+    // - - - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - - - Shape tree root for layer: Shape Layer 1
     // - -  Scale:0.7,0.7, Offset:<24, 24>
     winrt::com_ptr<CanvasGeometry> Geometry_0()
     {
@@ -382,7 +384,27 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         winrt::check_hresult(path->Open(sink.put()));
         sink->BeginFigure({ -15.1719999F, 0.0160000008F }, D2D1_FIGURE_BEGIN_FILLED);
         sink->AddLine({ -5.0F, 10.1879997F });
-        sink->AddLine({ 15.2810001F, -10.2810001F });
+        sink->AddLine({ 15.3369999F, -10.3369999F });
+        sink->EndFigure(D2D1_FIGURE_END_OPEN);
+        winrt::check_hresult(sink->Close());
+        auto result = winrt::make_self<CanvasGeometry>(path);
+        return result;
+    }
+
+    // - - - - - PreComp layer: Controls - 01 - Check - 09 - PointerOverOnToPressedOn -
+    // Tweak
+    // - - - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - - - Shape tree root for layer: Shape Layer 1
+    // - -  Scale:0.7,0.7, Offset:<24, 23>
+    winrt::com_ptr<CanvasGeometry> Geometry_2()
+    {
+        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
+        winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
+        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
+        winrt::check_hresult(path->Open(sink.put()));
+        sink->BeginFigure({ -15.1719999F, 0.0160000008F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ -5.0F, 10.1879997F });
+        sink->AddLine({ 15.3369999F, -10.2810001F });
         sink->EndFigure(D2D1_FIGURE_END_OPEN);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -403,16 +425,18 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - PreComp layer: Indeterminate State
-    // - Transforms for Indeterminate State Scale(1,1,0)
+    // - - - PreComp layer: Indeterminate State
+    // - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - Shape tree root for layer: Shape Layer 1
     // Scale:0.7,0.7, Offset:<24, 24>
     CompositionPathGeometry PathGeometry_00()
     {
         return _c.CreatePathGeometry(CompositionPath(CanvasGeometryToIGeometrySource2D(Geometry_0())));
     }
 
-    // - - PreComp layer: Controls - 01 - Check - 18 - PressedOffToNormalOn
-    // - Transforms for Controls - 01 - Check - 18 - PressedOffToNormalOn Scale(1,1,0)
+    // - - - PreComp layer: Controls - 01 - Check - 18 - PressedOffToNormalOn
+    // - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - Shape tree root for layer: Shape Layer 1
     // Scale:0.7,0.7, Offset:<24, 23>
     CompositionPathGeometry PathGeometry_01()
     {
@@ -421,9 +445,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn
-    // - Transforms for Controls - 01 - Check - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
+    // - - - PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn
+    // - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - Shape tree root for layer: Shape Layer 1
     // Scale:0.7,0.7, Offset:<24, 23>
     CompositionPathGeometry PathGeometry_02()
     {
@@ -432,8 +456,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
-    // - Transforms for Controls - 01 - Check - 16 - PressedOffToPressedOn Scale(1,1,0)
+    // - - - PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
+    // - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - Shape tree root for layer: Shape Layer 2
     // Scale:0.7,0.7, Offset:<24, 23>
     CompositionPathGeometry PathGeometry_03()
     {
@@ -442,8 +467,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
-    // - Transforms for Controls - 01 - Check - 15 - PressedOnToNormalOff Scale(1,1,0)
+    // - - - PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
+    // - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - Shape tree root for layer: Shape Layer 1
     // Scale:0.7,0.7, Offset:<24, 23>
     CompositionPathGeometry PathGeometry_04()
     {
@@ -452,9 +478,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff
-    // - Transforms for Controls - 01 - Check - 14 - PressedOnToPointerOverOff
-    // Scale(1,1,0)
+    // - - - PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff
+    // - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - Shape tree root for layer: Shape Layer 1
     // Scale:0.7,0.7, Offset:<24, 23>
     CompositionPathGeometry PathGeometry_05()
     {
@@ -463,8 +489,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
-    // - Transforms for Controls - 01 - Check - 13 - PressedOnToPressedOff Scale(1,1,0)
+    // - - - PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
+    // - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - Shape tree root for layer: Shape Layer 1
     // Scale:0.7,0.7, Offset:<24, 23>
     CompositionPathGeometry PathGeometry_06()
     {
@@ -473,9 +500,10 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
-    // - Transforms for Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
-    // Scale(1,1,0)
+    // - - - PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn -
+    // Tweak
+    // - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - Shape tree root for layer: Shape Layer 1
     // Scale:0.7,0.7, Offset:<24, 23>
     CompositionPathGeometry PathGeometry_07()
     {
@@ -484,44 +512,57 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
+    // - - - PreComp layer: Controls - 01 - Check - 09 - PointerOverOnToPressedOn
+    // - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - Shape tree root for layer: Shape Layer 1
+    // Scale:0.7,0.7, Offset:<24, 23>
     CompositionPathGeometry PathGeometry_08()
     {
-        return _pathGeometry_08 = _c.CreatePathGeometry(_path);
+        return _c.CreatePathGeometry(CompositionPath(CanvasGeometryToIGeometrySource2D(Geometry_2())));
     }
 
-    // - - PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
-    // - Transforms for Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
-    // Scale(1,1,0)
-    // Scale:0.7,0.7, Offset:<24, 23>
     CompositionPathGeometry PathGeometry_09()
+    {
+        return _pathGeometry_09 = _c.CreatePathGeometry(_path);
+    }
+
+    // - - - PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff -
+    // Tweak
+    // - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - Shape tree root for layer: Shape Layer 1
+    // Scale:0.7,0.7, Offset:<24, 23>
+    CompositionPathGeometry PathGeometry_10()
     {
         const auto result = _c.CreatePathGeometry(_path);
         StartProgressBoundAnimation(result, L"TrimStart", TrimStartScalarAnimation_0_to_1_3(), _rootProgress);
         return result;
     }
 
-    // - - PreComp layer: Controls - 01 - Check - 04 - NormalOffToNormalOn
-    // - Transforms for Controls - 01 - Check - 04 - NormalOffToNormalOn Scale(1,1,0)
+    // - - - PreComp layer: Controls - 01 - Check - 04 - NormalOffToNormalOn
+    // - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - Shape tree root for layer: Shape Layer 1
     // Scale:0.7,0.7, Offset:<24, 23>
-    CompositionPathGeometry PathGeometry_10()
+    CompositionPathGeometry PathGeometry_11()
     {
         const auto result = _c.CreatePathGeometry(_path);
         StartProgressBoundAnimation(result, L"TrimEnd", TrimEndScalarAnimation_0_to_1_4(), _rootProgress);
         return result;
     }
 
-    // - - PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff 
-    // - Transforms for Controls - 01 - Check - 01 - NormalOnToNormalOff  Scale(1,1,0)
+    // - - - PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff
+    // - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - Shape tree root for layer: Shape Layer 1
     // Scale:0.7,0.7, Offset:<24, 23>
-    CompositionPathGeometry PathGeometry_11()
+    CompositionPathGeometry PathGeometry_12()
     {
         const auto result = _c.CreatePathGeometry(_path);
         StartProgressBoundAnimation(result, L"TrimStart", TrimStartScalarAnimation_0_to_1_4(), _rootProgress);
         return result;
     }
 
-    // - PreComp layer: Indeterminate State
-    // Transforms for Indeterminate State Scale(1,1,0)
+    // - - PreComp layer: Indeterminate State
+    // - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Shape Layer 1
     // Path 1
     CompositionSpriteShape SpriteShape_00()
     {
@@ -536,8 +577,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - PreComp layer: Controls - 01 - Check - 18 - PressedOffToNormalOn
-    // Transforms for Controls - 01 - Check - 18 - PressedOffToNormalOn Scale(1,1,0)
+    // - - PreComp layer: Controls - 01 - Check - 18 - PressedOffToNormalOn
+    // - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Shape Layer 1
     // Path 1
     CompositionSpriteShape SpriteShape_01()
     {
@@ -553,8 +595,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn
-    // Transforms for Controls - 01 - Check - 17 - PressedOffToPointerOverOn Scale(1,1,0)
+    // - - PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn
+    // - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Shape Layer 1
     // Path 1
     CompositionSpriteShape SpriteShape_02()
     {
@@ -570,8 +613,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
-    // Transforms for Controls - 01 - Check - 16 - PressedOffToPressedOn Scale(1,1,0)
+    // - - PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
+    // - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Shape Layer 2
     // Path 1
     CompositionSpriteShape SpriteShape_03()
     {
@@ -587,8 +631,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
-    // Transforms for Controls - 01 - Check - 15 - PressedOnToNormalOff Scale(1,1,0)
+    // - - PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
+    // - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Shape Layer 1
     // Path 1
     CompositionSpriteShape SpriteShape_04()
     {
@@ -604,8 +649,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff
-    // Transforms for Controls - 01 - Check - 14 - PressedOnToPointerOverOff Scale(1,1,0)
+    // - - PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff
+    // - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Shape Layer 1
     // Path 1
     CompositionSpriteShape SpriteShape_05()
     {
@@ -621,8 +667,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
-    // Transforms for Controls - 01 - Check - 13 - PressedOnToPressedOff Scale(1,1,0)
+    // - - PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
+    // - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Shape Layer 1
     // Path 1
     CompositionSpriteShape SpriteShape_06()
     {
@@ -638,9 +685,10 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
-    // Transforms for Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
-    // Scale(1,1,0)
+    // - - PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn -
+    // Tweak
+    // - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Shape Layer 1
     // Path 1
     CompositionSpriteShape SpriteShape_07()
     {
@@ -656,8 +704,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - PreComp layer: Controls - 01 - Check - 09 - PointerOverOnToPressedOn
-    // Transforms for Controls - 01 - Check - 09 - PointerOverOnToPressedOn Scale(1,1,0)
+    // - - PreComp layer: Controls - 01 - Check - 09 - PointerOverOnToPressedOn
+    // - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Shape Layer 1
     // Path 1
     CompositionSpriteShape SpriteShape_08()
     {
@@ -673,28 +722,11 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - PreComp layer: Controls - 01 - Check - 08 - PointerOverOnToNormalOn
-    // Transforms for Controls - 01 - Check - 08 - PointerOverOnToNormalOn Scale(1,1,0)
+    // - - PreComp layer: Controls - 01 - Check - 08 - PointerOverOnToNormalOn
+    // - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Shape Layer 1
     // Path 1
     CompositionSpriteShape SpriteShape_09()
-    {
-        // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(_pathGeometry_08, { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
-        result.StrokeBrush(_themeColor_Foreground);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(4.0F);
-        return result;
-    }
-
-    // - PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
-    // Transforms for Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
-    // Scale(1,1,0)
-    // Path 1
-    CompositionSpriteShape SpriteShape_10()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
         const auto result = CreateSpriteShape(PathGeometry_09(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
@@ -708,10 +740,12 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - PreComp layer: Controls - 01 - Check - 04 - NormalOffToNormalOn
-    // Transforms for Controls - 01 - Check - 04 - NormalOffToNormalOn Scale(1,1,0)
+    // - - PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff -
+    // Tweak
+    // - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Shape Layer 1
     // Path 1
-    CompositionSpriteShape SpriteShape_11()
+    CompositionSpriteShape SpriteShape_10()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
         const auto result = CreateSpriteShape(PathGeometry_10(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
@@ -725,13 +759,32 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - PreComp layer: Controls - 01 - Check - 03 - NormalOnToPressedOn
-    // Transforms for Controls - 01 - Check - 03 - NormalOnToPressedOn Scale(1,1,0)
+    // - - PreComp layer: Controls - 01 - Check - 04 - NormalOffToNormalOn
+    // - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Shape Layer 1
+    // Path 1
+    CompositionSpriteShape SpriteShape_11()
+    {
+        // Offset:<24, 23>, Scale:<0.7, 0.7>
+        const auto result = CreateSpriteShape(PathGeometry_11(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
+        result.StrokeBrush(_themeColor_Foreground);
+        result.StrokeDashCap(CompositionStrokeCap::Round);
+        result.StrokeStartCap(CompositionStrokeCap::Round);
+        result.StrokeEndCap(CompositionStrokeCap::Round);
+        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
+        result.StrokeMiterLimit(2.0F);
+        result.StrokeThickness(4.0F);
+        return result;
+    }
+
+    // - - PreComp layer: Controls - 01 - Check - 03 - NormalOnToPressedOn
+    // - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Check
     // Path 1
     CompositionSpriteShape SpriteShape_12()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(_pathGeometry_08, { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
+        const auto result = CreateSpriteShape(_pathGeometry_09, { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -742,13 +795,14 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - PreComp layer: Controls - 01 - Check - 02 - NormalOnToPointerOverOn
-    // Transforms for Controls - 01 - Check - 02 - NormalOnToPointerOverOn Scale(1,1,0)
+    // - - PreComp layer: Controls - 01 - Check - 02 - NormalOnToPointerOverOn
+    // - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Check
     // Path 1
     CompositionSpriteShape SpriteShape_13()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(_pathGeometry_08, { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
+        const auto result = CreateSpriteShape(_pathGeometry_09, { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -759,13 +813,14 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff 
-    // Transforms for Controls - 01 - Check - 01 - NormalOnToNormalOff  Scale(1,1,0)
+    // - - PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff
+    // - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Shape Layer 1
     // Path 1
     CompositionSpriteShape SpriteShape_14()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(PathGeometry_11(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
+        const auto result = CreateSpriteShape(PathGeometry_12(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -780,236 +835,226 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     ContainerVisual ContainerVisual_00()
     {
         const auto result = _c.CreateContainerVisual();
-        result.Clip(InsetClip_0());
         result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Indeterminate State Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_00());
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_01());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_00(), RootProgress());
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 18 - PressedOffToNormalOn
+    // PreComp layer: Indeterminate State
+    // Transforms for Indeterminate State Scale(1,1,0), Offset(-24,-24,0)
     ContainerVisual ContainerVisual_01()
     {
         const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
+        result.Clip(InsetClip_0());
         result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 18 - PressedOffToNormalOn Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_01());
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        // Shape tree root for layer: Shape Layer 1
+        result.Children().InsertAtTop(ShapeVisual_00());
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 18 - PressedOffToNormalOn
+    ContainerVisual ContainerVisual_02()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.IsVisible(false);
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_03());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_01(), _rootProgress);
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn
-    ContainerVisual ContainerVisual_02()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 17 - PressedOffToPointerOverOn Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_02());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_02(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
+    // PreComp layer: Controls - 01 - Check - 18 - PressedOffToNormalOn
+    // Transforms for Controls - 01 - Check - 18 - PressedOffToNormalOn
+    // Scale(1,1,0), Offset(-24,-24,0)
     ContainerVisual ContainerVisual_03()
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.IsVisible(false);
         result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 16 - PressedOffToPressedOn Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_03());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_03(), _rootProgress);
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        // Shape tree root for layer: Shape Layer 1
+        result.Children().InsertAtTop(ShapeVisual_01());
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
+    // PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn
     ContainerVisual ContainerVisual_04()
     {
         const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
         result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 15 - PressedOnToNormalOff Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_04());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_04(), _rootProgress);
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_05());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_02(), _rootProgress);
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff
+    // PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn
+    // Transforms for Controls - 01 - Check - 17 - PressedOffToPointerOverOn
+    // Scale(1,1,0), Offset(-24,-24,0)
     ContainerVisual ContainerVisual_05()
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.IsVisible(false);
         result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 14 - PressedOnToPointerOverOff Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_05());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_05(), _rootProgress);
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        // Shape tree root for layer: Shape Layer 1
+        result.Children().InsertAtTop(ShapeVisual_02());
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
+    // PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
     ContainerVisual ContainerVisual_06()
     {
         const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
         result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 13 - PressedOnToPressedOff Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_06());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_06(), _rootProgress);
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_07());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_03(), _rootProgress);
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 12 - PointerOverOffToPressedOff
+    // PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
+    // Transforms for Controls - 01 - Check - 16 - PressedOffToPressedOn
+    // Scale(1,1,0), Offset(-24,-24,0)
     ContainerVisual ContainerVisual_07()
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.IsVisible(false);
         result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 12 - PointerOverOffToPressedOff Scale(1,1,0)
-        result.Children().InsertAtTop(ContainerVisual_08());
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        // Shape tree root for layer: Shape Layer 2
+        result.Children().InsertAtTop(ShapeVisual_03());
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
+    ContainerVisual ContainerVisual_08()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.IsVisible(false);
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_09());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_04(), _rootProgress);
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
+    // Transforms for Controls - 01 - Check - 15 - PressedOnToNormalOff
+    // Scale(1,1,0), Offset(-24,-24,0)
+    ContainerVisual ContainerVisual_09()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.Size({ 48.0F, 48.0F });
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        // Shape tree root for layer: Shape Layer 1
+        result.Children().InsertAtTop(ShapeVisual_04());
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff
+    ContainerVisual ContainerVisual_10()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.IsVisible(false);
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_11());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_05(), _rootProgress);
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff
+    // Transforms for Controls - 01 - Check - 14 - PressedOnToPointerOverOff
+    // Scale(1,1,0), Offset(-24,-24,0)
+    ContainerVisual ContainerVisual_11()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.Size({ 48.0F, 48.0F });
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        // Shape tree root for layer: Shape Layer 1
+        result.Children().InsertAtTop(ShapeVisual_05());
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
+    ContainerVisual ContainerVisual_12()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.IsVisible(false);
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_13());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_06(), _rootProgress);
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
+    // Transforms for Controls - 01 - Check - 13 - PressedOnToPressedOff
+    // Scale(1,1,0), Offset(-24,-24,0)
+    ContainerVisual ContainerVisual_13()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.Size({ 48.0F, 48.0F });
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        // Shape tree root for layer: Shape Layer 1
+        result.Children().InsertAtTop(ShapeVisual_06());
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 12 - PointerOverOffToPressedOff
+    ContainerVisual ContainerVisual_14()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.IsVisible(false);
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_15());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_07(), _rootProgress);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 12 - PointerOverOffToPressedOff
-    // Transforms for Controls - 01 - Check - 12 - PointerOverOffToPressedOff Scale(1,1,0)
-    ContainerVisual ContainerVisual_08()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.Size({ 48.0F, 48.0F });
-        return result;
-    }
-
-    // PreComp layer: Controls - 01 - Check - 11 - PointerOverOffToNormalOff
-    ContainerVisual ContainerVisual_09()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 11 - PointerOverOffToNormalOff Scale(1,1,0)
-        result.Children().InsertAtTop(ContainerVisual_10());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_08(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 01 - Check - 11 - PointerOverOffToNormalOff
-    // Transforms for Controls - 01 - Check - 11 - PointerOverOffToNormalOff Scale(1,1,0)
-    ContainerVisual ContainerVisual_10()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.Size({ 48.0F, 48.0F });
-        return result;
-    }
-
-    // PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
-    ContainerVisual ContainerVisual_11()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
-        // Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_07());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_09(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 01 - Check - 09 - PointerOverOnToPressedOn
-    ContainerVisual ContainerVisual_12()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 09 - PointerOverOnToPressedOn Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_08());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_10(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 01 - Check - 08 - PointerOverOnToNormalOn
-    ContainerVisual ContainerVisual_13()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 08 - PointerOverOnToNormalOn Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_09());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_11(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
-    ContainerVisual ContainerVisual_14()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
-        // Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_10());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_12(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 01 - Check - 06 - NormalOffToPressedOff
+    // Transforms for Controls - 01 - Check - 12 - PointerOverOffToPressedOff
+    // Scale(1,1,0), Offset(-24,-24,0)
     ContainerVisual ContainerVisual_15()
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.IsVisible(false);
         result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 06 - NormalOffToPressedOff Scale(1,1,0)
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         result.Children().InsertAtTop(ContainerVisual_16());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_13(), _rootProgress);
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 06 - NormalOffToPressedOff
-    // Transforms for Controls - 01 - Check - 06 - NormalOffToPressedOff Scale(1,1,0)
+    // - PreComp layer: Controls - 01 - Check - 12 - PointerOverOffToPressedOff
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
     ContainerVisual ContainerVisual_16()
     {
         const auto result = _c.CreateContainerVisual();
@@ -1018,24 +1063,222 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 05 - NormalOffToPointerOverOff
+    // PreComp layer: Controls - 01 - Check - 11 - PointerOverOffToNormalOff
     ContainerVisual ContainerVisual_17()
     {
         const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
         result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 05 - NormalOffToPointerOverOff Scale(1,1,0)
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_18());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_08(), _rootProgress);
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 11 - PointerOverOffToNormalOff
+    // Transforms for Controls - 01 - Check - 11 - PointerOverOffToNormalOff
+    // Scale(1,1,0), Offset(-24,-24,0)
+    ContainerVisual ContainerVisual_18()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.Size({ 48.0F, 48.0F });
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        result.Children().InsertAtTop(ContainerVisual_19());
+        return result;
+    }
+
+    // - PreComp layer: Controls - 01 - Check - 11 - PointerOverOffToNormalOff
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    ContainerVisual ContainerVisual_19()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.Size({ 48.0F, 48.0F });
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
+    ContainerVisual ContainerVisual_20()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.IsVisible(false);
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_21());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_09(), _rootProgress);
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
+    // Transforms for Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
+    // Scale(1,1,0), Offset(-24,-24,0)
+    ContainerVisual ContainerVisual_21()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.Size({ 48.0F, 48.0F });
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        // Shape tree root for layer: Shape Layer 1
+        result.Children().InsertAtTop(ShapeVisual_07());
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 09 - PointerOverOnToPressedOn
+    ContainerVisual ContainerVisual_22()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.IsVisible(false);
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_23());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_10(), _rootProgress);
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 09 - PointerOverOnToPressedOn
+    // Transforms for Controls - 01 - Check - 09 - PointerOverOnToPressedOn
+    // Scale(1,1,0), Offset(-24,-24,0)
+    ContainerVisual ContainerVisual_23()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.Size({ 48.0F, 48.0F });
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        // Shape tree root for layer: Shape Layer 1
+        result.Children().InsertAtTop(ShapeVisual_08());
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 08 - PointerOverOnToNormalOn
+    ContainerVisual ContainerVisual_24()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.IsVisible(false);
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_25());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_11(), _rootProgress);
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 08 - PointerOverOnToNormalOn
+    // Transforms for Controls - 01 - Check - 08 - PointerOverOnToNormalOn
+    // Scale(1,1,0), Offset(-24,-24,0)
+    ContainerVisual ContainerVisual_25()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.Size({ 48.0F, 48.0F });
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        // Shape tree root for layer: Shape Layer 1
+        result.Children().InsertAtTop(ShapeVisual_09());
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
+    ContainerVisual ContainerVisual_26()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.IsVisible(false);
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_27());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_12(), _rootProgress);
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
+    // Transforms for Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
+    // Scale(1,1,0), Offset(-24,-24,0)
+    ContainerVisual ContainerVisual_27()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.Size({ 48.0F, 48.0F });
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        // Shape tree root for layer: Shape Layer 1
+        result.Children().InsertAtTop(ShapeVisual_10());
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 06 - NormalOffToPressedOff
+    ContainerVisual ContainerVisual_28()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.IsVisible(false);
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_29());
+        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_13(), _rootProgress);
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 06 - NormalOffToPressedOff
+    // Transforms for Controls - 01 - Check - 06 - NormalOffToPressedOff
+    // Scale(1,1,0), Offset(-24,-24,0)
+    ContainerVisual ContainerVisual_29()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.Size({ 48.0F, 48.0F });
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        result.Children().InsertAtTop(ContainerVisual_30());
+        return result;
+    }
+
+    // - PreComp layer: Controls - 01 - Check - 06 - NormalOffToPressedOff
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    ContainerVisual ContainerVisual_30()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.Size({ 48.0F, 48.0F });
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 05 - NormalOffToPointerOverOff
+    ContainerVisual ContainerVisual_31()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.IsVisible(false);
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_32());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_14(), _rootProgress);
         return result;
     }
 
     // PreComp layer: Controls - 01 - Check - 05 - NormalOffToPointerOverOff
-    // Transforms for Controls - 01 - Check - 05 - NormalOffToPointerOverOff Scale(1,1,0)
-    ContainerVisual ContainerVisual_18()
+    // Transforms for Controls - 01 - Check - 05 - NormalOffToPointerOverOff Scale(1,1,0),
+    // Offset(-24,-24,0)
+    ContainerVisual ContainerVisual_32()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.Size({ 48.0F, 48.0F });
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        result.Children().InsertAtTop(ContainerVisual_33());
+        return result;
+    }
+
+    // - PreComp layer: Controls - 01 - Check - 05 - NormalOffToPointerOverOff
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    ContainerVisual ContainerVisual_33()
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
@@ -1044,61 +1287,113 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     }
 
     // PreComp layer: Controls - 01 - Check - 04 - NormalOffToNormalOn
-    ContainerVisual ContainerVisual_19()
+    ContainerVisual ContainerVisual_34()
     {
         const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
         result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 04 - NormalOffToNormalOn Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_11());
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_35());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_15(), _rootProgress);
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 03 - NormalOnToPressedOn
-    ContainerVisual ContainerVisual_20()
+    // PreComp layer: Controls - 01 - Check - 04 - NormalOffToNormalOn
+    // Transforms for Controls - 01 - Check - 04 - NormalOffToNormalOn
+    // Scale(1,1,0), Offset(-24,-24,0)
+    ContainerVisual ContainerVisual_35()
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.IsVisible(false);
         result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 03 - NormalOnToPressedOn Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_12());
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        // Shape tree root for layer: Shape Layer 1
+        result.Children().InsertAtTop(ShapeVisual_11());
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 03 - NormalOnToPressedOn
+    ContainerVisual ContainerVisual_36()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.IsVisible(false);
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_37());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_16(), _rootProgress);
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 02 - NormalOnToPointerOverOn
-    ContainerVisual ContainerVisual_21()
+    // PreComp layer: Controls - 01 - Check - 03 - NormalOnToPressedOn
+    // Transforms for Controls - 01 - Check - 03 - NormalOnToPressedOn
+    // Scale(1,1,0), Offset(-24,-24,0)
+    ContainerVisual ContainerVisual_37()
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.IsVisible(false);
         result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 02 - NormalOnToPointerOverOn Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_13());
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        // Shape tree root for layer: Check
+        result.Children().InsertAtTop(ShapeVisual_12());
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 02 - NormalOnToPointerOverOn
+    ContainerVisual ContainerVisual_38()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.IsVisible(false);
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_39());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_17(), _rootProgress);
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff
-    ContainerVisual ContainerVisual_22()
+    // PreComp layer: Controls - 01 - Check - 02 - NormalOnToPointerOverOn
+    // Transforms for Controls - 01 - Check - 02 - NormalOnToPointerOverOn
+    // Scale(1,1,0), Offset(-24,-24,0)
+    ContainerVisual ContainerVisual_39()
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
         result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 01 - Check - 01 - NormalOnToNormalOff  Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_14());
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        // Shape tree root for layer: Check
+        result.Children().InsertAtTop(ShapeVisual_13());
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff
+    ContainerVisual ContainerVisual_40()
+    {
+        const auto result = _c.CreateContainerVisual();
+        // Offset:<24, 24>, Scale:<1.05, 1.05>
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+        result.Children().InsertAtTop(ContainerVisual_41());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_18(), _rootProgress);
+        return result;
+    }
+
+    // PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff
+    // Transforms for Controls - 01 - Check - 01 - NormalOnToNormalOff
+    // Scale(1,1,0), Offset(-24,-24,0)
+    ContainerVisual ContainerVisual_41()
+    {
+        const auto result = _c.CreateContainerVisual();
+        result.Clip(_insetClip_0);
+        result.Size({ 48.0F, 48.0F });
+        // Offset:<-24, -24>, Scale:<1, 1>
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
+        // Shape tree root for layer: Shape Layer 1
+        result.Children().InsertAtTop(ShapeVisual_14());
         return result;
     }
 
@@ -1112,41 +1407,41 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         // PreComp layer: Indeterminate State
         children.InsertAtTop(ContainerVisual_00());
         // PreComp layer: Controls - 01 - Check - 18 - PressedOffToNormalOn
-        children.InsertAtTop(ContainerVisual_01());
-        // PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn
         children.InsertAtTop(ContainerVisual_02());
-        // PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
-        children.InsertAtTop(ContainerVisual_03());
-        // PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
+        // PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn
         children.InsertAtTop(ContainerVisual_04());
-        // PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff
-        children.InsertAtTop(ContainerVisual_05());
-        // PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
+        // PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
         children.InsertAtTop(ContainerVisual_06());
-        // PreComp layer: Controls - 01 - Check - 12 - PointerOverOffToPressedOff
-        children.InsertAtTop(ContainerVisual_07());
-        // PreComp layer: Controls - 01 - Check - 11 - PointerOverOffToNormalOff
-        children.InsertAtTop(ContainerVisual_09());
-        // PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
-        children.InsertAtTop(ContainerVisual_11());
-        // PreComp layer: Controls - 01 - Check - 09 - PointerOverOnToPressedOn
+        // PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
+        children.InsertAtTop(ContainerVisual_08());
+        // PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff
+        children.InsertAtTop(ContainerVisual_10());
+        // PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
         children.InsertAtTop(ContainerVisual_12());
-        // PreComp layer: Controls - 01 - Check - 08 - PointerOverOnToNormalOn
-        children.InsertAtTop(ContainerVisual_13());
-        // PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
+        // PreComp layer: Controls - 01 - Check - 12 - PointerOverOffToPressedOff
         children.InsertAtTop(ContainerVisual_14());
-        // PreComp layer: Controls - 01 - Check - 06 - NormalOffToPressedOff
-        children.InsertAtTop(ContainerVisual_15());
-        // PreComp layer: Controls - 01 - Check - 05 - NormalOffToPointerOverOff
+        // PreComp layer: Controls - 01 - Check - 11 - PointerOverOffToNormalOff
         children.InsertAtTop(ContainerVisual_17());
-        // PreComp layer: Controls - 01 - Check - 04 - NormalOffToNormalOn
-        children.InsertAtTop(ContainerVisual_19());
-        // PreComp layer: Controls - 01 - Check - 03 - NormalOnToPressedOn
+        // PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
         children.InsertAtTop(ContainerVisual_20());
-        // PreComp layer: Controls - 01 - Check - 02 - NormalOnToPointerOverOn
-        children.InsertAtTop(ContainerVisual_21());
-        // PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff
+        // PreComp layer: Controls - 01 - Check - 09 - PointerOverOnToPressedOn
         children.InsertAtTop(ContainerVisual_22());
+        // PreComp layer: Controls - 01 - Check - 08 - PointerOverOnToNormalOn
+        children.InsertAtTop(ContainerVisual_24());
+        // PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
+        children.InsertAtTop(ContainerVisual_26());
+        // PreComp layer: Controls - 01 - Check - 06 - NormalOffToPressedOff
+        children.InsertAtTop(ContainerVisual_28());
+        // PreComp layer: Controls - 01 - Check - 05 - NormalOffToPointerOverOff
+        children.InsertAtTop(ContainerVisual_31());
+        // PreComp layer: Controls - 01 - Check - 04 - NormalOffToNormalOn
+        children.InsertAtTop(ContainerVisual_34());
+        // PreComp layer: Controls - 01 - Check - 03 - NormalOnToPressedOn
+        children.InsertAtTop(ContainerVisual_36());
+        // PreComp layer: Controls - 01 - Check - 02 - NormalOnToPointerOverOn
+        children.InsertAtTop(ContainerVisual_38());
+        // PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff
+        children.InsertAtTop(ContainerVisual_40());
         return result;
     }
 
@@ -1173,8 +1468,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - - PreComp layer: Controls - 01 - Check - 18 - PressedOffToNormalOn
-    // - - Transforms for Controls - 01 - Check - 18 - PressedOffToNormalOn Scale(1,1,0)
+    // - - - - PreComp layer: Controls - 01 - Check - 18 - PressedOffToNormalOn
+    // - - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - - Shape tree root for layer: Shape Layer 1
     // -  Scale:0.7,0.7, Offset:<24, 23>
     // TrimEnd
     ScalarKeyFrameAnimation TrimEndScalarAnimation_0_to_1_0()
@@ -1188,9 +1484,10 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - - PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn
-    // - - Transforms for Controls - 01 - Check - 17 - PressedOffToPointerOverOn
-    // Scale(1,1,0)
+    // - - - - PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn -
+    // Tweak
+    // - - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - - Shape tree root for layer: Shape Layer 1
     // -  Scale:0.7,0.7, Offset:<24, 23>
     // TrimEnd
     ScalarKeyFrameAnimation TrimEndScalarAnimation_0_to_1_1()
@@ -1204,8 +1501,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - - PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
-    // - - Transforms for Controls - 01 - Check - 16 - PressedOffToPressedOn Scale(1,1,0)
+    // - - - - PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
+    // - - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - - Shape tree root for layer: Shape Layer 2
     // -  Scale:0.7,0.7, Offset:<24, 23>
     // TrimEnd
     ScalarKeyFrameAnimation TrimEndScalarAnimation_0_to_1_2()
@@ -1219,9 +1517,10 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - - PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
-    // - - Transforms for Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
-    // Scale(1,1,0)
+    // - - - - PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn -
+    // Tweak
+    // - - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - - Shape tree root for layer: Shape Layer 1
     // -  Scale:0.7,0.7, Offset:<24, 23>
     // TrimEnd
     ScalarKeyFrameAnimation TrimEndScalarAnimation_0_to_1_3()
@@ -1235,8 +1534,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - - PreComp layer: Controls - 01 - Check - 04 - NormalOffToNormalOn
-    // - - Transforms for Controls - 01 - Check - 04 - NormalOffToNormalOn Scale(1,1,0)
+    // - - - - PreComp layer: Controls - 01 - Check - 04 - NormalOffToNormalOn
+    // - - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - - Shape tree root for layer: Shape Layer 1
     // -  Scale:0.7,0.7, Offset:<24, 23>
     // TrimEnd
     ScalarKeyFrameAnimation TrimEndScalarAnimation_0_to_1_4()
@@ -1250,8 +1550,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - - PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
-    // - - Transforms for Controls - 01 - Check - 15 - PressedOnToNormalOff Scale(1,1,0)
+    // - - - - PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
+    // - - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - - Shape tree root for layer: Shape Layer 1
     // -  Scale:0.7,0.7, Offset:<24, 23>
     // TrimStart
     ScalarKeyFrameAnimation TrimStartScalarAnimation_0_to_1_0()
@@ -1265,9 +1566,10 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - - PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff
-    // - - Transforms for Controls - 01 - Check - 14 - PressedOnToPointerOverOff
-    // Scale(1,1,0)
+    // - - - - PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff -
+    // Tweak
+    // - - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - - Shape tree root for layer: Shape Layer 1
     // -  Scale:0.7,0.7, Offset:<24, 23>
     // TrimStart
     ScalarKeyFrameAnimation TrimStartScalarAnimation_0_to_1_1()
@@ -1281,8 +1583,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - - PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
-    // - - Transforms for Controls - 01 - Check - 13 - PressedOnToPressedOff Scale(1,1,0)
+    // - - - - PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
+    // - - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - - Shape tree root for layer: Shape Layer 1
     // -  Scale:0.7,0.7, Offset:<24, 23>
     // TrimStart
     ScalarKeyFrameAnimation TrimStartScalarAnimation_0_to_1_2()
@@ -1296,9 +1599,10 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - - PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
-    // - - Transforms for Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
-    // Scale(1,1,0)
+    // - - - - PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff -
+    // Tweak
+    // - - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - - Shape tree root for layer: Shape Layer 1
     // -  Scale:0.7,0.7, Offset:<24, 23>
     // TrimStart
     ScalarKeyFrameAnimation TrimStartScalarAnimation_0_to_1_3()
@@ -1312,8 +1616,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // - - - PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff 
-    // - - Transforms for Controls - 01 - Check - 01 - NormalOnToNormalOff  Scale(1,1,0)
+    // - - - - PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff
+    // - - - Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // - - Shape tree root for layer: Shape Layer 1
     // -  Scale:0.7,0.7, Offset:<24, 23>
     // TrimStart
     ScalarKeyFrameAnimation TrimStartScalarAnimation_0_to_1_4()
@@ -1325,7 +1630,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // PreComp layer: Indeterminate State
+    // - PreComp layer: Indeterminate State
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
     // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_00()
     {
@@ -1336,7 +1642,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 18 - PressedOffToNormalOn
+    // - PreComp layer: Controls - 01 - Check - 18 - PressedOffToNormalOn
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
     // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_01()
     {
@@ -1347,7 +1654,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn
+    // - PreComp layer: Controls - 01 - Check - 17 - PressedOffToPointerOverOn
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
     // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_02()
     {
@@ -1358,7 +1666,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
+    // - PreComp layer: Controls - 01 - Check - 16 - PressedOffToPressedOn
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
     // Shape tree root for layer: Shape Layer 2
     ShapeVisual ShapeVisual_03()
     {
@@ -1369,7 +1678,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
+    // - PreComp layer: Controls - 01 - Check - 15 - PressedOnToNormalOff
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
     // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_04()
     {
@@ -1380,7 +1690,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff
+    // - PreComp layer: Controls - 01 - Check - 14 - PressedOnToPointerOverOff
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
     // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_05()
     {
@@ -1391,7 +1702,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
+    // - PreComp layer: Controls - 01 - Check - 13 - PressedOnToPressedOff
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
     // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_06()
     {
@@ -1402,7 +1714,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
+    // - PreComp layer: Controls - 01 - Check - 10 - PointerOverOffToPointerOverOn
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
     // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_07()
     {
@@ -1413,7 +1726,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 09 - PointerOverOnToPressedOn
+    // - PreComp layer: Controls - 01 - Check - 09 - PointerOverOnToPressedOn
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
     // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_08()
     {
@@ -1424,7 +1738,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 08 - PointerOverOnToNormalOn
+    // - PreComp layer: Controls - 01 - Check - 08 - PointerOverOnToNormalOn
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
     // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_09()
     {
@@ -1435,7 +1750,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
+    // - PreComp layer: Controls - 01 - Check - 07 - PointerOverOnToPointerOverOff
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
     // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_10()
     {
@@ -1446,7 +1762,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 04 - NormalOffToNormalOn
+    // - PreComp layer: Controls - 01 - Check - 04 - NormalOffToNormalOn
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
     // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_11()
     {
@@ -1457,8 +1774,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 03 - NormalOnToPressedOn
-    // Shape tree root for layer: Shape Layer 1
+    // - PreComp layer: Controls - 01 - Check - 03 - NormalOnToPressedOn
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Check
     ShapeVisual ShapeVisual_12()
     {
         const auto result = _c.CreateShapeVisual();
@@ -1468,8 +1786,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 02 - NormalOnToPointerOverOn
-    // Shape tree root for layer: Shape Layer 1
+    // - PreComp layer: Controls - 01 - Check - 02 - NormalOnToPointerOverOn
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
+    // Shape tree root for layer: Check
     ShapeVisual ShapeVisual_13()
     {
         const auto result = _c.CreateShapeVisual();
@@ -1479,7 +1798,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         return result;
     }
 
-    // PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff 
+    // - PreComp layer: Controls - 01 - Check - 01 - NormalOnToNormalOff
+    // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
     // Shape tree root for layer: Shape Layer 1
     ShapeVisual ShapeVisual_14()
     {
@@ -1513,8 +1833,8 @@ public:
     AnimatedAcceptVisualSource_AnimatedVisual(
         Compositor compositor,
         CompositionPropertySet themeProperties)
-        : _c{ compositor }
-        , _themeProperties{ themeProperties }
+        : _c{compositor}
+        , _themeProperties{themeProperties}
         , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
     {
         winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.put()));
@@ -1628,47 +1948,47 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedAccep
 {
     return winrt::single_threaded_map<winrt::hstring, double>(
         std::map<winrt::hstring, double>
-    {
-        { L"NormalOnToNormalOff_Start", 0.0 },
-        { L"NormalOnToNormalOff_End", 0.0253125 },
-        { L"NormalOnToPointerOverOn_Start", 0.0315625 },
-        { L"NormalOnToPointerOverOn_End", 0.0565625 },
-        { L"NormalOnToPressedOn_Start", 0.0628125 },
-        { L"NormalOnToPressedOn_End", 0.0878125 },
-        { L"NormalOffToNormalOn_Start", 0.0940625 },
-        { L"NormalOffToNormalOn_End", 0.2128125 },
-        { L"NormalOffToPointerOverOff_Start", 0.2190625 },
-        { L"NormalOffToPointerOverOff_End", 0.2440625 },
-        { L"NormalOffToPressedOff_Start", 0.2503125 },
-        { L"NormalOffToPressedOff_End", 0.2753125 },
-        { L"PointerOverOnToPointerOverOff_Start", 0.2815625 },
-        { L"PointerOverOnToPointerOverOff_End", 0.3065625 },
-        { L"PointerOverOnToNormalOn_Start", 0.3128125 },
-        { L"PointerOverOnToNormalOn_End", 0.3378125 },
-        { L"PointerOverOnToPressedOn_Start", 0.3440625 },
-        { L"PointerOverOnToPressedOn_End", 0.3690625 },
-        { L"PointerOverOffToPointerOverOn_Start", 0.3753125 },
-        { L"PointerOverOffToPointerOverOn_End", 0.4940625 },
-        { L"PointerOverOffToNormalOff_Start", 0.5003125 },
-        { L"PointerOverOffToNormalOff_End", 0.5253125 },
-        { L"PointerOverOffToPressedOff_Start", 0.5315625 },
-        { L"PointerOverOffToPressedOff_End", 0.5565625 },
-        { L"PressedOnToPressedOff_Start", 0.5628125 },
-        { L"PressedOnToPressedOff_End", 0.5878125 },
-        { L"PressedOnToPointerOverOff_Start", 0.5940625 },
-        { L"PressedOnToPointerOverOff_End", 0.6190625 },
-        { L"PressedOnToNormalOff_Start", 0.6253125 },
-        { L"PressedOnToNormalOff_End", 0.6503125 },
-        { L"PressedOffToPressedOn_Start", 0.6565625 },
-        { L"PressedOffToPressedOn_End", 0.7128125 },
-        { L"PressedOffToPointerOverOn_Start", 0.7190625 },
-        { L"PressedOffToPointerOverOn_End", 0.8378125 },
-        { L"PressedOffToNormalOn_Start", 0.8440625 },
-        { L"PressedOffToNormalOn_End", 0.9628125 },
-        { L"NormalIndeterminate", 0.9690625 },
-        { L"PointerOverIndeterminate", 0.9815625 },
-        { L"PressedIndeterminate", 0.9940625 },
-    }
+        {
+            { L"NormalOnToNormalOff_Start", 0.0 },
+            { L"NormalOnToNormalOff_End", 0.0253125 },
+            { L"NormalOnToPointerOverOn_Start", 0.0315625 },
+            { L"NormalOnToPointerOverOn_End", 0.0565625 },
+            { L"NormalOnToPressedOn_Start", 0.0628125 },
+            { L"NormalOnToPressedOn_End", 0.0878125 },
+            { L"NormalOffToNormalOn_Start", 0.0940625 },
+            { L"NormalOffToNormalOn_End", 0.2128125 },
+            { L"NormalOffToPointerOverOff_Start", 0.2190625 },
+            { L"NormalOffToPointerOverOff_End", 0.2440625 },
+            { L"NormalOffToPressedOff_Start", 0.2503125 },
+            { L"NormalOffToPressedOff_End", 0.2753125 },
+            { L"PointerOverOnToPointerOverOff_Start", 0.2815625 },
+            { L"PointerOverOnToPointerOverOff_End", 0.3065625 },
+            { L"PointerOverOnToNormalOn_Start", 0.3128125 },
+            { L"PointerOverOnToNormalOn_End", 0.3378125 },
+            { L"PointerOverOnToPressedOn_Start", 0.3440625 },
+            { L"PointerOverOnToPressedOn_End", 0.3690625 },
+            { L"PointerOverOffToPointerOverOn_Start", 0.3753125 },
+            { L"PointerOverOffToPointerOverOn_End", 0.4940625 },
+            { L"PointerOverOffToNormalOff_Start", 0.5003125 },
+            { L"PointerOverOffToNormalOff_End", 0.5253125 },
+            { L"PointerOverOffToPressedOff_Start", 0.5315625 },
+            { L"PointerOverOffToPressedOff_End", 0.5565625 },
+            { L"PressedOnToPressedOff_Start", 0.5628125 },
+            { L"PressedOnToPressedOff_End", 0.5878125 },
+            { L"PressedOnToPointerOverOff_Start", 0.5940625 },
+            { L"PressedOnToPointerOverOff_End", 0.6190625 },
+            { L"PressedOnToNormalOff_Start", 0.6253125 },
+            { L"PressedOnToNormalOff_End", 0.6503125 },
+            { L"PressedOffToPressedOn_Start", 0.6565625 },
+            { L"PressedOffToPressedOn_End", 0.7128125 },
+            { L"PressedOffToPointerOverOn_Start", 0.7190625 },
+            { L"PressedOffToPointerOverOn_End", 0.8378125 },
+            { L"PressedOffToNormalOn_Start", 0.8440625 },
+            { L"PressedOffToNormalOn_End", 0.9628125 },
+            { L"NormalIndeterminate", 0.9690625 },
+            { L"PointerOverIndeterminate", 0.9815625 },
+            { L"PressedIndeterminate", 0.9940625 },
+        }
     ).GetView();
 }
 
