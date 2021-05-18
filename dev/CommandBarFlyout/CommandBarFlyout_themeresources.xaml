@@ -124,6 +124,7 @@
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="AllowFocusOnInteraction" Value="False" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter x:Uid="CommandBarFlyoutAppBarButtonLocalizedControlType" Property="AutomationProperties.LocalizedControlType" Value="menu item" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="AppBarButton">
@@ -343,6 +344,7 @@
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="AllowFocusOnInteraction" Value="False" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter x:Uid="CommandBarFlyoutAppBarToggleButtonLocalizedControlType" Property="AutomationProperties.LocalizedControlType" Value="menu item" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="AppBarToggleButton">
@@ -748,6 +750,7 @@
         <contract7Present:Setter Property="CommandBarOverflowPresenterStyle" Value="{StaticResource CommandBarFlyoutCommandBarOverflowPresenterStyle}" />
         <contract7NotPresent:Setter Property="CommandBarOverflowPresenterStyle" Value="{StaticResource CommandBarFlyoutCommandBarOverflowPresenterStyleRS4}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+        <Setter x:Uid="CommandBarFlyoutCommandBarLocalizedControlType" Property="AutomationProperties.LocalizedControlType" Value="menu" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:CommandBarFlyoutCommandBar">

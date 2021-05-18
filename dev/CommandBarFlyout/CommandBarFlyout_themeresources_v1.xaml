@@ -43,6 +43,7 @@
         <Setter Property="Height" Value="40" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="AllowFocusOnInteraction" Value="False" />
+        <Setter x:Uid="CommandBarFlyoutAppBarButtonLocalizedControlType" Property="AutomationProperties.LocalizedControlType" Value="menu item" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="AppBarButton">
@@ -254,6 +255,7 @@
         <Setter Property="Height" Value="40" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="AllowFocusOnInteraction" Value="False" />
+        <Setter x:Uid="CommandBarFlyoutAppBarToggleButtonLocalizedControlType" Property="AutomationProperties.LocalizedControlType" Value="menu item" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="AppBarToggleButton">
