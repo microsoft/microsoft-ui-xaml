@@ -785,7 +785,8 @@
                                 contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"/>
                             <local:AnimatedIcon x:Name="CheckGlyph"
                                                 Foreground="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}"
-                                                contract7NotPresent:Opacity="0">
+                                                contract7NotPresent:Opacity="0"
+                                                Margin="0,1,0,-1">
                                 <animatedvisuals:AnimatedAcceptVisualSource/>
                                 <local:AnimatedIcon.FallbackIconSource>
                                     <local:FontIconSource
