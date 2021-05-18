@@ -22,8 +22,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
     public class CalendarViewTests : ApiTestBase
-    {
+    {        
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Internal bug 33335709 - Address inconsistent property order in dump.
         public void VerifyVisualTree()
         {
             CalendarView calendarView = null;
