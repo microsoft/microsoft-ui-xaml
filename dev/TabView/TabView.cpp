@@ -140,7 +140,7 @@ void TabView::OnApplyTemplate()
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-        if (!SharedHelpers::Is21H1OrHigher() && !XamlControlsResources::IsUsingControlsResourcesVersion2())
+        if (!SharedHelpers::Is21H1OrHigher())
         {
             if (auto shadowCaster = GetTemplateChildT<winrt::Grid>(L"ShadowCaster", controlProtected))
             {
@@ -152,7 +152,6 @@ void TabView::OnApplyTemplate()
                 const auto currentTranslation = shadowCaster.Translation();
                 const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
 
-                shadowCaster.Visibility(winrt::Visibility::Visible);
                 shadowCaster.Translation(translation);
 
                 shadowCaster.Shadow(shadow);
