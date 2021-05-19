@@ -9,7 +9,6 @@
 #include "DoubleUtil.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
-#include "XamlControlsResources.h"
 #include "SharedHelpers.h"
 #include <Vector.h>
 
@@ -151,7 +150,6 @@ void TabView::OnApplyTemplate()
 
                 const auto currentTranslation = shadowCaster.Translation();
                 const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
-
                 shadowCaster.Translation(translation);
 
                 shadowCaster.Shadow(shadow);
