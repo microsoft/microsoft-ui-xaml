@@ -76,7 +76,8 @@
                         <local:AnimatedIcon x:Name="Content"
                             Height="16"
                             Width="16"
-                            local:AnimatedIcon.State="Normal"                                            
+                            local:AnimatedIcon.State="Normal"
+                            MirroredWhenRightToLeft="True"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                             AutomationProperties.AccessibilityView="Raw">
