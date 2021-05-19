@@ -7,6 +7,12 @@
 #include "CommandBarFlyoutCommandBar.properties.h"
 #include "CommandBarFlyoutTrace.h"
 
+enum class CommandBarFlyoutOpenCloseAnimationKind
+{
+    Opacity,
+    Clip
+};
+
 class CommandBarFlyoutCommandBar :
     public ReferenceTracker<CommandBarFlyoutCommandBar, winrt::implementation::CommandBarFlyoutCommandBarT>,
     public CommandBarFlyoutCommandBarProperties
@@ -20,6 +26,7 @@ public:
     void SetOwningFlyout(winrt::CommandBarFlyout const& owningFlyout);
 
     bool HasOpenAnimation();
+    CommandBarFlyoutOpenCloseAnimationKind OpenAnimationKind() { return m_openAnimationKind; };
     void PlayOpenAnimation();
     bool HasCloseAnimation();
     bool HasSecondaryOpenCloseAnimations();
@@ -28,9 +35,12 @@ public:
     void BindOwningFlyoutPresenterToCornerRadius();
 
     void ClearShadow();
+    void SetPresenter(winrt::FlyoutPresenter const& presenter);
 
     // IControlOverrides / IControlOverridesHelper
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
+
+    bool m_commandBarFlyoutIsOpening{ false };
 
 private:
     void AttachEventHandlers();
@@ -42,6 +52,8 @@ private:
     void UpdateTemplateSettings();
     void EnsureAutomationSetCountAndPosition();
     void EnsureFocusedPrimaryCommand();
+
+    void SetPresenterName(winrt::FlyoutPresenter const& presenter);
 
     static bool IsControlFocusable(
         winrt::Control const& control,
@@ -63,13 +75,16 @@ private:
         winrt::IObservableVector<winrt::ICommandBarElement> const& commands,
         winrt::Control const& moreButton);
 
-    void AddShadow();
-    void UpdateShadow();
+    void AddProjectedShadow();
+    void UpdateProjectedShadow();
+    void ClearProjectedShadow();
 
     tracker_ref<winrt::FrameworkElement> m_primaryItemsRoot{ this };
+    tracker_ref<winrt::Popup> m_overflowPopup{ this };
     tracker_ref<winrt::FrameworkElement> m_secondaryItemsRoot{ this };
     tracker_ref<winrt::ButtonBase> m_moreButton{ this };
     weak_ref<winrt::CommandBarFlyout> m_owningFlyout{ nullptr };
+    winrt::IPopup4::ActualPlacementChanged_revoker m_overflowPopupActualPlacementChangedRevoker{};
     RoutedEventHandler_revoker m_keyDownRevoker{};
     winrt::UIElement::PreviewKeyDown_revoker m_secondaryItemsRootPreviewKeyDownRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_secondaryItemsRootSizeChangedRevoker{};
@@ -82,6 +97,8 @@ private:
     tracker_ref<winrt::FrameworkElement> m_currentPrimaryItemsEndElement{ this };
     tracker_ref<winrt::FrameworkElement> m_currentSecondaryItemsStartElement{ this };
 
+    CommandBarFlyoutOpenCloseAnimationKind m_openAnimationKind{ CommandBarFlyoutOpenCloseAnimationKind::Clip };
+    weak_ref<winrt::FlyoutPresenter> m_flyoutPresenter{};
     tracker_ref<winrt::Storyboard> m_openingStoryboard{ this };
     tracker_ref<winrt::Storyboard> m_closingStoryboard{ this };
     winrt::Storyboard::Completed_revoker m_openingStoryboardCompletedRevoker{};

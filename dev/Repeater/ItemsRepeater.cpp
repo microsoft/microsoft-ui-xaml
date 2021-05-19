@@ -42,6 +42,7 @@ ItemsRepeater::ItemsRepeater()
 
     Loaded({ this, &ItemsRepeater::OnLoaded });
     Unloaded({ this, &ItemsRepeater::OnUnloaded });
+    LayoutUpdated({ this, &ItemsRepeater::OnLayoutUpdated });
 
     // Initialize the cached layout to the default value
     auto layout = Layout().as<winrt::VirtualizingLayout>();
@@ -96,6 +97,23 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
         throw winrt::hresult_error(E_FAIL, L"Cannot run layout in the middle of a collection change.");
     }
 
+    auto layout = Layout();
+
+    if (layout)
+    {
+        auto const stackLayout = layout.try_as<winrt::StackLayout>();
+
+        if (stackLayout && ++m_stackLayoutMeasureCounter >= s_maxStackLayoutIterations)
+        {
+            REPEATER_TRACE_INFO(L"MeasureOverride shortcut - %d\n", m_stackLayoutMeasureCounter);
+            // Shortcut the apparent layout cycle by returning the previous desired size.
+            // This can occur when children have variable sizes that prevent the ItemsPresenter's desired size from settling.
+            const winrt::Rect layoutExtent = m_viewportManager->GetLayoutExtent();
+            const winrt::Size desiredSize{ layoutExtent.Width - layoutExtent.X, layoutExtent.Height - layoutExtent.Y };
+            return desiredSize;
+        }
+    }
+
     m_viewportManager->OnOwnerMeasuring();
 
     m_isLayoutInProgress = true;
@@ -108,7 +126,7 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
     winrt::Rect extent{};
     winrt::Size desiredSize{};
 
-    if (auto layout = Layout())
+    if (layout)
     {
         auto layoutContext = GetLayoutContext();
 
@@ -499,12 +517,20 @@ void ItemsRepeater::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt:
 
 void ItemsRepeater::OnUnloaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
+    m_stackLayoutMeasureCounter = 0u;
+
     ++_unloadedCounter;
     // Only reset the scrollers if this unload event is in-sync.
     if (_unloadedCounter == _loadedCounter)
     {
         m_viewportManager->ResetScrollers();
     }
+}
+
+void ItemsRepeater::OnLayoutUpdated(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
+{
+    // Now that the layout has settled, reset the measure counter to detect the next potential StackLayout layout cycle.
+    m_stackLayoutMeasureCounter = 0u;
 }
 
 void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& oldValue, const winrt::ItemsSourceView& newValue)
@@ -520,8 +546,6 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
     {
         m_itemsSourceViewChanged.revoke();
     }
-
-   
 
     if (newValue)
     {
@@ -669,6 +693,7 @@ void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::
         oldValue.UninitializeForContext(GetLayoutContext());
         m_measureInvalidated.revoke();
         m_arrangeInvalidated.revoke();
+        m_stackLayoutMeasureCounter = 0u;
         
         // Walk through all the elements and make sure they are cleared
         auto children = Children();

@@ -127,22 +127,41 @@ CommandBarFlyout::CommandBarFlyout()
 
             if (auto commandBar = m_commandBar.get())
             {
-                // If we don't have IFlyoutBase5 available, then we assume a standard show mode.
-                if (!thisAsFlyoutBase5 || thisAsFlyoutBase5.ShowMode() == winrt::FlyoutShowMode::Standard)
-                {
-                    commandBar.IsOpen(true);
-                }
-
+                // If we are in AlwaysExpanded mode then we want to make sure we open in Standard ShowMode
+                // Otherwise the timing on the creation of the two drops shows is such that the primary items
+                // draw their shadow on top of the secondary items.
                 // When CommandBarFlyout is in AlwaysOpen state, don't show the overflow button
                 if (AlwaysExpanded())
                 {
-                    commandBar.IsOpen(true);
                     commandBar.OverflowButtonVisibility(winrt::Windows::UI::Xaml::Controls::CommandBarOverflowButtonVisibility::Collapsed);
+                    if (thisAsFlyoutBase5)
+                    {
+                        thisAsFlyoutBase5.ShowMode(winrt::FlyoutShowMode::Standard);
+                    }
                 }
                 else
                 {
                     commandBar.OverflowButtonVisibility(winrt::Windows::UI::Xaml::Controls::CommandBarOverflowButtonVisibility::Auto);
                 }
+                SharedHelpers::QueueCallbackForCompositionRendering(
+                    [strongThis = get_strong(), thisAsFlyoutBase5, commandBar]
+                    {
+                        if (auto const commandBarFlyoutCommandBar = winrt::get_self<CommandBarFlyoutCommandBar>(commandBar))
+                        {
+                            auto const scopeGuard = gsl::finally([commandBarFlyoutCommandBar]()
+                                {
+                                    commandBarFlyoutCommandBar->m_commandBarFlyoutIsOpening = false;
+                                });
+                            commandBarFlyoutCommandBar->m_commandBarFlyoutIsOpening = true;
+
+                            // If we don't have IFlyoutBase5 available, then we assume a standard show mode.
+                            if (!thisAsFlyoutBase5 || thisAsFlyoutBase5.ShowMode() == winrt::FlyoutShowMode::Standard)
+                            {
+                                commandBar.IsOpen(true);
+                            }
+                        }
+                    }
+                );
             }
 
             if (m_primaryCommands.Size() > 0)
@@ -175,6 +194,9 @@ CommandBarFlyout::CommandBarFlyout()
         {
             if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
             {
+                // We are not able to fade this shadow out with the V2 default opacity closing animition.
+                // Additionally we drop shadows doing play well with the clip animation of the V1 style.
+                // So we need to remove it in all cases.
                 RemoveDropShadow();
 
                 if (!m_isClosingAfterCloseAnimation && commandBar->HasCloseAnimation())
@@ -189,20 +211,22 @@ CommandBarFlyout::CommandBarFlyout()
                             m_isClosingAfterCloseAnimation = false;
                         });
                 }
+                else
+                {
+                    // If we don't have an animation, close the command bar and thus it's subflyouts.
+                    commandBar->IsOpen(false);
+                }
 
-                // Close commandbar and thus other associated flyouts
-                commandBar->IsOpen(false);
-
-                //CommandBarFlyoutCommandBar.Closed will be called when
-                //clicking the more (...) button, we clear the translations
-                //here
-                commandBar->ClearShadow();
+                //Drop shadows do not play nicely with clip animations, if we are using both, clear the shadow
+                if (SharedHelpers::Is21H1OrHigher() && commandBar->OpenAnimationKind() == CommandBarFlyoutOpenCloseAnimationKind::Clip)
+                {
+                    commandBar->ClearShadow();
+                }
             }
         }
     });
 
-    // If we didn't close the CommandBar in the Closing event, we want to do it here,
-    // in order to ensure that we're always starting from a known state when opening the flyout.
+    // Close the CommandBar in order to ensure that we're always starting from a known state when opening the flyout.
     Closed({
         [this](auto const&, auto const&)
         {
@@ -281,10 +305,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
 
     if (SharedHelpers::Is21H1OrHigher())
     {
-        // Since DropShadows don't play well with the entrance animation for the presenter,
-        // we'll need to fade it in. This name helps us locate the element to set the fade in
-        // flag in the OS code.
-        presenter.Name(L"DropShadowFadeInTarget");
+        commandBar->SetPresenter(presenter);
 
         // We'll need to remove the presenter's drop shadow on the commandBar's Opening/Closing
         // because we need it to disappear during its expand/shrink animation when the Overflow is opened.
@@ -300,7 +321,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
                         // We'll only need to do the mid-animation remove/add when the "..." button is
                         // pressed to open/close the overflow. This means we shouldn't do it for AlwaysExpanded
                         // and if there's nothing in the overflow.
-                        if (!AlwaysExpanded() && m_secondaryCommands.Size() > 0)
+                        if (m_secondaryCommands.Size() > 0)
                         {
                             RemoveDropShadow();
                         }
