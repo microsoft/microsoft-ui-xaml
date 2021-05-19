@@ -162,6 +162,11 @@ CommandBarFlyout::CommandBarFlyout()
                     commandBar->PlayOpenAnimation();
                 }
             }
+
+            if (auto commandBarPeer = winrt::FrameworkElementAutomationPeer::FromElement(m_commandBar.get()))
+            {
+                commandBarPeer.RaiseAutomationEvent(winrt::AutomationEvents::MenuOpened);
+            }
         }
     });
 
@@ -201,11 +206,16 @@ CommandBarFlyout::CommandBarFlyout()
     Closed({
         [this](auto const&, auto const&)
         {
-            if (auto commandBar = m_commandBar.get())
+            if (auto& commandBar = m_commandBar.get())
             {
                 if (commandBar.IsOpen())
                 {
                     commandBar.IsOpen(false);
+                }
+
+                if (auto commandBarPeer = winrt::FrameworkElementAutomationPeer::FromElement(commandBar))
+                {
+                    commandBarPeer.RaiseAutomationEvent(winrt::AutomationEvents::MenuClosed);
                 }
             }
         }
