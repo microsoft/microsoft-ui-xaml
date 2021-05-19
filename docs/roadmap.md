@@ -59,7 +59,7 @@ WinUI 3 is currently available as a part of Project Reunion 0.5 for building sta
 
 [Windows UI Library 3 - Project Reunion 0.5 (March 2021)](https://docs.microsoft.com/windows/apps/winui/winui3/)
 
-There's also a preview version of WinUI 3 available that supports building UWP apps - see the [preview release notes](https://docs.microsoft.com/windows/apps/winui/winui3/release-notes/winui3-project-reunion-0.5-preview). Note that preview releases have limitations and known issues, so they are not equipped for production apps. 
+There's also a preview version of WinUI 3 available that supports building UWP apps - see the [preview release notes](https://aka.ms/winui3/projectreunion-0.8preview). Note that preview releases have limitations and known issues, so they are not equipped for production apps. 
 
 The 3rd generation of WinUI has some key benefits over the 2nd generation, including:
 
@@ -128,7 +128,7 @@ For questions or status updates on either features listed here, or features not 
 Blank -  Not available
 
 
-**WinUI 3 - Project Reunion 0.5** is our latest release. 
+**WinUI 3 - Project Reunion 0.8 Preview** is our latest release. 
 
 | Customer Capability                                                         | Preview 3 (Nov 2020)                | Preview 4 (Feb 2021)                | Project Reunion 0.5 (March 2021)            | Project Reunion 0.8 (June 2021)              | Planned for a future update         |
 |-----------------------------------------------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|
