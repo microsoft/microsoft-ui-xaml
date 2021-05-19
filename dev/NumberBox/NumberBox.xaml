@@ -170,7 +170,7 @@
                             HorizontalAlignment="Left">
 
                             <Grid x:Name="PopupContentRoot"
-                                Padding="8"
+                                Padding="6"
                                 Background="{ThemeResource NumberBoxPopupBackground}"
                                 BorderBrush="{ThemeResource NumberBoxPopupBorderBrush}"
                                 BorderThickness="{ThemeResource NumberBoxPopupBorderThickness}"
@@ -228,7 +228,7 @@
 
                                 <RepeatButton x:Name="PopupUpSpinButton"
                                     Style="{StaticResource NumberBoxPopupSpinButtonStyle}"
-                                    Margin="0,0,0,8"
+                                    Margin="0,0,0,4"
                                     Content="&#xE70E;"/>
 
                                 <RepeatButton x:Name="PopupDownSpinButton"
@@ -245,6 +245,8 @@
                             Visibility="Collapsed"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
+                            Margin="4,0,0,0"
+                            IsTabStop="False"
                             AutomationProperties.AccessibilityView="Raw">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
@@ -301,8 +303,8 @@
         <Style.Setters>
             <Setter Property="AutomationProperties.AccessibilityView" Value="Raw"/>
             <Setter Property="IsTabStop" Value="False"/>
-            <Setter Property="Width" Value="30"/>
-            <Setter Property="Height" Value="30"/>
+            <Setter Property="Width" Value="36"/>
+            <Setter Property="Height" Value="36"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="BorderThickness" Value="{ThemeResource NumberBoxPopupSpinButtonBorderThickness}"/>
             <Setter Property="FontSize" Value="16"/>
