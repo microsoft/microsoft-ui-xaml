@@ -90,7 +90,10 @@ void TabView::OnApplyTemplate()
 
     if (!SharedHelpers::Is21H1OrHigher())
     {
-        m_shadowReceiver.set(GetTemplateChildT<winrt::Grid>(L"ShadowReceiver", controlProtected));
+        if (auto shadowReceiver = GetTemplateChildT<winrt::Grid>(L"ShadowReceiver", controlProtected))
+        {
+            m_shadowReceiver.set(shadowReceiver);
+        }
     }
 
     m_listView.set([this, controlProtected]() {
