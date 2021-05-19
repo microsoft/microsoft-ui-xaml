@@ -21,7 +21,6 @@ public:
     // IFrameworkElement
     void OnApplyTemplate();
     void OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&);
-    void OnSizeChanged(winrt::IInspectable const&, winrt::SizeChangedEventArgs const&);
     void OnLayoutUpdatedAfterStateChanged(winrt::IInspectable const& sender, winrt::IInspectable const& args);
 
     // FrameworkElement overrides

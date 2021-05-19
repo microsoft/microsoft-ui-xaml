@@ -20,7 +20,6 @@ AnimatedIcon::AnimatedIcon()
     m_progressPropertySet = winrt::Window::Current().Compositor().CreatePropertySet();
     m_progressPropertySet.InsertScalar(s_progressPropertyName, 0);
     Loaded({ this, &AnimatedIcon::OnLoaded });
-    SizeChanged({ this, &AnimatedIcon::OnSizeChanged });
 
     RegisterPropertyChangedCallback(winrt::IconElement::ForegroundProperty(), { this, &AnimatedIcon::OnForegroundPropertyChanged});
     RegisterPropertyChangedCallback(winrt::FrameworkElement::FlowDirectionProperty(), { this, &AnimatedIcon::OnFlowDirectionPropertyChanged });
@@ -98,14 +97,6 @@ void AnimatedIcon::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs c
     OnFallbackIconSourcePropertyChanged(nullptr);
 }
 
-void AnimatedIcon::OnSizeChanged(winrt::IInspectable const&, winrt::SizeChangedEventArgs const&)
-{
-    if (auto const scaleTransform = m_scaleTransform.get())
-    {
-        scaleTransform.CenterX(ActualWidth() / 2);
-        scaleTransform.CenterY(ActualHeight() / 2);
-    }
-}
 
 winrt::Size AnimatedIcon::MeasureOverride(winrt::Size const& availableSize)
 {
@@ -464,15 +455,15 @@ void AnimatedIcon::UpdateMirrorTransform()
             // Initialize the scale transform that will be used for mirroring and the
             // render transform origin as center in order to have the icon mirrored in place.
             winrt::Windows::UI::Xaml::Media::ScaleTransform scaleTransform;
-            scaleTransform.CenterX(ActualWidth() / 2);
-            scaleTransform.CenterY(ActualHeight() / 2);
 
             RenderTransform(scaleTransform);
+            RenderTransformOrigin({ 0.5, 0.5 });
             m_scaleTransform.set(scaleTransform);
             return scaleTransform;
         }
         return m_scaleTransform.get();
     }();
+
 
     scaleTransform.ScaleX(FlowDirection() == winrt::FlowDirection::RightToLeft && !MirroredWhenRightToLeft() && m_canDisplayPrimaryContent ? -1.0f : 1.0f);
 }
