@@ -79,6 +79,7 @@
             <Thickness x:Key="CalendarViewNavigationButtonFocusVisualMargin">-2</Thickness>
             <FontWeight x:Key="CalendarViewHeaderNavigationFontWeight">SemiBold</FontWeight>
             <FontWeight x:Key="CalendarViewWeekDayFontWeight">SemiBold</FontWeight>
+            <FontWeight x:Key="CalendarViewTodayFontWeight">Normal</FontWeight>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="CalendarViewFocusVisualPrimaryBrush" ResourceKey="SystemColorWindowTextColorBrush" />
@@ -154,6 +155,7 @@
             <Thickness x:Key="CalendarViewNavigationButtonFocusVisualMargin">-2</Thickness>
             <FontWeight x:Key="CalendarViewHeaderNavigationFontWeight">SemiBold</FontWeight>
             <FontWeight x:Key="CalendarViewWeekDayFontWeight">SemiBold</FontWeight>
+            <FontWeight x:Key="CalendarViewTodayFontWeight">Normal</FontWeight>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="CalendarViewFocusVisualPrimaryBrush" ResourceKey="FocusStrokeColorOuterBrush" />
@@ -229,6 +231,7 @@
             <Thickness x:Key="CalendarViewNavigationButtonFocusVisualMargin">-2</Thickness>
             <FontWeight x:Key="CalendarViewHeaderNavigationFontWeight">SemiBold</FontWeight>
             <FontWeight x:Key="CalendarViewWeekDayFontWeight">SemiBold</FontWeight>
+            <FontWeight x:Key="CalendarViewTodayFontWeight">Normal</FontWeight>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -265,7 +268,7 @@
         <Setter Property="TodayForeground" Value="{ThemeResource CalendarViewTodayForeground}" />
         <Setter Property="DisabledForeground" Value="{ThemeResource CalendarViewDisabledForeground}" />
         <Setter Property="BlackoutForeground" Value="{ThemeResource CalendarViewBlackoutForeground}" />
-        <Setter Property="SelectedForeground" Value="{ThemeResource CalendarViewSelectedForeground}" />        
+        <Setter Property="SelectedForeground" Value="{ThemeResource CalendarViewSelectedForeground}" />
         <Setter Property="SelectedHoverForeground" Value="{ThemeResource CalendarViewSelectedHoverForeground}" />
         <Setter Property="SelectedPressedForeground" Value="{ThemeResource CalendarViewSelectedPressedForeground}" />
         <Setter Property="SelectedDisabledForeground" Value="{ThemeResource CalendarViewSelectedDisabledForeground}" />
@@ -301,6 +304,7 @@
         <Setter Property="FirstOfYearDecadeLabelFontFamily" Value="XamlAutoFontFamily" />
         <Setter Property="FirstOfYearDecadeLabelFontSize" Value="{ThemeResource CalendarViewFirstOfYearDecadeLabelFontSize}" />
         <Setter Property="FirstOfYearDecadeLabelMargin" Value="{ThemeResource CalendarViewFirstOfYearDecadeLabelMargin}" />
+        <Setter Property="TodayFontWeight" Value="{ThemeResource CalendarViewTodayFontWeight}" />
         <Setter Property="CalendarItemBorderThickness" Value="1" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="HorizontalAlignment" Value="Left" />
