@@ -124,12 +124,12 @@
             <StaticResource x:Key="CalendarViewNavigationButtonBackground" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="CalendarViewNavigationButtonBackgroundPointerOver" ResourceKey="SystemColorButtonFaceColorBrush" />
             <StaticResource x:Key="CalendarViewNavigationButtonBackgroundPressed" ResourceKey="SystemColorWindowColorBrush" />
-            <StaticResource x:Key="CalendarViewNavigationButtonForeground" ResourceKey="SystemColorButtonFaceColorBrush" />
-            <StaticResource x:Key="CalendarViewNavigationButtonForegroundPointerOver" ResourceKey="SystemColorButtonFaceColorBrush" />
-            <StaticResource x:Key="CalendarViewNavigationButtonForegroundPressed" ResourceKey="SystemColorButtonFaceColorBrush" />
-            <StaticResource x:Key="CalendarViewNavigationButtonForegroundDisabled" ResourceKey="SystemColorButtonFaceColorBrush" />
-            <StaticResource x:Key="CalendarViewHeaderNavigationButtonForegroundPointerOver" ResourceKey="SystemColorWindowTextColorBrush" />
-            <StaticResource x:Key="CalendarViewHeaderNavigationButtonForegroundPressed" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="CalendarViewNavigationButtonForeground" ResourceKey="SystemControlHyperlinkBaseHighBrush" />
+            <StaticResource x:Key="CalendarViewNavigationButtonForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="CalendarViewNavigationButtonForegroundPressed" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="CalendarViewNavigationButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="CalendarViewHeaderNavigationButtonForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="CalendarViewHeaderNavigationButtonForegroundPressed" ResourceKey="SystemControlForegroundBaseMediumBrush" />
             <StaticResource x:Key="CalendarViewHeaderNavigationButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="CalendarViewNavigationButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="CalendarViewNavigationButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
