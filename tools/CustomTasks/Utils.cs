@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using System;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace CustomTasks
@@ -53,6 +52,44 @@ namespace CustomTasks
             }
 
             return fullPath;
+        }
+    }
+
+    static class TaskExtensions
+    {
+        public static void LogMessage(this Task task, string message, params object[] messageParams)
+        {
+            LogMessage(task, MessageImportance.Normal, message, messageParams);
+        }
+
+        public static void LogMessage(this Task task, MessageImportance messageImportance, string message, params object[] messageParams)
+        {
+            // If BuildEngine is null, we're not running in an MSBuild context,
+            // so we'll output to the console in that case.
+            // Otherwise, we'll use the Log object.
+            if (task.BuildEngine == null)
+            {
+                Console.WriteLine(string.Format(message, messageParams));
+            }
+            else
+            {
+                task.Log.LogMessage(messageImportance, message, messageParams);
+            }
+        }
+
+        public static void LogError(this Microsoft.Build.Utilities.Task task, string message, params object[] messageParams)
+        {
+            // If BuildEngine is null, we're not running in an MSBuild context,
+            // so we'll output to the console in that case.
+            // Otherwise, we'll use the Log object.
+            if (task.BuildEngine == null)
+            {
+                Console.WriteLine(string.Format(message, messageParams));
+            }
+            else
+            {
+                task.Log.LogError(message, messageParams);
+            }
         }
     }
 }

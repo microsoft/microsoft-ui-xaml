@@ -64,7 +64,7 @@ public:
     static bool IsSelectionIndicatorModeAvailable();
 
     // Actual OS version checks
-    static bool IsAPIContractV13Available(); // 21H1
+    static bool IsAPIContractV14Available(); // 21H1
     static bool IsAPIContractV9Available();  // 19H2
     static bool IsAPIContractV8Available();  // 19H1
     static bool IsAPIContractV7Available();  // RS5

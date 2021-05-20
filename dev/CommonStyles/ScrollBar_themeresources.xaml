@@ -197,6 +197,7 @@
     <x:Double x:Key="ScrollBarThumbStrokeThickness">6</x:Double>
 
     <x:Double x:Key="ScrollBarButtonArrowIconFontSize">8</x:Double>
+    <x:Double x:Key="ScrollBarButtonArrowScalePressed">0.875</x:Double>
     <x:String x:Key="ScrollBarExpandBeginTime">00:00:00.40</x:String>
     <x:String x:Key="ScrollBarContractBeginTime">00:00:00.50</x:String>
     <CornerRadius x:Key="ScrollBarCornerRadius">3</CornerRadius>
@@ -253,6 +254,14 @@
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
                                                     </ObjectAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX" RepeatBehavior="Forever">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource ScrollBarButtonArrowScalePressed}"/>
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource ScrollBarButtonArrowScalePressed}"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY" RepeatBehavior="Forever">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource ScrollBarButtonArrowScalePressed}"/>
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource ScrollBarButtonArrowScalePressed}"/>
+                                                    </DoubleAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
                                             <VisualState x:Name="Disabled">
@@ -264,7 +273,11 @@
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDDA;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True" />
+                                    <FontIcon x:Name="Arrow" RenderTransformOrigin="0.5, 0.5" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDDA;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True">
+                                        <FontIcon.RenderTransform>
+                                            <ScaleTransform x:Name="ScaleTransform" ScaleY="1" ScaleX="1" />
+                                        </FontIcon.RenderTransform>
+                                    </FontIcon>
                                 </Grid>
                             </ControlTemplate>
                             <ControlTemplate x:Key="HorizontalDecrementTemplate" TargetType="RepeatButton">
@@ -284,6 +297,14 @@
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
                                                     </ObjectAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX" RepeatBehavior="Forever">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource ScrollBarButtonArrowScalePressed}"/>
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource ScrollBarButtonArrowScalePressed}"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY" RepeatBehavior="Forever">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource ScrollBarButtonArrowScalePressed}"/>
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource ScrollBarButtonArrowScalePressed}"/>
+                                                    </DoubleAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
                                             <VisualState x:Name="Disabled">
@@ -295,7 +316,11 @@
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDD9;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True" />
+                                    <FontIcon x:Name="Arrow" RenderTransformOrigin="0.5, 0.5" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDD9;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True">
+                                        <FontIcon.RenderTransform>
+                                            <ScaleTransform x:Name="ScaleTransform" ScaleY="1" ScaleX="1" />
+                                        </FontIcon.RenderTransform>
+                                    </FontIcon>
                                 </Grid>
                             </ControlTemplate>
                             <ControlTemplate x:Key="VerticalIncrementTemplate" TargetType="RepeatButton">
@@ -315,6 +340,14 @@
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
                                                     </ObjectAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX" RepeatBehavior="Forever">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource ScrollBarButtonArrowScalePressed}"/>
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource ScrollBarButtonArrowScalePressed}"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY" RepeatBehavior="Forever">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource ScrollBarButtonArrowScalePressed}"/>
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource ScrollBarButtonArrowScalePressed}"/>
+                                                    </DoubleAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
                                             <VisualState x:Name="Disabled">
@@ -326,7 +359,11 @@
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDDC;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" />
+                                    <FontIcon x:Name="Arrow" RenderTransformOrigin="0.5, 0.5" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDDC;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}">
+                                        <FontIcon.RenderTransform>
+                                            <ScaleTransform x:Name="ScaleTransform" ScaleY="1" ScaleX="1" />
+                                        </FontIcon.RenderTransform>
+                                    </FontIcon>
                                 </Grid>
                             </ControlTemplate>
                             <ControlTemplate x:Key="VerticalDecrementTemplate" TargetType="RepeatButton">
@@ -346,6 +383,14 @@
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
                                                     </ObjectAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX" RepeatBehavior="Forever">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource ScrollBarButtonArrowScalePressed}"/>
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource ScrollBarButtonArrowScalePressed}"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY" RepeatBehavior="Forever">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource ScrollBarButtonArrowScalePressed}"/>
+                                                        <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource ScrollBarButtonArrowScalePressed}"/>
+                                                    </DoubleAnimationUsingKeyFrames>
                                                 </Storyboard>
                                             </VisualState>
                                             <VisualState x:Name="Disabled">
@@ -357,7 +402,11 @@
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDDB;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}" />
+                                    <FontIcon x:Name="Arrow" RenderTransformOrigin="0.5, 0.5" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEDDB;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{StaticResource ScrollBarButtonArrowIconFontSize}">
+                                        <FontIcon.RenderTransform>
+                                            <ScaleTransform x:Name="ScaleTransform" ScaleY="1" ScaleX="1" />
+                                        </FontIcon.RenderTransform>
+                                    </FontIcon>
                                 </Grid>
                             </ControlTemplate>
                             <ControlTemplate x:Key="VerticalThumbTemplate" TargetType="Thumb">

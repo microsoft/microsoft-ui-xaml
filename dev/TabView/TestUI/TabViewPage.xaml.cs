@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -338,13 +338,13 @@ namespace MUXControlsTestApp
         public void SetTabViewWidth_Click(object sender, RoutedEventArgs e)
         {
             // This is the smallest width that fits our content without any scrolling.
-            Tabs.Width = 740;
+            Tabs.Width = 744;
         }
 
         public void GetScrollButtonsVisible_Click(object sender, RoutedEventArgs e)
         {
-            var scrollDecrease = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollDecreaseButton") as FrameworkElement;
-            var scrollIncrease = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollIncreaseButton") as FrameworkElement;
+            var scrollDecrease = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollDecreaseButtonContainer") as FrameworkElement;
+            var scrollIncrease = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollIncreaseButtonContainer") as FrameworkElement;
             if(scrollDecrease.Visibility == Visibility.Visible && scrollIncrease.Visibility == Visibility.Visible)
             {
                 ScrollButtonsVisible.Text = "True";
