@@ -8,7 +8,9 @@
     xmlns:contract6NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,6)"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
-    xmlns:contract12Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,12)">
+    xmlns:contract8Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,8)"
+    xmlns:contract12Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,12)"
+    xmlns:contract14NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,14)">
     
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
@@ -760,39 +762,30 @@
                             <!-- We'll only provide opening and closing storyboards for RS5 and above,
                                  because we aren't able to suppress the default flyout open/close animations
                                  on earlier versions of the OS than that. -->
-                            <contract7Present:Storyboard x:Name="OpeningStoryboard" FillBehavior="Stop">
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OuterContentRootClipTransform" Storyboard.TargetProperty="X">
-                                    <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationStartPosition}" />
-                                    <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationEndPosition}" />
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRootClipTransform" Storyboard.TargetProperty="X">
-                                    <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationStartPosition}" />
-                                    <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationEndPosition}" />
-                                </DoubleAnimationUsingKeyFrames>
+                            <contract7Present:Storyboard x:Name="OpeningOpacityStoryboard" FillBehavior="Stop">
+                                <DoubleAnimation Storyboard.TargetName="LayoutRoot"
+                                                                    Storyboard.TargetProperty="Opacity"
+                                                                    From="0"
+                                                                    To="1"
+                                                                    Duration="{StaticResource ControlFasterAnimationDuration}" />
+                                <DoubleAnimation Storyboard.TargetName="OverflowPopup"
+                                                                    Storyboard.TargetProperty="Opacity"
+                                                                    From="0"
+                                                                    To="1"
+                                                                    Duration="{StaticResource ControlFasterAnimationDuration}" />
                             </contract7Present:Storyboard>
-                            <!-- The closing animation plays the opening animation in reverse and then snaps to a position where
-                                 the clip will fully hide the flyout, in preparation for closing the flyout.
-                                 As such, it's expected and normal that we use OpenAnimation* template settings properties
-                                 in the closing animation. -->
-                            <contract7Present:Storyboard x:Name="ClosingStoryboard">
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OuterContentRootClipTransform" Storyboard.TargetProperty="X">
-                                    <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationEndPosition}" />
-                                    <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationStartPosition}" />
-                                    <DiscreteDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationAfterDuration}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CloseAnimationEndPosition}" />
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRootClipTransform" Storyboard.TargetProperty="X">
-                                    <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationEndPosition}" />
-                                    <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationStartPosition}" />
-                                    <DiscreteDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationAfterDuration}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CloseAnimationEndPosition}" />
-                                </DoubleAnimationUsingKeyFrames>
-                                <!-- When closing in AlwaysExpanded, the IsOpen() call causes us to not go back to the Default visual state. This presents a
-                                     problem with drop shadows, as it relies on the transitions between visual states to show/hide itself during animations. So,
-                                     we'll set it to null here in order to guarantee that when all is said and done and the whole flyout is closing, the shadow
-                                     is set to null. We may be messing with the shadow in multiple places, but when the ClosingStoryboard is played, it's the last to play.
-                                     So when the flyout is closed it will always win out. -->
-                                <contract12Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRoot" Storyboard.TargetProperty="Shadow">
-                                    <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Null}"/>
-                                </contract12Present:ObjectAnimationUsingKeyFrames>
+
+                            <contract7Present:Storyboard x:Name="ClosingOpacityStoryboard" FillBehavior="Stop">
+                                <DoubleAnimation Storyboard.TargetName="LayoutRoot"
+                                                                    Storyboard.TargetProperty="Opacity"
+                                                                    From="1"
+                                                                    To="0"
+                                                                    Duration="{StaticResource ControlFasterAnimationDuration}" />
+                                <DoubleAnimation Storyboard.TargetName="OverflowPopup"
+                                                                    Storyboard.TargetProperty="Opacity"
+                                                                    From="1"
+                                                                    To="0"
+                                                                    Duration="{StaticResource ControlFasterAnimationDuration}" />
                             </contract7Present:Storyboard>
                         </Grid.Resources>
                         <VisualStateManager.VisualStateGroups>
@@ -835,9 +828,9 @@
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Width">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}" />
                                             </ObjectAnimationUsingKeyFrames>
-                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OverflowContentRootTransform" Storyboard.TargetProperty="Y">
+                                            <contract14NotPresent:DoubleAnimationUsingKeyFrames Storyboard.TargetName="OverflowContentRootTransform" Storyboard.TargetProperty="Y">
                                                 <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpOverflowVerticalPosition}" />
-                                            </DoubleAnimationUsingKeyFrames>
+                                            </contract14NotPresent:DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MoreButtonTransform" Storyboard.TargetProperty="X">
                                                 <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionMoreButtonAnimationStartPosition}" />
                                                 <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="0" />
@@ -862,13 +855,16 @@
                                                 <contract7Present:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                                 <contract7NotPresent:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                             </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRootV2" Storyboard.TargetProperty="CornerRadius">
                                                 <contract7Present:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                                 <contract7NotPresent:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                             </ObjectAnimationUsingKeyFrames>
                                             <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="SecondaryItemsControl" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                             </contract7Present:ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryItemsRoot" Storyboard.TargetProperty="VerticalAlignment">
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Bottom" />
+                                            </ObjectAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualTransition>
                                     <VisualTransition From="ExpandedUp" To="Collapsed" GeneratedDuration="{StaticResource ControlFastAnimationDuration}">
@@ -876,9 +872,9 @@
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Width">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}" />
                                             </ObjectAnimationUsingKeyFrames>
-                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OverflowContentRootTransform" Storyboard.TargetProperty="Y">
+                                            <contract14NotPresent:DoubleAnimationUsingKeyFrames Storyboard.TargetName="OverflowContentRootTransform" Storyboard.TargetProperty="Y">
                                                 <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpOverflowVerticalPosition}" />
-                                            </DoubleAnimationUsingKeyFrames>
+                                            </contract14NotPresent:DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MoreButtonTransform" Storyboard.TargetProperty="X">
                                                 <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
                                                 <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionMoreButtonAnimationStartPosition}" />
@@ -899,6 +895,9 @@
                                                 <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpAnimationStartPosition}" />
                                                 <DiscreteDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationAfterDuration}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpAnimationHoldPosition}" />
                                             </DoubleAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryItemsRoot" Storyboard.TargetProperty="VerticalAlignment">
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Bottom" />
+                                            </ObjectAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualTransition>
                                     <VisualTransition From="Collapsed" To="ExpandedDown" GeneratedDuration="{StaticResource ControlNormalAnimationDuration}">
@@ -930,13 +929,16 @@
                                                 <contract7Present:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                                 <contract7NotPresent:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                             </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRootV2" Storyboard.TargetProperty="CornerRadius">
                                                 <contract7Present:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                                 <contract7NotPresent:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                             </ObjectAnimationUsingKeyFrames>
                                             <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="SecondaryItemsControl" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                             </contract7Present:ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryItemsRoot" Storyboard.TargetProperty="VerticalAlignment">
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Top" />
+                                            </ObjectAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualTransition>
                                     <VisualTransition From="ExpandedDown" To="Collapsed" GeneratedDuration="{StaticResource ControlFastAnimationDuration}">
@@ -964,6 +966,9 @@
                                                 <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandDownAnimationStartPosition}" />
                                                 <DiscreteDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationAfterDuration}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandDownAnimationHoldPosition}" />
                                             </DoubleAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryItemsRoot" Storyboard.TargetProperty="VerticalAlignment">
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Top" />
+                                            </ObjectAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualTransition>
                                 </VisualStateGroup.Transitions>
@@ -972,9 +977,13 @@
                                     <VisualState.Setters>
                                         <Setter Target="MoreButtonTransform.X" Value="0" />
                                         <Setter Target="ContentRootClipTransform.X" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionAnimationEndPosition}" />
-                                        <Setter Target="OverflowContentRootTransform.Y" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpOverflowVerticalPosition}" />
+                                        <contract14NotPresent:Setter Target="OverflowContentRootTransform.Y" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpOverflowVerticalPosition}" />
                                         <Setter Target="OverflowContentRootClipTransform.X" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionAnimationEndPosition}" />
                                         <Setter Target="OverflowContentRootClipTransform.Y" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandUpAnimationEndPosition}" />
+                                        <!-- We're using PrimaryItemsRoot as the anchor for the overflow popup, so when we're showing that
+                                             popup, we'll align PrimaryItemsRoot against the side that we're opening against to ensure that
+                                             the popup is placed in the expected location. -->
+                                        <Setter Target="PrimaryItemsRoot.VerticalAlignment" Value="Bottom" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ExpandedDown">
@@ -983,6 +992,7 @@
                                         <Setter Target="ContentRootClipTransform.X" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionAnimationEndPosition}" />
                                         <Setter Target="OverflowContentRootClipTransform.X" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionAnimationEndPosition}" />
                                         <Setter Target="OverflowContentRootClipTransform.Y" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandDownAnimationEndPosition}" />
+                                        <Setter Target="PrimaryItemsRoot.VerticalAlignment" Value="Top" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -995,7 +1005,11 @@
                                 </VisualState>
                                 <VisualState x:Name="SecondaryCommandsOnly">
                                     <VisualState.Setters>
-                                        <Setter Target="PrimaryItemsRoot.Visibility" Value="Collapsed" />
+                                        <!-- We'll use PrimaryItemsRoot as the anchor for the overflow popup, so to be able to do that
+                                             we can't set it to be collapsed.  Instead, we'll just hide it and make it not hit-testable. -->
+                                        <Setter Target="PrimaryItemsRoot.Opacity" Value="0" />
+                                        <Setter Target="PrimaryItemsRoot.IsHitTestVisible" Value="False" />
+                                        <Setter Target="PrimaryItemsRoot.Height" Value="0" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -1018,10 +1032,10 @@
                                             <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryItemsRoot" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                             </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                            <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                            <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRootV2" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                             </contract7Present:ObjectAnimationUsingKeyFrames>
-                                            <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                            <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRootV2" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                             </contract7NotPresent:ObjectAnimationUsingKeyFrames>
                                             <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="SecondaryItemsControl" Storyboard.TargetProperty="CornerRadius">
@@ -1046,10 +1060,10 @@
                                             <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryItemsRoot" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                             </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                            <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                            <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRootV2" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                             </contract7Present:ObjectAnimationUsingKeyFrames>
-                                            <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                            <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRootV2" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                             </contract7NotPresent:ObjectAnimationUsingKeyFrames>
                                             <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="SecondaryItemsControl" Storyboard.TargetProperty="CornerRadius">
@@ -1073,17 +1087,17 @@
                                             </contract7NotPresent:ObjectAnimationUsingKeyFrames>
                                             <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryItemsRoot" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
-                                                <DiscreteObjectKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
+                                                <DiscreteObjectKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
                                             </contract7Present:ObjectAnimationUsingKeyFrames>
                                             <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryItemsRoot" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                                 <DiscreteObjectKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" Value="{Binding Source={ThemeResource OverlayCornerRadius}, RelativeSource={RelativeSource TemplatedParent}}" />
                                             </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                            <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                            <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRootV2" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                                 <DiscreteObjectKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
                                             </contract7Present:ObjectAnimationUsingKeyFrames>
-                                            <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                            <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRootV2" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                                 <DiscreteObjectKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" Value="{Binding Source={ThemeResource OverlayCornerRadius}, RelativeSource={RelativeSource TemplatedParent}}" />
                                             </contract7NotPresent:ObjectAnimationUsingKeyFrames>
@@ -1115,11 +1129,11 @@
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                                 <DiscreteObjectKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" Value="{Binding Source={ThemeResource OverlayCornerRadius}, RelativeSource={RelativeSource TemplatedParent}}" />
                                             </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                            <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                            <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRootV2" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                                 <DiscreteObjectKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
                                             </contract7Present:ObjectAnimationUsingKeyFrames>
-                                            <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                            <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRootV2" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                                 <DiscreteObjectKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" Value="{Binding Source={ThemeResource OverlayCornerRadius}, RelativeSource={RelativeSource TemplatedParent}}" />
                                             </contract7NotPresent:ObjectAnimationUsingKeyFrames>
@@ -1138,8 +1152,8 @@
                                         <contract7NotPresent:Setter Target="LayoutRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                         <contract7Present:Setter Target="PrimaryItemsRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                         <contract7NotPresent:Setter Target="PrimaryItemsRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
-                                        <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
-                                        <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
+                                        <contract7Present:Setter Target="OuterOverflowContentRootV2.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
+                                        <contract7NotPresent:Setter Target="OuterOverflowContentRootV2.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                         <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                         <contract7NotPresent:Setter Target="OverflowPresenterBorder.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                     </VisualState.Setters>
@@ -1151,10 +1165,9 @@
                                         <contract7NotPresent:Setter Target="LayoutRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                         <contract7Present:Setter Target="PrimaryItemsRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                         <contract7NotPresent:Setter Target="PrimaryItemsRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
-                                        <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
-                                        <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
+                                        <contract7Present:Setter Target="OuterOverflowContentRootV2.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
+                                        <contract7NotPresent:Setter Target="OuterOverflowContentRootV2.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                         <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
-                                        <contract12Present:Setter Target="OuterOverflowContentRoot.Shadow" Value="{StaticResource CommandBarFlyoutOverflowShadow}"/>
                                         <contract7NotPresent:Setter Target="OverflowPresenterBorder.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1165,10 +1178,9 @@
                                         <contract7NotPresent:Setter Target="LayoutRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
                                         <contract7Present:Setter Target="PrimaryItemsRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
                                         <contract7NotPresent:Setter Target="PrimaryItemsRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
-                                        <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
-                                        <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
+                                        <contract7Present:Setter Target="OuterOverflowContentRootV2.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
+                                        <contract7NotPresent:Setter Target="OuterOverflowContentRootV2.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
                                         <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
-                                        <contract12Present:Setter Target="OuterOverflowContentRoot.Shadow" Value="{StaticResource CommandBarFlyoutOverflowShadow}"/>
                                         <contract7NotPresent:Setter Target="OverflowPresenterBorder.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1179,11 +1191,18 @@
                                         <contract7NotPresent:Setter Target="LayoutRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
                                         <contract7Present:Setter Target="PrimaryItemsRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
                                         <contract7NotPresent:Setter Target="PrimaryItemsRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
-                                        <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
-                                        <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
+                                        <contract7Present:Setter Target="OuterOverflowContentRootV2.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
+                                        <contract7NotPresent:Setter Target="OuterOverflowContentRootV2.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
                                         <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
-                                        <contract12Present:Setter Target="OuterOverflowContentRoot.Shadow" Value="{StaticResource CommandBarFlyoutOverflowShadow}"/>
                                         <contract7NotPresent:Setter Target="OverflowPresenterBorder.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup>
+                                <VisualState x:Name="NoOuterOverflowContentRootShadow"/>
+                                <VisualState x:Name="OuterOverflowContentRootShadow">
+                                    <VisualState.Setters>
+                                        <contract12Present:Setter Target="OuterOverflowContentRootV2.Shadow" Value="{StaticResource CommandBarFlyoutOverflowShadow}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -1194,22 +1213,15 @@
                             MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentWidth}"
                             Height="{TemplateBinding Height}"
                             contract4Present:XYFocusKeyboardNavigation="Enabled">
-                            <Grid.Clip>
-                                <RectangleGeometry x:Name="OuterContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ContentClipRect}">
-                                    <RectangleGeometry.Transform>
-                                        <TranslateTransform x:Name="OuterContentRootClipTransform" />
-                                    </RectangleGeometry.Transform>
-                                </RectangleGeometry>
-                            </Grid.Clip>
                             <Grid x:Name="ContentRoot"
                                     Background="{TemplateBinding Background}">
                                 <Grid.Clip>
                                     <RectangleGeometry x:Name="ContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ContentClipRect}">
                                         <RectangleGeometry.Transform>
-                                            <!-- If you have a value set by a binding and then animate that value,
+                                             <!-- If you have a value set by a binding and then animate that value,
                                                  the animation will clear the binding.  Because of that, we need to have
                                                  two translate transforms - one that we bind to a property,
-                                                 and another that we can animate. -->
+                                                 and another that we can animate. --> 
                                             <TransformGroup>
                                                 <TranslateTransform X="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionDelta}" />
                                                 <TranslateTransform x:Name="ContentRootClipTransform" />
@@ -1258,22 +1270,17 @@
                                             Glyph="&#xE10C;" />
                                     </Button>
                                 </Grid>
-                                <Popup x:Name="OverflowPopup">
+                                <Popup x:Name="OverflowPopup" contract8Present:ShouldConstrainToRootBounds="False">
+                                    <!-- The name OuterOverflowContentRoot is treated specially by the system and causes a shadow placed on this
+                                         an element with this name to fade in. We don't want this for this style, so we need a different template part name -->
                                     <Grid
-                                        x:Name="OuterOverflowContentRoot"
+                                        x:Name="OuterOverflowContentRootV2"
                                         RequestedTheme="{TemplateBinding ActualTheme}"
                                         Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}">
-                                        <Grid.Clip>
-                                            <RectangleGeometry x:Name="OuterOverflowContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OverflowContentClipRect}">
-                                                <RectangleGeometry.Transform>
-                                                    <TranslateTransform x:Name="OuterOverflowContentRootClipTransform" />
-                                                </RectangleGeometry.Transform>
-                                            </RectangleGeometry>
-                                        </Grid.Clip>
                                         <Grid.RenderTransform>
                                             <TranslateTransform
                                                 x:Name="OverflowContentRootTransform"
-                                                Y="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandDownOverflowVerticalPosition}" />
+                                                contract14NotPresent:Y="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandDownOverflowVerticalPosition}" />
                                         </Grid.RenderTransform>
                                         <Grid x:Name="OverflowContentRoot" HorizontalAlignment="Stretch" Background="{TemplateBinding Background}">
                                             <Grid.RowDefinitions>
@@ -1284,10 +1291,10 @@
                                             <Grid.Clip>
                                                 <RectangleGeometry x:Name="OverflowContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OverflowContentClipRect}">
                                                     <RectangleGeometry.Transform>
-                                                        <!-- If you have a value set by a binding and then animate that value,
+                                                         <!-- If you have a value set by a binding and then animate that value,
                                                              the animation will clear the binding.  Because of that, we need to have
                                                              two translate transforms - one that we bind to a property,
-                                                             and another that we can animate. -->
+                                                             and another that we can animate. --> 
                                                         <TransformGroup>
                                                             <TranslateTransform X="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionDelta}" />
                                                             <TranslateTransform x:Name="OverflowContentRootClipTransform" />
