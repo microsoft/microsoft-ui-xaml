@@ -251,6 +251,14 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+                            <VisualStateGroup x:Name="FlyoutStates">
+                                <VisualState x:Name="NoFlyout" />
+                                <VisualState x:Name="HasFlyout">
+                                    <VisualState.Setters>
+                                        <Setter Target="SubItemChevron.Visibility" Value="{ThemeResource AppBarButtonHasFlyoutChevronVisibility}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <Border x:Name="AppBarButtonInnerBorder"
@@ -680,6 +688,9 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
+                        <Grid.Resources>
+                            <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
+                        </Grid.Resources>
                         <ContentPresenter x:Name="ContentPresenter"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
