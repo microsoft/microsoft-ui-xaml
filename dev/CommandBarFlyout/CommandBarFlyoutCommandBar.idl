@@ -77,18 +77,18 @@ interface IPopup4
 interface IAutomationPropertiesStatics9
 {
     Windows.UI.Xaml.DependencyProperty ControlTypeProperty{ get; };
-    Windows.UI.Xaml.Automation.Peers.AutomationControlType GetControlType(Windows.UI.Xaml.DependencyObject element);
-    void SetControlType(Windows.UI.Xaml.DependencyObject element, Windows.UI.Xaml.Automation.Peers.AutomationControlType value);
+    Windows.UI.Xaml.Automation.Peers.AutomationControlType GetControlType(Windows.UI.Xaml.UIElement element);
+    void SetControlType(Windows.UI.Xaml.UIElement element, Windows.UI.Xaml.Automation.Peers.AutomationControlType value);
 };
 
 [MUX_INTERNAL]
 [webhosthidden]
-runtimeclass CommandBarFlyoutCommandBarAutomationProperties
+static runtimeclass CommandBarFlyoutCommandBarAutomationProperties
 {
     [MUX_DEFAULT_VALUE("winrt::AutomationControlType::Custom")]
     [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnControlTypePropertyChanged")]
     static Windows.UI.Xaml.DependencyProperty ControlTypeProperty{ get; };
-    static Windows.UI.Xaml.Automation.Peers.AutomationControlType GetControlType(Windows.UI.Xaml.DependencyObject element);
-    static void SetControlType(Windows.UI.Xaml.DependencyObject element, Windows.UI.Xaml.Automation.Peers.AutomationControlType value);
+    static Windows.UI.Xaml.Automation.Peers.AutomationControlType GetControlType(Windows.UI.Xaml.UIElement element);
+    static void SetControlType(Windows.UI.Xaml.UIElement element, Windows.UI.Xaml.Automation.Peers.AutomationControlType value);
 }
 }
