@@ -118,15 +118,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CommandBarFlyoutCommandBarLocalizedControlType.Value" xml:space="preserve">
-    <value>menu localized</value>
+    <value>menu</value>
     <comment>The name of the control type for CommandBars inside CommandBarFlyouts to be reported to UIA clients.</comment>
   </data>
   <data name="CommandBarFlyoutAppBarButtonLocalizedControlType.Value" xml:space="preserve">
-    <value>menu item localized</value>
+    <value>menu item</value>
     <comment>The name of the control type for AppBarButtons inside CommandBarFlyouts to be reported to UIA clients.</comment>
   </data>
   <data name="CommandBarFlyoutAppBarToggleButtonLocalizedControlType.Value" xml:space="preserve">
-    <value>menu item localized</value>
+    <value>menu item</value>
     <comment>The name of the control type for AppBarToggleButtons inside CommandBarFlyouts to be reported to UIA clients.</comment>
   </data>
   <data name="ProofingMenuItemLabel" xml:space="preserve">
