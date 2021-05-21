@@ -24,4 +24,12 @@ This works with the platform's resource system to allow overrides of the XamlCon
     </Application.Resources>
 </Application>
 
+If you're using C++/WinRT, you also need to add this code to your pch.h file:
+
+#include "winrt/Microsoft.UI.Xaml.Automation.Peers.h"
+#include "winrt/Microsoft.UI.Xaml.Controls.h"
+#include "winrt/Microsoft.UI.Xaml.Controls.Primitives.h"
+#include "winrt/Microsoft.UI.Xaml.Media.h"
+#include "winrt/Microsoft.UI.Xaml.XamlTypeInfo.h"
+
 See http://aka.ms/winui for more information.
