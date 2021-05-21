@@ -23,8 +23,8 @@ namespace CustomTasksTool
             // This tool is here to let you F5 the tasks and debug them more easily than through MSBuild.
             string projectRoot = Path.GetFullPath(Path.Combine(Assembly.GetExecutingAssembly().Location, @"..\..\..\..\..\"));
 
-            TestBatchMergeXaml(projectRoot);
-            //TestDependencyPropertyCodeGen(projectRoot);
+            //TestBatchMergeXaml(projectRoot);
+            TestDependencyPropertyCodeGen(projectRoot);
         }
 
         private static void TestBatchMergeXaml(string projectRoot)
