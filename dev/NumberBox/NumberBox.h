@@ -68,7 +68,6 @@ private:
     void OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
-    void OnCornerRadiusPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&);
     void OnAutomationPropertiesNamePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
 
@@ -111,8 +110,6 @@ private:
     winrt::TextBox::KeyUp_revoker m_textBoxKeyUpRevoker{};
     winrt::RepeatButton::Click_revoker m_popupUpButtonClickRevoker{};
     winrt::RepeatButton::Click_revoker m_popupDownButtonClickRevoker{};
-
-    PropertyChanged_revoker m_cornerRadiusChangedRevoker{};
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
 };
