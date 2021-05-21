@@ -270,6 +270,16 @@ namespace MUXControlsTestApp
             }
         }
 
+        public void IsLeftToRightChecked(object sender, RoutedEventArgs args)
+        {
+            this.FlowDirection = FlowDirection.LeftToRight;
+        }
+
+        public void IsLeftToRightUnchecked(object sender, RoutedEventArgs args)
+        {
+            this.FlowDirection = FlowDirection.RightToLeft;
+        }
+
         private void ChangeFallbackGlyphButton_Click(object sender, RoutedEventArgs e)
         {
             boundFallback.FallbackGlyph = "\uE9AE";

@@ -22,6 +22,7 @@ AnimatedIcon::AnimatedIcon()
     Loaded({ this, &AnimatedIcon::OnLoaded });
 
     RegisterPropertyChangedCallback(winrt::IconElement::ForegroundProperty(), { this, &AnimatedIcon::OnForegroundPropertyChanged});
+    RegisterPropertyChangedCallback(winrt::FrameworkElement::FlowDirectionProperty(), { this, &AnimatedIcon::OnFlowDirectionPropertyChanged });
 }
 
 void AnimatedIcon::OnApplyTemplate()
@@ -95,6 +96,7 @@ void AnimatedIcon::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs c
     // they will not have been set during OnApplyTemplate.
     OnFallbackIconSourcePropertyChanged(nullptr);
 }
+
 
 winrt::Size AnimatedIcon::MeasureOverride(winrt::Size const& availableSize)
 {
@@ -444,6 +446,33 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
     }
 }
 
+void AnimatedIcon::UpdateMirrorTransform()
+{
+    auto const scaleTransform = [this]()
+    {
+        if (!m_scaleTransform)
+        {
+            // Initialize the scale transform that will be used for mirroring and the
+            // render transform origin as center in order to have the icon mirrored in place.
+            winrt::Windows::UI::Xaml::Media::ScaleTransform scaleTransform;
+
+            RenderTransform(scaleTransform);
+            RenderTransformOrigin({ 0.5, 0.5 });
+            m_scaleTransform.set(scaleTransform);
+            return scaleTransform;
+        }
+        return m_scaleTransform.get();
+    }();
+
+
+    scaleTransform.ScaleX(FlowDirection() == winrt::FlowDirection::RightToLeft && !MirroredWhenRightToLeft() && m_canDisplayPrimaryContent ? -1.0f : 1.0f);
+}
+
+void AnimatedIcon::OnMirroredWhenRightToLeftPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
+{
+    UpdateMirrorTransform();
+}
+
 bool AnimatedIcon::ConstructAndInsertVisual()
 {
     auto const visual = [this]()
@@ -497,6 +526,8 @@ bool AnimatedIcon::ConstructAndInsertVisual()
         m_canDisplayPrimaryContent = false;
         return false;
     }
+
+    UpdateMirrorTransform();
 }
 
 void AnimatedIcon::OnFallbackIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
@@ -533,6 +564,11 @@ void AnimatedIcon::OnForegroundPropertyChanged(const winrt::DependencyObject& se
         m_foregroundColorPropertyChangedRevoker = RegisterPropertyChanged(foregroundSolidColorBrush, winrt::SolidColorBrush::ColorProperty(), { this, &AnimatedIcon::OnForegroundBrushColorPropertyChanged });
         TrySetForegroundProperty(foregroundSolidColorBrush.Color());
     }
+}
+
+void AnimatedIcon::OnFlowDirectionPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+    UpdateMirrorTransform();
 }
 
 void AnimatedIcon::OnForegroundBrushColorPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
