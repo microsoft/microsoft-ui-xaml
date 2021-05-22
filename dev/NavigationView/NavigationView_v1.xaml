@@ -458,10 +458,10 @@
                                         <!-- "Non header" content -->
                                         <Grid x:Name="ItemsContainerGrid" Grid.Row="6" Margin="0,0,0,8">
                                             <Grid.RowDefinitions>
-                                                <RowDefinition x:Name="MenuItemsRow" Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/> <!-- MenuItems -->
-                                                <RowDefinition Height="*" MinHeight="21"/> <!-- Fill spacing -->
+                                                <RowDefinition Height="*"/> <!-- MenuItems -->
+                                                <RowDefinition Height="Auto"/> <!-- Fill spacing -->
                                                 <RowDefinition Height="Auto" /> <!-- PaneFooter -->
-                                                <RowDefinition x:Name="FooterItemsRow" Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/> <!-- FooterItems -->
+                                                <RowDefinition Height="Auto"/> <!-- FooterItems -->
                                             </Grid.RowDefinitions>
 
                                             <!-- MenuItems -->
@@ -493,6 +493,7 @@
                                             <!-- FooterItems -->
                                             <local:ItemsRepeaterScrollHost Grid.Row="3">
                                                 <ScrollViewer x:Name="FooterItemsScrollViewer"
+                                                        VerticalScrollBarVisibility="Auto"
                                                         contract7Present:VerticalAnchorRatio="1">
                                                     <local:ItemsRepeater
                                                         x:Name="FooterMenuItemsHost"
