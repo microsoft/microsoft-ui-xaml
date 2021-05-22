@@ -9,8 +9,8 @@ class CommandBarFlyoutCommandBarAutomationPropertiesProperties
 public:
     CommandBarFlyoutCommandBarAutomationPropertiesProperties();
 
-    static void SetControlType(winrt::DependencyObject const& target, winrt::AutomationControlType const& value);
-    static winrt::AutomationControlType GetControlType(winrt::DependencyObject const& target);
+    static void SetControlType(winrt::UIElement const& target, winrt::AutomationControlType const& value);
+    static winrt::AutomationControlType GetControlType(winrt::UIElement const& target);
 
     static winrt::DependencyProperty ControlTypeProperty() { return s_ControlTypeProperty; }
 

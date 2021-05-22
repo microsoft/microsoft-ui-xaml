@@ -12,10 +12,13 @@
     const winrt::DependencyObject& sender,
     const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    winrt::IActivationFactory automationPropertiesStatics = winrt::get_activation_factory(L"Windows.UI.Xaml.Automation.AutomationProperties");
-
-    if (auto automationPropertiesStatics9 = automationPropertiesStatics.try_as<winrt::IAutomationPropertiesStatics9>())
+    if (auto senderAsUIE = sender.try_as<winrt::UIElement>())
     {
-        automationPropertiesStatics9.SetControlType(sender, unbox_value<winrt::AutomationControlType>(args.NewValue()));
+        winrt::IActivationFactory automationPropertiesStatics = winrt::get_activation_factory(L"Windows.UI.Xaml.Automation.AutomationProperties");
+
+        if (auto automationPropertiesStatics9 = automationPropertiesStatics.try_as<winrt::IAutomationPropertiesStatics9>())
+        {
+            automationPropertiesStatics9.SetControlType(senderAsUIE, unbox_value<winrt::AutomationControlType>(args.NewValue()));
+        }
     }
 }

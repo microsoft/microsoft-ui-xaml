@@ -41,12 +41,12 @@ void CommandBarFlyoutCommandBarAutomationPropertiesProperties::ClearProperties()
 }
 
 
-void CommandBarFlyoutCommandBarAutomationPropertiesProperties::SetControlType(winrt::DependencyObject const& target, winrt::AutomationControlType const& value)
+void CommandBarFlyoutCommandBarAutomationPropertiesProperties::SetControlType(winrt::UIElement const& target, winrt::AutomationControlType const& value)
 {
     target.SetValue(s_ControlTypeProperty, ValueHelper<winrt::AutomationControlType>::BoxValueIfNecessary(value));
 }
 
-winrt::AutomationControlType CommandBarFlyoutCommandBarAutomationPropertiesProperties::GetControlType(winrt::DependencyObject const& target)
+winrt::AutomationControlType CommandBarFlyoutCommandBarAutomationPropertiesProperties::GetControlType(winrt::UIElement const& target)
 {
     return ValueHelper<winrt::AutomationControlType>::CastOrUnbox(target.GetValue(s_ControlTypeProperty));
 }

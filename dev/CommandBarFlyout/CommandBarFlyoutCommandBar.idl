@@ -73,7 +73,7 @@ interface IPopup4
 
 [MUX_INTERNAL]
 [webhosthidden]
-[uuid(f1905988-c9f5-5217-be94-83251c01b4d6)]
+[uuid(98ffd442-a3f5-534c-906d-88b72a78126b)]
 interface IAutomationPropertiesStatics9
 {
     Windows.UI.Xaml.DependencyProperty ControlTypeProperty{ get; };
