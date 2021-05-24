@@ -207,6 +207,7 @@
                         <TextBlock x:Name="ToggleButtonBackgroundColor" AutomationProperties.Name="ToggleButtonBackgroundColor"  Margin="5"/>
                         <CheckBox x:Name="MoviesEnabledCheckbox" AutomationProperties.Name="MoviesEnabledCheckbox" Content="Movies+TV Enabled" Checked="MoviesEnabledCheckbox_Checked" Unchecked="MoviesEnabledCheckbox_Unchecked" IsChecked="True"  Margin="5"/>
                         <Button x:Name="SetHeaderButton" AutomationProperties.Name="SetHeaderButton" Content="Set Header" Click="SetHeaderButton_Click"/>
+                        <CheckBox IsChecked="True" Checked="FlowDirectionCheckbox_Checked" Unchecked="FlowDirectionCheckbox_Unchecked" Content="Is LeftToRight"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
