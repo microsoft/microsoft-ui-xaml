@@ -899,7 +899,6 @@
         <Setter Property="IsEnabled" Value="False" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="MinHeight" Value="0" />
-        <Setter Property="Margin" Value="{ThemeResource NavigationViewItemSeparatorMargin}" />
         <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
         <Setter Property="Template">
             <Setter.Value>
@@ -928,7 +927,7 @@
                             x:Name="SeparatorLine"
                             Height="{ThemeResource NavigationViewItemSeparatorHeight}"
                             Fill="{ThemeResource NavigationViewItemSeparatorForeground}"
-                            Margin="{TemplateBinding Margin}"/>
+                            Margin="{ThemeResource NavigationViewItemSeparatorMargin}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
