@@ -22,6 +22,7 @@ AnimatedIcon::AnimatedIcon()
     Loaded({ this, &AnimatedIcon::OnLoaded });
 
     RegisterPropertyChangedCallback(winrt::IconElement::ForegroundProperty(), { this, &AnimatedIcon::OnForegroundPropertyChanged});
+    RegisterPropertyChangedCallback(winrt::FrameworkElement::FlowDirectionProperty(), { this, &AnimatedIcon::OnFlowDirectionPropertyChanged });
 }
 
 void AnimatedIcon::OnApplyTemplate()
@@ -52,10 +53,8 @@ void AnimatedIcon::OnApplyTemplate()
         {
             winrt::ElementCompositionPreview::SetElementChildVisual(panel, visual.RootVisual());
         }
-        if (auto const source = Source())
-        {
-            TrySetForegroundProperty(source);
-        }
+
+        TrySetForegroundProperty();
     }
 }
 
@@ -97,6 +96,7 @@ void AnimatedIcon::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs c
     // they will not have been set during OnApplyTemplate.
     OnFallbackIconSourcePropertyChanged(nullptr);
 }
+
 
 winrt::Size AnimatedIcon::MeasureOverride(winrt::Size const& availableSize)
 {
@@ -165,11 +165,10 @@ winrt::Size AnimatedIcon::ArrangeOverride(winrt::Size const& finalSize)
             std::min(finalSize.Height / scale.y, visualSize.y)
         };
         const auto offset = (finalSize - (visualSize * scale)) / 2;
-        const auto z = 0.0F;
         const auto rootVisual = visual.RootVisual();
-        rootVisual.Offset({ offset, z });
+        rootVisual.Offset({ offset, 0.0f });
         rootVisual.Size(arrangedSize);
-        rootVisual.Scale({ scale, z });
+        rootVisual.Scale({ scale, 1.0f });
         return finalSize;
     }
     else
@@ -447,6 +446,33 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
     }
 }
 
+void AnimatedIcon::UpdateMirrorTransform()
+{
+    auto const scaleTransform = [this]()
+    {
+        if (!m_scaleTransform)
+        {
+            // Initialize the scale transform that will be used for mirroring and the
+            // render transform origin as center in order to have the icon mirrored in place.
+            winrt::Windows::UI::Xaml::Media::ScaleTransform scaleTransform;
+
+            RenderTransform(scaleTransform);
+            RenderTransformOrigin({ 0.5, 0.5 });
+            m_scaleTransform.set(scaleTransform);
+            return scaleTransform;
+        }
+        return m_scaleTransform.get();
+    }();
+
+
+    scaleTransform.ScaleX(FlowDirection() == winrt::FlowDirection::RightToLeft && !MirroredWhenRightToLeft() && m_canDisplayPrimaryContent ? -1.0f : 1.0f);
+}
+
+void AnimatedIcon::OnMirroredWhenRightToLeftPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
+{
+    UpdateMirrorTransform();
+}
+
 bool AnimatedIcon::ConstructAndInsertVisual()
 {
     auto const visual = [this]()
@@ -500,6 +526,8 @@ bool AnimatedIcon::ConstructAndInsertVisual()
         m_canDisplayPrimaryContent = false;
         return false;
     }
+
+    UpdateMirrorTransform();
 }
 
 void AnimatedIcon::OnFallbackIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
@@ -530,17 +558,38 @@ void AnimatedIcon::SetRootPanelChildToFallbackIcon()
 
 void AnimatedIcon::OnForegroundPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
-    TrySetForegroundProperty(Source());
+    m_foregroundColorPropertyChangedRevoker.revoke();
+    if (auto const foregroundSolidColorBrush = Foreground().try_as<winrt::SolidColorBrush>())
+    {
+        m_foregroundColorPropertyChangedRevoker = RegisterPropertyChanged(foregroundSolidColorBrush, winrt::SolidColorBrush::ColorProperty(), { this, &AnimatedIcon::OnForegroundBrushColorPropertyChanged });
+        TrySetForegroundProperty(foregroundSolidColorBrush.Color());
+    }
+}
+
+void AnimatedIcon::OnFlowDirectionPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+    UpdateMirrorTransform();
+}
+
+void AnimatedIcon::OnForegroundBrushColorPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+    TrySetForegroundProperty(sender.GetValue(args).as<winrt::Color>());
 }
 
 void AnimatedIcon::TrySetForegroundProperty(winrt::IAnimatedVisualSource2 const& source)
 {
-    if (source)
+    if (auto const foregroundSolidColorBrush = Foreground().try_as<winrt::SolidColorBrush>())
     {
-        if (auto const ForegroundSolidColorBrush = Foreground().try_as<winrt::SolidColorBrush>())
-        {
-            source.SetColorProperty(s_foregroundPropertyName, ForegroundSolidColorBrush.Color());
-        }
+        TrySetForegroundProperty(foregroundSolidColorBrush.Color(), source);
+    }
+}
+
+void AnimatedIcon::TrySetForegroundProperty(winrt::Color color, winrt::IAnimatedVisualSource2 const& source)
+{
+    auto const localSource = source ? source : Source();
+    if (localSource)
+    {
+        localSource.SetColorProperty(s_foregroundPropertyName, color);
     }
 }
 

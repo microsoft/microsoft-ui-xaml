@@ -1,11 +1,12 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
-<Page
+<local:TestPage
     x:Class="MUXControlsTestApp.Samples.BasicDemo"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls">
 
-    <Page.Resources>
+    <local:TestPage.Resources>
         <controls:RecyclePool x:Key="RecyclePool" />
         <DataTemplate x:Key="odd" x:DataType="x:String">
             <Button Content="{x:Bind}" Foreground="Red" Width="100" Height="100" />
@@ -21,7 +22,7 @@
                 <StaticResource x:Key="even" ResourceKey="even" />
             </controls:RecyclingElementFactory.Templates>
         </controls:RecyclingElementFactory>
-    </Page.Resources>
+    </local:TestPage.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
@@ -31,7 +32,6 @@
         </Grid.RowDefinitions>
 
         <StackPanel>
-            <Button x:Name="goBackButton">Back</Button>
             <Button Click="OnAddRecipeButton_Click" AutomationProperties.Name="InsertAtStartButton">Insert item at start</Button>
             <TextBlock x:Name="InsertAtStartChildCountLabel" AutomationProperties.Name="InsertAtStartChildCountLabel" Text="0"/>
         </StackPanel>
@@ -82,4 +82,4 @@
             </controls:ItemsRepeater>
         </-->
     </Grid>
-</Page>
+</local:TestPage>

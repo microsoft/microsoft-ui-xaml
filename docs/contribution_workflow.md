@@ -4,14 +4,14 @@ You can contribute to WinUI with issues and PRs. Simply filing issues for
 problems you encounter is a great way to contribute. Contributing 
 implementations is greatly appreciated.
 
+Good issues to work on are issues tagged with [help wanted](https://github.com/microsoft/microsoft-ui-xaml/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) or [good first issue](https://github.com/microsoft/microsoft-ui-xaml/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
+
 ## Suggested Workflow
 
 We use and recommend the following workflow:
 1. Create an issue for your work. 
     * You can skip this step for trivial changes.
     * Reuse an existing issue on the topic, if there is one.
-    * Identify stakeholders and get agreement on the direction of your proposed
-     change.
     * If your change adds or changes public API or UI, first follow
     the [New Feature or API Process](feature_proposal_process.md).
     * Clearly state that you are going to take on implementing it, if that's 
@@ -19,9 +19,8 @@ We use and recommend the following workflow:
     issue filer and the implementer don't have to be the same person.
 2. Create a personal fork of the repository on GitHub (if you don't already 
 have one).
-3. Create a branch off of master (`git checkout -b mybranch`). 
-    * Name the branch so that it clearly communicates your intentions, such as 
-    user/your-github-handle/issue-name.
+3. Create a branch off of main (`git checkout -b mybranch`). 
+    * Name the branch so that it clearly communicates your intentions.
     * Branches are useful since they isolate your changes from incoming changes 
     from upstream. They also enable you to create multiple PRs from the same 
     fork.
@@ -33,7 +32,7 @@ have one).
     * Make sure that the builds are clean.
     * Make sure that the [tests](developer_guide.md#Testing) are all passing, including your new 
     tests.
-7. Create a pull request (PR) against the upstream repository's master branch. 
+7. Create a pull request (PR) against the upstream repository's main branch. 
     * Push your changes to your fork on GitHub (if you haven't already).
     - Note: It is okay for your PR to include a large number of commits. Once 
     your change is accepted, you will be asked to squash your commits into one 
@@ -71,25 +70,26 @@ discussing it first: see the [New Feature or API Process](feature_proposal_proce
 
 ## Checks
 
-Each pull request to `master` must pass the following checks.
+Each pull request to `main` must pass the following checks:
+
+###### [WinUI-Public-MUX-PR](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21)
+
+This pipeline builds your change and runs automated tests.
+These tests should match what you're able to run with local automated testing using Test Explorer.
+It also creates a NuGet package to match your change.
+
+###### license/cla
+
+This check confirms that you have completed the [CLA](https://cla.microsoft.com).
+
 
 Pull requests from a fork will not automatically trigger all of these checks. A member of the WinUI 
 team can trigger the Azure Pipeline checks by commenting `/azp run` on the PR. The Azure Pipelines
 bot will then trigger the build.
 
-In order to have your change automatically merge once all checks have passed (including optional 
-checks), apply the [auto merge](https://github.com/Microsoft/microsoft-ui-xaml/labels/auto%20merge) 
-label. It will take effect after an 8 hour delay, [more info here](https://microsoft.sharepoint.com/teams/FabricBot/SitePages/AutoMerge,-Bot-Templates-and.aspx).
-
-#### [WinUI-Public-MUX-PR](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21)
-
-This pipeline builds your change and runs automated tests. These tests should match what you're 
-able to run with local automated testing using Test Explorer. It also creates a NuGet package to
-match your change.
-
-#### license/cla
-
-This check confirms that you have completed the [CLA](https://cla.microsoft.com).
+In order to have PRs automatically merge once all checks have passed (including optional 
+checks), maintainers can apply the [auto merge](https://github.com/Microsoft/microsoft-ui-xaml/labels/auto%20merge) 
+label. It will take effect after an 8 hour delay, [more info here (internal link)](https://microsoft.sharepoint.com/teams/FabricBot/SitePages/AutoMerge,-Bot-Templates-and.aspx).
 
 ### Other Pipelines
 
@@ -100,7 +100,7 @@ define them here:
 
 This pipeline extends [WinUI-Public-MUX-PR](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21) 
 to validate more platforms, adding Debug and ARM. It is run after your changes are merged to 
-master.
+main.
 
 ## Commit Messages
 
@@ -117,7 +117,3 @@ paragraph and indicate which issue is fixed in the specific format below.
 	
 Fix #42
 ```
-
-Also do your best to factor commits appropriately, not too large with unrelated 
-things in the same commit, and not too small with the same small change applied 
-N times in N different commits.
