@@ -7,6 +7,29 @@ steps:
       buildOutputDir: $(buildOutputDir)
       publishDir: $(publishDir)
 
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: 'NuGet restore MUXExperimental.sln'
+    inputs:
+      restoreSolution: MUXExperimental.sln
+      feedsToUse: config
+      nugetConfigPath: nuget.config
+
+  - task: VSBuild@1
+    displayName: 'Build solution MUXExperimental.sln'
+    inputs:
+      solution: MUXExperimental.sln
+      vsVersion: 16.0
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
+      msbuildArgs: '/restore /p:UseInsiderSDK=$(UseInsiderSDK) /p:AppxPackageDir="$(appxPackageDir)" /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false /binaryLogger:$(Build.SourcesDirectory)/MUXExperimental.sln.$(buildPlatform).$(buildConfiguration).binlog /p:MUXVersionBuild=$(builddate_yymm) /p:MUXVersionRevision=$(builddate_dd)$(buildrevision) /p:VCToolsInstallDir="$(VCToolsInstallDir)\" /p:PGOBuildMode=$(PGOBuildMode)'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish MUXExperimental.sln binlog'
+    condition: succeededOrFailed()
+    inputs:
+      PathtoPublish: $(Build.SourcesDirectory)/MUXExperimental.sln.$(buildPlatform).$(buildConfiguration).binlog
+      artifactName: drop
+
   - template: MUX-MakeFrameworkPackages-Steps.yml
     parameters:
       buildOutputDir: $(buildOutputDir)

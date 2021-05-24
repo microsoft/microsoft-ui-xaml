@@ -5,7 +5,11 @@
 #include "common.h"
 #include "ResourceAccessor.h"
 
+#ifdef MUX_EXPERIMENTAL
+PCWSTR ResourceAccessor::c_resourceLoc{ L"Microsoft.Experimental.UI.Xaml/Resources" };
+#else
 PCWSTR ResourceAccessor::c_resourceLoc{ L"Microsoft.UI.Xaml/Resources" };
+#endif
 
 winrt::ResourceMap ResourceAccessor::GetResourceMap()
 {

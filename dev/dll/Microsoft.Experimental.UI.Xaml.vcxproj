@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.UI.Xaml.Common.props" />
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4647FA1B-124E-4447-AF56-4016AB6FAF4A}</ProjectGuid>
+    <Keyword>DynamicLibrary</Keyword>
+    <TargetName>$(MEUXTargetName)</TargetName>
+    <RootNamespace>$(MEUXNamespace)</RootNamespace>
+    <CppWinRTNamespaceMergeDepth>2</CppWinRTNamespaceMergeDepth>
+    <MdMergeNamespaceMergeDepth>4</MdMergeNamespaceMergeDepth>
+    <ProjectWinMDName>Microsoft.Experimental.winmd</ProjectWinMDName>
+    <DependencyPropertyCodeGenOutputDirectory>$(MSBuildThisFileDirectory)..\GeneratedExperimental</DependencyPropertyCodeGenOutputDirectory>
+    <DisablePGO>True</DisablePGO>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <ItemDefinitionGroup>
+    <Link>
+      <ModuleDefinitionFile>Microsoft.Experimental.UI.Xaml.def</ModuleDefinitionFile>
+    </Link>
+    <ClCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);MUX_EXPERIMENTAL</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Midl Include="..\..\idl\Microsoft.Experimental.UI.Xaml.idl" />
+    <ResourceCompile Include="Microsoft.Experimental.UI.Xaml.rc" />
+    <ClInclude Include="ExperimentalXamlControlsResources.h" />
+    <ClCompile Include="$(DependencyPropertyCodeGenOutputDirectory)\ExperimentalXamlControlsResources.properties.cpp" />
+    <ClCompile Include="ExperimentalXamlControlsResources.cpp" />
+  </ItemGroup>
+  <ImportGroup Label="Shared">
+    <Import Project="..\Collections\Collections.vcxitems" Label="Shared" />
+    <Import Project="..\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" />
+    <Import Project="..\SampleControl\SampleControl.vcxitems" Label="Shared" />
+  </ImportGroup>
+  <ItemGroup>
+    <SharedPage Include="@(Page)" />
+    <SharedPage Update="@(Page)">
+      <ControlsResourcesVersion2 Condition="'%(Page.ControlsResourcesVersion)' != 'Version1'">true</ControlsResourcesVersion2>
+      <ControlsResourcesVersion1 Condition="'%(Page.ControlsResourcesVersion)' != 'Version2'">true</ControlsResourcesVersion1>
+    </SharedPage>
+  </ItemGroup>
+
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\packages\Microsoft.UI.Xaml.2.5.0\build\native\Microsoft.UI.Xaml.targets" Condition="Exists('..\..\packages\Microsoft.UI.Xaml.2.5.0\build\native\Microsoft.UI.Xaml.targets')" />
+  </ImportGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.UI.Xaml.Common.targets" />
+
+  <Target Name="EnsureNuGetPackageBuildImports2" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\Microsoft.UI.Xaml.2.5.0\build\native\Microsoft.UI.Xaml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.UI.Xaml.2.5.0\build\native\Microsoft.UI.Xaml.targets'))" />
+  </Target>
+</Project>

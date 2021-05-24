@@ -21,7 +21,9 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\MenuBar\MenuBar_TestUI\MenuBar_TestUI.projitems" Label="Shared" Condition="$(FeatureMenuBarEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\NavigationView\TestUI\NavigationView_TestUI.projitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ParallaxView\TestUI\ParallaxView_TestUI.projitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true'" />
+
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PersonPicture\TestUI\PersonPicture_TestUI.projitems" Label="Shared" Condition="$(FeaturePersonPictureEnabled) == 'true'" />
+  
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PullToRefresh\RefreshVisualizer\TestUI\RefreshVisualizer_TestUI.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PullToRefresh\RefreshContainer\TestUI\RefreshContainer_TestUI.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\TestUI\ScrollViewerAdapter_TestUI.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />

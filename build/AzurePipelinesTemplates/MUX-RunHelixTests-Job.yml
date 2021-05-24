@@ -105,6 +105,14 @@ jobs:
     parameters:
       condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
       testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
+      testFilePattern: 'MUXExperimental.Test.dll'
+      outputProjFileName: 'RunTestsInHelix-ExperimentalInteractionTests.proj'
+      taefQuery: ${{ parameters.taefQuery }}
+
+  - template: MUX-CreateHelixProjFile-Steps.yml
+    parameters:
+      condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
+      testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
       testFilePattern: 'MUXControlsTestApp.appx'
       outputProjFileName: 'RunTestsInHelix-ApiTests.proj'
       taefQuery: ${{ parameters.taefQuery }}

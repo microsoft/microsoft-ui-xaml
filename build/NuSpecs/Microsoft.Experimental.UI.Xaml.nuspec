@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>$ID$</id>
+    <version>0.0.0-SpecifyVersionOnCommandline</version>
+    <title>Microsoft.Experimental.UI.Xaml</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <description>Microsoft.Experimental.UI.Xaml</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <projectUrl>https://github.com/microsoft/microsoft-ui-xaml</projectUrl>
+    <iconUrl>https://aka.ms/winui_icon</iconUrl>
+    <dependencies>
+      <dependency id="Microsoft.UI.Xaml" version="2.5.0" />
+    </dependencies>
+  </metadata>
+  <files>
+
+    <file target="lib\uap10.0" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.Experimental.UI.Xaml\sdk\Microsoft.Experimental.UI.Xaml.winmd"/>
+
+    <file target="lib\uap10.0\Microsoft.Experimental.UI.Xaml\Themes" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.Experimental.UI.Xaml\Generic.xaml"/>
+
+    <file target="runtimes" src="$RUNTIMESDIR$\**\*.*"/>
+
+    <!-- Common build logic -->
+    <file target="build\$ID$.targets" src="MUXControls-Experimental-Nuget-Common.targets"/>
+    <file target="buildTransitive\$ID$.targets" src="MUXControls-Experimental-Nuget-Common.targets"/>
+
+    <file target="build\native\$ID$.targets" src="MUXControls-Nuget-Native.targets"/>
+  </files>
+</package>

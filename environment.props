@@ -1,11 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- BuildingWithBuildExe is a property set by razzle builds to let us know whether or not we're currently in a razzle build,
-       started by using "build" in a razzle window.  If we are in a razzle build, then we want to set all of the properties that are needed
-       by the razzle targets files.  If we aren't in a razzle build, then we're just building using VS, so whether we're doing that
-       in the WinUI repo or the Windows repo, we can just use the standard VS properties we've been using to date. -->
-  <PropertyGroup Condition="$(BuildingWithBuildExe) != 'true'">
+  <PropertyGroup>
     <PlatformToolset>v141</PlatformToolset>
     <PlatformToolset Condition="'$(VisualStudioVersion)' >= '16.0'">v142</PlatformToolset>
     <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -14,35 +10,9 @@
     <CSharpTargetsFilePath>$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets</CSharpTargetsFilePath>
     <MUXNamespace>Microsoft.UI.Xaml</MUXNamespace>
     <MUXTargetName>Microsoft.UI.Xaml</MUXTargetName>
+    <MEUXNamespace>Microsoft.Experimental.UI.Xaml</MEUXNamespace>
+    <MEUXTargetName>Microsoft.Experimental.UI.Xaml</MEUXTargetName>
   </PropertyGroup>
-  <PropertyGroup Condition="$(BuildingWithBuildExe) == 'true'">
-    <DevToolChain>LKG</DevToolChain>
-    <VisualStudioVersion>14.0</VisualStudioVersion>
-    <UseAtl>true</UseAtl>
-    <AtlVersion>80</AtlVersion>
-    <UseStl>true</UseStl>
-    <StlVersion>StlVerCurrent</StlVersion>
-    <UseMsvcrt>true</UseMsvcrt>
-    <UseUnicrt>true</UseUnicrt>
-    <UseNativeEh>true</UseNativeEh>
-    <ExcludeWin32Libs>true</ExcludeWin32Libs>
-    <Use_Asmmeta>false</Use_Asmmeta>
-    <AssemblyAttributeCLSCompliant>false</AssemblyAttributeCLSCompliant>
-    <DisableXbfGeneration>false</DisableXbfGeneration>
-    <UseOldXamlCompiler>false</UseOldXamlCompiler>
-    <PlatformToolset>v120</PlatformToolset>
-    <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
-    <GenerateDebugInformation>true</GenerateDebugInformation>
-    <CppTargetsFilePath>$(NTMAKEENV)\Microsoft.Build.UI.Xaml.Cpp.targets</CppTargetsFilePath>
-    <CSharpTargetsFilePath>$(NTMAKEENV)\Microsoft.Build.UI.Xaml.CSharp.targets</CSharpTargetsFilePath>
-    <_NoWinAPIFamilyApp>true</_NoWinAPIFamilyApp>
-    <MUXNamespace>Windows.UI.Xaml</MUXNamespace>
-    <MUXTargetName>Windows.UI.Xaml.Controls</MUXTargetName>
-    <!-- arm64 builds aren't supported by .net -->
-    <PlatformSpecificBuild Condition="$(_BuildArch) != 'arm64'">true</PlatformSpecificBuild>
-    <UseInsiderSDK>true</UseInsiderSDK>
-  </PropertyGroup>
-  <Import Condition="$(BuildingWithBuildExe) == 'true'" Project="$(NTMAKEENV)\Microsoft.Build.settings" />
   <PropertyGroup Condition="$(MUXFinalRelease) != 'true'">
     <!-- If MUXPrelease is unset, default it to false. -->
     <MUXFinalRelease>false</MUXFinalRelease>
@@ -68,16 +38,5 @@
     <Midl>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);USE_INSIDER_SDK</PreprocessorDefinitions>
     </Midl>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="$(BuildingWithBuildExe) == 'true'">
-    <ClCompile>
-      <AdditionalIncludeDirectories>
-        %(AdditionalIncludeDirectories);
-        $(PUBLIC_ROOT)\internal\sdk\inc;
-      </AdditionalIncludeDirectories>
-    </ClCompile>
-    <Page>
-      <Link>%(Filename)%(Extension)</Link>
-    </Page>
   </ItemDefinitionGroup>
 </Project>

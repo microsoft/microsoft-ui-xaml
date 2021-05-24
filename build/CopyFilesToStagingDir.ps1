@@ -40,6 +40,12 @@ PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\Microsoft.UI.Xaml.Fr
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\MUXControls.Test.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\MUXTestInfra.TAEF.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.ReleaseTest.TAEF\MUXControls.ReleaseTest.dll $FullPublishDir\Test\
+PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXExperimental.Test.TAEF\MUXExperimental.Test.dll $FullPublishDir\Test\
+
+PublishFile -IfExists $FullBuildOutput\Microsoft.Experimental.UI.Xaml\Microsoft.Experimental.UI.Xaml.dll $FullPublishDir\Microsoft.Experimental.UI.Xaml\
+PublishFile -IfExists $FullBuildOutput\Microsoft.Experimental.UI.Xaml\Microsoft.Experimental.UI.Xaml.pri $FullPublishDir\Microsoft.Experimental.UI.Xaml\
+PublishFile -IfExists $FullBuildOutput\Microsoft.Experimental.UI.Xaml\sdk\Microsoft.Experimental.UI.Xaml.winmd $FullPublishDir\Microsoft.Experimental.UI.Xaml\sdk\
+PublishFile -IfExists $FullBuildOutput\Microsoft.Experimental.UI.Xaml\Generic.xaml $FullPublishDir\Microsoft.Experimental.UI.Xaml\
 
 # pgosweep and vcruntime are required to run pgo instrumented test run. They are placed from the
 # cx test app instead of releasetest.dll since these are architecture specific and the ReleaseTest assembly is AnyCPU.
@@ -60,6 +66,7 @@ if ($PublishAppxFiles)
     PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\AppPackages\NugetPackageTestAppCX_Test\ $AppxPackagesDir
     PublishFile -IfExists $FullBuildOutput\AppThatUsesMUXIndirectly\AppPackages\AppThatUsesMUXIndirectly_Test\ $AppxPackagesDir
     PublishFile -IfExists $FullBuildOutput\WpfApp.Package\AppPackages\WpfApp_Test\ $AppxPackagesDir
+    PublishFile -IfExists $FullBuildOutput\MUXExperimentalTestApp\AppPackages\MUXExperimentalTestApp_Test\ $AppxPackagesDir
 }
 
 $UnpackagedAppsDir = "$FullPublishDir\UnpackagedApps"
@@ -78,3 +85,5 @@ PublishFile -IfExists $FullBuildOutput\TestAppCX\TestAppCX.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\NugetPackageTestApp\NugetPackageTestApp.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\AppThatUsesMUXIndirectly\AppThatUsesMUXIndirectly.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\NugetPackageTestAppCX.pdb $symbolsOutputDir
+PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXExperimental.Test.TAEF\MUXExperimental.Test.pdb $symbolsOutputDir
+PublishFile -IfExists $FullBuildOutput\MUXExperimentalTestApp\MUXExperimentalTestApp.pdb $symbolsOutputDir

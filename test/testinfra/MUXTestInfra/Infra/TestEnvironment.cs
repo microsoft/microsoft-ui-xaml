@@ -166,6 +166,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 return new TestApplicationInfo("WpfApp_8wekyb3d8bbwe", "WpfApp", @"WpfApp\WpfApp.exe");
             }
         }
+
+        public static TestApplicationInfo MUXExperimentalTestApp
+        {
+            get
+            {
+                return new TestApplicationInfo("MUXExperimentalTestApp", "MUXExperimentalTestApp_8wekyb3d8bbwe!App", "MUXExperimentalTestApp_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+            }
+        }
     }
 
     public class TestEnvironment

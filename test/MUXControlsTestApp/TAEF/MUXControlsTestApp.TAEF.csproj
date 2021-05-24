@@ -14,17 +14,10 @@
     <AppInstallerCheckForUpdateFrequency>OnApplicationRun</AppInstallerCheckForUpdateFrequency>
   </PropertyGroup>
   <ItemGroup>
-    <AppxManifest Include="Package.VS.appxmanifest" Condition="$(BuildingWithBuildExe) != 'true'">
-      <SubType>Designer</SubType>
-    </AppxManifest>
-    <AppxManifest Include="Package.Razzle.appxmanifest" Condition="$(BuildingWithBuildExe) == 'true'">
+    <AppxManifest Include="Package.VS.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
   </ItemGroup>
-  <!-- If we include the razzle includes in the csproj, VS raises warnings about referenced components not being found even if
-       it's gated with the condition that we're building with build.exe.  To avoid that, we'll add the razzle includes
-       in a props file that is only included when we're building with build.exe, which makes VS never see them. -->
-  <Import Project="RazzleIncludes.props" Condition="$(BuildingWithBuildExe) == 'true'" />
   <Import Project="..\MUXControlsTestApp.Shared.projitems" />
   <Import Project="..\MUXControlsTestApp.Shared.targets" />
 </Project>

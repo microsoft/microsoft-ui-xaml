@@ -67,6 +67,7 @@
   </PropertyGroup>
   <!-- Dependencies for IconSource -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureIconSourceEnabled) == 'true'">
+    <FeatureImageIconEnabled>productOnly</FeatureImageIconEnabled>
   </PropertyGroup>
   <!-- Dependencies for InfoBar -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureInfoBarEnabled) == 'true'">
@@ -192,6 +193,9 @@
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureAnimatedIconEnabled) == 'true'">
     <FeatureAnimatedVisualPlayerEnabled>productOnly</FeatureAnimatedVisualPlayerEnabled>
   </PropertyGroup>
+  <!-- Dependencies for SampleControl -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureSampleControlEnabled) == 'true'">
+  </PropertyGroup>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
     <FeatureAnimatedVisualPlayerEnabled>true</FeatureAnimatedVisualPlayerEnabled>
@@ -243,6 +247,7 @@
     <FeatureImageIconEnabled>true</FeatureImageIconEnabled>
     <FeatureAnimatedIconEnabled>true</FeatureAnimatedIconEnabled>
     <FeatureMonochromaticOverlayPresenterEnabled>true</FeatureMonochromaticOverlayPresenterEnabled>
+    <FeatureSampleControlEnabled>true</FeatureSampleControlEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>

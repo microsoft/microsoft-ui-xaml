@@ -1,0 +1,17 @@
+namespace MEU_XC_NAMESPACE
+{
+
+[MUX_EXPERIMENTAL]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass SampleControl : Windows.UI.Xaml.Controls.Control
+{
+    SampleControl();
+
+    Object Placeholder{ get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty PlaceholderProperty{ get; };
+}
+
+}

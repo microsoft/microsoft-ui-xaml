@@ -23,11 +23,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\testinfra\MUXTestInfra\MSTest\MUXTestInfra.MSTest.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft">
-      <HintPath>..\..\..\BuildOutput\Debug\x86\Microsoft.UI.Xaml\Microsoft.winmd</HintPath>
-    </Reference>
-  </ItemGroup>
   <Import Project="..\MUXControls.Test.Shared.projitems" />
   <Import Project="..\MUXControls.Test.Shared.targets" />
 </Project>
