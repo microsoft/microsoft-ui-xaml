@@ -3339,6 +3339,7 @@ void NavigationView::UpdateVisualState(bool useTransitions)
         if (IsTopNavigationView())
         {
             UpdateVisualStateForOverflowButton();
+            winrt::VisualStateManager::GoToState(*this, L"TopNavigation", false /*useTransitions*/);
         }
         else
         {
