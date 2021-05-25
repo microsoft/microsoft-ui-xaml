@@ -7,26 +7,26 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <StaticResource x:Key="PersonPictureForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
-            <SolidColorBrush x:Key="PersonPictureEllipseBadgeForegroundThemeBrush" Color="{StaticResource SystemBaseHighColor}"/>
-            <SolidColorBrush x:Key="PersonPictureEllipseBadgeFillThemeBrush" Color="{StaticResource SystemChromeDisabledHighColor}"/>
-            <SolidColorBrush x:Key="PersonPictureEllipseBadgeStrokeThemeBrush" Color="{StaticResource SystemListMediumColor}"/>
+            <StaticResource x:Key="PersonPictureEllipseBadgeForegroundThemeBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
+            <StaticResource x:Key="PersonPictureEllipseBadgeFillThemeBrush" ResourceKey="AccentFillColorDefaultBrush"/>
+            <StaticResource x:Key="PersonPictureEllipseBadgeStrokeThemeBrush" ResourceKey="ControlFillColorTransparentBrush"/>
             <StaticResource x:Key="PersonPictureEllipseFillThemeBrush" ResourceKey="ControlAltFillColorQuarternary" />
             <StaticResource x:Key="PersonPictureEllipseFillStrokeBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-            <x:Double x:Key="PersonPictureEllipseBadgeStrokeOpacity">0.8</x:Double>
-            <x:Double x:Key="PersonPictureEllipseBadgeImageSourceStrokeOpacity">1.0</x:Double>
+            <x:Double x:Key="PersonPictureEllipseBadgeStrokeOpacity">1</x:Double>
+            <x:Double x:Key="PersonPictureEllipseBadgeImageSourceStrokeOpacity">1</x:Double>
             <x:Double x:Key="PersonPictureEllipseStrokeThickness">1</x:Double>
             <x:Double x:Key="PersonPictureEllipseBadgeStrokeThickness">2</x:Double>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="PersonPictureForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
-            <SolidColorBrush x:Key="PersonPictureEllipseBadgeForegroundThemeBrush" Color="{StaticResource SystemBaseHighColor}"/>
-            <SolidColorBrush x:Key="PersonPictureEllipseBadgeFillThemeBrush" Color="{StaticResource SystemChromeDisabledHighColor}"/>
-            <SolidColorBrush x:Key="PersonPictureEllipseBadgeStrokeThemeBrush" Color="{StaticResource SystemListMediumColor}"/>
+            <StaticResource x:Key="PersonPictureEllipseBadgeForegroundThemeBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
+            <StaticResource x:Key="PersonPictureEllipseBadgeFillThemeBrush" ResourceKey="AccentFillColorDefaultBrush"/>
+            <StaticResource x:Key="PersonPictureEllipseBadgeStrokeThemeBrush" ResourceKey="ControlFillColorTransparentBrush"/>
             <StaticResource x:Key="PersonPictureEllipseFillThemeBrush" ResourceKey="ControlAltFillColorQuarternary" />
             <StaticResource x:Key="PersonPictureEllipseFillStrokeBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-            <x:Double x:Key="PersonPictureEllipseBadgeStrokeOpacity">0.8</x:Double>
-            <x:Double x:Key="PersonPictureEllipseBadgeImageSourceStrokeOpacity">1.0</x:Double>
+            <x:Double x:Key="PersonPictureEllipseBadgeStrokeOpacity">1</x:Double>
+            <x:Double x:Key="PersonPictureEllipseBadgeImageSourceStrokeOpacity">1</x:Double>
             <x:Double x:Key="PersonPictureEllipseStrokeThickness">1</x:Double>
             <x:Double x:Key="PersonPictureEllipseBadgeStrokeThickness">2</x:Double>
         </ResourceDictionary>
@@ -38,8 +38,8 @@
             <SolidColorBrush x:Key="PersonPictureEllipseBadgeStrokeThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}"/>
             <StaticResource x:Key="PersonPictureEllipseFillThemeBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
             <StaticResource x:Key="PersonPictureEllipseFillStrokeBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-            <x:Double x:Key="PersonPictureEllipseBadgeStrokeOpacity">1.0</x:Double>
-            <x:Double x:Key="PersonPictureEllipseBadgeImageSourceStrokeOpacity">1.0</x:Double>
+            <x:Double x:Key="PersonPictureEllipseBadgeStrokeOpacity">1</x:Double>
+            <x:Double x:Key="PersonPictureEllipseBadgeImageSourceStrokeOpacity">1</x:Double>
             <x:Double x:Key="PersonPictureEllipseStrokeThickness">1</x:Double>
             <x:Double x:Key="PersonPictureEllipseBadgeStrokeThickness">2</x:Double>
         </ResourceDictionary>

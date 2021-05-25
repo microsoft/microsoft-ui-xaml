@@ -96,7 +96,7 @@
                         <Grid
                             x:Name="BadgeGrid"
                             Visibility="Collapsed"
-                            VerticalAlignment="Bottom"
+                            VerticalAlignment="Top"
                             HorizontalAlignment="Right">
 
                             <Ellipse
