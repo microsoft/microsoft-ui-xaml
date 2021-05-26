@@ -190,5 +190,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(initialsTextBlock.Text, "\xE716");
             });
         }
+
+        [TestMethod]
+        public void VerifyPersonPictureVisualTree()
+        {
+            PersonPicture personPicture = null;
+            RunOnUIThread.Execute(() =>
+            {
+                personPicture = new PersonPicture { Initials="LC", Width=100, Height=100 };
+            });
+            TestUtilities.SetAsVisualTreeRoot(personPicture);
+
+            VisualTreeTestHelper.VerifyVisualTree(root: personPicture, verificationFileNamePrefix: "PersonPicture");
+        }
     }
 }

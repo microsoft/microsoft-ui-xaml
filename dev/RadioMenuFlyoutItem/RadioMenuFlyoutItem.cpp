@@ -27,9 +27,9 @@ RadioMenuFlyoutItem::RadioMenuFlyoutItem()
 RadioMenuFlyoutItem::~RadioMenuFlyoutItem()
 {
     // If this is the checked item, remove it from the lookup.
-    if (IsChecked())
+    if (m_isChecked)
     {
-        SharedHelpers::EraseIfExists(*s_selectionMap, GroupName());
+        SharedHelpers::EraseIfExists(*s_selectionMap, m_groupName);
     }
 }
 
@@ -46,6 +46,11 @@ void RadioMenuFlyoutItem::OnPropertyChanged(const winrt::DependencyPropertyChang
             m_isSafeUncheck = false;
             UpdateCheckedItemInGroup();
         }
+        m_isChecked = IsChecked();
+    }
+    else if (property == s_GroupNameProperty)
+    {
+        m_groupName = GroupName();
     }
 }
 

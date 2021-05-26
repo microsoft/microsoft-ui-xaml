@@ -17,29 +17,26 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <ScrollViewer>
-                <StackPanel Padding="5" Background="{ThemeResource SystemChromeMediumLowColor}" Width="250">
-                    <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
-                    <CheckBox x:Name="IsClosableCheckBox" AutomationProperties.Name="IsClosableCheckBox" Checked="IsClosableCheckBox_CheckChanged" Unchecked="IsClosableCheckBox_CheckChanged" IsChecked="True" Content="IsClosable on first tab"/>
-                    <CheckBox x:Name="HandleTabCloseRequestedCheckBox" AutomationProperties.Name="HandleTabCloseRequestedCheckBox" Content="Handle TabView tab close" IsChecked="True"/>
-                    <CheckBox x:Name="HandleTabItemCloseRequestedCheckBox" AutomationProperties.Name="HandleTabItemCloseRequestedCheckBox" Content="Handle TabViewItem close"/>
-                    <CheckBox x:Name="IsAddButtonVisibleCheckBox" AutomationProperties.Name="IsAddButtonVisibleCheckBox" Content="Add button visible" IsChecked="{x:Bind Tabs.IsAddTabButtonVisible, Mode=TwoWay}"/>
-                    <CheckBox x:Name="IsDisabledTabVisibleCheckBox" AutomationProperties.Name="IsDisabledTabVisibleCheckBox" Checked="IsDisabledTabVisibleCheckBox_CheckChanged" Unchecked="IsDisabledTabVisibleCheckBox_CheckChanged" Content="Disabled tab visible" IsChecked="True"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                        <TextBlock VerticalAlignment="Center" Text="Tab Width:"/>
-                        <ComboBox x:Name="TabWidthComboBox" AutomationProperties.Name="TabWidthComboBox" Margin="4,0,0,0" SelectedIndex="0" SelectionChanged="TabWidthComboBox_SelectionChanged">
-                            <ComboBoxItem Content="Equal"/>
-                            <ComboBoxItem Content="SizeToContent"/>
-                            <ComboBoxItem Content="Compact"/>
-                        </ComboBox>
-                    </StackPanel>
+            <StackPanel Padding="12" Width="250">
+                <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
+                <CheckBox x:Name="IsClosableCheckBox" AutomationProperties.Name="IsClosableCheckBox" Checked="IsClosableCheckBox_CheckChanged" Unchecked="IsClosableCheckBox_CheckChanged" IsChecked="True" Content="IsClosable on first tab"/>
+                <CheckBox x:Name="HandleTabCloseRequestedCheckBox" AutomationProperties.Name="HandleTabCloseRequestedCheckBox" Content="Handle TabView tab close" IsChecked="True"/>
+                <CheckBox x:Name="HandleTabItemCloseRequestedCheckBox" AutomationProperties.Name="HandleTabItemCloseRequestedCheckBox" Content="Handle TabViewItem close"/>
+                <CheckBox x:Name="IsAddButtonVisibleCheckBox" AutomationProperties.Name="IsAddButtonVisibleCheckBox" Content="Add button visible" IsChecked="{x:Bind Tabs.IsAddTabButtonVisible, Mode=TwoWay}"/>
+                <CheckBox x:Name="IsDisabledTabVisibleCheckBox" AutomationProperties.Name="IsDisabledTabVisibleCheckBox" Checked="IsDisabledTabVisibleCheckBox_CheckChanged" Unchecked="IsDisabledTabVisibleCheckBox_CheckChanged" Content="Disabled tab visible" IsChecked="True"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock VerticalAlignment="Center">Tab Width:</TextBlock>
+                    <ComboBox x:Name="TabWidthComboBox" AutomationProperties.Name="TabWidthComboBox" Margin="4,0,0,0" SelectedIndex="0" SelectionChanged="TabWidthComboBox_SelectionChanged">
+                        <ComboBoxItem Content="Equal"/>
+                        <ComboBoxItem Content="SizeToContent"/>
+                        <ComboBoxItem Content="Compact"/>
+                    </ComboBox>
                     <TextBlock Text="Closebutton overlay mode:"/>
                     <ComboBox x:Name="CloseButtonOverlayModeCombobox" AutomationProperties.Name="CloseButtonOverlayModeCombobox" SelectedIndex="2" Margin="0,4,0,0" SelectionChanged="CloseButtonOverlayModeCombobox_SelectionChanged">
                         <ComboBoxItem Content="Auto"/>
                         <ComboBoxItem Content="OnPointerOver"/>
                         <ComboBoxItem Content="Always"/>
                     </ComboBox>
-
                     <Border HorizontalAlignment="Stretch" Height="3" Background="{ThemeResource SystemChromeGrayColor}" Margin="0,8,0,8"/>
 
                     <TextBlock Text="Actions" Style="{ThemeResource StandardGroupHeader}"/>
@@ -116,7 +113,7 @@
                         <TextBlock x:Name="SecondTabHeaderForegroundTextBlock" AutomationProperties.Name="SecondTabHeaderForegroundTextBlock" Margin="4,0,0,0" Text=""/>
                     </StackPanel>
                 </StackPanel>
-            </ScrollViewer>
+            </StackPanel>
 
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
@@ -143,8 +140,8 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Middle" Margin="6,3,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="2" Text="Right" Margin="6,3,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="Middle" Margin="6,3,6,0" VerticalAlignment="Center" FontSize="14"/>
+                            <TextBlock Grid.Column="2" Text="Right" Margin="6,3,6,0" VerticalAlignment="Center" FontSize="14"/>
                         </Grid>
                     </controls:TabView.TabStripFooter>
 
@@ -153,7 +150,7 @@
                             <controls:SymbolIconSource Symbol="Home"/>
                         </controls:TabViewItem.IconSource>
 
-                        <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
+                        <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
                             <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
                             <StackPanel>
                                 <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton"

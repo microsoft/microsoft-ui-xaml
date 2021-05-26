@@ -141,7 +141,7 @@
                                 </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="DisplayModeStates">
-                                <VisualStateGroup.Transitions>
+                                <contract8Present:VisualStateGroup.Transitions>
                                     <VisualTransition From="CompactClosed" To="CompactOpenUp" GeneratedDuration="{StaticResource ControlNormalAnimationDuration}">
                                         <Storyboard>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Background">
@@ -576,7 +576,7 @@
                                             </DoubleAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualTransition>
-                                </VisualStateGroup.Transitions>
+                                </contract8Present:VisualStateGroup.Transitions>
                                 <VisualState x:Name="CompactClosed" />
                                 <VisualState x:Name="CompactOpenUp">
                                     <Storyboard>
@@ -833,7 +833,7 @@
                               XYFocusKeyboardNavigation="Enabled">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" MinWidth="{StaticResource AppBarMoreButtonColumnMinWidth}"/>
+                                <ColumnDefinition Width="Auto" MinWidth="{ThemeResource AppBarMoreButtonColumnMinWidth}"/>
                             </Grid.ColumnDefinitions>
                             <Grid.RenderTransform>
                                 <TranslateTransform x:Name="ContentTransform" />

@@ -38,7 +38,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="DownSpinButton.Visibility" Value="Visible" />
                                         <Setter Target="UpSpinButton.Visibility" Value="Visible" />
-                                        <contract7Present:Setter Target="InputBox.CornerRadius" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}" />
+                                        <Setter Target="InputEater.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -74,18 +74,42 @@
                             <ResourceDictionary>
                                 <ResourceDictionary.ThemeDictionaries>
                                     <ResourceDictionary x:Key="Light">
-                                        <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="TextControlBorderBrush"/>
-                                        <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="TextControlBorderBrush"/>
+                                        <StaticResource x:Key="RepeatButtonBackground" ResourceKey="TextControlButtonBackground" />
+                                        <StaticResource x:Key="RepeatButtonBackgroundPointerOver" ResourceKey="TextControlButtonBackgroundPointerOver" />
+                                        <StaticResource x:Key="RepeatButtonBackgroundPressed" ResourceKey="TextControlButtonBackgroundPressed" />
+                                        <StaticResource x:Key="RepeatButtonForeground" ResourceKey="TextControlButtonForeground" />
+                                        <StaticResource x:Key="RepeatButtonForegroundPointerOver" ResourceKey="TextControlButtonForegroundPointerOver" />
+                                        <StaticResource x:Key="RepeatButtonForegroundPressed" ResourceKey="TextControlButtonForegroundPressed" />
+                                        <StaticResource x:Key="RepeatButtonBorderBrush" ResourceKey="TextControlButtonBorderBrush" />
+                                        <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="TextControlButtonBorderBrushPointerOver" />
+                                        <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="TextControlButtonBorderBrushPressed" />
+                                        <StaticResource x:Key="RepeatButtonBorderBrushDisabled" ResourceKey="TextControlButtonBorderBrush" />
                                     </ResourceDictionary>
 
                                     <ResourceDictionary x:Key="Dark">
-                                        <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="TextControlBorderBrush"/>
-                                        <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="TextControlBorderBrush"/>
+                                        <StaticResource x:Key="RepeatButtonBackground" ResourceKey="TextControlButtonBackground" />
+                                        <StaticResource x:Key="RepeatButtonBackgroundPointerOver" ResourceKey="TextControlButtonBackgroundPointerOver" />
+                                        <StaticResource x:Key="RepeatButtonBackgroundPressed" ResourceKey="TextControlButtonBackgroundPressed" />
+                                        <StaticResource x:Key="RepeatButtonForeground" ResourceKey="TextControlButtonForeground" />
+                                        <StaticResource x:Key="RepeatButtonForegroundPointerOver" ResourceKey="TextControlButtonForegroundPointerOver" />
+                                        <StaticResource x:Key="RepeatButtonForegroundPressed" ResourceKey="TextControlButtonForegroundPressed" />
+                                        <StaticResource x:Key="RepeatButtonBorderBrush" ResourceKey="TextControlButtonBorderBrush" />
+                                        <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="TextControlButtonBorderBrushPointerOver" />
+                                        <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="TextControlButtonBorderBrushPressed" />
+                                        <StaticResource x:Key="RepeatButtonBorderBrushDisabled" ResourceKey="TextControlButtonBorderBrush" />
                                     </ResourceDictionary>
 
                                     <ResourceDictionary x:Key="HighContrast">
-                                        <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
-                                        <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
+                                        <StaticResource x:Key="RepeatButtonBackground" ResourceKey="TextControlButtonBackground" />
+                                        <StaticResource x:Key="RepeatButtonBackgroundPointerOver" ResourceKey="TextControlButtonBackgroundPointerOver" />
+                                        <StaticResource x:Key="RepeatButtonBackgroundPressed" ResourceKey="TextControlButtonBackgroundPressed" />
+                                        <StaticResource x:Key="RepeatButtonForeground" ResourceKey="TextControlButtonForeground" />
+                                        <StaticResource x:Key="RepeatButtonForegroundPointerOver" ResourceKey="TextControlButtonForegroundPointerOver" />
+                                        <StaticResource x:Key="RepeatButtonForegroundPressed" ResourceKey="TextControlButtonForegroundPressed" />
+                                        <StaticResource x:Key="RepeatButtonBorderBrush" ResourceKey="TextControlButtonBorderBrush" />
+                                        <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="TextControlButtonBorderBrushPointerOver" />
+                                        <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="TextControlButtonBorderBrushPressed" />
+                                        <StaticResource x:Key="RepeatButtonBorderBrushDisabled" ResourceKey="TextControlButtonBorderBrush" />
                                     </ResourceDictionary>
                                 </ResourceDictionary.ThemeDictionaries>
                             </ResourceDictionary>
@@ -119,6 +143,8 @@
 
                         <TextBox x:Name="InputBox"
                             Grid.Row="1"
+                            Grid.ColumnSpan="3"
+                            Style="{StaticResource NumberBoxTextBoxStyle}"
                             InputScope="{TemplateBinding InputScope}"
                             PlaceholderText="{TemplateBinding PlaceholderText}"
                             contract7Present:SelectionFlyout="{TemplateBinding SelectionFlyout}"
@@ -144,6 +170,7 @@
                             HorizontalAlignment="Left">
 
                             <Grid x:Name="PopupContentRoot"
+                                Padding="6"
                                 Background="{ThemeResource NumberBoxPopupBackground}"
                                 BorderBrush="{ThemeResource NumberBoxPopupBorderBrush}"
                                 BorderThickness="{ThemeResource NumberBoxPopupBorderThickness}"
@@ -154,8 +181,54 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
+                                <Grid.Resources>
+                                    <ResourceDictionary>
+                                        <ResourceDictionary.ThemeDictionaries>
+                                            <ResourceDictionary x:Key="Light">
+                                                <StaticResource x:Key="RepeatButtonBackground" ResourceKey="TextControlButtonBackground" />
+                                                <StaticResource x:Key="RepeatButtonBackgroundPointerOver" ResourceKey="TextControlButtonBackgroundPointerOver" />
+                                                <StaticResource x:Key="RepeatButtonBackgroundPressed" ResourceKey="TextControlButtonBackgroundPressed" />
+                                                <StaticResource x:Key="RepeatButtonForeground" ResourceKey="TextControlButtonForeground" />
+                                                <StaticResource x:Key="RepeatButtonForegroundPointerOver" ResourceKey="TextControlButtonForegroundPointerOver" />
+                                                <StaticResource x:Key="RepeatButtonForegroundPressed" ResourceKey="TextControlButtonForegroundPressed" />
+                                                <StaticResource x:Key="RepeatButtonBorderBrush" ResourceKey="TextControlButtonBorderBrush" />
+                                                <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="TextControlButtonBorderBrushPointerOver" />
+                                                <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="TextControlButtonBorderBrushPressed" />
+                                                <StaticResource x:Key="RepeatButtonBorderBrushDisabled" ResourceKey="TextControlButtonBorderBrush" />
+                                            </ResourceDictionary>
+
+                                            <ResourceDictionary x:Key="Dark">
+                                                <StaticResource x:Key="RepeatButtonBackground" ResourceKey="TextControlButtonBackground" />
+                                                <StaticResource x:Key="RepeatButtonBackgroundPointerOver" ResourceKey="TextControlButtonBackgroundPointerOver" />
+                                                <StaticResource x:Key="RepeatButtonBackgroundPressed" ResourceKey="TextControlButtonBackgroundPressed" />
+                                                <StaticResource x:Key="RepeatButtonForeground" ResourceKey="TextControlButtonForeground" />
+                                                <StaticResource x:Key="RepeatButtonForegroundPointerOver" ResourceKey="TextControlButtonForegroundPointerOver" />
+                                                <StaticResource x:Key="RepeatButtonForegroundPressed" ResourceKey="TextControlButtonForegroundPressed" />
+                                                <StaticResource x:Key="RepeatButtonBorderBrush" ResourceKey="TextControlButtonBorderBrush" />
+                                                <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="TextControlButtonBorderBrushPointerOver" />
+                                                <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="TextControlButtonBorderBrushPressed" />
+                                                <StaticResource x:Key="RepeatButtonBorderBrushDisabled" ResourceKey="TextControlButtonBorderBrush" />
+                                            </ResourceDictionary>
+
+                                            <ResourceDictionary x:Key="HighContrast">
+                                                <StaticResource x:Key="RepeatButtonBackground" ResourceKey="TextControlButtonBackground" />
+                                                <StaticResource x:Key="RepeatButtonBackgroundPointerOver" ResourceKey="TextControlButtonBackgroundPointerOver" />
+                                                <StaticResource x:Key="RepeatButtonBackgroundPressed" ResourceKey="TextControlButtonBackgroundPressed" />
+                                                <StaticResource x:Key="RepeatButtonForeground" ResourceKey="TextControlButtonForeground" />
+                                                <StaticResource x:Key="RepeatButtonForegroundPointerOver" ResourceKey="TextControlButtonForegroundPointerOver" />
+                                                <StaticResource x:Key="RepeatButtonForegroundPressed" ResourceKey="TextControlButtonForegroundPressed" />
+                                                <StaticResource x:Key="RepeatButtonBorderBrush" ResourceKey="TextControlButtonBorderBrush" />
+                                                <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="TextControlButtonBorderBrushPointerOver" />
+                                                <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="TextControlButtonBorderBrushPressed" />
+                                                <StaticResource x:Key="RepeatButtonBorderBrushDisabled" ResourceKey="TextControlButtonBorderBrush" />
+                                            </ResourceDictionary>
+                                        </ResourceDictionary.ThemeDictionaries>
+                                    </ResourceDictionary>
+                                </Grid.Resources>
+
                                 <RepeatButton x:Name="PopupUpSpinButton"
                                     Style="{StaticResource NumberBoxPopupSpinButtonStyle}"
+                                    Margin="0,0,0,4"
                                     Content="&#xE70E;"/>
 
                                 <RepeatButton x:Name="PopupDownSpinButton"
@@ -165,25 +238,42 @@
                             </Grid>
                         </Popup>
 
+                        <Button x:Name="InputEater"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="2"
+                            Visibility="Collapsed"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            Margin="4,0,0,0"
+                            IsTabStop="False"
+                            AutomationProperties.AccessibilityView="Raw">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Grid Background="Transparent"/>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
                         <RepeatButton x:Name="UpSpinButton"
                             Grid.Row="1"
                             Grid.Column="1"
                             Visibility="Collapsed"
                             FontSize="{TemplateBinding FontSize}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
                             Content="&#xE70E;"
                             Style="{StaticResource NumberBoxSpinButtonStyle}"
-                            contract7Present:CornerRadius="0"/>
+                            Margin="4"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
 
                         <RepeatButton x:Name="DownSpinButton"
                             Grid.Row="1"
                             Grid.Column="2"
                             Visibility="Collapsed"
                             FontSize="{TemplateBinding FontSize}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
                             Content="&#xE70D;"
                             Style="{StaticResource NumberBoxSpinButtonStyle}"
-                            contract7Present:CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
+                            Margin="0,4,4,4"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}" />
 
                         <ContentPresenter x:Name="DescriptionPresenter"
                             Grid.Row="2"
@@ -200,11 +290,11 @@
     <Style x:Name="NumberBoxSpinButtonStyle" TargetType="RepeatButton" BasedOn="{StaticResource DefaultRepeatButtonStyle}">
         <Style.Setters>
             <Setter Property="IsTabStop" Value="False"/>
-            <Setter Property="MinWidth" Value="34"/>
+            <Setter Property="MinWidth" Value="32"/>
+            <Setter Property="Padding" Value="0"/>
             <Setter Property="VerticalAlignment" Value="Stretch"/>
-            <Setter Property="Background" Value="{ThemeResource TextControlBackground}"/>
-            <Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}"/>
             <Setter Property="BorderThickness" Value="{ThemeResource NumberBoxSpinButtonBorderThickness}"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
         </Style.Setters>
     </Style>
@@ -213,10 +303,13 @@
         <Style.Setters>
             <Setter Property="AutomationProperties.AccessibilityView" Value="Raw"/>
             <Setter Property="IsTabStop" Value="False"/>
-            <Setter Property="Width" Value="40"/>
-            <Setter Property="Background" Value="{ThemeResource NumberBoxPopupSpinButtonBackground}"/>
+            <Setter Property="Width" Value="36"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="0"/>
             <Setter Property="BorderThickness" Value="{ThemeResource NumberBoxPopupSpinButtonBorderThickness}"/>
+            <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
+            <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
         </Style.Setters>
     </Style>
 
@@ -231,11 +324,12 @@
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
                                             <Grid x:Name="ButtonLayoutGrid"
+                                                Margin="{ThemeResource TextBoxInnerButtonMargin}"
                                                 BorderBrush="{ThemeResource TextControlButtonBorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                 Background="{ThemeResource TextControlButtonBackground}"
                                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                                contract7NotPresent:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}">
+                                                contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                                                 <VisualStateManager.VisualStateGroups>
                                                     <VisualStateGroup x:Name="CommonStates">
                                                         <VisualState x:Name="Normal" />
@@ -362,8 +456,8 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
-
                             </VisualStateGroup>
+                            
                             <VisualStateGroup x:Name="ButtonStates">
                                 <VisualState x:Name="ButtonVisible">
 
@@ -378,7 +472,20 @@
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="ButtonCollapsed" />
+                            </VisualStateGroup>
 
+                            <VisualStateGroup x:Name="SpinButtonStates">
+                                <VisualState x:Name="SpinButtonsCollapsed" />
+                                <VisualState x:Name="SpinButtonsPopup">
+                                    <VisualState.Setters>
+                                        <Setter Target="PopupIndicator.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="SpinButtonsVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="DeleteButton.Margin" Value="0,0,72,0" />
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
 
                         </VisualStateManager.VisualStateGroups>
@@ -455,14 +562,14 @@
                             Grid.Column="1"
                             Style="{StaticResource DeleteButtonStyle}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            contract7Present:CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             Padding="{ThemeResource HelperButtonThemePadding}"
                             IsTabStop="False"
                             Visibility="Collapsed"
                             AutomationProperties.AccessibilityView="Raw"
                             FontSize="{TemplateBinding FontSize}"
                             HorizontalAlignment="Right"
-                            MinWidth="34"
+                            MinWidth="40"
                             VerticalAlignment="Stretch" />
                         <contract7Present:ContentPresenter x:Name="DescriptionPresenter"
                             Grid.Row="2"
@@ -473,9 +580,10 @@
                             AutomationProperties.AccessibilityView="Raw"
                             x:Load="False"/>
 
-                        <TextBlock
+                        <TextBlock x:Name="PopupIndicator"
                             Grid.Row="1"
                             Grid.Column="2"
+                            Visibility="Collapsed"
                             Margin="{StaticResource NumberBoxPopupIndicatorMargin}"
                             Foreground="{ThemeResource NumberBoxPopupIndicatorForeground}"
                             VerticalAlignment="Center"
