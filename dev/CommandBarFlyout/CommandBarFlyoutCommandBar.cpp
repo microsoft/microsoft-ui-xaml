@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
+#include "CommandBarFlyout.h"
 #include "CommandBarFlyoutCommandBar.h"
 #include "CommandBarFlyoutCommandBarTemplateSettings.h"
 #include "TypeLogging.h"
@@ -18,7 +19,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
         {
             COMMANDBARFLYOUT_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
-            UpdateUI();
+            UpdateUI(!m_commandBarFlyoutIsOpening);
 
             // Programmatically focus the first primary command if any, else programmatically focus the first secondary command if any.
             auto commands = PrimaryCommands().Size() > 0 ? PrimaryCommands() : (SecondaryCommands().Size() > 0 ? SecondaryCommands() : nullptr);
@@ -66,7 +67,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
         {
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-            UpdateUI();
+            UpdateUI(!m_commandBarFlyoutIsOpening);
         }
     });
 
@@ -107,7 +108,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
             UpdateFlowsFromAndFlowsTo();
-            UpdateUI();
+            UpdateUI(!m_commandBarFlyoutIsOpening);
         });
 
     // Since we own these vectors, we don't need to cache the event tokens -
@@ -119,7 +120,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
             UpdateFlowsFromAndFlowsTo();
-            UpdateUI();
+            UpdateUI(!m_commandBarFlyoutIsOpening);
         }
     });
 
@@ -130,7 +131,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 
             m_secondaryItemsRootSized = false;
             UpdateFlowsFromAndFlowsTo();
-            UpdateUI();
+            UpdateUI(!m_commandBarFlyoutIsOpening);
         }
     });
 }
@@ -142,15 +143,50 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
     __super::OnApplyTemplate();
     DetachEventHandlers();
 
+    if (auto& overflowPopup = m_overflowPopup.get())
+    {
+        if (auto overflowPopup4 = overflowPopup.try_as<winrt::IPopup4>())
+        {
+            overflowPopup4.PlacementTarget(nullptr);
+            overflowPopup4.DesiredPlacement(winrt::PopupPlacementMode::Auto);
+        }
+    }
+
     winrt::IControlProtected thisAsControlProtected = *this;
 
     m_primaryItemsRoot.set(GetTemplateChildT<winrt::FrameworkElement>(L"PrimaryItemsRoot", thisAsControlProtected));
+    m_overflowPopup.set(GetTemplateChildT<winrt::Popup>(L"OverflowPopup", thisAsControlProtected));
     m_secondaryItemsRoot.set(GetTemplateChildT<winrt::FrameworkElement>(L"OverflowContentRoot", thisAsControlProtected));
     m_moreButton.set(GetTemplateChildT<winrt::ButtonBase>(L"MoreButton", thisAsControlProtected));
-    m_openingStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"OpeningStoryboard", thisAsControlProtected));
-    m_closingStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"ClosingStoryboard", thisAsControlProtected));
+    m_openingStoryboard.set([this, thisAsControlProtected]()
+        {
+            if (auto const opacityStoryBoard = GetTemplateChildT<winrt::Storyboard>(L"OpeningOpacityStoryboard", thisAsControlProtected))
+            {
+                m_openAnimationKind = CommandBarFlyoutOpenCloseAnimationKind::Opacity;
+                return opacityStoryBoard;
+            }
+            m_openAnimationKind = CommandBarFlyoutOpenCloseAnimationKind::Clip;
+            return GetTemplateChildT<winrt::Storyboard>(L"OpeningStoryboard", thisAsControlProtected);
+        }());
+    m_closingStoryboard.set([this, thisAsControlProtected]()
+        {
+            if (auto const opacityStoryBoard = GetTemplateChildT<winrt::Storyboard>(L"ClosingOpacityStoryboard", thisAsControlProtected))
+            {
+                return opacityStoryBoard;
+            }
+            return GetTemplateChildT<winrt::Storyboard>(L"ClosingStoryboard", thisAsControlProtected);
+        }());
 
-    if (auto moreButton = m_moreButton.get())
+    if (auto& overflowPopup = m_overflowPopup.get())
+    {
+        if (auto overflowPopup4 = overflowPopup.try_as<winrt::IPopup4>())
+        {
+            overflowPopup4.PlacementTarget(m_primaryItemsRoot.get());
+            overflowPopup4.DesiredPlacement(winrt::PopupPlacementMode::BottomEdgeAlignedLeft);
+        }
+    }
+
+    if (auto& moreButton = m_moreButton.get())
     {
         // Initially only the first focusable primary and secondary commands
         // keep their IsTabStop set to True.
@@ -160,9 +196,22 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
         }
     }
 
+    if (SharedHelpers::Is21H1OrHigher() && m_owningFlyout)
+    {
+        AttachEventsToSecondaryStoryboards();
+    }
+
+    // Keep the owning FlyoutPresenter's corner radius in sync with the
+    // primary commands's corner radius.
+    if (SharedHelpers::IsRS5OrHigher())
+    {
+        BindOwningFlyoutPresenterToCornerRadius();
+    }
+
     AttachEventHandlers();
     UpdateFlowsFromAndFlowsTo();
     UpdateUI(false /* useTransitions */);
+    SetPresenterName(m_flyoutPresenter.get());
 }
 
 void CommandBarFlyoutCommandBar::SetOwningFlyout(
@@ -175,6 +224,20 @@ void CommandBarFlyoutCommandBar::AttachEventHandlers()
 {
     COMMANDBARFLYOUT_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
+    if (auto overflowPopup = m_overflowPopup.get())
+    {
+        if (auto overflowPopup4 = overflowPopup.try_as<winrt::IPopup4>())
+        {
+            m_overflowPopupActualPlacementChangedRevoker = overflowPopup4.ActualPlacementChanged(winrt::auto_revoke,
+            {
+                [this](auto const&, auto const&)
+                {
+                    UpdateUI();
+                }
+            });
+        }
+    }
+
     if (auto secondaryItemsRoot = m_secondaryItemsRoot.get())
     {
         m_secondaryItemsRootSizeChangedRevoker = secondaryItemsRoot.SizeChanged(winrt::auto_revoke,
@@ -182,7 +245,7 @@ void CommandBarFlyoutCommandBar::AttachEventHandlers()
             [this](auto const&, auto const&)
             {
                 m_secondaryItemsRootSized = true;
-                UpdateUI();
+                UpdateUI(!m_commandBarFlyoutIsOpening);
             }
         });
 
@@ -355,6 +418,10 @@ void CommandBarFlyoutCommandBar::DetachEventHandlers()
     m_openingStoryboardCompletedRevoker.revoke();
     m_closingStoryboardCompletedRevoker.revoke();
     m_closingStoryboardCompletedCallbackRevoker.revoke();
+    m_expandedUpToCollapsedStoryboardRevoker.revoke();
+    m_expandedDownToCollapsedStoryboardRevoker.revoke();
+    m_collapsedToExpandedUpStoryboardRevoker.revoke();
+    m_collapsedToExpandedDownStoryboardRevoker.revoke();
 }
 
 bool CommandBarFlyoutCommandBar::HasOpenAnimation()
@@ -484,7 +551,7 @@ void CommandBarFlyoutCommandBar::UpdateUI(
     UpdateTemplateSettings();
     UpdateVisualState(useTransitions);
 
-    UpdateShadow();
+    UpdateProjectedShadow();
 }
 
 void CommandBarFlyoutCommandBar::UpdateVisualState(
@@ -502,19 +569,31 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
         }
 
         bool shouldExpandUp = false;
+        bool hadActualPlacement = false;
+
+        if (auto overflowPopup = m_overflowPopup.get())
+        {
+            if (auto overflowPopup4 = overflowPopup.try_as<winrt::IPopup4>())
+            {
+                // If we have a value set for ActualPlacement, then we'll directly use that -
+                // that tells us where our popup's been placed, so we don't need to try to
+                // infer where it should go.
+                if (overflowPopup4.ActualPlacement() != winrt::PopupPlacementMode::Auto)
+                {
+                    hadActualPlacement = true;
+                    shouldExpandUp =
+                        overflowPopup4.ActualPlacement() == winrt::PopupPlacementMode::TopEdgeAlignedLeft ||
+                        overflowPopup4.ActualPlacement() == winrt::PopupPlacementMode::TopEdgeAlignedRight;
+                }
+            }
+        }
 
         // If there isn't enough space to display the overflow below the command bar,
         // and if there is enough space above, then we'll display it above instead.
-        if (auto window = winrt::Window::Current() && m_secondaryItemsRoot)
+        if (auto window = winrt::Window::Current() && !hadActualPlacement && m_secondaryItemsRoot)
         {
             double availableHeight = -1;
-            bool isConstrainedToRootBounds = true;
             const auto controlBounds = TransformToVisual(nullptr).TransformBounds({ 0, 0, static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()) });
-            
-            if (winrt::IFlyoutBase6 owningFlyoutAsFlyoutBase6 = m_owningFlyout.get())
-            {
-                isConstrainedToRootBounds = owningFlyoutAsFlyoutBase6.IsConstrainedToRootBounds();
-            }
 
             try
             {
@@ -555,15 +634,18 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
         {
             if (shouldExpandUp)
             {
+                winrt::VisualStateManager::GoToState(*this, L"NoOuterOverflowContentRootShadow", useTransitions);
                 winrt::VisualStateManager::GoToState(*this, L"ExpandedUpWithPrimaryCommands", useTransitions);
             }
             else
             {
+                winrt::VisualStateManager::GoToState(*this, L"OuterOverflowContentRootShadow", useTransitions);
                 winrt::VisualStateManager::GoToState(*this, L"ExpandedDownWithPrimaryCommands", useTransitions);
             }
         }
         else
         {
+            winrt::VisualStateManager::GoToState(*this, L"OuterOverflowContentRootShadow", useTransitions);
             if (shouldExpandUp)
             {
                 winrt::VisualStateManager::GoToState(*this, L"ExpandedUpWithoutPrimaryCommands", useTransitions);
@@ -576,6 +658,7 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
     }
     else
     {
+        winrt::VisualStateManager::GoToState(*this, L"NoOuterOverflowContentRootShadow", useTransitions);
         winrt::VisualStateManager::GoToState(*this, L"Default", useTransitions);
         winrt::VisualStateManager::GoToState(*this, L"Collapsed", useTransitions);
     }
@@ -699,7 +782,15 @@ void CommandBarFlyoutCommandBar::EnsureAutomationSetCountAndPosition()
     {
         if (auto commandAsUIElement = command.try_as<winrt::UIElement>())
         {
-            if (commandAsUIElement.Visibility() == winrt::Visibility::Visible)
+            // Don't count AppBarSeparator if IsTabStop is false
+            if (auto separator = commandAsUIElement.try_as<winrt::AppBarSeparator>())
+            {
+                if (!separator.IsTabStop())
+                {
+                    continue;
+                }
+            }
+            else if (commandAsUIElement.Visibility() == winrt::Visibility::Visible)
             {
                 sizeOfSet++;
             }
@@ -716,7 +807,15 @@ void CommandBarFlyoutCommandBar::EnsureAutomationSetCountAndPosition()
     {
         if (auto commandAsUIElement = command.try_as<winrt::UIElement>())
         {
-            if (commandAsUIElement.Visibility() == winrt::Visibility::Visible)
+            // Don't count AppBarSeparator if IsTabStop is false
+            if (auto separator = commandAsUIElement.try_as<winrt::AppBarSeparator>())
+            {
+                if (!separator.IsTabStop())
+                {
+                    continue;
+                }
+            }
+            else if (commandAsUIElement.Visibility() == winrt::Visibility::Visible)
             {
                 winrt::AutomationProperties::SetSizeOfSet(commandAsUIElement, sizeOfSet);
             }
@@ -948,7 +1047,7 @@ bool CommandBarFlyoutCommandBar::IsControlFocusable(
     return control &&
         control.Visibility() == winrt::Visibility::Visible &&
         (control.IsEnabled() || control.AllowFocusWhenDisabled()) &&
-        (!checkTabStop || control.IsTabStop());
+        (control.IsTabStop() || (!checkTabStop && !control.try_as<winrt::AppBarSeparator>())); // AppBarSeparator is not focusable if IsTabStop is false
 }
 
 winrt::Control CommandBarFlyoutCommandBar::GetFirstTabStopControl(
@@ -1103,61 +1202,162 @@ void CommandBarFlyoutCommandBar::EnsureTabStopUniqueness(
     }
 }
 
-void CommandBarFlyoutCommandBar::UpdateShadow()
-{
-    if (PrimaryCommands().Size() > 0)
-    {
-        AddShadow();
-    }
-    else if (PrimaryCommands().Size() == 0)
-    {
-        ClearShadow();
-    }
-}
-
-void CommandBarFlyoutCommandBar::AddShadow()
+void CommandBarFlyoutCommandBar::UpdateProjectedShadow()
 {
     if (SharedHelpers::IsThemeShadowAvailable() && !SharedHelpers::Is21H1OrHigher())
     {
-        //This logic applies to projected shadows, which are the default on < 21H1.
-        //See additional notes in CommandBarFlyout::CreatePresenter().
-        //Apply Shadow on the Grid named "ContentRoot", this is the first element below
-        //the clip animation of the commandBar. This guarantees that shadow respects the 
-        //animation
-        winrt::IControlProtected thisAsControlProtected = *this;
-        auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
-
-        if (winrt::IUIElement10 grid_uiElement10 = grid)
+        if (PrimaryCommands().Size() > 0)
         {
-            if (!grid_uiElement10.Shadow())
-            {
-                winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
-                grid_uiElement10.Shadow(shadow);
-
-                const auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 32.0f };
-                grid.Translation(translation);
-            }
+            AddProjectedShadow();
+        }
+        else if (PrimaryCommands().Size() == 0)
+        {
+            ClearProjectedShadow();
         }
     }
 }
+
+void CommandBarFlyoutCommandBar::AddProjectedShadow()
+{
+    //This logic applies to projected shadows, which are the default on < 21H1.
+    //See additional notes in CommandBarFlyout::CreatePresenter().
+    //Apply Shadow on the Grid named "ContentRoot", this is the first element below
+    //the clip animation of the commandBar. This guarantees that shadow respects the 
+    //animation
+    winrt::IControlProtected thisAsControlProtected = *this;
+    auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
+
+    if (winrt::IUIElement10 grid_uiElement10 = grid)
+    {
+        if (!grid_uiElement10.Shadow())
+        {
+            winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
+            grid_uiElement10.Shadow(shadow);
+
+            const auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 32.0f };
+            grid.Translation(translation);
+        }
+    }
+}
+
+void CommandBarFlyoutCommandBar::ClearProjectedShadow()
+{
+    // This logic applies to projected shadows, which are the default on < 21H1.
+    // See additional notes in CommandBarFlyout::CreatePresenter().
+    winrt::IControlProtected thisAsControlProtected = *this;
+    auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
+    if (winrt::IUIElement10 grid_uiElement10 = grid)
+    {
+        if (grid_uiElement10.Shadow())
+        {
+            grid_uiElement10.Shadow(nullptr);
+
+            //Undo the elevation
+            const auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 0.0f };
+            grid.Translation(translation);
+        }
+    }
+}
+
 
 void CommandBarFlyoutCommandBar::ClearShadow()
 {
     if (SharedHelpers::IsThemeShadowAvailable() && !SharedHelpers::Is21H1OrHigher())
     {
-        // This logic applies to projected shadows, which are the default on < 21H1.
-        // See additional notes in CommandBarFlyout::CreatePresenter().
-        winrt::IControlProtected thisAsControlProtected = *this;
-        auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
-        if (winrt::IUIElement10 grid_uiElement10 = grid)
-        {
-            if (grid_uiElement10.Shadow())
-            {
-                grid_uiElement10.Shadow(nullptr);
+        ClearProjectedShadow();
+    }
+    winrt::VisualStateManager::GoToState(*this, L"NoOuterOverflowContentRootShadow", true/*useTransitions*/);
+}
 
-                //Undo the elevation
-                const auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 0.0f };
-                grid.Translation(translation);
+
+void CommandBarFlyoutCommandBar::SetPresenter(winrt::FlyoutPresenter const& presenter)
+{
+    m_flyoutPresenter = winrt::make_weak(presenter);
+}
+
+void CommandBarFlyoutCommandBar::SetPresenterName(winrt::FlyoutPresenter const& presenter)
+{
+    // Since DropShadows don't play well with clip entrance animations for the presenter,
+    // we'll need to fade it in. This name helps us locate the element to set the fade in
+    // flag in the OS code.
+    if (presenter)
+    {
+        if (OpenAnimationKind() == CommandBarFlyoutOpenCloseAnimationKind::Clip)
+        {
+            presenter.Name(L"DropShadowFadeInTarget");
+        }
+        else
+        {
+            presenter.Name(L"");
+        }
+    }
+}
+
+bool CommandBarFlyoutCommandBar::HasSecondaryOpenCloseAnimations()
+{
+    return SharedHelpers::IsAnimationsEnabled() &&
+           static_cast<bool>(m_expandedDownToCollapsedStoryboardRevoker ||
+                             m_expandedUpToCollapsedStoryboardRevoker ||
+                             m_collapsedToExpandedUpStoryboardRevoker ||
+                             m_collapsedToExpandedDownStoryboardRevoker);
+}
+
+void CommandBarFlyoutCommandBar::AttachEventsToSecondaryStoryboards()
+{
+    winrt::IControlProtected thisAsControlProtected = *this;
+
+    const auto addDropShadowFunc = [this](auto const&, auto const&)
+    {
+        if (SharedHelpers::IsAnimationsEnabled())
+        {
+            if (const auto owningFlyout = m_owningFlyout.get())
+            {
+                if (const auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+                {
+                    actualFlyout->AddDropShadow();
+                }
+            }
+        }
+    };
+
+    if (const auto expandedDownToCollapsed = GetTemplateChildT<winrt::Storyboard>(L"ExpandedDownToCollapsed", thisAsControlProtected))
+    {
+        m_expandedDownToCollapsedStoryboardRevoker = expandedDownToCollapsed.Completed(winrt::auto_revoke, addDropShadowFunc);
+    }
+
+    if (const auto expandedUpToCollapsed = GetTemplateChildT<winrt::Storyboard>(L"ExpandedUpToCollapsed", thisAsControlProtected))
+    {
+        m_expandedUpToCollapsedStoryboardRevoker = expandedUpToCollapsed.Completed(winrt::auto_revoke, addDropShadowFunc);
+    }
+
+    if (const auto collapsedToExpandedUp = GetTemplateChildT<winrt::Storyboard>(L"CollapsedToExpandedUp", thisAsControlProtected))
+    {
+        m_collapsedToExpandedUpStoryboardRevoker = collapsedToExpandedUp.Completed(winrt::auto_revoke, addDropShadowFunc);
+    }
+
+    if (const auto collapsedToExpandedDown = GetTemplateChildT<winrt::Storyboard>(L"CollapsedToExpandedDown", thisAsControlProtected))
+    {
+        m_collapsedToExpandedDownStoryboardRevoker = collapsedToExpandedDown.Completed(winrt::auto_revoke, addDropShadowFunc);
+    }
+}
+
+void CommandBarFlyoutCommandBar::BindOwningFlyoutPresenterToCornerRadius()
+{
+    if (const auto owningFlyout = m_owningFlyout.get())
+    {
+        if (const auto actualFlyout = winrt::get_self<CommandBarFlyout>(owningFlyout))
+        {
+            winrt::IControlProtected thisAsControlProtected = *this;
+            if (const auto root = GetTemplateChildT<winrt::Grid>(L"LayoutRoot", thisAsControlProtected))
+            {
+                winrt::Binding binding;
+                binding.Source(root);
+                binding.Path(winrt::PropertyPath(L"CornerRadius"));
+                binding.Mode(winrt::BindingMode::OneWay);
+                if (auto&& presenter = actualFlyout->GetPresenter().get())
+                {
+                    presenter.SetBinding(winrt::Control::CornerRadiusProperty(), binding);
+                }
             }
         }
     }

@@ -22,6 +22,9 @@ unsealed runtimeclass AnimatedIcon : Windows.UI.Xaml.Controls.IconElement
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     IconSource FallbackIconSource{ get; set; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean MirroredWhenRightToLeft{ get; set; };
+
     [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnAnimatedIconStatePropertyChanged")]
     static Windows.UI.Xaml.DependencyProperty StateProperty{ get; };
     static void SetState(Windows.UI.Xaml.DependencyObject object, String value);
@@ -29,6 +32,7 @@ unsealed runtimeclass AnimatedIcon : Windows.UI.Xaml.Controls.IconElement
 
     static Windows.UI.Xaml.DependencyProperty SourceProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty FallbackIconSourceProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty MirroredWhenRightToLeftProperty{ get; };
 }
 
 }

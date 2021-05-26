@@ -48,7 +48,7 @@
                 <TextBox x:Name="lineSpacing" Text="10"></TextBox>
                 <TextBlock>LineAlignment</TextBlock>
                 <TextBlock>(Start/Center/End/SpaceEvenly/SpaceAround/SpaceBetween)</TextBlock>
-                <TextBox x:Name="lineAlingment" Text="Start"></TextBox>
+                <TextBox x:Name="lineAlignment" Text="Start"></TextBox>
                 <ToggleSwitch x:Name="orientation" OnContent="Horizontal" OffContent="Vertical">Scroll Orientation</ToggleSwitch>
             </StackPanel>
             <StackPanel Orientation="Horizontal">

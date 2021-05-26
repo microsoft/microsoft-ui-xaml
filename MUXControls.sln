@@ -208,12 +208,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Localization", "Localizatio
 		build\Localization\RunLocWorkflow.ps1 = build\Localization\RunLocWorkflow.ps1
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Settings", "Settings", "{9944D1EA-3D24-4ECC-A0C1-D678E51CF90A}"
-	ProjectSection(SolutionItems) = preProject
-		build\Localization\Settings\LocConfig.xml = build\Localization\Settings\LocConfig.xml
-		build\Localization\Settings\packages.config = build\Localization\Settings\packages.config
-	EndProjectSection
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TreeView_APITests", "dev\TreeView\APITests\TreeView_APITests.shproj", "{DE885C66-929C-464E-BAC4-3E076EC46483}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TreeView_InteractionTests", "dev\TreeView\InteractionTests\TreeView_InteractionTests.shproj", "{AE638A24-2BC6-4D4F-A51E-715D198F01FD}"
@@ -649,6 +643,12 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AnimatedIcon_TestUI", "dev\
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AnimatedIcon_APITests", "dev\AnimatedIcon\APITests\AnimatedIcon_APITests.shproj", "{DB15FF28-AB3A-4FED-A1D5-004A095A3FD5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MonochromaticOverlayPresenter", "MonochromaticOverlayPresenter", "{7FA40D21-3085-41B3-9C46-6CBC2F56B442}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MonochromaticOverlayPresenter", "dev\MonochromaticOverlayPresenter\MonochromaticOverlayPresenter.vcxitems", "{D03847C1-7EE7-4423-82FD-3CB31DAF98D1}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MonochromaticOverlayPresenter_TestUI", "dev\MonochromaticOverlayPresenter\TestUI\MonochromaticOverlayPresenter_TestUI.shproj", "{52AAA6ED-E5A0-41BB-8858-66249333A8D4}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
@@ -713,6 +713,7 @@ Global
 		dev\Expander\TestUI\Expander_TestUI.projitems*{50c1f1d3-20aa-49a8-9e4c-cf4e5811a1d8}*SharedItemsImports = 13
 		dev\RadioMenuFlyoutItem\TestUI\RadioMenuFlyoutItem_TestUI.projitems*{50e838a2-a886-46c9-ab0b-a57f510ce643}*SharedItemsImports = 13
 		dev\PersonPicture\APITests\PersonPicture_APITests.projitems*{5243ef2c-f250-48bd-b633-39cc2a0a38aa}*SharedItemsImports = 13
+		dev\MonochromaticOverlayPresenter\TestUI\MonochromaticOverlayPresenter_TestUI.projitems*{52aaa6ed-e5a0-41bb-8858-66249333a8d4}*SharedItemsImports = 13
 		dev\PullToRefresh\TestUI\PTR_TestUI.projitems*{549c8eb7-e099-4eab-a1f6-faa3fa79b9e0}*SharedItemsImports = 13
 		dev\MenuBar\MenuBar_TestUI\MenuBar_TestUI.projitems*{55cb08ca-19fe-4db9-8160-a4ec47984b95}*SharedItemsImports = 13
 		dev\Breadcrumb\Breadcrumb.vcxitems*{563fe343-c6b0-447b-831a-b0ce3aa7a688}*SharedItemsImports = 9
@@ -787,6 +788,7 @@ Global
 		dev\Materials\Acrylic\AcrylicBrush.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Materials\Reveal\RevealBrush.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\MenuBar\MenuBar.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
+		dev\MonochromaticOverlayPresenter\MonochromaticOverlayPresenter.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\NavigationView\NavigationView.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\NumberBox\NumberBox.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\PagerControl\PagerControl.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
@@ -841,6 +843,7 @@ Global
 		dev\AnimatedVisualPlayer\InteractionTests\AnimatedVisualPlayer_InteractionTests.projitems*{cbaaccf6-a27d-40b3-980b-adf51a2ebb89}*SharedItemsImports = 13
 		dev\InfoBar\InfoBar.vcxitems*{ccc102b7-f5ef-479d-94f1-008d189448b1}*SharedItemsImports = 9
 		dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems*{cddf46ef-aa2d-4bb3-b33e-98b3dbb3c41b}*SharedItemsImports = 13
+		dev\MonochromaticOverlayPresenter\MonochromaticOverlayPresenter.vcxitems*{d03847c1-7ee7-4423-82fd-3cb31daf98d1}*SharedItemsImports = 9
 		dev\Interactions\SliderInteraction\SliderInteraction.vcxitems*{d097a4d5-6b61-424d-99f0-f335eff41665}*SharedItemsImports = 9
 		dev\TabView\InteractionTests\TabView_InteractionTests.projitems*{d1e297b4-5e5b-4807-8624-4141c817a98a}*SharedItemsImports = 13
 		dev\PipsPager\PipsPager.vcxitems*{d1eb61d8-c689-4ad1-bd61-fdaa50362563}*SharedItemsImports = 9
@@ -883,6 +886,7 @@ Global
 		dev\Materials\Reveal\APITests\Reveal_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\Materials\Reveal\TestUI\Reveal_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\MenuBar\MenuBar_TestUI\MenuBar_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\MonochromaticOverlayPresenter\TestUI\MonochromaticOverlayPresenter_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\NavigationView\NavigationView_ApiTests\NavigationView_ApiTests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\NavigationView\TestUI\NavigationView_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\NumberBox\APITests\NumberBox_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
@@ -976,6 +980,7 @@ Global
 		dev\Materials\Reveal\APITests\Reveal_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\Materials\Reveal\TestUI\Reveal_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\MenuBar\MenuBar_TestUI\MenuBar_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\MonochromaticOverlayPresenter\TestUI\MonochromaticOverlayPresenter_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\NavigationView\NavigationView_ApiTests\NavigationView_ApiTests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\NavigationView\TestUI\NavigationView_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\NumberBox\APITests\NumberBox_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
@@ -1441,7 +1446,6 @@ Global
 		{0A38E3C5-3CFA-42EB-860C-395A861B6791} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{EEB38379-3A5C-439F-BB5E-535D75F2B6C1} = {0A38E3C5-3CFA-42EB-860C-395A861B6791}
 		{5FC770CF-73C1-407A-A195-FDFCEDB2930B} = {CDC531B5-F8D8-4A8D-8653-0470B07B2404}
-		{9944D1EA-3D24-4ECC-A0C1-D678E51CF90A} = {5FC770CF-73C1-407A-A195-FDFCEDB2930B}
 		{DE885C66-929C-464E-BAC4-3E076EC46483} = {0A38E3C5-3CFA-42EB-860C-395A861B6791}
 		{AE638A24-2BC6-4D4F-A51E-715D198F01FD} = {0A38E3C5-3CFA-42EB-860C-395A861B6791}
 		{B2C714DD-9C6B-400C-9CEF-13A2D48378BD} = {0A38E3C5-3CFA-42EB-860C-395A861B6791}
@@ -1635,6 +1639,9 @@ Global
 		{F1C8A5A1-B1B0-4095-8849-E550FCF2EBF6} = {221D9F75-FFF3-49C1-A88B-7F3898A5756E}
 		{83FD36C0-189F-4E95-8002-9B73905CA301} = {221D9F75-FFF3-49C1-A88B-7F3898A5756E}
 		{DB15FF28-AB3A-4FED-A1D5-004A095A3FD5} = {221D9F75-FFF3-49C1-A88B-7F3898A5756E}
+		{7FA40D21-3085-41B3-9C46-6CBC2F56B442} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
+		{D03847C1-7EE7-4423-82FD-3CB31DAF98D1} = {7FA40D21-3085-41B3-9C46-6CBC2F56B442}
+		{52AAA6ED-E5A0-41BB-8858-66249333A8D4} = {7FA40D21-3085-41B3-9C46-6CBC2F56B442}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}

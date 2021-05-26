@@ -239,6 +239,19 @@ void SplitButton::CloseFlyout()
     }
 }
 
+void SplitButton::ExecuteCommand()
+{
+    if (const auto& command = Command())
+    {
+        const auto& commandParameter = CommandParameter();
+
+        if (command.CanExecute(commandParameter))
+        {
+            command.Execute(commandParameter);
+        }
+    }
+}
+
 void SplitButton::OnFlyoutOpened(const winrt::IInspectable& sender, const winrt::IInspectable& args)
 {
     m_isFlyoutOpen = true;
@@ -313,6 +326,7 @@ void SplitButton::OnSplitButtonKeyUp(const winrt::IInspectable& sender, const wi
         if (IsEnabled())
         {
             OnClickPrimary(nullptr, nullptr);
+            ExecuteCommand();
             args.Handled(true);
         }
     }
