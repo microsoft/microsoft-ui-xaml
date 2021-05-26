@@ -308,7 +308,7 @@
           CornerRadius=0,0,0,0
           BorderThickness=0,0,0,0
           BorderBrush=[NULL]
-          Background=Microsoft.UI.Xaml.Media.AcrylicBrush
+          Background=#00FFFFFF
           Name=TopNavArea
           Margin=0,0,0,0
           FocusVisualSecondaryThickness=1,1,1,1
@@ -1118,7 +1118,7 @@
                       FocusVisualPrimaryThickness=2,2,2,2
                       FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
-                      RenderSize=300,383
+                      RenderSize=300,378
                     [Windows.UI.Xaml.Controls.ScrollViewer]
                         Padding=0,0,0,0
                         Foreground=#E4000000
@@ -1134,7 +1134,7 @@
                         FocusVisualPrimaryThickness=2,2,2,2
                         FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
-                        RenderSize=300,383
+                        RenderSize=300,378
                       [Windows.UI.Xaml.Controls.Border]
                           Padding=0,0,0,0
                           CornerRadius=0,0,0,0
@@ -1148,7 +1148,7 @@
                           FocusVisualPrimaryThickness=2,2,2,2
                           FocusVisualPrimaryBrush=#E4000000
                           Visibility=Visible
-                          RenderSize=300,383
+                          RenderSize=300,378
                         [Windows.UI.Xaml.Controls.Grid]
                             Padding=0,0,0,0
                             CornerRadius=0,0,0,0
@@ -1161,7 +1161,7 @@
                             FocusVisualPrimaryThickness=2,2,2,2
                             FocusVisualPrimaryBrush=#E4000000
                             Visibility=Visible
-                            RenderSize=300,383
+                            RenderSize=300,378
                           [Windows.UI.Xaml.Controls.ScrollContentPresenter]
                               Foreground=#E4000000
                               Padding=0,0,0,0
@@ -1176,7 +1176,7 @@
                               FocusVisualPrimaryThickness=2,2,2,2
                               FocusVisualPrimaryBrush=#E4000000
                               Visibility=Visible
-                              RenderSize=300,383
+                              RenderSize=300,378
                             [Microsoft.UI.Xaml.Controls.ItemsRepeater]
                                 Background=[NULL]
                                 Name=MenuItemsHost
@@ -1186,7 +1186,7 @@
                                 FocusVisualPrimaryThickness=2,2,2,2
                                 FocusVisualPrimaryBrush=#E4000000
                                 Visibility=Visible
-                                RenderSize=300,383
+                                RenderSize=300,378
                               [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                                   Padding=0,0,0,0
                                   Foreground=#E4000000
@@ -1717,7 +1717,7 @@
                               FocusVisualPrimaryThickness=2,2,2,2
                               FocusVisualPrimaryBrush=#E4000000
                               Visibility=Visible
-                              RenderSize=300,383
+                              RenderSize=300,378
                           [Windows.UI.Xaml.Controls.Grid]
                               Padding=1,1,1,1
                               CornerRadius=0,0,0,0
@@ -2216,7 +2216,7 @@
                       FocusVisualPrimaryThickness=2,2,2,2
                       FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
-                      RenderSize=300,3
+                      RenderSize=300,8
                     [Windows.UI.Xaml.Controls.Grid]
                         Padding=0,0,0,0
                         CornerRadius=0,0,0,0
@@ -2230,11 +2230,11 @@
                         FocusVisualPrimaryThickness=2,2,2,2
                         FocusVisualPrimaryBrush=#E4000000
                         Visibility=Visible
-                        RenderSize=300,3
+                        RenderSize=300,8
                       [Windows.UI.Xaml.Shapes.Rectangle]
                           StrokeThickness=1
                           Name=SeparatorLine
-                          Margin=0,0,0,2
+                          Margin=0,3,0,4
                           Height=1
                           FocusVisualSecondaryThickness=1,1,1,1
                           FocusVisualSecondaryBrush=#B3FFFFFF
@@ -2774,8 +2774,8 @@
                   Padding=0,0,0,0
                   CornerRadius=0,0,0,0
                   BorderThickness=0,0,0,0
-                  BorderBrush=[NULL]
-                  Background=#FFF3F3F3
+                  BorderBrush=#0F000000
+                  Background=#80FFFFFF
                   Name=ContentGrid
                   Margin=0,0,0,0
                   FocusVisualSecondaryThickness=1,1,1,1
@@ -2861,13 +2861,14 @@
                     BorderThickness=0,0,0,0
                     BorderBrush=[NULL]
                     Background=[NULL]
-                    Margin=48,12,0,0
+                    Name=ContentPresenter
+                    Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
                     FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
                     FocusVisualPrimaryBrush=#E4000000
                     Visibility=Visible
-                    RenderSize=452,506
+                    RenderSize=500,518
                   [Windows.UI.Xaml.Controls.StackPanel]
                       Padding=0,0,0,0
                       CornerRadius=0,0,0,0
@@ -2880,7 +2881,7 @@
                       FocusVisualPrimaryThickness=2,2,2,2
                       FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
-                      RenderSize=452,506
+                      RenderSize=500,518
                     [Windows.UI.Xaml.Controls.Button]
                         Padding=11,5,11,6
                         Foreground=#E4000000
