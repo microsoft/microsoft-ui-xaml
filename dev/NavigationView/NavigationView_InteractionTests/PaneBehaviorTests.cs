@@ -1112,14 +1112,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                 // Fill footer items
                 AddFooterItem(200, 200);
-                AddFooterItem(200, 200);
-                AddFooterItem(200, 200);
-                // Reached maximum height
-                AddFooterItem(200, 200);
+                AddFooterItem(190, 205);
+                AddFooterItem(190, 210);
+                AddFooterItem(180, 215);
 
-                AddMenuItem(200, 200);
-                AddMenuItem(200, 200);
-                AddMenuItem(200, 200);
+                AddMenuItem(180, 220);
+                AddMenuItem(170, 225);
+                AddMenuItem(195, 200);
 
                 void VerifyHeights(double menuItemsHeight, double footerItemsHeight)
                 {
