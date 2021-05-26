@@ -65,6 +65,13 @@ void RadioButtons::OnApplyTemplate()
         return static_cast<winrt::ItemsRepeater>(nullptr);
     }());
 
+    const auto name = winrt::AutomationProperties::GetName(*this);
+    if (name.empty())
+    {
+        // If the automation name isn't set, use header text as the name.
+        winrt::AutomationProperties::SetName(*this, SharedHelpers::TryGetStringRepresentationFromObject(Header()));
+    }
+
     UpdateItemsSource();
     UpdateVisualStateForIsEnabledChange();
 }
