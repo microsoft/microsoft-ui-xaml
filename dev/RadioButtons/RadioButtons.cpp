@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "RadioButtons.h"
+#include "RadioButtonsAutomationPeer.h"
 #include "Vector.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
@@ -45,6 +46,12 @@ RadioButtons::RadioButtons()
             nullptr);
 }
 
+winrt::AutomationPeer RadioButtons::OnCreateAutomationPeer()
+{
+    return winrt::make<RadioButtonsAutomationPeer>(*this);
+}
+
+
 void RadioButtons::OnApplyTemplate()
 {
     const winrt::IControlProtected controlProtected{ *this };
@@ -64,13 +71,6 @@ void RadioButtons::OnApplyTemplate()
         }
         return static_cast<winrt::ItemsRepeater>(nullptr);
     }());
-
-    const auto name = winrt::AutomationProperties::GetName(*this);
-    if (name.empty())
-    {
-        // If the automation name isn't set, use header text as the name.
-        winrt::AutomationProperties::SetName(*this, SharedHelpers::TryGetStringRepresentationFromObject(Header()));
-    }
 
     UpdateItemsSource();
     UpdateVisualStateForIsEnabledChange();
