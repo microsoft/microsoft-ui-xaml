@@ -22,7 +22,7 @@
             <x:Double x:Key="MediaTransportControlsAppBarButtonWidth">40</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderHeight">32</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderWidth">190</x:Double>
-            <x:Double x:Key="MediaTransportControlsMinWidth">314</x:Double>
+            <x:Double x:Key="MediaTransportControlsMinWidth">296</x:Double>
             <x:Double x:Key="MediaTransportControlsMaxWidth">720</x:Double>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
@@ -41,7 +41,7 @@
             <x:Double x:Key="MediaTransportControlsAppBarButtonWidth">40</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderHeight">32</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderWidth">190</x:Double>
-            <x:Double x:Key="MediaTransportControlsMinWidth">314</x:Double>
+            <x:Double x:Key="MediaTransportControlsMinWidth">296</x:Double>
             <x:Double x:Key="MediaTransportControlsMaxWidth">720</x:Double>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
@@ -60,7 +60,7 @@
             <x:Double x:Key="MediaTransportControlsAppBarButtonWidth">40</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderHeight">32</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderWidth">190</x:Double>
-            <x:Double x:Key="MediaTransportControlsMinWidth">314</x:Double>
+            <x:Double x:Key="MediaTransportControlsMinWidth">296</x:Double>
             <x:Double x:Key="MediaTransportControlsMaxWidth">720</x:Double>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
