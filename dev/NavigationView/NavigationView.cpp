@@ -3960,6 +3960,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         {
             m_autoSuggestBoxSuggestionChosenRevoker = newAutoSuggestBox.SuggestionChosen(winrt::auto_revoke, {this, &NavigationView::OnAutoSuggestBoxSuggestionChosen });
         }
+        UpdateVisualState(false);
     }
     else if (property == s_SelectionFollowsFocusProperty)
     {
