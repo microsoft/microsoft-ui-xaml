@@ -426,7 +426,7 @@ void CommandBarFlyoutCommandBar::DetachEventHandlers()
 
 bool CommandBarFlyoutCommandBar::HasOpenAnimation()
 {
-    return static_cast<bool>(m_openingStoryboard) && AreAnimationsEnabled();
+    return static_cast<bool>(m_openingStoryboard) && SharedHelpers::IsAnimationsEnabled();
 }
 
 void CommandBarFlyoutCommandBar::PlayOpenAnimation()
@@ -442,7 +442,7 @@ void CommandBarFlyoutCommandBar::PlayOpenAnimation()
 
 bool CommandBarFlyoutCommandBar::HasCloseAnimation()
 {
-    return static_cast<bool>(m_closingStoryboard) && AreAnimationsEnabled();
+    return static_cast<bool>(m_closingStoryboard) && SharedHelpers::IsAnimationsEnabled();
 }
 
 void CommandBarFlyoutCommandBar::PlayCloseAnimation(
@@ -1361,16 +1361,4 @@ void CommandBarFlyoutCommandBar::BindOwningFlyoutPresenterToCornerRadius()
             }
         }
     }
-}
-
-bool CommandBarFlyoutCommandBar::AreAnimationsEnabled()
-{
-    bool areAnimationsEnabled = SharedHelpers::IsAnimationsEnabled();
-
-    if (auto owningFlyout = m_owningFlyout.get())
-    {
-        areAnimationsEnabled = areAnimationsEnabled && owningFlyout.AreOpenCloseAnimationsEnabled();
-    }
-
-    return areAnimationsEnabled;
 }

@@ -79,8 +79,6 @@ private:
     void UpdateProjectedShadow();
     void ClearProjectedShadow();
 
-    bool AreAnimationsEnabled();
-
     tracker_ref<winrt::FrameworkElement> m_primaryItemsRoot{ this };
     tracker_ref<winrt::Popup> m_overflowPopup{ this };
     tracker_ref<winrt::FrameworkElement> m_secondaryItemsRoot{ this };
