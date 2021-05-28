@@ -390,9 +390,13 @@
                                 <VisualState x:Name="Selected">
                                     <VisualState.Setters>
                                         <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRenderArc.Fill" Value="{ThemeResource TabViewSelectedItemBorderBrush}" />
                                         <Setter Target="RightRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRenderArc.Fill" Value="{ThemeResource TabViewSelectedItemBorderBrush}" />
                                         <Setter Target="LeftRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="TabContainer.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
                                         <Setter Target="TabContainer.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}"/>
                                         <Setter Target="TabContainer.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}"/>
@@ -410,9 +414,13 @@
                                 <VisualState x:Name="PointerOverSelected">
                                     <VisualState.Setters>
                                         <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRenderArc.Fill" Value="{ThemeResource TabViewSelectedItemBorderBrush}" />
                                         <Setter Target="RightRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRenderArc.Fill" Value="{ThemeResource TabViewSelectedItemBorderBrush}" />
                                         <Setter Target="LeftRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="TabContainer.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
                                         <Setter Target="TabContainer.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}"/>
                                         <Setter Target="TabContainer.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}"/>
@@ -430,9 +438,13 @@
                                 <VisualState x:Name="PressedSelected">
                                     <VisualState.Setters>
                                         <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRenderArc.Fill" Value="{ThemeResource TabViewSelectedItemBorderBrush}" />
                                         <Setter Target="RightRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRenderArc.Fill" Value="{ThemeResource TabViewSelectedItemBorderBrush}" />
                                         <Setter Target="LeftRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="TabContainer.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
                                         <Setter Target="TabContainer.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}"/>
                                         <Setter Target="TabContainer.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}"/>

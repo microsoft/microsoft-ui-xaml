@@ -428,7 +428,9 @@
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonBackground}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonForeground}" />
                                         <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRender.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRender.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -442,7 +444,9 @@
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonForeground}" />
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
                                         <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRender.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRender.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -455,7 +459,9 @@
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonForeground}" />
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
                                         <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRender.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRender.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
