@@ -619,45 +619,6 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-
-                        <Path x:Name="LeftRadiusRenderArc"
-                            x:Load="False"
-                            Fill="{ThemeResource CardStrokeColorDefault}"
-                            VerticalAlignment="Bottom"
-                            Visibility="Collapsed"
-                            Margin="-4,0,0,0"
-                            Height="4"
-                            Width="4"
-                            Data="M4 0C4 1.19469 3.47624 2.26706 2.64582 3H0C1.65685 3 3 1.65685 3 0H4Z" />
-
-                        <Path  x:Name="LeftRadiusRenderTriangle"
-                            x:Load="False"
-                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
-                            VerticalAlignment="Bottom"
-                            Margin="-4,0,0,0"
-                            Visibility="Collapsed"
-                            Data="M0 4H4V0C4 2.20914 2.20914 4 0 4Z" />
-
-                        <Path x:Name="RightRadiusRenderArc"
-                            x:Load="False"
-                            Grid.Column="2"
-                            Visibility="Collapsed"
-                            Fill="{ThemeResource CardStrokeColorDefault}"
-                            VerticalAlignment="Bottom"
-                            Margin="0,0,-4,0"
-                            Height="4"
-                            Width="4"
-                            Data="M0 0C0 1.19469 0.523755 2.26706 1.35418 3H4C2.34315 3 1 1.65685 1 0H0Z"/>
-
-                        <Path x:Name="RightRadiusRenderTriangle"
-                            x:Load="False"
-                            Grid.Column="2"
-                            Visibility="Collapsed"
-                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
-                            VerticalAlignment="Bottom"
-                            Margin="0,0,-4,0"
-                            Data="M4 4H0V0C0 2.20914 1.79086 4 4 4Z"/>
-
                         <Border x:Name="TabSeparator"
                             HorizontalAlignment="Right"
                             Width="1"
@@ -716,6 +677,44 @@
                                 Style="{ThemeResource TabViewCloseButtonStyle}"
                                 HighContrastAdjustment="None" />
                         </Grid>
+
+                        <Path x:Name="LeftRadiusRenderArc"
+                            x:Load="False"
+                            Fill="{ThemeResource CardStrokeColorDefault}"
+                            VerticalAlignment="Bottom"
+                            Visibility="Collapsed"
+                            Margin="-4,0,0,0"
+                            Height="4"
+                            Width="4"
+                            Data="M4 0C4 1.19469 3.47624 2.26706 2.64582 3H0C1.65685 3 3 1.65685 3 0H4Z" />
+
+                        <Path  x:Name="LeftRadiusRenderTriangle"
+                            x:Load="False"
+                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                            VerticalAlignment="Bottom"
+                            Margin="-4,0,0,0"
+                            Visibility="Collapsed"
+                            Data="M0 4H4V0C4 2.20914 2.20914 4 0 4Z" />
+
+                        <Path x:Name="RightRadiusRenderArc"
+                            x:Load="False"
+                            Grid.Column="2"
+                            Visibility="Collapsed"
+                            Fill="{ThemeResource CardStrokeColorDefault}"
+                            VerticalAlignment="Bottom"
+                            Margin="0,0,-4,0"
+                            Height="4"
+                            Width="4"
+                            Data="M0 0C0 1.19469 0.523755 2.26706 1.35418 3H4C2.34315 3 1 1.65685 1 0H0Z"/>
+
+                        <Path x:Name="RightRadiusRenderTriangle"
+                            x:Load="False"
+                            Grid.Column="2"
+                            Visibility="Collapsed"
+                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                            VerticalAlignment="Bottom"
+                            Margin="0,0,-4,0"
+                            Data="M4 4H0V0C0 2.20914 1.79086 4 4 4Z"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
