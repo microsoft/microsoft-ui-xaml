@@ -153,7 +153,8 @@
                             Style="{StaticResource TabScrollViewerStyle}">
 
                             <ItemsPresenter x:Name="TabsItemsPresenter"
-                                Padding="{TemplateBinding Padding}" />
+                                Padding="{TemplateBinding Padding}"
+                                Margin="1,0,0,0" />
 
                         </ScrollViewer>
                     </Border>
