@@ -351,11 +351,6 @@
                 <ControlTemplate TargetType="local:TabViewItem">
                     <Grid x:Name="LayoutRoot"
                             Padding="{TemplateBinding Padding}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition x:Name="LeftColumn" Width="Auto"/>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition x:Name="RightColumn" Width="Auto"/>
-                        </Grid.ColumnDefinitions>
 
                         <Grid.RenderTransform>
                             <ScaleTransform x:Name="LayoutRootScale" />
@@ -622,10 +617,17 @@
                         <Border x:Name="TabSeparator"
                             HorizontalAlignment="Right"
                             Width="1"
-                            Grid.Column="1"
                             BorderBrush="{ThemeResource TabViewItemSeparator}"
                             BorderThickness="1"
                             Margin="{ThemeResource TabViewItemSeparatorMargin}"/>
+
+                        <Grid x:Name="TabContent">
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="LeftColumn" Width="Auto"/>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition x:Name="RightColumn" Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
                         <Grid x:Name="TabBackground"
                             Grid.Column="1"
@@ -725,6 +727,7 @@
                                 Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
                                 Data="M4 4H0V0C0 2.20914 1.79086 4 4 4Z" />
                         </Viewbox>
+                        </Grid>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
