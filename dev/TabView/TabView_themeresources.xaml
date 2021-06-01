@@ -217,9 +217,9 @@
 
     <x:Double x:Key="TabViewShadowDepth">16</x:Double>
 
-    <Thickness x:Key="TabViewItemSeparatorMargin">0,8,0,8</Thickness>
+    <Thickness x:Key="TabViewItemSeparatorMargin">0,8,-1,8</Thickness>
 
-    <Thickness x:Key="TabViewItemBorderThickness">1</Thickness>
+    <Thickness x:Key="TabViewItemBorderThickness">0</Thickness>
     
     <Thickness x:Key="TabViewSelectedItemBorderThickness">1,1,1,0</Thickness>
 
@@ -227,4 +227,12 @@
 
     <Thickness x:Key="TabViewItemLeftRadiusRenderBorderThickness">0,0,1,1</Thickness>
     <Thickness x:Key="TabViewItemRightRadiusRenderBorderThickness">1,0,0,1</Thickness>
+
+    <!-- Temporary - should be equal to the left/right border thickness -->
+    <x:Double x:Key="TabViewItemHeaderLeftBorderSpacing">1</x:Double>
+    <x:Double x:Key="TabViewItemHeaderRightBorderSpacing">1</x:Double>
+
+    <!-- Only bottom left and bottom right are used -->
+    <CornerRadius x:Key="TabViewItemRadiusRenderCornerRadius">4</CornerRadius>
+
 </ResourceDictionary>

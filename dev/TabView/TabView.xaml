@@ -343,9 +343,10 @@
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="MinHeight" Value="{ThemeResource TabViewItemMinHeight}"/>
-        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
         <Setter Property="BorderThickness" Value="{ThemeResource TabViewItemBorderThickness}" />
         <Setter Property="BorderBrush" Value="{ThemeResource TabViewItemBorderBrush}" />
+        <Setter Property="Margin" Value="0,0,1,0" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TabViewItem">
@@ -390,10 +391,13 @@
                                         <Setter Target="LeftRadiusRender.Visibility" Value="Visible" />
                                         <Setter Target="LeftRadiusRenderArc.BorderBrush" Value="{ThemeResource TabViewItemRadiusRenderBorderBrush}" />
                                         <Setter Target="LeftRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
-                                        <Setter Target="TabBackground.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
+                                        <Setter Target="TabContent.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
                                         <Setter Target="TabBackground.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}"/>
                                         <Setter Target="TabBackground.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}"/>
                                         <Setter Target="TabBackground.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
+                                        <Setter Target="TabBackground.Margin" Value="{Binding Source={Binding Source={StaticResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}, Converter={StaticResource RightThicknessFilterConverter}}" />
+                                        <Setter Target="TabFillerBackground.Visibility" Value="Visible" />
+                                        <Setter Target="TabFillerBackground.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="TabContainer.Padding" Value="{ThemeResource TabViewSelectedItemHeaderPadding}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
@@ -412,10 +416,13 @@
                                         <Setter Target="LeftRadiusRender.Visibility" Value="Visible" />
                                         <Setter Target="LeftRadiusRenderArc.BorderBrush" Value="{ThemeResource TabViewItemRadiusRenderBorderBrush}" />
                                         <Setter Target="LeftRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
-                                        <Setter Target="TabBackground.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
+                                        <Setter Target="TabContent.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
                                         <Setter Target="TabBackground.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}"/>
                                         <Setter Target="TabBackground.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}"/>
                                         <Setter Target="TabBackground.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
+                                        <Setter Target="TabBackground.Margin" Value="{Binding Source={Binding Source={StaticResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}, Converter={StaticResource RightThicknessFilterConverter}}" />
+                                        <Setter Target="TabFillerBackground.Visibility" Value="Visible" />
+                                        <Setter Target="TabFillerBackground.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="TabContainer.Padding" Value="{ThemeResource TabViewSelectedItemHeaderPadding}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
@@ -434,10 +441,13 @@
                                         <Setter Target="LeftRadiusRender.Visibility" Value="Visible" />
                                         <Setter Target="LeftRadiusRenderArc.BorderBrush" Value="{ThemeResource TabViewItemRadiusRenderBorderBrush}" />
                                         <Setter Target="LeftRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
-                                        <Setter Target="TabBackground.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
+                                        <Setter Target="TabContent.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
                                         <Setter Target="TabBackground.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}"/>
                                         <Setter Target="TabBackground.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}"/>
                                         <Setter Target="TabBackground.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
+                                        <Setter Target="TabBackground.Margin" Value="{Binding Source={Binding Source={StaticResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}, Converter={StaticResource RightThicknessFilterConverter}}" />
+                                        <Setter Target="TabFillerBackground.Visibility" Value="Visible" />
+                                        <Setter Target="TabFillerBackground.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="TabContainer.Padding" Value="{ThemeResource TabViewSelectedItemHeaderPadding}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
@@ -619,21 +629,30 @@
 
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition x:Name="LeftColumn" Width="Auto"/>
+                                <ColumnDefinition x:Name="LeftBorder" MaxWidth="{StaticResource TabViewItemHeaderLeftBorderSpacing}"/>
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition x:Name="RightBorder" MaxWidth="{StaticResource TabViewItemHeaderRightBorderSpacing}"/>
                                 <ColumnDefinition x:Name="RightColumn" Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
                             <Grid x:Name="TabBackground"
                                 Grid.Column="1"
+                                Grid.ColumnSpan="3"
                                 Background="{ThemeResource TabViewItemHeaderBackground}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                contract7Present:CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource TopCornerRadiusFilterConverter}}"
-                                contract7NotPresent:CornerRadius="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}"
-                                />
+                                BorderBrush="{ThemeResource TabViewItemBorderBrush}"
+                                BorderThickness="{ThemeResource TabViewItemBorderThickness}"
+                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                contract7NotPresent:CornerRadius="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
+
+                            <Grid x:Name="TabFillerBackground"
+                                Grid.Column="2"
+                                Height="{Binding Source={StaticResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                VerticalAlignment="Bottom"
+                                Background="{ThemeResource TabViewItemHeaderBackground}" />
 
                             <Grid x:Name="TabContainer"
                                 Grid.Column="1"
+                                Grid.ColumnSpan="3"
                                 Control.IsTemplateFocusTarget="True"
                                 Padding="{ThemeResource TabViewItemHeaderPadding}"
                                 FocusVisualMargin="{TemplateBinding FocusVisualMargin}">
@@ -676,52 +695,61 @@
                                     IsTabStop="False"
                                     Style="{ThemeResource TabViewCloseButtonStyle}"
                                     HighContrastAdjustment="None" />
+
                             </Grid>
 
                             <Grid x:Name="LeftRadiusRender"
                                 Grid.Column="0"
+                                Grid.ColumnSpan="2"
                                 Visibility="Collapsed"
-                                Width="4"
-                                Height="4"
+                                Width="{Binding Source={StaticResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                Height="{Binding Source={StaticResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                 VerticalAlignment="Bottom"
                                 HorizontalAlignment="Right"
-                                Margin="-4,0,0,0">
+                                Margin="{Binding Source={StaticResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource TabViewLeftInsetCornerConverter}}" >
+
+                                <Viewbox>
+                                    <Path x:Name="LeftRadiusRenderTriangle"
+                                        x:Load="False"
+                                        Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                                        VerticalAlignment="Bottom"
+                                        HorizontalAlignment="Right"
+                                        Data="M0 4H4V0C4 2.20914 2.20914 4 0 4Z" />
+                                </Viewbox>
 
                                 <Grid x:Name="LeftRadiusRenderArc"
                                     x:Load="False"
                                     BorderBrush="{ThemeResource TabViewItemRadiusRenderBorderBrush}"
                                     BorderThickness="{ThemeResource TabViewItemLeftRadiusRenderBorderThickness}"
-                                    CornerRadius="0,0,4,0" />
+                                    CornerRadius="{Binding Source={Binding Source={ThemeResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
 
-                                <Viewbox Margin="-1,0,1,0">
-                                    <Path x:Name="LeftRadiusRenderTriangle"
-                                        x:Load="False"
-                                        Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
-                                        Data="M0 4H4V0C4 2.20914 2.20914 4 0 4Z" />
-                                </Viewbox>
                             </Grid>
 
                             <Grid x:Name="RightRadiusRender"
-                                Grid.Column="2"
+                                Grid.Column="3"
+                                Grid.ColumnSpan="2"
                                 Visibility="Collapsed"
-                                Width="4"
-                                Height="4"
+                                Width="{Binding Source={StaticResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                Height="{Binding Source={StaticResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                 VerticalAlignment="Bottom"
                                 HorizontalAlignment="Left"
-                                Margin="0,0,-4,0">
+                                Margin="{Binding Source={StaticResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource TabViewRightInsetCornerConverter}}" >
+
+                                <Viewbox>
+                                    <Path x:Name="RightRadiusRenderTriangle"
+                                        x:Load="False"
+                                        Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                                        VerticalAlignment="Bottom"
+                                        HorizontalAlignment="Left"
+                                        Data="M4 4H0V0C0 2.20914 1.79086 4 4 4Z" />
+                                </Viewbox>
 
                                 <Grid x:Name="RightRadiusRenderArc"
                                     x:Load="False"
                                     BorderBrush="{ThemeResource TabViewItemRadiusRenderBorderBrush}"
                                     BorderThickness="{ThemeResource TabViewItemRightRadiusRenderBorderThickness}"
-                                    CornerRadius="0,0,0,4" />
+                                    CornerRadius="{Binding Source={Binding Source={ThemeResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource LeftCornerRadiusFilterConverter}}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
 
-                                <Viewbox Margin="1,0,-1,0">
-                                    <Path x:Name="RightRadiusRenderTriangle"
-                                        x:Load="False"
-                                        Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
-                                        Data="M4 4H0V0C0 2.20914 1.79086 4 4 4Z" />
-                                </Viewbox>
                             </Grid>
                         </Grid>
                     </Grid>
