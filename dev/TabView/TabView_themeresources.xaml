@@ -61,6 +61,7 @@
             <StaticResource x:Key="TabViewBorderBrush"                                      ResourceKey="CardStrokeColorDefault" />
             <StaticResource x:Key="TabViewItemBorderBrush"                                  ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TabViewSelectedItemBorderBrush"                          ResourceKey="CardStrokeColorDefault" />
+            <StaticResource x:Key="TabViewItemRadiusRenderBorderBrush"                      ResourceKey="CardStrokeColorDefault" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Dark">
@@ -119,6 +120,7 @@
             <StaticResource x:Key="TabViewBorderBrush"                                      ResourceKey="CardStrokeColorDefault" />
             <StaticResource x:Key="TabViewItemBorderBrush"                                  ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TabViewSelectedItemBorderBrush"                          ResourceKey="CardStrokeColorDefault" />
+            <StaticResource x:Key="TabViewItemRadiusRenderBorderBrush"                      ResourceKey="CardStrokeColorDefault" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -177,6 +179,7 @@
             <StaticResource x:Key="TabViewBorderBrush"                                      ResourceKey="CardStrokeColorDefault" />
             <StaticResource x:Key="TabViewItemBorderBrush"                                  ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TabViewSelectedItemBorderBrush"                          ResourceKey="SystemColorHighlightColor" />
+            <StaticResource x:Key="TabViewItemRadiusRenderBorderBrush"                      ResourceKey="SystemColorHighlightColor" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -222,4 +225,6 @@
 
     <Thickness x:Key="TabViewSelectedItemHeaderMargin">-1,0,-1,0</Thickness>
 
+    <Thickness x:Key="TabViewItemLeftRadiusRenderBorderThickness">0,0,1,1</Thickness>
+    <Thickness x:Key="TabViewItemRightRadiusRenderBorderThickness">1,0,0,1</Thickness>
 </ResourceDictionary>

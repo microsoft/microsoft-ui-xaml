@@ -367,7 +367,7 @@
 
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundPointerOver}" />
+                                        <Setter Target="TabBackground.Background" Value="{ThemeResource TabViewItemHeaderBackgroundPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundPointerOver}" />
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewItemHeaderPointerOverCloseButtonBackground}" />
@@ -378,7 +378,7 @@
 
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundPressed}" />
+                                        <Setter Target="TabBackground.Background" Value="{ThemeResource TabViewItemHeaderBackgroundPressed}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundPressed}" />
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewItemHeaderPressedCloseButtonBackground}" />
@@ -390,17 +390,17 @@
                                 <VisualState x:Name="Selected">
                                     <VisualState.Setters>
                                         <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
-                                        <Setter Target="RightRadiusRenderArc.Fill" Value="{ThemeResource TabViewSelectedItemBorderBrush}" />
+                                        <Setter Target="RightRadiusRenderArc.BorderBrush" Value="{ThemeResource TabViewItemRadiusRenderBorderBrush}" />
                                         <Setter Target="RightRadiusRenderTriangle.Visibility" Value="Visible"/>
                                         <Setter Target="RightRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
-                                        <Setter Target="LeftRadiusRenderArc.Fill" Value="{ThemeResource TabViewSelectedItemBorderBrush}" />
+                                        <Setter Target="LeftRadiusRenderArc.BorderBrush" Value="{ThemeResource TabViewItemRadiusRenderBorderBrush}" />
                                         <Setter Target="LeftRadiusRenderTriangle.Visibility" Value="Visible"/>
                                         <Setter Target="LeftRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
-                                        <Setter Target="TabContainer.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
-                                        <Setter Target="TabContainer.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}"/>
-                                        <Setter Target="TabContainer.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}"/>
-                                        <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
+                                        <Setter Target="TabBackground.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
+                                        <Setter Target="TabBackground.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}"/>
+                                        <Setter Target="TabBackground.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}"/>
+                                        <Setter Target="TabBackground.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="TabContainer.Padding" Value="{ThemeResource TabViewSelectedItemHeaderPadding}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
@@ -414,17 +414,17 @@
                                 <VisualState x:Name="PointerOverSelected">
                                     <VisualState.Setters>
                                         <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
-                                        <Setter Target="RightRadiusRenderArc.Fill" Value="{ThemeResource TabViewSelectedItemBorderBrush}" />
+                                        <Setter Target="RightRadiusRenderArc.BorderBrush" Value="{ThemeResource TabViewItemRadiusRenderBorderBrush}" />
                                         <Setter Target="RightRadiusRenderTriangle.Visibility" Value="Visible"/>
                                         <Setter Target="RightRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
-                                        <Setter Target="LeftRadiusRenderArc.Fill" Value="{ThemeResource TabViewSelectedItemBorderBrush}" />
+                                        <Setter Target="LeftRadiusRenderArc.BorderBrush" Value="{ThemeResource TabViewItemRadiusRenderBorderBrush}" />
                                         <Setter Target="LeftRadiusRenderTriangle.Visibility" Value="Visible"/>
                                         <Setter Target="LeftRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
-                                        <Setter Target="TabContainer.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
-                                        <Setter Target="TabContainer.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}"/>
-                                        <Setter Target="TabContainer.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}"/>
-                                        <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
+                                        <Setter Target="TabBackground.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
+                                        <Setter Target="TabBackground.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}"/>
+                                        <Setter Target="TabBackground.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}"/>
+                                        <Setter Target="TabBackground.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="TabContainer.Padding" Value="{ThemeResource TabViewSelectedItemHeaderPadding}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
@@ -438,17 +438,17 @@
                                 <VisualState x:Name="PressedSelected">
                                     <VisualState.Setters>
                                         <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
-                                        <Setter Target="RightRadiusRenderArc.Fill" Value="{ThemeResource TabViewSelectedItemBorderBrush}" />
+                                        <Setter Target="RightRadiusRenderArc.BorderBrush" Value="{ThemeResource TabViewItemRadiusRenderBorderBrush}" />
                                         <Setter Target="RightRadiusRenderTriangle.Visibility" Value="Visible"/>
                                         <Setter Target="RightRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
-                                        <Setter Target="LeftRadiusRenderArc.Fill" Value="{ThemeResource TabViewSelectedItemBorderBrush}" />
+                                        <Setter Target="LeftRadiusRenderArc.BorderBrush" Value="{ThemeResource TabViewItemRadiusRenderBorderBrush}" />
                                         <Setter Target="LeftRadiusRenderTriangle.Visibility" Value="Visible"/>
                                         <Setter Target="LeftRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
-                                        <Setter Target="TabContainer.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
-                                        <Setter Target="TabContainer.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}"/>
-                                        <Setter Target="TabContainer.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}"/>
-                                        <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
+                                        <Setter Target="TabBackground.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
+                                        <Setter Target="TabBackground.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}"/>
+                                        <Setter Target="TabBackground.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}"/>
+                                        <Setter Target="TabBackground.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="TabContainer.Padding" Value="{ThemeResource TabViewSelectedItemHeaderPadding}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
@@ -465,7 +465,7 @@
 
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundDisabled}" />
+                                        <Setter Target="TabBackground.Background" Value="{ThemeResource TabViewItemHeaderBackgroundDisabled}" />
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundDisabled}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundDisabled}" />
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewButtonForegroundDisabled}" />
@@ -627,15 +627,19 @@
                             BorderThickness="1"
                             Margin="{ThemeResource TabViewItemSeparatorMargin}"/>
 
-                        <Grid x:Name="TabContainer"
+                        <Grid x:Name="TabBackground"
                             Grid.Column="1"
                             Background="{ThemeResource TabViewItemHeaderBackground}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            Control.IsTemplateFocusTarget="True"
-                            Padding="{ThemeResource TabViewItemHeaderPadding}"
                             contract7Present:CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource TopCornerRadiusFilterConverter}}"
                             contract7NotPresent:CornerRadius="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}"
+                            />
+
+                        <Grid x:Name="TabContainer"
+                            Grid.Column="1"
+                            Control.IsTemplateFocusTarget="True"
+                            Padding="{ThemeResource TabViewItemHeaderPadding}"
                             FocusVisualMargin="{TemplateBinding FocusVisualMargin}">
 
                             <Grid.ColumnDefinitions>
@@ -678,43 +682,49 @@
                                 HighContrastAdjustment="None" />
                         </Grid>
 
-                        <Path x:Name="LeftRadiusRenderArc"
+                        <Grid x:Name="LeftRadiusRenderArc"
                             x:Load="False"
-                            Fill="{ThemeResource CardStrokeColorDefault}"
+                            BorderBrush="{ThemeResource TabViewItemRadiusRenderBorderBrush}"
+                            BorderThickness="{ThemeResource TabViewItemLeftRadiusRenderBorderThickness}"
+                            CornerRadius="0,0,4,0"
                             VerticalAlignment="Bottom"
                             Visibility="Collapsed"
                             Margin="-4,0,0,0"
                             Height="4"
-                            Width="4"
-                            Data="M4 0C4 1.19469 3.47624 2.26706 2.64582 3H0C1.65685 3 3 1.65685 3 0H4Z" />
+                            Width="4" />
 
-                        <Path  x:Name="LeftRadiusRenderTriangle"
-                            x:Load="False"
-                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                        <Viewbox
                             VerticalAlignment="Bottom"
-                            Margin="-4,0,0,0"
-                            Visibility="Collapsed"
-                            Data="M0 4H4V0C4 2.20914 2.20914 4 0 4Z" />
+                            Margin="-4,0,0,0">
+                            <Path x:Name="LeftRadiusRenderTriangle"
+                                x:Load="False"
+                                Visibility="Collapsed"
+                                Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                                Data="M0 4H4V0C4 2.20914 2.20914 4 0 4Z" />
+                        </Viewbox>
 
-                        <Path x:Name="RightRadiusRenderArc"
+                        <Grid x:Name="RightRadiusRenderArc"
                             x:Load="False"
                             Grid.Column="2"
                             Visibility="Collapsed"
-                            Fill="{ThemeResource CardStrokeColorDefault}"
+                            BorderBrush="{ThemeResource TabViewItemRadiusRenderBorderBrush}"
+                            BorderThickness="{ThemeResource TabViewItemRightRadiusRenderBorderThickness}"
+                            CornerRadius="0,0,0,4"
                             VerticalAlignment="Bottom"
                             Margin="0,0,-4,0"
                             Height="4"
-                            Width="4"
-                            Data="M0 0C0 1.19469 0.523755 2.26706 1.35418 3H4C2.34315 3 1 1.65685 1 0H0Z"/>
+                            Width="4" />
 
-                        <Path x:Name="RightRadiusRenderTriangle"
-                            x:Load="False"
+                        <Viewbox
                             Grid.Column="2"
-                            Visibility="Collapsed"
-                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
                             VerticalAlignment="Bottom"
-                            Margin="0,0,-4,0"
-                            Data="M4 4H0V0C0 2.20914 1.79086 4 4 4Z"/>
+                            Margin="0,0,-4,0">
+                            <Path x:Name="RightRadiusRenderTriangle"
+                                x:Load="False"
+                                Visibility="Collapsed"
+                                Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                                Data="M4 4H0V0C0 2.20914 1.79086 4 4 4Z" />
+                        </Viewbox>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
