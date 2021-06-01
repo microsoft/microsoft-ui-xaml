@@ -623,110 +623,110 @@
 
                         <Grid x:Name="TabContent">
 
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition x:Name="LeftColumn" Width="Auto"/>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition x:Name="RightColumn" Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <Grid x:Name="TabBackground"
-                            Grid.Column="1"
-                            Background="{ThemeResource TabViewItemHeaderBackground}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            contract7Present:CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource TopCornerRadiusFilterConverter}}"
-                            contract7NotPresent:CornerRadius="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}"
-                            />
-
-                        <Grid x:Name="TabContainer"
-                            Grid.Column="1"
-                            Control.IsTemplateFocusTarget="True"
-                            Padding="{ThemeResource TabViewItemHeaderPadding}"
-                            FocusVisualMargin="{TemplateBinding FocusVisualMargin}">
-
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition x:Name="IconColumn" Width="Auto" />
+                                <ColumnDefinition x:Name="LeftColumn" Width="Auto"/>
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition x:Name="RightColumn" Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <Viewbox x:Name="IconBox"
-                                    MaxWidth="{ThemeResource TabViewItemHeaderIconSize}"
-                                    MaxHeight="{ThemeResource TabViewItemHeaderIconSize}"
-                                    Margin="{ThemeResource TabViewItemHeaderIconMargin}">
-                                <ContentControl x:Name="IconControl"
-                                        Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.IconElement}"
-                                        IsTabStop="False"
-                                        Foreground="{ThemeResource TabViewItemIconForeground}"
-                                        HighContrastAdjustment="None" />
+                            <Grid x:Name="TabBackground"
+                                Grid.Column="1"
+                                Background="{ThemeResource TabViewItemHeaderBackground}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                contract7Present:CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource TopCornerRadiusFilterConverter}}"
+                                contract7NotPresent:CornerRadius="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}"
+                                />
+
+                            <Grid x:Name="TabContainer"
+                                Grid.Column="1"
+                                Control.IsTemplateFocusTarget="True"
+                                Padding="{ThemeResource TabViewItemHeaderPadding}"
+                                FocusVisualMargin="{TemplateBinding FocusVisualMargin}">
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition x:Name="IconColumn" Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Viewbox x:Name="IconBox"
+                                        MaxWidth="{ThemeResource TabViewItemHeaderIconSize}"
+                                        MaxHeight="{ThemeResource TabViewItemHeaderIconSize}"
+                                        Margin="{ThemeResource TabViewItemHeaderIconMargin}">
+                                    <ContentControl x:Name="IconControl"
+                                            Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.IconElement}"
+                                            IsTabStop="False"
+                                            Foreground="{ThemeResource TabViewItemIconForeground}"
+                                            HighContrastAdjustment="None" />
+                                </Viewbox>
+
+                                <ContentPresenter x:Name="ContentPresenter"
+                                    Grid.Column="1"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Content="{TemplateBinding Header}"
+                                    ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                    ContentTransitions="{TemplateBinding ContentTransitions}"
+                                    FontWeight="{TemplateBinding FontWeight}"
+                                    FontSize="{ThemeResource TabViewItemHeaderFontSize}"
+                                    Foreground="{ThemeResource TabViewItemHeaderForeground}"
+                                    OpticalMarginAlignment="TrimSideBearings"
+                                    HighContrastAdjustment="None" />
+
+                                <Button x:Name="CloseButton"
+                                    Grid.Column="2"
+                                    Margin="{ThemeResource TabViewItemHeaderCloseMargin}"
+                                    Content="&#xE711;"
+                                    IsTextScaleFactorEnabled="False"
+                                    IsTabStop="False"
+                                    Style="{ThemeResource TabViewCloseButtonStyle}"
+                                    HighContrastAdjustment="None" />
+                            </Grid>
+
+                            <Grid x:Name="LeftRadiusRenderArc"
+                                x:Load="False"
+                                BorderBrush="{ThemeResource TabViewItemRadiusRenderBorderBrush}"
+                                BorderThickness="{ThemeResource TabViewItemLeftRadiusRenderBorderThickness}"
+                                CornerRadius="0,0,4,0"
+                                VerticalAlignment="Bottom"
+                                Visibility="Collapsed"
+                                Margin="-4,0,0,0"
+                                Height="4"
+                                Width="4" />
+
+                            <Viewbox
+                                VerticalAlignment="Bottom"
+                                Margin="-4,0,0,0">
+                                <Path x:Name="LeftRadiusRenderTriangle"
+                                    x:Load="False"
+                                    Visibility="Collapsed"
+                                    Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                                    Data="M0 4H4V0C4 2.20914 2.20914 4 0 4Z" />
                             </Viewbox>
 
-                            <ContentPresenter x:Name="ContentPresenter"
-                                Grid.Column="1"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                Content="{TemplateBinding Header}"
-                                ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                ContentTransitions="{TemplateBinding ContentTransitions}"
-                                FontWeight="{TemplateBinding FontWeight}"
-                                FontSize="{ThemeResource TabViewItemHeaderFontSize}"
-                                Foreground="{ThemeResource TabViewItemHeaderForeground}"
-                                OpticalMarginAlignment="TrimSideBearings"
-                                HighContrastAdjustment="None" />
-
-                            <Button x:Name="CloseButton"
+                            <Grid x:Name="RightRadiusRenderArc"
+                                x:Load="False"
                                 Grid.Column="2"
-                                Margin="{ThemeResource TabViewItemHeaderCloseMargin}"
-                                Content="&#xE711;"
-                                IsTextScaleFactorEnabled="False"
-                                IsTabStop="False"
-                                Style="{ThemeResource TabViewCloseButtonStyle}"
-                                HighContrastAdjustment="None" />
-                        </Grid>
-
-                        <Grid x:Name="LeftRadiusRenderArc"
-                            x:Load="False"
-                            BorderBrush="{ThemeResource TabViewItemRadiusRenderBorderBrush}"
-                            BorderThickness="{ThemeResource TabViewItemLeftRadiusRenderBorderThickness}"
-                            CornerRadius="0,0,4,0"
-                            VerticalAlignment="Bottom"
-                            Visibility="Collapsed"
-                            Margin="-4,0,0,0"
-                            Height="4"
-                            Width="4" />
-
-                        <Viewbox
-                            VerticalAlignment="Bottom"
-                            Margin="-4,0,0,0">
-                            <Path x:Name="LeftRadiusRenderTriangle"
-                                x:Load="False"
                                 Visibility="Collapsed"
-                                Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
-                                Data="M0 4H4V0C4 2.20914 2.20914 4 0 4Z" />
-                        </Viewbox>
+                                BorderBrush="{ThemeResource TabViewItemRadiusRenderBorderBrush}"
+                                BorderThickness="{ThemeResource TabViewItemRightRadiusRenderBorderThickness}"
+                                CornerRadius="0,0,0,4"
+                                VerticalAlignment="Bottom"
+                                Margin="0,0,-4,0"
+                                Height="4"
+                                Width="4" />
 
-                        <Grid x:Name="RightRadiusRenderArc"
-                            x:Load="False"
-                            Grid.Column="2"
-                            Visibility="Collapsed"
-                            BorderBrush="{ThemeResource TabViewItemRadiusRenderBorderBrush}"
-                            BorderThickness="{ThemeResource TabViewItemRightRadiusRenderBorderThickness}"
-                            CornerRadius="0,0,0,4"
-                            VerticalAlignment="Bottom"
-                            Margin="0,0,-4,0"
-                            Height="4"
-                            Width="4" />
-
-                        <Viewbox
-                            Grid.Column="2"
-                            VerticalAlignment="Bottom"
-                            Margin="0,0,-4,0">
-                            <Path x:Name="RightRadiusRenderTriangle"
-                                x:Load="False"
-                                Visibility="Collapsed"
-                                Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
-                                Data="M4 4H0V0C0 2.20914 1.79086 4 4 4Z" />
-                        </Viewbox>
+                            <Viewbox
+                                Grid.Column="2"
+                                VerticalAlignment="Bottom"
+                                Margin="0,0,-4,0">
+                                <Path x:Name="RightRadiusRenderTriangle"
+                                    x:Load="False"
+                                    Visibility="Collapsed"
+                                    Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                                    Data="M4 4H0V0C0 2.20914 1.79086 4 4 4Z" />
+                            </Viewbox>
                         </Grid>
                     </Grid>
                 </ControlTemplate>
