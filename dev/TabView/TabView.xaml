@@ -628,15 +628,13 @@
                         <Grid x:Name="TabContent">
 
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition x:Name="LeftColumn" Width="Auto"/>
-                                <ColumnDefinition x:Name="LeftBorder" MaxWidth="{StaticResource TabViewItemHeaderLeftBorderSpacing}"/>
+                                <ColumnDefinition x:Name="LeftColumn" MaxWidth="{StaticResource TabViewItemHeaderLeftBorderSpacing}"/>
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition x:Name="RightBorder" MaxWidth="{StaticResource TabViewItemHeaderRightBorderSpacing}"/>
-                                <ColumnDefinition x:Name="RightColumn" Width="Auto"/>
+                                <ColumnDefinition x:Name="RightColumn" MaxWidth="{StaticResource TabViewItemHeaderRightBorderSpacing}"/>
                             </Grid.ColumnDefinitions>
 
                             <Grid x:Name="TabBackground"
-                                Grid.Column="1"
+                                Grid.Column="0"
                                 Grid.ColumnSpan="3"
                                 Background="{ThemeResource TabViewItemHeaderBackground}"
                                 BorderBrush="{ThemeResource TabViewItemBorderBrush}"
@@ -645,13 +643,13 @@
                                 contract7NotPresent:CornerRadius="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
 
                             <Grid x:Name="TabFillerBackground"
-                                Grid.Column="2"
+                                Grid.Column="1"
                                 Height="{Binding Source={StaticResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                 VerticalAlignment="Bottom"
                                 Background="{ThemeResource TabViewItemHeaderBackground}" />
 
                             <Grid x:Name="TabContainer"
-                                Grid.Column="1"
+                                Grid.Column="0"
                                 Grid.ColumnSpan="3"
                                 Control.IsTemplateFocusTarget="True"
                                 Padding="{ThemeResource TabViewItemHeaderPadding}"
@@ -700,7 +698,6 @@
 
                             <Grid x:Name="LeftRadiusRender"
                                 Grid.Column="0"
-                                Grid.ColumnSpan="2"
                                 Visibility="Collapsed"
                                 Width="{Binding Source={StaticResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                 Height="{Binding Source={StaticResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
@@ -726,8 +723,7 @@
                             </Grid>
 
                             <Grid x:Name="RightRadiusRender"
-                                Grid.Column="3"
-                                Grid.ColumnSpan="2"
+                                Grid.Column="2"
                                 Visibility="Collapsed"
                                 Width="{Binding Source={StaticResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                 Height="{Binding Source={StaticResource TabViewItemRadiusRenderCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
