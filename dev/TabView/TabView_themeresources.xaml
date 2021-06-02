@@ -245,5 +245,6 @@
     <Thickness x:Key="TabViewSelectedItemBorderThickness">1,1,1,0</Thickness>
 
     <Thickness x:Key="TabViewSelectedItemHeaderMargin">-1,0,-1,0</Thickness>
+    <Thickness x:Key="TabViewItemsPresenterMargin">1,0,1,0</Thickness>
 
 </ResourceDictionary>

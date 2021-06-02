@@ -169,4 +169,6 @@
 
     <Thickness x:Key="TabViewItemSeparatorMargin">0,6,0,6</Thickness>
 
+    <Thickness x:Key="TabViewItemsPresenterMargin">1,0,0,0</Thickness>
+
 </ResourceDictionary>
