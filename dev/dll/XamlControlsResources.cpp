@@ -118,13 +118,11 @@ void XamlControlsResources::UpdateSource()
         }()
     };
 
-    Clear();
+    // Because of Compact, UpdateSource may be executed twice, but there is a bug in XAML and manually clear theme dictionaries here:
+    // Prior to RS5, when ResourceDictionary.Source property is changed, XAML forgot to clear ThemeDictionaries.
     ThemeDictionaries().Clear();
 
-    // We'll use LoadComponent rather than setting the Source property,
-    // since this way we can instruct it that contents in this dictionary
-    // come from a component rather than from the application resources.
-    winrt::Application::LoadComponent(*this, uri, winrt::ComponentResourceLocation::Nested);
+    Source(uri);
 
     // Hacky workaround for a XAML compiler bug:
     // Assigning nullable primitive types from XAML fails with disabled XAML metadata reflection on older versions.

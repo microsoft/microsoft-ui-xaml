@@ -6,6 +6,7 @@
 #include "CommandBarFlyout.h"
 #include "CommandBarFlyoutCommandBar.h"
 #include "CommandBarFlyoutCommandBarTemplateSettings.h"
+#include "ResourceAccessor.h"
 #include "TypeLogging.h"
 
 CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
@@ -119,6 +120,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
         {
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
+            EnsureLocalizedControlTypes();
             UpdateFlowsFromAndFlowsTo();
             UpdateUI(!m_commandBarFlyoutIsOpening);
         }
@@ -130,6 +132,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
             m_secondaryItemsRootSized = false;
+            EnsureLocalizedControlTypes();
             UpdateFlowsFromAndFlowsTo();
             UpdateUI(!m_commandBarFlyoutIsOpening);
         }
@@ -151,6 +154,9 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
             overflowPopup4.DesiredPlacement(winrt::PopupPlacementMode::Auto);
         }
     }
+
+    winrt::AutomationProperties::SetLocalizedControlType(*this, ResourceAccessor::GetLocalizedStringResource(SR_CommandBarFlyoutCommandBarLocalizedControlType));
+    EnsureLocalizedControlTypes();
 
     winrt::IControlProtected thisAsControlProtected = *this;
 
@@ -826,6 +832,35 @@ void CommandBarFlyoutCommandBar::EnsureAutomationSetCountAndPosition()
     {
         winrt::AutomationProperties::SetSizeOfSet(moreButton, sizeOfSet);
         winrt::AutomationProperties::SetPositionInSet(moreButton, sizeOfSet);
+    }
+}
+
+void CommandBarFlyoutCommandBar::EnsureLocalizedControlTypes()
+{
+    COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    for (auto const& command : PrimaryCommands())
+    {
+        SetKnownCommandLocalizedControlTypes(command);
+    }
+
+    for (auto const& command : SecondaryCommands())
+    {
+        SetKnownCommandLocalizedControlTypes(command);
+    }
+}
+
+void CommandBarFlyoutCommandBar::SetKnownCommandLocalizedControlTypes(winrt::ICommandBarElement const& command)
+{
+    COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    if (auto const& appBarButton = command.try_as<winrt::AppBarButton>())
+    {
+        winrt::AutomationProperties::SetLocalizedControlType(appBarButton, ResourceAccessor::GetLocalizedStringResource(SR_CommandBarFlyoutAppBarButtonLocalizedControlType));
+    }
+    else if (auto const& appBarToggleButton = command.try_as<winrt::AppBarToggleButton>())
+    {
+        winrt::AutomationProperties::SetLocalizedControlType(appBarToggleButton, ResourceAccessor::GetLocalizedStringResource(SR_CommandBarFlyoutAppBarToggleButtonLocalizedControlType));
     }
 }
 
