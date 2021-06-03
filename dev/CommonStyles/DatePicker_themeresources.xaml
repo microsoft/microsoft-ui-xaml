@@ -37,7 +37,6 @@
             <StaticResource x:Key="DatePickerButtonForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
 
             <contract7NotPresent:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="DatePickerHasNoDateForeground" ResourceKey="TextFillColorSecondaryBrush" />
             <contract7NotPresent:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
@@ -72,7 +71,6 @@
             <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="SystemControlHighlightBaseHighBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="DatePickerHasNoDateForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundFocused" ResourceKey="SystemControlForegroundBaseHighBrush" />
 
             <contract7NotPresent:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
@@ -123,7 +121,6 @@
             <StaticResource x:Key="DatePickerButtonForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
             
             <contract7NotPresent:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="DatePickerHasNoDateForeground" ResourceKey="TextFillColorSecondaryBrush" />
             <contract7NotPresent:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
@@ -265,7 +262,7 @@
                                 <VisualState x:Name="HasDate" />
                                 <VisualState x:Name="HasNoDate">                                    
                                     <VisualState.Setters>
-                                        <Setter Target="FlyoutButton.Foreground" Value="{ThemeResource DatePickerHasNoDateForeground}" />
+                                        <Setter Target="FlyoutButton.Foreground" Value="{ThemeResource DatePickerButtonForegroundDefault}" />
                                     </VisualState.Setters>
                                 </VisualState>
 

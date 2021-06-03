@@ -36,7 +36,6 @@
             <StaticResource x:Key="TimePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TimePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="TimePickerButtonForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="TimePickerHasNoDateForeground" ResourceKey="TextFillColorSecondaryBrush" />
             <contract7Present:StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7Present:StaticResource x:Key="TimePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <contract7NotPresent:StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
@@ -73,7 +72,6 @@
             <StaticResource x:Key="TimePickerButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
             <StaticResource x:Key="TimePickerButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="TimePickerButtonForegroundFocused" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="TimePickerHasNoDateForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <contract7Present:StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <contract7Present:StaticResource x:Key="TimePickerFlyoutPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
             <contract7NotPresent:StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
@@ -120,7 +118,6 @@
             <StaticResource x:Key="TimePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TimePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="TimePickerButtonForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="TimePickerHasNoDateForeground" ResourceKey="TextFillColorSecondaryBrush" />
             <contract7Present:StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7Present:StaticResource x:Key="TimePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <contract7NotPresent:StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
@@ -252,7 +249,7 @@
                                 <VisualState x:Name="HasTime" />
                                 <VisualState x:Name="HasNoTime">
                                     <VisualState.Setters>
-                                        <Setter Target="FlyoutButton.Foreground" Value="{ThemeResource TimePickerHasNoDateForeground}" />
+                                        <Setter Target="FlyoutButton.Foreground" Value="{ThemeResource TimePickerButtonForegroundDefault}" />
                                     </VisualState.Setters>
                                 </VisualState>
 
