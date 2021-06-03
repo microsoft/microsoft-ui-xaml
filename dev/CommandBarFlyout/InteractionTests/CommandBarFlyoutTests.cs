@@ -725,18 +725,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Button underlineButton9 = FindElement.ById<Button>("UnderlineButton9");
                 Verify.AreEqual(AutomationElement.FocusedElement.Current.AutomationId, underlineButton9.AutomationId);
 
-                Log.Comment("Press Down key to move focus to first secondary command: Undo.");
-                KeyboardHelper.PressKey(Key.Down);
-                Wait.ForIdle();
-
                 Button undoButton9 = FindElement.ById<Button>("UndoButton9");
-                Verify.AreEqual(AutomationElement.FocusedElement.Current.AutomationId, undoButton9.AutomationId);
 
-                Log.Comment("Press Up key to move focus to first primary command: Cut.");
-                for (int i = 0; i < 6; i++)
+                if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
                 {
-                    KeyboardHelper.PressKey(Key.Up);
+                    Log.Comment("Press Down key to move focus to first secondary command: Undo.");
+                    KeyboardHelper.PressKey(Key.Down);
                     Wait.ForIdle();
+
+                    Verify.AreEqual(AutomationElement.FocusedElement.Current.AutomationId, undoButton9.AutomationId);
+
+                    Log.Comment("Press Up key to move focus to first primary command: Cut.");
+                    for (int i = 0; i < 6; i++)
+                    {
+                        KeyboardHelper.PressKey(Key.Up);
+                        Wait.ForIdle();
+                    }
+                }
+                else
+                {
+                    Log.Comment("Press Up key to move focus to first primary command: Cut.");
+                    for (int i = 0; i < 5; i++)
+                    {
+                        KeyboardHelper.PressKey(Key.Up);
+                        Wait.ForIdle();
+                    }
                 }
 
                 Button cutButton9 = FindElement.ById<Button>("CutButton9");
