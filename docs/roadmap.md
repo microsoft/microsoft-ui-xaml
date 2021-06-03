@@ -59,7 +59,7 @@ WinUI 3 is currently available as a part of Project Reunion 0.5 for building sta
 
 [Windows UI Library 3 - Project Reunion 0.5 (March 2021)](https://docs.microsoft.com/windows/apps/winui/winui3/)
 
-There's also a preview version of WinUI 3 available that supports building UWP apps - see the [preview release notes](https://docs.microsoft.com/windows/apps/winui/winui3/release-notes/winui3-project-reunion-0.5-preview). Note that preview releases have limitations and known issues, so they are not equipped for production apps. 
+There's also a preview version of WinUI 3 available that supports building UWP apps - see the [preview release notes](https://aka.ms/winui3/projectreunion-0.8preview). Note that preview releases have limitations and known issues, so they are not equipped for production apps. 
 
 The 3rd generation of WinUI has some key benefits over the 2nd generation, including:
 
@@ -92,7 +92,7 @@ The Universal Windows Platform contains more than just the XAML framework (e.g. 
 
 ### Updating your apps to use WinUI 3
 
-Creating a new WinUI 3 app will be easy using new [Visual Studio 2019 project templates](https://docs.microsoft.com/windows/apps/winui/winui3/create-winui3-projects). 
+Creating a new WinUI 3 app will be easy using new [Visual Studio 2019 project templates](https://docs.microsoft.com/windows/apps/winui/winui3/winui-project-templates-in-visual-studio). 
 
 For existing UWP XAML apps there will be some updates required when migrating to WinUI 3. These updates will require little effort, with the bulk of most project changes involving find-and-replace namespace changes. We'd love to hear your thoughts on the developer experience in the [WinUI 3.0 tooling discussion issue](https://github.com/microsoft/microsoft-ui-xaml/issues/1045).
 
@@ -100,14 +100,19 @@ For existing UWP XAML apps there will be some updates required when migrating to
 
 The first stable, supported version of WinUI 3 has just been released. We plan to transition into a release cadence that includes more frequent pre-releases alongside less frequent stable releases, similar to the release cadence of WinUI 2.x. 
 
-See the image below for a more detailed look at our past and future release plans for WinUI 3:
+## WinUI Release Roadmap for 2021
+The image below lists out what the WinUI team plans to ship in 2021.
+
+For WinUI 3, you can plan to see new preview releases of Project Reunion roughly once a month, with three stable releases this year. For more details on when specific features will become available, see the [Feature Roadmap](##WinUI-30-Feature-Roadmap) below. 
+
+For WinUI 2, you can plan to see frequent pre-releases (see our [Releases](https://github.com/microsoft/microsoft-ui-xaml/releases) page for more info), along with three stable releases this year.
 
 ![Winui roadmap](images/winui-roadmap.jpg)
 
 ## WinUI 3.0 Feature Roadmap
 We know that for many of our developers, the choice to adopt WinUI 3 is dependent on certain features and capabilities. The table below outlines the status on WinUI 3 features, and the expected date they'll be available to you. 
 
-As we begin moving towards releasing preview and stable packages in parallel, you'll see in the feature roadmap below that some features remain "preview" features during stable releases. This means that the feature is not stable/bug-free enough to be included in the stable release, but will be available in the corresponding pre-release package. 
+As we begin moving towards releasing preview and stable packages in parallel, you'll see in the feature roadmap below that some features remain "preview" features during stable releases. This means that the feature is not stable/bug-free enough to be included in the stable release, but will be available in the corresponding preview package. 
 
 **Please note: This is a living document, and the information below can and likely will change as the project continues development. The feature availability dates listed here are the team's current goals and expectations, but are not promises or guarantees.**
 
@@ -123,9 +128,9 @@ For questions or status updates on either features listed here, or features not 
 Blank -  Not available
 
 
-**WinUI 3 - Project Reunion 0.5** is our latest release. 
+**WinUI 3 - Project Reunion 0.8 Preview** is our latest release. 
 
-| Customer Capability                                                         | Preview 3 (Nov 2020)                | Preview 4 (Feb 2021)                | Project Reunion 0.5 (March 2021)            | Project Reunion 0.8 (May 2021)              | Planned for a future update         |
+| Customer Capability                                                         | Preview 3 (Nov 2020)                | Preview 4 (Feb 2021)                | Project Reunion 0.5 (March 2021)            | Project Reunion 0.8 (June 2021)              | Planned for a future update         |
 |-----------------------------------------------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|
 | WinUI 3 in Desktop (Win32) apps                                             | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
 | WinUI 3 in UWP apps                                                         | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> |

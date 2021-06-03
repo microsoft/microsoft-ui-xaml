@@ -1,4 +1,4 @@
-namespace MU_XCP_NAMESPACE
+﻿namespace MU_XCP_NAMESPACE
 {
 
 [MUX_PUBLIC]
@@ -37,6 +37,38 @@ unsealed runtimeclass CommandBarFlyoutCommandBar : Windows.UI.Xaml.Controls.Comm
 
     [MUX_PROPERTY_NEEDS_DP_FIELD]
     CommandBarFlyoutCommandBarTemplateSettings FlyoutTemplateSettings { get; };
+};
+
+// Needed so we can access this enum and interface until they ship in the official SDK.
+[MUX_INTERNAL]
+[webhosthidden]
+enum PopupPlacementMode
+{
+    Auto,
+    Top,
+    Bottom,
+    Left,
+    Right,
+    TopEdgeAlignedLeft,
+    TopEdgeAlignedRight,
+    BottomEdgeAlignedLeft,
+    BottomEdgeAlignedRight,
+    LeftEdgeAlignedTop,
+    LeftEdgeAlignedBottom,
+    RightEdgeAlignedTop,
+    RightEdgeAlignedBottom,
+};
+
+[MUX_INTERNAL]
+[webhosthidden]
+[uuid(1870b836-df2f-5fc6-a5f2-748ed6ce7321)]
+interface IPopup4
+{
+    Windows.UI.Xaml.FrameworkElement PlacementTarget;
+    Microsoft.UI.Xaml.Controls.Primitives.PopupPlacementMode DesiredPlacement;
+    Microsoft.UI.Xaml.Controls.Primitives.PopupPlacementMode ActualPlacement{ get; };
+
+    event Windows.Foundation.EventHandler<Object> ActualPlacementChanged;
 };
 
 }

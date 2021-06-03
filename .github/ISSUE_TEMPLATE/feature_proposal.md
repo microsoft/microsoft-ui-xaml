@@ -14,7 +14,7 @@ For feature proposals related to UWP or the app models, please open an issue on 
 It's fine if you don't have all the details: you can start with the Summary and Rationale.
 
 This link describes the WinUI feature/API proposal process:
-https://github.com/Microsoft/microsoft-ui-xaml/blob/master/docs/feature_proposal_process.md
+https://github.com/Microsoft/microsoft-ui-xaml/blob/main/docs/feature_proposal_process.md
 -->
 
 # Proposal: [your title here] 
@@ -27,7 +27,7 @@ https://github.com/Microsoft/microsoft-ui-xaml/blob/master/docs/feature_proposal
 <!-- Create a list that describes WHY the feature should be added to WinUI for all developers and users.
 Proposals often have multiple motives for why we should do the work, so list each one as a separate bullet.
 If applicable you can also describe how the proposal aligns to the current WinUI roadmap and priorities in a separate paragraph:
-https://github.com/Microsoft/microsoft-ui-xaml/blob/master/docs/roadmap.md
+https://github.com/Microsoft/microsoft-ui-xaml/blob/main/docs/roadmap.md
 -->
 * {First reason for why we should consider this proposal}
 * {Second reason for why we should consider this proposal}
@@ -36,7 +36,7 @@ https://github.com/Microsoft/microsoft-ui-xaml/blob/master/docs/roadmap.md
 
 <!----------------------
 The below sections are optional when submitting an idea or proposal.
-All sections are required before we'll accept a PR to master, but aren't necessary to start the discussion.
+All sections are required before we'll accept a PR to main, but aren't necessary to start the discussion.
 ------------------------>
 
 ## Scope

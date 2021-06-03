@@ -93,7 +93,7 @@ namespace CustomTasks
                     // If this type has DependencyProperty properties then write out the helpers
                     typeDefinition.HasHeaderFile = (props.Count > 0 || events.Count > 0);
                     typeDefinition.HasImplementationFile = typeDefinition.HasHeaderFile || (!typeDefinition.HasCustomActivationFactory && typeDefinition.NeedsActivationFactory);
-                    if (typeDefinition.HasHeaderFile || typeDefinition.HasImplementationFile)
+                    if ((typeDefinition.HasHeaderFile || typeDefinition.HasImplementationFile) && typeDefinition.Type.IsClass)
                     {
                         collectedMetadata.Add(typeDefinition);
                     }

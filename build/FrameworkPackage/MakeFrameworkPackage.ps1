@@ -38,7 +38,7 @@ function ExecuteMakePri
     if ($LastExitCode -ne 0) { Exit 1 }
 }
 
-# only keep 21h1 themeresources, and set othe themeresources to " "
+# only keep 21h1 themeresources, and set other themeresources to " "
 # I didn't set it to "" because "" will change the `makepri dump` layout, but " " will not.
 function RepackCBSResourcesPri
 {

@@ -12,7 +12,7 @@
             <StaticResource x:Key="ContentDialogBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
             <StaticResource x:Key="ContentDialogSmokeFill" ResourceKey="SmokeFillColorDefaultBrush" />
             <StaticResource x:Key="ContentDialogTopOverlay" ResourceKey="LayerFillColorAltBrush" />
-            <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="ControlElevationBorderBrush" />
+            <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="SurfaceStrokeColorDefault" />
             <StaticResource x:Key="ContentDialogSeparatorBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <Thickness x:Key="ContentDialogBorderWidth">1</Thickness>
         </ResourceDictionary>
@@ -30,7 +30,7 @@
             <StaticResource x:Key="ContentDialogBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
             <StaticResource x:Key="ContentDialogSmokeFill" ResourceKey="SmokeFillColorDefaultBrush" />
             <StaticResource x:Key="ContentDialogTopOverlay" ResourceKey="LayerFillColorAltBrush" />
-            <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="ControlElevationBorderBrush" />
+            <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="SurfaceStrokeColorDefault" />
             <StaticResource x:Key="ContentDialogSeparatorBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <Thickness x:Key="ContentDialogBorderWidth">1</Thickness>
         </ResourceDictionary>
@@ -205,7 +205,8 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Grid x:Name="LayoutRoot">
+                        <Grid x:Name="LayoutRoot"
+                            contract7Present:CornerRadius="{ThemeResource OverlayCornerRadius}">
                             <Rectangle x:Name="SmokeLayerBackground" Fill="{ThemeResource ContentDialogSmokeFill}" />
                             <Border
                                 x:Name="BackgroundElement"
@@ -225,7 +226,7 @@
                                 <Border.RenderTransform>
                                     <ScaleTransform x:Name="ScaleTransform" />
                                 </Border.RenderTransform>
-                                <Grid x:Name="DialogSpace">
+                                <Grid x:Name="DialogSpace" contract7Present:CornerRadius="{ThemeResource OverlayCornerRadius}">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="Auto" />
@@ -252,7 +253,7 @@
                                                 ContentTemplate="{TemplateBinding TitleTemplate}"
                                                 FontSize="20"
                                                 FontFamily="XamlAutoFontFamily"
-                                                FontWeight="Normal"
+                                                FontWeight="SemiBold"
                                                 Foreground="{TemplateBinding Foreground}"
                                                 HorizontalAlignment="Left"
                                                 VerticalAlignment="Top"

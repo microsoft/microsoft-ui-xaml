@@ -2,11 +2,11 @@
 SETLOCAL
 set ERRORLEVEL=
 
-echo robocopy /E %~dp0..\..\packages\InternalWindowsSDK-part1.1.0.3\windowssdk-21330.1000.210303-1505-part1 %~dp0..\..\packages\InternalWindowsSDK.1.0.3
-call robocopy /E %~dp0..\..\packages\InternalWindowsSDK-part1.1.0.3\windowssdk-21330.1000.210303-1505-part1 %~dp0..\..\packages\InternalWindowsSDK.1.0.3
+echo robocopy /E %~dp0..\..\packages\InternalWindowsSDK-part1.1.0.7\windowssdk-21681.1000.210511-1558-part1 %~dp0..\..\packages\InternalWindowsSDK.1.0.7
+call robocopy /E %~dp0..\..\packages\InternalWindowsSDK-part1.1.0.7\windowssdk-21681.1000.210511-1558-part1 %~dp0..\..\packages\InternalWindowsSDK.1.0.7
 
-echo robocopy /E %~dp0..\..\packages\InternalWindowsSDK-part2.1.0.3\windowssdk-21330.1000.210303-1505-part2 %~dp0..\..\packages\InternalWindowsSDK.1.0.3
-call robocopy /E %~dp0..\..\packages\InternalWindowsSDK-part2.1.0.3\windowssdk-21330.1000.210303-1505-part2 %~dp0..\..\packages\InternalWindowsSDK.1.0.3
+echo robocopy /E %~dp0..\..\packages\InternalWindowsSDK-part2.1.0.7\windowssdk-21681.1000.210511-1558-part2 %~dp0..\..\packages\InternalWindowsSDK.1.0.7
+call robocopy /E %~dp0..\..\packages\InternalWindowsSDK-part2.1.0.7\windowssdk-21681.1000.210511-1558-part2 %~dp0..\..\packages\InternalWindowsSDK.1.0.7
 
 REM robocopy returns:
 REM - 0x0 for no files copied,

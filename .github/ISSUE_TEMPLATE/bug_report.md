@@ -36,7 +36,9 @@ Examples
 [Microsoft.WinUI 3.0.0-preview3.201113.0]
 [Microsoft.WinUI 3.0.0-preview4.210210.4] 
 [WinUI 3 - Project Reunion 0.5 Preview: 0.5.0-prerelease] 
-[WinUI 3 - Project Reunion 0.5: 0.5.0] If you're seeing your issue in older previews, please try this release.
+[WinUI 3 - Project Reunion 0.5: 0.5.0] 
+[WinUI 3 - Project Reunion 0.5: 0.5.7] 
+[WinUI 3 - Project Reunion 0.8 Preview: 0.8.0-preview] If you're seeing your issue in older previews, please try this release.
 -->
 
 <!-- If you are using WinUI 3, please specify for which Windows app type you have encountered the issue. Leave blank if you didn't try that app type. -->

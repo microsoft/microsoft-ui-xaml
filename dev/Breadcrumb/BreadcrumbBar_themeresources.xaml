@@ -3,21 +3,16 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <x:String x:Key="BreadcrumbBarChevronLeftToRight">&#xE76C;</x:String>
-    <x:String x:Key="BreadcrumbBarChevronRightToLeft">&#xE76B;</x:String>
-
-    <x:Double x:Key="BreadcrumbBarEllipsisFlyoutThemeMinHeight">40</x:Double>
-    <Thickness x:Key="BreadcrumbBarEllipsisDropDownItemMargin">5,3,5,3</Thickness>
-    <Thickness x:Key="BreadcrumbBarEllipsisDropDownItemPadding">11,7,11,9</Thickness>
-    <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterThemePadding">0,2,0,2</Thickness>
-
-    <Thickness x:Key="BreadcrumbBarItemDefaultPadding">4,0,3,0</Thickness>
-    <Thickness x:Key="BreadcrumbBarItemDefaultMargin">0,3,0,4</Thickness>
-    <Thickness x:Key="BreadcrumbBarItemLastItemMargin">0,3,1,4</Thickness>
-
     <ResourceDictionary.ThemeDictionaries>
 
         <ResourceDictionary x:Key="Default">
+            <x:String x:Key="BreadcrumbBarChevronLeftToRight">&#xE974;</x:String>
+            <x:String x:Key="BreadcrumbBarChevronRightToLeft">&#xE973;</x:String>
+
+            <Thickness x:Key="BreadcrumbBarChevronPadding">2,0</Thickness>
+
+            <FontWeight x:Key="BreadcrumbBarItemFontWeight">Normal</FontWeight>
+            
             <StaticResource x:Key="BreadcrumbBarNormalForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="BreadcrumbBarHoverForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="BreadcrumbBarPressedForegroundBrush" ResourceKey="TextFillColorTertiaryBrush" />
@@ -47,9 +42,17 @@
             <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderThemeThickness">1</Thickness>
 
             <StaticResource x:Key="BreadcrumbBarItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
+            <x:Double x:Key="BreadcrumbBarChevronFontSize">12</x:Double>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
+            <x:String x:Key="BreadcrumbBarChevronLeftToRight">&#xE974;</x:String>
+            <x:String x:Key="BreadcrumbBarChevronRightToLeft">&#xE973;</x:String>
+
+            <Thickness x:Key="BreadcrumbBarChevronPadding">2,0</Thickness>
+
+            <FontWeight x:Key="BreadcrumbBarItemFontWeight">Normal</FontWeight>
+
             <StaticResource x:Key="BreadcrumbBarNormalForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="BreadcrumbBarHoverForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="BreadcrumbBarPressedForegroundBrush" ResourceKey="TextFillColorTertiaryBrush" />
@@ -80,9 +83,17 @@
             <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderThemeThickness">1</Thickness>
 
             <StaticResource x:Key="BreadcrumbBarItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
+            <x:Double x:Key="BreadcrumbBarChevronFontSize">12</x:Double>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
+            <x:String x:Key="BreadcrumbBarChevronLeftToRight">&#xE974;</x:String>
+            <x:String x:Key="BreadcrumbBarChevronRightToLeft">&#xE973;</x:String>
+
+            <Thickness x:Key="BreadcrumbBarChevronPadding">2,0</Thickness>
+
+            <FontWeight x:Key="BreadcrumbBarItemFontWeight">Normal</FontWeight>
+
             <StaticResource x:Key="BreadcrumbBarNormalForegroundBrush" ResourceKey="SystemColorHighlightColor" />
             <StaticResource x:Key="BreadcrumbBarHoverForegroundBrush" ResourceKey="SystemColorButtonTextColor" />
             <StaticResource x:Key="BreadcrumbBarPressedForegroundBrush" ResourceKey="SystemColorHighlightColor" />
@@ -112,6 +123,7 @@
             <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderThemeThickness">2</Thickness>
 
             <StaticResource x:Key="BreadcrumbBarItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
+            <x:Double x:Key="BreadcrumbBarChevronFontSize">12</x:Double>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

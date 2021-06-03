@@ -168,6 +168,7 @@ private:
     void UpdateVisualStateForOverflowButton();
     void UpdateLeftNavigationOnlyVisualState(bool useTransitions);
     void UpdatePaneShadow();
+    void UpdatePaneOverlayGroup();
     void UpdateNavigationViewItemsFactory();
     void SyncItemTemplates();
     bool IsRootGridOfFlyout(const winrt::DependencyObject& element);
@@ -347,7 +348,6 @@ private:
     tracker_ref<winrt::ColumnDefinition> m_paneToggleButtonIconGridColumn{ this };
     tracker_ref<winrt::FrameworkElement> m_paneTitleHolderFrameworkElement{ this };
     tracker_ref<winrt::FrameworkElement> m_paneTitleFrameworkElement{ this };
-    tracker_ref<winrt::FrameworkElement> m_visualItemsSeparator{ this };
     tracker_ref<winrt::Button> m_paneSearchButton{ this };
     tracker_ref<winrt::Button> m_backButton{ this };
     tracker_ref<winrt::Button> m_closeButton{ this };
@@ -360,8 +360,6 @@ private:
     tracker_ref<winrt::Grid> m_topNavGrid{ this };
     tracker_ref<winrt::Border> m_topNavContentOverlayAreaGrid{ this };
     tracker_ref<winrt::Grid> m_shadowCaster{ this };
-    tracker_ref<winrt::Storyboard> m_shadowCasterEaseInStoryboard{ this };
-    tracker_ref<winrt::Storyboard> m_shadowCasterSmallPaneEaseInStoryboard{ this };
     tracker_ref<winrt::Storyboard> m_shadowCasterEaseOutStoryboard{ this };
 
     // Indicator animations
@@ -392,6 +390,7 @@ private:
     tracker_ref<winrt::ColumnDefinition> m_paneHeaderCloseButtonColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_paneHeaderToggleButtonColumn{ this };
     tracker_ref<winrt::RowDefinition> m_paneHeaderContentBorderRow{ this };
+    tracker_ref<winrt::FrameworkElement> m_itemsContainer{ this };
 
     tracker_ref<winrt::NavigationViewItem> m_lastItemExpandedIntoFlyout{ this };
 
@@ -498,5 +497,7 @@ private:
     bool m_OrientationChangedPendingAnimation{ false };
 
     bool m_TabKeyPrecedesFocusChange{ false };
+
+    bool m_isLeftPaneTitleEmpty{ false };
 };
 
