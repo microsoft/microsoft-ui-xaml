@@ -242,10 +242,8 @@
                                                     </VisualStateGroup>
                                                 </VisualStateManager.VisualStateGroups>
 
-                                                <ContentPresenter x:Name="ContentPresenter"
-                                                    Foreground="{TemplateBinding Foreground}"
-                                                    Background="Transparent"
-                                                    BorderBrush="{ThemeResource DatePickerButtonBorderBrush}"
+                                                <ContentPresenter
+                                                    x:Name="ContentPresenter"
                                                     BorderThickness="{ThemeResource DatePickerBorderThemeThickness}"
                                                     Content="{TemplateBinding Content}"
                                                     HorizontalContentAlignment="Stretch"
