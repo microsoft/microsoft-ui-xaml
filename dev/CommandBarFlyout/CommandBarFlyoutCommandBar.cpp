@@ -120,6 +120,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
         {
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
+            PopulateAccessibleControls();
             UpdateFlowsFromAndFlowsTo();
             UpdateUI(!m_commandBarFlyoutIsOpening);
         }
@@ -131,6 +132,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
             m_secondaryItemsRootSized = false;
+            PopulateAccessibleControls();
             UpdateFlowsFromAndFlowsTo();
             UpdateUI(!m_commandBarFlyoutIsOpening);
         }
@@ -210,6 +212,7 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
     }
 
     AttachEventHandlers();
+    PopulateAccessibleControls();
     UpdateFlowsFromAndFlowsTo();
     UpdateUI(false /* useTransitions */);
     SetPresenterName(m_flyoutPresenter.get());
@@ -789,6 +792,52 @@ void CommandBarFlyoutCommandBar::EnsureFocusedPrimaryCommand()
     }
 }
 
+void CommandBarFlyoutCommandBar::PopulateAccessibleControls()
+{
+    COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    // The primary commands and the more button are the only controls accessible
+    // using left and right arrow keys. All of the commands are accessible using
+    // the up and down arrow keys.
+    if (!m_horizontallyAccessibleControls)
+    {
+        MUX_ASSERT(!m_verticallyAccessibleControls);
+
+        m_horizontallyAccessibleControls = winrt::make<Vector<winrt::Control>>();
+        m_verticallyAccessibleControls = winrt::make<Vector<winrt::Control>>();
+    }
+    else
+    {
+        MUX_ASSERT(m_verticallyAccessibleControls);
+
+        m_horizontallyAccessibleControls.Clear();
+        m_verticallyAccessibleControls.Clear();
+    }
+
+    for (winrt::ICommandBarElement const& command : PrimaryCommands())
+    {
+        if (auto const& commandAsControl = command.try_as<winrt::Control>())
+        {
+            m_horizontallyAccessibleControls.Append(commandAsControl);
+            m_verticallyAccessibleControls.Append(commandAsControl);
+        }
+    }
+
+    if (auto const& moreButton = m_moreButton.get())
+    {
+        m_horizontallyAccessibleControls.Append(moreButton);
+        m_verticallyAccessibleControls.Append(moreButton);
+    }
+
+    for (winrt::ICommandBarElement const& command : SecondaryCommands())
+    {
+        if (auto const& commandAsControl = command.try_as<winrt::Control>())
+        {
+            m_verticallyAccessibleControls.Append(commandAsControl);
+        }
+    }
+}
+
 void CommandBarFlyoutCommandBar::OnKeyDown(
     winrt::KeyRoutedEventArgs const& args)
 {
@@ -841,48 +890,11 @@ void CommandBarFlyoutCommandBar::OnKeyDown(
         const bool isDown = args.Key() == winrt::VirtualKey::Down;
         const bool isUp = args.Key() == winrt::VirtualKey::Up;
 
-        // The primary commands and the more button are the only controls accessible
-        // using left and right arrow keys. All of the commands are accessible using
-        // the up and down arrow keys.
-        auto horizontallyAccessibleControls = winrt::make<Vector<winrt::Control>>();
-        auto verticallyAccessibleControls = winrt::make<Vector<winrt::Control>>();
-
-        for (winrt::ICommandBarElement const& command : PrimaryCommands())
-        {
-            if (auto const& commandAsControl = command.try_as<winrt::Control>())
-            {
-                if (IsControlFocusable(commandAsControl, false /*checkTabStop*/))
-                {
-                    horizontallyAccessibleControls.Append(commandAsControl);
-                    verticallyAccessibleControls.Append(commandAsControl);
-                }
-            }
-        }
-
-        auto const& moreButton = m_moreButton.get();
-
-        if (moreButton && IsControlFocusable(moreButton, false /*checkTabStop*/))
-        {
-            horizontallyAccessibleControls.Append(moreButton);
-            verticallyAccessibleControls.Append(moreButton);
-        }
-
-        for (winrt::ICommandBarElement const& command : SecondaryCommands())
-        {
-            if (auto const& commandAsControl = command.try_as<winrt::Control>())
-            {
-                if (IsControlFocusable(commandAsControl, false /*checkTabStop*/))
-                {
-                    verticallyAccessibleControls.Append(commandAsControl);
-                }
-            }
-        }
-
         // To avoid code duplication, we'll use the key directionality to determine
         // both which control list to use and in which direction to iterate through
         // it to find the next control to focus.  Then we'll do that iteration
         // to focus the next control.
-        auto const& accessibleControls{ isUp || isDown ? verticallyAccessibleControls : horizontallyAccessibleControls };
+        auto const& accessibleControls{ isUp || isDown ? m_verticallyAccessibleControls : m_horizontallyAccessibleControls };
         int const startIndex = isLeft || isUp ? accessibleControls.Size() - 1 : 0;
         int const endIndex = isLeft || isUp ? -1 : accessibleControls.Size();
         int const deltaIndex = isLeft || isUp ? -1 : 1;
@@ -929,7 +941,7 @@ void CommandBarFlyoutCommandBar::OnKeyDown(
                     focusedControlIndex = i;
                 }
             }
-            else
+            else if (IsControlFocusable(control, false /*checkTabStop*/))
             {
                 // If the control we're trying to focus is in the secondary command list,
                 // then we'll make sure that that list is open before trying to focus the control.
