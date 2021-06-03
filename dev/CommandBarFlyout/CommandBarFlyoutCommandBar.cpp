@@ -7,6 +7,7 @@
 #include "CommandBarFlyoutCommandBar.h"
 #include "CommandBarFlyoutCommandBarTemplateSettings.h"
 #include "TypeLogging.h"
+#include "Vector.h"
 
 CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 {
@@ -279,87 +280,7 @@ void CommandBarFlyoutCommandBar::AttachEventHandlers()
                     case winrt::VirtualKey::Down:
                     case winrt::VirtualKey::Up:
                     {
-                        if (SecondaryCommands().Size() > 1)
-                        {
-                            winrt::Control focusedControl = nullptr;
-                            int startIndex = 0;
-                            int endIndex = static_cast<int>(SecondaryCommands().Size());
-                            int deltaIndex = 1;
-                            int loopCount = 0;
-
-                            if (args.Key() == winrt::VirtualKey::Up)
-                            {
-                                deltaIndex = -1;
-                                startIndex = endIndex - 1;
-                                endIndex = -1;
-                            }
-
-                            do
-                            {
-                                // Give keyboard focus to the previous or next secondary command if possible
-                                for (int index = startIndex; index != endIndex; index += deltaIndex)
-                                {
-                                    auto secondaryCommand = SecondaryCommands().GetAt(index);
-
-                                    if (auto secondaryCommandAsControl = secondaryCommand.try_as<winrt::Control>())
-                                    {
-                                        if (secondaryCommandAsControl.FocusState() != winrt::FocusState::Unfocused)
-                                        {
-                                            focusedControl = secondaryCommandAsControl;
-                                        }
-                                        else if (focusedControl && IsControlFocusable(secondaryCommandAsControl, false /*checkTabStop*/) &&
-                                                 focusedControl != secondaryCommandAsControl)
-                                        {
-                                            if (FocusControl(
-                                                    secondaryCommandAsControl /*newFocus*/,
-                                                    focusedControl /*oldFocus*/,
-                                                    winrt::FocusState::Keyboard /*focusState*/,
-                                                    true /*updateTabStop*/))
-                                            {
-                                                args.Handled(true);
-                                                return;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                if (loopCount == 0 && PrimaryCommands().Size() > 0)
-                                {
-                                    auto moreButton = m_moreButton.get();
-
-                                    if (deltaIndex == 1 &&
-                                        FocusCommand(
-                                            PrimaryCommands() /*commands*/,
-                                            moreButton /*moreButton*/,
-                                            winrt::FocusState::Keyboard /*focusState*/,
-                                            true /*firstCommand*/,
-                                            true /*ensureTabStopUniqueness*/))
-                                    {
-                                        // Being on the last secondary command, keyboard focus was given to the first primary command
-                                        args.Handled(true);
-                                        return;
-                                    }
-                                    else if (deltaIndex == -1 &&
-                                        focusedControl &&
-                                        moreButton &&
-                                        IsControlFocusable(moreButton, false /*checkTabStop*/) &&
-                                        FocusControl(
-                                            moreButton /*newFocus*/,
-                                            focusedControl /*oldFocus*/,
-                                            winrt::FocusState::Keyboard /*focusState*/,
-                                            true /*updateTabStop*/))
-                                    {
-                                        // Being on the first secondary command, keyboard focus was given to the MoreButton
-                                        args.Handled(true);
-                                        return;
-                                    }
-                                }
-
-                                loopCount++; // Looping again when focus could not be given to a MoreButton going up or primary command going down.
-                            }
-                            while (loopCount < 2 && focusedControl);
-                        }
-                        args.Handled(true);
+                        OnKeyDown(args);
                         break;
                     }
                     }
@@ -523,7 +444,7 @@ void CommandBarFlyoutCommandBar::UpdateFlowsFromAndFlowsTo()
 
         // If we have a more button and at least one focusable primary item, then
         // we'll use the more button as the last element in our primary items list.
-        if (moreButton && m_currentPrimaryItemsEndElement)
+        if (moreButton && moreButton.Visibility() == winrt::Visibility::Visible && m_currentPrimaryItemsEndElement)
         {
             m_currentPrimaryItemsEndElement.set(moreButton);
         }
@@ -797,7 +718,7 @@ void CommandBarFlyoutCommandBar::EnsureAutomationSetCountAndPosition()
         }
     }
 
-    if (moreButton)
+    if (moreButton && moreButton.Visibility() == winrt::Visibility::Visible)
     {
         // Accounting for the MoreButton
         sizeOfSet++;
@@ -822,7 +743,7 @@ void CommandBarFlyoutCommandBar::EnsureAutomationSetCountAndPosition()
         }
     }
 
-    if (moreButton)
+    if (moreButton && moreButton.Visibility() == winrt::Visibility::Visible)
     {
         winrt::AutomationProperties::SetSizeOfSet(moreButton, sizeOfSet);
         winrt::AutomationProperties::SetPositionInSet(moreButton, sizeOfSet);
@@ -920,110 +841,115 @@ void CommandBarFlyoutCommandBar::OnKeyDown(
         const bool isDown = args.Key() == winrt::VirtualKey::Down;
         const bool isUp = args.Key() == winrt::VirtualKey::Up;
 
-        auto moreButton = m_moreButton.get();
+        // The primary commands and the more button are the only controls accessible
+        // using left and right arrow keys. All of the commands are accessible using
+        // the up and down arrow keys.
+        auto horizontallyAccessibleControls = winrt::make<Vector<winrt::Control>>();
+        auto verticallyAccessibleControls = winrt::make<Vector<winrt::Control>>();
 
-        if (isDown &&
-            moreButton &&
-            moreButton.FocusState() != winrt::FocusState::Unfocused &&
-            SecondaryCommands().Size() > 0)
+        for (winrt::ICommandBarElement const& command : PrimaryCommands())
         {
-            // When on the MoreButton, give keyboard focus to the first focusable secondary command
-            // First ensure the secondary commands flyout is open
-            if (!IsOpen())
+            if (auto const& commandAsControl = command.try_as<winrt::Control>())
             {
-                IsOpen(true);
-            }
-
-            if (FocusCommand(
-                    SecondaryCommands() /*commands*/,
-                    nullptr /*moreButton*/,
-                    winrt::FocusState::Keyboard /*focusState*/,
-                    true /*firstCommand*/,
-                    SharedHelpers::IsRS3OrHigher() /*ensureTabStopUniqueness*/))
-            {
-                args.Handled(true);
+                if (IsControlFocusable(commandAsControl, false /*checkTabStop*/))
+                {
+                    horizontallyAccessibleControls.Append(commandAsControl);
+                    verticallyAccessibleControls.Append(commandAsControl);
+                }
             }
         }
 
-        if (!args.Handled() && PrimaryCommands().Size() > 0)
+        auto const& moreButton = m_moreButton.get();
+
+        if (moreButton && IsControlFocusable(moreButton, false /*checkTabStop*/))
         {
-            winrt::Control focusedControl = nullptr;
-            int startIndex = 0;
-            int endIndex = static_cast<int>(PrimaryCommands().Size());
-            int deltaIndex = 1;
+            horizontallyAccessibleControls.Append(moreButton);
+            verticallyAccessibleControls.Append(moreButton);
+        }
 
-            if (isLeft || isUp)
+        for (winrt::ICommandBarElement const& command : SecondaryCommands())
+        {
+            if (auto const& commandAsControl = command.try_as<winrt::Control>())
             {
-                deltaIndex = -1;
-                startIndex = endIndex - 1;
-                endIndex = -1;
-
-                if (moreButton && moreButton.FocusState() != winrt::FocusState::Unfocused)
+                if (IsControlFocusable(commandAsControl, false /*checkTabStop*/))
                 {
-                    focusedControl = moreButton;
+                    verticallyAccessibleControls.Append(commandAsControl);
+                }
+            }
+        }
+
+        // To avoid code duplication, we'll use the key directionality to determine
+        // both which control list to use and in which direction to iterate through
+        // it to find the next control to focus.  Then we'll do that iteration
+        // to focus the next control.
+        auto const& accessibleControls{ isUp || isDown ? verticallyAccessibleControls : horizontallyAccessibleControls };
+        int const startIndex = isLeft || isUp ? accessibleControls.Size() - 1 : 0;
+        int const endIndex = isLeft || isUp ? -1 : accessibleControls.Size();
+        int const deltaIndex = isLeft || isUp ? -1 : 1;
+        bool const shouldLoop = isUp || isDown;
+        winrt::Control focusedControl{ nullptr };
+        int focusedControlIndex = -1;
+
+        for (int i = startIndex;
+            // We'll stop looping at the end index unless we're looping,
+            // in which case we want to wrap back around to the start index.
+            (i != endIndex || shouldLoop) ||
+            // If we found a focused control but have looped all the way back around,
+            // then there wasn't another control to focus, so we should quit.
+            (focusedControlIndex > 0 && i == focusedControlIndex);
+            i += deltaIndex)
+        {
+            // If we've reached the end index, that means we want to loop.
+            // We'll wrap around to the start index.
+            if (i == endIndex)
+            {
+                MUX_ASSERT(shouldLoop);
+
+                if (focusedControl)
+                {
+                    i = startIndex;
+                }
+                else
+                {
+                    // If no focused control was found after going through the entire list of controls,
+                    // then we have nowhere for focus to go.  Let's early-out in that case.
+                    break;
                 }
             }
 
-            // Give focus to the previous or next command if possible
-            for (int index = startIndex; index != endIndex; index += deltaIndex)
-            {
-                auto primaryCommand = PrimaryCommands().GetAt(index);
+            auto const& control = accessibleControls.GetAt(i);
 
-                if (auto primaryCommandAsControl = primaryCommand.try_as<winrt::Control>())
+            // If we've yet to find the focused control, we'll keep looking for it.
+            // Otherwise, we'll try to focus the next control after it.
+            if (!focusedControl)
+            {
+                if (control.FocusState() != winrt::FocusState::Unfocused)
                 {
-                    if (primaryCommandAsControl.FocusState() != winrt::FocusState::Unfocused)
-                    {
-                        focusedControl = primaryCommandAsControl;
-                    }
-                    else if (focusedControl &&
-                        IsControlFocusable(primaryCommandAsControl, false /*checkTabStop*/) &&
-                        FocusControl(
-                            primaryCommandAsControl /*newFocus*/,
-                            focusedControl /*oldFocus*/,
-                            winrt::FocusState::Keyboard /*focusState*/,
-                            true /*updateTabStop*/))
-                    {
-                        args.Handled(true);
-                        break;
-                    }
+                    focusedControl = control;
+                    focusedControlIndex = i;
                 }
             }
-
-            if (!args.Handled())
+            else
             {
-                if ((isRight || isDown) &&
-                    focusedControl &&
-                    moreButton &&
-                    IsControlFocusable(moreButton, false /*checkTabStop*/))
+                // If the control we're trying to focus is in the secondary command list,
+                // then we'll make sure that that list is open before trying to focus the control.
+                if (auto const& controlAsCommandBarElement = control.try_as<winrt::ICommandBarElement>())
                 {
-                    // When on last primary command, give keyboard focus to the MoreButton
-                    if (FocusControl(
-                            moreButton /*newFocus*/,
-                            focusedControl /*oldFocus*/,
-                            winrt::FocusState::Keyboard /*focusState*/,
-                            true /*updateTabStop*/))
-                    {
-                        args.Handled(true);
-                    }
-                }
-                else if (isUp && SecondaryCommands().Size() > 0)
-                {
-                    // When on first primary command, give keyboard focus to the last focusable secondary command
-                    // First ensure the secondary commands flyout is open
-                    if (!IsOpen())
+                    uint32_t index = 0;
+                    if (SecondaryCommands().IndexOf(controlAsCommandBarElement, index) && !IsOpen())
                     {
                         IsOpen(true);
                     }
+                }
 
-                    if (FocusCommand(
-                            SecondaryCommands() /*commands*/,
-                            nullptr /*moreButton*/,
-                            winrt::FocusState::Keyboard /*focusState*/,
-                            false /*firstCommand*/,
-                            SharedHelpers::IsRS3OrHigher() /*ensureTabStopUniqueness*/))
-                    {
-                        args.Handled(true);
-                    }
+                if (FocusControl(
+                    accessibleControls.GetAt(i) /*newFocus*/,
+                    focusedControl /*oldFocus*/,
+                    winrt::FocusState::Keyboard /*focusState*/,
+                    true /*updateTabStop*/))
+                {
+                    args.Handled(true);
+                    break;
                 }
             }
         }
