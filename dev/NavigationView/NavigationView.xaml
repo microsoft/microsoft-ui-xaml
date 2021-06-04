@@ -34,13 +34,11 @@
                                     </VisualState.Setters>
                                 </VisualState>
 
-                                <VisualState x:Name="TopNavigation">
+                                <VisualState x:Name="TopNavigationMinimal">
                                     <VisualState.Setters>
                                         <Setter Target="ContentGrid.BorderThickness" Value="{ThemeResource TopNavigationViewContentGridBorderThickness}" />
                                     </VisualState.Setters>
                                 </VisualState>
-
-                                <VisualState x:Name="TopNavigationMinimal" />
 
                                 <VisualState x:Name="MinimalWithBackButton">
                                     <VisualState.Setters>
