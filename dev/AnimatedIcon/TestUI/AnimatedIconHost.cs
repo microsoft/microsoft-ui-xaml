@@ -96,21 +96,7 @@ namespace MUXControlsTestApp
         {
             if (m_iconPresenter != null)
             {
-                AnimatedIcon animatedIcon = new AnimatedIcon();
-                AnimatedIconSource source = (AnimatedIconSource)IconSource;
-                if (source.Source != null)
-                {
-                    animatedIcon.Source = source.Source;
-                }
-                if (source.FallbackIconSource != null)
-                {
-                    animatedIcon.FallbackIconSource = source.FallbackIconSource;
-                }
-                if (source.Foreground != null)
-                {
-                    animatedIcon.Foreground = source.Foreground;
-                }
-                m_iconPresenter.Child = animatedIcon;
+                m_iconPresenter.Child = IconSource.CreateIconElement();
             }
         }
     }
