@@ -146,7 +146,10 @@
         <Setter Property="FocusVisualMargin" Value="0" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <Setter Property="Background" Value="{ThemeResource DatePickerButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource TimePickerButtonForeground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource DatePickerButtonBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource DatePickerBorderThemeThickness}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
@@ -166,19 +169,8 @@
 
                                                 <VisualStateManager.VisualStateGroups>
                                                     <VisualStateGroup x:Name="CommonStates">
-                                                        <VisualState x:Name="Normal">
-                                                        <Storyboard>
-                                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
-                                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TimePickerButtonBackground}" />
-                                                            </ObjectAnimationUsingKeyFrames>
-                                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TimePickerButtonForeground}" />
-                                                            </ObjectAnimationUsingKeyFrames>
-                                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
-                                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TimePickerButtonBorderBrush}" />
-                                                            </ObjectAnimationUsingKeyFrames>
-                                                        </Storyboard>
-                                                        </VisualState>
+                                                        <VisualState x:Name="Normal" />
+                                                        
                                                         <VisualState x:Name="PointerOver">
                                                             <Storyboard>
                                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
@@ -228,10 +220,10 @@
                                                 </VisualStateManager.VisualStateGroups>
 
                                                 <ContentPresenter x:Name="ContentPresenter"
+                                                    Background="{TemplateBinding Background}"
                                                     Foreground="{TemplateBinding Foreground}"
-                                                    Background="Transparent"
-                                                    BorderBrush="{ThemeResource TimePickerButtonBorderBrush}"
-                                                    BorderThickness="{ThemeResource TimePickerBorderThemeThickness}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
                                                     Content="{TemplateBinding Content}"
                                                     HorizontalContentAlignment="Stretch"
                                                     VerticalContentAlignment="Stretch"
@@ -297,6 +289,10 @@
                         <Button x:Name="FlyoutButton"
                             Grid.Row="1"
                             Style="{StaticResource TimePickerFlyoutButtonStyle}"
+                            Background="{TemplateBinding Background}"
+                            Foreground="{TemplateBinding Foreground}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
                             IsEnabled="{TemplateBinding IsEnabled}"
                             MinWidth="{StaticResource TimePickerThemeMinWidth}"
                             MaxWidth="{StaticResource TimePickerThemeMaxWidth}"

@@ -158,7 +158,10 @@
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <Setter Property="Background" Value="{ThemeResource DatePickerButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource DatePickerButtonForeground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource DatePickerButtonBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource DatePickerBorderThemeThickness}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
@@ -179,20 +182,7 @@
 
                                                 <VisualStateManager.VisualStateGroups>
                                                     <VisualStateGroup x:Name="CommonStates">
-                                                        <VisualState x:Name="Normal">
-                                                            <Storyboard>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
-                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBackground}" />
-                                                                </ObjectAnimationUsingKeyFrames>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonForeground}" />
-                                                                </ObjectAnimationUsingKeyFrames>
-                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
-                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBorderBrush}" />
-                                                                </ObjectAnimationUsingKeyFrames>
-                                                            </Storyboard>
-                                                        </VisualState>
-
+                                                        <VisualState x:Name="Normal" />
 
                                                         <VisualState x:Name="PointerOver">
                                                             <Storyboard>
@@ -244,7 +234,10 @@
 
                                                 <ContentPresenter
                                                     x:Name="ContentPresenter"
-                                                    BorderThickness="{ThemeResource DatePickerBorderThemeThickness}"
+                                                    Background="{TemplateBinding Background}"
+                                                    Foreground="{TemplateBinding Foreground}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
                                                     Content="{TemplateBinding Content}"
                                                     HorizontalContentAlignment="Stretch"
                                                     VerticalContentAlignment="Stretch"
@@ -310,9 +303,10 @@
                         <Button x:Name="FlyoutButton"
                             Grid.Row="1"
                             Style="{StaticResource DatePickerFlyoutButtonStyle}"
-                            Foreground="{TemplateBinding Foreground}"
                             Background="{TemplateBinding Background}"
+                            Foreground="{TemplateBinding Foreground}"
                             BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
                             IsEnabled="{TemplateBinding IsEnabled}"
                             MinWidth="{StaticResource DatePickerThemeMinWidth}"
                             MaxWidth="{StaticResource DatePickerThemeMaxWidth}"
