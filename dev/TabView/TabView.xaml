@@ -391,8 +391,10 @@
                                     <VisualState.Setters>
                                         <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="RightRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}"/>
                                         <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="LeftRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}"/>
                                         <Setter Target="TabContainer.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
                                         <Setter Target="TabContainer.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}"/>
                                         <Setter Target="TabContainer.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}"/>
@@ -411,8 +413,10 @@
                                     <VisualState.Setters>
                                         <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="RightRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}"/>
                                         <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="LeftRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}"/>
                                         <Setter Target="TabContainer.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
                                         <Setter Target="TabContainer.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}"/>
                                         <Setter Target="TabContainer.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}"/>
@@ -431,8 +435,10 @@
                                     <VisualState.Setters>
                                         <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="RightRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}"/>
                                         <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="LeftRadiusRenderTriangle.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRenderTriangle.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}"/>
                                         <Setter Target="TabContainer.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}"/>
                                         <Setter Target="TabContainer.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}"/>
                                         <Setter Target="TabContainer.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}"/>
