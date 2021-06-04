@@ -347,7 +347,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                 Log.Comment("Verify item invoked was raised despite item already selected");
                 result = new TextBlock(FindElement.ByName("InvokedItemState"));
-                Verify.AreEqual("ItemWasInvokedSecomdTimeWithCorrectSelection", result.GetText());
+                Verify.AreEqual("ItemWasInvokedSecondTimeWithCorrectSelection", result.GetText());
             }
         }
 

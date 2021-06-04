@@ -385,21 +385,43 @@ namespace MUXControlsTestApp
             }
 
             var curSelected = sender.SelectedItem as NavigationViewItem;
-            var text = args.InvokedItem as string;
-            if (curSelected != null && (string)curSelected.Content == text)
+            if (args.InvokedItem is string)
             {
-                if(InvokedItemState.Text == "ItemWasSelectedInItemInvoked")
+                var text = args.InvokedItem as string;
+                if (curSelected != null && (curSelected.Content is string) && (curSelected.Content as string) == text)
                 {
-                    InvokedItemState.Text = "ItemWasInvokedSecomdTimeWithCorrectSelection";
+                    if (InvokedItemState.Text == "ItemWasSelectedInItemInvoked")
+                    {
+                        InvokedItemState.Text = "ItemWasInvokedSecondTimeWithCorrectSelection";
+                    }
+                    else
+                    {
+                        InvokedItemState.Text = "ItemWasSelectedInItemInvoked";
+                    }
                 }
                 else
                 {
-                    InvokedItemState.Text = "ItemWasSelectedInItemInvoked";
+                    InvokedItemState.Text = "Error:ItemUnselectedInItemInvoked";
                 }
-            } 
-            else
+            }
+            else if (args.InvokedItem is int)
             {
-                InvokedItemState.Text = "Error:ItemUnselectedInItemInvoked";
+                int integer = (int) args.InvokedItem;
+                if (curSelected != null && (curSelected.Content is int) && (int)curSelected.Content == integer)
+                {
+                    if (InvokedItemState.Text == "ItemWasSelectedInItemInvoked")
+                    {
+                        InvokedItemState.Text = "ItemWasInvokedSecondTimeWithCorrectSelection";
+                    }
+                    else
+                    {
+                        InvokedItemState.Text = "ItemWasSelectedInItemInvoked";
+                    }
+                }
+                else
+                {
+                    InvokedItemState.Text = "Error:ItemUnselectedInItemInvoked";
+                }
             }
         }
 
