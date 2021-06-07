@@ -727,7 +727,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Button undoButton9 = FindElement.ById<Button>("UndoButton9");
 
-                if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
                 {
                     Log.Comment("Press Down key to move focus to first secondary command: Undo.");
                     KeyboardHelper.PressKey(Key.Down);
