@@ -48,26 +48,26 @@
                                     <VisualState.Setters>
                                         <Setter Target="CloseButton.Visibility" Value="Collapsed"/>
                                         <Setter Target="ActionButton.Visibility" Value="Visible"/>
-                                        <Setter Target="ActionButton.(Grid.Column)" Value="1"/>
-                                        <Setter Target="ActionButton.Margin" Value="{StaticResource TeachingTipRightButtonMargin}"/>
+                                        <Setter Target="ActionButton.(Grid.ColumnSpan)" Value="2"/>
+                                        <Setter Target="ActionButton.Margin" Value="{ThemeResource TeachingTipButtonPanelMargin}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="CloseButtonVisible">
                                     <VisualState.Setters>
                                         <Setter Target="CloseButton.Visibility" Value="Visible"/>
-                                        <Setter Target="CloseButton.Margin" Value="{StaticResource TeachingTipRightButtonMargin}"/>
-
+                                        <Setter Target="CloseButton.Margin" Value="{ThemeResource TeachingTipButtonPanelMargin}"/>
+                                        <Setter Target="CloseButton.(Grid.Column)" Value="0"/>
+                                        <Setter Target="CloseButton.(Grid.ColumnSpan)" Value="2"/>
                                         <Setter Target="ActionButton.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="BothButtonsVisible">
                                     <VisualState.Setters>
                                         <Setter Target="CloseButton.Visibility" Value="Visible"/>
-                                        <Setter Target="CloseButton.Margin" Value="{StaticResource TeachingTipRightButtonMargin}"/>
-
+                                        <Setter Target="CloseButton.Margin" Value="{ThemeResource TeachingTipRightButtonMargin}"/>
                                         <Setter Target="ActionButton.Visibility" Value="Visible"/>
                                         <Setter Target="ActionButton.(Grid.Column)" Value="0"/>
-                                        <Setter Target="ActionButton.Margin" Value="{StaticResource TeachingTipLeftButtonMargin}"/>
+                                        <Setter Target="ActionButton.Margin" Value="{ThemeResource TeachingTipLeftButtonMargin}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -390,17 +390,19 @@
                                                     </Grid.ColumnDefinitions>
                                                     <Button x:Name="ActionButton"
                                                             HorizontalAlignment="Stretch"
-                                                            Content="{TemplateBinding ActionButtonContent}"
                                                             Style="{TemplateBinding ActionButtonStyle}" 
                                                             Command="{TemplateBinding ActionButtonCommand}"
-                                                            CommandParameter="{TemplateBinding ActionButtonCommandParameter}"/>
+                                                            CommandParameter="{TemplateBinding ActionButtonCommandParameter}">
+                                                            <ContentPresenter TextWrapping="WrapWholeWords" Content="{TemplateBinding ActionButtonContent}"/>
+						    </Button>
                                                     <Button x:Name="CloseButton"
                                                             HorizontalAlignment="Stretch"
-                                                            Content="{TemplateBinding CloseButtonContent}"
                                                             Style="{TemplateBinding CloseButtonStyle}"
                                                             Command="{TemplateBinding CloseButtonCommand}"
                                                             CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
-                                                            Grid.Column="1"/>
+                                                            Grid.Column="1">
+					    		    <ContentPresenter TextWrapping="WrapWholeWords" Content="{TemplateBinding CloseButtonContent}"/>
+						    </Button>
                                                 </Grid>
                                             </StackPanel>
                                         </ScrollViewer>
