@@ -56,6 +56,8 @@ steps:
       vsVersion: 16.0
       platform: '$(buildPlatform)'
       configuration: '$(buildConfiguration)'
+      # Workaround for an MSBuild logging nullref - remove when https://github.com/microsoft/azure-pipelines-tasks/issues/14904 is fixed.
+      enableDefaultLogger: false
       msbuildArgs: '/restore /p:UseInsiderSDK=$(UseInsiderSDK) /p:AppxPackageDir="${{ parameters.appxPackageDir }}" /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false /binaryLogger:$(Build.SourcesDirectory)/${{ parameters.solutionPath }}.$(buildPlatform).$(buildConfiguration).binlog /p:MUXVersionBuild=$(builddate_yymm) /p:MUXVersionRevision=$(builddate_dd)$(buildrevision) /p:VCToolsInstallDir="$(VCToolsInstallDir)\" /p:PGOBuildMode=$(PGOBuildMode)'
 
   - task: PublishBuildArtifacts@1
