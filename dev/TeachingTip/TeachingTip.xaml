@@ -113,15 +113,15 @@
                                 <VisualState x:Name="HeroContentTop">
                                     <VisualState.Setters>
                                         <Setter Target="HeroContentBorder.(Grid.Row)" Value="0"/>
-                                        <contract7Present:Setter Target="HeroContentBorder.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}"/>
-                                        <contract7NotPresent:Setter Target="HeroContentBorder.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}"/>
+                                        <contract7Present:Setter Target="HeroContentBorder.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}, FallbackValue=0}"/>
+                                        <contract7NotPresent:Setter Target="HeroContentBorder.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}, FallbackValue=0}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="HeroContentBottom">
                                     <VisualState.Setters>
                                         <Setter Target="HeroContentBorder.(Grid.Row)" Value="2"/>
-                                        <contract7Present:Setter Target="HeroContentBorder.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}"/>
-                                        <contract7NotPresent:Setter Target="HeroContentBorder.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}"/>
+                                        <contract7Present:Setter Target="HeroContentBorder.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}, FallbackValue=0}"/>
+                                        <contract7NotPresent:Setter Target="HeroContentBorder.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}, FallbackValue=0}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
