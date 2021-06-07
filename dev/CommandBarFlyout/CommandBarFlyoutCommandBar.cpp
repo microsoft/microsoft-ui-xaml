@@ -432,7 +432,7 @@ void CommandBarFlyoutCommandBar::DetachEventHandlers()
 
 bool CommandBarFlyoutCommandBar::HasOpenAnimation()
 {
-    return static_cast<bool>(m_openingStoryboard);
+    return static_cast<bool>(m_openingStoryboard) && SharedHelpers::IsAnimationsEnabled();
 }
 
 void CommandBarFlyoutCommandBar::PlayOpenAnimation()
@@ -448,7 +448,7 @@ void CommandBarFlyoutCommandBar::PlayOpenAnimation()
 
 bool CommandBarFlyoutCommandBar::HasCloseAnimation()
 {
-    return static_cast<bool>(m_closingStoryboard);
+    return static_cast<bool>(m_closingStoryboard) && SharedHelpers::IsAnimationsEnabled();
 }
 
 void CommandBarFlyoutCommandBar::PlayCloseAnimation(

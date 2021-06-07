@@ -56,6 +56,7 @@
             <StaticResource x:Key="NavigationViewItemBorderBrushSelectedDisabled" ResourceKey="SystemControlTransparentBrush" />
 
             <StaticResource x:Key="NavigationViewItemSeparatorForeground" ResourceKey="SystemControlForegroundBaseLowBrush" />
+            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="TextFillColorPrimaryBrush"/>
 
             <StaticResource x:Key="NavigationViewSelectionIndicatorForeground" ResourceKey="SystemControlForegroundAccentBrush" />
 
@@ -129,6 +130,7 @@
             <StaticResource x:Key="NavigationViewItemBorderBrushSelectedDisabled" ResourceKey="SystemControlTransparentBrush" />
 
             <StaticResource x:Key="NavigationViewItemSeparatorForeground" ResourceKey="SystemControlForegroundBaseLowBrush" />
+            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="TextFillColorPrimaryBrush"/>
 
             <StaticResource x:Key="NavigationViewSelectionIndicatorForeground" ResourceKey="SystemControlForegroundAccentBrush" />
 
@@ -202,6 +204,7 @@
             <StaticResource x:Key="NavigationViewItemBorderBrushSelectedDisabled" ResourceKey="SystemControlTransparentBrush" />
 
             <StaticResource x:Key="NavigationViewItemSeparatorForeground" ResourceKey="SystemControlForegroundBaseLowBrush" />
+            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
 
             <StaticResource x:Key="NavigationViewSelectionIndicatorForeground" ResourceKey="SystemColorHighlightTextColor" />
 
@@ -1575,7 +1578,7 @@
     <Style x:Key="NavigationViewItemHeaderTextStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="OpticalMarginAlignment" Value="TrimSideBearings" />
-        <Setter Property="TextWrapping" Value="NoWrap"/>        
+        <Setter Property="TextWrapping" Value="NoWrap"/>
     </Style>
 
     <!-- based on TitleTextBlockStyle -->

@@ -71,7 +71,10 @@ void TabViewItem::OnApplyTemplate()
                 winrt::ThemeShadow shadow;
                 if (!SharedHelpers::Is21H1OrHigher())
                 {
-                    shadow.Receivers().Append(internalTabView->GetShadowReceiver());
+                    if (auto shadowReceiver = internalTabView->GetShadowReceiver())
+                    {
+                        shadow.Receivers().Append(shadowReceiver);
+                    }
                 }
                 m_shadow = shadow;
 

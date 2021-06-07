@@ -65,7 +65,7 @@ if($BuildId)
     Write-Host "Found these updated verification files: $files"
     foreach($file in $files)
     {
-        Copy-Item $file.FullName "$tempUpdatesDir\$file" 
+        Copy-Item $file.FullName ($tempUpdatesDir.ToString() + "\" + $file.Name)
     }
 
     $updatedVerificationFiles = Get-ChildItem $tempUpdatesDir
