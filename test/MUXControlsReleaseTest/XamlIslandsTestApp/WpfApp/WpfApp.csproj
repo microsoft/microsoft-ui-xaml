@@ -21,6 +21,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Page Remove="bin\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Toolkit.Wpf.UI.XamlHost" Version="6.1.2" />
   </ItemGroup>
 
@@ -53,16 +57,16 @@
     <Unzip SourceFiles="$(VCLibsLocation)Microsoft.VCLibs.$(Platform)$(VCLibsDebug).14.00.appx" DestinationFolder="$(VCLibsTempDir)" />
     <Unzip SourceFiles="$(VCLibsDesktopLocation)Microsoft.VCLibs.$(Platform)$(VCLibsDebug).14.00.Desktop.appx" DestinationFolder="$(VCLibsDesktopTempDir)" />
     <ItemGroup>
-      <VCLibsDlls Include="$(VCLibsTempDir)msvcp140_app.dll" />
-      <VCLibsDlls Include="$(VCLibsTempDir)vcruntime140_app.dll" />
-      <VCLibsDesktopDlls Include="$(VCLibsDesktopTempDir)msvcp140.dll" />
-      <VCLibsDesktopDlls Include="$(VCLibsDesktopTempDir)vcruntime140.dll" />
+      <VCLibsDlls Include="$(VCLibsTempDir)msvcp140*_app.dll" />
+      <VCLibsDlls Include="$(VCLibsTempDir)vcruntime140*_app.dll" />
+      <VCLibsDesktopDlls Include="$(VCLibsDesktopTempDir)msvcp140*.dll" />
+      <VCLibsDesktopDlls Include="$(VCLibsDesktopTempDir)vcruntime*140.dll" />
     </ItemGroup>
     <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-      <VCLibsDlls Include="$(VCLibsTempDir)msvcp140d_app.dll" />
-      <VCLibsDlls Include="$(VCLibsTempDir)vcruntime140d_app.dll" />
-      <VCLibsDesktopDlls Include="$(VCLibsDesktopTempDir)msvcp140d.dll" />
-      <VCLibsDesktopDlls Include="$(VCLibsDesktopTempDir)vcruntime140d.dll" />
+      <VCLibsDlls Include="$(VCLibsTempDir)msvcp140*d_app.dll" />
+      <VCLibsDlls Include="$(VCLibsTempDir)vcruntime140*d_app.dll" />
+      <VCLibsDesktopDlls Include="$(VCLibsDesktopTempDir)msvcp140*d.dll" />
+      <VCLibsDesktopDlls Include="$(VCLibsDesktopTempDir)vcruntime140*d.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(VCLibsDlls)" DestinationFiles="@(VCLibsDlls -> '$(OutDir)%(Filename)%(Extension)')" SkipUnchangedFiles="True" />
     <RemoveDir Directories="$(VCLibsTempDir)" Condition="Exists('$(VCLibsTempDir)')" />
