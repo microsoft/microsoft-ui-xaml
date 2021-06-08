@@ -39,6 +39,7 @@
                 AreTransportControlsEnabled="True">
                 <MediaPlayerElement.TransportControls>
                     <MediaTransportControls
+                        MaxWidth="500"
                         IsCompact="{x:Bind IsCompactCheckBox.IsChecked.Value, Mode=OneWay}"
                         IsSeekBarVisible="{x:Bind IsSeekBarVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
                         IsFastForwardButtonVisible="{x:Bind IsFastForwardButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}"

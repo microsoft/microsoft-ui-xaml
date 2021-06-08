@@ -106,7 +106,6 @@
                                 <VisualState x:Name="UpdatingError">
                                     <VisualState.Setters>
                                         <Setter Target="DeterminateProgressBarIndicator.Fill" Value="{ThemeResource ProgressBarErrorForegroundColor}" />
-                                        <Setter Target="ProgressBarTrack.Fill" Value="{TemplateBinding Background}" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -167,7 +166,7 @@
                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)">
                                             <SplineDoubleKeyFrame KeyTime="0:0:0.167" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Container2AnimationEndPosition}" KeySpline="1.0, 1.0, 0.0, 1.0" />
                                             <SplineDoubleKeyFrame KeyTime="0:0:0.167" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Container2AnimationStartPosition}" KeySpline="1.0, 1.0, 0.0, 1.0" />
-                                            <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationMidPosition}" KeySpline="0.0, 0.0, 0.0, 1.0" />
+                                            <SplineDoubleKeyFrame KeyTime="0:0:0.75" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationMidPosition}" KeySpline="0.0, 0.0, 0.0, 1.0" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <ColorAnimation
                                             Storyboard.TargetName="IndeterminateProgressBarIndicator2"
@@ -197,7 +196,7 @@
                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)">
                                             <SplineDoubleKeyFrame KeyTime="0:0:0.167" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Container2AnimationEndPosition}" KeySpline="1.0, 1.0, 0.0, 1.0" />
                                             <SplineDoubleKeyFrame KeyTime="0:0:0.167" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Container2AnimationStartPosition}" KeySpline="1.0, 1.0, 0.0, 1.0" />
-                                            <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationMidPosition}" KeySpline="0.0, 0.0, 0.0, 1.0" />
+                                            <SplineDoubleKeyFrame KeyTime="0:0:0.75" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationMidPosition}" KeySpline="0.0, 0.0, 0.0, 1.0" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <ColorAnimation
                                             Storyboard.TargetName="IndeterminateProgressBarIndicator2"
