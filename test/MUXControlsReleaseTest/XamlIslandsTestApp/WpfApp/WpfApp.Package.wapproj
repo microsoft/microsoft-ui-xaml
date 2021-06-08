@@ -38,6 +38,7 @@
     <AppxPackageName>WpfApp</AppxPackageName>
     <AppxBundleNameForOutput>WpfApp</AppxBundleNameForOutput>
     <PackageCertificateKeyFile>..\..\..\..\build\MSTest.pfx</PackageCertificateKeyFile>
+    <AppxValidateAppxManifest>false</AppxValidateAppxManifest>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -73,6 +74,74 @@
       <Version>2.1.190606001</Version>
     </PackageReference>
   </ItemGroup>
+  <!-- For reasons that are unclear, MSBuild generates an AppX manifest that has two duplicate entries for Microsoft.UI.Xaml.dll
+       and does not point the other DLLs at the version in the WpfApp subfolder.  We want them all to point at the WpfApp subfolder,
+       so we'll remove the one entry that already points there and point the rest there. -->
+  <UsingTask TaskName="RepathRootWinMDEntries" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <PathToAppxManifest ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+        <Reference Include="System.Xml" />
+        <Using Namespace="System" />
+        <Using Namespace="System.Xml" />
+        <Using Namespace="System.Collections.Generic" />
+        <Using Namespace="System.IO" />
+        <Code Type="Fragment" Language="cs"><![CDATA[
+            if (File.Exists(PathToAppxManifest))
+            {
+                Log.LogMessage(File.ReadAllText(PathToAppxManifest));
+                
+                // Load AppxManifest.xml
+                XmlDocument appxManifest = new XmlDocument();
+                appxManifest.Load(PathToAppxManifest);
+
+                XmlNamespaceManager namespaceManager = new XmlNamespaceManager(appxManifest.NameTable);
+                namespaceManager.AddNamespace("w", "http://schemas.microsoft.com/appx/manifest/foundation/windows10");
+
+                // For each extension node, if it doesn't have a "WpfApp\" subfolder prefix in its path, add one.
+                // If we've already seen the path, then we'll remove it to avoid duplication.
+                XmlNode extensionsNode = null;
+
+                foreach (XmlNode node in appxManifest.DocumentElement.SelectNodes("//w:Package/w:Extensions", namespaceManager))
+                {
+                    extensionsNode = node;
+                    break;
+                }
+
+                if (extensionsNode != null)
+                {
+                    List<string> pathsSeen = new List<string>();
+                    XmlNodeList xmlNodeList = appxManifest.DocumentElement.SelectNodes("//w:Package/w:Extensions/w:Extension", namespaceManager);
+
+                    foreach (XmlNode node in xmlNodeList)
+                    {
+                        XmlNode pathNode = node.SelectSingleNode("w:InProcessServer/w:Path", namespaceManager);
+                        string path = pathNode.InnerText.Replace(@"WpfApp\", "");
+                        
+                        if (pathsSeen.Contains(path))
+                        {
+                            extensionsNode.RemoveChild(node);
+                        }
+                        else
+                        {
+                            pathNode.InnerText = @"WpfApp\" + path;
+                            pathsSeen.Add(path);
+                        }
+                    }
+                }
+
+                // Save the updated AppxManifest.xml file
+                appxManifest.Save(PathToAppxManifest);
+                Log.LogMessage(File.ReadAllText(PathToAppxManifest));
+            }
+        ]]></Code>
+    </Task>
+  </UsingTask>
+  <Target Name="RepathRootWinMDEntries" AfterTargets="_ValidateAppxPackage" BeforeTargets="_GenerateAppxPackageFile" Inputs="$(FinalAppxManifestName)" Outputs="$(FinalAppxManifestName).incremental">
+    <RepathRootWinMDEntries PathToAppxManifest="$(FinalAppxManifestName)" />
+    <Touch Files="$(FinalAppxManifestName).incremental" AlwaysCreate="True" />
+  </Target>
   <!-- For reasons that are unclear, _RemoveExtraPriFiles fails to remove an instance of AppTestAutomationHelpers.pri,
        which causes an duplicate item issue during MakePri.exe.  We'll remove it explicitly to avoid that. -->
   <Target Name="RemoveAnotherExtraPriFile" AfterTargets="_RemoveExtraPriFiles" BeforeTargets="_GenerateProjectPriConfigurationFiles">
@@ -88,9 +157,15 @@
   <Target Name="PlaceEverythingInAppDirectory" AfterTargets="_ValidateAppxPackage" BeforeTargets="_GenerateAppxPackageFile">
     <ItemGroup>
       <AppxPackagePayloadToCopy Include="@(AppxPackagePayload)" Condition="'%(TargetPath)' == '%(Filename)%(Extension)' and ('%(Extension)' == '.dll' or '%(Extension)' == '.winmd')" />
+      <AppxPackagePayload Remove="@(AppxPackagePayloadToCopy)" />
       <AppxPackagePayload Include="@(AppxPackagePayloadToCopy)">
         <TargetPath>$(AppxPackageName)\%(Filename)%(Extension)</TargetPath>
       </AppxPackagePayload>
+      <AppxUploadPackagePayloadToCopy Include="@(AppxUploadPackagePayload)" Condition="'%(TargetPath)' == '%(Filename)%(Extension)' and ('%(Extension)' == '.dll' or '%(Extension)' == '.winmd')" />
+      <AppxUploadPackagePayload Remove="@(AppxUploadPackagePayloadToCopy)" />
+      <AppxUploadPackagePayload Include="@(AppxUploadPackagePayloadToCopy)">
+        <TargetPath>$(AppxPackageName)\%(Filename)%(Extension)</TargetPath>
+      </AppxUploadPackagePayload>
     </ItemGroup>
   </Target>
   <!-- We also need to remove the UWP app payload that conflicts with the desktop DLLs.
