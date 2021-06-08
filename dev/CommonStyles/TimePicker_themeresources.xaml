@@ -159,7 +159,7 @@
                     <Grid x:Name="LayoutRoot" Margin="{TemplateBinding Padding}">
                         <Grid.Resources>
                             <Style x:Key="TimePickerFlyoutButtonStyle" TargetType="Button">
-                                <Setter Property="UseSystemFocusVisuals" Value="True"/>
+                                <contract6Present:Setter Property="UseSystemFocusVisuals" Value="True" />
                                 <Setter Property="FocusVisualMargin" Value="-3" />
                                 <Setter Property="ElementSoundMode" Value="FocusOnly" />
                                 <Setter Property="Template">
