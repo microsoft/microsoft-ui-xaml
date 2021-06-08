@@ -223,13 +223,13 @@ void AnimatedIcon::OnLayoutUpdatedAfterStateChanged(winrt::IInspectable const& s
     case winrt::AnimatedIconAnimationQueueBehavior::QueueOne:
         if (m_isPlaying)
         {
-            // If we already have a queued state, cancel the current animation with the previously queued transition
+            // If we already have too many queued states, cancel the current animation with the previously queued transition
             // then Queue this new transition.
-            if (!m_queuedState.empty())
+            if (m_queuedStates.size() >= m_queueLength)
             {
-                TransitionAndUpdateStates(m_currentState, m_queuedState);
+                TransitionAndUpdateStates(m_currentState, m_queuedStates.front());
             }
-            m_queuedState = m_pendingState;
+            m_queuedStates.push(m_pendingState);
         }
         else
         {
@@ -239,29 +239,38 @@ void AnimatedIcon::OnLayoutUpdatedAfterStateChanged(winrt::IInspectable const& s
     case winrt::AnimatedIconAnimationQueueBehavior::SpeedUpQueueOne:
         if (m_isPlaying)
         {
-            // Cancel the previous animation completed handler, before we cancel that animation by starting a new one.
-            if (m_batch)
-            {
-                m_batchCompletedRevoker.revoke();
-            }
-
-            // If we already have a queued state, cancel the current animation with the previously queued transition
+            // If we already have too many queued states, cancel the current animation with the previously queued transition
             //  played speed up then Queue this new transition.
-            if (!m_queuedState.empty())
+            if (m_queuedStates.size() >= m_queueLength)
             {
-                TransitionAndUpdateStates(m_currentState, m_queuedState, m_speedUpMultiplier);
-                m_queuedState = m_pendingState;
+                // Cancel the previous animation completed handler, before we cancel that animation by starting a new one.
+                if (m_batch)
+                {
+                    m_batchCompletedRevoker.revoke();
+                }
+                TransitionAndUpdateStates(m_currentState, m_queuedStates.front(), m_speedUpMultiplier);
+                m_queuedStates.push(m_pendingState);
             }
             else
             {
-                m_queuedState = m_pendingState;
-
-                auto const markers = Source().Markers();
-                winrt::hstring transitionEndName = StringUtil::FormatString(L"%1!s!%2!s!%3!s!%4!s!", m_previousState.c_str(), s_transitionInfix.data(), m_currentState.c_str(), s_transitionEndSuffix.data());
-                auto const hasEndMarker = markers.HasKey(transitionEndName);
-                if (hasEndMarker)
+                m_queuedStates.push(m_pendingState);
+                if (!m_isSpeedUp)
                 {
-                    PlaySegment(NAN, static_cast<float>(markers.Lookup(transitionEndName)), m_speedUpMultiplier);
+                    // Cancel the previous animation completed handler, before we cancel that animation by starting a new one.
+                    if (m_batch)
+                    {
+                        m_batchCompletedRevoker.revoke();
+                    }
+
+                    m_isSpeedUp = true;
+
+                    auto const markers = Source().Markers();
+                    winrt::hstring transitionEndName = StringUtil::FormatString(L"%1!s!%2!s!%3!s!%4!s!", m_previousState.c_str(), s_transitionInfix.data(), m_currentState.c_str(), s_transitionEndSuffix.data());
+                    auto const hasEndMarker = markers.HasKey(transitionEndName);
+                    if (hasEndMarker)
+                    {
+                        PlaySegment(NAN, static_cast<float>(markers.Lookup(transitionEndName)), m_speedUpMultiplier);
+                    }
                 }
             }
         }
@@ -279,7 +288,10 @@ void AnimatedIcon::TransitionAndUpdateStates(const winrt::hstring& fromState, co
     TransitionStates(fromState, toState, playbackMultiplier);
     m_previousState = fromState;
     m_currentState = toState;
-    m_queuedState = L"";
+    if (!m_queuedStates.empty())
+    {
+        m_queuedStates.pop();
+    }
 }
 
 void AnimatedIcon::TransitionStates(const winrt::hstring& fromState, const winrt::hstring& toState, float playbackMultiplier)
@@ -606,10 +618,22 @@ void AnimatedIcon::OnAnimationCompleted(winrt::IInspectable const&, winrt::Compo
     case winrt::AnimatedIconAnimationQueueBehavior::Cut:
         break;
     case winrt::AnimatedIconAnimationQueueBehavior::QueueOne:
-    case winrt::AnimatedIconAnimationQueueBehavior::SpeedUpQueueOne:
-        if (!m_queuedState.empty())
+        if (!m_queuedStates.empty())
         {
-            TransitionAndUpdateStates(m_currentState, m_queuedState);
+            TransitionAndUpdateStates(m_currentState, m_queuedStates.front());
+        }
+        break;
+    case winrt::AnimatedIconAnimationQueueBehavior::SpeedUpQueueOne:
+        if (!m_queuedStates.empty())
+        {
+            if (m_queuedStates.size() == 1)
+            {
+                TransitionAndUpdateStates(m_currentState, m_queuedStates.front());
+            }
+            else
+            {
+                TransitionAndUpdateStates(m_currentState, m_queuedStates.front(), m_isSpeedUp ? m_speedUpMultiplier : 1.0f);
+            }
         }
         break;
     }
@@ -630,6 +654,11 @@ void AnimatedIcon::SetDurationMultiplier(float multiplier)
 void AnimatedIcon::SetSpeedUpMultiplier(float multiplier)
 {
     m_speedUpMultiplier = multiplier;
+}
+
+void AnimatedIcon::SetQueueLength(unsigned int length)
+{
+    m_queueLength = length;
 }
 
 winrt::hstring AnimatedIcon::GetLastAnimationSegment()
