@@ -67,18 +67,21 @@
             <x:Double x:Key="CalendarViewFirstOfYearDecadeLabelFontSize">8</x:Double>
             <x:Double x:Key="CalendarViewHeaderNavigationButtonFontSize">14</x:Double>
             <x:Double x:Key="CalendarViewNavigationButtonFontSize">8</x:Double>
-            <Thickness x:Key="CalendarViewDayItemMargin">0,5,0,0</Thickness>
+            <Thickness x:Key="CalendarViewDayItemMargin">0,3,0,0</Thickness>
             <Thickness x:Key="CalendarViewWeekDayMargin">1</Thickness>
             <Thickness x:Key="CalendarViewWeekDayPadding">12</Thickness>
-            <Thickness x:Key="CalendarViewMonthYearItemMargin">0,2,0,0</Thickness>
+            <Thickness x:Key="CalendarViewMonthYearItemMargin">0</Thickness>
             <Thickness x:Key="CalendarViewFirstOfMonthLabelMargin">0,2,0,0</Thickness>
             <Thickness x:Key="CalendarViewFirstOfYearDecadeLabelMargin">0,9,0,0</Thickness>
-            <Thickness x:Key="CalendarViewHeaderNavigationButtonPadding">8,8,8,7</Thickness>
+            <Thickness x:Key="CalendarViewHeaderNavigationButtonPadding">8,7,8,8</Thickness>
             <Thickness x:Key="CalendarViewNavigationButtonPadding">12,11.5,12,11.5</Thickness>
-            <Thickness x:Key="CalendarViewNavigationButtonMargin">7,6,7,7</Thickness>
+            <Thickness x:Key="CalendarViewHeaderNavigationButtonMargin">7,6,4,7</Thickness>
+            <Thickness x:Key="CalendarViewNavigationPreviousButtonMargin">4,6,4,7</Thickness>
+            <Thickness x:Key="CalendarViewNavigationNextButtonMargin">4,6,7,7</Thickness>
             <Thickness x:Key="CalendarViewNavigationButtonFocusVisualMargin">-2</Thickness>
             <FontWeight x:Key="CalendarViewHeaderNavigationFontWeight">SemiBold</FontWeight>
             <FontWeight x:Key="CalendarViewWeekDayFontWeight">SemiBold</FontWeight>
+            <FontWeight x:Key="CalendarViewTodayFontWeight">Normal</FontWeight>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="CalendarViewFocusVisualPrimaryBrush" ResourceKey="SystemColorWindowTextColorBrush" />
@@ -124,12 +127,12 @@
             <StaticResource x:Key="CalendarViewNavigationButtonBackground" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="CalendarViewNavigationButtonBackgroundPointerOver" ResourceKey="SystemColorButtonFaceColorBrush" />
             <StaticResource x:Key="CalendarViewNavigationButtonBackgroundPressed" ResourceKey="SystemColorWindowColorBrush" />
-            <StaticResource x:Key="CalendarViewNavigationButtonForeground" ResourceKey="SystemColorButtonFaceColorBrush" />
-            <StaticResource x:Key="CalendarViewNavigationButtonForegroundPointerOver" ResourceKey="SystemColorButtonFaceColorBrush" />
-            <StaticResource x:Key="CalendarViewNavigationButtonForegroundPressed" ResourceKey="SystemColorButtonFaceColorBrush" />
-            <StaticResource x:Key="CalendarViewNavigationButtonForegroundDisabled" ResourceKey="SystemColorButtonFaceColorBrush" />
-            <StaticResource x:Key="CalendarViewHeaderNavigationButtonForegroundPointerOver" ResourceKey="SystemColorWindowTextColorBrush" />
-            <StaticResource x:Key="CalendarViewHeaderNavigationButtonForegroundPressed" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="CalendarViewNavigationButtonForeground" ResourceKey="SystemControlHyperlinkBaseHighBrush" />
+            <StaticResource x:Key="CalendarViewNavigationButtonForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="CalendarViewNavigationButtonForegroundPressed" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="CalendarViewNavigationButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="CalendarViewHeaderNavigationButtonForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="CalendarViewHeaderNavigationButtonForegroundPressed" ResourceKey="SystemControlForegroundBaseMediumBrush" />
             <StaticResource x:Key="CalendarViewHeaderNavigationButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="CalendarViewNavigationButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="CalendarViewNavigationButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
@@ -142,18 +145,21 @@
             <x:Double x:Key="CalendarViewFirstOfYearDecadeLabelFontSize">8</x:Double>
             <x:Double x:Key="CalendarViewHeaderNavigationButtonFontSize">14</x:Double>
             <x:Double x:Key="CalendarViewNavigationButtonFontSize">8</x:Double>
-            <Thickness x:Key="CalendarViewDayItemMargin">0,5,0,0</Thickness>
+            <Thickness x:Key="CalendarViewDayItemMargin">0,3,0,0</Thickness>
             <Thickness x:Key="CalendarViewWeekDayMargin">1</Thickness>
             <Thickness x:Key="CalendarViewWeekDayPadding">12</Thickness>
-            <Thickness x:Key="CalendarViewMonthYearItemMargin">0,2,0,0</Thickness>
+            <Thickness x:Key="CalendarViewMonthYearItemMargin">0</Thickness>
             <Thickness x:Key="CalendarViewFirstOfMonthLabelMargin">0,2,0,0</Thickness>
             <Thickness x:Key="CalendarViewFirstOfYearDecadeLabelMargin">0,9,0,0</Thickness>
-            <Thickness x:Key="CalendarViewHeaderNavigationButtonPadding">8,8,8,7</Thickness>
+            <Thickness x:Key="CalendarViewHeaderNavigationButtonPadding">8,7,8,8</Thickness>
             <Thickness x:Key="CalendarViewNavigationButtonPadding">12,11.5,12,11.5</Thickness>
-            <Thickness x:Key="CalendarViewNavigationButtonMargin">7,6,7,7</Thickness>
+            <Thickness x:Key="CalendarViewHeaderNavigationButtonMargin">7,6,4,7</Thickness>
+            <Thickness x:Key="CalendarViewNavigationPreviousButtonMargin">4,6,4,7</Thickness>
+            <Thickness x:Key="CalendarViewNavigationNextButtonMargin">4,6,7,7</Thickness>
             <Thickness x:Key="CalendarViewNavigationButtonFocusVisualMargin">-2</Thickness>
             <FontWeight x:Key="CalendarViewHeaderNavigationFontWeight">SemiBold</FontWeight>
             <FontWeight x:Key="CalendarViewWeekDayFontWeight">SemiBold</FontWeight>
+            <FontWeight x:Key="CalendarViewTodayFontWeight">Normal</FontWeight>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="CalendarViewFocusVisualPrimaryBrush" ResourceKey="FocusStrokeColorOuterBrush" />
@@ -217,18 +223,21 @@
             <x:Double x:Key="CalendarViewFirstOfYearDecadeLabelFontSize">8</x:Double>
             <x:Double x:Key="CalendarViewHeaderNavigationButtonFontSize">14</x:Double>
             <x:Double x:Key="CalendarViewNavigationButtonFontSize">8</x:Double>
-            <Thickness x:Key="CalendarViewDayItemMargin">0,5,0,0</Thickness>
+            <Thickness x:Key="CalendarViewDayItemMargin">0,3,0,0</Thickness>
             <Thickness x:Key="CalendarViewWeekDayMargin">1</Thickness>
             <Thickness x:Key="CalendarViewWeekDayPadding">12</Thickness>
-            <Thickness x:Key="CalendarViewMonthYearItemMargin">0,2,0,0</Thickness>
+            <Thickness x:Key="CalendarViewMonthYearItemMargin">0</Thickness>
             <Thickness x:Key="CalendarViewFirstOfMonthLabelMargin">0,2,0,0</Thickness>
             <Thickness x:Key="CalendarViewFirstOfYearDecadeLabelMargin">0,9,0,0</Thickness>
-            <Thickness x:Key="CalendarViewHeaderNavigationButtonPadding">8,8,8,7</Thickness>
+            <Thickness x:Key="CalendarViewHeaderNavigationButtonPadding">8,7,8,8</Thickness>
             <Thickness x:Key="CalendarViewNavigationButtonPadding">12,11.5,12,11.5</Thickness>
-            <Thickness x:Key="CalendarViewNavigationButtonMargin">7,6,7,7</Thickness>
+            <Thickness x:Key="CalendarViewHeaderNavigationButtonMargin">7,6,4,7</Thickness>
+            <Thickness x:Key="CalendarViewNavigationPreviousButtonMargin">4,6,4,7</Thickness>
+            <Thickness x:Key="CalendarViewNavigationNextButtonMargin">4,6,7,7</Thickness>
             <Thickness x:Key="CalendarViewNavigationButtonFocusVisualMargin">-2</Thickness>
             <FontWeight x:Key="CalendarViewHeaderNavigationFontWeight">SemiBold</FontWeight>
             <FontWeight x:Key="CalendarViewWeekDayFontWeight">SemiBold</FontWeight>
+            <FontWeight x:Key="CalendarViewTodayFontWeight">Normal</FontWeight>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -265,7 +274,7 @@
         <Setter Property="TodayForeground" Value="{ThemeResource CalendarViewTodayForeground}" />
         <Setter Property="DisabledForeground" Value="{ThemeResource CalendarViewDisabledForeground}" />
         <Setter Property="BlackoutForeground" Value="{ThemeResource CalendarViewBlackoutForeground}" />
-        <Setter Property="SelectedForeground" Value="{ThemeResource CalendarViewSelectedForeground}" />        
+        <Setter Property="SelectedForeground" Value="{ThemeResource CalendarViewSelectedForeground}" />
         <Setter Property="SelectedHoverForeground" Value="{ThemeResource CalendarViewSelectedHoverForeground}" />
         <Setter Property="SelectedPressedForeground" Value="{ThemeResource CalendarViewSelectedPressedForeground}" />
         <Setter Property="SelectedDisabledForeground" Value="{ThemeResource CalendarViewSelectedDisabledForeground}" />
@@ -301,6 +310,7 @@
         <Setter Property="FirstOfYearDecadeLabelFontFamily" Value="XamlAutoFontFamily" />
         <Setter Property="FirstOfYearDecadeLabelFontSize" Value="{ThemeResource CalendarViewFirstOfYearDecadeLabelFontSize}" />
         <Setter Property="FirstOfYearDecadeLabelMargin" Value="{ThemeResource CalendarViewFirstOfYearDecadeLabelMargin}" />
+        <Setter Property="TodayFontWeight" Value="{ThemeResource CalendarViewTodayFontWeight}" />
         <Setter Property="CalendarItemBorderThickness" Value="1" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="HorizontalAlignment" Value="Left" />
@@ -334,7 +344,7 @@
                                 <Setter Property="FontSize" Value="{ThemeResource CalendarViewHeaderNavigationButtonFontSize}" />
                                 <Setter Property="FontWeight" Value="{ThemeResource CalendarViewHeaderNavigationFontWeight}" />
                                 <Setter Property="Background" Value="{ThemeResource CalendarViewNavigationButtonBackground}" />
-                                <Setter Property="Margin" Value="{ThemeResource CalendarViewNavigationButtonMargin}" />
+                                <Setter Property="Margin" Value="{ThemeResource CalendarViewHeaderNavigationButtonMargin}" />
                                 <Setter Property="Padding" Value="{ThemeResource CalendarViewHeaderNavigationButtonPadding}" />
                                 <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
                                 <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
@@ -391,7 +401,6 @@
                                 <Setter Property="FontSize" Value="{ThemeResource CalendarViewNavigationButtonFontSize}" />
                                 <Setter Property="Background" Value="{ThemeResource CalendarViewNavigationButtonBackground}" />
                                 <Setter Property="Foreground" Value="{ThemeResource CalendarViewNavigationButtonForeground}" />
-                                <Setter Property="Margin" Value="{ThemeResource CalendarViewNavigationButtonMargin}" />
                                 <Setter Property="Padding" Value="{ThemeResource CalendarViewNavigationButtonPadding}" />
                                 <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
                                 <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
@@ -712,11 +721,13 @@
                                     Content="&#xEDDB;"
                                     IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HasMoreContentBefore}"
                                     Style="{StaticResource NavigationButtonStyle}"
+                                    Margin="{ThemeResource CalendarViewNavigationPreviousButtonMargin}"
                                     HorizontalContentAlignment="Center" />
                                 <Button x:Name="NextButton" Grid.Column="2"
                                     Content="&#xEDDC;"
                                     IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HasMoreContentAfter}"
                                     Style="{StaticResource NavigationButtonStyle}"
+                                    Margin="{ThemeResource CalendarViewNavigationNextButtonMargin}"
                                     HorizontalContentAlignment="Center" />
                             </Grid>
                             <Border Grid.Row="1" Height="1" BorderThickness="1" BorderBrush="{TemplateBinding BorderBrush}" />
