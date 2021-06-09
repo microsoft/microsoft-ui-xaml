@@ -646,6 +646,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetItemType(RadioButtonsSourceType.RadioButton);
                 SetSource(RadioButtonsSourceLocation.ItemSource);
 
+                Log.Comment("Verify the header is set as the name for the RadioButtons control.");
+                UIObject groupElement = TryFindElement.ByName("More Radio Buttons");
+                Verify.IsTrue(groupElement.ControlType == ControlType.Group);
+
                 SelectByIndex(1);
                 VerifySelectedIndex(1);
                 VerifySelectedPositionInSet(2);
