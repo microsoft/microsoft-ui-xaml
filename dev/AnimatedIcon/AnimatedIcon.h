@@ -70,7 +70,7 @@ private:
     winrt::hstring m_currentState{ L"" };
     winrt::hstring m_previousState{ L"" };
     std::queue<winrt::hstring> m_queuedStates{};
-    unsigned int m_queueLength{ 4 };
+    unsigned int m_queueLength{ 2 };
     winrt::hstring m_pendingState{ L"" };
     winrt::hstring m_lastAnimationSegment{ L"" };
     winrt::hstring m_lastAnimationSegmentStart{ L"" };
@@ -91,5 +91,5 @@ private:
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedRevoker{};
     PropertyChanged_revoker m_foregroundColorPropertyChangedRevoker{};
 
-    winrt::AnimatedIconAnimationQueueBehavior m_queueBehavior{ winrt::AnimatedIconAnimationQueueBehavior::SpeedUpQueueOne };
+    winrt::AnimatedIconAnimationQueueBehavior m_queueBehavior{ winrt::AnimatedIconAnimationQueueBehavior::QueueOne };
 };
