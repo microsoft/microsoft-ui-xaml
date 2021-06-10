@@ -104,6 +104,8 @@
     <Thickness x:Key="AppBarButtonInnerBorderCompactMargin">2,6,2,22</Thickness>
     <Thickness x:Key="AppBarButtonInnerBorderOverflowMargin">4,0,4,0</Thickness>
 
+    <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
+
     <Style TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}" />
 
     <Style x:Key="AppBarButtonOverflowStyle" TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}">
@@ -173,6 +175,9 @@
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TextLabel" Storyboard.TargetProperty="Margin">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource AppBarButtonTextLabelOnRightMargin}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SubItemChevron" Storyboard.TargetProperty="Margin">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="-7,20,12,0" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -413,12 +418,13 @@
                                 AutomationProperties.AccessibilityView="Raw" />
                             <FontIcon x:Name="SubItemChevron"
                                 Grid.Column="2"
-                                Glyph="&#xE0E3;"
+                                Glyph="{ThemeResource AppBarButtonFlyoutGlyph}"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="12"
+                                FontSize="8"
                                 AutomationProperties.AccessibilityView="Raw"
                                 Foreground="{ThemeResource MenuFlyoutSubItemChevron}"
-                                Margin="12,0,12,0"
+                                VerticalAlignment="Top"
+                                Margin="-23,20,12,0"
                                 MirroredWhenRightToLeft="True"
                                 Visibility="Collapsed"/>
 
