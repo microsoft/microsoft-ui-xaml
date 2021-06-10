@@ -658,7 +658,6 @@ void NavigationView::OnApplyTemplate()
     m_itemsContainerRow.set(GetTemplateChildT<winrt::RowDefinition>(c_itemsContainerRow, controlProtected));
     m_menuItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_menuItemsScrollViewer, controlProtected));
     m_footerItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_footerItemsScrollViewer, controlProtected));
-    m_visualItemsSeparator.set(GetTemplateChildT<winrt::NavigationViewItemSeparator>(c_visualItemsSeparator, controlProtected));
 
     m_itemsContainerSizeChangedRevoker.revoke();
     if (const auto itemsContainer = GetTemplateChildT<winrt::FrameworkElement>(c_itemsContainer, controlProtected))
@@ -1511,19 +1510,27 @@ void NavigationView::UpdatePaneLayout()
                         // We know the actual height of footer items, so use that to determine how to split pane.
                         if (const auto& menuItems = m_leftNavRepeater.get())
                         {
-                            const auto footersActualHeight = footerItemsRepeater.ActualHeight();
-                            const auto menuItemsActualHeight = menuItems.ActualHeight();
+                            const auto footersActualHeight = [this, footerItemsRepeater]() {
+                                const auto footerItemsRepeaterMargin = footerItemsRepeater.Margin();
+                                return footerItemsRepeater.ActualHeight() + footerItemsRepeaterMargin.Top + footerItemsRepeaterMargin.Bottom;
+                            }();
+                            
+                            const auto menuItemsActualHeight = [this, menuItems]() {
+                                const auto menuItemsMargin = menuItems.Margin();
+                                return menuItems.ActualHeight() + menuItemsMargin.Top + menuItemsMargin.Bottom;
+                            }();
 
-                            const auto paneFooterHeight = [this]() {
+                            const auto paneFooterActualHeight = [this]() {
                                 if (const auto& paneFooter = m_leftNavFooterContentBorder.get())
                                 {
-                                    return paneFooter.ActualHeight();
+                                    const auto paneFooterMargin = paneFooter.Margin();
+                                    return paneFooter.ActualHeight() + paneFooterMargin.Top + paneFooterMargin.Bottom;
                                 }
                                 return 0.0;
                             }();
 
                             // Footer and PaneFooter are included in the footerGroup to calculate available height for menu items.
-                            const auto footerGroupActualHeight = footersActualHeight + paneFooterHeight;
+                            const auto footerGroupActualHeight = footersActualHeight + paneFooterActualHeight;
 
                             if (m_footerItemsSource.Count() == 0 && !IsSettingsVisible())
                             {
