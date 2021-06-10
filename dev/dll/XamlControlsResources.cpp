@@ -114,6 +114,17 @@ void XamlControlsResources::UpdateSource()
                 releasePrefix = L"rs2_";
             }
 
+            if (isInCBSPackage && !is21H1OrHigher)
+            {
+                if (SharedHelpers::Is21H1OrHigher())
+                {
+                    MUX_FAIL_FAST_MSG("CBS package can run only on os when IsSelectionIndicatorModeAvailable is true");
+                }
+                else
+                {
+                    MUX_FAIL_FAST_MSG("CBS package can run only on os when is21H1OrHigher is true");                
+                }
+            }
             return packagePrefix + releasePrefix + compactPrefix + postfix;
         }()
     };

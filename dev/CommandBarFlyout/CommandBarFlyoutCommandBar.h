@@ -52,6 +52,7 @@ private:
     void UpdateTemplateSettings();
     void EnsureAutomationSetCountAndPosition();
     void EnsureFocusedPrimaryCommand();
+    void PopulateAccessibleControls();
 
     void SetPresenterName(winrt::FlyoutPresenter const& presenter);
 
@@ -113,4 +114,7 @@ private:
     winrt::Storyboard::Completed_revoker m_expandedDownToCollapsedStoryboardRevoker{};
     winrt::Storyboard::Completed_revoker m_collapsedToExpandedUpStoryboardRevoker{};
     winrt::Storyboard::Completed_revoker m_collapsedToExpandedDownStoryboardRevoker{};
+
+    winrt::IVector<winrt::Control> m_horizontallyAccessibleControls{ nullptr };
+    winrt::IVector<winrt::Control> m_verticallyAccessibleControls{ nullptr };
 };
