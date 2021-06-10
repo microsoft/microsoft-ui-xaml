@@ -1522,14 +1522,6 @@ void NavigationView::UpdatePaneLayout()
                                 return 0.0;
                             }();
 
-                            const auto visualItemsSeparatorHeight = [this]() {
-                                if (const auto& visualItemsSeparator = m_visualItemsSeparator.get())
-                                {
-                                    return visualItemsSeparator.ActualHeight();
-                                }
-                                return 0.0;
-                            }();
-
                             // Footer and PaneFooter are included in the footerGroup to calculate available height for menu items.
                             const auto footerGroupActualHeight = footersActualHeight + paneFooterHeight;
 
