@@ -85,7 +85,6 @@ static constexpr auto c_paneHeaderContentBorderRow = L"PaneHeaderContentBorderRo
 
 static constexpr auto c_separatorVisibleStateName = L"SeparatorVisible";
 static constexpr auto c_separatorCollapsedStateName = L"SeparatorCollapsed";
-static constexpr auto c_visualItemsSeparator = L"VisualItemsSeparator"sv;
 
 static constexpr int c_backButtonHeight = 40;
 static constexpr int c_backButtonWidth = 40;
@@ -658,7 +657,6 @@ void NavigationView::OnApplyTemplate()
     m_itemsContainerRow.set(GetTemplateChildT<winrt::RowDefinition>(c_itemsContainerRow, controlProtected));
     m_menuItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_menuItemsScrollViewer, controlProtected));
     m_footerItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_footerItemsScrollViewer, controlProtected));
-    m_visualItemsSeparator.set(GetTemplateChildT<winrt::NavigationViewItemSeparator>(c_visualItemsSeparator, controlProtected));
 
 
     m_itemsContainerSizeChangedRevoker.revoke();
@@ -1513,35 +1511,48 @@ void NavigationView::UpdatePaneLayout()
                         if (const auto& menuItems = m_leftNavRepeater.get())
                         {
                             const auto footersActualHeight = [this, footerItemsRepeater]() {
-                                const auto footerItemsRepeaterMargin = footerItemsRepeater.Margin();
-                                return footerItemsRepeater.ActualHeight() + footerItemsRepeaterMargin.Top + footerItemsRepeaterMargin.Bottom;
-                            }();
-                            
-                            const auto menuItemsActualHeight = [this, menuItems]() {
-                                const auto menuItemsMargin = menuItems.Margin();
-                                return menuItems.ActualHeight() + menuItemsMargin.Top + menuItemsMargin.Bottom;
+                                double footerItemsRepeaterTopBottomMargin = 0.0;
+                                if (footerItemsRepeater.Visibility() == winrt::Visibility::Visible)
+                                {
+                                    const auto footerItemsRepeaterMargin = footerItemsRepeater.Margin();
+                                    footerItemsRepeaterTopBottomMargin = footerItemsRepeaterMargin.Top + footerItemsRepeaterMargin.Bottom;
+                                }
+                                return footerItemsRepeater.ActualHeight() + footerItemsRepeaterTopBottomMargin;
                             }();
 
                             const auto paneFooterActualHeight = [this]() {
                                 if (const auto& paneFooter = m_leftNavFooterContentBorder.get())
                                 {
-                                    const auto paneFooterMargin = paneFooter.Margin();
-                                    return paneFooter.ActualHeight() + paneFooterMargin.Top + paneFooterMargin.Bottom;
+                                    double paneFooterTopBottomMargin = 0.0;
+                                    if (paneFooter.Visibility() == winrt::Visibility::Visible)
+                                    {
+                                        const auto paneFooterMargin = paneFooter.Margin();
+                                        paneFooterTopBottomMargin = paneFooterMargin.Top + paneFooterMargin.Bottom;
+                                    }
+                                    return paneFooter.ActualHeight() + paneFooterTopBottomMargin;
                                 }
                                 return 0.0;
                             }();
 
-                            const auto visualItemsSeparatorHeight = [this]() {
-                                if (const auto& visualItemsSeparator = m_visualItemsSeparator.get())
+                            const auto menuItemsTopBottomMargin = [this, menuItems]() {
+                                if (menuItems.Visibility() == winrt::Visibility::Visible)
                                 {
-                                    const auto visualItemsSeparatorMargin = visualItemsSeparator.Margin();
-                                    return visualItemsSeparator.ActualHeight() + visualItemsSeparatorMargin.Top + visualItemsSeparatorMargin.Bottom;
+                                    const auto menuItemsMargin = menuItems.Margin();
+                                    return menuItemsMargin.Top + menuItemsMargin.Bottom;
                                 }
                                 return 0.0;
                             }();
 
-                            // Footer, PaneFooter, and VisualItemsSeparator are included in the footerGroup to calculate available height for menu items.
-                            const auto footerGroupActualHeight = footersActualHeight + paneFooterActualHeight + visualItemsSeparatorHeight;
+                            // This is the value computed during the measure pass of the layout process. This will be the value used to determine
+                            // the partition logic between menuItems and footerGroup, since the ActualHeight may be taller if there's more space.
+                            const auto menuItemsDesiredHeight = menuItems.DesiredSize().Height + menuItemsTopBottomMargin;
+
+                            // This is what the height ended up being, so will be the value that is used to calculate the partition
+                            // between menuItems and footerGroup.
+                            const auto menuItemsActualHeight = menuItems.ActualHeight() + menuItemsTopBottomMargin;
+
+                            // Footer and PaneFooter are included in the footerGroup to calculate available height for menu items.
+                            const auto footerGroupActualHeight = footersActualHeight + paneFooterActualHeight;
 
                             if (m_footerItemsSource.Count() == 0 && !IsSettingsVisible())
                             {
@@ -1554,14 +1565,14 @@ void NavigationView::UpdatePaneLayout()
                                 winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
                                 return 0.0;
                             }
-                            else if (totalAvailableHeight > menuItemsActualHeight + footerGroupActualHeight)
+                            else if (totalAvailableHeight >= menuItemsDesiredHeight + footerGroupActualHeight)
                             {
                                 // We have enough space for two so let everyone get as much as they need.
                                 footerItemsScrollViewer.MaxHeight(footersActualHeight);
                                 winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
                                 return totalAvailableHeight - footerGroupActualHeight;
                             }
-                            else if (menuItemsActualHeight <= totalAvailableHeightHalf)
+                            else if (menuItemsDesiredHeight <= totalAvailableHeightHalf)
                             {
                                 // Footer items exceed over the half, so let's limit them.
                                 footerItemsScrollViewer.MaxHeight(totalAvailableHeight - menuItemsActualHeight);
