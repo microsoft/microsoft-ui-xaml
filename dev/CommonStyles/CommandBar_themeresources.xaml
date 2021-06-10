@@ -45,7 +45,7 @@
             <StaticResource x:Key="CommandBarEllipsisIconForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <contract7NotPresent:StaticResource x:Key="CommandBarOverflowPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <contract7NotPresent:StaticResource x:Key="CommandBarOverflowPresenterBorderBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />
-            <contract7Present:StaticResource x:Key="CommandBarOverflowPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+            <contract7Present:StaticResource x:Key="CommandBarOverflowPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <contract7Present:StaticResource x:Key="CommandBarOverflowPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
             <StaticResource x:Key="CommandBarLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <x:Double x:Key="CommandBarOverflowMinWidth">160</x:Double>
@@ -90,7 +90,7 @@
     <x:Double x:Key="AppBarThemeCompactHeight">48</x:Double>
     <Thickness x:Key="AppBarEllipsisButtonInnerBorderMargin">2,6,6,6</Thickness>
     <x:Double x:Key="AppBarMoreButtonColumnMinWidth">6</x:Double>
-    
+
     <Thickness x:Key="CommandBarOverflowPresenterMargin">0,4,0,4</Thickness>
 
     <Style TargetType="CommandBar" BasedOn="{StaticResource DefaultCommandBarStyle}" />
@@ -903,10 +903,10 @@
                         </Grid>
                         <Popup x:Name="OverflowPopup">
                             <Popup.RenderTransform>
-                              <TransformGroup>
-                                <TranslateTransform x:Name="OverflowContentRootMarginOffsetTransform" />
-                                <TranslateTransform x:Name="OverflowContentRootTransform" X="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentHorizontalOffset}" />
-                              </TransformGroup>
+                                <TransformGroup>
+                                    <TranslateTransform x:Name="OverflowContentRootMarginOffsetTransform" />
+                                    <TranslateTransform x:Name="OverflowContentRootTransform" X="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentHorizontalOffset}" />
+                                </TransformGroup>
                             </Popup.RenderTransform>
                             <Grid x:Name="OverflowContentRoot"
                                 Opacity="0"
@@ -1111,7 +1111,7 @@
                             </VisualStateGroup>
 
                         </VisualStateManager.VisualStateGroups>
-                        
+
                         <ContentPresenter x:Name="ContentPresenter"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
