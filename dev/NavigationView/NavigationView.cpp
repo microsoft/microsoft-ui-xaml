@@ -1532,6 +1532,8 @@ void NavigationView::UpdatePaneLayout()
                         {
                             const auto footersActualHeight = footerItemsRepeater.ActualHeight();
                             const auto menuItemsActualHeight = menuItems.ActualHeight();
+                            const auto menuItemsDesiredHeight = menuItems.DesiredSize().Height;
+                            const auto scaleFactorRounding = 0.5 / winrt::DisplayInformation::GetForCurrentView().RawPixelsPerViewPixel();
 
                             if (m_footerItemsSource.Count() == 0 && !IsSettingsVisible())
                             {
@@ -1544,7 +1546,7 @@ void NavigationView::UpdatePaneLayout()
                                 winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
                                 return 0.0;
                             }
-                            else if (totalAvailableHeight > menuItemsActualHeight + footersActualHeight)
+                            else if (totalAvailableHeight + scaleFactorRounding > menuItemsDesiredHeight + footersActualHeight)
                             {
                                 // We have enough space for two so let everyone get as much as they need.
                                 footerItemsScrollViewer.MaxHeight(footersActualHeight);
