@@ -137,7 +137,6 @@
                         contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                         <ScrollViewer x:Name="ScrollViewer"
                             Grid.Column="1"
-                            Padding="0,0,-1,0"
                             AutomationProperties.AccessibilityView="Raw"
                             BringIntoViewOnFocusChange="{TemplateBinding ScrollViewer.BringIntoViewOnFocusChange}"
                             HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
