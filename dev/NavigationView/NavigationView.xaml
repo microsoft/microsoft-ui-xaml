@@ -185,10 +185,10 @@
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="PaneSeparatorStates">
-                                <VisualState x:Name="SeparatorCollapsed"/>
-                                <VisualState x:Name="SeparatorVisible">
+                                <VisualState x:Name="SeparatorVisible"/>
+                                <VisualState x:Name="SeparatorCollapsed">
                                     <VisualState.Setters>
-                                        <Setter Target="VisualItemsSeparator.Visibility" Value="Visible"/>
+                                        <Setter Target="VisualItemsSeparator.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -589,7 +589,7 @@
                                                 x:Name="VisualItemsSeparator"
                                                 Grid.Row="1"
                                                 Margin="0,0,0,2"
-                                                Visibility="Collapsed"
+                                                Visibility="Visible"
                                                 VerticalAlignment="Center"
                                                 HorizontalAlignment="Stretch"/>
 

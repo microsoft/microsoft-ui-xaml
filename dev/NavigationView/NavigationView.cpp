@@ -658,6 +658,8 @@ void NavigationView::OnApplyTemplate()
     m_itemsContainerRow.set(GetTemplateChildT<winrt::RowDefinition>(c_itemsContainerRow, controlProtected));
     m_menuItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_menuItemsScrollViewer, controlProtected));
     m_footerItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_footerItemsScrollViewer, controlProtected));
+    m_visualItemsSeparator.set(GetTemplateChildT<winrt::NavigationViewItemSeparator>(c_visualItemsSeparator, controlProtected));
+
 
     m_itemsContainerSizeChangedRevoker.revoke();
     if (const auto itemsContainer = GetTemplateChildT<winrt::FrameworkElement>(c_itemsContainer, controlProtected))
@@ -1529,8 +1531,17 @@ void NavigationView::UpdatePaneLayout()
                                 return 0.0;
                             }();
 
-                            // Footer and PaneFooter are included in the footerGroup to calculate available height for menu items.
-                            const auto footerGroupActualHeight = footersActualHeight + paneFooterActualHeight;
+                            const auto visualItemsSeparatorHeight = [this]() {
+                                if (const auto& visualItemsSeparator = m_visualItemsSeparator.get())
+                                {
+                                    const auto visualItemsSeparatorMargin = visualItemsSeparator.Margin();
+                                    return visualItemsSeparator.ActualHeight() + visualItemsSeparatorMargin.Top + visualItemsSeparatorMargin.Bottom;
+                                }
+                                return 0.0;
+                            }();
+
+                            // Footer, PaneFooter, and VisualItemsSeparator are included in the footerGroup to calculate available height for menu items.
+                            const auto footerGroupActualHeight = footersActualHeight + paneFooterActualHeight + visualItemsSeparatorHeight;
 
                             if (m_footerItemsSource.Count() == 0 && !IsSettingsVisible())
                             {
