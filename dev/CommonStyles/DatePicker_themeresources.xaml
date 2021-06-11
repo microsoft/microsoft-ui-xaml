@@ -16,22 +16,19 @@
             <x:Double x:Key="DatePickerSpacingThemeHeight">20</x:Double>
             <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,4</Thickness>
             <FontWeight x:Key="DatePickerHeaderThemeFontWeight">Normal</FontWeight>
-            <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
-
-            <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="AccentFillColorDisabledBrush" />
+            <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="DatePickerHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DatePickerHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="ControlAltFillColorTertiaryBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="AccentFillColorDisabledBrush" />
-
+            <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
-            <StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="AccentAAFillColorDefaultBrush" />
-            
+            <StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="ControlFillColorDefaultBrush" />
             <StaticResource x:Key="DatePickerButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundDefault" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
@@ -103,23 +100,19 @@
             <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,4</Thickness>
             <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,4</Thickness>
             <FontWeight x:Key="DatePickerHeaderThemeFontWeight">Normal</FontWeight>
-            
-            <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
-            <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="AccentFillColorDisabledBrush" />
+            <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="DatePickerHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DatePickerHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-
-            <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="ControlAltFillColorTertiaryBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="AccentFillColorDisabledBrush" />
-
+            <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
-            <StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="AccentAAFillColorDefaultBrush" />
-            
+            <StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="ControlFillColorDefaultBrush" />
             <StaticResource x:Key="DatePickerButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundDefault" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
@@ -165,10 +158,14 @@
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <Setter Property="Background" Value="{ThemeResource DatePickerButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource DatePickerButtonForeground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource DatePickerButtonBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource DatePickerBorderThemeThickness}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
-        <contract6Present:Setter Property="UseSystemFocusVisuals" Value="{ThemeResource UseSystemFocusVisuals}" />
+        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <Setter Property="FocusVisualMargin" Value="-3" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
 
         <Setter Property="Template">
@@ -177,7 +174,6 @@
                     <Grid x:Name="LayoutRoot" Margin="{TemplateBinding Padding}">
                         <Grid.Resources>
                             <Style x:Key="DatePickerFlyoutButtonStyle" TargetType="Button">
-                                <Setter Property="UseSystemFocusVisuals" Value="False" />
                                 <Setter Property="ElementSoundMode" Value="FocusOnly" />
                                 <Setter Property="Template">
                                     <Setter.Value>
@@ -196,6 +192,9 @@
                                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonForegroundPointerOver}" />
                                                                 </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBorderBrushPointerOver}" />
+                                                                </ObjectAnimationUsingKeyFrames>
                                                             </Storyboard>
                                                         </VisualState>
 
@@ -206,6 +205,9 @@
                                                                 </ObjectAnimationUsingKeyFrames>
                                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonForegroundPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBorderBrushPressed}" />
                                                                 </ObjectAnimationUsingKeyFrames>
                                                             </Storyboard>
                                                         </VisualState>
@@ -218,6 +220,9 @@
                                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonForegroundDisabled}" />
                                                                 </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DatePickerButtonBorderBrushDisabled}" />
+                                                                </ObjectAnimationUsingKeyFrames>
                                                             </Storyboard>
                                                         </VisualState>
                                                     </VisualStateGroup>
@@ -227,11 +232,12 @@
                                                     </VisualStateGroup>
                                                 </VisualStateManager.VisualStateGroups>
 
-                                                <ContentPresenter x:Name="ContentPresenter"
+                                                <ContentPresenter
+                                                    x:Name="ContentPresenter"
+                                                    Background="{TemplateBinding Background}"
                                                     Foreground="{TemplateBinding Foreground}"
-                                                    Background="Transparent"
-                                                    BorderBrush="{ThemeResource DatePickerButtonBorderBrush}"
-                                                    BorderThickness="{ThemeResource DatePickerBorderThemeThickness}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
                                                     Content="{TemplateBinding Content}"
                                                     HorizontalContentAlignment="Stretch"
                                                     VerticalContentAlignment="Stretch"
@@ -297,14 +303,17 @@
                         <Button x:Name="FlyoutButton"
                             Grid.Row="1"
                             Style="{StaticResource DatePickerFlyoutButtonStyle}"
-                            Foreground="{TemplateBinding Foreground}"
                             Background="{TemplateBinding Background}"
+                            Foreground="{TemplateBinding Foreground}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
                             IsEnabled="{TemplateBinding IsEnabled}"
                             MinWidth="{StaticResource DatePickerThemeMinWidth}"
                             MaxWidth="{StaticResource DatePickerThemeMaxWidth}"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
                             VerticalAlignment="Top"
+                            FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
                             UseSystemFocusVisuals="{TemplateBinding UseSystemFocusVisuals}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
                             <Grid x:Name="FlyoutButtonContentGrid">
