@@ -1962,7 +1962,7 @@
                       FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
                       FocusVisualPrimaryBrush=#E4000000
-                      Visibility=Collapsed
+                      Visibility=Visible
                       RenderSize=0,0
                   [Windows.UI.Xaml.Controls.ContentControl]
                       Padding=0,0,0,0
@@ -2032,7 +2032,7 @@
               [Windows.UI.Xaml.Controls.Grid]
                   Padding=0,0,0,0
                   CornerRadius=0,0,0,0
-                  BorderThickness=0,0,0,0
+                  BorderThickness=0,1,0,0
                   BorderBrush=#0F000000
                   Background=#80FFFFFF
                   Name=ContentGrid
@@ -2127,7 +2127,7 @@
                     FocusVisualPrimaryThickness=2,2,2,2
                     FocusVisualPrimaryBrush=#E4000000
                     Visibility=Visible
-                    RenderSize=800,470
+                    RenderSize=800,469
                   [Windows.UI.Xaml.Controls.StackPanel]
                       Padding=0,0,0,0
                       CornerRadius=0,0,0,0
@@ -2140,7 +2140,7 @@
                       FocusVisualPrimaryThickness=2,2,2,2
                       FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
-                      RenderSize=800,470
+                      RenderSize=800,469
                     [Windows.UI.Xaml.Controls.Button]
                         Padding=11,5,11,6
                         Foreground=#E4000000
