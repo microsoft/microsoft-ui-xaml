@@ -39,7 +39,7 @@ unsealed runtimeclass CommandBarFlyoutCommandBar : Windows.UI.Xaml.Controls.Comm
     CommandBarFlyoutCommandBarTemplateSettings FlyoutTemplateSettings { get; };
 };
 
-// Needed so we can access this enum and interface until they ship in the official SDK.
+// Needed so we can access these enum and interfaces until they ship in the official SDK.
 [MUX_INTERNAL]
 [webhosthidden]
 enum PopupPlacementMode
@@ -71,4 +71,24 @@ interface IPopup4
     event Windows.Foundation.EventHandler<Object> ActualPlacementChanged;
 };
 
+[MUX_INTERNAL]
+[webhosthidden]
+[uuid(98ffd442-a3f5-534c-906d-88b72a78126b)]
+interface IAutomationPropertiesStatics9
+{
+    Windows.UI.Xaml.DependencyProperty ControlTypeProperty{ get; };
+    Windows.UI.Xaml.Automation.Peers.AutomationControlType GetControlType(Windows.UI.Xaml.UIElement element);
+    void SetControlType(Windows.UI.Xaml.UIElement element, Windows.UI.Xaml.Automation.Peers.AutomationControlType value);
+};
+
+[MUX_INTERNAL]
+[webhosthidden]
+static runtimeclass CommandBarFlyoutCommandBarAutomationProperties
+{
+    [MUX_DEFAULT_VALUE("winrt::AutomationControlType::Custom")]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnControlTypePropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty ControlTypeProperty{ get; };
+    static Windows.UI.Xaml.Automation.Peers.AutomationControlType GetControlType(Windows.UI.Xaml.UIElement element);
+    static void SetControlType(Windows.UI.Xaml.UIElement element, Windows.UI.Xaml.Automation.Peers.AutomationControlType value);
+}
 }

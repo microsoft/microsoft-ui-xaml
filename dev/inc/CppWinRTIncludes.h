@@ -325,6 +325,7 @@ namespace winrt
     // using namespace ::winrt::Windows::UI::Xaml::Controls::Primitives;
     using ButtonBase = winrt::Windows::UI::Xaml::Controls::Primitives::ButtonBase;
     using CarouselPanel = winrt::Windows::UI::Xaml::Controls::Primitives::CarouselPanel;
+    using ComponentResourceLocation = winrt::Windows::UI::Xaml::Controls::Primitives::ComponentResourceLocation;
     using FlyoutBase = winrt::Windows::UI::Xaml::Controls::Primitives::FlyoutBase;
     using FlyoutBaseClosingEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::FlyoutBaseClosingEventArgs;
     using FlyoutPlacementMode = winrt::Windows::UI::Xaml::Controls::Primitives::FlyoutPlacementMode;
