@@ -73,7 +73,6 @@ void NavigationViewItem::OnApplyTemplate()
     UnhookEventsAndClearFields();
 
     NavigationViewItemBase::OnApplyTemplate();
-    Loaded({ this, &NavigationViewItem::OnLoaded });
 
     // Find selection indicator
     // Retrieve pointers to stable controls 
@@ -95,28 +94,6 @@ void NavigationViewItem::OnApplyTemplate()
     m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this,  &NavigationViewItem::OnIsEnabledChanged });
 
     m_toolTip.set(GetTemplateChildT<winrt::ToolTip>(L"ToolTip"sv, controlProtected));
-
-    m_flyoutContentGrid.set(GetTemplateChildT<winrt::Grid>(c_flyoutContentGrid, controlProtected));
-
-    m_appliedTemplate = true;
-
-    UpdateItemIndentation();
-    UpdateVisualStateNoTransition();
-    ReparentRepeater();
-    // We dont want to update the repeater visibilty during OnApplyTemplate if NavigationView is in a mode when items are shown in a flyout
-    if (!ShouldRepeaterShowInFlyout())
-    {
-        ShowHideChildren();
-    }
-
-    auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
-    NavigationView::CreateAndAttachHeaderAnimation(visual);
-}
-
-void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
-{
-    winrt::IControlProtected controlProtected = *this;
-    m_helper.Init(controlProtected);
 
     if (auto splitView = GetSplitView())
     {
@@ -147,6 +124,22 @@ void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEvent
 
         UpdateRepeaterItemsSource();
     }
+
+    m_flyoutContentGrid.set(GetTemplateChildT<winrt::Grid>(c_flyoutContentGrid, controlProtected));
+
+    m_appliedTemplate = true;
+
+    UpdateItemIndentation();
+    UpdateVisualStateNoTransition();
+    ReparentRepeater();
+    // We dont want to update the repeater visibilty during OnApplyTemplate if NavigationView is in a mode when items are shown in a flyout
+    if (!ShouldRepeaterShowInFlyout())
+    {
+        ShowHideChildren();
+    }
+
+    auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
+    NavigationView::CreateAndAttachHeaderAnimation(visual);
 }
 
 void NavigationViewItem::UpdateRepeaterItemsSource()

@@ -709,6 +709,7 @@ void NavigationView::OnApplyTemplate()
     UpdatePaneTitleMargins();
     UpdatePaneLayout();
     UpdatePaneOverlayGroup();
+    AddNavigationViewReferenceToPaneFooter();
 }
 
 void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
@@ -3999,6 +4000,31 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     else if (property == s_PaneFooterProperty)
     {
         UpdatePaneLayout();
+        AddNavigationViewReferenceToPaneFooter();
+    }
+}
+
+void NavigationView::AddNavigationViewReferenceToPaneFooter()
+{
+    if (auto footerContentBorder = GetTemplateChildT<winrt::ContentControl>(c_leftNavFooterContentBorder, *this))
+    {
+        if (auto content = footerContentBorder.Content())
+        {
+            if (auto stackPanel = content.try_as<winrt::StackPanel>())
+            {
+                if (auto elementCollection = stackPanel.Children())
+                {
+                    for ( int i = 0; i < static_cast<int>(elementCollection.Size()); i++)
+                    {
+                        if (auto nvib = elementCollection.GetAt(i).try_as<winrt::NavigationViewItemBase>())
+                        {
+                            auto nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
+                            nvibImpl->SetNavigationViewParent(*this);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

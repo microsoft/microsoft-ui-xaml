@@ -335,6 +335,8 @@ private:
     void UnsetDropShadow();
     void ShadowCasterEaseOutStoryboard_Completed(const winrt::Grid& shadowCaster);
 
+    void AddNavigationViewReferenceToPaneFooter();
+
     com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
 
     // Visual components

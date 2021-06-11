@@ -7,22 +7,6 @@
 #include "NavigationView.h"
 #include "IndexPath.h"
 
-void NavigationViewItemBase::OnApplyTemplate()
-{
-    __super::OnApplyTemplate();
-
-    Loaded({ this, &NavigationViewItemBase::OnLoaded });
-}
-
-void NavigationViewItemBase::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
-{
-    // If the NavViewItem is not prepared in an ItemPresenter it will be missing a reference to NavigationView, so adding that here.
-    if (!m_navigationView.get())
-    {
-        SetNavigationViewParent(SharedHelpers::GetAncestorOfType<winrt::NavigationView>(*this));
-    }
-}
-
 NavigationViewRepeaterPosition NavigationViewItemBase::Position() const
 {
     return m_position;
