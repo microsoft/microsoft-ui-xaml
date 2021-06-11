@@ -242,13 +242,13 @@
             <local:AcrylicBrush
                 x:Key="AcrylicBackgroundFillColorBaseBrush"
                 TintColor="#202020"
-                TintOpacity="0.5"
+                TintOpacity="0.8"
                 FallbackColor="#1C1C1C"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
                 x:Key="AcrylicInAppFillColorBaseBrush"
                 TintColor="#202020"
-                TintOpacity="0.5"
+                TintOpacity="0.8"
                 FallbackColor="#1C1C1C"
                 BackgroundSource="Backdrop"/>
             <local:AcrylicBrush
