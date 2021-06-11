@@ -1028,11 +1028,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 FindElement.ByName("NoFooter").Click();
                 Wait.ForIdle();
                 // No footer items, but a settings item => 40px height
-                VerifyHeights(360, 40);
+                VerifyHeights(368, 40);
 
                 FindElement.ByName("Both").Click();
                 Wait.ForIdle();
-                VerifyHeights(240, 160);
+                VerifyHeights(248, 160);
 
                 void VerifyHeights(int menuItemsHeight, int footerItemsHeight)
                 {
@@ -1058,20 +1058,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var resetCollectionsButton = new Button(FindElement.ByName("ResetCollectionsButton"));
 
                 // Fill menu items
-                AddMenuItem(240, 160);
-                AddMenuItem(240, 160);
-                AddMenuItem(240, 160);
+                AddMenuItem(248, 160);
+                AddMenuItem(248, 160);
+                AddMenuItem(248, 160);
 
                 // Fill footer items
                 AddFooterItem(200, 200);
+                AddFooterItem(190, 204);
 
                 // Check that we reached equilibrium.
-                AddFooterItem(200, 200);
-                AddMenuItem(200, 200);
+                AddFooterItem(190, 204);
+                AddMenuItem(190, 204);
 
                 resetCollectionsButton.Click();
                 Wait.ForIdle();
-                VerifyHeights(240, 160);
+                VerifyHeights(248, 160);
 
                 void VerifyHeights(double menuItemsHeight, double footerItemsHeight)
                 {
@@ -1111,14 +1112,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var resetCollectionsButton = new Button(FindElement.ByName("ResetCollectionsButton"));
 
                 // Fill footer items
-                AddFooterItem(200, 200);
-                AddFooterItem(190, 205);
-                AddFooterItem(190, 210);
-                AddFooterItem(180, 215);
+                AddFooterItem(208, 200);
+                AddFooterItem(168, 240);
+                AddFooterItem(128, 280);
+                AddFooterItem(114, 284);
 
-                AddMenuItem(180, 220);
-                AddMenuItem(170, 225);
-                AddMenuItem(195, 200);
+                AddMenuItem(104, 290);
+                AddMenuItem(144, 250);
+                AddMenuItem(185, 210);
 
                 void VerifyHeights(double menuItemsHeight, double footerItemsHeight)
                 {
