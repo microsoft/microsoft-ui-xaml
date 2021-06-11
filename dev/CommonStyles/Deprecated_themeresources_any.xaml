@@ -13,7 +13,7 @@
                 TintColor="#2C2C2C"
                 TintOpacity="0.15"
                 FallbackColor="#2C2C2C"
-                BackgroundSource="Backdrop"/>
+                BackgroundSource="HostBackdrop"/>
 
             <x:Double x:Key="SplitViewOpenPaneThemeLength">320</x:Double>
             <x:Double x:Key="SplitViewCompactPaneThemeLength">48</x:Double>
@@ -57,7 +57,7 @@
                 TintColor="#FCFCFC"
                 TintOpacity="0.0"
                 FallbackColor="#FCFCFC"
-                BackgroundSource="Backdrop"/>
+                BackgroundSource="HostBackdrop"/>
 
             <x:Double x:Key="SplitViewOpenPaneThemeLength">320</x:Double>
             <x:Double x:Key="SplitViewCompactPaneThemeLength">48</x:Double>
