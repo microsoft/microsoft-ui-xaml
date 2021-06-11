@@ -384,7 +384,7 @@
                         </Grid.ColumnDefinitions>
 
                         <Grid VerticalAlignment="Top" Height="32">
-                            <Ellipse x:Name="OuterEllipse" Width="20" Height="20" UseLayoutRounding="False" Stroke="{ThemeResource RadioButtonOuterEllipseStroke}" Fill="{StaticResource RadioButtonOuterEllipseFill}" StrokeThickness="{ThemeResource RadioButtonBorderThemeThickness}" />
+                            <Ellipse x:Name="OuterEllipse" Width="20" Height="20" UseLayoutRounding="False" Stroke="{ThemeResource RadioButtonOuterEllipseStroke}" Fill="{ThemeResource RadioButtonOuterEllipseFill}" StrokeThickness="{ThemeResource RadioButtonBorderThemeThickness}" />
                             <!-- A seperate element is added since the two orthogonal state groups that cannot touch the same property -->
                             <Ellipse x:Name="CheckOuterEllipse" Width="20" Height="20" UseLayoutRounding="False" Stroke="{ThemeResource RadioButtonOuterEllipseCheckedStroke}" Fill="{ThemeResource RadioButtonOuterEllipseCheckedFill}" Opacity="0" StrokeThickness="{ThemeResource RadioButtonBorderThemeThickness}" />
                             <Ellipse x:Name="CheckGlyph" Width="{ThemeResource RadioButtonCheckGlyphSize}" Height="{ThemeResource RadioButtonCheckGlyphSize}" UseLayoutRounding="False" Opacity="0" Fill="{ThemeResource RadioButtonCheckGlyphFill}" Stroke="{ThemeResource RadioButtonCheckGlyphStroke}">
