@@ -1534,22 +1534,21 @@ void NavigationView::UpdatePaneLayout()
                                 return 0.0;
                             }();
 
-                            const auto menuItemsTopBottomMargin = [this, menuItems]() {
-                                if (menuItems.Visibility() == winrt::Visibility::Visible)
-                                {
-                                    const auto menuItemsMargin = menuItems.Margin();
-                                    return menuItemsMargin.Top + menuItemsMargin.Bottom;
-                                }
-                                return 0.0;
-                            }();
-
                             // This is the value computed during the measure pass of the layout process. This will be the value used to determine
                             // the partition logic between menuItems and footerGroup, since the ActualHeight may be taller if there's more space.
-                            const auto menuItemsDesiredHeight = menuItems.DesiredSize().Height + menuItemsTopBottomMargin;
+                            const auto menuItemsDesiredHeight = menuItems.DesiredSize().Height;
 
                             // This is what the height ended up being, so will be the value that is used to calculate the partition
                             // between menuItems and footerGroup.
-                            const auto menuItemsActualHeight = menuItems.ActualHeight() + menuItemsTopBottomMargin;
+                            const auto menuItemsActualHeight = [this, menuItems]() {
+                                double menuItemsTopBottomMargin = 0.0;
+                                if (menuItems.Visibility() == winrt::Visibility::Visible)
+                                {
+                                    const auto menuItemsMargin = menuItems.Margin();
+                                    menuItemsTopBottomMargin = menuItemsMargin.Top + menuItemsMargin.Bottom;
+                                }
+                                return menuItems.ActualHeight() + menuItemsTopBottomMargin;
+                            }();
 
                             // Footer and PaneFooter are included in the footerGroup to calculate available height for menu items.
                             const auto footerGroupActualHeight = footersActualHeight + paneFooterActualHeight;
