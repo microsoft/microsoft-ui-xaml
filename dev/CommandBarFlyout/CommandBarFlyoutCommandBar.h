@@ -51,6 +51,8 @@ private:
     void UpdateVisualState(bool useTransitions);
     void UpdateTemplateSettings();
     void EnsureAutomationSetCountAndPosition();
+    void EnsureLocalizedControlTypes();
+    void SetKnownCommandLocalizedControlTypes(winrt::ICommandBarElement const& command);
     void EnsureFocusedPrimaryCommand();
     void PopulateAccessibleControls();
 
