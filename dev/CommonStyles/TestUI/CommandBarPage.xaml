@@ -10,14 +10,24 @@
   xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
   xmlns:contract6NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,6)"
   xmlns:contract5NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,5)"
-    mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    mc:Ignorable="d">
 
 
     <Page.Resources>
     </Page.Resources>
 
     <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="Red" Offset="0.000" />
+                <GradientStop Color="Orange" Offset="0.167" />
+                <GradientStop Color="Yellow" Offset="0.333" />
+                <GradientStop Color="Green" Offset="0.500" />
+                <GradientStop Color="Blue" Offset="0.667" />
+                <GradientStop Color="Indigo" Offset="0.833" />
+                <GradientStop Color="Violet" Offset="1.000" />
+            </LinearGradientBrush>
+        </Grid.Background>
         <StackPanel Orientation="Vertical">
 
             <CommandBar>
