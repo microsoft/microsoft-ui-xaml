@@ -3,12 +3,16 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <!-- 2.5 controls should not depend on brushes on this file except for new controls like Expander -->
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <AcrylicBrush
+            <contract7NotPresent:StaticResource
+                x:Key="SystemControlTransientBackgroundBrush"
+                ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
+            <contract7Present:AcrylicBrush
                 x:Key="SystemControlTransientBackgroundBrush"
                 TintColor="#2C2C2C"
                 TintOpacity="0.15"
@@ -52,7 +56,10 @@
             <SolidColorBrush x:Key="ControlAAStrokeColorDisabledBrush" Color="{StaticResource ControlAAStrokeColorDisabled}" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <AcrylicBrush
+            <contract7NotPresent:StaticResource
+                x:Key="SystemControlTransientBackgroundBrush"
+                ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
+            <contract7Present:AcrylicBrush
                 x:Key="SystemControlTransientBackgroundBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.0"
