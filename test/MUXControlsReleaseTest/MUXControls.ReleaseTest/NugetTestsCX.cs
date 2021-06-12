@@ -69,7 +69,7 @@ namespace MUXControls.ReleaseTest
             Wait.ForIdle();
 
             var textBlock = new TextBlock(FindElement.ByName("CheckBoxRectangleCornerRadiusValueTextBlock"));
-            Verify.AreEqual("2,2", textBlock.DocumentText);
+            Verify.AreEqual("4,4", textBlock.DocumentText);
         }
 
         [TestMethod]
