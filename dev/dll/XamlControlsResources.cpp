@@ -209,11 +209,11 @@ void XamlControlsResources::UpdateAcrylicBrushesDarkTheme(const winrt::IInspecta
         }
         if (const auto acrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
         {
-            acrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.92);
+            acrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.96);
         }
         if (const auto acrylicInAppFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
         {
-            acrylicInAppFillColorBaseBrush.TintLuminosityOpacity(0.92);
+            acrylicInAppFillColorBaseBrush.TintLuminosityOpacity(0.96);
         }
         if (const auto accentAcrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
         {

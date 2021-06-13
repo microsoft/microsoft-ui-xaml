@@ -63,7 +63,7 @@
             </controls:NavigationView>
             <controls:NavigationView x:Name="NavView3"
                 AutomationProperties.Name="NavView3"
-                AutomationProperties.AutomationId="NavView3" >
+                AutomationProperties.AutomationId="NavView3" Height="500">
                 <controls:NavigationView.MenuItems>
                     <controls:NavigationViewItem Content="Collection" />
                     <controls:NavigationViewItem Content="Albums" IsSelected="True" />
