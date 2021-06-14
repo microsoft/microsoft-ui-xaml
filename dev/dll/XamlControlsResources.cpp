@@ -45,6 +45,13 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
         // Source link depends on ControlsResourcesVersion and UseCompactResources flag, we need to update it when either property changed
         UpdateSource();
     }
+
+    // To be deleted
+    // Version is going to be replaced with ControlsResourcesVersion
+    else if (property == s_VersionProperty)
+    {
+        ControlsResourcesVersion(Version() == winrt::StylesVersion::Latest ? winrt::ControlsResourcesVersion::Version2 : winrt::ControlsResourcesVersion::Version1);
+    }
 }
 
 void XamlControlsResources::UpdateSource()
