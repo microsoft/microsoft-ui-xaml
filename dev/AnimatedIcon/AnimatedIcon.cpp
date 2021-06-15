@@ -270,7 +270,7 @@ void AnimatedIcon::OnLayoutUpdatedAfterStateChanged(winrt::IInspectable const& s
                     auto const hasEndMarker = markers.HasKey(transitionEndName);
                     if (hasEndMarker)
                     {
-                        PlaySegment(NAN, static_cast<float>(markers.Lookup(transitionEndName)), m_speedUpMultiplier);
+                        PlaySegment(NAN, static_cast<float>(markers.Lookup(transitionEndName)), nullptr, m_speedUpMultiplier);
                     }
                 }
             }
