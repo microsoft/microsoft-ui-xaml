@@ -150,14 +150,18 @@
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <TextBlock HorizontalAlignment="Center" Text="Animation Duration Multiplier" Grid.Row="0"/>
             <Slider HorizontalAlignment="Center" Minimum="0.1" Maximum="5.0" StepFrequency="0.1" Value="1.0" ValueChanged="Slider_ValueChanged" Width="150" Grid.Row="1"/>
             <TextBlock HorizontalAlignment="Center" Text="Speed Up behavior Multiplier" Grid.Row="2"/>
             <Slider HorizontalAlignment="Center" Minimum="1.0" Maximum="15.0" StepFrequency="0.1" Value="7.0" ValueChanged="SpeedUpSlider_ValueChanged" Width="150" Grid.Row="3"/>
-            <TextBlock HorizontalAlignment="Center" Text="Foreground Color" Grid.Row="4"/>
-            <Button HorizontalAlignment="Center" Grid.Row="5">
+            <TextBlock HorizontalAlignment="Center" Text="Queue Length" Grid.Row="4"/>
+            <Slider HorizontalAlignment="Center" Minimum="1.0" Maximum="100.0" StepFrequency="1" Value="4" ValueChanged="QueueLengthSlider_ValueChanged" Width="500" Grid.Row="5"/>
+            <TextBlock HorizontalAlignment="Center" Text="Foreground Color" Grid.Row="6"/>
+            <Button HorizontalAlignment="Center" Grid.Row="7">
                 <Rectangle Height="100" Width="100">
                     <Rectangle.Fill>
                         <SolidColorBrush Color="{Binding ElementName=ForegoundColorPicker, Path=Color}"/>
@@ -169,8 +173,8 @@
                     </Flyout>
                 </Button.Flyout>
             </Button>
-            <CheckBox Content="Is LeftToRight" IsChecked="True" Checked="IsLeftToRightChecked" Unchecked="IsLeftToRightUnchecked" HorizontalAlignment="Center" Grid.Row="6"/>
-            <ScrollViewer Grid.Row="7">
+            <CheckBox Content="Is LeftToRight" IsChecked="True" Checked="IsLeftToRightChecked" Unchecked="IsLeftToRightUnchecked" HorizontalAlignment="Center" Grid.Row="8"/>
+            <ScrollViewer Grid.Row="9">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
