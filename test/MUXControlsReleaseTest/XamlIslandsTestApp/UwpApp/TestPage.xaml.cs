@@ -28,6 +28,15 @@ namespace UwpApp
             button.Content = "Clicked!";
         }
 
+        private void OnFlyoutButtonClick(object sender, RoutedEventArgs e)
+        {
+            Button button = (Button)sender;
+
+            Flyout.ShowAt(button, new FlyoutShowOptions() {
+                Placement = FlyoutPlacementMode.BottomEdgeAlignedRight
+            });
+        }
+
         private void OnMenuFlyoutButtonClick(object sender, RoutedEventArgs e)
         {
             Button button = (Button)sender;
@@ -44,6 +53,14 @@ namespace UwpApp
             CommandBarFlyout.ShowAt(button, new FlyoutShowOptions() {
                 Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft
             });
+        }
+
+        private void OnTeachingTipButtonClick(object sender, RoutedEventArgs e)
+        {
+            Button button = (Button)sender;
+
+            TeachingTip.Target = button;
+            TeachingTip.IsOpen = true;
         }
     }
 }

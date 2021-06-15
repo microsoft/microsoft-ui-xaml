@@ -25,6 +25,9 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.Resources>
+            <Flyout x:Name="Flyout">
+                <TextBlock Text="I'm a flyout!" />
+            </Flyout>
             <MenuFlyout x:Name="MenuFlyout">
                 <MenuFlyoutItem Text="Item 1" />
                 <MenuFlyoutItem Text="Item 2" />
@@ -52,15 +55,34 @@
                     <AppBarButton Label="Select all" Icon="SelectAll" />
                 </muxc:CommandBarFlyout.SecondaryCommands>
             </muxc:CommandBarFlyout>
+            <muxc:TeachingTip x:Name="TeachingTip"
+                IsLightDismissEnabled="True"
+                PreferredPlacement="Bottom"
+                Title="A TeachingTip" 
+                Subtitle="This is a TeachingTip" />
         </Grid.Resources>
         <StackPanel Orientation="Horizontal">
-            <Button Content="Open MenuFlyout" Click="OnMenuFlyoutButtonClick" VerticalAlignment="Bottom" />
-            <Button Content="Open CommandBarFlyout" Click="OnCommandBarFlyoutButtonClick"  VerticalAlignment="Bottom" />
+            <Button Content="Open Flyout" Click="OnFlyoutButtonClick" />
+            <Button Content="Open MenuFlyout" Click="OnMenuFlyoutButtonClick" />
+            <Button Content="Open CommandBarFlyout" Click="OnCommandBarFlyoutButtonClick" />
+            <Button Content="Open TeachingTip" Click="OnTeachingTipButtonClick" />
+            <Button Content="Hover for ToolTip">
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="ToolTip for Button" Placement="Bottom" />
+                </ToolTipService.ToolTip>
+            </Button>
         </StackPanel>
         <Button Content="Test" AutomationProperties.AutomationId="TestButton" Click="OnTestButtonClick" Grid.Row="1" />
         <StackPanel Orientation="Horizontal" Grid.Row="2">
-            <Button Content="Open MenuFlyout" Click="OnMenuFlyoutButtonClick" VerticalAlignment="Bottom" />
-            <Button Content="Open CommandBarFlyout" Click="OnCommandBarFlyoutButtonClick"  VerticalAlignment="Bottom" />
+            <Button Content="Open Flyout" Click="OnFlyoutButtonClick" />
+            <Button Content="Open MenuFlyout" Click="OnMenuFlyoutButtonClick" />
+            <Button Content="Open CommandBarFlyout" Click="OnCommandBarFlyoutButtonClick" />
+            <Button Content="Open TeachingTip" Click="OnTeachingTipButtonClick" />
+            <Button Content="Hover for ToolTip">
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="ToolTip for Button" Placement="Bottom" />
+                </ToolTipService.ToolTip>
+            </Button>
         </StackPanel>
     </Grid>
 </Page>
