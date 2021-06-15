@@ -8,6 +8,7 @@
 #include "ResourceAccessor.h"
 #include <AnimatedIconTestHooks.h>
 #include "Utils.h"
+#include <mutex>
 
 static constexpr wstring_view s_progressPropertyName{ L"Progress"sv };
 static constexpr wstring_view s_foregroundPropertyName{ L"Foreground"sv };
@@ -269,7 +270,7 @@ void AnimatedIcon::OnLayoutUpdatedAfterStateChanged(winrt::IInspectable const& s
                     auto const hasEndMarker = markers.HasKey(transitionEndName);
                     if (hasEndMarker)
                     {
-                        PlaySegment(NAN, static_cast<float>(markers.Lookup(transitionEndName)), m_speedUpMultiplier);
+                        PlaySegment(NAN, static_cast<float>(markers.Lookup(transitionEndName)), nullptr, m_speedUpMultiplier);
                     }
                 }
             }
@@ -285,16 +286,23 @@ void AnimatedIcon::OnLayoutUpdatedAfterStateChanged(winrt::IInspectable const& s
 
 void AnimatedIcon::TransitionAndUpdateStates(const winrt::hstring& fromState, const winrt::hstring& toState, float playbackMultiplier)
 {
-    TransitionStates(fromState, toState, playbackMultiplier);
-    m_previousState = fromState;
-    m_currentState = toState;
-    if (!m_queuedStates.empty())
+    std::once_flag cleanedUpFlag;
+    std::function<void()> cleanupAction = [this, fromState, toState, &cleanedUpFlag]()
     {
-        m_queuedStates.pop();
-    }
+        std::call_once(cleanedUpFlag, [this, fromState, toState]() {
+                m_previousState = fromState;
+                m_currentState = toState;
+                if (!m_queuedStates.empty())
+                {
+                    m_queuedStates.pop();
+                }
+            });
+    };
+    TransitionStates(fromState, toState, cleanupAction, playbackMultiplier);
+    cleanupAction();
 }
 
-void AnimatedIcon::TransitionStates(const winrt::hstring& fromState, const winrt::hstring& toState, float playbackMultiplier)
+void AnimatedIcon::TransitionStates(const winrt::hstring& fromState, const winrt::hstring& toState, const std::function<void()>& cleanupAction, float playbackMultiplier)
 {
     if (auto const source = Source())
     {
@@ -310,7 +318,7 @@ void AnimatedIcon::TransitionStates(const winrt::hstring& fromState, const winrt
             {
                 auto const fromProgress = static_cast<float>(markers.Lookup(transitionStartName));
                 auto const toProgress = static_cast<float>(markers.Lookup(transitionEndName));
-                PlaySegment(fromProgress, toProgress, playbackMultiplier);
+                PlaySegment(fromProgress, toProgress, cleanupAction, playbackMultiplier);
                 m_lastAnimationSegmentStart = transitionStartName;
                 m_lastAnimationSegmentEnd = transitionEndName;
             }
@@ -377,7 +385,7 @@ void AnimatedIcon::TransitionStates(const winrt::hstring& fromState, const winrt
 
                     if(strEnd == toState.c_str() + toState.size())
                     {
-                        PlaySegment(NAN, parsedFloat, playbackMultiplier);
+                        PlaySegment(NAN, parsedFloat, cleanupAction, playbackMultiplier);
                         m_lastAnimationSegmentStart = L"";
                         m_lastAnimationSegmentEnd = toState;
                     }
@@ -397,7 +405,7 @@ void AnimatedIcon::TransitionStates(const winrt::hstring& fromState, const winrt
     }
 }
 
-void AnimatedIcon::PlaySegment(float from, float to, float playbackMultiplier)
+void AnimatedIcon::PlaySegment(float from, float to, const std::function<void()>& cleanupAction, float playbackMultiplier)
 {
     auto const segmentLength = [from, to, previousSegmentLength = m_previousSegmentLength]()
     {
@@ -416,6 +424,10 @@ void AnimatedIcon::PlaySegment(float from, float to, float playbackMultiplier)
     if (duration < winrt::TimeSpan{ 20ms } || !SharedHelpers::IsAnimationsEnabled())
     {
         m_progressPropertySet.InsertScalar(s_progressPropertyName, to);
+        if (cleanupAction)
+        {
+            cleanupAction();
+        }
         OnAnimationCompleted(nullptr, nullptr);
     }
     else
