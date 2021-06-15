@@ -8,6 +8,7 @@
 
 #include "AnimatedIcon.g.h"
 #include "AnimatedIcon.properties.h"
+#include <queue>
 
 class AnimatedIcon :
     public ReferenceTracker<AnimatedIcon, DeriveFromPathIconHelper_base, winrt::AnimatedIcon>,
@@ -44,6 +45,7 @@ public:
     void SetAnimationQueueBehavior(winrt::AnimatedIconAnimationQueueBehavior behavior);
     void SetDurationMultiplier(float multiplier);
     void SetSpeedUpMultiplier(float multiplier);
+    void SetQueueLength(unsigned int length);
     winrt::hstring GetLastAnimationSegment();
     winrt::hstring GetLastAnimationSegmentStart();
     winrt::hstring GetLastAnimationSegmentEnd();
@@ -67,7 +69,8 @@ private:
 
     winrt::hstring m_currentState{ L"" };
     winrt::hstring m_previousState{ L"" };
-    winrt::hstring m_queuedState{ L"" };
+    std::queue<winrt::hstring> m_queuedStates{};
+    unsigned int m_queueLength{ 2 };
     winrt::hstring m_pendingState{ L"" };
     winrt::hstring m_lastAnimationSegment{ L"" };
     winrt::hstring m_lastAnimationSegmentStart{ L"" };
@@ -77,6 +80,7 @@ private:
     float m_previousSegmentLength{ 1.0f };
     float m_durationMultiplier{ 1.0 };
     float m_speedUpMultiplier{ 7.0f };
+    bool m_isSpeedUp{ false };
 
 
     winrt::Composition::CompositionPropertySet m_progressPropertySet{ nullptr };
@@ -87,5 +91,5 @@ private:
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedRevoker{};
     PropertyChanged_revoker m_foregroundColorPropertyChangedRevoker{};
 
-    winrt::AnimatedIconAnimationQueueBehavior m_queueBehavior{ winrt::AnimatedIconAnimationQueueBehavior::SpeedUpQueueOne };
+    winrt::AnimatedIconAnimationQueueBehavior m_queueBehavior{ winrt::AnimatedIconAnimationQueueBehavior::QueueOne };
 };

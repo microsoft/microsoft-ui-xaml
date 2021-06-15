@@ -34,7 +34,11 @@
                                     </VisualState.Setters>
                                 </VisualState>
 
-                                <VisualState x:Name="TopNavigationMinimal" />
+                                <VisualState x:Name="TopNavigationMinimal">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentGrid.BorderThickness" Value="{ThemeResource TopNavigationViewContentGridBorderThickness}" />
+                                    </VisualState.Setters>
+                                </VisualState>
 
                                 <VisualState x:Name="MinimalWithBackButton">
                                     <VisualState.Setters>
@@ -181,7 +185,7 @@
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="PaneSeparatorStates">
-                                <VisualState x:Name="SeparatorCollapsed"/>
+                                <VisualState x:Name="SeparatorCollapsed" />
                                 <VisualState x:Name="SeparatorVisible">
                                     <VisualState.Setters>
                                         <Setter Target="VisualItemsSeparator.Visibility" Value="Visible"/>
@@ -614,8 +618,11 @@
                                 <SplitView.Content>
                                     <Grid
                                         x:Name="ContentGrid"
+                                        BorderBrush="{ThemeResource NavigationViewContentGridBorderBrush}"
+                                        BorderThickness="{ThemeResource NavigationViewContentGridBorderThickness}"
                                         Background="{ThemeResource NavigationViewContentBackground}"
-                                        Margin="{ThemeResource NavigationViewContentMargin}">
+                                        Margin="{ThemeResource NavigationViewContentMargin}"
+                                        contract7Present:CornerRadius="{ThemeResource NavigationViewContentGridCornerRadius}">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
@@ -646,6 +653,7 @@
                                             Style="{StaticResource NavigationViewTitleHeaderContentControlTextStyle}"/>
 
                                         <ContentPresenter
+                                            x:Name="ContentPresenter"
                                             AutomationProperties.LandmarkType="Main"
                                             Grid.Row="2"
                                             Grid.ColumnSpan="2"
@@ -899,7 +907,6 @@
         <Setter Property="IsEnabled" Value="False" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="MinHeight" Value="0" />
-        <Setter Property="Margin" Value="{ThemeResource NavigationViewItemSeparatorMargin}" />
         <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
         <Setter Property="Template">
             <Setter.Value>
@@ -928,7 +935,7 @@
                             x:Name="SeparatorLine"
                             Height="{ThemeResource NavigationViewItemSeparatorHeight}"
                             Fill="{ThemeResource NavigationViewItemSeparatorForeground}"
-                            Margin="{TemplateBinding Margin}"/>
+                            Margin="{ThemeResource NavigationViewItemSeparatorMargin}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

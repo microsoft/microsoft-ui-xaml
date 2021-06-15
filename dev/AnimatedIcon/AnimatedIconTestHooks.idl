@@ -18,6 +18,7 @@ runtimeclass AnimatedIconTestHooks
     static void SetAnimationQueueBehavior(MU_XC_NAMESPACE.AnimatedIcon animatedIcon, AnimatedIconAnimationQueueBehavior easingFunction);
     static void SetDurationMultiplier(MU_XC_NAMESPACE.AnimatedIcon animatedIcon, Single multiplier);
     static void SetSpeedUpMultiplier(MU_XC_NAMESPACE.AnimatedIcon animatedIcon, Single multiplier);
+    static void SetQueueLength(MU_XC_NAMESPACE.AnimatedIcon animatedIcon, Int32 length);
 
     static String GetLastAnimationSegment(MU_XC_NAMESPACE.AnimatedIcon animatedIcon);
     static String GetLastAnimationSegmentStart(MU_XC_NAMESPACE.AnimatedIcon animatedIcon);

@@ -18,6 +18,7 @@ public:
     static void SetAnimationQueueBehavior(const winrt::AnimatedIcon& animatedIcon, winrt::AnimatedIconAnimationQueueBehavior behavior);
     static void SetDurationMultiplier(const winrt::AnimatedIcon& animatedIcon, float multiplier);
     static void SetSpeedUpMultiplier(const winrt::AnimatedIcon& animatedIcon, float multiplier);
+    static void SetQueueLength(const winrt::AnimatedIcon& animatedIcon, int length);
 
     static winrt::hstring GetLastAnimationSegment(const winrt::AnimatedIcon& animatedIcon);
     static winrt::hstring GetLastAnimationSegmentStart(const winrt::AnimatedIcon& animatedIcon);
