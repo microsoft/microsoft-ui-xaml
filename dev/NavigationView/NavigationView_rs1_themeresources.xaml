@@ -278,9 +278,9 @@
     <Thickness x:Key="NavigationViewCompactItemSeparatorMargin">0,3,0,4</Thickness>
     <Thickness x:Key="TopNavigationViewItemSeparatorMargin">3,0,4,0</Thickness>
     <Thickness x:Key="TopNavigationViewOverflowButtonMargin">0</Thickness>
-    <Thickness x:Key="NavigationViewItemContentPresenterMargin">4,-1,20,-1</Thickness>
+    <Thickness x:Key="NavigationViewItemContentPresenterMargin">4,-1,20,0</Thickness>
     <Thickness x:Key="NavigationViewCompactItemContentPresenterMargin">0,0,0,0</Thickness>
-    <Thickness x:Key="TopNavigationViewItemContentPresenterMargin">8,-1,12,-1</Thickness>
+    <Thickness x:Key="TopNavigationViewItemContentPresenterMargin">8,-1,12,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemContentOnlyContentPresenterMargin">12,0</Thickness>
     <Thickness x:Key="NavigationViewItemExpandChevronMargin">0</Thickness>
     <Thickness x:Key="TopNavigationViewItemExpandChevronMargin">-16,0,0,0</Thickness>

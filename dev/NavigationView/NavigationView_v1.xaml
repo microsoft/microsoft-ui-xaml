@@ -563,7 +563,6 @@
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="TabNavigation" Value="Once"/>
-        <Setter Property="Padding" Value="0,0,0,3"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
