@@ -12,6 +12,7 @@
 
     <Page.Resources>
         <local:NullableBooleanToBooleanConverter x:Key="NullableBooleanToBooleanConverter" />
+        <SolidColorBrush x:Key="MyProgressRingForegroundThemeBrush" Color="{ThemeResource SystemAccentColor}" />
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -19,6 +20,7 @@
         <StackPanel Orientation="Vertical">
             <StackPanel Orientation="Horizontal">
                 <controls:ProgressRing
+                    Foreground="{ThemeResource MyProgressRingForegroundThemeBrush}"
                     x:Name="TestProgressRing"
                     AutomationProperties.Name="TestProgressRing"
                     IsActive="{x:Bind ShowIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
@@ -26,7 +28,8 @@
                 />
 
                 <Grid VerticalAlignment="Stretch" Margin="5" Width="100" Height="100">
-                    <controls:ProgressRing IsActive="True" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    <controls:ProgressRing IsActive="True" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                    Foreground="{ThemeResource MyProgressRingForegroundThemeBrush}"/>
                 </Grid>
             </StackPanel>
 
