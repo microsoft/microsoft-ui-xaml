@@ -709,7 +709,6 @@ void NavigationView::OnApplyTemplate()
     UpdatePaneTitleMargins();
     UpdatePaneLayout();
     UpdatePaneOverlayGroup();
-    AddNavigationViewReferenceToPaneFooter();
 }
 
 void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
@@ -4000,7 +3999,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     else if (property == s_PaneFooterProperty)
     {
         UpdatePaneLayout();
-        AddNavigationViewReferenceToPaneFooter();
+        AddNavigationViewReferenceToPaneFooter(args);
     }
 }
 
@@ -5564,26 +5563,17 @@ bool NavigationView::IsTopLevelItem(const winrt::NavigationViewItemBase& nvib)
     return IsRootItemsRepeater(GetParentItemsRepeaterForContainer(nvib));
 }
 
-void NavigationView::AddNavigationViewReferenceToPaneFooter()
+void NavigationView::AddNavigationViewReferenceToPaneFooter(winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    if (auto footerContentBorder = GetTemplateChildT<winrt::ContentControl>(c_leftNavFooterContentBorder, *this))
+    if (const auto nvib = unbox_value<winrt::UIElement>(args.NewValue()))
     {
-        if (auto content = footerContentBorder.Content())
-        {
-            if (auto stackPanel = content.try_as<winrt::StackPanel>())
-            {
-                if (auto elementCollection = stackPanel.Children())
-                {
-                    for (int i = 0; i < static_cast<int>(elementCollection.Size()); i++)
-                    {
-                        if (auto nvib = elementCollection.GetAt(i).try_as<winrt::NavigationViewItemBase>())
-                        {
-                            auto nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
-                            nvibImpl->SetNavigationViewParent(*this);
-                        }
-                    }
-                }
-            }
-        }
+        
+        /*auto nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
+        nvibImpl->SetNavigationViewParent(*this);*/
+        auto nvibimpl = nvib;
     }
+    /*if (auto nvib = newItem.try_as<winrt::NavigationViewItemBase>())
+    {*/
+        
+    //}
 }

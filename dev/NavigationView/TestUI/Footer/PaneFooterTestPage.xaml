@@ -46,6 +46,9 @@
                     AutomationProperties.Name="PaneFooterNavigationViewItem"
                     Content="NVI"
                     Icon="Accept"/>
+                <muxc:NavigationViewItem
+                    Content="NVI2"
+                    Icon="Accept"/>
             </StackPanel>
         </muxc:NavigationView.PaneFooter>
     </muxc:NavigationView>
