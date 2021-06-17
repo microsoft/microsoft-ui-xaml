@@ -22,19 +22,20 @@
   
     <!-- Custom styles for this template -->
     <link href="css/landing-page.css" rel="stylesheet">
-  
-    <!-- CSS files for Microsoft UHF header & footer-->
-    <link rel="stylesheet" href="https://www.microsoft.com/onerfstatics/marketingsites-wcus-ppe/west-european/shell/_scrf/css/themes=default.device=uplevel_web_pc_webkit_chrome/a4-d79dea/49-300017/c3-ad84aa/ef-3482ca/9a-49bbef/f3-b326fa/79-88f619/e6-0516d2?ver=2.0" type="text/css" media="all" />
-  
-    <link rel="stylesheet" href="https://c.s-microsoft.com/mscc/statics/mscc-0.4.2.min.css" type="text/css"/>
-    
+
+    <script src="index.js"></script>
+
   </head>
 
 <body>
 
   <!-- Navigation -->
    <!-- HTML for UHF header provided by Microsoft. -->
-   <div id="UHF-header"></div>
+  <!-- Cookie banner -->
+  <div id="cookie-banner"></div>
+
+  <!-- HTML for UHF header provided by Microsoft. -->
+  <div id="UHF-header-about"></div>
   
 
   <div class="container-fluid">
@@ -78,7 +79,7 @@
           <!-- About section -->
           <section class="content-section">
               <div id="about-section">
-                  <h1 class="subject-header">About WinUI</h1>
+                  <h1 class="subject-header" id="mainHeader">About WinUI</h1>
                   <div id="what-is-it">
                       <h2 class="content-subhead">What is WinUI?</h2>
                       <p><span style="font-weight: 600;">WinUI is a user interface layer that contains modern controls and styles for building Windows apps. </span> As the native UI layer in Windows it embodies <a href="https://www.microsoft.com/design/fluent/#/" class="inline-link" >Fluent Design</a>, giving each Windows app the polished feel that customers expect.
@@ -260,17 +261,20 @@
     
 </div>
 
+ <!-- UHF Footer from Microsoft -->
+ <div class="footer bg-light" id="UHF-footer-about">
+</div>
 
-  <!-- UHF Footer from Microsoft -->
-  <div class="footer bg-light" id="UHF-footer"></div>
+<!-- Javascript: Bootstrap required scripts, UHF header/footer, and custom file -->
+<script src="vendor/jquery/jquery.slim.min.js"/></script>
 
-  <!-- Javascript: Bootstrap required scripts, UHF header/footer, and custom file -->
-  <script src="vendor/jquery/jquery.slim.min.js"/></script>
-  
-  <script src="vendor/popper/popper.min.js"></script>
-  <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
-  <script src="https://www.microsoft.com/onerfstatics/marketingsites-wcus-ppe/shell/_scrf/js/themes=default/54-af9f9f/c0-247156/de-099401/e1-a50eee/e7-954872/d8-97d509/f0-251fe2/46-be1318/77-04a268/11-240c7b/63-077520/a4-34de62/1b-c96630/db-bc0148/dc-7e9864/78-4c7d22/e1-c35781/40-7b7803/cd-23d3b0/6d-1e7ed0/b7-cadaa7/ca-40b7b0/4e-ee3a55/3e-f5c39b/c3-6454d7/f9-7592d3/92-10345d/79-499886/7e-cda2d3/db-f3b1fd/93-283c2d/e0-3c9860/91-97a04f/1f-100dea/33-abe4df/19-c0fae7?ver=2.0&iife=1"></script>
-  <script src="index.js"></script>
+<script src="vendor/popper/popper.min.js"></script>
+<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+
+<!-- Scripts for Microsoft header/footer -->
+<script src="https://wcpstatic.microsoft.com/mscc/lib/v2/wcp-consent.js"></script>
+<script src="https://www.microsoft.com/onerfstatics/marketingsites-eus-prod/shell/_scrf/js/themes=default/54-af9f9f/c0-247156/de-099401/e1-a50eee/e7-954872/d8-97d509/f0-251fe2/46-be1318/77-04a268/11-240c7b/63-077520/a4-34de62/bb-d7480b/db-bc0148/dc-7e9864/6d-c07ea1/9d-b58f60/f6-aa5278/cd-23d3b0/6d-1e7ed0/b7-cadaa7/c4-898cf2/ca-40b7b0/4e-ee3a55/3e-f5c39b/c3-6454d7/f9-7592d3/92-10345d/79-499886/7e-cda2d3/69-13871c/6a-234a32/e0-3c9860/91-97a04f/1f-100dea/33-abe4df/17-f90ef1?ver=2.0&_cf=20210415&iife=1"></script>
+
 </body>
 
 </html>

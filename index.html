@@ -23,12 +23,8 @@
 
   <!-- Custom styles for this template -->
   <link href="css/landing-page.css" rel="stylesheet">
+  <script src="index.js"></script> 
 
-  <!-- CSS files for Microsoft UHF header & footer-->
-  <!-- <link rel="stylesheet" href="https://www.microsoft.com/onerfstatics/marketingsites-wcus-ppe/west-european/shell/_scrf/css/themes=default.device=uplevel_web_pc_webkit_chrome/a4-d79dea/49-300017/c3-ad84aa/ef-3482ca/9a-49bbef/f3-b326fa/79-88f619/e6-0516d2?ver=2.0" type="text/css" media="all" />
-
-  <link rel="stylesheet" href="https://c.s-microsoft.com/mscc/statics/mscc-0.4.2.min.css" type="text/css"/> -->
-  
 </head>
 
 <body>
@@ -53,9 +49,6 @@
                   <div>
                     <a role="button" href="about.html" class="btn btn-custom mt-2 mr-2" id="learn-more">Learn more</a> <a role="button" href="https://docs.microsoft.com/windows/apps/winui/winui3/" target="_blank" class="btn btn-custom mt-2 ml-2" id="download">Try WinUI 3</a>
                   </div><br/>
-                  <!-- <div id="download-div">
-                    <a role="button" href="https://docs.microsoft.com/windows/apps/winui/winui3/" target="_blank" class="btn btn-custom mt-2" id="download">Try WinUI 3</a>
-                  </div> -->
                 </div>
               </div>
               <div class="col-md-6 pl-0 pr-0">
@@ -282,28 +275,10 @@
   
   <script src="vendor/popper/popper.min.js"></script>
   <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
-  <div id="uhf-scripts">
-  </div>
-
   
-  <script>
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange =  function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var xmlResp = this.responseXML;
-            console.log(this.responseXML);
-            var js_markup = xmlResp.getElementsByTagName("javascriptIncludes")[0];
-
-            var uhfScripts = document.getElementById('uhf-scripts');
-            uhfScripts.innerHTML += js_markup.textContent;
-        }
-    };
-
-    xhttp.open("GET", "https://uhf.microsoft.com/en-US/shell/xml/MSWinUI?headerId=MSWinUIHeader&footerid=MSWinUIFooter&CookieComplianceEnabled=true", true);
-    xhttp.send();
-  </script>
-
-  <script src="index.js"></script> 
+  <!-- Scripts for Microsoft header/footer -->
+  <script src="https://wcpstatic.microsoft.com/mscc/lib/v2/wcp-consent.js"></script>
+  <script src="https://www.microsoft.com/onerfstatics/marketingsites-eus-prod/shell/_scrf/js/themes=default/54-af9f9f/c0-247156/de-099401/e1-a50eee/e7-954872/d8-97d509/f0-251fe2/46-be1318/77-04a268/11-240c7b/63-077520/a4-34de62/bb-d7480b/db-bc0148/dc-7e9864/6d-c07ea1/9d-b58f60/f6-aa5278/cd-23d3b0/6d-1e7ed0/b7-cadaa7/c4-898cf2/ca-40b7b0/4e-ee3a55/3e-f5c39b/c3-6454d7/f9-7592d3/92-10345d/79-499886/7e-cda2d3/69-13871c/6a-234a32/e0-3c9860/91-97a04f/1f-100dea/33-abe4df/17-f90ef1?ver=2.0&_cf=20210415&iife=1"></script>
 
 </body>
 
