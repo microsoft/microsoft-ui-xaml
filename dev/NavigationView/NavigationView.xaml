@@ -31,6 +31,7 @@
                                 <VisualState x:Name="Minimal">
                                     <VisualState.Setters>
                                         <Setter Target="HeaderContent.Margin" Value="{ThemeResource NavigationViewMinimalHeaderMargin}" />
+                                        <Setter Target="NavigationViewBackButton.Style" Value="{ThemeResource NavigationBackButtonSmallStyle}" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -43,6 +44,7 @@
                                 <VisualState x:Name="MinimalWithBackButton">
                                     <VisualState.Setters>
                                         <Setter Target="HeaderContent.Margin" Value="{ThemeResource NavigationViewMinimalHeaderMargin}" />
+                                        <Setter Target="NavigationViewBackButton.Style" Value="{ThemeResource NavigationBackButtonSmallStyle}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
