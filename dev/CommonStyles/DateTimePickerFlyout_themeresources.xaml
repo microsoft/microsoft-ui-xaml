@@ -82,6 +82,7 @@
 
     <Thickness x:Key="LoopingSelectorItemMargin">4,2,4,2</Thickness>
     <Thickness x:Key="LoopingSelectorUpDownButtonMargin">0</Thickness>
+    <x:Double  x:Key="LoopingSelectorUpDownButtonHeight">34</x:Double>
     <x:Double  x:Key="LoopingSelectorUpDownButtonScalePressed">0.875</x:Double>
  
     <!-- This style covers the accept/cancel buttons-->
@@ -271,7 +272,7 @@
                             Content="&#xEDDB;"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             FontSize="8"
-                            Height="34"
+                            Height="{ThemeResource LoopingSelectorUpDownButtonHeight}"
                             Padding="0"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Top"
@@ -284,7 +285,7 @@
                             Content="&#xEDDC;"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             FontSize="8"
-                            Height="34"
+                            Height="{ThemeResource LoopingSelectorUpDownButtonHeight}"
                             Padding="0"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Bottom"
