@@ -1,6 +1,6 @@
 # Windows UI Library Roadmap
 
-WinUI is the native UI platform for Windows 10. This document outlines the prospective roadmap for WinUI through 2020 and into 2021. WinUI is under active development by the Windows developer platform team and the roadmap will continue to evolve based on market changes and customer feedback, so please note that the plans outlined here aren't exhaustive or guaranteed. We welcome your feedback on the roadmap: please feel free to contribute to existing issues or [file a new issue](https://github.com/microsoft/microsoft-ui-xaml/issues).
+WinUI is the native UI platform for Windows 10. This document outlines the prospective roadmap for WinUI through 2021. WinUI is under active development by the Windows developer platform team and the roadmap will continue to evolve based on market changes and customer feedback, so please note that the plans outlined here aren't exhaustive or guaranteed. We welcome your feedback on the roadmap: please feel free to contribute to existing issues or [file a new issue](https://github.com/microsoft/microsoft-ui-xaml/issues).
 
 **Note: For a detailed look at the target availability dates for certain features in WinUI 3, see [our feature roadmap](#winui-30-feature-roadmap).**
 
@@ -35,9 +35,9 @@ WinUI is planned to ship roughly every 4 months, with monthly pre-release builds
  
 ## WinUI 2 Controls Library
 
-The next release of the **WinUI 2 Controls Library** will be v2.6, ETA Spring 2021. 
+The next release of the **WinUI 2 Controls Library** will be v2.7, ETA Late Summer 2021. 
 
-WinUI 2.6 will include new Xaml features and fixes for UWP apps on Windows 10.  You can find a list of currently planned work in the [WinUI 2.6 milestone](https://github.com/microsoft/microsoft-ui-xaml/milestone/11).
+WinUI 2.7 will include new Xaml features and fixes for UWP apps on Windows 10.  You can find a list of currently planned work in the [WinUI 2.7 milestone](https://github.com/microsoft/microsoft-ui-xaml/milestone/12).
 
 For installation instructions see [Getting started with the Windows UI Library](https://docs.microsoft.com/en-us/windows/apps/winui/winui2/getting-started).
 
@@ -55,11 +55,15 @@ It focuses on enabling three main use cases:
 3. **Enabling other frameworks**
     * Providing the native implementation for other frameworks like [React Native](https://github.com/Microsoft/react-native-windows) when running on Windows
 
-WinUI 3 is currently available as a part of Project Reunion 0.5 for building stable and supported desktop/Win32 apps for production scenarios: 
+WinUI 3 is available as a part of the [Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk) for building stable and supported desktop/Win32 apps for production scenarios. The latest release is the Windows App SDK 0.8, which you can download and read more about at the documentation linked below:
 
-[Windows UI Library 3 - Project Reunion 0.5 (March 2021)](https://docs.microsoft.com/windows/apps/winui/winui3/)
+[Stable release channel for the Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk/stable-channel)
 
-There's also a preview version of WinUI 3 available that supports building UWP apps - see the [preview release notes](https://aka.ms/winui3/projectreunion-0.8preview). Note that preview releases have limitations and known issues, so they are not equipped for production apps. 
+There's also a preview version of WinUI 3 available that supports building UWP apps. You can read more about the Windows App SDK Preview at the following documentation. Note that preview releases have limitations and known issues, so they are not equipped for production apps. 
+
+[Experimental release channel for the Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk/experimental-channel).
+ 
+
 
 The 3rd generation of WinUI has some key benefits over the 2nd generation, including:
 
@@ -87,12 +91,12 @@ The existing UWP XAML APIs that ship as part of the OS will no longer receive ne
 
 The Universal Windows Platform contains more than just the XAML framework (e.g. application and security model, media pipeline, Xbox and Windows 10 shell integrations, broad device support) and will continue to evolve.
 
-[**Project Reunion**](https://github.com/microsoft/ProjectReunion) is a set of libraries, frameworks, components, and tools that you can use in your apps to access powerful Windows platform functionality from all kinds of apps on many versions of Windows. **WinUI 3 ships as a component of Project Reunion** as it brings modern UI to a variety of Windows app types. 
+The [**Windows App SDK**](https://github.com/microsoft/ProjectReunion) (previously called Project Reunion) is a set of libraries, frameworks, components, and tools that you can use in your apps to access powerful Windows platform functionality from all kinds of apps on many versions of Windows. **WinUI 3 ships as a component of the Windows App SDK** as it brings modern UI to a variety of Windows app types. 
 
 
 ### Updating your apps to use WinUI 3
 
-Creating a new WinUI 3 app will be easy using new [Visual Studio 2019 project templates](https://docs.microsoft.com/windows/apps/winui/winui3/winui-project-templates-in-visual-studio). 
+Creating a new WinUI 3 app will be easy using new [WinUI 3 project templates in Visual Studio](https://docs.microsoft.com/windows/apps/winui/winui3/winui-project-templates-in-visual-studio). 
 
 For existing UWP XAML apps there will be some updates required when migrating to WinUI 3. These updates will require little effort, with the bulk of most project changes involving find-and-replace namespace changes. We'd love to hear your thoughts on the developer experience in the [WinUI 3.0 tooling discussion issue](https://github.com/microsoft/microsoft-ui-xaml/issues/1045).
 
@@ -103,7 +107,7 @@ The first stable, supported version of WinUI 3 has just been released. We plan t
 ## WinUI Release Roadmap for 2021
 The image below lists out what the WinUI team plans to ship in 2021.
 
-For WinUI 3, you can plan to see new preview releases of Project Reunion roughly once a month, with three stable releases this year. For more details on when specific features will become available, see the [Feature Roadmap](##WinUI-30-Feature-Roadmap) below. 
+For WinUI 3, you can plan to see new preview releases of Windows App SDK roughly once a month, with three stable releases this year. For more details on when specific features will become available, see the [Feature Roadmap](##WinUI-30-Feature-Roadmap) below. 
 
 For WinUI 2, you can plan to see frequent pre-releases (see our [Releases](https://github.com/microsoft/microsoft-ui-xaml/releases) page for more info), along with three stable releases this year.
 
@@ -128,9 +132,9 @@ For questions or status updates on either features listed here, or features not 
 Blank -  Not available
 
 
-**WinUI 3 - Project Reunion 0.8 Preview** is our latest release. 
+**WinUI 3 - Windows App SDK 0.8** is our latest release. 
 
-| Customer Capability                                                         | Preview 3 (Nov 2020)                | Preview 4 (Feb 2021)                | Project Reunion 0.5 (March 2021)            | Project Reunion 0.8 (June 2021)              | Planned for a future update         |
+| Customer Capability                                                         | Preview 3 (Nov 2020)                | Preview 4 (Feb 2021)                | Project Reunion 0.5 (March 2021)            | Windows App SDK 0.8 (June 2021)              | Planned for a future update         |
 |-----------------------------------------------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|
 | WinUI 3 in Desktop (Win32) apps                                             | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
 | WinUI 3 in UWP apps                                                         | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> |
