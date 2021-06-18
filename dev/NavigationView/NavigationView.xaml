@@ -22,11 +22,7 @@
                             <VisualStateGroup x:Name="DisplayModeGroup">
                                 <VisualState x:Name="Compact"/>
 
-                                <VisualState x:Name="Expanded">
-                                    <VisualState.Setters>
-                                        <Setter Target="RootSplitView.PaneBackground" Value="{ThemeResource NavigationViewExpandedPaneBackground}" />
-                                    </VisualState.Setters>
-                                </VisualState>
+                                <VisualState x:Name="Expanded" />
 
                                 <VisualState x:Name="Minimal">
                                     <VisualState.Setters>
@@ -199,7 +195,6 @@
                         <!-- Button grid -->
                         <Grid
                             x:Name="PaneToggleButtonGrid"
-                            Margin="0,0,0,8"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Top"
                             Canvas.ZIndex="100">
