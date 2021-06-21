@@ -399,7 +399,11 @@
                                                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                                                         <local:ItemsRepeater
                                                                     AutomationProperties.AccessibilityView = "Content"
-                                                                    x:Name="TopNavMenuItemsOverflowHost"/>
+                                                                    x:Name="TopNavMenuItemsOverflowHost">
+                                                            <local:ItemsRepeater.Layout>
+                                                                <local:StackLayout />
+                                                            </local:ItemsRepeater.Layout>
+                                                        </local:ItemsRepeater>
                                                     </ScrollViewer>
                                                 </local:ItemsRepeaterScrollHost>
                                             </Flyout>
@@ -581,7 +585,11 @@
                                                     <local:ItemsRepeater
                                                         x:Name="MenuItemsHost"
                                                         AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
-                                                        AutomationProperties.AccessibilityView = "Content"/>
+                                                        AutomationProperties.AccessibilityView = "Content">
+                                                        <local:ItemsRepeater.Layout>
+                                                            <local:StackLayout />
+                                                        </local:ItemsRepeater.Layout>
+                                                    </local:ItemsRepeater>
                                                 </ScrollViewer>
                                             </local:ItemsRepeaterScrollHost>
 
@@ -608,7 +616,11 @@
                                                     contract7Present:VerticalAnchorRatio="1">
                                                     <local:ItemsRepeater
                                                         x:Name="FooterMenuItemsHost"
-                                                        AutomationProperties.AccessibilityView = "Content"/>
+                                                        AutomationProperties.AccessibilityView = "Content">
+                                                        <local:ItemsRepeater.Layout>
+                                                            <local:StackLayout />
+                                                        </local:ItemsRepeater.Layout>
+                                                    </local:ItemsRepeater>
                                                 </ScrollViewer>
                                             </local:ItemsRepeaterScrollHost>
                                         </Grid>
