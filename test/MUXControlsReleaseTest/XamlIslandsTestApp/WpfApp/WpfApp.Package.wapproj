@@ -63,6 +63,9 @@
     <ProjectReference Include="WpfApp.csproj">
       <SkipGetTargetFrameworkProperties>True</SkipGetTargetFrameworkProperties>
       <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
+      <!-- A recent update to MSBuild targets caused this property not to get set on all instances of MSBuild calls to WpfApp.csproj,
+           making us pick up the wrong value for $(OutDir) and causing a build error.  Let's make sure we set it. -->
+      <SetTargetFramework>IsBeingPackaged=true</SetTargetFramework>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />

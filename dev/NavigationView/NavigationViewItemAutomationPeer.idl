@@ -9,7 +9,7 @@ unsealed runtimeclass NavigationViewItemAutomationPeer : Windows.UI.Xaml.Automat
 }
 
 
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass NavigationViewAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {

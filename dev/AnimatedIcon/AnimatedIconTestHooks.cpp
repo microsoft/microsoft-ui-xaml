@@ -39,6 +39,14 @@ void AnimatedIconTestHooks::SetSpeedUpMultiplier(const winrt::AnimatedIcon& anim
     }
 }
 
+void AnimatedIconTestHooks::SetQueueLength(const winrt::AnimatedIcon& animatedIcon, int length)
+{
+    if (animatedIcon)
+    {
+        winrt::get_self<AnimatedIcon>(animatedIcon)->SetQueueLength(length);
+    }
+}
+
 winrt::hstring AnimatedIconTestHooks::GetLastAnimationSegment(const winrt::AnimatedIcon& animatedIcon)
 {
     if (animatedIcon)
