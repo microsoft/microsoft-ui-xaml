@@ -213,6 +213,7 @@ namespace MUXControlsTestApp
 #if DEBUG
             if (System.Diagnostics.Debugger.IsAttached)
             {
+                this.DebugSettings.FailFastOnErrors = true;
                 this.DebugSettings.EnableFrameRateCounter = false;
                 this.DebugSettings.BindingFailed += (object sender, BindingFailedEventArgs args) =>
                 {
