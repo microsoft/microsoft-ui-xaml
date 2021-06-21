@@ -131,8 +131,15 @@ void XamlControlsResources::UpdateSource()
     // Since something must go horribly wrong for those lookups to fail, we just assume they exist.
     if (SharedHelpers::Is19H1OrHigher())
     {
-        UpdateAcrylicBrushesDarkTheme(ThemeDictionaries().Lookup(box_value(L"Default")));
-        UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
+        try
+        {
+            UpdateAcrylicBrushesDarkTheme(ThemeDictionaries().Lookup(box_value(L"Default")));
+            UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
+        }
+        catch (winrt::hresult_error const& e)
+        {
+            MUX_FAIL_FAST_MSG("Fail to update acrylic brush");
+        }
     }
 
     s_tlsIsControlsResourcesVersion2 = useControlsResourcesVersion2;
