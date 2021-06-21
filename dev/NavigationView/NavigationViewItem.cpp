@@ -96,22 +96,6 @@ void NavigationViewItem::OnApplyTemplate()
 
     m_toolTip.set(GetTemplateChildT<winrt::ToolTip>(L"ToolTip"sv, controlProtected));
 
-    m_flyoutContentGrid.set(GetTemplateChildT<winrt::Grid>(c_flyoutContentGrid, controlProtected));
-
-    m_appliedTemplate = true;
-
-    UpdateItemIndentation();
-    UpdateVisualStateNoTransition();
-    ReparentRepeater();
-    // We dont want to update the repeater visibilty during OnApplyTemplate if NavigationView is in a mode when items are shown in a flyout
-    if (!ShouldRepeaterShowInFlyout())
-    {
-        ShowHideChildren();
-    }
-
-    auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
-    NavigationView::CreateAndAttachHeaderAnimation(visual);
-
     if (auto splitView = GetSplitView())
     {
         m_splitViewIsPaneOpenChangedRevoker = RegisterPropertyChanged(splitView,
@@ -121,6 +105,7 @@ void NavigationViewItem::OnApplyTemplate()
         m_splitViewCompactPaneLengthChangedRevoker = RegisterPropertyChanged(splitView,
             winrt::SplitView::CompactPaneLengthProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
 
+        UpdateCompactPaneLength();
         UpdateIsClosedCompact();
     }
 
@@ -140,6 +125,22 @@ void NavigationViewItem::OnApplyTemplate()
 
         UpdateRepeaterItemsSource();
     }
+
+    m_flyoutContentGrid.set(GetTemplateChildT<winrt::Grid>(c_flyoutContentGrid, controlProtected));
+
+    m_appliedTemplate = true;
+
+    UpdateItemIndentation();
+    UpdateVisualStateNoTransition();
+    ReparentRepeater();
+    // We dont want to update the repeater visibilty during OnApplyTemplate if NavigationView is in a mode when items are shown in a flyout
+    if (!ShouldRepeaterShowInFlyout())
+    {
+        ShowHideChildren();
+    }
+
+    auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
+    NavigationView::CreateAndAttachHeaderAnimation(visual);
 }
 
 void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
