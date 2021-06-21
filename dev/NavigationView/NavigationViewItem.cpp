@@ -111,12 +111,6 @@ void NavigationViewItem::OnApplyTemplate()
 
     auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
     NavigationView::CreateAndAttachHeaderAnimation(visual);
-}
-
-void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
-{
-    winrt::IControlProtected controlProtected = *this;
-    m_helper.Init(controlProtected);
 
     if (auto splitView = GetSplitView())
     {
@@ -127,7 +121,6 @@ void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEvent
         m_splitViewCompactPaneLengthChangedRevoker = RegisterPropertyChanged(splitView,
             winrt::SplitView::CompactPaneLengthProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
 
-        UpdateCompactPaneLength();
         UpdateIsClosedCompact();
     }
 
@@ -147,6 +140,13 @@ void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEvent
 
         UpdateRepeaterItemsSource();
     }
+}
+
+void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+{
+    // This is moved to OnLoaded so that if the NVI is not prepared in an ItemPresenter, it will still have reference
+    // to NavView from NavigationViewItemBase::OnLoaded(). This will allow its TemplateSettings to be properly set.
+    UpdateCompactPaneLength();
 }
 
 void NavigationViewItem::UpdateRepeaterItemsSource()
