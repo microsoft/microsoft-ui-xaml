@@ -281,6 +281,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     presenter.MaxHeight(std::numeric_limits<double>::infinity());
     presenter.BorderThickness(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Padding(winrt::ThicknessHelper::FromUniformLength(0));
+    presenter.Translation({ 0.0f, 0.0f, 32.0f });
     presenter.Content(*commandBar);
 
     // Disable the default shadow, as we'll be providing our own shadow.
