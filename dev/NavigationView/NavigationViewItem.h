@@ -116,6 +116,8 @@ private:
     void UnhookInputEvents();
     void UnhookEventsAndClearFields();
 
+    void PrepNavigationViewItem(const winrt::SplitView& splitView);
+
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
     PropertyChanged_revoker m_splitViewCompactPaneLengthChangedRevoker{};

@@ -73,7 +73,6 @@ void NavigationViewItem::OnApplyTemplate()
     UnhookEventsAndClearFields();
 
     NavigationViewItemBase::OnApplyTemplate();
-    Loaded({ this, &NavigationViewItem::OnLoaded });
 
     // Find selection indicator
     // Retrieve pointers to stable controls 
@@ -98,15 +97,13 @@ void NavigationViewItem::OnApplyTemplate()
 
     if (auto splitView = GetSplitView())
     {
-        m_splitViewIsPaneOpenChangedRevoker = RegisterPropertyChanged(splitView,
-            winrt::SplitView::IsPaneOpenProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
-        m_splitViewDisplayModeChangedRevoker = RegisterPropertyChanged(splitView,
-            winrt::SplitView::DisplayModeProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
-        m_splitViewCompactPaneLengthChangedRevoker = RegisterPropertyChanged(splitView,
-            winrt::SplitView::CompactPaneLengthProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
-
-        UpdateCompactPaneLength();
-        UpdateIsClosedCompact();
+        PrepNavigationViewItem(splitView);
+    }
+    else
+    {
+        // If the NVI is not prepared in an ItemPresenter, it will not have reference to SplitView. So check OnLoaded
+        // if it the reference has been manually set in NavigationViewItemBase::OnLoaded(). 
+        Loaded({ this, &NavigationViewItem::OnLoaded });
     }
 
     // Retrieve reference to NavigationView
@@ -145,9 +142,10 @@ void NavigationViewItem::OnApplyTemplate()
 
 void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
-    // This is moved to OnLoaded so that if the NVI is not prepared in an ItemPresenter, it will still have reference
-    // to NavView from NavigationViewItemBase::OnLoaded(). This will allow its TemplateSettings to be properly set.
-    UpdateCompactPaneLength();
+    if (auto splitView = GetSplitView())
+    {
+        PrepNavigationViewItem(splitView);
+    }
 }
 
 void NavigationViewItem::UpdateRepeaterItemsSource()
@@ -1091,4 +1089,17 @@ void NavigationViewItem::UnhookEventsAndClearFields()
     m_toolTip.set(nullptr);
     m_repeater.set(nullptr);
     m_flyoutContentGrid.set(nullptr);
+}
+
+void NavigationViewItem::PrepNavigationViewItem(const winrt::SplitView& splitView)
+{
+    m_splitViewIsPaneOpenChangedRevoker = RegisterPropertyChanged(splitView,
+        winrt::SplitView::IsPaneOpenProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
+    m_splitViewDisplayModeChangedRevoker = RegisterPropertyChanged(splitView,
+        winrt::SplitView::DisplayModeProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
+    m_splitViewCompactPaneLengthChangedRevoker = RegisterPropertyChanged(splitView,
+        winrt::SplitView::CompactPaneLengthProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
+
+    UpdateCompactPaneLength();
+    UpdateIsClosedCompact();
 }
