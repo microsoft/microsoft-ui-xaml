@@ -28,6 +28,8 @@
                                     <VisualState.Setters>
                                         <Setter Target="HeaderContent.Margin" Value="{ThemeResource NavigationViewMinimalHeaderMargin}" />
                                         <Setter Target="NavigationViewBackButton.Style" Value="{ThemeResource NavigationBackButtonSmallStyle}" />
+                                        <Setter Target="ContentGrid.BorderThickness" Value="{ThemeResource NavigationViewMinimalContentGridBorderThickness}" />
+                                        <Setter Target="ContentGrid.CornerRadius" Value="{ThemeResource NavigationViewMinimalContentGridCornerRadius}" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -41,6 +43,8 @@
                                     <VisualState.Setters>
                                         <Setter Target="HeaderContent.Margin" Value="{ThemeResource NavigationViewMinimalHeaderMargin}" />
                                         <Setter Target="NavigationViewBackButton.Style" Value="{ThemeResource NavigationBackButtonSmallStyle}" />
+                                        <Setter Target="ContentGrid.BorderThickness" Value="{ThemeResource NavigationViewMinimalContentGridBorderThickness}" />
+                                        <Setter Target="ContentGrid.CornerRadius" Value="{ThemeResource NavigationViewMinimalContentGridCornerRadius}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
