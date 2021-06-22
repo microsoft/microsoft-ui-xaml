@@ -55,16 +55,16 @@ jobs:
     displayName: 'CopyBackLocalizedFiles.ps1'
 
   - powershell: |
-        $changes = & git ls-files -m
-        Write-Host "Edited files:"
-        Write-Host "$changes"
-        if ($changes -imatch "\.resw")
+      $changes = & git ls-files -m
+      Write-Host "Edited files:"
+      Write-Host "$changes"
+      if ($changes -imatch "\.resw")
+      {
+        Write-Host "##vso[task.complete result=SucceededWithIssues;]"
+        Write-Host "##vso[task.logissue type=warning;]Localization updates needed"
+        foreach ($change in $changes)
         {
-          Write-Host "##vso[task.complete result=SucceededWithIssues;]"
-          Write-Host "##vso[task.logissue type=warning;]Localization updates needed"
-          foreach ($change in $changes)
-          {
-            Write-Host "##vso[task.logissue type=warning;]$change"
-          }
+          Write-Host "##vso[task.logissue type=warning;]$change"
         }
-      displayName: checkEditedFiles
+      }
+    displayName: checkEditedFiles
