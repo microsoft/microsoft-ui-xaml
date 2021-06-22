@@ -1788,5 +1788,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 }
             }
         }
+
+        [TestMethod]
+        public void VerifyNavigationViewItemInPaneFooterHasTemplateSettingBindings()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "PaneFooterTestPage" }))
+            {
+                TextBlock paneFooterNavViewItemWidthTextBlock = new TextBlock(FindElement.ByName("PaneFooterNavViewItemWidth"));
+                ComboBox compactPaneLengthComboBox = new ComboBox(FindElement.ByName("CompactPaneLengthComboBox"));
+                UIObject getIconColumnWidth = FindElement.ByName("GetIconColumnWidth");
+
+                getIconColumnWidth.Click();
+
+                Log.Comment("Verify IconColumnWidth is binded correctly to SmallerIconWidthProperty");
+                Verify.AreEqual("40", paneFooterNavViewItemWidthTextBlock.DocumentText); 
+
+                Log.Comment("Change CompactPaneLength to 40px");
+                compactPaneLengthComboBox.SelectItemByName("40");
+                Wait.ForIdle();
+
+                getIconColumnWidth.Click();
+                Wait.ForIdle();
+
+                Verify.AreEqual("32", paneFooterNavViewItemWidthTextBlock.DocumentText);
+
+                Log.Comment("Change CompactPaneLength to 96px");
+                compactPaneLengthComboBox.SelectItemByName("96");
+                Wait.ForIdle();
+                getIconColumnWidth.Click();
+                Wait.ForIdle();
+
+                Verify.AreEqual("88", paneFooterNavViewItemWidthTextBlock.DocumentText);
+            }
+        }
     }
 }
