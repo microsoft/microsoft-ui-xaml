@@ -424,7 +424,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="NormalOff"/>
+                                        <Setter Target="CheckGlyph.(local:AnimatedIcon.State)" Value="NormalOff"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="UncheckedPointerOver">
@@ -450,7 +450,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="PointerOverOff"/>
+                                        <Setter Target="CheckGlyph.(local:AnimatedIcon.State)" Value="PointerOverOff"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="UncheckedPressed">
@@ -476,7 +476,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="PressedOff"/>
+                                        <Setter Target="CheckGlyph.(local:AnimatedIcon.State)" Value="PressedOff"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="UncheckedDisabled">
@@ -503,7 +503,7 @@
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <!-- DisabledVisual Should be handled by the control, not the animated icon. -->
-                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="NormalOff"/>
+                                        <Setter Target="CheckGlyph.(local:AnimatedIcon.State)" Value="NormalOff"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="CheckedNormal">
@@ -533,7 +533,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="NormalOn"/>
+                                        <Setter Target="CheckGlyph.(local:AnimatedIcon.State)" Value="NormalOn"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="CheckedPointerOver">
@@ -563,7 +563,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="PointerOverOn"/>
+                                        <Setter Target="CheckGlyph.(local:AnimatedIcon.State)" Value="PointerOverOn"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="CheckedPressed">
@@ -593,7 +593,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="PressedOn"/>
+                                        <Setter Target="CheckGlyph.(local:AnimatedIcon.State)" Value="PressedOn"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="CheckedDisabled">
@@ -624,7 +624,7 @@
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <!-- DisabledVisual Should be handled by the control, not the animated icon. -->
-                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="NormalOn"/>
+                                        <Setter Target="CheckGlyph.(local:AnimatedIcon.State)" Value="NormalOn"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="IndeterminateNormal">
@@ -657,7 +657,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="NormalIndeterminate"/>
+                                        <Setter Target="CheckGlyph.(local:AnimatedIcon.State)" Value="NormalIndeterminate"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="IndeterminatePointerOver">
@@ -690,7 +690,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="PointerOverIndeterminate"/>
+                                        <Setter Target="CheckGlyph.(local:AnimatedIcon.State)" Value="PointerOverIndeterminate"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="IndeterminatePressed">
@@ -723,7 +723,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="PressedIndeterminate"/>
+                                        <Setter Target="CheckGlyph.(local:AnimatedIcon.State)" Value="PressedIndeterminate"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="IndeterminateDisabled">
@@ -757,7 +757,7 @@
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <!-- DisabledVisual Should be handled by the control, not the animated icon. -->
-                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="NormalIndeterminate"/>
+                                        <Setter Target="CheckGlyph.(local:AnimatedIcon.State)" Value="NormalIndeterminate"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
