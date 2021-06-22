@@ -142,8 +142,19 @@ void XamlControlsResources::UpdateSource()
     // Since something must go horribly wrong for those lookups to fail, we just assume they exist.
     if (SharedHelpers::Is19H1OrHigher())
     {
-        UpdateAcrylicBrushesDarkTheme(ThemeDictionaries().Lookup(box_value(L"Default")));
-        UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
+        try
+        {
+            UpdateAcrylicBrushesDarkTheme(ThemeDictionaries().Lookup(box_value(L"Default")));
+            UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
+        }
+        catch (winrt::hresult_error const& e)
+        {
+            if (e.code() == E_FAIL)
+            {
+                MUX_FAIL_FAST_MSG(e.message().c_str());
+            }
+            throw e;
+        }
     }
 
     s_tlsIsControlsResourcesVersion2 = useControlsResourcesVersion2;
