@@ -1296,7 +1296,8 @@
                                     <Grid
                                         x:Name="OuterOverflowContentRootV2"
                                         RequestedTheme="{TemplateBinding ActualTheme}"
-                                        Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}">
+                                        Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}"
+                                        contract7Present:Translation="0,0,32">
                                         <Grid.RenderTransform>
                                             <TranslateTransform
                                                 x:Name="OverflowContentRootTransform"
