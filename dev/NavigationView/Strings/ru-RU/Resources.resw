@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NavigationButtonClosedName" xml:space="preserve">
-    <value>TEST</value>
+    <value>Открыть навигацию</value>
     <comment>Automation name for the hamburger button when it is in a closed state</comment>
   </data>
   <data name="NavigationButtonOpenName" xml:space="preserve">
