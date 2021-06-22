@@ -40,7 +40,7 @@ unsealed runtimeclass CommandBarFlyoutCommandBar : Windows.UI.Xaml.Controls.Comm
 };
 
 // Needed so we can access these enum and interfaces until they ship in the official SDK.
-[MUX_INTERNAL]
+[MUX_PUBLIC]
 [webhosthidden]
 enum PopupPlacementMode
 {
@@ -81,7 +81,7 @@ interface IAutomationPropertiesStatics9
     void SetControlType(Windows.UI.Xaml.UIElement element, Windows.UI.Xaml.Automation.Peers.AutomationControlType value);
 };
 
-[MUX_INTERNAL]
+[MUX_PUBLIC]
 [webhosthidden]
 static runtimeclass CommandBarFlyoutCommandBarAutomationProperties
 {
