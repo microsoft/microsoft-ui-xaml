@@ -138,7 +138,7 @@ void XamlControlsResources::UpdateSource()
         }
         catch (winrt::hresult_error const& e)
         {
-            MUX_FAIL_FAST_MSG("Fail to update acrylic brush");
+            MUX_FAIL_FAST_MSG(e.message().c_str());
         }
     }
 
