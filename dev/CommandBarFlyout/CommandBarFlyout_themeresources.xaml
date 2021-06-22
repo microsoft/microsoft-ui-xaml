@@ -795,7 +795,7 @@
                                                                     Duration="{StaticResource ControlFasterAnimationDuration}" />
                             </contract7Present:Storyboard>
 
-                            <contract7Present:Storyboard x:Name="ClosingOpacityStoryboard" FillBehavior="Stop">
+                            <contract7Present:Storyboard x:Name="ClosingOpacityStoryboard" FillBehavior="HoldEnd">
                                 <DoubleAnimation Storyboard.TargetName="LayoutRoot"
                                                                     Storyboard.TargetProperty="Opacity"
                                                                     From="1"

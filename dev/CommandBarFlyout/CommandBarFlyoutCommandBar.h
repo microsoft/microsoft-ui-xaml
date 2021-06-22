@@ -105,7 +105,6 @@ private:
     tracker_ref<winrt::Storyboard> m_openingStoryboard{ this };
     tracker_ref<winrt::Storyboard> m_closingStoryboard{ this };
     winrt::Storyboard::Completed_revoker m_openingStoryboardCompletedRevoker{};
-    winrt::Storyboard::Completed_revoker m_closingStoryboardCompletedRevoker{};
     winrt::Storyboard::Completed_revoker m_closingStoryboardCompletedCallbackRevoker{};
 
     bool m_secondaryItemsRootSized{ false };
