@@ -138,7 +138,11 @@ void XamlControlsResources::UpdateSource()
         }
         catch (winrt::hresult_error const& e)
         {
-            MUX_FAIL_FAST_MSG(e.message().c_str());
+            if (e.code() == E_FAIL)
+            {
+                MUX_FAIL_FAST_MSG(e.message().c_str());
+            }
+            throw e;
         }
     }
 
