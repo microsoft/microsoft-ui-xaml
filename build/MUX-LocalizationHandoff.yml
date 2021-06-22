@@ -47,3 +47,24 @@ jobs:
       artifactName: 'LocalizationDrop'
       parallel: true
       parallelCount: 8
+
+  # Copy back files returned from localization service and notify if there are changes that need to be commited
+  - powershell: |
+      & "$env:Build_SourcesDirectory\build\Localization\CopyBackLocalizedFiles.ps1" `
+        -LocalizedFilesLocation '${{ variables.resourceOutputDirectory }}'
+    displayName: 'CopyBackLocalizedFiles.ps1'
+
+  - powershell: |
+        $changes = & git ls-files -m
+        Write-Host "Edited files:"
+        Write-Host "$changes"
+        if ($changes -imatch "\.resw")
+        {
+          Write-Host "##vso[task.complete result=SucceededWithIssues;]"
+          Write-Host "##vso[task.logissue type=warning;]Localization updates needed"
+          foreach ($change in $changes)
+          {
+            Write-Host "##vso[task.logissue type=warning;]$change"
+          }
+        }
+      displayName: checkEditedFiles
