@@ -34,6 +34,7 @@
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
+            <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SystemControlTransparentBrush" />
@@ -62,6 +63,7 @@
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
+            <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
@@ -90,6 +92,7 @@
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
+            <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -103,8 +106,6 @@
     <Thickness x:Key="AppBarButtonInnerBorderMargin">2,6,2,6</Thickness>
     <Thickness x:Key="AppBarButtonInnerBorderCompactMargin">2,6,2,22</Thickness>
     <Thickness x:Key="AppBarButtonInnerBorderOverflowMargin">4,0,4,0</Thickness>
-
-    <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
 
     <Style TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}" />
 
