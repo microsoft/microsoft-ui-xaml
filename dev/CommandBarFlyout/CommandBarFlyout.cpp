@@ -282,6 +282,10 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     presenter.BorderThickness(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Padding(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Content(*commandBar);
+    if (SharedHelpers::IsRS5OrHigher())
+    {
+        presenter.Translation({ 0.0f, 0.0f, 32.0f });
+    }
 
     // Disable the default shadow, as we'll be providing our own shadow.
     if (winrt::IFlyoutPresenter2 presenter2 = presenter)

@@ -74,32 +74,36 @@
             </CommandBar>
 
             <CommandBar DefaultLabelPosition="Right" OverflowButtonVisibility="Collapsed">
-                <AppBarButton Icon="Add" Label="Add" />
-                <AppBarButton Icon="Remove" Label="Remove" />
-                <AppBarSeparator />
-                <AppBarButton Icon="Save" Label="Save" />
-                <AppBarToggleButton Icon="Add" Label="Toggle" />
+                <AppBarButton Icon="Add" Label="Add"/>
+                <AppBarButton Icon="Remove" Label="Remove"/>
+                <AppBarSeparator/>
+                <AppBarButton Icon="Save" Label="Save"/>
+                <AppBarToggleButton Icon="Keyboard" Label="Toggle"/>
                 <contract7Present:AppBarElementContainer>
                     <controls:SplitButton>
-                        <Grid Margin="0,1,0,0">
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <SymbolIcon Margin="0,0,8,0" Symbol="Keyboard" />
-                            <TextBlock Grid.Column="1" Text="Split" />
+                            <Viewbox Height="16" Margin="0,0,8,0">
+                                <SymbolIcon Symbol="Keyboard"/>
+                            </Viewbox>
+                            <TextBlock Grid.Column="1" Text="Split"/>
                         </Grid>
                     </controls:SplitButton>
                 </contract7Present:AppBarElementContainer>
                 <contract7Present:AppBarElementContainer>
                     <controls:ToggleSplitButton>
-                        <Grid Margin="0,1,0,0">
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <SymbolIcon Margin="0,0,8,0" Symbol="Shuffle" />
-                            <TextBlock Grid.Column="1" Text="Toggle" />
+                            <Viewbox Height="16" Margin="0,0,8,0">
+                                <SymbolIcon Symbol="Shuffle"/>
+                            </Viewbox>
+                            <TextBlock Grid.Column="1" Text="Toggle"/>
                         </Grid>
                     </controls:ToggleSplitButton>
                 </contract7Present:AppBarElementContainer>
@@ -180,10 +184,10 @@
                         <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
                     </AppBarButton.Resources>
                     <AppBarButton.Flyout>
-                        <contract7Present:CommandBarFlyout Placement="Right">
+                        <controls:CommandBarFlyout Placement="Right">
                             <AppBarButton Icon="Play" />
                             <AppBarButton Icon="People" />
-                        </contract7Present:CommandBarFlyout>
+                        </controls:CommandBarFlyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
                 <AppBarButton
@@ -199,6 +203,29 @@
                     <AppBarSeparator />
                     <AppBarToggleButton Icon="Add" Label="Toggle" />
                 </CommandBar.SecondaryCommands>
+            </CommandBar>
+
+            <TextBlock Text="AppBarButton with flyout with visibility override and glyph override"/>
+            <CommandBar HorizontalAlignment="Left" DefaultLabelPosition="Right">
+                <CommandBar.Resources>
+                    <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE972;</x:String>
+                </CommandBar.Resources>
+                <AppBarButton Icon="Add" Label="Add">
+                    <AppBarButton.Resources>
+                        <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
+                    </AppBarButton.Resources>
+                    <AppBarButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuFlyoutItem Text="Item 1"/>
+                            <MenuFlyoutItem Text="Item 2"/>
+                            <MenuFlyoutItem Text="Item 3"/>
+                        </MenuFlyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
+                <AppBarButton Icon="Remove" Label="Remove" LabelPosition="Collapsed"/>
+                <AppBarSeparator/>
+                <AppBarButton Icon="Save" Label="Save"/>
+                <AppBarToggleButton Icon="Add" Label="Toggle"/>
             </CommandBar>
         </StackPanel>
 
