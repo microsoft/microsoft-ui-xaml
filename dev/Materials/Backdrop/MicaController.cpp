@@ -8,10 +8,20 @@
 
 MicaController::~MicaController()
 {
-    // If we are going away and we own the backdrop, clear it.
-    if (m_target && m_target.SystemBackdrop() == m_currentBrush)
+    if (auto target = m_target.get())
     {
-        m_target.SystemBackdrop(nullptr);
+        try
+        {
+            // If we are going away and we own the backdrop, clear it.
+            if (target.SystemBackdrop() == m_currentBrush)
+            {
+                target.SystemBackdrop(nullptr);
+            }
+        }
+        catch (winrt::hresult_error)
+        {
+            // If we are called during shutdown then getting SystemBackdrop will fail with E_UNEXPECTED
+        }
     }
 }
 
@@ -168,7 +178,7 @@ bool MicaController::IsMicaSupported() const
 
 void MicaController::Crossfade(const winrt::Windows::UI::Composition::CompositionBrush& newBrush)
 {
-    const winrt::CompositionBrush& oldBrush = m_target.SystemBackdrop();
+    const winrt::CompositionBrush& oldBrush = m_target.get().SystemBackdrop();
 
     if (oldBrush == nullptr)
     {
@@ -202,7 +212,7 @@ void MicaController::Crossfade(const winrt::Windows::UI::Composition::Compositio
 void MicaController::UpdateSystemBackdropBrush(const winrt::CompositionBrush& brush)
 {
     m_currentBrush = brush;
-    m_target.SystemBackdrop(m_currentBrush);
+    m_target.get().SystemBackdrop(m_currentBrush);
 }
 
 void MicaController::Update()

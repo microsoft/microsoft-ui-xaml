@@ -56,7 +56,7 @@
 
         </StackPanel>
         
-        <muxc:NavigationView IsTitleBarAutoPaddingEnabled="true" Grid.Row="1" IsBackEnabled="true">
+        <muxc:NavigationView x:Name="_navigationView" IsTitleBarAutoPaddingEnabled="true" Grid.Row="1" IsBackEnabled="true">
             <muxc:NavigationView.MenuItems>
                 <muxc:NavigationViewItem Icon="AddFriend" Content="Add Friend"/>
                 <muxc:NavigationViewItem Icon="Cut" Content="Cut"/>
@@ -81,6 +81,8 @@
                                 Margin="0,8,0,0"
                                 Width="200"
                                 Value="{x:Bind mupc:BackdropMaterialTestApi.TintOpacity, Mode=TwoWay}" Minimum="0" Maximum="1" SmallChange="0.01" LargeChange="0.1" StepFrequency="0.01"/>
+
+                            <Button Content="Create secondary view" Click="NewView"/>
                         </StackPanel>
                     </Grid>
                 </Frame>

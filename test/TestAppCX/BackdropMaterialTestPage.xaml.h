@@ -31,7 +31,7 @@ namespace TestAppCX
 	{
 	public:
         BackdropMaterialTestPage();
-
+        
         void OnNavigatedTo(NavigationEventArgs^ e) override;
         void OnNavigatingFrom(NavigatingCancelEventArgs^ e) override;
 
@@ -48,5 +48,8 @@ namespace TestAppCX
 
         Windows::Foundation::EventRegistrationToken m_layoutMetricsChangedToken;
         Windows::Foundation::EventRegistrationToken m_activatedToken;
+        void NewView(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+        void OnBackRequested(Microsoft::UI::Xaml::Controls::NavigationView^ sender, Microsoft::UI::Xaml::Controls::NavigationViewBackRequestedEventArgs^ args);
+        void CloseWindow(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
     };
 }
