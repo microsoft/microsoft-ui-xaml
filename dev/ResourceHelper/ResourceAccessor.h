@@ -193,4 +193,8 @@ public:
 
 #define SR_AutomationNameEllipsisBreadcrumbBarItem L"AutomationNameEllipsisBreadcrumbBarItem"
 
+#define SR_CommandBarFlyoutCommandBarLocalizedControlType L"CommandBarFlyoutCommandBarLocalizedControlType"
+#define SR_CommandBarFlyoutAppBarButtonLocalizedControlType L"CommandBarFlyoutAppBarButtonLocalizedControlType"
+#define SR_CommandBarFlyoutAppBarToggleButtonLocalizedControlType L"CommandBarFlyoutAppBarToggleButtonLocalizedControlType"
+
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"

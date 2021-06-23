@@ -51,7 +51,10 @@ private:
     void UpdateVisualState(bool useTransitions);
     void UpdateTemplateSettings();
     void EnsureAutomationSetCountAndPosition();
+    void EnsureLocalizedControlTypes();
+    void SetKnownCommandLocalizedControlTypes(winrt::ICommandBarElement const& command);
     void EnsureFocusedPrimaryCommand();
+    void PopulateAccessibleControls();
 
     void SetPresenterName(winrt::FlyoutPresenter const& presenter);
 
@@ -102,7 +105,6 @@ private:
     tracker_ref<winrt::Storyboard> m_openingStoryboard{ this };
     tracker_ref<winrt::Storyboard> m_closingStoryboard{ this };
     winrt::Storyboard::Completed_revoker m_openingStoryboardCompletedRevoker{};
-    winrt::Storyboard::Completed_revoker m_closingStoryboardCompletedRevoker{};
     winrt::Storyboard::Completed_revoker m_closingStoryboardCompletedCallbackRevoker{};
 
     bool m_secondaryItemsRootSized{ false };
@@ -113,4 +115,7 @@ private:
     winrt::Storyboard::Completed_revoker m_expandedDownToCollapsedStoryboardRevoker{};
     winrt::Storyboard::Completed_revoker m_collapsedToExpandedUpStoryboardRevoker{};
     winrt::Storyboard::Completed_revoker m_collapsedToExpandedDownStoryboardRevoker{};
+
+    winrt::IVector<winrt::Control> m_horizontallyAccessibleControls{ nullptr };
+    winrt::IVector<winrt::Control> m_verticallyAccessibleControls{ nullptr };
 };

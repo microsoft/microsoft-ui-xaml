@@ -181,6 +181,11 @@ CommandBarFlyout::CommandBarFlyout()
                     commandBar->PlayOpenAnimation();
                 }
             }
+
+            if (auto commandBarPeer = winrt::FrameworkElementAutomationPeer::FromElement(m_commandBar.get()))
+            {
+                commandBarPeer.RaiseAutomationEvent(winrt::AutomationEvents::MenuOpened);
+            }
         }
     });
 
@@ -225,11 +230,16 @@ CommandBarFlyout::CommandBarFlyout()
     Closed({
         [this](auto const&, auto const&)
         {
-            if (auto commandBar = m_commandBar.get())
+            if (auto& commandBar = m_commandBar.get())
             {
                 if (commandBar.IsOpen())
                 {
                     commandBar.IsOpen(false);
+                }
+
+                if (auto commandBarPeer = winrt::FrameworkElementAutomationPeer::FromElement(commandBar))
+                {
+                    commandBarPeer.RaiseAutomationEvent(winrt::AutomationEvents::MenuClosed);
                 }
             }
         }
@@ -272,6 +282,10 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     presenter.BorderThickness(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Padding(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Content(*commandBar);
+    if (SharedHelpers::IsRS5OrHigher())
+    {
+        presenter.Translation({ 0.0f, 0.0f, 32.0f });
+    }
 
     // Disable the default shadow, as we'll be providing our own shadow.
     if (winrt::IFlyoutPresenter2 presenter2 = presenter)
