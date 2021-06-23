@@ -625,6 +625,7 @@
                             FlowDirection="{TemplateBinding FlowDirection}"
                             Foreground="{ThemeResource ComboBoxHeaderForeground}"
                             FontWeight="{ThemeResource ComboBoxHeaderThemeFontWeight}"
+                            LineHeight="20"
                             Margin="{ThemeResource ComboBoxTopHeaderMargin}"
                             TextWrapping="Wrap"
                             VerticalAlignment="Top"
@@ -714,13 +715,13 @@
                             Grid.Row="1"
                             Grid.Column="1"
                             IsHitTestVisible="False"
-                            Margin="0,0,12,0"
+                            Margin="0,0,14,0"
                             Foreground="{ThemeResource ComboBoxDropDownGlyphForeground}"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             AutomationProperties.AccessibilityView="Raw"
-                            Width="16"
-                            Height="16">
+                            Width="12"
+                            Height="12">
                             <animatedVisuals:AnimatedChevronDownSmallVisualSource/>
                             <controls:AnimatedIcon.FallbackIconSource>
                                 <controls:FontIconSource 
