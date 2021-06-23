@@ -5,6 +5,7 @@
 
 #include "pch.h"
 #include "BackdropMaterialTestPage.xaml.h"
+#include "App.xaml.h"
 
 using namespace TestAppCX;
 
@@ -29,6 +30,8 @@ BackdropMaterialTestPage::BackdropMaterialTestPage()
 	InitializeComponent();
 
     Loaded += ref new RoutedEventHandler(this, &BackdropMaterialTestPage::OnLoaded);
+
+    _navigationView->BackRequested += ref new Windows::Foundation::TypedEventHandler<Microsoft::UI::Xaml::Controls::NavigationView^, Microsoft::UI::Xaml::Controls::NavigationViewBackRequestedEventArgs^>(this, &TestAppCX::BackdropMaterialTestPage::OnBackRequested);
 }
 
 void BackdropMaterialTestPage::OnLoaded(Object^ object, RoutedEventArgs^ args)
@@ -129,4 +132,46 @@ void BackdropMaterialTestPage::OnActivated(CoreWindow^ sender, WindowActivatedEv
 
     auto opacity = Microsoft::UI::Private::Controls::BackdropMaterialTestApi::TintOpacity;
     TintOpacitySlider->Value = opacity;
+}
+
+
+void TestAppCX::BackdropMaterialTestPage::NewView(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    auto secondaryView = CoreApplication::CreateNewView();
+
+    auto mainDispatcher = Dispatcher;
+
+    secondaryView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([=]()
+    {
+        auto frame = ref new Windows::UI::Xaml::Controls::Frame();
+        frame->Navigate(Windows::UI::Xaml::Interop::TypeName(BackdropMaterialTestPage::typeid), nullptr);
+        auto secondaryWindow = Window::Current;
+        Window::Current->Content = frame;
+        ApplicationView^ secondaryAppView = ApplicationView::GetForCurrentView();
+        Window::Current->Activate();
+
+        secondaryAppView->Consolidated += ref new Windows::Foundation::TypedEventHandler<Windows::UI::ViewManagement::ApplicationView^, Windows::UI::ViewManagement::ApplicationViewConsolidatedEventArgs^>(
+            [=](auto&&...) {
+                secondaryWindow->Close();
+            });
+
+        mainDispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([=]() {
+            ApplicationViewSwitcher::TryShowAsStandaloneAsync(secondaryAppView->Id);
+            }));
+
+
+    }));
+
+}
+
+
+void TestAppCX::BackdropMaterialTestPage::OnBackRequested(Microsoft::UI::Xaml::Controls::NavigationView^ sender, Microsoft::UI::Xaml::Controls::NavigationViewBackRequestedEventArgs^ args)
+{
+    ((App^)Application::Current)->RootFrame->GoBack();
+}
+
+
+void TestAppCX::BackdropMaterialTestPage::CloseWindow(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    Window::Current->Close();
 }

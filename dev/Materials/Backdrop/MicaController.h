@@ -50,7 +50,7 @@ private:
 
     winrt::CompositionBrush m_currentBrush{ nullptr };
     winrt::Windows::UI::Composition::Compositor m_compositor{ nullptr };
-    winrt::ICompositionSupportsSystemBackdrop m_target{ nullptr };
+    winrt::weak_ref<winrt::ICompositionSupportsSystemBackdrop> m_target{ nullptr };
     std::unique_ptr<SystemBackdropComponentInternal::BaseWindowHandler> m_windowHandler{ nullptr };
 
     bool m_isActive{ false };
