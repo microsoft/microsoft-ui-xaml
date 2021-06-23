@@ -698,5 +698,216 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.Tap(showCommandBarFlyoutButton);
             }
         }
+
+        [TestMethod]
+        public void VerifyUpAndDownNavigationBetweenPrimaryAndSecondaryCommandsWithAlwaysExpanded()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                return;
+            }
+
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with AlwaysExpanded");
+
+                Log.Comment("Tap on a button to show the CommandBarFlyout.");
+                InputHelper.Tap(showCommandBarFlyoutButton);
+
+                Log.Comment("Press Down key to move focus to last primary command: Underline.");
+                for (int i = 0; i < 5; i++)
+                {
+                    KeyboardHelper.PressKey(Key.Down);
+                    Wait.ForIdle();
+                }
+
+                Button underlineButton9 = FindElement.ById<Button>("UnderlineButton9");
+                Verify.AreEqual(AutomationElement.FocusedElement.Current.AutomationId, underlineButton9.AutomationId);
+
+                Button undoButton9 = FindElement.ById<Button>("UndoButton9");
+
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+                {
+                    Log.Comment("Press Down key to move focus to first secondary command: Undo.");
+                    KeyboardHelper.PressKey(Key.Down);
+                    Wait.ForIdle();
+
+                    Verify.AreEqual(AutomationElement.FocusedElement.Current.AutomationId, undoButton9.AutomationId);
+
+                    Log.Comment("Press Up key to move focus to first primary command: Cut.");
+                    for (int i = 0; i < 6; i++)
+                    {
+                        KeyboardHelper.PressKey(Key.Up);
+                        Wait.ForIdle();
+                    }
+                }
+                else
+                {
+                    Log.Comment("Press Up key to move focus to first primary command: Cut.");
+                    for (int i = 0; i < 5; i++)
+                    {
+                        KeyboardHelper.PressKey(Key.Up);
+                        Wait.ForIdle();
+                    }
+                }
+
+                Button cutButton9 = FindElement.ById<Button>("CutButton9");
+                Verify.AreEqual(AutomationElement.FocusedElement.Current.AutomationId, cutButton9.AutomationId);
+
+                Log.Comment("Press Up key to move focus to last secondary command: Favorite.");
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+
+                Button favoriteToggleButton9 = FindElement.ById<Button>("FavoriteToggleButton9");
+                Verify.AreEqual(AutomationElement.FocusedElement.Current.AutomationId, favoriteToggleButton9.AutomationId);
+
+                Log.Comment("Press Up key to move focus to first secondary command: Undo.");
+                for (int i = 0; i < 3; i++)
+                {
+                    KeyboardHelper.PressKey(Key.Up);
+                    Wait.ForIdle();
+                }
+
+                Verify.AreEqual(AutomationElement.FocusedElement.Current.AutomationId, undoButton9.AutomationId);
+
+                if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
+                {
+                    Log.Comment("Press Up key and remain on first secondary command: Undo.");
+                    KeyboardHelper.PressKey(Key.Up);
+                    Wait.ForIdle();
+
+                    Verify.AreEqual(AutomationElement.FocusedElement.Current.AutomationId, undoButton9.AutomationId);
+                }
+                else
+                {
+                    Log.Comment("Press Up key to move focus to last primary command: Underline.");
+                    KeyboardHelper.PressKey(Key.Up);
+                    Wait.ForIdle();
+
+                    Verify.AreEqual(AutomationElement.FocusedElement.Current.AutomationId, underlineButton9.AutomationId);
+
+                    Log.Comment("Press Down key to move focus to first primary command through all secondary commands: Cut.");
+                    for (int i = 0; i < 5; i++)
+                    {
+                        KeyboardHelper.PressKey(Key.Down);
+                        Wait.ForIdle();
+                    }
+
+                    Verify.AreEqual(AutomationElement.FocusedElement.Current.AutomationId, cutButton9.AutomationId);
+
+                    Log.Comment("Tapping on a button to hide the CommandBarFlyout.");
+                    InputHelper.Tap(showCommandBarFlyoutButton);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyPrimaryCommandsAutomationSetWithAlwaysExpanded()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                return;
+            }
+
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with AlwaysExpanded");
+
+                Log.Comment("Tap on a button to show the CommandBarFlyout.");
+                InputHelper.Tap(showCommandBarFlyoutButton);
+
+                Button cutButton9 = FindElement.ById<Button>("CutButton9");
+                var focusedElement = AutomationElement.FocusedElement;
+                Verify.AreEqual(focusedElement.Current.AutomationId, cutButton9.AutomationId);
+
+                int sizeOfSet = (int)focusedElement.GetCurrentPropertyValue(AutomationProperty.LookupById(UIA_SizeOfSetPropertyId));
+                int positionInSet = (int)focusedElement.GetCurrentPropertyValue(AutomationProperty.LookupById(UIA_PositionInSetPropertyId));
+
+                Log.Comment("Verify first primary command's SizeOfSet and PositionInSet automation properties.");
+                Verify.AreEqual(sizeOfSet, 6);
+                Verify.IsTrue(positionInSet == -1 || positionInSet == 1);
+
+                Log.Comment("Press Right key to move focus to last primary command: Underline.");
+                for (int i = 0; i < 5; i++)
+                {
+                    KeyboardHelper.PressKey(Key.Right);
+                    Wait.ForIdle();
+                }
+
+                Button underlineButton9 = FindElement.ById<Button>("UnderlineButton9");
+                focusedElement = AutomationElement.FocusedElement;
+                Verify.AreEqual(focusedElement.Current.AutomationId, underlineButton9.AutomationId);
+
+                sizeOfSet = (int)focusedElement.GetCurrentPropertyValue(AutomationProperty.LookupById(UIA_SizeOfSetPropertyId));
+                positionInSet = (int)focusedElement.GetCurrentPropertyValue(AutomationProperty.LookupById(UIA_PositionInSetPropertyId));
+
+                Log.Comment("Verify last primary command's SizeOfSet and PositionInSet automation properties.");
+                Verify.AreEqual(sizeOfSet, 6);
+                Verify.IsTrue(positionInSet == -1 || positionInSet == 6);
+
+                Log.Comment("Press Right key. Focus should not move.");
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+
+                focusedElement = AutomationElement.FocusedElement;
+                Verify.AreEqual(focusedElement.Current.AutomationId, underlineButton9.AutomationId);
+
+                Log.Comment("Tapping on a button to hide the CommandBarFlyout.");
+                InputHelper.Tap(showCommandBarFlyoutButton);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyFlowsToAndFromConnectsPrimaryAndSecondaryCommandsWithAlwaysExpanded()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                return;
+            }
+
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with AlwaysExpanded");
+
+                Log.Comment("Tapping on a button to show the CommandBarFlyout.");
+                InputHelper.Tap(showCommandBarFlyoutButton);
+
+                Log.Comment("Press Right key to move focus to last primary command: Underline.");
+                for (int i = 0; i < 5; i++)
+                {
+                    KeyboardHelper.PressKey(Key.Right);
+                    Wait.ForIdle();
+                }
+
+                Button underlineButton9 = FindElement.ById<Button>("UnderlineButton9");
+                var underlineButtonElement = AutomationElement.FocusedElement;
+                Verify.AreEqual(underlineButtonElement.Current.AutomationId, underlineButton9.AutomationId);
+
+                // Moving to the Undo button to retrieve it
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+
+                Button undoButton9 = FindElement.ById<Button>("UndoButton9");
+                var undoButtonElement = AutomationElement.FocusedElement;
+                Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton9.AutomationId);
+
+                Log.Comment("Verifying that the two elements point at each other using FlowsTo and FlowsFrom.");
+                var flowsToCollection = (AutomationElementCollection)underlineButtonElement.GetCurrentPropertyValue(AutomationProperty.LookupById(UIA_FlowsToPropertyId));
+
+                Verify.AreEqual(1, flowsToCollection.Count);
+                Verify.AreEqual(undoButtonElement, flowsToCollection[0]);
+
+                var flowsFromCollection = (AutomationElementCollection)undoButtonElement.GetCurrentPropertyValue(AutomationProperty.LookupById(UIA_FlowsFromPropertyId));
+
+                Verify.AreEqual(1, flowsFromCollection.Count);
+                Verify.AreEqual(underlineButtonElement, flowsFromCollection[0]);
+
+                Log.Comment("Tapping on a button to hide the CommandBarFlyout.");
+                InputHelper.Tap(showCommandBarFlyoutButton);
+            }
+        }
     }
 }

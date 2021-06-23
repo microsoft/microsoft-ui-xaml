@@ -17,10 +17,10 @@
             <StaticResource x:Key="GridViewItemCheckBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="GridViewItemCheckPressedBrush" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
             <StaticResource x:Key="GridViewItemCheckDisabledBrush" ResourceKey="TextOnAccentFillColorDisabledBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxPointerOverBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxPressedBrush" ResourceKey="ControlAltFillColorTertiaryBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxDisabledBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
+            <StaticResource x:Key="GridViewItemCheckBoxBrush" ResourceKey="ControlOnImageFillColorDefaultBrush" />
+            <StaticResource x:Key="GridViewItemCheckBoxPointerOverBrush" ResourceKey="ControlOnImageFillColorSecondaryBrush" />
+            <StaticResource x:Key="GridViewItemCheckBoxPressedBrush" ResourceKey="ControlOnImageFillColorTertiaryBrush" />
+            <StaticResource x:Key="GridViewItemCheckBoxDisabledBrush" ResourceKey="ControlOnImageFillColorDisabledBrush" />
             <StaticResource x:Key="GridViewItemCheckBoxSelectedBrush" ResourceKey="AccentFillColorDefaultBrush" />
             <StaticResource x:Key="GridViewItemCheckBoxSelectedPointerOverBrush" ResourceKey="AccentFillColorSecondaryBrush" />
             <StaticResource x:Key="GridViewItemCheckBoxSelectedPressedBrush" ResourceKey="AccentFillColorTertiaryBrush" />
@@ -93,10 +93,10 @@
             <StaticResource x:Key="GridViewItemCheckBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="GridViewItemCheckPressedBrush" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
             <StaticResource x:Key="GridViewItemCheckDisabledBrush" ResourceKey="TextOnAccentFillColorDisabledBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxPointerOverBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxPressedBrush" ResourceKey="ControlAltFillColorTertiaryBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxDisabledBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
+            <StaticResource x:Key="GridViewItemCheckBoxBrush" ResourceKey="ControlOnImageFillColorDefaultBrush" />
+            <StaticResource x:Key="GridViewItemCheckBoxPointerOverBrush" ResourceKey="ControlOnImageFillColorSecondaryBrush" />
+            <StaticResource x:Key="GridViewItemCheckBoxPressedBrush" ResourceKey="ControlOnImageFillColorTertiaryBrush" />
+            <StaticResource x:Key="GridViewItemCheckBoxDisabledBrush" ResourceKey="ControlOnImageFillColorDisabledBrush" />
             <StaticResource x:Key="GridViewItemCheckBoxSelectedBrush" ResourceKey="AccentFillColorDefaultBrush" />
             <StaticResource x:Key="GridViewItemCheckBoxSelectedPointerOverBrush" ResourceKey="AccentFillColorSecondaryBrush" />
             <StaticResource x:Key="GridViewItemCheckBoxSelectedPressedBrush" ResourceKey="AccentFillColorTertiaryBrush" />

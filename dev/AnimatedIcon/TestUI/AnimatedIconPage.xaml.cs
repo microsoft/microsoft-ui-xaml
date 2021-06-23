@@ -270,6 +270,109 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void QueueLengthSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (this.DropDownIcon_Cut != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.DropDownIcon_Cut.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.DropDownIcon_Queue != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.DropDownIcon_Queue.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.DropDownIcon_SpeedUpQueue != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.DropDownIcon_SpeedUpQueue.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.DropDownIconNavView_Cut != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.DropDownIconNavView_Cut.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.DropDownIconNavView_Queue != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.DropDownIconNavView_Queue.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.DropDownIconNavView_SpeedUpQueue != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.DropDownIconNavView_SpeedUpQueue.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.SideChevron_Cut != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.SideChevron_Cut.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.SideChevron_Queue != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.SideChevron_Queue.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.SideChevron_SpeedUpQueue != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.SideChevron_SpeedUpQueue.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.HamburgerIcon_Cut != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.HamburgerIcon_Cut.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.HamburgerIcon_Queue != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.HamburgerIcon_Queue.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.HamburgerIcon_SpeedUpQueue != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.HamburgerIcon_SpeedUpQueue.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.SettingsIcon_Cut != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.SettingsIcon_Cut.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.SettingsIcon_Queue != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.SettingsIcon_Queue.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.SettingsIcon_SpeedUpQueue != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.SettingsIcon_SpeedUpQueue.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.BackIcon_Cut != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.BackIcon_Cut.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.BackIcon_Queue != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.BackIcon_Queue.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.BackIcon_SpeedUpQueue != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.BackIcon_SpeedUpQueue.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.SearchIcon_Cut != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.SearchIcon_Cut.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.SearchIcon_Queue != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.SearchIcon_Queue.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.SearchIcon_SpeedUpQueue != null)
+            {
+                AnimatedIconTestHooks.SetQueueLength(this.SearchIcon_SpeedUpQueue.GetAnimatedIcon(), (int)e.NewValue);
+            }
+            if (this.AnimatedCheckbox != null)
+            {
+                var rootGrid = VisualTreeHelper.GetChild(AnimatedCheckbox, 0);
+                var grid = VisualTreeHelper.GetChild(rootGrid, 0);
+                var CheckIcon = VisualTreeHelper.GetChild(grid, 1) as AnimatedIcon;
+
+                AnimatedIconTestHooks.SetQueueLength(CheckIcon, (int)e.NewValue);
+            }
+            if (this.LargeAnimatedCheckbox != null)
+            {
+                var rootGrid = VisualTreeHelper.GetChild(LargeAnimatedCheckbox, 0);
+                var grid = VisualTreeHelper.GetChild(rootGrid, 0);
+                var CheckIcon = VisualTreeHelper.GetChild(grid, 1) as AnimatedIcon;
+
+                AnimatedIconTestHooks.SetQueueLength(CheckIcon, (int)e.NewValue);
+            }
+        }
         public void IsLeftToRightChecked(object sender, RoutedEventArgs args)
         {
             this.FlowDirection = FlowDirection.LeftToRight;

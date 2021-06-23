@@ -714,7 +714,7 @@ void ColorSpectrum::UpdateEllipse()
         // we inverted the direction of that axis in order to put more hue on the outside of the ring,
         // so we need to do similarly here when positioning the ellipse.
         if (m_componentsFromLastBitmapCreation == winrt::ColorSpectrumComponents::HueSaturation ||
-            m_componentsFromLastBitmapCreation == winrt::ColorSpectrumComponents::ValueHue)
+            m_componentsFromLastBitmapCreation == winrt::ColorSpectrumComponents::SaturationHue)
         {
             sThetaValue = 360 - sThetaValue;
             sRValue = -sRValue - 1;

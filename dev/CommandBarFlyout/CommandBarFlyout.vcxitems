@@ -16,9 +16,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\CommandBarFlyoutCommandBar.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\CommandBarFlyoutCommandBarAutomationProperties.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\CommandBarFlyoutCommandBarTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)CommandBarFlyout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)CommandBarFlyoutCommandBar.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)CommandBarFlyoutCommandBarAutomationProperties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)CommandBarFlyoutCommandBarTemplateSettings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TextCommandBarFlyout.cpp" />
   </ItemGroup>
@@ -26,6 +28,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandBarFlyout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandBarFlyoutTrace.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandBarFlyoutCommandBar.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)CommandBarFlyoutCommandBarAutomationProperties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandBarFlyoutCommandBarTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TextCommandBarFlyout.h" />
   </ItemGroup>

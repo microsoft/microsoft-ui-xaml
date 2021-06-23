@@ -22,6 +22,8 @@
             <x:Double x:Key="MediaTransportControlsAppBarButtonWidth">40</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderHeight">32</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderWidth">190</x:Double>
+            <x:Double x:Key="MediaTransportControlsMinWidth">296</x:Double>
+            <x:Double x:Key="MediaTransportControlsMaxWidth">720</x:Double>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
@@ -39,6 +41,8 @@
             <x:Double x:Key="MediaTransportControlsAppBarButtonWidth">40</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderHeight">32</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderWidth">190</x:Double>
+            <x:Double x:Key="MediaTransportControlsMinWidth">296</x:Double>
+            <x:Double x:Key="MediaTransportControlsMaxWidth">720</x:Double>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
@@ -56,6 +60,8 @@
             <x:Double x:Key="MediaTransportControlsAppBarButtonWidth">40</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderHeight">32</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderWidth">190</x:Double>
+            <x:Double x:Key="MediaTransportControlsMinWidth">296</x:Double>
+            <x:Double x:Key="MediaTransportControlsMaxWidth">720</x:Double>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -66,6 +72,8 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="FlowDirection" Value="LeftToRight" />
         <Setter Property="Margin" Value="{ThemeResource MediaTransportControlsMargin}" />
+        <Setter Property="MaxWidth" Value="{ThemeResource MediaTransportControlsMaxWidth}" />
+        <Setter Property="MinWidth" Value="{ThemeResource MediaTransportControlsMinWidth}" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="IsTextScaleFactorEnabled" Value="False" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />

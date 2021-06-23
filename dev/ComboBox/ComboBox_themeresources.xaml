@@ -449,7 +449,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="DropDownGlyph.(local:AnimatedIcon.State)" Value="PointerOver"/>
+                                        <Setter Target="DropDownGlyph.(controls:AnimatedIcon.State)" Value="PointerOver"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -469,7 +469,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="DropDownGlyph.(local:AnimatedIcon.State)" Value="Pressed"/>
+                                        <Setter Target="DropDownGlyph.(controls:AnimatedIcon.State)" Value="Pressed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">

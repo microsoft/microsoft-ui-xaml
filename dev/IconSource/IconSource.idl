@@ -114,7 +114,7 @@ unsealed runtimeclass ImageIconSource : IconSource
     static Windows.UI.Xaml.DependencyProperty ImageSourceProperty{ get; };
 }
 
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass AnimatedIconSource : IconSource

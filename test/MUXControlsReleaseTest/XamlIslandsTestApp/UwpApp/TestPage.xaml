@@ -2,13 +2,87 @@
     x:Class="UwpApp.TestPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:UwpApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d">
 
     <Grid>
-        <Button Content="Test" AutomationProperties.AutomationId="TestButton" Click="Button_Click" />
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="Red" Offset="0.000" />
+                <GradientStop Color="Orange" Offset="0.167" />
+                <GradientStop Color="Yellow" Offset="0.333" />
+                <GradientStop Color="Green" Offset="0.500" />
+                <GradientStop Color="Blue" Offset="0.667" />
+                <GradientStop Color="Indigo" Offset="0.833" />
+                <GradientStop Color="Violet" Offset="1.000" />
+            </LinearGradientBrush>
+        </Grid.Background>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.Resources>
+            <Flyout x:Name="Flyout">
+                <TextBlock Text="I'm a flyout!" />
+            </Flyout>
+            <MenuFlyout x:Name="MenuFlyout">
+                <MenuFlyoutItem Text="Item 1" />
+                <MenuFlyoutItem Text="Item 2" />
+                <MenuFlyoutItem Text="Item 3" />
+                <MenuFlyoutItem Text="Item 4" />
+            </MenuFlyout>
+            <muxc:CommandBarFlyout x:Name="CommandBarFlyout" AlwaysExpanded="True">
+                <AppBarButton Label="Cut" Icon="Cut" />
+                <AppBarButton Label="Copy" Icon="Copy" />
+                <AppBarButton Label="Paste" Icon="Paste" />
+                <AppBarButton Label="Rename" Icon="Rename" />
+                <muxc:CommandBarFlyout.SecondaryCommands>
+                    <AppBarButton Label="Open" Icon="OpenFile" />
+                    <AppBarButton Label="Open with" Icon="OpenWith">
+                        <AppBarButton.Flyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Notepad" />
+                                <MenuFlyoutItem Text="Microsoft Visual Studio" />
+                                <MenuFlyoutItem Text="Microsoft Edge" />
+                                <MenuFlyoutItem Text="Search apps" />
+                            </MenuFlyout>
+                        </AppBarButton.Flyout>
+                    </AppBarButton>
+                    <AppBarButton Label="Edit" Icon="Edit" />
+                    <AppBarButton Label="Select all" Icon="SelectAll" />
+                </muxc:CommandBarFlyout.SecondaryCommands>
+            </muxc:CommandBarFlyout>
+            <muxc:TeachingTip x:Name="TeachingTip"
+                IsLightDismissEnabled="True"
+                PreferredPlacement="Bottom"
+                Title="A TeachingTip" 
+                Subtitle="This is a TeachingTip" />
+        </Grid.Resources>
+        <StackPanel Orientation="Horizontal">
+            <Button Content="Open Flyout" Click="OnFlyoutButtonClick" />
+            <Button Content="Open MenuFlyout" Click="OnMenuFlyoutButtonClick" />
+            <Button Content="Open CommandBarFlyout" Click="OnCommandBarFlyoutButtonClick" />
+            <Button Content="Open TeachingTip" Click="OnTeachingTipButtonClick" />
+            <Button Content="Hover for ToolTip">
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="ToolTip for Button" Placement="Bottom" />
+                </ToolTipService.ToolTip>
+            </Button>
+        </StackPanel>
+        <Button Content="Test" AutomationProperties.AutomationId="TestButton" Click="OnTestButtonClick" Grid.Row="1" />
+        <StackPanel Orientation="Horizontal" Grid.Row="2">
+            <Button Content="Open Flyout" Click="OnFlyoutButtonClick" />
+            <Button Content="Open MenuFlyout" Click="OnMenuFlyoutButtonClick" />
+            <Button Content="Open CommandBarFlyout" Click="OnCommandBarFlyoutButtonClick" />
+            <Button Content="Open TeachingTip" Click="OnTeachingTipButtonClick" />
+            <Button Content="Hover for ToolTip">
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="ToolTip for Button" Placement="Bottom" />
+                </ToolTipService.ToolTip>
+            </Button>
+        </StackPanel>
     </Grid>
 </Page>

@@ -45,13 +45,6 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
         // Source link depends on ControlsResourcesVersion and UseCompactResources flag, we need to update it when either property changed
         UpdateSource();
     }
-
-    // To be deleted
-    // Version is going to be replaced with ControlsResourcesVersion
-    else if (property == s_VersionProperty)
-    {
-        ControlsResourcesVersion(Version() == winrt::StylesVersion::Latest ? winrt::ControlsResourcesVersion::Version2 : winrt::ControlsResourcesVersion::Version1);
-    }
 }
 
 void XamlControlsResources::UpdateSource()
@@ -114,6 +107,17 @@ void XamlControlsResources::UpdateSource()
                 releasePrefix = L"rs2_";
             }
 
+            if (isInCBSPackage && !is21H1OrHigher)
+            {
+                if (SharedHelpers::Is21H1OrHigher())
+                {
+                    MUX_FAIL_FAST_MSG("CBS package can run only on os when IsSelectionIndicatorModeAvailable is true");
+                }
+                else
+                {
+                    MUX_FAIL_FAST_MSG("CBS package can run only on os when is21H1OrHigher is true");                
+                }
+            }
             return packagePrefix + releasePrefix + compactPrefix + postfix;
         }()
     };
@@ -131,8 +135,19 @@ void XamlControlsResources::UpdateSource()
     // Since something must go horribly wrong for those lookups to fail, we just assume they exist.
     if (SharedHelpers::Is19H1OrHigher())
     {
-        UpdateAcrylicBrushesDarkTheme(ThemeDictionaries().Lookup(box_value(L"Default")));
-        UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
+        try
+        {
+            UpdateAcrylicBrushesDarkTheme(ThemeDictionaries().Lookup(box_value(L"Default")));
+            UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
+        }
+        catch (winrt::hresult_error const& e)
+        {
+            if (e.code() == E_FAIL)
+            {
+                MUX_FAIL_FAST_MSG(e.message().c_str());
+            }
+            throw e;
+        }
     }
 
     s_tlsIsControlsResourcesVersion2 = useControlsResourcesVersion2;
@@ -205,11 +220,11 @@ void XamlControlsResources::UpdateAcrylicBrushesDarkTheme(const winrt::IInspecta
         }
         if (const auto acrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
         {
-            acrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.92);
+            acrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.96);
         }
         if (const auto acrylicInAppFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
         {
-            acrylicInAppFillColorBaseBrush.TintLuminosityOpacity(0.92);
+            acrylicInAppFillColorBaseBrush.TintLuminosityOpacity(0.96);
         }
         if (const auto accentAcrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
         {

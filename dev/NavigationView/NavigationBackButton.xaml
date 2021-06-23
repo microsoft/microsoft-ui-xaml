@@ -43,7 +43,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="Content.(AnimatedIcon.State)" Value="PointerOver"/>
+                                        <Setter Target="Content.(local:AnimatedIcon.State)" Value="PointerOver"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -58,7 +58,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="Content.(AnimatedIcon.State)" Value="Pressed"/>
+                                        <Setter Target="Content.(local:AnimatedIcon.State)" Value="Pressed"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -96,8 +96,6 @@
         </Setter>
     </Style>
     <Style x:Key="NavigationBackButtonSmallStyle" TargetType="Button" BasedOn="{StaticResource NavigationBackButtonNormalStyle}">
-        <Setter Property="FontSize" Value="20" />
-        <Setter Property="Height" Value="32" />
-        <Setter Property="Width" Value="32" />
+        <Setter Property="Margin" Value="4,2,0,2" />
     </Style>
 </ResourceDictionary>

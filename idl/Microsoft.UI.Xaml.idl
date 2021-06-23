@@ -184,15 +184,6 @@ namespace MU_XC_NAMESPACE
         Version2 = 2,
     };
 
-    // To be removed
-    [MUX_PREVIEW]
-    [webhosthidden]
-    enum StylesVersion
-    {
-        Latest = 0,
-        WinUI_2dot5 = 1,
-    };
-
     [MUX_PUBLIC]
     [webhosthidden]
     [default_interface]
@@ -213,19 +204,10 @@ namespace MU_XC_NAMESPACE
 
         [MUX_PUBLIC_V2]
         {
-            [MUX_DEFAULT_VALUE("winrt::ControlsResourcesVersion::Version1")]
+            [MUX_DEFAULT_VALUE("winrt::ControlsResourcesVersion::Version2")]
             ControlsResourcesVersion ControlsResourcesVersion{ get; set; };
 
             static Windows.UI.Xaml.DependencyProperty ControlsResourcesVersionProperty{ get; };
-        }
-
-        // To be removed
-        [MUX_PREVIEW]
-        {
-            [MUX_DEFAULT_VALUE("winrt::StylesVersion::WinUI_2dot5")]
-            StylesVersion Version{ get; set; };
-
-            static Windows.UI.Xaml.DependencyProperty VersionProperty{ get; };
         }
     }
 }

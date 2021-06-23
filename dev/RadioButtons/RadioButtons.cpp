@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "RadioButtons.h"
+#include "RadioButtonsAutomationPeer.h"
 #include "Vector.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
@@ -44,6 +45,12 @@ RadioButtons::RadioButtons()
             nullptr,
             nullptr);
 }
+
+winrt::AutomationPeer RadioButtons::OnCreateAutomationPeer()
+{
+    return winrt::make<RadioButtonsAutomationPeer>(*this);
+}
+
 
 void RadioButtons::OnApplyTemplate()
 {

@@ -14,7 +14,8 @@
     
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="CommandBarFlyoutBackground" ResourceKey="SystemControlTransientBackgroundBrush"/>
+            <contract7NotPresent:StaticResource x:Key="CommandBarFlyoutBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush"/>
+            <contract7Present:StaticResource x:Key="CommandBarFlyoutBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush"/>
             <StaticResource x:Key="CommandBarFlyoutForeground" ResourceKey="TextFillColorPrimaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush"/>
@@ -45,7 +46,8 @@
             <StaticResource x:Key="CommandBarFlyoutButtonBackground" ResourceKey="SystemControlTransparentBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="CommandBarFlyoutBackground" ResourceKey="SystemControlTransientBackgroundBrush"/>
+            <contract7NotPresent:StaticResource x:Key="CommandBarFlyoutBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush"/>
+            <contract7Present:StaticResource x:Key="CommandBarFlyoutBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush"/>
             <StaticResource x:Key="CommandBarFlyoutForeground" ResourceKey="TextFillColorPrimaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush"/>
@@ -126,6 +128,7 @@
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="AllowFocusOnInteraction" Value="False" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="local:CommandBarFlyoutCommandBarAutomationProperties.ControlType" Value="MenuItem" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="AppBarButton">
@@ -353,6 +356,7 @@
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="AllowFocusOnInteraction" Value="False" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="local:CommandBarFlyoutCommandBarAutomationProperties.ControlType" Value="MenuItem" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="AppBarToggleButton">
@@ -764,6 +768,7 @@
         <contract7Present:Setter Property="CommandBarOverflowPresenterStyle" Value="{StaticResource CommandBarFlyoutCommandBarOverflowPresenterStyle}" />
         <contract7NotPresent:Setter Property="CommandBarOverflowPresenterStyle" Value="{StaticResource CommandBarFlyoutCommandBarOverflowPresenterStyleRS4}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+        <Setter Property="local:CommandBarFlyoutCommandBarAutomationProperties.ControlType" Value="Menu" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:CommandBarFlyoutCommandBar">
@@ -790,7 +795,7 @@
                                                                     Duration="{StaticResource ControlFasterAnimationDuration}" />
                             </contract7Present:Storyboard>
 
-                            <contract7Present:Storyboard x:Name="ClosingOpacityStoryboard" FillBehavior="Stop">
+                            <contract7Present:Storyboard x:Name="ClosingOpacityStoryboard" FillBehavior="HoldEnd">
                                 <DoubleAnimation Storyboard.TargetName="LayoutRoot"
                                                                     Storyboard.TargetProperty="Opacity"
                                                                     From="1"
@@ -1291,7 +1296,8 @@
                                     <Grid
                                         x:Name="OuterOverflowContentRootV2"
                                         RequestedTheme="{TemplateBinding ActualTheme}"
-                                        Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}">
+                                        Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}"
+                                        contract7Present:Translation="0,0,32">
                                         <Grid.RenderTransform>
                                             <TranslateTransform
                                                 x:Name="OverflowContentRootTransform"
