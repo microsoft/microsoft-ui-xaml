@@ -272,7 +272,7 @@
     <Thickness x:Key="TopNavigationViewItemInnerHeaderMargin">12,0</Thickness>
     <Thickness x:Key="NavigationViewMinimalHeaderMargin">-24,44,0,0</Thickness>
     <Thickness x:Key="NavigationViewButtonHolderGridMargin">0,4</Thickness>
-    <Thickness x:Key="NavigationViewPaneContentGridMargin">0,4</Thickness>
+    <Thickness x:Key="NavigationViewPaneContentGridMargin">-1,3</Thickness>
     <Thickness x:Key="NavigationViewContentGridBorderThickness">1,1,0,0</Thickness>
     <Thickness x:Key="NavigationViewMinimalContentGridBorderThickness">0,1,0,0</Thickness>
     <Thickness x:Key="TopNavigationViewContentGridBorderThickness">0,1,0,0</Thickness>
