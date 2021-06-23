@@ -7,13 +7,13 @@
     CornerRadius=0,0,0,0
     Name=HeaderContent
     MinHeight=36
-    Margin=8,5,0,0
+    Margin=-24,44,0,0
     FocusVisualSecondaryThickness=1,1,1,1
     FocusVisualSecondaryBrush=#B3FFFFFF
     FocusVisualPrimaryThickness=2,2,2,2
     FocusVisualPrimaryBrush=#E4000000
     Visibility=Visible
-    RenderSize=312,38
+    RenderSize=344,38
   [Windows.UI.Xaml.Controls.ContentPresenter]
       Foreground=#E4000000
       Padding=0,0,0,0
@@ -27,7 +27,7 @@
       FocusVisualPrimaryThickness=2,2,2,2
       FocusVisualPrimaryBrush=#E4000000
       Visibility=Visible
-      RenderSize=312,38
+      RenderSize=344,38
     [Windows.UI.Xaml.Controls.TextBlock]
         Padding=0,0,0,0
         Foreground=#E4000000
