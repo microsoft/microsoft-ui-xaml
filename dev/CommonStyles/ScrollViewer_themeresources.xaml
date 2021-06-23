@@ -15,6 +15,13 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <Thickness x:Key="ScrollViewerScrollBarMargin">1</Thickness>
+    
+    <x:String x:Key="ScrollViewerSeparatorExpandBeginTime">00:00:00.40</x:String>
+    <x:String x:Key="ScrollViewerSeparatorExpandDuration">00:00:00.1</x:String>
+    <x:String x:Key="ScrollViewerSeparatorContractBeginTime">00:00:02.00</x:String>
+    <x:String x:Key="ScrollViewerSeparatorContractDelay">00:00:02</x:String>
+    <x:String x:Key="ScrollViewerSeparatorContractDuration">00:00:00.1</x:String>
+    <x:String x:Key="ScrollViewerSeparatorContractFinalKeyframe">00:00:02.1</x:String>
 
     <Style TargetType="ScrollViewer" BasedOn="{StaticResource DefaultScrollViewerStyle}" />
 

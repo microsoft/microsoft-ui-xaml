@@ -50,6 +50,7 @@
                             <primitives:TabViewListView
                                 Grid.Column="1"
                                 x:Name="TabListView"
+                                Padding="{TemplateBinding Padding}"
                                 CanReorderItems="{TemplateBinding CanReorderTabs}"
                                 CanDragItems="{TemplateBinding CanDragTabs}"
                                 AllowDrop="{TemplateBinding AllowDropTabs}"
@@ -98,7 +99,6 @@
 
     <Style TargetType="primitives:TabViewListView">
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="Padding" Value="{ThemeResource TabViewHeaderPadding}" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="TabNavigation" Value="Once" />
         <Setter Property="IsSwipeEnabled" Value="False" />
