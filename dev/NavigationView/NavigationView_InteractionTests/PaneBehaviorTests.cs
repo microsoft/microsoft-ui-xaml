@@ -612,7 +612,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
-       public void VerifyIconsRespectCompactPaneLength()
+        public void VerifyIconsRespectCompactPaneLength()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView compact pane length test" }))
             {
@@ -1063,7 +1063,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 AddMenuItem(248, 160);
 
                 // Fill footer items
-                AddFooterItem(194, 200);
+                AddFooterItem(198, 200);
                 AddFooterItem(190, 204);
 
                 // Check that we reached equilibrium.
