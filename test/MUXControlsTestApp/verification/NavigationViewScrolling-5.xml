@@ -982,7 +982,7 @@
                                               RenderSize=40,36
                                             [Windows.UI.Xaml.Controls.Viewbox]
                                                 Name=IconBox
-                                                Margin=11,0,11,0
+                                                Margin=0,0,0,0
                                                 Height=16
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#B3FFFFFF
@@ -1239,7 +1239,7 @@
                                               RenderSize=40,36
                                             [Windows.UI.Xaml.Controls.Viewbox]
                                                 Name=IconBox
-                                                Margin=11,0,11,0
+                                                Margin=0,0,0,0
                                                 Height=16
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#B3FFFFFF
@@ -1549,7 +1549,7 @@
                                               RenderSize=40,36
                                             [Windows.UI.Xaml.Controls.Viewbox]
                                                 Name=IconBox
-                                                Margin=11,0,11,0
+                                                Margin=0,0,0,0
                                                 Height=16
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#B3FFFFFF
@@ -1806,7 +1806,7 @@
                                               RenderSize=40,36
                                             [Windows.UI.Xaml.Controls.Viewbox]
                                                 Name=IconBox
-                                                Margin=11,0,11,0
+                                                Margin=0,0,0,0
                                                 Height=16
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#B3FFFFFF
@@ -2101,7 +2101,7 @@
                                               RenderSize=40,36
                                             [Windows.UI.Xaml.Controls.Viewbox]
                                                 Name=IconBox
-                                                Margin=11,0,11,0
+                                                Margin=0,0,0,0
                                                 Height=16
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#B3FFFFFF
@@ -2358,7 +2358,7 @@
                                               RenderSize=40,36
                                             [Windows.UI.Xaml.Controls.Viewbox]
                                                 Name=IconBox
-                                                Margin=11,0,11,0
+                                                Margin=0,0,0,0
                                                 Height=16
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#B3FFFFFF
@@ -2615,7 +2615,7 @@
                                               RenderSize=40,36
                                             [Windows.UI.Xaml.Controls.Viewbox]
                                                 Name=IconBox
-                                                Margin=11,0,11,0
+                                                Margin=0,0,0,0
                                                 Height=16
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#B3FFFFFF
@@ -2872,7 +2872,7 @@
                                               RenderSize=40,36
                                             [Windows.UI.Xaml.Controls.Viewbox]
                                                 Name=IconBox
-                                                Margin=11,0,11,0
+                                                Margin=0,0,0,0
                                                 Height=16
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#B3FFFFFF
@@ -3182,7 +3182,7 @@
                                               RenderSize=40,36
                                             [Windows.UI.Xaml.Controls.Viewbox]
                                                 Name=IconBox
-                                                Margin=11,0,11,0
+                                                Margin=0,0,0,0
                                                 Height=16
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#B3FFFFFF
@@ -3439,7 +3439,7 @@
                                               RenderSize=40,36
                                             [Windows.UI.Xaml.Controls.Viewbox]
                                                 Name=IconBox
-                                                Margin=11,0,11,0
+                                                Margin=0,0,0,0
                                                 Height=16
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#B3FFFFFF
@@ -3734,7 +3734,7 @@
                                               RenderSize=40,36
                                             [Windows.UI.Xaml.Controls.Viewbox]
                                                 Name=IconBox
-                                                Margin=11,0,11,0
+                                                Margin=0,0,0,0
                                                 Height=16
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#B3FFFFFF
@@ -4631,7 +4631,7 @@
                                               RenderSize=40,36
                                             [Windows.UI.Xaml.Controls.Viewbox]
                                                 Name=IconBox
-                                                Margin=11,0,11,0
+                                                Margin=0,0,0,0
                                                 Height=16
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#B3FFFFFF
