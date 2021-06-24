@@ -188,25 +188,28 @@ void MicaController::Crossfade(const winrt::Windows::UI::Composition::Compositio
 
     if (oldBrush.Comment() == L"Crossfade")
     {
-        // Stop previous animation.
-        oldBrush.StopAnimation(L"Crossfade.Weight");
+        // If we were animating, cut to the new brush and don't try to get fancy.
+        UpdateSystemBackdropBrush(newBrush);
     }
+    else
+    {
 
-    const winrt::CompositionBrush crossFadeBrush = SystemBackdropComponentInternal::CreateCrossFadeEffectBrush(m_compositor, oldBrush, newBrush);
-    winrt::ScalarKeyFrameAnimation animation = SystemBackdropComponentInternal::CreateCrossFadeAnimation(m_compositor);
-    UpdateSystemBackdropBrush(crossFadeBrush);
+        const winrt::CompositionBrush crossFadeBrush = SystemBackdropComponentInternal::CreateCrossFadeEffectBrush(m_compositor, oldBrush, newBrush);
+        winrt::ScalarKeyFrameAnimation animation = SystemBackdropComponentInternal::CreateCrossFadeAnimation(m_compositor);
+        UpdateSystemBackdropBrush(crossFadeBrush);
 
-    const auto crossFadeAnimationBatch = m_compositor.CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
-    crossFadeBrush.StartAnimation(L"Crossfade.Weight", animation);
-    crossFadeAnimationBatch.End();
+        const auto crossFadeAnimationBatch = m_compositor.CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
+        crossFadeBrush.StartAnimation(L"Crossfade.Weight", animation);
+        crossFadeAnimationBatch.End();
 
-    crossFadeAnimationBatch.Completed([weakThis = get_weak(), newBrush](auto&&, auto&&)
+        crossFadeAnimationBatch.Completed([weakThis = get_weak(), newBrush](auto&&, auto&&)
         {
             if (auto self = weakThis.get())
             {
                 self->UpdateSystemBackdropBrush(newBrush);
             }
         });
+    }
 }
 
 void MicaController::UpdateSystemBackdropBrush(const winrt::CompositionBrush& brush)

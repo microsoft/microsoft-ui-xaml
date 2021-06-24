@@ -35,7 +35,7 @@ struct MicaController : winrt::implementation::MicaControllerT<MicaController>, 
     static constexpr auto sc_darkThemeTintOpacity = 0.8f;
 
     static constexpr auto sc_lightThemeColor = winrt::Color{ 255, 243, 243, 243 };
-    static constexpr auto sc_lightThemeTintOpacity = 0.65f;
+    static constexpr auto sc_lightThemeTintOpacity = 0.5f;
 
 private:
     bool IsMicaSupported() const;

@@ -37,7 +37,7 @@ void FontIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::FontFamily>(),
                 winrt::name_of<winrt::FontIconSource>(),
                 false /* isAttached */,
-                ValueHelper<winrt::FontFamily>::BoxValueIfNecessary(winrt::FontFamily{ c_fontIconSourceDefaultFontFamily }),
+                ValueHelper<winrt::FontFamily>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnFontFamilyPropertyChanged));
     }
     if (!s_FontSizeProperty)
