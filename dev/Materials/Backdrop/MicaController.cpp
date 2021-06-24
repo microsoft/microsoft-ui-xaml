@@ -28,7 +28,7 @@ MicaController::~MicaController()
 
 bool MicaController::SetTarget(winrt::Windows::UI::Xaml::Window const& xamlWindow)
 {
-    m_target = xamlWindow.try_as<winrt::ICompositionSupportsSystemBackdrop>();
+    m_target = xamlWindow.try_as<winrt::Microsoft::UI::Private::Controls::ICompositionSupportsSystemBackdrop>();
     m_compositor = xamlWindow.Compositor();
 
     WINRT_ASSERT(m_compositor);
@@ -171,7 +171,7 @@ bool MicaController::IsMicaSupported() const
 {
     WINRT_ASSERT(m_compositor);
 
-    if (auto blurredWallpaperBackdropBrush = m_compositor.try_as<winrt::ICompositorWithBlurredWallpaperBackdropBrush>())
+    if (auto blurredWallpaperBackdropBrush = m_compositor.try_as<winrt::Microsoft::UI::Private::Controls::ICompositorWithBlurredWallpaperBackdropBrush>())
     {
         return m_target && blurredWallpaperBackdropBrush.TryCreateBlurredWallpaperBackdropBrush();
     }

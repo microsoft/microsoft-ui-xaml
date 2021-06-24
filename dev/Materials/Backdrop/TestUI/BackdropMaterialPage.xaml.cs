@@ -74,19 +74,13 @@ namespace MUXControlsTestApp
         {
             // Get the brush from the frame
             var testFrame = this.Frame as TestFrame;
-#if USE_INSIDER_SDK
-            var backdropBrush = (object)Window.Current as Windows.UI.Composition.ICompositionSupportsSystemBackdrop;
-#endif
+            var backdropBrush = (object)Window.Current as Microsoft.UI.Private.Controls.ICompositionSupportsSystemBackdrop;
 
             var frameBackground = testFrame.Background as SolidColorBrush; ;
 
             var sb = new StringBuilder();
             sb.Append($"TestFrame.Background = {frameBackground?.Color.ToString() ?? "null"},");
-#if USE_INSIDER_SDK
             sb.Append($"Window.Backdrop = {backdropBrush?.SystemBackdrop?.ToString() ?? "null"}");
-#else
-            sb.Append($"Window.Backdrop = null");
-#endif
             TestOutput.Text = sb.ToString();
         }
     }
