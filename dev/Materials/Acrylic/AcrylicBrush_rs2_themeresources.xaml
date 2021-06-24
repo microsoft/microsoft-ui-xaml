@@ -2,7 +2,7 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.UI.Xaml.Media">
+    xmlns:media="using:Microsoft.UI.Xaml.Media">
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
@@ -10,266 +10,266 @@
             <Color x:Key="SystemChromeAltMediumHighColor">#CC1F1F1F</Color>
             <Color x:Key="SystemChromeAltHighColor">#FF1C1C1C</Color>
 
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="SystemControlAcrylicWindowBrush"
                 BackgroundSource="HostBackdrop"
                 TintColor="{StaticResource SystemChromeAltHighColor}"
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemChromeMediumColor}" />
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="SystemControlAcrylicElementBrush"
                 BackgroundSource="Backdrop"
                 TintColor="{StaticResource SystemChromeAltHighColor}"
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemChromeMediumColor}" />
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="SystemControlAccentAcrylicWindowAccentMediumHighBrush"
                 BackgroundSource="HostBackdrop"
                 TintColor="{ThemeResource SystemAccentColor}" 
                 TintOpacity="0.7" 
                 FallbackColor="{ThemeResource SystemAccentColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAccentAcrylicElementAccentMediumHighBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{ThemeResource SystemAccentColor}" 
                 TintOpacity="0.7" 
                 FallbackColor="{ThemeResource SystemAccentColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAccentDark1AcrylicWindowAccentDark1Brush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{ThemeResource SystemAccentColorDark1}" 
                 TintOpacity="0.8" 
                 FallbackColor="{ThemeResource SystemAccentColorDark1}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAccentDark1AcrylicElementAccentDark1Brush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{ThemeResource SystemAccentColorDark1}" 
                 TintOpacity="0.8" 
                 FallbackColor="{ThemeResource SystemAccentColorDark1}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAccentDark2AcrylicWindowAccentDark2MediumHighBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{ThemeResource SystemAccentColorDark2}" 
                 TintOpacity="0.7" 
                 FallbackColor="{ThemeResource SystemAccentColorDark2}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAccentDark2AcrylicElementAccentDark2MediumHighBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{ThemeResource SystemAccentColorDark2}" 
                 TintOpacity="0.7" 
                 FallbackColor="{ThemeResource SystemAccentColorDark2}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAcrylicWindowMediumHighBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.7" 
                 FallbackColor="{StaticResource SystemChromeMediumColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAcrylicElementMediumHighBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.7" 
                 FallbackColor="{StaticResource SystemChromeMediumColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlChromeMediumLowAcrylicWindowMediumBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemChromeMediumLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlChromeMediumLowAcrylicElementMediumBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemChromeMediumLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseHighAcrylicWindowBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemBaseHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseHighAcrylicElementBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemBaseHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseHighAcrylicWindowMediumHighBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.7" 
                 FallbackColor="{StaticResource SystemBaseHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseHighAcrylicElementMediumHighBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.7" 
                 FallbackColor="{StaticResource SystemBaseHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseHighAcrylicWindowMediumBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemBaseHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseHighAcrylicElementMediumBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemBaseHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlChromeLowAcrylicWindowBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemChromeLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlChromeLowAcrylicElementBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemChromeLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlChromeMediumAcrylicWindowMediumBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemChromeMediumColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlChromeMediumAcrylicElementMediumBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemChromeMediumColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlChromeHighAcrylicWindowMediumBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemChromeHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlChromeHighAcrylicElementMediumBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemChromeHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseLowAcrylicWindowBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemBaseLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseLowAcrylicElementBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemBaseLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseMediumLowAcrylicWindowMediumBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemBaseMediumLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseMediumLowAcrylicElementMediumBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemBaseMediumLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAltLowAcrylicWindowBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemAltLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAltLowAcrylicElementBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemAltLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAltMediumLowAcrylicWindowMediumBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemAltMediumLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAltMediumLowAcrylicElementMediumBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemAltMediumLowColor}" />
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="SystemControlAltHighAcrylicWindowBrush"
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemAltHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAltHighAcrylicElementBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemAltHighColor}" />
             <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="#000000" Opacity="0.36" />
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AcrylicBackgroundFillColorDefaultBrush"
                 TintColor="#2C2C2C"
                 TintOpacity="0.8"
                 FallbackColor="#2C2C2C"
                 BackgroundSource="HostBackdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AcrylicInAppFillColorDefaultBrush"
                 TintColor="#2C2C2C"
                 TintOpacity="0.8"
                 FallbackColor="#2C2C2C"
                 BackgroundSource="Backdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AcrylicBackgroundFillColorDefaultInverseBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.8"
                 FallbackColor="#F9F9F9"
                 BackgroundSource="HostBackdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AcrylicInAppFillColorDefaultInverseBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.8"
                 FallbackColor="#F9F9F9"
                 BackgroundSource="Backdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AcrylicBackgroundFillColorBaseBrush"
-                TintColor="#1C1C1C"
+                TintColor="#202020"
                 TintOpacity="0.8"
                 FallbackColor="#1C1C1C"
                 BackgroundSource="HostBackdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AcrylicInAppFillColorBaseBrush"
-                TintColor="#1C1C1C"
+                TintColor="#202020"
                 TintOpacity="0.8"
                 FallbackColor="#1C1C1C"
                 BackgroundSource="Backdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AccentAcrylicBackgroundFillColorDefaultBrush"
                 TintColor="{ThemeResource SystemAccentColorDark1}"
                 TintOpacity="0.8"
                 FallbackColor="{ThemeResource SystemAccentColorDark1}"
                 BackgroundSource="HostBackdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AccentAcrylicInAppFillColorDefaultBrush"
                 TintColor="{ThemeResource SystemAccentColorDark1}"
                 TintOpacity="0.8"
                 FallbackColor="{ThemeResource SystemAccentColorDark1}"
                 BackgroundSource="Backdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AccentAcrylicBackgroundFillColorBaseBrush"
                 TintColor="{ThemeResource SystemAccentColorDark2}"
                 TintOpacity="0.8"
                 FallbackColor="{ThemeResource SystemAccentColorDark2}"
                 BackgroundSource="HostBackdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AccentAcrylicInAppFillColorBaseBrush"
                 TintColor="{ThemeResource SystemAccentColorDark2}"
                 TintOpacity="0.8"
@@ -282,266 +282,266 @@
             <Color x:Key="SystemChromeAltMediumHighColor">#CCFFFFFF</Color>
             <Color x:Key="SystemChromeAltHighColor">#FFFFFFFF</Color>
 
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="SystemControlAcrylicWindowBrush"
                 BackgroundSource="HostBackdrop"
                 TintColor="{StaticResource SystemChromeAltHighColor}"
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemChromeMediumColor}" />
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="SystemControlAcrylicElementBrush"
                 BackgroundSource="Backdrop"
                 TintColor="{StaticResource SystemChromeAltHighColor}"
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemChromeMediumColor}" />
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="SystemControlAccentAcrylicWindowAccentMediumHighBrush"
                 BackgroundSource="HostBackdrop"
                 TintColor="{ThemeResource SystemAccentColor}" 
                 TintOpacity="0.7" 
                 FallbackColor="{ThemeResource SystemAccentColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAccentAcrylicElementAccentMediumHighBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{ThemeResource SystemAccentColor}" 
                 TintOpacity="0.7" 
                 FallbackColor="{ThemeResource SystemAccentColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAccentDark1AcrylicWindowAccentDark1Brush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{ThemeResource SystemAccentColorDark1}" 
                 TintOpacity="0.8" 
                 FallbackColor="{ThemeResource SystemAccentColorDark1}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAccentDark1AcrylicElementAccentDark1Brush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{ThemeResource SystemAccentColorDark1}" 
                 TintOpacity="0.8" 
                 FallbackColor="{ThemeResource SystemAccentColorDark1}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAccentDark2AcrylicWindowAccentDark2MediumHighBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{ThemeResource SystemAccentColorDark2}" 
                 TintOpacity="0.7" 
                 FallbackColor="{ThemeResource SystemAccentColorDark2}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAccentDark2AcrylicElementAccentDark2MediumHighBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{ThemeResource SystemAccentColorDark2}" 
                 TintOpacity="0.7" 
                 FallbackColor="{ThemeResource SystemAccentColorDark2}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAcrylicWindowMediumHighBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.7" 
                 FallbackColor="{StaticResource SystemChromeMediumColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAcrylicElementMediumHighBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.7" 
                 FallbackColor="{StaticResource SystemChromeMediumColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlChromeMediumLowAcrylicWindowMediumBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemChromeMediumLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlChromeMediumLowAcrylicElementMediumBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemChromeMediumLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseHighAcrylicWindowBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemBaseHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseHighAcrylicElementBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemBaseHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseHighAcrylicWindowMediumHighBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.7" 
                 FallbackColor="{StaticResource SystemBaseHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseHighAcrylicElementMediumHighBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.7" 
                 FallbackColor="{StaticResource SystemBaseHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseHighAcrylicWindowMediumBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemBaseHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseHighAcrylicElementMediumBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemBaseHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlChromeLowAcrylicWindowBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemChromeLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlChromeLowAcrylicElementBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemChromeLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlChromeMediumAcrylicWindowMediumBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemChromeMediumColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlChromeMediumAcrylicElementMediumBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemChromeMediumColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlChromeHighAcrylicWindowMediumBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemChromeHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlChromeHighAcrylicElementMediumBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemChromeHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseLowAcrylicWindowBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemBaseLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseLowAcrylicElementBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemBaseLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseMediumLowAcrylicWindowMediumBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemBaseMediumLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlBaseMediumLowAcrylicElementMediumBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemBaseMediumLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAltLowAcrylicWindowBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemAltLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAltLowAcrylicElementBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemAltLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAltMediumLowAcrylicWindowMediumBrush" 
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemAltMediumLowColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAltMediumLowAcrylicElementMediumBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.6" 
                 FallbackColor="{StaticResource SystemAltMediumLowColor}" />
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="SystemControlAltHighAcrylicWindowBrush"
                 BackgroundSource="HostBackdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemAltHighColor}" />
-            <local:AcrylicBrush 
+            <media:AcrylicBrush 
                 x:Key="SystemControlAltHighAcrylicElementBrush" 
                 BackgroundSource="Backdrop" 
                 TintColor="{StaticResource SystemChromeAltHighColor}" 
                 TintOpacity="0.8" 
                 FallbackColor="{StaticResource SystemAltHighColor}" />
             <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="#000000" Opacity="0.14" />
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AcrylicBackgroundFillColorDefaultBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.8"
                 FallbackColor="#F9F9F9"
                 BackgroundSource="HostBackdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AcrylicInAppFillColorDefaultBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.8"
                 FallbackColor="#F9F9F9"
                 BackgroundSource="Backdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AcrylicBackgroundFillColorDefaultInverseBrush"
                 TintColor="#2C2C2C"
                 TintOpacity="0.8"
                 FallbackColor="#2C2C2C"
                 BackgroundSource="HostBackdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AcrylicInAppFillColorDefaultInverseBrush"
                 TintColor="#2C2C2C"
                 TintOpacity="0.8"
                 FallbackColor="#2C2C2C"
                 BackgroundSource="Backdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AcrylicBackgroundFillColorBaseBrush"
                 TintColor="#F3F3F3"
                 TintOpacity="0.8"
                 FallbackColor="#EEEEEE"
                 BackgroundSource="HostBackdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AcrylicInAppFillColorBaseBrush"
                 TintColor="#F3F3F3"
                 TintOpacity="0.8"
                 FallbackColor="#EEEEEE"
                 BackgroundSource="Backdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AccentAcrylicBackgroundFillColorDefaultBrush"
                 TintColor="{ThemeResource SystemAccentColorLight3}"
                 TintOpacity="0.8"
                 FallbackColor="{ThemeResource SystemAccentColorLight3}"
                 BackgroundSource="HostBackdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AccentAcrylicInAppFillColorDefaultBrush"
                 TintColor="{ThemeResource SystemAccentColorLight3}"
                 TintOpacity="0.8"
                 FallbackColor="{ThemeResource SystemAccentColorLight3}"
                 BackgroundSource="Backdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AccentAcrylicBackgroundFillColorBaseBrush"
                 TintColor="{ThemeResource SystemAccentColorLight3}"
                 TintOpacity="0.8"
                 FallbackColor="{ThemeResource SystemAccentColorLight3}"
                 BackgroundSource="HostBackdrop"/>
-            <local:AcrylicBrush
+            <media:AcrylicBrush
                 x:Key="AccentAcrylicInAppFillColorBaseBrush"
                 TintColor="{ThemeResource SystemAccentColorLight3}"
                 TintOpacity="0.8"

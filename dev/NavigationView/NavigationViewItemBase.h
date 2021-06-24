@@ -15,10 +15,8 @@ public:
 
     // Promote all overrides that our derived classes want into virtual so that our shim will call them.
     // IFrameworkElementOverrides
-    virtual void OnApplyTemplate()
-    {
-        __super::OnApplyTemplate();
-    }
+    virtual void OnApplyTemplate();
+    void OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&);
 
     // IUIElementOverrides
     virtual winrt::AutomationPeer OnCreateAutomationPeer()

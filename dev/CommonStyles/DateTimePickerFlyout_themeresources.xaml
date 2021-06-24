@@ -15,8 +15,12 @@
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
 
-            <StaticResource x:Key="LoopingSelectorButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonForeground" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="LoopingSelectorUpDownButtonBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonBackgroundPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonBackgroundPressed" ResourceKey="SubtleFillColorTransparentBrush" />
 
             <StaticResource x:Key="LoopingSelectorItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
@@ -35,8 +39,13 @@
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
 
-            <StaticResource x:Key="LoopingSelectorButtonBackground" ResourceKey="SystemControlBackgroundChromeMediumBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="LoopingSelectorUpDownButtonBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
+
 
             <StaticResource x:Key="LoopingSelectorItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="LoopingSelectorItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
@@ -55,8 +64,12 @@
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
 
-            <StaticResource x:Key="LoopingSelectorButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonForeground" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="LoopingSelectorUpDownButtonBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonBackgroundPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonBackgroundPressed" ResourceKey="SubtleFillColorTransparentBrush" />
 
             <StaticResource x:Key="LoopingSelectorItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
@@ -68,7 +81,8 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <Thickness x:Key="LoopingSelectorItemMargin">4,2,4,2</Thickness>
-    <Thickness x:Key="LoopingSelectorUpDownButtonMargin">4</Thickness>
+    <Thickness x:Key="LoopingSelectorUpDownButtonMargin">0</Thickness>
+    <x:Double  x:Key="LoopingSelectorUpDownButtonHeight">34</x:Double>
     <x:Double  x:Key="LoopingSelectorUpDownButtonScalePressed">0.875</x:Double>
  
     <!-- This style covers the accept/cancel buttons-->
@@ -139,7 +153,8 @@
         </Setter>
     </Style>
 
-    <Style x:Key="DateTimePickerFlyoutLoopingSelectorNavigationButtonStyle" TargetType="ButtonBase" BasedOn="{StaticResource DateTimePickerFlyoutButtonStyle}">
+    <Style x:Key="DateTimePickerFlyoutLoopingSelectorNavigationButtonStyle" TargetType="ButtonBase">
+        <Setter Property="Foreground" Value="{ThemeResource LoopingSelectorUpDownButtonForeground}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ButtonBase">
@@ -148,17 +163,14 @@
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
-
+                                
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DateTimePickerFlyoutButtonBackgroundPointerOver}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder" Storyboard.TargetProperty="BorderBrush">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DateTimePickerFlyoutButtonBorderBrushPointerOver}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource LoopingSelectorUpDownButtonBackgroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DateTimePickerFlyoutButtonForegroundPointerOver}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource LoopingSelectorUpDownButtonForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -166,13 +178,10 @@
                                 <VisualState x:Name="Pressed">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DateTimePickerFlyoutButtonBackgroundPressed}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder" Storyboard.TargetProperty="BorderBrush">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DateTimePickerFlyoutButtonBorderBrushPressed}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource LoopingSelectorUpDownButtonBackgroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DateTimePickerFlyoutButtonForegroundPressed}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource LoopingSelectorUpDownButtonForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX" RepeatBehavior="Forever">
                                             <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource LoopingSelectorUpDownButtonScalePressed}"/>
@@ -189,14 +198,11 @@
                         <Border
                             x:Name="RootBorder"
                             contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
-                            BorderBrush="{ThemeResource DateTimePickerFlyoutButtonBorderBrush}"
-                            BorderThickness="{ThemeResource DateTimeFlyoutButtonBorderThickness}"
                             Padding="{TemplateBinding Padding}"
-                            AutomationProperties.AccessibilityView="Raw"
-                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            contract7NotPresent:CornerRadius="{TemplateBinding ControlCornerRadius}">
+                            AutomationProperties.AccessibilityView="Raw" >
                             <TextBlock
                                 x:Name="Content"
+                                Foreground="{TemplateBinding Foreground}"
                                 FontSize="{TemplateBinding FontSize}"
                                 FontFamily="{TemplateBinding FontFamily}"
                                 Text="{TemplateBinding Content}"
@@ -266,7 +272,7 @@
                             Content="&#xEDDB;"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             FontSize="8"
-                            Height="22"
+                            Height="{ThemeResource LoopingSelectorUpDownButtonHeight}"
                             Padding="0"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Top"
@@ -279,7 +285,7 @@
                             Content="&#xEDDC;"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             FontSize="8"
-                            Height="22"
+                            Height="{ThemeResource LoopingSelectorUpDownButtonHeight}"
                             Padding="0"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Bottom"

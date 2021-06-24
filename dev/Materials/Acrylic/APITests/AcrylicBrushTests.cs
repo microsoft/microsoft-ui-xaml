@@ -84,6 +84,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 #endif
         public void VerifyAcrylicBrushHasCorrectFallbackColor()
         {
+            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone2))
+            {
+                Log.Comment("Using system XAML AcrylicBrushes post-RS2, so nothing to test.");
+                return;
+            }
+
             RunOnUIThread.Execute(() =>
             {
                 // only select the pair whose <fallback color> is not empty

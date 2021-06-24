@@ -326,15 +326,6 @@ void CommandBarFlyoutCommandBar::AttachEventHandlers()
                 [this](auto const&, auto const&) { m_openingStoryboard.get().Stop(); }
             });
     }
-
-    if (m_closingStoryboard)
-    {
-        m_closingStoryboardCompletedRevoker =
-            m_closingStoryboard.get().Completed(winrt::auto_revoke,
-            {
-                [this](auto const&, auto const&) { m_closingStoryboard.get().Stop(); }
-            });
-    }
 }
 
 void CommandBarFlyoutCommandBar::DetachEventHandlers()
@@ -346,7 +337,6 @@ void CommandBarFlyoutCommandBar::DetachEventHandlers()
     m_secondaryItemsRootSizeChangedRevoker.revoke();
     m_firstItemLoadedRevoker.revoke();
     m_openingStoryboardCompletedRevoker.revoke();
-    m_closingStoryboardCompletedRevoker.revoke();
     m_closingStoryboardCompletedCallbackRevoker.revoke();
     m_expandedUpToCollapsedStoryboardRevoker.revoke();
     m_expandedDownToCollapsedStoryboardRevoker.revoke();
@@ -361,6 +351,11 @@ bool CommandBarFlyoutCommandBar::HasOpenAnimation()
 
 void CommandBarFlyoutCommandBar::PlayOpenAnimation()
 {
+    if (auto const& closingStoryboard = m_closingStoryboard.get())
+    {
+        closingStoryboard.Stop();
+    }
+
     if (auto openingStoryboard = m_openingStoryboard.get())
     {
         if (openingStoryboard.GetCurrentState() != winrt::ClockState::Active)

@@ -9,7 +9,18 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+    <Grid Margin="12">
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="Red" Offset="0.000" />
+                <GradientStop Color="Orange" Offset="0.167" />
+                <GradientStop Color="Yellow" Offset="0.333" />
+                <GradientStop Color="Green" Offset="0.500" />
+                <GradientStop Color="Blue" Offset="0.667" />
+                <GradientStop Color="Indigo" Offset="0.833" />
+                <GradientStop Color="Violet" Offset="1.000" />
+            </LinearGradientBrush>
+        </Grid.Background>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>

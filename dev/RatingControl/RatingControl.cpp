@@ -640,12 +640,12 @@ void RatingControl::OnFontFamilyChanged(const winrt::DependencyObject& /*sender*
         for (int i = 0; i < MaxRating(); i++)
         {
             // FUTURE: handle image rating items
-            if (auto backgroundTB = m_backgroundStackPanel.get().Children().GetAt(i).as<winrt::TextBlock>())
+            if (auto backgroundTB = m_backgroundStackPanel.get().Children().GetAt(i).try_as<winrt::TextBlock>())
             {
                 CustomizeRatingItem(backgroundTB, RatingControlStates::Unset);
             }
 
-            if (auto foregroundTB = m_foregroundStackPanel.get().Children().GetAt(i).as<winrt::TextBlock>())
+            if (auto foregroundTB = m_foregroundStackPanel.get().Children().GetAt(i).try_as<winrt::TextBlock>())
             {
                 CustomizeRatingItem(foregroundTB, RatingControlStates::Set);
             }

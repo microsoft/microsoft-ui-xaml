@@ -57,7 +57,7 @@
           CornerRadius=10,10,10,10
           BorderThickness=0,0,0,0
           BorderBrush=[NULL]
-          Background=Microsoft.UI.Xaml.Media.AcrylicBrush
+          Background=Windows.UI.Xaml.Media.AcrylicBrush
           Name=ContentRoot
           MinHeight=48
           Margin=0,0,0,0
