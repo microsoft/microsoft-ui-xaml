@@ -70,7 +70,7 @@ private:
     winrt::hstring m_currentState{ L"" };
     winrt::hstring m_previousState{ L"" };
     std::queue<winrt::hstring> m_queuedStates{};
-    unsigned int m_queueLength{ 2 };
+    unsigned int m_queueLength{ 4 };
     winrt::hstring m_pendingState{ L"" };
     winrt::hstring m_lastAnimationSegment{ L"" };
     winrt::hstring m_lastAnimationSegmentStart{ L"" };

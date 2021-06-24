@@ -58,7 +58,7 @@
             <StaticResource x:Key="NavigationViewItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorSecondaryBrush" />
 
             <StaticResource x:Key="NavigationViewItemSeparatorForeground" ResourceKey="DividerStrokeColorDefaultBrush" />
-            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="TextFillColorSecondaryBrush"/>
+            <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="TextFillColorSecondaryBrush" />
 
             <StaticResource x:Key="NavigationViewSelectionIndicatorForeground" ResourceKey="AccentFillColorDefaultBrush" />
 
@@ -270,10 +270,11 @@
     <Thickness x:Key="NavigationViewItemButtonMargin">4,2</Thickness>
     <Thickness x:Key="NavigationViewItemInnerHeaderMargin">16,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemInnerHeaderMargin">12,0</Thickness>
-    <Thickness x:Key="NavigationViewMinimalHeaderMargin">8,5,0,0</Thickness>
+    <Thickness x:Key="NavigationViewMinimalHeaderMargin">-24,44,0,0</Thickness>
     <Thickness x:Key="NavigationViewButtonHolderGridMargin">0,4</Thickness>
-    <Thickness x:Key="NavigationViewPaneContentGridMargin">0,4</Thickness>
-    <Thickness x:Key="NavigationViewContentGridBorderThickness">0</Thickness>
+    <Thickness x:Key="NavigationViewPaneContentGridMargin">-1,3</Thickness>
+    <Thickness x:Key="NavigationViewContentGridBorderThickness">1,1,0,0</Thickness>
+    <Thickness x:Key="NavigationViewMinimalContentGridBorderThickness">0,1,0,0</Thickness>
     <Thickness x:Key="TopNavigationViewContentGridBorderThickness">0,1,0,0</Thickness>
     <Thickness x:Key="TopNavigationViewTopNavGridMargin">4,0</Thickness>
     <Thickness x:Key="NavigationViewHeaderMargin">56,44,0,0</Thickness>
@@ -299,7 +300,8 @@
     <Thickness x:Key="TopNavigationViewItemOnOverflowExpandChevronMargin">-4,0,6,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemOnOverflowExpandChevronPadding">12,0,12,0</Thickness>
 
-    <CornerRadius x:Key="NavigationViewContentGridCornerRadius">0</CornerRadius>
+    <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
+    <CornerRadius x:Key="NavigationViewMinimalContentGridCornerRadius">0</CornerRadius>
 
     <!-- The two resources below must be defined at the app level in order to take effect. -->
     <Thickness x:Key="TopNavigationViewOverflowMenuPadding">0,8</Thickness>

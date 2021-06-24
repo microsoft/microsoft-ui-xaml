@@ -1063,7 +1063,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 AddMenuItem(248, 160);
 
                 // Fill footer items
-                AddFooterItem(200, 200);
+                AddFooterItem(198, 200);
                 AddFooterItem(190, 204);
 
                 // Check that we reached equilibrium.

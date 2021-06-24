@@ -1,6 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
+[bindable]
 [MUX_PUBLIC]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
