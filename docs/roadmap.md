@@ -72,7 +72,7 @@ The Windows App SDK ships experimental, preview, and stable builds (with WinUI 3
 
 For WinUI 2, you can plan to see frequent pre-releases (see our [Releases](https://github.com/microsoft/microsoft-ui-xaml/releases) page for more info), along with three stable releases this year.
 
-![Winui roadmap](images/winui-roadmap.jpg)
+![Winui roadmap](images/winui-roadmap2.jpg)
 
 
 We know that for many of our developers, the choice to adopt WinUI 3 is dependent on certain features and capabilities. The table below outlines the status on WinUI 3 features, and the expected date they'll be available to you. 
@@ -97,7 +97,7 @@ Blank -  Not available
 
 | Customer Capability                                                         | Preview 3 (Nov 2020)                | Preview 4 (Feb 2021)                | Project Reunion 0.5 (March 2021)            | Windows App SDK 0.8 (June 2021)              | Planned for a future update         |
 |-----------------------------------------------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|
-| Supported in any app using the Windows App SDK                                         | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
+| Supported in any app using the Windows App SDK                                         | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
 | Supports MSIX Deployment                                                    | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
 | WinUI 3 works downlevel to Windows 10 version 1809 and above                | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
 | Supports the latest .NET                                                    | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
