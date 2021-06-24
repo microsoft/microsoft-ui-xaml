@@ -379,7 +379,8 @@ footer.footer a{
 }
 
 .logo-bottom {
- max-height: 90%;
+ max-height: 75%;
+ margin-top: 15px;
 }
 
 .icon-calendar {
