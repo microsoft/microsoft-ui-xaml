@@ -59,5 +59,6 @@
     <Page Include="MenuBarTestPage.xaml" />
     <Page Include="CornerRadiusTestPage.xaml" />
     <Page Include="TreeViewTestPage.xaml" />
+    <Page Include="BackdropMaterialTestPage.xaml" />
   </ItemGroup>
 </Project>

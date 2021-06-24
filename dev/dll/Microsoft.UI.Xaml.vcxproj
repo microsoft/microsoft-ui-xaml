@@ -111,6 +111,7 @@
     <Import Project="..\MenuBar\MenuBar.vcxitems" Label="Shared" Condition="$(FeatureMenuBarEnabled) == 'true' Or $(FeatureMenuBarEnabled) == 'productOnly'" />
     <Import Project="..\Materials\Acrylic\AcrylicBrush.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
     <Import Project="..\Materials\Reveal\RevealBrush.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
+    <Import Project="..\Materials\Backdrop\SystemBackdropComponent.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
     <Import Project="..\TreeView\TreeView.vcxitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true' Or $(FeatureTreeViewEnabled) == 'productOnly'" />
     <Import Project="..\Telemetry\Telemetry.vcxitems" Label="Shared" />
     <Import Project="..\ParallaxView\ParallaxView.vcxitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true' Or $(FeatureParallaxViewEnabled) == 'productOnly'" />
