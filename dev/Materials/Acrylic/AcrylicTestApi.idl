@@ -20,7 +20,7 @@ runtimeclass AcrylicTestApi : Windows.UI.Xaml.DependencyObject
 interface IAcrylicBrushStaticsPrivate
 {
     Windows.UI.Composition.CompositionEffectBrush CreateBackdropAcrylicEffectBrush(Windows.UI.Composition.Compositor compositor, Windows.UI.Color initialTintColor, Windows.UI.Color initialFallbackColor, Boolean willTintColorAlwaysBeOpaque);
-    Windows.UI.Composition.CompositionEffectBrush CreateBackdropAcrylicEffectBrushWithLuminosity(Windows.UI.Composition.Compositor compositor, Windows.UI.Color initialTintColor, Windows.UI.Color initialLuminosityColor, Windows.UI.Color initialFallbackColor, Boolean willTintColorAlwaysBeOpaque);
+    Windows.UI.Composition.CompositionEffectBrush CreateBackdropAcrylicEffectBrushWithLuminosity(Windows.UI.Composition.Compositor compositor, Windows.UI.Color initialTintColor, Windows.Foundation.IReference<double> luminosityOpacity, Windows.UI.Color initialFallbackColor, Boolean willTintColorAlwaysBeOpaque);
 }
 
 }
