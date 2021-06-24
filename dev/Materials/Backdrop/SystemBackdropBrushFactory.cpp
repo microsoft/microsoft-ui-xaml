@@ -47,7 +47,8 @@ namespace SystemBackdropComponentInternal
         colorBlendEffect->Foreground(*tintOpacityEffect);
 
         winrt::CompositionEffectBrush micaEffectBrush = compositor.CreateEffectFactory(*colorBlendEffect).CreateBrush();
-        micaEffectBrush.SetSourceParameter(L"BlurredWallpaperBackdrop", compositor.TryCreateBlurredWallpaperBackdropBrush());
+        auto blurredWallpaperBackdropBrush = compositor.try_as<winrt::ICompositorWithBlurredWallpaperBackdropBrush>();
+        micaEffectBrush.SetSourceParameter(L"BlurredWallpaperBackdrop", blurredWallpaperBackdropBrush.TryCreateBlurredWallpaperBackdropBrush());
 
         return micaEffectBrush;
     }

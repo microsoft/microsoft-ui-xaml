@@ -49,4 +49,20 @@ namespace MU_PRIVATE_CONTROLS_NAMESPACE
         static Single LuminosityOpacity;
         static Windows.UI.Color FallbackColor;
     }
+
+    [MUX_INTERNAL]
+    [webhosthidden]
+    [uuid(397DAFE4-B6C2-5BB9-951D-F5707DE8B7BC)]
+    interface ICompositionSupportsSystemBackdrop
+    {
+        Windows.UI.Composition.CompositionBrush SystemBackdrop;
+    }
+
+    [MUX_INTERNAL]
+    [webhosthidden]
+    [uuid(0D8FB190-F122-5B8D-9FDD-543B0D8EB7F3)]
+    interface ICompositorWithBlurredWallpaperBackdropBrush
+    {
+        Windows.UI.Composition.CompositionBackdropBrush TryCreateBlurredWallpaperBackdropBrush();
+    }
 }

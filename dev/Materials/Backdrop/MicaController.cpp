@@ -171,9 +171,12 @@ bool MicaController::IsMicaSupported() const
 {
     WINRT_ASSERT(m_compositor);
 
-    return (m_target &&
-        m_compositor.try_as<winrt::ICompositorWithBlurredWallpaperBackdropBrush>() &&
-        m_compositor.TryCreateBlurredWallpaperBackdropBrush());
+    if (auto blurredWallpaperBackdropBrush = m_compositor.try_as<winrt::ICompositorWithBlurredWallpaperBackdropBrush>())
+    {
+        return m_target && blurredWallpaperBackdropBrush.TryCreateBlurredWallpaperBackdropBrush();
+    }
+
+    return false;
 }
 
 void MicaController::Crossfade(const winrt::Windows::UI::Composition::CompositionBrush& newBrush)
