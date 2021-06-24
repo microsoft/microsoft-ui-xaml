@@ -180,15 +180,14 @@ void MicaController::Crossfade(const winrt::Windows::UI::Composition::Compositio
 {
     const winrt::CompositionBrush& oldBrush = m_target.get().SystemBackdrop();
 
-    if (oldBrush == nullptr)
+    // Immediately set the new brush if:
+    // 1) We don't have an old brush
+    // 2) There was a cross fade happening, just jump to the new brush
+    // 3) Both brushes are solid color (theme change or startup scenario), this doesn't need an animation
+    if (  !oldBrush
+        || (oldBrush.Comment() == L"Crossfade")
+        || (oldBrush.try_as<winrt::ICompositionColorBrush>() && newBrush.try_as<winrt::ICompositionColorBrush>()))
     {
-        UpdateSystemBackdropBrush(newBrush);
-        return;
-    }
-
-    if (oldBrush.Comment() == L"Crossfade")
-    {
-        // If we were animating, cut to the new brush and don't try to get fancy.
         UpdateSystemBackdropBrush(newBrush);
     }
     else
