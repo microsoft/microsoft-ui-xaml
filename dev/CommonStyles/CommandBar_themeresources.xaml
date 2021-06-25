@@ -91,7 +91,7 @@
     <Thickness x:Key="AppBarEllipsisButtonInnerBorderMargin">2,6,6,6</Thickness>
     <x:Double x:Key="AppBarMoreButtonColumnMinWidth">6</x:Double>
     
-    <Thickness x:Key="CommandBarOverflowPresenterMargin">0,4,0,4</Thickness>
+    <Thickness x:Key="CommandBarOverflowPresenterMargin">0,2</Thickness>
 
     <Style TargetType="CommandBar" BasedOn="{StaticResource DefaultCommandBarStyle}" />
 

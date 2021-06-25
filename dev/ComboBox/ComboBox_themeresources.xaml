@@ -356,14 +356,14 @@
     <Thickness x:Key="ComboBoxItemThemeTouchPadding">11,11,11,13</Thickness>
     <Thickness x:Key="ComboBoxItemThemeGameControllerPadding">11,11,11,13</Thickness>
     <Thickness x:Key="ComboBoxBackgroundBorderThicknessFocused">2</Thickness>
-    <Thickness x:Key="ComboBoxDropdownContentMargin">0,4</Thickness>
+    <Thickness x:Key="ComboBoxDropdownContentMargin">0,2</Thickness>
     <Thickness x:Key="ComboBoxTopHeaderMargin">0,0,0,8</Thickness>
     <Thickness x:Key="ComboBoxPadding">12,5,0,7</Thickness>
     <Thickness x:Key="ComboBoxEditableTextPadding">11,5,38,6</Thickness>
 
-    <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">7</CornerRadius>
+    <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">8</CornerRadius>
     <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4</CornerRadius>
-    <CornerRadius x:Key="ComboBoxItemCornerRadius">3</CornerRadius>
+    <CornerRadius x:Key="ComboBoxItemCornerRadius">4</CornerRadius>
     <CornerRadius x:Key="ComboBoxItemPillCornerRadius">1.5</CornerRadius>
     
     <FontWeight x:Key="ComboBoxHeaderThemeFontWeight">Normal</FontWeight>
@@ -658,7 +658,6 @@
 
                         <Rectangle x:Name="Pill"
                             Style="{StaticResource ComboBoxItemPill}"
-                            Margin="1,0,0,0"
                             Grid.Row="1" Grid.Column="0"
                             Opacity="0">
                             <Rectangle.RenderTransform>
@@ -790,7 +789,7 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        Margin="5,2,5,2"
+                        Margin="4,2"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                         contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                         Control.IsTemplateFocusTarget="True">
