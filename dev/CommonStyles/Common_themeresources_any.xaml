@@ -13,7 +13,7 @@
             <Color x:Key="TextFillColorPrimary">#FFFFFF</Color>
             <Color x:Key="TextFillColorSecondary">#C5FFFFFF</Color>
             <Color x:Key="TextFillColorTertiary">#87FFFFFF</Color>
-            <Color x:Key="TextFillColorDisabled">#5DFFFFFF</Color>
+            <Color x:Key="TextFillColorDisabled">#FF0000</Color>
             <Color x:Key="TextFillColorInverse">#E4000000</Color>
 
             <Color x:Key="AccentTextFillColorDisabled">#5DFFFFFF</Color>
@@ -255,7 +255,7 @@
             <Color x:Key="TextFillColorPrimary">#E4000000</Color>
             <Color x:Key="TextFillColorSecondary">#9E000000</Color>
             <Color x:Key="TextFillColorTertiary">#72000000</Color>
-            <Color x:Key="TextFillColorDisabled">#5C000000</Color>
+            <Color x:Key="TextFillColorDisabled">#0000FF</Color>
             <Color x:Key="TextFillColorInverse">#FFFFFF</Color>
 
             <Color x:Key="AccentTextFillColorDisabled">#5C000000</Color>
