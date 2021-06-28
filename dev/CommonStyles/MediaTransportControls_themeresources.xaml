@@ -371,8 +371,7 @@
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
                                             <AppBarSeparator x:Name="LeftSeparator" Height="0" Width="0" Margin="0,0" />
-                                            <AppBarButton x:Name="StopButton" Icon="Stop" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="7" Visibility="Collapsed">
-                                            </AppBarButton>
+                                            <AppBarButton x:Name="StopButton" Icon="Stop" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="7" Visibility="Collapsed" />
                                             <AppBarButton x:Name="SkipBackwardButton" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="5" Visibility="Collapsed">
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xED3C;" />
