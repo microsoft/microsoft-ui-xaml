@@ -270,7 +270,7 @@
 
     <Thickness x:Key="NavigationViewToggleBorderThickness">0</Thickness>
     <Thickness x:Key="NavigationViewItemBorderThickness">1</Thickness>
-    <Thickness x:Key="NavigationViewItemOnLeftIconBoxMargin">11,0,11,0</Thickness>
+    <Thickness x:Key="NavigationViewItemOnLeftIconBoxMargin">0</Thickness>
     <Thickness x:Key="NavigationViewItemButtonMargin">4,2</Thickness>
     <Thickness x:Key="NavigationViewItemInnerHeaderMargin">16,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemInnerHeaderMargin">12,0</Thickness>
@@ -741,7 +741,8 @@
                                 <Border x:Name="IconColumn" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SmallerIconWidth}">
                                     <Viewbox x:Name="IconBox"
                                         Height="{ThemeResource NavigationViewItemOnLeftIconBoxHeight}"
-                                        HorizontalAlignment="Center">
+                                        HorizontalAlignment="Center"
+                                        Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
                                         <ContentPresenter 
                                             x:Name="Icon" 
                                             Content="{TemplateBinding Icon}"
