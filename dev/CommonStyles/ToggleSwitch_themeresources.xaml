@@ -31,19 +31,19 @@
             <StaticResource x:Key="ToggleSwitchFillOn" ResourceKey="AccentFillColorDefaultBrush" />
             <StaticResource x:Key="ToggleSwitchFillOnPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleSwitchFillOnPressed" ResourceKey="AccentFillColorTertiaryBrush" />
-            <StaticResource x:Key="ToggleSwitchFillOnDisabled" ResourceKey="AccentFillColorDisabled" />
+            <StaticResource x:Key="ToggleSwitchFillOnDisabled" ResourceKey="AccentFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleSwitchStrokeOn" ResourceKey="AccentFillColorDefaultBrush" />
             <StaticResource x:Key="ToggleSwitchStrokeOnPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleSwitchStrokeOnPressed" ResourceKey="AccentFillColorTertiaryBrush" />
-            <StaticResource x:Key="ToggleSwitchStrokeOnDisabled" ResourceKey="AccentFillColorDisabled" />
+            <StaticResource x:Key="ToggleSwitchStrokeOnDisabled" ResourceKey="AccentFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOff" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOffPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOffPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOffDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOn" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOnPointerOver" ResourceKey="TextOnAccentFillColorPrimary" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOnPressed" ResourceKey="TextOnAccentFillColorPrimary" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOnDisabled" ResourceKey="TextOnAccentFillColorDisabled" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOnPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOnPressed" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOnDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleSwitchKnobStrokeOn" ResourceKey="CircleElevationBorderBrush" />
 
             <!-- Legacy Brushes -->
@@ -156,19 +156,19 @@
             <StaticResource x:Key="ToggleSwitchFillOn" ResourceKey="AccentFillColorDefaultBrush" />
             <StaticResource x:Key="ToggleSwitchFillOnPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleSwitchFillOnPressed" ResourceKey="AccentFillColorTertiaryBrush" />
-            <StaticResource x:Key="ToggleSwitchFillOnDisabled" ResourceKey="AccentFillColorDisabled" />
+            <StaticResource x:Key="ToggleSwitchFillOnDisabled" ResourceKey="AccentFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleSwitchStrokeOn" ResourceKey="AccentFillColorDefaultBrush" />
             <StaticResource x:Key="ToggleSwitchStrokeOnPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleSwitchStrokeOnPressed" ResourceKey="AccentFillColorTertiaryBrush" />
-            <StaticResource x:Key="ToggleSwitchStrokeOnDisabled" ResourceKey="AccentFillColorDisabled" />
+            <StaticResource x:Key="ToggleSwitchStrokeOnDisabled" ResourceKey="AccentFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOff" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOffPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOffPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOffDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOn" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOnPointerOver" ResourceKey="TextOnAccentFillColorPrimary" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOnPressed" ResourceKey="TextOnAccentFillColorPrimary" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOnDisabled" ResourceKey="TextOnAccentFillColorDisabled" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOnPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOnPressed" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOnDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleSwitchKnobStrokeOn" ResourceKey="CircleElevationBorderBrush" />
 
             <!-- Legacy Brushes -->
@@ -365,12 +365,12 @@
                                         <ColorAnimationUsingKeyFrames Storyboard.TargetName="OuterBorder" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)">
                                             <LinearColorKeyFrame KeyTime="{StaticResource ControlFasterAnimationDuration}" Value="{ThemeResource ToggleSwitchFillOffDisabled}" />
                                         </ColorAnimationUsingKeyFrames>
-                                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobBounds" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame KeyTime="{StaticResource ControlFasterAnimationDuration}" Value="{ThemeResource ToggleSwitchFillOnDisabled}" />
-                                        </ColorAnimationUsingKeyFrames>
-                                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobBounds" Storyboard.TargetProperty="(Shape.Stroke).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame KeyTime="{StaticResource ControlFasterAnimationDuration}" Value="{ThemeResource ToggleSwitchStrokeOnDisabled}" />
-                                        </ColorAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobBounds" Storyboard.TargetProperty="Fill">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleSwitchFillOnDisabled}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobBounds" Storyboard.TargetProperty="Stroke">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleSwitchStrokeOnDisabled}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobOff" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleSwitchKnobFillOffDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
