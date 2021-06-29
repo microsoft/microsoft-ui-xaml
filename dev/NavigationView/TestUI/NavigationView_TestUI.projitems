@@ -58,10 +58,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewBackButton.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Regression\NavigationViewRS3Page.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -151,9 +147,6 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewPageDataContext.xaml.cs">
       <DependentUpon>NavigationViewPageDataContext.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewBackButton.xaml.cs">
-      <DependentUpon>NavigationViewBackButton.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Regression\NavigationViewRS3Page.xaml.cs">
       <DependentUpon>NavigationViewRS3Page.xaml</DependentUpon>
