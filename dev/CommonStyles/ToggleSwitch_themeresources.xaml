@@ -37,9 +37,9 @@
             <StaticResource x:Key="ToggleSwitchStrokeOnPressed" ResourceKey="AccentFillColorTertiaryBrush" />
             <StaticResource x:Key="ToggleSwitchStrokeOnDisabled" ResourceKey="AccentFillColorDisabled" />
             <StaticResource x:Key="ToggleSwitchKnobFillOff" ResourceKey="TextFillColorSecondaryBrush" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOffPointerOver" ResourceKey="TextFillColorSecondary" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOffPressed" ResourceKey="TextFillColorSecondary" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOffDisabled" ResourceKey="TextFillColorDisabled" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOffPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOffPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOffDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOn" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOnPointerOver" ResourceKey="TextOnAccentFillColorPrimary" />
             <StaticResource x:Key="ToggleSwitchKnobFillOnPressed" ResourceKey="TextOnAccentFillColorPrimary" />
@@ -162,9 +162,9 @@
             <StaticResource x:Key="ToggleSwitchStrokeOnPressed" ResourceKey="AccentFillColorTertiaryBrush" />
             <StaticResource x:Key="ToggleSwitchStrokeOnDisabled" ResourceKey="AccentFillColorDisabled" />
             <StaticResource x:Key="ToggleSwitchKnobFillOff" ResourceKey="TextFillColorSecondaryBrush" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOffPointerOver" ResourceKey="TextFillColorSecondary" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOffPressed" ResourceKey="TextFillColorSecondary" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOffDisabled" ResourceKey="TextFillColorDisabled" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOffPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOffPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOffDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOn" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOnPointerOver" ResourceKey="TextOnAccentFillColorPrimary" />
             <StaticResource x:Key="ToggleSwitchKnobFillOnPressed" ResourceKey="TextOnAccentFillColorPrimary" />
@@ -274,12 +274,12 @@
                                         <ColorAnimationUsingKeyFrames Storyboard.TargetName="OuterBorder" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)">
                                             <LinearColorKeyFrame KeyTime="{StaticResource ControlFasterAnimationDuration}" Value="{ThemeResource ToggleSwitchFillOffPointerOver}" />
                                         </ColorAnimationUsingKeyFrames>
-                                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobOff" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame KeyTime="{StaticResource ControlFasterAnimationDuration}" Value="{ThemeResource ToggleSwitchKnobFillOffPointerOver}" />
-                                        </ColorAnimationUsingKeyFrames>
-                                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobOn" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame KeyTime="{StaticResource ControlFasterAnimationDuration}" Value="{ThemeResource ToggleSwitchKnobFillOnPointerOver}" />
-                                        </ColorAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobOff" Storyboard.TargetProperty="Fill">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleSwitchKnobFillOffPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobOn" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleSwitchKnobFillOnPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobBounds" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleSwitchFillOnPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -325,12 +325,12 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobBounds" Storyboard.TargetProperty="Stroke">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleSwitchStrokeOnPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobOff" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame KeyTime="{StaticResource ControlFasterAnimationDuration}" Value="{ThemeResource ToggleSwitchKnobFillOffPressed}" />
-                                        </ColorAnimationUsingKeyFrames>
-                                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobOn" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame KeyTime="{StaticResource ControlFasterAnimationDuration}" Value="{ThemeResource ToggleSwitchKnobFillOnPressed}" />
-                                        </ColorAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobOff" Storyboard.TargetProperty="Fill">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleSwitchKnobFillOffPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobOn" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleSwitchKnobFillOnPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <ColorAnimationUsingKeyFrames Storyboard.TargetName="SwitchAreaGrid" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
                                             <LinearColorKeyFrame KeyTime="{StaticResource ControlFasterAnimationDuration}" Value="{ThemeResource ToggleSwitchContainerBackgroundPressed}" />
                                         </ColorAnimationUsingKeyFrames>
@@ -371,12 +371,12 @@
                                         <ColorAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobBounds" Storyboard.TargetProperty="(Shape.Stroke).(SolidColorBrush.Color)">
                                             <LinearColorKeyFrame KeyTime="{StaticResource ControlFasterAnimationDuration}" Value="{ThemeResource ToggleSwitchStrokeOnDisabled}" />
                                         </ColorAnimationUsingKeyFrames>
-                                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobOff" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame KeyTime="{StaticResource ControlFasterAnimationDuration}" Value="{ThemeResource ToggleSwitchKnobFillOffDisabled}" />
-                                        </ColorAnimationUsingKeyFrames>
-                                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobOn" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame KeyTime="{StaticResource ControlFasterAnimationDuration}" Value="{ThemeResource ToggleSwitchKnobFillOnDisabled}" />
-                                        </ColorAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobOff" Storyboard.TargetProperty="Fill">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleSwitchKnobFillOffDisabled}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobOn" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleSwitchKnobFillOnDisabled}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <ColorAnimationUsingKeyFrames Storyboard.TargetName="SwitchAreaGrid" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
                                             <LinearColorKeyFrame KeyTime="{StaticResource ControlFasterAnimationDuration}" Value="{ThemeResource ToggleSwitchContainerBackgroundDisabled}" />
                                         </ColorAnimationUsingKeyFrames>
