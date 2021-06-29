@@ -7,6 +7,11 @@
 #include "IconSource.h"
 #include "FontIconSource.h"
 
+FontIconSource::FontIconSource()
+{
+    FontFamily(winrt::FontFamily{ c_fontIconSourceDefaultFontFamily });
+}
+
 winrt::IconElement FontIconSource::CreateIconElementCore()
 {
     winrt::FontIcon fontIcon;

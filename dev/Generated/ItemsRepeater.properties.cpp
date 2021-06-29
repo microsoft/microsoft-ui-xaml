@@ -94,7 +94,7 @@ void ItemsRepeaterProperties::EnsureProperties()
                 winrt::name_of<winrt::Layout>(),
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
-                ValueHelper<winrt::Layout>::BoxValueIfNecessary(winrt::StackLayout()),
+                ValueHelper<winrt::Layout>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnLayoutPropertyChanged));
     }
     if (!s_VerticalCacheLengthProperty)

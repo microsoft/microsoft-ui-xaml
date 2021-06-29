@@ -125,7 +125,6 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
     Object ItemTemplate { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_DEFAULT_VALUE("winrt::StackLayout()")]
     Layout Layout { get; set; };
 
     [MUX_PREVIEW]
