@@ -2031,7 +2031,7 @@
                 RenderSize=800,552
               [Windows.UI.Xaml.Controls.Grid]
                   Padding=0,0,0,0
-                  CornerRadius=8,0,0,0
+                  CornerRadius=0,0,0,0
                   BorderThickness=0,1,0,0
                   BorderBrush=#0F000000
                   Background=#80FFFFFF

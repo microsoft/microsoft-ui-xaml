@@ -36,6 +36,8 @@
                                 <VisualState x:Name="TopNavigationMinimal">
                                     <VisualState.Setters>
                                         <Setter Target="ContentGrid.BorderThickness" Value="{ThemeResource TopNavigationViewContentGridBorderThickness}" />
+                                        <Setter Target="ContentGrid.CornerRadius" Value="{ThemeResource TopNavigationViewContentGridCornerRadius}" />
+                                        <Setter Target="ContentGrid.Margin" Value="{ThemeResource TopNavigationViewContentMargin}" />
                                     </VisualState.Setters>
                                 </VisualState>
 
