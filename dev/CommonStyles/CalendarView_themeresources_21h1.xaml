@@ -75,9 +75,9 @@
             <Thickness x:Key="CalendarViewFirstOfYearDecadeLabelMargin">0,9,0,0</Thickness>
             <Thickness x:Key="CalendarViewHeaderNavigationButtonPadding">8,7,8,8</Thickness>
             <Thickness x:Key="CalendarViewNavigationButtonPadding">12,11.5,12,11.5</Thickness>
-            <Thickness x:Key="CalendarViewHeaderNavigationButtonMargin">7,6,4,7</Thickness>
-            <Thickness x:Key="CalendarViewNavigationPreviousButtonMargin">4,6,4,7</Thickness>
-            <Thickness x:Key="CalendarViewNavigationNextButtonMargin">4,6,7,7</Thickness>
+            <Thickness x:Key="CalendarViewHeaderNavigationButtonMargin">7,6,3,7</Thickness>
+            <Thickness x:Key="CalendarViewNavigationPreviousButtonMargin">3,6,3,7</Thickness>
+            <Thickness x:Key="CalendarViewNavigationNextButtonMargin">3,6,7,7</Thickness>
             <Thickness x:Key="CalendarViewNavigationButtonFocusVisualMargin">-2</Thickness>
             <FontWeight x:Key="CalendarViewHeaderNavigationFontWeight">SemiBold</FontWeight>
             <FontWeight x:Key="CalendarViewWeekDayFontWeight">SemiBold</FontWeight>
@@ -153,9 +153,9 @@
             <Thickness x:Key="CalendarViewFirstOfYearDecadeLabelMargin">0,9,0,0</Thickness>
             <Thickness x:Key="CalendarViewHeaderNavigationButtonPadding">8,7,8,8</Thickness>
             <Thickness x:Key="CalendarViewNavigationButtonPadding">12,11.5,12,11.5</Thickness>
-            <Thickness x:Key="CalendarViewHeaderNavigationButtonMargin">7,6,4,7</Thickness>
-            <Thickness x:Key="CalendarViewNavigationPreviousButtonMargin">4,6,4,7</Thickness>
-            <Thickness x:Key="CalendarViewNavigationNextButtonMargin">4,6,7,7</Thickness>
+            <Thickness x:Key="CalendarViewHeaderNavigationButtonMargin">7,6,3,7</Thickness>
+            <Thickness x:Key="CalendarViewNavigationPreviousButtonMargin">3,6,3,7</Thickness>
+            <Thickness x:Key="CalendarViewNavigationNextButtonMargin">3,6,7,7</Thickness>
             <Thickness x:Key="CalendarViewNavigationButtonFocusVisualMargin">-2</Thickness>
             <FontWeight x:Key="CalendarViewHeaderNavigationFontWeight">SemiBold</FontWeight>
             <FontWeight x:Key="CalendarViewWeekDayFontWeight">SemiBold</FontWeight>
@@ -231,9 +231,9 @@
             <Thickness x:Key="CalendarViewFirstOfYearDecadeLabelMargin">0,9,0,0</Thickness>
             <Thickness x:Key="CalendarViewHeaderNavigationButtonPadding">8,7,8,8</Thickness>
             <Thickness x:Key="CalendarViewNavigationButtonPadding">12,11.5,12,11.5</Thickness>
-            <Thickness x:Key="CalendarViewHeaderNavigationButtonMargin">7,6,4,7</Thickness>
-            <Thickness x:Key="CalendarViewNavigationPreviousButtonMargin">4,6,4,7</Thickness>
-            <Thickness x:Key="CalendarViewNavigationNextButtonMargin">4,6,7,7</Thickness>
+            <Thickness x:Key="CalendarViewHeaderNavigationButtonMargin">7,6,3,7</Thickness>
+            <Thickness x:Key="CalendarViewNavigationPreviousButtonMargin">3,6,3,7</Thickness>
+            <Thickness x:Key="CalendarViewNavigationNextButtonMargin">3,6,7,7</Thickness>
             <Thickness x:Key="CalendarViewNavigationButtonFocusVisualMargin">-2</Thickness>
             <FontWeight x:Key="CalendarViewHeaderNavigationFontWeight">SemiBold</FontWeight>
             <FontWeight x:Key="CalendarViewWeekDayFontWeight">SemiBold</FontWeight>
@@ -707,9 +707,9 @@
                             </Grid.RowDefinitions>
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="5*" />
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <Button x:Name="HeaderButton"
                                     Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HeaderText}"
