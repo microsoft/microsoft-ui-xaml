@@ -205,8 +205,7 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Grid x:Name="LayoutRoot"
-                            contract7Present:CornerRadius="{ThemeResource OverlayCornerRadius}">
+                        <Grid x:Name="LayoutRoot">
                             <Rectangle x:Name="SmokeLayerBackground" Fill="{ThemeResource ContentDialogSmokeFill}" />
                             <Border
                                 x:Name="BackgroundElement"
