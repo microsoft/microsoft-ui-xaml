@@ -462,7 +462,7 @@
                                 x:Name="RootSplitView"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
-                                BorderThickness="1"
+                                BorderThickness="{ThemeResource NavigationViewBorderThickness}"
                                 CompactPaneLength="{TemplateBinding CompactPaneLength}"
                                 DisplayMode="Inline"
                                 IsPaneOpen="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsPaneOpen, Mode=TwoWay}"

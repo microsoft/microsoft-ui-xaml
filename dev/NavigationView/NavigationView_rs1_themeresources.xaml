@@ -219,7 +219,7 @@
             <SolidColorBrush x:Key="NavigationViewSelectionIndicatorForeground" Color="{ThemeResource SystemColorHighlightTextColor}" />
 
             <StaticResource x:Key="NavigationViewContentGridBorderBrush" ResourceKey="SystemControlTransparentBrush" />
-            
+
             <StaticResource x:Key="TopNavigationViewItemForeground" ResourceKey="NavigationViewItemForeground" />
             <StaticResource x:Key="TopNavigationViewItemForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="TopNavigationViewItemForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
@@ -281,6 +281,7 @@
     <Thickness x:Key="NavigationViewMinimalContentGridBorderThickness">0,1,0,0</Thickness>
     <Thickness x:Key="TopNavigationViewContentGridBorderThickness">0,1,0,0</Thickness>
     <Thickness x:Key="TopNavigationViewTopNavGridMargin">4,0</Thickness>
+    <Thickness x:Key="NavigationViewBorderThickness">1</Thickness>
     <Thickness x:Key="NavigationViewHeaderMargin">56,44,0,0</Thickness>
     <Thickness x:Key="NavigationViewContentPresenterMargin">0</Thickness>
     <Thickness x:Key="NavigationViewContentMargin">0</Thickness>
