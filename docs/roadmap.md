@@ -72,7 +72,7 @@ The Windows App SDK ships experimental, preview, and stable builds (with WinUI 3
 
 For WinUI 2, you can plan to see frequent pre-releases (see our [Releases](https://github.com/microsoft/microsoft-ui-xaml/releases) page for more info), along with three stable releases this year.
 
-![Winui roadmap](images/winui-release-schedule.jpg)
+![Winui roadmap](images/roadmap0621.jpg)
 
 
 We know that for many of our developers, the choice to adopt WinUI 3 is dependent on certain features and capabilities. The table below outlines the status on WinUI 3 features, and the expected date they'll be available to you. 
