@@ -399,10 +399,6 @@ void NumberBox::OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::Ro
             popup.IsOpen(true);
         }
     }
-    else if (SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline)
-    {
-        //UpdateSpinButtonPlacement();
-    }
 }
 
 void NumberBox::OnNumberBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
