@@ -7,11 +7,6 @@
 #include "IconSource.h"
 #include "FontIconSource.h"
 
-FontIconSource::FontIconSource()
-{
-    FontFamily(winrt::FontFamily{ c_fontIconSourceDefaultFontFamily });
-}
-
 winrt::IconElement FontIconSource::CreateIconElementCore()
 {
     winrt::FontIcon fontIcon;
@@ -23,10 +18,11 @@ winrt::IconElement FontIconSource::CreateIconElementCore()
         fontIcon.Foreground(newForeground);
     }
 
-    if (FontFamily())
+    if (!FontFamily())
     {
-        fontIcon.FontFamily(FontFamily());
+        FontFamily(winrt::FontFamily{ c_fontIconSourceDefaultFontFamily });
     }
+    fontIcon.FontFamily(FontFamily());
 
     fontIcon.FontWeight(FontWeight());
     fontIcon.FontStyle(FontStyle());
