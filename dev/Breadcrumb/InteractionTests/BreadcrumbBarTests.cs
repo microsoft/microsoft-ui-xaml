@@ -610,7 +610,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return elementGotFocus;
         }
 
-        private bool TryGetFocusForRs3(UIObject breadcrumb, int indexToFocus, bool isRightToLeft)
+        private bool TryGetFocusForRs3(UIObject breadcrumb, int indexToFocus, bool isEllipsisVisible, bool isRightToLeft)
         {
             Log.Comment("Try Set focus for RS3 build");
 
@@ -619,6 +619,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             // For RS3 we need only one Tab key stroke
             KeyboardHelper.PressKey(Key.Tab);
+
+            if (!isEllipsisVisible)
+            {
+                if (isRightToLeft)
+                {
+                    KeyboardHelper.PressKey(Key.Left);
+                }
+                else
+                {
+                    KeyboardHelper.PressKey(Key.Right);
+                }
+            }
 
             bool elementGotFocus = breadcrumb.Children[indexToFocus].HasKeyboardFocus;
 
@@ -675,7 +687,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             bool gotFocus = TryGetFocusForRs2(breadcrumb, indexToFocus, isEllipsisVisible);
             if (!gotFocus)
             {
-                gotFocus = TryGetFocusForRs3(breadcrumb, indexToFocus, isRightToLeft);
+                gotFocus = TryGetFocusForRs3(breadcrumb, indexToFocus, isEllipsisVisible, isRightToLeft);
                 if (!gotFocus)
                 {
                     gotFocus = TryGetFocusByPressingTab(breadcrumb, indexToFocus);
