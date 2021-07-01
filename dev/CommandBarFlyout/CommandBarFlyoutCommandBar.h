@@ -40,6 +40,8 @@ public:
     // IControlOverrides / IControlOverridesHelper
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 
+    void OnCommandBarElementDependencyPropertyChanged();
+
     bool m_commandBarFlyoutIsOpening{ false };
 
 private:
@@ -47,8 +49,8 @@ private:
     void DetachEventHandlers();
 
     void UpdateFlowsFromAndFlowsTo();
-    void UpdateUI(bool useTransitions = true);
-    void UpdateVisualState(bool useTransitions);
+    void UpdateUI(bool useTransitions = true, bool isForCommandBarElementDependencyPropertyChange = false);
+    void UpdateVisualState(bool useTransitions, bool isForCommandBarElementDependencyPropertyChange = false);
     void UpdateTemplateSettings();
     void EnsureAutomationSetCountAndPosition();
     void EnsureLocalizedControlTypes();

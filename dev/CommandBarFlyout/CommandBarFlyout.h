@@ -30,7 +30,18 @@ protected:
     tracker_ref<winrt::CommandBarFlyoutCommandBar> m_commandBar{ this };
 
 private:
+    static constexpr int s_commandBarElementDependencyPropertiesCount{ 5 };
+
+    static const winrt::DependencyProperty s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount];
+    static const winrt::DependencyProperty s_appBarToggleButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount];
+
     void SetSecondaryCommandsToCloseWhenExecuted();
+    void HookAppBarButtonDependencyPropertyChanges(winrt::AppBarButton const& appBarButton, int index);
+    void HookAppBarToggleButtonDependencyPropertyChanges(winrt::AppBarToggleButton const& appBarToggleButton, int index);
+    void HookAllCommandBarElementDependencyPropertyChanges();
+    void UnhookCommandBarElementDependencyPropertyChanges(int index, bool eraseRevokers = true);
+    void UnhookAllCommandBarElementDependencyPropertyChanges();
+    void OnCommandBarElementDependencyPropertyChanged(winrt::DependencyObject const& dependencyObject, winrt::DependencyProperty const& dependencyProperty);
 
     bool m_alwaysExpanded;
 
@@ -50,6 +61,7 @@ private:
     std::map<int, winrt::ButtonBase::Click_revoker> m_secondaryButtonClickRevokerByIndexMap;
     std::map<int, winrt::ToggleButton::Checked_revoker> m_secondaryToggleButtonCheckedRevokerByIndexMap;
     std::map<int, winrt::ToggleButton::Unchecked_revoker> m_secondaryToggleButtonUncheckedRevokerByIndexMap;
+    std::map<int, PropertyChanged_revoker[s_commandBarElementDependencyPropertiesCount]> m_propertyChangedRevokersByIndexMap;
 
     tracker_ref<winrt::FlyoutPresenter> m_presenter{ this };
 

@@ -11,8 +11,26 @@
 #include "CommandBarFlyout.properties.cpp"
 
 // Change to 'true' to turn on debugging outputs in Output window
-bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ false };
-bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ false };
+bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ true };
+bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ true };
+
+const winrt::DependencyProperty CommandBarFlyout::s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]
+{
+    winrt::AppBarButton::IconProperty(),
+    winrt::AppBarButton::IsCompactProperty(),
+    winrt::AppBarButton::KeyboardAcceleratorTextOverrideProperty(),
+    winrt::AppBarButton::LabelProperty(),
+    winrt::AppBarButton::LabelPositionProperty()
+};
+
+const winrt::DependencyProperty CommandBarFlyout::s_appBarToggleButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]
+{
+    winrt::AppBarToggleButton::IconProperty(),
+    winrt::AppBarToggleButton::IsCompactProperty(),
+    winrt::AppBarToggleButton::KeyboardAcceleratorTextOverrideProperty(),
+    winrt::AppBarToggleButton::LabelProperty(),
+    winrt::AppBarToggleButton::LabelPositionProperty()
+};
 
 CommandBarFlyout::CommandBarFlyout()
 {
@@ -65,6 +83,17 @@ CommandBarFlyout::CommandBarFlyout()
                     auto button = element.try_as<winrt::AppBarButton>();
                     auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
 
+                    UnhookCommandBarElementDependencyPropertyChanges(index);
+
+                    if (button)
+                    {
+                        HookAppBarButtonDependencyPropertyChanges(button, index);
+                    }
+                    else if (toggleButton)
+                    {
+                        HookAppBarToggleButtonDependencyPropertyChanges(toggleButton, index);
+                    }
+
                     if (button && !button.Flyout())
                     {
                         m_secondaryButtonClickRevokerByIndexMap[index] = button.Click(winrt::auto_revoke, closeFlyoutFunc);
@@ -91,6 +120,15 @@ CommandBarFlyout::CommandBarFlyout()
                     auto button = element.try_as<winrt::AppBarButton>();
                     auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
 
+                    if (button)
+                    {
+                        HookAppBarButtonDependencyPropertyChanges(button, index);
+                    }
+                    else if (toggleButton)
+                    {
+                        HookAppBarToggleButtonDependencyPropertyChanges(toggleButton, index);
+                    }
+
                     if (button && !button.Flyout())
                     {
                         m_secondaryButtonClickRevokerByIndexMap[index] = button.Click(winrt::auto_revoke, closeFlyoutFunc);
@@ -103,12 +141,15 @@ CommandBarFlyout::CommandBarFlyout()
                     break;
                 }
                 case winrt::CollectionChange::ItemRemoved:
+                    UnhookCommandBarElementDependencyPropertyChanges(index);
+
                     SharedHelpers::EraseIfExists(m_secondaryButtonClickRevokerByIndexMap, index);
                     SharedHelpers::EraseIfExists(m_secondaryToggleButtonCheckedRevokerByIndexMap, index);
                     SharedHelpers::EraseIfExists(m_secondaryToggleButtonUncheckedRevokerByIndexMap, index);
                     break;
                 case winrt::CollectionChange::Reset:
                     SetSecondaryCommandsToCloseWhenExecuted();
+                    HookAllCommandBarElementDependencyPropertyChanges();
                     break;
                 default:
                     MUX_ASSERT(false);
@@ -250,6 +291,8 @@ CommandBarFlyout::~CommandBarFlyout()
 {
     m_primaryCommands.VectorChanged(m_primaryCommandsVectorChangedToken);
     m_secondaryCommands.VectorChanged(m_secondaryCommandsVectorChangedToken);
+
+    UnhookAllCommandBarElementDependencyPropertyChanges();
 }
 
 winrt::IObservableVector<winrt::ICommandBarElement> CommandBarFlyout::PrimaryCommands()
@@ -270,6 +313,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     SharedHelpers::CopyVector(m_secondaryCommands, commandBar->SecondaryCommands());
 
     SetSecondaryCommandsToCloseWhenExecuted();
+    HookAllCommandBarElementDependencyPropertyChanges();
 
     winrt::FlyoutPresenter presenter;
     presenter.Background(nullptr);
@@ -406,4 +450,83 @@ void CommandBarFlyout::RemoveDropShadow()
 tracker_ref<winrt::FlyoutPresenter> CommandBarFlyout::GetPresenter()
 {
     return m_presenter;
+}
+
+void CommandBarFlyout::HookAppBarButtonDependencyPropertyChanges(winrt::AppBarButton const& appBarButton, int index)
+{
+    for (int commandBarElementDependencyPropertyIndex = 0; commandBarElementDependencyPropertyIndex < s_commandBarElementDependencyPropertiesCount; commandBarElementDependencyPropertyIndex++)
+    {
+        m_propertyChangedRevokersByIndexMap[index][commandBarElementDependencyPropertyIndex] =
+            RegisterPropertyChanged(
+                appBarButton,
+                s_appBarButtonDependencyProperties[commandBarElementDependencyPropertyIndex], { this, &CommandBarFlyout::OnCommandBarElementDependencyPropertyChanged });
+    }
+}
+
+void CommandBarFlyout::HookAppBarToggleButtonDependencyPropertyChanges(winrt::AppBarToggleButton const& appBarToggleButton, int index)
+{
+    for (int commandBarElementDependencyPropertyIndex = 0; commandBarElementDependencyPropertyIndex < s_commandBarElementDependencyPropertiesCount; commandBarElementDependencyPropertyIndex++)
+    {
+        m_propertyChangedRevokersByIndexMap[index][commandBarElementDependencyPropertyIndex] =
+            RegisterPropertyChanged(
+                appBarToggleButton,
+                s_appBarToggleButtonDependencyProperties[commandBarElementDependencyPropertyIndex], { this, &CommandBarFlyout::OnCommandBarElementDependencyPropertyChanged });
+    }
+}
+
+void CommandBarFlyout::HookAllCommandBarElementDependencyPropertyChanges()
+{
+    UnhookAllCommandBarElementDependencyPropertyChanges();
+
+    for (uint32_t i = 0; i < SecondaryCommands().Size(); i++)
+    {
+        auto element = SecondaryCommands().GetAt(i);
+        auto button = element.try_as<winrt::AppBarButton>();
+        auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
+
+        if (button)
+        {
+            HookAppBarButtonDependencyPropertyChanges(button, i);
+        }
+        else if (toggleButton)
+        {
+            HookAppBarToggleButtonDependencyPropertyChanges(toggleButton, i);
+        }
+    }
+}
+
+void CommandBarFlyout::UnhookCommandBarElementDependencyPropertyChanges(int index, bool eraseRevokers)
+{
+    const auto revokers = m_propertyChangedRevokersByIndexMap.find(index);
+    if (revokers != m_propertyChangedRevokersByIndexMap.end())
+    {
+        for (int commandBarElementDependencyPropertyIndex = 0; commandBarElementDependencyPropertyIndex < s_commandBarElementDependencyPropertiesCount; commandBarElementDependencyPropertyIndex++)
+        {
+            m_propertyChangedRevokersByIndexMap[index][commandBarElementDependencyPropertyIndex].revoke();
+        }
+
+        if (eraseRevokers)
+        {
+            m_propertyChangedRevokersByIndexMap.erase(revokers);
+        }
+    }
+}
+
+void CommandBarFlyout::UnhookAllCommandBarElementDependencyPropertyChanges()
+{
+    for (auto const& revokers : m_propertyChangedRevokersByIndexMap)
+    {
+        UnhookCommandBarElementDependencyPropertyChanges(revokers.first, false /*eraseRevokers*/);
+    }
+    m_propertyChangedRevokersByIndexMap.clear();
+}
+
+void CommandBarFlyout::OnCommandBarElementDependencyPropertyChanged(winrt::DependencyObject const& dependencyObject, winrt::DependencyProperty const& dependencyProperty)
+{
+    COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
+    {
+        commandBar->OnCommandBarElementDependencyPropertyChanged();
+    }
 }
