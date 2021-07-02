@@ -553,6 +553,8 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
 
         if (isForCommandBarElementDependencyPropertyChange)
         {
+            // UpdateVisualState is called as a result of a secondary command bar element dependency property change. This CommandBarFlyoutCommandBar is already open
+            // and expanded. Jump to the Collapsed and back to ExpandedUp/ExpandedDown state to apply all refreshed CommandBarFlyoutCommandBarTemplateSettings values.
             winrt::VisualStateManager::GoToState(*this, L"Collapsed", false);
         }
 
@@ -1359,10 +1361,12 @@ void CommandBarFlyoutCommandBar::BindOwningFlyoutPresenterToCornerRadius()
     }
 }
 
+// Invoked by CommandBarFlyout when a secondary AppBarButton or AppBarToggleButton dependency property changed.
 void CommandBarFlyoutCommandBar::OnCommandBarElementDependencyPropertyChanged()
 {
     COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
+    // Only refresh the UI when the CommandBarFlyoutCommandBar is already open since it will be refreshed anyways in the event it gets opened.
     if (IsOpen())
     {
         UpdateUI(!m_commandBarFlyoutIsOpening, true /*isForCommandBarElementDependencyPropertyChange*/);

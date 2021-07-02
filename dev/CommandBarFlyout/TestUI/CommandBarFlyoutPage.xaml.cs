@@ -244,8 +244,8 @@ namespace MUXControlsTestApp
                 {
                     originalLabelSecondaryCommand = appBarButton.Label;
                     dynamicLabelSecondaryCommand = appBarButton;
-                    dynamicLabelTimer.Interval = new TimeSpan(0, 0, 0, 0, int.Parse(txtDynamicLabelTimerInterval.Text) /*msec*/);
-                    dynamicLabelChangeCount = int.Parse(txtDynamicLabelChangeCount.Text);
+                    dynamicLabelTimer.Interval = new TimeSpan(0, 0, 0, 0, int.Parse(DynamicLabelTimerIntervalTextBox.Text) /*msec*/);
+                    dynamicLabelChangeCount = int.Parse(DynamicLabelChangeCountTextBox.Text);
                     dynamicLabelTimer.Start();
                 }
             }

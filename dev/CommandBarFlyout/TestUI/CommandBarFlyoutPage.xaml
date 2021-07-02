@@ -217,10 +217,10 @@
                 <CheckBox x:Name="IsRTLCheckBox" Content="Is Page in RightToLeft FlowDirection?" AutomationProperties.AutomationId="IsRTLCheckBox" Margin="10,10,10,2" Checked="IsRTLCheckBox_Checked" Unchecked="IsRTLCheckBox_Unchecked" />
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,2">
                     <CheckBox x:Name="UseSecondaryCommandDynamicLabelCheckBox" Content="Use Secondary Command with Dynamic Label?" AutomationProperties.AutomationId="UseSecondaryCommandDynamicLabelCheckBox" />
-                    <TextBlock Text="Timer Interval (ms):" Margin="5,0,0,0"/>
-                    <TextBox x:Name="txtDynamicLabelTimerInterval" Text="1500" Margin="5,0,0,0"/>
-                    <TextBlock Text="Change Count:" Margin="5,0,0,0"/>
-                    <TextBox x:Name="txtDynamicLabelChangeCount" Text="4" Margin="5,0,0,0"/>
+                    <TextBlock Text="Timer Interval (ms):" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="DynamicLabelTimerIntervalTextBox" Text="1500" Margin="5,0,0,0" AutomationProperties.AutomationId="DynamicLabelTimerIntervalTextBox"/>
+                    <TextBlock Text="Change Count:" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="DynamicLabelChangeCountTextBox" Text="4" Margin="5,0,0,0" AutomationProperties.AutomationId="DynamicLabelChangeCountTextBox"/>
                 </StackPanel>
                 <CheckBox x:Name="ClearSecondaryCommandsCheckBox" Content="Clear Secondary Commands Asynchronously?" AutomationProperties.AutomationId="ClearSecondaryCommandsCheckBox" Margin="10,0,10,2" />
             </StackPanel>

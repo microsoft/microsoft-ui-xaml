@@ -11,9 +11,10 @@
 #include "CommandBarFlyout.properties.cpp"
 
 // Change to 'true' to turn on debugging outputs in Output window
-bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ true };
-bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ true };
+bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ false };
+bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ false };
 
+// List of AppBarButton dependency properties being listened to for raising the CommandBarFlyoutCommandBar::OnCommandBarElementDependencyPropertyChanged notifications.
 const winrt::DependencyProperty CommandBarFlyout::s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]
 {
     winrt::AppBarButton::IconProperty(),
@@ -23,6 +24,7 @@ const winrt::DependencyProperty CommandBarFlyout::s_appBarButtonDependencyProper
     winrt::AppBarButton::LabelPositionProperty()
 };
 
+// List of AppBarToggleButton dependency properties being listened to for raising the CommandBarFlyoutCommandBar::OnCommandBarElementDependencyPropertyChanged notifications.
 const winrt::DependencyProperty CommandBarFlyout::s_appBarToggleButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]
 {
     winrt::AppBarToggleButton::IconProperty(),
@@ -521,6 +523,7 @@ void CommandBarFlyout::UnhookAllCommandBarElementDependencyPropertyChanges()
     m_propertyChangedRevokersByIndexMap.clear();
 }
 
+// Let the potential CommandBarFlyoutCommandBar know of the dependency property change so it can adjust its size.
 void CommandBarFlyout::OnCommandBarElementDependencyPropertyChanged(winrt::DependencyObject const& dependencyObject, winrt::DependencyProperty const& dependencyProperty)
 {
     COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
