@@ -15,6 +15,11 @@
             <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <StaticResource x:Key="ContentDialogSeparatorBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <Thickness x:Key="ContentDialogBorderWidth">1</Thickness>
+
+            <x:Double x:Key="ContentDialogMinWidth">320</x:Double>
+            <x:Double x:Key="ContentDialogMaxWidth">548</x:Double>
+            <x:Double x:Key="ContentDialogMinHeight">184</x:Double>
+            <x:Double x:Key="ContentDialogMaxHeight">756</x:Double>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="ContentDialogForeground" ResourceKey="SystemColorWindowTextColorBrush" />
@@ -24,6 +29,11 @@
             <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
             <StaticResource x:Key="ContentDialogSeparatorBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
             <Thickness x:Key="ContentDialogBorderWidth">2</Thickness>
+
+            <x:Double x:Key="ContentDialogMinWidth">320</x:Double>
+            <x:Double x:Key="ContentDialogMaxWidth">548</x:Double>
+            <x:Double x:Key="ContentDialogMinHeight">184</x:Double>
+            <x:Double x:Key="ContentDialogMaxHeight">756</x:Double>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="ContentDialogForeground" ResourceKey="TextFillColorPrimaryBrush" />
@@ -33,13 +43,14 @@
             <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <StaticResource x:Key="ContentDialogSeparatorBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <Thickness x:Key="ContentDialogBorderWidth">1</Thickness>
+
+            <x:Double x:Key="ContentDialogMinWidth">320</x:Double>
+            <x:Double x:Key="ContentDialogMaxWidth">548</x:Double>
+            <x:Double x:Key="ContentDialogMinHeight">184</x:Double>
+            <x:Double x:Key="ContentDialogMaxHeight">756</x:Double>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <x:Double x:Key="ContentDialogMinWidth">320</x:Double>
-    <x:Double x:Key="ContentDialogMaxWidth">548</x:Double>
-    <x:Double x:Key="ContentDialogMinHeight">184</x:Double>
-    <x:Double x:Key="ContentDialogMaxHeight">756</x:Double>
     <GridLength x:Key="ContentDialogButtonSpacing">8</GridLength>
     <Thickness x:Key="ContentDialogTitleMargin">0,0,0,12</Thickness>
     <Thickness x:Key="ContentDialogPadding">24</Thickness>
@@ -215,10 +226,10 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 contract7Present:BackgroundSizing="InnerBorderEdge"
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                MinWidth="{StaticResource ContentDialogMinWidth}"
-                                MaxWidth="{StaticResource ContentDialogMaxWidth}"
-                                MinHeight="{StaticResource ContentDialogMinHeight}"
-                                MaxHeight="{StaticResource ContentDialogMaxHeight}"
+                                MinWidth="{ThemeResource ContentDialogMinWidth}"
+                                MaxWidth="{ThemeResource ContentDialogMaxWidth}"
+                                MinHeight="{ThemeResource ContentDialogMinHeight}"
+                                MaxHeight="{ThemeResource ContentDialogMaxHeight}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 RenderTransformOrigin="0.5,0.5">
