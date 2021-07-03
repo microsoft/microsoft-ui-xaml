@@ -15,23 +15,21 @@ bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ false };
 bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ false };
 
 // List of AppBarButton dependency properties being listened to for raising the CommandBarFlyoutCommandBar::OnCommandBarElementDependencyPropertyChanged notifications.
+// AppBarButton::IsCompact and AppBarButton::LabelPosition having no effect on AppBarButton's rendering, they are not present in the list.
 const winrt::DependencyProperty CommandBarFlyout::s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]
 {
     winrt::AppBarButton::IconProperty(),
-    winrt::AppBarButton::IsCompactProperty(),
     winrt::AppBarButton::KeyboardAcceleratorTextOverrideProperty(),
-    winrt::AppBarButton::LabelProperty(),
-    winrt::AppBarButton::LabelPositionProperty()
+    winrt::AppBarButton::LabelProperty()
 };
 
 // List of AppBarToggleButton dependency properties being listened to for raising the CommandBarFlyoutCommandBar::OnCommandBarElementDependencyPropertyChanged notifications.
+// AppBarToggleButton::IsCompact and AppBarToggleButton::LabelPosition having no effect on AppBarToggleButton's rendering, they are not present in the list.
 const winrt::DependencyProperty CommandBarFlyout::s_appBarToggleButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]
 {
     winrt::AppBarToggleButton::IconProperty(),
-    winrt::AppBarToggleButton::IsCompactProperty(),
     winrt::AppBarToggleButton::KeyboardAcceleratorTextOverrideProperty(),
-    winrt::AppBarToggleButton::LabelProperty(),
-    winrt::AppBarToggleButton::LabelPositionProperty()
+    winrt::AppBarToggleButton::LabelProperty()
 };
 
 CommandBarFlyout::CommandBarFlyout()

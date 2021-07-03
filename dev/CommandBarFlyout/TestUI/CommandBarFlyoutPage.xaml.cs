@@ -233,7 +233,11 @@ namespace MUXControlsTestApp
             {
                 if (dynamicLabelSecondaryCommand != null)
                 {
-                    dynamicLabelSecondaryCommand.Label = originalLabelSecondaryCommand;
+                    if (dynamicLabelSecondaryCommand.Label != originalLabelSecondaryCommand)
+                    {
+                        dynamicLabelSecondaryCommand.Label = originalLabelSecondaryCommand;
+                        SecondaryCommandDynamicLabelChangedCheckBox.IsChecked = true;
+                    }
                     dynamicLabelSecondaryCommand = null;
                     dynamicLabelTimer.Stop();
                 }
@@ -273,6 +277,8 @@ namespace MUXControlsTestApp
                     // Testing dynamic label shrinkage
                     dynamicLabelSecondaryCommand.Label = originalLabelSecondaryCommand;
                 }
+                
+                SecondaryCommandDynamicLabelChangedCheckBox.IsChecked = true;
 
                 if (--dynamicLabelChangeCount == 0)
                 {

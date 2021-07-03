@@ -931,6 +931,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Retrieving UseSecondaryCommandDynamicLabelCheckBox");
                 ToggleButton useSecondaryCommandDynamicLabelCheckBox = FindElement.ById<ToggleButton>("UseSecondaryCommandDynamicLabelCheckBox");
 
+                Log.Comment("SecondaryCommandDynamicLabelChangedCheckBox");
+                ToggleButton secondaryCommandDynamicLabelChangedCheckBox = FindElement.ById<ToggleButton>("SecondaryCommandDynamicLabelChangedCheckBox");
+
                 Log.Comment("Retrieving DynamicLabelTimerIntervalTextBox");
                 Edit dynamicLabelTimerIntervalTextBox = new Edit(FindElement.ById("DynamicLabelTimerIntervalTextBox"));
 
@@ -948,31 +951,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Setting DynamicLabelChangeCountTextBox to 1 single change");
                 dynamicLabelChangeCountTextBox.SetValue("1");                
                 Wait.ForIdle();
-                
+
+                Verify.AreEqual(ToggleState.Off, secondaryCommandDynamicLabelChangedCheckBox.ToggleState);
+
                 Log.Comment("Invoking button 'Show CommandBarFlyout with no primary commands' to show the Flyout6 command bar.");
                 showCommandBarFlyoutButton.Invoke();
                 Wait.ForIdle();
                 Verify.AreEqual(ToggleState.On, isFlyoutOpenCheckBox.ToggleState);
-                
+
                 Button undoButton6 = FindElement.ById<Button>("UndoButton6");
                 Verify.IsNotNull(undoButton6);
-                
+
                 UIObject commandBarElementsContainer = undoButton6.Parent;
                 Verify.IsNotNull(commandBarElementsContainer);
 
                 Rectangle initialBoundingRectangle = commandBarElementsContainer.BoundingRectangle;
 
-                Log.Comment("commandBarElementsContainer.BoundingRectangle.Width=" + initialBoundingRectangle.Width);
-                Log.Comment("commandBarElementsContainer.BoundingRectangle.Height=" + initialBoundingRectangle.Height);
+                Log.Comment("Initial commandBarElementsContainer.BoundingRectangle.Width=" + initialBoundingRectangle.Width);
+                Log.Comment("Initial commandBarElementsContainer.BoundingRectangle.Height=" + initialBoundingRectangle.Height);
 
-                Log.Comment("Waiting for the 1s before the asynchronous Label property change");
-                Wait.ForSeconds(1);
+                Verify.AreEqual(ToggleState.Off, secondaryCommandDynamicLabelChangedCheckBox.ToggleState);
+
+                Log.Comment("Waiting for SecondaryCommandDynamicLabelChangedCheckBox becoming checked indicating the asynchronous Label property change occurred");
+                secondaryCommandDynamicLabelChangedCheckBox.GetToggledWaiter().Wait();
                 Wait.ForIdle();
 
                 Rectangle finalBoundingRectangle = commandBarElementsContainer.BoundingRectangle;
 
-                Log.Comment("commandBarElementsContainer.BoundingRectangle.Width=" + finalBoundingRectangle.Width);
-                Log.Comment("commandBarElementsContainer.BoundingRectangle.Height=" + finalBoundingRectangle.Height);
+                Log.Comment("Final commandBarElementsContainer.BoundingRectangle.Width=" + finalBoundingRectangle.Width);
+                Log.Comment("Final commandBarElementsContainer.BoundingRectangle.Height=" + finalBoundingRectangle.Height);
 
                 Log.Comment("Hitting Escape key to close the command bar.");
                 KeyboardHelper.PressKey(Key.Escape);

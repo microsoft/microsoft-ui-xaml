@@ -30,7 +30,7 @@ protected:
     tracker_ref<winrt::CommandBarFlyoutCommandBar> m_commandBar{ this };
 
 private:
-    static constexpr int s_commandBarElementDependencyPropertiesCount{ 5 };
+    static constexpr int s_commandBarElementDependencyPropertiesCount{ 3 };
 
     static const winrt::DependencyProperty s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount];
     static const winrt::DependencyProperty s_appBarToggleButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount];
