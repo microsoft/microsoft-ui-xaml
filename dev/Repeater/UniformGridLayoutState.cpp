@@ -27,7 +27,7 @@ void UniformGridLayoutState::EnsureElementSize(
     const winrt::Size availableSize,
     const winrt::VirtualizingLayoutContext& context,
     const double layoutItemWidth,
-    const double LayoutItemHeight,
+    const double layoutItemHeight,
     const winrt::UniformGridLayoutItemsStretch& stretch,
     const winrt::Orientation& orientation,
     double minRowSpacing,
@@ -42,19 +42,48 @@ void UniformGridLayoutState::EnsureElementSize(
     if (context.ItemCount() > 0)
     {
         // If the first element is realized we don't need to get it from the context
-        if (auto realizedElement = m_flowAlgorithm.GetElementIfRealized(0))
+        if (auto realizedElement = m_flowAlgorithm.GetElementIfRealized(0).as<winrt::FrameworkElement>())
         {
+            SetConstraints(realizedElement, availableSize, orientation, layoutItemWidth, layoutItemHeight, maxItemsPerLine);
             realizedElement.Measure(availableSize);
-            SetSize(realizedElement.DesiredSize(), layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
+            SetSize(realizedElement.DesiredSize(), layoutItemWidth, layoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
         }
         else
         {
             // Not realized by flowlayout, so do this now!
-            if (const auto firstElement = context.GetOrCreateElementAt(0, winrt::ElementRealizationOptions::ForceCreate))
+            if (const auto firstElement = context.GetOrCreateElementAt(0, winrt::ElementRealizationOptions::ForceCreate).as<winrt::FrameworkElement>())
             {
+                SetConstraints(firstElement, availableSize, orientation, layoutItemWidth, layoutItemHeight, maxItemsPerLine);
                 firstElement.Measure(availableSize);
-                SetSize(firstElement.DesiredSize(), layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
+                SetSize(firstElement.DesiredSize(), layoutItemWidth, layoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
                 context.RecycleElement(firstElement);
+            }
+        }
+    }
+}
+
+void UniformGridLayoutState::SetConstraints(const winrt::UIElement element,
+    const winrt::Size availableSize,
+    const winrt::Orientation orientation,
+    const double itemWidth,
+    const double itemHeight,
+    const unsigned int maxItemsPerLine)
+{
+    if (const auto frElement = element.try_as<winrt::FrameworkElement>()) {
+        if (orientation == winrt::Orientation::Horizontal) {
+            if (!isnan(itemWidth)) {
+                frElement.MaxWidth(itemWidth);
+            }
+            else if(!isnan(availableSize.Width)){
+                frElement.MaxWidth(availableSize.Width / maxItemsPerLine);
+            }
+        }
+        else {
+            if (!isnan(itemHeight)) {
+                frElement.MaxWidth(itemHeight);
+            }
+            else if (!isnan(availableSize.Height)) {
+                frElement.MaxWidth(availableSize.Height / maxItemsPerLine);
             }
         }
     }

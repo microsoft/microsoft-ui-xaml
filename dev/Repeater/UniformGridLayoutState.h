@@ -37,6 +37,13 @@ private:
     double m_effectiveItemWidth{ 0.0 };
     double m_effectiveItemHeight{ 0.0 };
 
+    void SetConstraints(const winrt::UIElement element,
+        const winrt::Size availableSize,
+        const winrt::Orientation orientation,
+        const double itemWidth,
+        const double itemHeight,
+        const unsigned int maxItemsPerLine);
+
     void SetSize(const winrt::Size& desiredItemSize,
         const double itemWidth,
         const double itemHeight,

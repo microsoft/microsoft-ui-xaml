@@ -17,6 +17,7 @@ namespace MUXControlsTestApp.Samples
         {
             collection = Enumerable.Range(0, 40);
             this.InitializeComponent();
+            imageAspectRatioTestRepeater.ItemsSource = Enumerable.Range(0, 30);
         }
 
         public void GetRepeaterActualHeightButtonClick(object sender, RoutedEventArgs e)
