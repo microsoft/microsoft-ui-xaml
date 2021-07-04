@@ -41,8 +41,7 @@ private:
         const winrt::Size availableSize,
         const winrt::Orientation orientation,
         const double itemWidth,
-        const double itemHeight,
-        const unsigned int maxItemsPerLine);
+        const double itemHeight);
 
     void SetSize(const winrt::Size& desiredItemSize,
         const double itemWidth,

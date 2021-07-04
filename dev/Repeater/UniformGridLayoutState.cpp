@@ -44,7 +44,7 @@ void UniformGridLayoutState::EnsureElementSize(
         // If the first element is realized we don't need to get it from the context
         if (auto realizedElement = m_flowAlgorithm.GetElementIfRealized(0).as<winrt::FrameworkElement>())
         {
-            SetConstraints(realizedElement, availableSize, orientation, layoutItemWidth, layoutItemHeight, maxItemsPerLine);
+            SetConstraints(realizedElement, availableSize, orientation, layoutItemWidth, layoutItemHeight);
             realizedElement.Measure(availableSize);
             SetSize(realizedElement.DesiredSize(), layoutItemWidth, layoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
         }
@@ -53,7 +53,7 @@ void UniformGridLayoutState::EnsureElementSize(
             // Not realized by flowlayout, so do this now!
             if (const auto firstElement = context.GetOrCreateElementAt(0, winrt::ElementRealizationOptions::ForceCreate).as<winrt::FrameworkElement>())
             {
-                SetConstraints(firstElement, availableSize, orientation, layoutItemWidth, layoutItemHeight, maxItemsPerLine);
+                SetConstraints(firstElement, availableSize, orientation, layoutItemWidth, layoutItemHeight);
                 firstElement.Measure(availableSize);
                 SetSize(firstElement.DesiredSize(), layoutItemWidth, layoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
                 context.RecycleElement(firstElement);
@@ -66,24 +66,17 @@ void UniformGridLayoutState::SetConstraints(const winrt::UIElement element,
     const winrt::Size availableSize,
     const winrt::Orientation orientation,
     const double itemWidth,
-    const double itemHeight,
-    const unsigned int maxItemsPerLine)
+    const double itemHeight)
 {
     if (const auto frElement = element.try_as<winrt::FrameworkElement>()) {
         if (orientation == winrt::Orientation::Horizontal) {
             if (!isnan(itemWidth)) {
                 frElement.MaxWidth(itemWidth);
             }
-            else if(!isnan(availableSize.Width)){
-                frElement.MaxWidth(availableSize.Width / maxItemsPerLine);
-            }
         }
         else {
             if (!isnan(itemHeight)) {
                 frElement.MaxWidth(itemHeight);
-            }
-            else if (!isnan(availableSize.Height)) {
-                frElement.MaxWidth(availableSize.Height / maxItemsPerLine);
             }
         }
     }
