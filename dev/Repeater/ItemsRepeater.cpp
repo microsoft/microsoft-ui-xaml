@@ -33,11 +33,6 @@ ItemsRepeater::ItemsRepeater()
         m_viewportManager = std::make_shared<ViewportManagerDownLevel>(this);
     }
 
-    if (!Layout())
-    {
-        Layout(winrt::StackLayout());
-    }
-
     winrt::AutomationProperties::SetAccessibilityView(*this, winrt::AccessibilityView::Raw);
     if (SharedHelpers::IsRS3OrHigher())
     {
