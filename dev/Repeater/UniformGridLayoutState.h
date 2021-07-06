@@ -39,8 +39,18 @@ private:
 
     winrt::Size CalculateAvailableSize(const winrt::Size availableSize,
         const winrt::Orientation orientation,
+        const winrt::UniformGridLayoutItemsStretch& stretch,
+        const unsigned int maxItemsPerLine,
         const double itemWidth,
-        const double itemHeight);
+        const double itemHeight,
+        double minRowSpacing,
+        double minColumnSpacing);
+
+    double CalculateExtraPixelsPerColumn(unsigned int maxItemsPerLine,
+        const float availableSizeMinor,
+        const double itemSizeMinor,
+        const double minorItemSpacing);
+
 
     void SetSize(const winrt::Size& desiredItemSize,
         const double itemWidth,
@@ -52,3 +62,5 @@ private:
         double minColumnSpacing,
         unsigned int maxItemsPerLine);
 };
+
+void CalculateExtraPixelsPerColumn(unsigned int& maxItemsPerLine, const float& availableSizeMinor, const double& itemSizeMinor, const double& minorItemSpacing, double& extraMinorPixelsForEachItem);
