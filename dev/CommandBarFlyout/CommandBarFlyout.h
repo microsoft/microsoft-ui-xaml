@@ -31,6 +31,7 @@ protected:
 
 private:
     static constexpr int s_commandBarElementDependencyPropertiesCount{ 3 };
+    static constexpr int s_commandBarElementDependencyPropertiesCountRS3{ 2 };
 
     static const winrt::DependencyProperty s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount];
     static const winrt::DependencyProperty s_appBarToggleButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount];

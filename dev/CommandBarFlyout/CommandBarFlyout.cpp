@@ -19,8 +19,8 @@ bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ false };
 const winrt::DependencyProperty CommandBarFlyout::s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]
 {
     winrt::AppBarButton::IconProperty(),
-    winrt::AppBarButton::KeyboardAcceleratorTextOverrideProperty(),
-    winrt::AppBarButton::LabelProperty()
+    winrt::AppBarButton::LabelProperty(),
+    winrt::AppBarButton::KeyboardAcceleratorTextOverrideProperty()
 };
 
 // List of AppBarToggleButton dependency properties being listened to for raising the CommandBarFlyoutCommandBar::OnCommandBarElementDependencyPropertyChanged notifications.
@@ -28,8 +28,8 @@ const winrt::DependencyProperty CommandBarFlyout::s_appBarButtonDependencyProper
 const winrt::DependencyProperty CommandBarFlyout::s_appBarToggleButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]
 {
     winrt::AppBarToggleButton::IconProperty(),
-    winrt::AppBarToggleButton::KeyboardAcceleratorTextOverrideProperty(),
-    winrt::AppBarToggleButton::LabelProperty()
+    winrt::AppBarToggleButton::LabelProperty(),
+    winrt::AppBarToggleButton::KeyboardAcceleratorTextOverrideProperty()
 };
 
 CommandBarFlyout::CommandBarFlyout()
@@ -454,7 +454,9 @@ tracker_ref<winrt::FlyoutPresenter> CommandBarFlyout::GetPresenter()
 
 void CommandBarFlyout::HookAppBarButtonDependencyPropertyChanges(winrt::AppBarButton const& appBarButton, int index)
 {
-    for (int commandBarElementDependencyPropertyIndex = 0; commandBarElementDependencyPropertyIndex < s_commandBarElementDependencyPropertiesCount; commandBarElementDependencyPropertyIndex++)
+    const auto commandBarElementDependencyPropertiesCount = SharedHelpers::IsRS4OrHigher() ? s_commandBarElementDependencyPropertiesCount : s_commandBarElementDependencyPropertiesCountRS3;
+
+    for (int commandBarElementDependencyPropertyIndex = 0; commandBarElementDependencyPropertyIndex < commandBarElementDependencyPropertiesCount; commandBarElementDependencyPropertyIndex++)
     {
         m_propertyChangedRevokersByIndexMap[index][commandBarElementDependencyPropertyIndex] =
             RegisterPropertyChanged(
@@ -465,7 +467,9 @@ void CommandBarFlyout::HookAppBarButtonDependencyPropertyChanges(winrt::AppBarBu
 
 void CommandBarFlyout::HookAppBarToggleButtonDependencyPropertyChanges(winrt::AppBarToggleButton const& appBarToggleButton, int index)
 {
-    for (int commandBarElementDependencyPropertyIndex = 0; commandBarElementDependencyPropertyIndex < s_commandBarElementDependencyPropertiesCount; commandBarElementDependencyPropertyIndex++)
+    const auto commandBarElementDependencyPropertiesCount = SharedHelpers::IsRS4OrHigher() ? s_commandBarElementDependencyPropertiesCount : s_commandBarElementDependencyPropertiesCountRS3;
+
+    for (int commandBarElementDependencyPropertyIndex = 0; commandBarElementDependencyPropertyIndex < commandBarElementDependencyPropertiesCount; commandBarElementDependencyPropertyIndex++)
     {
         m_propertyChangedRevokersByIndexMap[index][commandBarElementDependencyPropertyIndex] =
             RegisterPropertyChanged(
@@ -500,7 +504,9 @@ void CommandBarFlyout::UnhookCommandBarElementDependencyPropertyChanges(int inde
     const auto revokers = m_propertyChangedRevokersByIndexMap.find(index);
     if (revokers != m_propertyChangedRevokersByIndexMap.end())
     {
-        for (int commandBarElementDependencyPropertyIndex = 0; commandBarElementDependencyPropertyIndex < s_commandBarElementDependencyPropertiesCount; commandBarElementDependencyPropertyIndex++)
+        const auto commandBarElementDependencyPropertiesCount = SharedHelpers::IsRS4OrHigher() ? s_commandBarElementDependencyPropertiesCount : s_commandBarElementDependencyPropertiesCountRS3;
+
+        for (int commandBarElementDependencyPropertyIndex = 0; commandBarElementDependencyPropertyIndex < commandBarElementDependencyPropertiesCount; commandBarElementDependencyPropertyIndex++)
         {
             m_propertyChangedRevokersByIndexMap[index][commandBarElementDependencyPropertyIndex].revoke();
         }
