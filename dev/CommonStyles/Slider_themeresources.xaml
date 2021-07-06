@@ -182,10 +182,10 @@
     <x:Double x:Key="SliderInnerThumbHeight">12</x:Double>
     <x:Double x:Key="SliderHorizontalHeight">32</x:Double>
     <x:Double x:Key="SliderVerticalWidth">32</x:Double>   
-    <x:Double x:Key="SliderHorizontalThumbWidth">20</x:Double>
-    <x:Double x:Key="SliderHorizontalThumbHeight">20</x:Double>
-    <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
-    <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
+    <x:Double x:Key="SliderHorizontalThumbWidth">18</x:Double>
+    <x:Double x:Key="SliderHorizontalThumbHeight">18</x:Double>
+    <x:Double x:Key="SliderVerticalThumbWidth">18</x:Double>
+    <x:Double x:Key="SliderVerticalThumbHeight">18</x:Double>
     <x:Double x:Key="SliderInnerThumbWidth">12</x:Double>
     <x:Double x:Key="SliderInnerThumbHeight">12</x:Double>
 
@@ -215,7 +215,7 @@
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Thumb">
                                             <Border
-                                                Margin="-1"
+                                                Margin="-2"
                                                 Background="{ThemeResource SliderOuterThumbBackground}"
                                                 BorderBrush="{ThemeResource SliderThumbBorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
@@ -439,8 +439,7 @@
                         <Grid x:Name="SliderContainer"
                             Grid.Row="1"
                             Background="{ThemeResource SliderContainerBackground}"
-                            Control.IsTemplateFocusTarget="True"
-                            CornerRadius="{StaticResource ControlCornerRadius}">
+                            Control.IsTemplateFocusTarget="True">
                             <Grid x:Name="HorizontalTemplate" MinHeight="{ThemeResource SliderHorizontalHeight}">
 
                                 <Grid.ColumnDefinitions>
