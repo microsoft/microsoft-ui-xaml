@@ -522,6 +522,8 @@ bool AnimatedIcon::ConstructAndInsertVisual()
         winrt::ElementCompositionPreview::SetElementChildVisual(rootPanel, visual);
     }
 
+    UpdateMirrorTransform();
+
     if (visual)
     {
         m_canDisplayPrimaryContent = true;
@@ -550,8 +552,6 @@ bool AnimatedIcon::ConstructAndInsertVisual()
         m_canDisplayPrimaryContent = false;
         return false;
     }
-
-    UpdateMirrorTransform();
 }
 
 void AnimatedIcon::OnFallbackIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)

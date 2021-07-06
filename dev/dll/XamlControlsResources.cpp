@@ -69,7 +69,7 @@ void XamlControlsResources::UpdateSource()
             const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
             const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
-            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher() && SharedHelpers::IsSelectionIndicatorModeAvailable();
+            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher();
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
@@ -116,14 +116,7 @@ void XamlControlsResources::UpdateSource()
 
             if (isInCBSPackage && !is21H1OrHigher)
             {
-                if (SharedHelpers::Is21H1OrHigher())
-                {
-                    MUX_FAIL_FAST_MSG("CBS package can run only on os when IsSelectionIndicatorModeAvailable is true");
-                }
-                else
-                {
-                    MUX_FAIL_FAST_MSG("CBS package can run only on os when is21H1OrHigher is true");                
-                }
+                MUX_FAIL_FAST_MSG("CBS package can run only on os when is21H1OrHigher is true");                
             }
             return packagePrefix + releasePrefix + compactPrefix + postfix;
         }()
@@ -266,7 +259,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
             const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
-            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher() && SharedHelpers::IsSelectionIndicatorModeAvailable();
+            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher();
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();

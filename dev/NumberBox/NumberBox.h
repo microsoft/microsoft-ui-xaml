@@ -41,6 +41,7 @@ public:
 
     // IFrameworkElement
     void OnApplyTemplate();
+    void OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&);
 
     void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);

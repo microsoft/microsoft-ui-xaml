@@ -342,11 +342,20 @@ void BreadcrumbBar::ReIndexVisibleElementsForAccessibility() const
     if (auto const& itemsRepeater = m_itemsRepeater.get())
     {
         const uint32_t visibleItemsCount{ m_itemsRepeaterLayout->GetVisibleItemsCount() };
+        const auto isEllipsisRendered = m_itemsRepeaterLayout->EllipsisIsRendered();
         uint32_t firstItemToIndex{ 1 };
 
-        if (m_itemsRepeaterLayout->EllipsisIsRendered())
+        if (isEllipsisRendered)
         {
             firstItemToIndex = m_itemsRepeaterLayout->FirstRenderedItemIndexAfterEllipsis();
+        }
+
+        // In order to make the ellipsis inaccessible to accessbility tools when it's hidden,
+        // we set the accessibilityView to raw and restore it to content when it becomes visible.
+        if (const auto ellipsisItem = m_ellipsisBreadcrumbBarItem.get())
+        {
+            const auto accessibilityView = isEllipsisRendered ? winrt::AccessibilityView::Content : winrt::AccessibilityView::Raw;
+            ellipsisItem.SetValue(winrt::AutomationProperties::AccessibilityViewProperty(), box_value(accessibilityView));
         }
 
         const auto& itemsSourceView = itemsRepeater.ItemsSourceView();
