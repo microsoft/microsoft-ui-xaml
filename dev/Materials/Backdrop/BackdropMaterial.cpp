@@ -91,10 +91,13 @@ BackdropMaterial::BackdropMaterialState::BackdropMaterialState(winrt::Control co
     {
         if (auto targetThemeChanged = target.try_as<winrt::IFrameworkElement6>())
         {
-            m_themeChangedRevoker = targetThemeChanged.ActualThemeChanged(winrt::auto_revoke, [this](auto&&, auto&&)
+            m_themeChangedRevoker = targetThemeChanged.ActualThemeChanged(winrt::auto_revoke, [weakThis = get_weak()](auto&&, auto&&)
+            {
+                if (auto instance = weakThis.get())
                 {
-                    UpdateFallbackBrush();
-                });
+                    instance->UpdateFallbackBrush();
+                }
+            });
         }
     }
 
