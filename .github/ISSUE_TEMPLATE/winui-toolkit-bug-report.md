@@ -2,7 +2,7 @@
 name: WinUI Design Toolkit Bug report
 about: File a WinUI Design Toolkit bug report
 title: 'WinUI Design Toolkit Bug: [descriptive bug title here]'
-labels: Toolkit, WinUI2.6
+labels: area-DesignToolkit, team-Design
 assignees: ''
 
 ---
