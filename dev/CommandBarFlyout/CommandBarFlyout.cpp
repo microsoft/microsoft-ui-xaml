@@ -16,25 +16,31 @@ bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ false };
 
 // List of AppBarButton dependency properties being listened to for raising the CommandBarFlyoutCommandBar::OnCommandBarElementDependencyPropertyChanged notifications.
 // AppBarButton::IsCompact and AppBarButton::LabelPosition having no effect on an AppBarButton's rendering, when used as a secondary command, they are not present in the list.
-const winrt::DependencyProperty CommandBarFlyout::s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]
+winrt::DependencyProperty CommandBarFlyout::s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]
 {
     winrt::AppBarButton::IconProperty(),
     winrt::AppBarButton::LabelProperty(),
-    winrt::AppBarButton::KeyboardAcceleratorTextOverrideProperty()
+    nullptr
 };
 
 // List of AppBarToggleButton dependency properties being listened to for raising the CommandBarFlyoutCommandBar::OnCommandBarElementDependencyPropertyChanged notifications.
 // AppBarToggleButton::IsCompact and AppBarToggleButton::LabelPosition having no effect on an AppBarToggleButton's rendering, when used as a secondary command, they are not present in the list.
-const winrt::DependencyProperty CommandBarFlyout::s_appBarToggleButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]
+winrt::DependencyProperty CommandBarFlyout::s_appBarToggleButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]
 {
     winrt::AppBarToggleButton::IconProperty(),
     winrt::AppBarToggleButton::LabelProperty(),
-    winrt::AppBarToggleButton::KeyboardAcceleratorTextOverrideProperty()
+    nullptr
 };
 
 CommandBarFlyout::CommandBarFlyout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_CommandBarFlyout);
+
+    if (SharedHelpers::IsRS4OrHigher() && s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount - 1] == nullptr)
+    {
+        s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount - 1] = winrt::AppBarButton::KeyboardAcceleratorTextOverrideProperty();
+        s_appBarToggleButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount - 1] = winrt::AppBarToggleButton::KeyboardAcceleratorTextOverrideProperty();
+    }
 
     if (winrt::IFlyoutBase6 thisAsFlyoutBase6 = *this)
     {
