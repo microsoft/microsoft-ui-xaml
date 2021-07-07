@@ -4,6 +4,7 @@
 using Common;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 
@@ -907,6 +908,88 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Tapping on a button to hide the CommandBarFlyout.");
                 InputHelper.Tap(showCommandBarFlyoutButton);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyDynamicSecondaryCommandLabel()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                return;
+            }
+
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Log.Comment("Retrieving FlyoutTarget6");
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with no primary commands");
+
+                Log.Comment("Retrieving IsFlyoutOpenCheckBox");
+                ToggleButton isFlyoutOpenCheckBox = FindElement.ById<ToggleButton>("IsFlyoutOpenCheckBox");
+
+                Log.Comment("Retrieving UseSecondaryCommandDynamicLabelCheckBox");
+                ToggleButton useSecondaryCommandDynamicLabelCheckBox = FindElement.ById<ToggleButton>("UseSecondaryCommandDynamicLabelCheckBox");
+
+                Log.Comment("SecondaryCommandDynamicLabelChangedCheckBox");
+                ToggleButton secondaryCommandDynamicLabelChangedCheckBox = FindElement.ById<ToggleButton>("SecondaryCommandDynamicLabelChangedCheckBox");
+
+                Log.Comment("Retrieving DynamicLabelTimerIntervalTextBox");
+                Edit dynamicLabelTimerIntervalTextBox = new Edit(FindElement.ById("DynamicLabelTimerIntervalTextBox"));
+
+                Log.Comment("Retrieving DynamicLabelChangeCountTextBox");
+                Edit dynamicLabelChangeCountTextBox = new Edit(FindElement.ById("DynamicLabelChangeCountTextBox"));
+
+                Verify.AreEqual(ToggleState.Off, isFlyoutOpenCheckBox.ToggleState);
+
+                Log.Comment("Change the first command bar element's Label property asynchronously after the command bar is opened");
+                useSecondaryCommandDynamicLabelCheckBox.Check();
+
+                Log.Comment("Setting DynamicLabelTimerIntervalTextBox to 1s");
+                dynamicLabelTimerIntervalTextBox.SetValue("1000");
+
+                Log.Comment("Setting DynamicLabelChangeCountTextBox to 1 single change");
+                dynamicLabelChangeCountTextBox.SetValue("1");                
+                Wait.ForIdle();
+
+                Verify.AreEqual(ToggleState.Off, secondaryCommandDynamicLabelChangedCheckBox.ToggleState);
+
+                Log.Comment("Invoking button 'Show CommandBarFlyout with no primary commands' to show the Flyout6 command bar.");
+                showCommandBarFlyoutButton.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual(ToggleState.On, isFlyoutOpenCheckBox.ToggleState);
+
+                Button undoButton6 = FindElement.ById<Button>("UndoButton6");
+                Verify.IsNotNull(undoButton6);
+
+                UIObject commandBarElementsContainer = undoButton6.Parent;
+                Verify.IsNotNull(commandBarElementsContainer);
+
+                Rectangle initialBoundingRectangle = commandBarElementsContainer.BoundingRectangle;
+
+                Log.Comment("Initial commandBarElementsContainer.BoundingRectangle.Width=" + initialBoundingRectangle.Width);
+                Log.Comment("Initial commandBarElementsContainer.BoundingRectangle.Height=" + initialBoundingRectangle.Height);
+
+                Verify.AreEqual(ToggleState.Off, secondaryCommandDynamicLabelChangedCheckBox.ToggleState);
+
+                Log.Comment("Waiting for SecondaryCommandDynamicLabelChangedCheckBox becoming checked indicating the asynchronous Label property change occurred");
+                secondaryCommandDynamicLabelChangedCheckBox.GetToggledWaiter().Wait();
+                Wait.ForIdle();
+
+                Rectangle finalBoundingRectangle = commandBarElementsContainer.BoundingRectangle;
+
+                Log.Comment("Final commandBarElementsContainer.BoundingRectangle.Width=" + finalBoundingRectangle.Width);
+                Log.Comment("Final commandBarElementsContainer.BoundingRectangle.Height=" + finalBoundingRectangle.Height);
+
+                Log.Comment("Hitting Escape key to close the command bar.");
+                KeyboardHelper.PressKey(Key.Escape);
+                Wait.ForIdle();
+
+                Verify.AreEqual(ToggleState.Off, isFlyoutOpenCheckBox.ToggleState);
+
+                Log.Comment("Verifying the command bar flyout width was increased to accommodate the longer label.");
+                Verify.IsGreaterThan(finalBoundingRectangle.Width, initialBoundingRectangle.Width);
+                Verify.AreEqual(finalBoundingRectangle.Height, initialBoundingRectangle.Height);
             }
         }
     }

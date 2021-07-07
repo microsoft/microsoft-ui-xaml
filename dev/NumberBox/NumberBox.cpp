@@ -37,6 +37,8 @@ NumberBox::NumberBox()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NumberBox);
 
+    Loaded({ this, &NumberBox::OnLoaded });
+
     NumberFormatter(GetRegionalSettingsAwareDecimalFormatter());
 
     PointerWheelChanged({ this, &NumberBox::OnNumberBoxScroll });
@@ -209,7 +211,6 @@ void NumberBox::OnApplyTemplate()
     // .NET rounds to 12 significant digits when displaying doubles, so we will do the same.
     m_displayRounder.SignificantDigits(12);
 
-    UpdateSpinButtonPlacement();
     UpdateSpinButtonEnabled();
 
     UpdateVisualStateForIsEnabledChange();
@@ -226,6 +227,12 @@ void NumberBox::OnApplyTemplate()
     {
         UpdateTextToValue();
     }
+}
+
+void NumberBox::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+{
+    // This is done OnLoaded so TextBox VisualStates can be updated properly.
+    UpdateSpinButtonPlacement();
 }
 
 void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)

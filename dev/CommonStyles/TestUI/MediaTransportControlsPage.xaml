@@ -28,6 +28,12 @@
             <CheckBox x:Name="IsFullWindowButtonVisibleCheckBox" AutomationProperties.Name="IsFullWindowButtonVisibleCheckBox" IsChecked="True" Content="IsFullWindowButtonVisible" />
             <CheckBox x:Name="IsPlaybackRateButtonVisibleCheckBox" AutomationProperties.Name="IsPlaybackRateButtonVisibleCheckBox" IsChecked="False" Content="IsPlaybackRateButtonVisible" />
             <CheckBox x:Name="IsZoomButtonVisibleCheckBox" AutomationProperties.Name="IsZoomButtonVisibleCheckBox" IsChecked="True" Content="IsZoomButtonVisisble" />
+            
+            <CheckBox x:Name="IsSkipForwardButtonVisibleCheckBox" AutomationProperties.Name="IsSkipForwardButtonVisibleCheckBox" IsChecked="False" Content="IsSkipForwardButtonVisible" />
+            <CheckBox x:Name="IsSkipBackwardButtonVisibleCheckBox" AutomationProperties.Name="IsSkipBackwardButtonVisibleCheckBox" IsChecked="False" Content="IsSkipBackwardButtonVisible" />
+            <CheckBox x:Name="IsNextTrackButtonVisibleCheckBox" AutomationProperties.Name="IsNextTrackButtonVisibleCheckBox" IsChecked="False" Content="IsNextTrackButtonVisibleCheckBox" />
+            <CheckBox x:Name="IsPreviousTrackButtonVisibleCheckBox" AutomationProperties.Name="IsPreviousTrackButtonVisibleCheckBox" IsChecked="False" Content="IsPreviousTrackButtonVisible" />
+            <CheckBox x:Name="IsCompactOverlayButtonVisibleCheckBox" AutomationProperties.Name="IsCompactOverlayButtonVisibleCheckBox" IsChecked="False" Content="IsCompactOverlayButtonVisible" />
         </StackPanel>
 
         <Grid Grid.Column="1">
@@ -48,7 +54,12 @@
                         IsVolumeButtonVisible="{x:Bind IsVolumeButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
                         IsFullWindowButtonVisible="{x:Bind IsFullWindowButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
                         IsPlaybackRateButtonVisible="{x:Bind IsPlaybackRateButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
-                        IsZoomButtonVisible="{x:Bind IsZoomButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}" />
+                        IsZoomButtonVisible="{x:Bind IsZoomButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
+                        IsSkipForwardButtonVisible="{x:Bind IsSkipForwardButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
+                        IsSkipBackwardButtonVisible="{x:Bind IsSkipBackwardButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
+                        IsNextTrackButtonVisible="{x:Bind IsNextTrackButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
+                        IsPreviousTrackButtonVisible="{x:Bind IsPreviousTrackButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
+                        IsCompactOverlayButtonVisible="{x:Bind IsCompactOverlayButtonVisibleCheckBox.IsChecked.Value, Mode=OneWay}"/>
                 </MediaPlayerElement.TransportControls>
             </MediaPlayerElement>
         </Grid>

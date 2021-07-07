@@ -67,7 +67,7 @@
             <Color x:Key="ControlStrongStrokeColorDefault">#8BFFFFFF</Color>
             <Color x:Key="ControlStrongStrokeColorDisabled">#28FFFFFF</Color>
 
-            <Color x:Key="SurfaceStrokeColorDefault">#15FFFFFF</Color>
+            <Color x:Key="SurfaceStrokeColorDefault">#66757575</Color>
             <Color x:Key="SurfaceStrokeColorFlyout">#33000000</Color>
             <Color x:Key="SurfaceStrokeColorInverse">#0F000000</Color>
 
@@ -311,7 +311,7 @@
             <Color x:Key="ControlStrongStrokeColorDefault">#72000000</Color>
             <Color x:Key="ControlStrongStrokeColorDisabled">#37000000</Color>
 
-            <Color x:Key="SurfaceStrokeColorDefault">#0F000000</Color>
+            <Color x:Key="SurfaceStrokeColorDefault">#66757575</Color>
             <Color x:Key="SurfaceStrokeColorFlyout">#0F000000</Color>
             <Color x:Key="SurfaceStrokeColorInverse">#15FFFFFF</Color>
 

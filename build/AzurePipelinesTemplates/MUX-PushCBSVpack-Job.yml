@@ -1,0 +1,74 @@
+parameters:
+  dependsOn: ''
+
+jobs:
+- job: CreateVPack
+  dependsOn:
+    - ${{ parameters.dependsOn }}
+  pool:
+    name: Package ES Lab E
+  variables:
+    windowsPublicsWinmdVersion: 0.0.2
+    internalSDKFeedUrl: https://pkgs.dev.azure.com/microsoft/WinUI/_packaging/WinUIInternalWindowsSDK/nuget/v3/index.json
+
+  steps:
+  - task: DownloadBuildArtifacts@0 
+    inputs: 
+      artifactName: drop
+      downloadPath: $(System.ArtifactsDirectory)
+
+  # This contains the OS internal version of windows.winmd which is required for us to re-merge our winmd so that it can be used from OS repo.
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: 'nuget install Microsoft.Internal.WinUI.WindowsPublicsWinmd'
+    inputs:
+      command: custom
+      arguments: 'install Microsoft.Internal.WinUI.WindowsPublicsWinmd -NonInteractive -Version $(windowsPublicsWinmdVersion) -Source $(internalSDKFeedUrl) -OutputDirectory packages'
+
+  - script: |
+      $(Build.SourcesDirectory)\build\CreateCBSVPack.cmd -releaseFolder $(System.ArtifactsDirectory)\drop\Release -publicsRoot $(Build.SourcesDirectory)\packages\Microsoft.Internal.WinUI.WindowsPublicsWinmd.$(windowsPublicsWinmdVersion)
+    displayName: CreateCBSVPack.cmd
+    # Note: This task sets the 'vpackversion' variable that is used below.
+
+  - task: PublishBuildArtifacts@1
+    displayName: Publish CBS Artifact
+    inputs:
+      PathtoPublish: $(System.ArtifactsDirectory)\drop\release\cbs
+      artifactName: cbs
+    # This artifact is not consumed by anyone, but it is useful for debugging purposes.
+
+  # Push the VPacks:
+  - task: PkgESVPack@10
+    displayName: 'Push VPack MicrosoftUIXamlInbox_x64'
+    inputs:
+      sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\x64'
+      description: 'MicrosoftUIXamlInbox_x64'
+      pushPkgName: 'MicrosoftUIXamlInbox_x64'
+      version: $(vpackversion)
+  - task: PkgESVPack@10
+    displayName: 'Push VPack MicrosoftUIXamlInbox_x86'
+    inputs:
+      sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\x86'
+      description: 'MicrosoftUIXamlInbox_x86'
+      pushPkgName: 'MicrosoftUIXamlInbox_x86'
+      version: $(vpackversion)
+  - task: PkgESVPack@10
+    displayName: 'Push VPack MicrosoftUIXamlInbox_arm'
+    inputs:
+      sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\arm'
+      description: 'MicrosoftUIXamlInbox_arm'
+      pushPkgName: 'MicrosoftUIXamlInbox_arm'
+      version: $(vpackversion)
+  - task: PkgESVPack@10
+    displayName: 'Push VPack MicrosoftUIXamlInbox_arm64'
+    inputs:
+      sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\arm64'
+      description: 'MicrosoftUIXamlInbox_arm64'
+      pushPkgName: 'MicrosoftUIXamlInbox_arm64'
+      version: $(vpackversion)
+  - task: PkgESVPack@10
+    displayName: 'Push VPack MicrosoftUIXamlInboxWinmd'
+    inputs:
+      sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\winmd'
+      description: 'MicrosoftUIXamlInboxWinmd'
+      pushPkgName: 'MicrosoftUIXamlInboxWinmd'
+      version: $(vpackversion)

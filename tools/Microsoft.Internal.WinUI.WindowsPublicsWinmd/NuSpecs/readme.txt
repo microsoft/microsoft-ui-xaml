@@ -1,0 +1,2 @@
+This package contains the Windows.winmd from Windows Publics for use in OS repo. When we create VPacks for use in OS repo we need to re-merge our winmd against this one for WinUI to be usable from OS repo.
+To build this nuget package ensure PUBLIC_ROOT environment variable is set and points to OS repo publics root (e.g. d:\os\public\x86chk.nocil).
