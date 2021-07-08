@@ -547,7 +547,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout");
 
                 Log.Comment("Tapping on a button to show the CommandBarFlyout.");
-                InputHelper.Tap(showCommandBarFlyoutButton);
+                showCommandBarFlyoutButton.InvokeAndWait();
 
                 // Pre-RS5, CommandBarFlyouts always open expanded,
                 // so we don't need to tap on the more button in that case.
@@ -874,7 +874,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with AlwaysExpanded");
 
                 Log.Comment("Tapping on a button to show the CommandBarFlyout.");
-                InputHelper.Tap(showCommandBarFlyoutButton);
+                showCommandBarFlyoutButton.InvokeAndWait();
 
                 Log.Comment("Press Right key to move focus to last primary command: Underline.");
                 for (int i = 0; i < 5; i++)
