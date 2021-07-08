@@ -18,12 +18,11 @@ winrt::IconElement FontIconSource::CreateIconElementCore()
         fontIcon.Foreground(newForeground);
     }
 
-    auto fontFamily = FontFamily();
-    if (!fontFamily)
+    if (!FontFamily())
     {
-        fontFamily = winrt::FontFamily{ c_fontIconSourceDefaultFontFamily };
+        FontFamily(winrt::FontFamily{ c_fontIconSourceDefaultFontFamily });
     }
-    fontIcon.FontFamily(fontFamily);
+    fontIcon.FontFamily(FontFamily());
 
     fontIcon.FontWeight(FontWeight());
     fontIcon.FontStyle(FontStyle());
