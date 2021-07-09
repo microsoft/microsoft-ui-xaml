@@ -1297,7 +1297,7 @@
                                         x:Name="OuterOverflowContentRootV2"
                                         RequestedTheme="{TemplateBinding ActualTheme}"
                                         Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}"
-                                        contract7Present:Translation="0,0,32">
+                                        contract14NotPresent:Translation="0,0,32">
                                         <Grid.RenderTransform>
                                             <TranslateTransform
                                                 x:Name="OverflowContentRootTransform"
@@ -1312,10 +1312,10 @@
                                             <Grid.Clip>
                                                 <RectangleGeometry x:Name="OverflowContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OverflowContentClipRect}">
                                                     <RectangleGeometry.Transform>
-                                                         <!-- If you have a value set by a binding and then animate that value,
+                                                        <!-- If you have a value set by a binding and then animate that value,
                                                              the animation will clear the binding.  Because of that, we need to have
                                                              two translate transforms - one that we bind to a property,
-                                                             and another that we can animate. --> 
+                                                             and another that we can animate. -->
                                                         <TransformGroup>
                                                             <TranslateTransform X="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionDelta}" />
                                                             <TranslateTransform x:Name="OverflowContentRootClipTransform" />
