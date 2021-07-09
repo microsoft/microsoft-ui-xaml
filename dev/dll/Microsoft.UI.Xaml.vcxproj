@@ -135,7 +135,7 @@
     <Import Project="..\TabView\TabView.vcxitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true' Or $(FeatureTabViewEnabled) == 'productOnly'" />
     <Import Project="..\AutoSuggestBox\AutoSuggestBox.vcxitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true' Or $(FeatureAutoSuggestBoxEnabled) == 'productOnly'" />
     <Import Project="..\ComboBox\ComboBox.vcxitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true' Or $(FeatureComboBoxEnabled) == 'productOnly'" />
-    <Import Project="..\SplitView\SplitView.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true' Or $(FeatureScrollBarEnabled) == 'productOnly'" />
+    <Import Project="..\SplitView\SplitView.vcxitems" Label="Shared" Condition="$(FeatureSplitViewEnabled) == 'true' Or $(FeatureSplitViewEnabled) == 'productOnly'" />
     <Import Project="..\ProgressBar\ProgressBar.vcxitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true' Or $(FeatureProgressBarEnabled) == 'productOnly'" />
     <Import Project="..\ProgressRing\ProgressRing.vcxitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true' Or $(FeatureProgressRingEnabled) == 'productOnly'" />
     <Import Project="..\NumberBox\NumberBox.vcxitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true' Or $(FeatureNumberBoxEnabled) == 'productOnly'" />
