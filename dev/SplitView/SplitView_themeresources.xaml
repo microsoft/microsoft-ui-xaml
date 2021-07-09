@@ -40,7 +40,7 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <CornerRadius x:Key="SplitViewPaneRootCornerRadius">0</CornerRadius>
+    <Style TargetType="SplitView" BasedOn="{StaticResource DefaultSplitViewStyle}" />
         
     <Style x:Key="DefaultSplitViewStyle" TargetType="SplitView">
         <Setter Property="BorderBrush" Value="{ThemeResource SystemControlForegroundTransparentBrush}" />
@@ -638,7 +638,5 @@
             </Setter.Value>
         </Setter>
     </Style>
-
-    <Style TargetType="SplitView" BasedOn="{StaticResource DefaultSplitViewStyle}" />
 
 </ResourceDictionary>
