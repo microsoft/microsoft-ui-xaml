@@ -44,7 +44,6 @@ unsealed runtimeclass FontIconSource : IconSource
     Double FontSize { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_DEFAULT_VALUE("winrt::FontFamily{ c_fontIconSourceDefaultFontFamily }")]
     Windows.UI.Xaml.Media.FontFamily FontFamily { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
