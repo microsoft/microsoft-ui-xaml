@@ -192,11 +192,10 @@
                                 <Popup x:Name="OverflowPopup" contract8Present:ShouldConstrainToRootBounds="False">
                                     <!-- The name OuterOverflowContentRoot is treated specially by the system and causes a shadow placed on this
                                          an element with this name to fade in. We don't want this for this style, so we need a different template part name -->
-                                    <contract7Present:Grid
+                                    <Grid
                                         x:Name="OuterOverflowContentRootV2"
                                         RequestedTheme="{TemplateBinding ActualTheme}"
-                                        Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}"
-                                        contract14NotPresent:Translation="0,0,32">
+                                        Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}">
                                         <Grid.RenderTransform>
                                             <TranslateTransform
                                                 x:Name="OverflowContentRootTransform"
@@ -231,52 +230,7 @@
                                                 IsTabStop="False">
                                             </CommandBarOverflowPresenter>
                                         </Grid>
-                                    </contract7Present:Grid>
-                                    <contract7NotPresent:Grid
-                                        x:Name="OuterOverflowContentRootV2"
-                                        RequestedTheme="{TemplateBinding ActualTheme}"
-                                        Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}">
-                                        <Grid.RenderTransform>
-                                            <TranslateTransform
-                                                x:Name="OverflowContentRootTransform"
-                                                Y="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandDownOverflowVerticalPosition}" />
-                                        </Grid.RenderTransform>
-                                        <Grid x:Name="OverflowContentRoot" HorizontalAlignment="Stretch" Background="{TemplateBinding Background}">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition />
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
-                                            <Grid.Clip>
-                                                <RectangleGeometry x:Name="OverflowContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OverflowContentClipRect}">
-                                                    <RectangleGeometry.Transform>
-                                                        <!-- If you have a value set by a binding and then animate that value,
-                                                             the animation will clear the binding.  Because of that, we need to have
-                                                             two translate transforms - one that we bind to a property,
-                                                             and another that we can animate. -->
-                                                        <TransformGroup>
-                                                            <TranslateTransform X="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.WidthExpansionDelta}" />
-                                                            <TranslateTransform x:Name="OverflowContentRootClipTransform" />
-                                                        </TransformGroup>
-                                                    </RectangleGeometry.Transform>
-                                                </RectangleGeometry>
-                                            </Grid.Clip>
-                                            <Border
-                                                x:Name="OverflowPresenterBorder"
-                                                Grid.Row="1"
-                                                BorderBrush="{TemplateBinding BorderBrush}"
-                                                BorderThickness="{ThemeResource CommandBarFlyoutBorderThemeThickness}"
-                                                CornerRadius="{ThemeResource OverlayCornerRadius}"/>
-                                            <CommandBarOverflowPresenter
-                                                Grid.Row="1"
-                                                x:Name="SecondaryItemsControl"
-                                                Style="{TemplateBinding CommandBarOverflowPresenterStyle}"
-                                                BorderBrush="{TemplateBinding BorderBrush}"
-                                                BorderThickness="{ThemeResource CommandBarFlyoutBorderThemeThickness}"
-                                                IsTabStop="False">
-                                            </CommandBarOverflowPresenter>
-                                        </Grid>
-                                    </contract7NotPresent:Grid>
+                                    </Grid>
                                 </Popup>
                             </Grid>
                         </Grid>
