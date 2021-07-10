@@ -400,7 +400,7 @@
                                 <VisualState x:Name="FocusDisengaged" />
                                 <VisualState x:Name="FocusEngagedHorizontal">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SliderContainer" Storyboard.TargetProperty="(Control.IsTemplateFocusTarget)">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="FocusBorder" Storyboard.TargetProperty="(Control.IsTemplateFocusTarget)">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="False" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="(Control.IsTemplateFocusTarget)">
@@ -410,7 +410,7 @@
                                 </VisualState>
                                 <VisualState x:Name="FocusEngagedVertical">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SliderContainer" Storyboard.TargetProperty="(Control.IsTemplateFocusTarget)">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="FocusBorder" Storyboard.TargetProperty="(Control.IsTemplateFocusTarget)">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="False" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="(Control.IsTemplateFocusTarget)">
@@ -436,10 +436,13 @@
                             TextWrapping="Wrap"
                             Visibility="Collapsed"
                             x:DeferLoadStrategy="Lazy"/>
+
+                        <!-- This border exists only to draw the correct focus rect with rounded corners when element is focused.-->
+                        <Border x:Name="FocusBorder" Grid.Row="1" CornerRadius="{ThemeResource ControlCornerRadius}" Control.IsTemplateFocusTarget="True" />
+
                         <Grid x:Name="SliderContainer"
                             Grid.Row="1"
-                            Background="{ThemeResource SliderContainerBackground}"
-                            Control.IsTemplateFocusTarget="True">
+                            Background="{ThemeResource SliderContainerBackground}">
                             <Grid x:Name="HorizontalTemplate" MinHeight="{ThemeResource SliderHorizontalHeight}">
 
                                 <Grid.ColumnDefinitions>
