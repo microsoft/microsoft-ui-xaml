@@ -11,7 +11,8 @@
     xmlns:contract8Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,8)"
     xmlns:contract9NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,9)"
     xmlns:contract12Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,12)"
-    xmlns:contract14NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,14)">
+    xmlns:contract14NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,14)"
+    xmlns:contract14Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,14)">
     
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
@@ -1291,11 +1292,14 @@
                                 <Popup x:Name="OverflowPopup" contract8Present:ShouldConstrainToRootBounds="False">
                                     <!-- The name OuterOverflowContentRoot is treated specially by the system and causes a shadow placed on this
                                          an element with this name to fade in. We don't want this for this style, so we need a different template part name -->
+                                    <!-- The Translation and Render transform are mutually exclusive properties. We need
+                                         The translation property on contract 14+ for the drop shadow to work.  We need
+                                         The TranslationTransform is needed before-->
                                     <contract7Present:Grid
                                         x:Name="OuterOverflowContentRootV2"
                                         RequestedTheme="{TemplateBinding ActualTheme}"
                                         Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}"
-                                        contract14NotPresent:Translation="0,0,32">
+                                        contract14Present:Translation="0,0,32">
                                         <contract14NotPresent:Grid.RenderTransform>
                                             <TranslateTransform
                                                 x:Name="OverflowContentRootTransform"
@@ -1328,6 +1332,9 @@
                                                 BorderBrush="{TemplateBinding BorderBrush}"
                                                 BorderThickness="{ThemeResource CommandBarFlyoutBorderThemeThickness}"
                                                 IsTabStop="False">
+                                                <!-- 19h1 has a bug in focus manager that causes a crash when an implicitly styled element
+                                                     has focus and its parent popup closes.  To work around this, on 19h1 we will explicitly
+                                                     Style the overflow elements. -->
                                                 <contract9NotPresent:CommandBarOverflowPresenter.ItemContainerStyle>
                                                     <Style TargetType="Control">
                                                         <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackground}" />

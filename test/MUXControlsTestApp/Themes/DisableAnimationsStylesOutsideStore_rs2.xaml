@@ -240,8 +240,6 @@
                                                         <Setter Property="Width" Value="NaN" />
                                                         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
                                                         <Setter Property="AllowFocusOnInteraction" Value="False" />
-                                                        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
-                                                        <Setter Property="local:CommandBarFlyoutCommandBarAutomationProperties.ControlType" Value="MenuItem" />
                                                     </Style>
                                                 </CommandBarOverflowPresenter.ItemContainerStyle>
                                             </CommandBarOverflowPresenter>
