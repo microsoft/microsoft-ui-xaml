@@ -155,7 +155,7 @@
                                     contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" MinWidth="3" />
+                                        <ColumnDefinition Width="Auto" MinWidth="3"/>
                                     </Grid.ColumnDefinitions>
                                     <ItemsControl x:Name="PrimaryItemsControl"
                                         Height="40"
@@ -194,7 +194,6 @@
                                          an element with this name to fade in. We don't want this for this style, so we need a different template part name -->
                                     <Grid
                                         x:Name="OuterOverflowContentRootV2"
-                                        RequestedTheme="{TemplateBinding ActualTheme}"
                                         Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}">
                                         <Grid.RenderTransform>
                                             <TranslateTransform
@@ -228,6 +227,23 @@
                                                 BorderBrush="{TemplateBinding BorderBrush}"
                                                 BorderThickness="{ThemeResource CommandBarFlyoutBorderThemeThickness}"
                                                 IsTabStop="False">
+                                                <CommandBarOverflowPresenter.ItemContainerStyle>
+                                                    <Style TargetType="Control">
+                                                        <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackground}" />
+                                                        <Setter Property="Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForeground}" />
+                                                        <Setter Property="BorderBrush" Value="{ThemeResource CommandBarFlyoutAppBarButtonBorderBrush}" />
+                                                        <Setter Property="BorderThickness" Value="0" />
+                                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                                        <Setter Property="VerticalAlignment" Value="Stretch" />
+                                                        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+                                                        <Setter Property="FontWeight" Value="Normal" />
+                                                        <Setter Property="Width" Value="NaN" />
+                                                        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+                                                        <Setter Property="AllowFocusOnInteraction" Value="False" />
+                                                        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+                                                        <Setter Property="local:CommandBarFlyoutCommandBarAutomationProperties.ControlType" Value="MenuItem" />
+                                                    </Style>
+                                                </CommandBarOverflowPresenter.ItemContainerStyle>
                                             </CommandBarOverflowPresenter>
                                         </Grid>
                                     </Grid>
