@@ -18,7 +18,7 @@
             <x:Double x:Key="ListViewItemMinHeight">40</x:Double>
             <Thickness x:Key="ListViewItemCompactSelectedBorderThemeThickness">4</Thickness>
             <StaticResource x:Key="ListViewItemBorderBackground" ResourceKey="SubtleFillColorTertiaryBrush" />
-            <StaticResource x:Key="ListViewItemBackground" ResourceKey="AccentFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ListViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="ListViewItemBackgroundSelected" ResourceKey="AccentFillColorPrimaryBrush" />
