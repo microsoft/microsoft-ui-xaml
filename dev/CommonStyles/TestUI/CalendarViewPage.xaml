@@ -47,10 +47,14 @@
             <ComboBox x:Name="calendarIdentifier" Margin="0,2,0,0" Header="CalendarIdentifier" Width="220" />
 
             <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                <TextBlock Text="Width:" VerticalAlignment="Center"/>
+                <TextBlock Text="Size:" VerticalAlignment="Center"/>
                 <TextBox x:Name="calendarWidth" Text="600" Margin="2" VerticalAlignment="Center" MinWidth="60"/>
-                <Button x:Name="getCalendarWidth" Content="Get" Margin="2" Click="GetCalendarWidth_Click" VerticalAlignment="Center"/>
-                <Button x:Name="setCalendarWidth" Content="Set" Margin="2" Click="SetCalendarWidth_Click" VerticalAlignment="Center"/>
+                <TextBox x:Name="calendarHeight" Text="600" Margin="2" VerticalAlignment="Center" MinWidth="60"/>
+                <TextBlock Text="ActualSize:" VerticalAlignment="Center"/>
+                <TextBlock x:Name="calendarActualWidth" Text="600" Margin="2" VerticalAlignment="Center" MinWidth="60"/>
+                <TextBlock x:Name="calendarActualHeight" Text="600" Margin="2" VerticalAlignment="Center" MinWidth="60"/>
+                <Button x:Name="getCalendarSize" Content="Get" Margin="2" Click="GetCalendarSize_Click" VerticalAlignment="Center"/>
+                <Button x:Name="setCalendarSize" Content="Set" Margin="2" Click="SetCalendarSize_Click" VerticalAlignment="Center"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
