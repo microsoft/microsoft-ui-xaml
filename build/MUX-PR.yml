@@ -21,7 +21,8 @@ jobs:
       ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
     )
   pool:
-    name: 'windevbuildagents'
+    name: WinDevPool-XL
+    demands: ImageOverride -equals WinDevVS16-9
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10

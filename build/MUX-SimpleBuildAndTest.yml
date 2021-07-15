@@ -11,7 +11,8 @@ jobs:
   condition:
     eq(variables['useBuildOutputFromBuildId'],'') 
   pool:
-    name: 'windevbuildagents'
+    name: WinDevPool-XL
+    demands: ImageOverride -equals WinDevVS16-9
   timeoutInMinutes: 120
   variables:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
