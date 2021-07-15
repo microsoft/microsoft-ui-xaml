@@ -46,7 +46,7 @@ private:
         double minRowSpacing,
         double minColumnSpacing);
 
-    double CalculateExtraPixelsPerColumn(unsigned int maxItemsPerLine,
+    double CalculateExtraPixelsInLine(unsigned int maxItemsPerLine,
         const float availableSizeMinor,
         const double itemSizeMinor,
         const double minorItemSpacing);
@@ -62,5 +62,3 @@ private:
         double minColumnSpacing,
         unsigned int maxItemsPerLine);
 };
-
-void CalculateExtraPixelsPerColumn(unsigned int& maxItemsPerLine, const float& availableSizeMinor, const double& itemSizeMinor, const double& minorItemSpacing, double& extraMinorPixelsForEachItem);

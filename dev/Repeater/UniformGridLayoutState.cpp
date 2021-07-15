@@ -42,7 +42,7 @@ void UniformGridLayoutState::EnsureElementSize(
     if (context.ItemCount() > 0)
     {
         // If the first element is realized we don't need to get it from the context
-        if (auto realizedElement = m_flowAlgorithm.GetElementIfRealized(0).as<winrt::FrameworkElement>())
+        if (auto realizedElement = m_flowAlgorithm.GetElementIfRealized(0))
         {
             realizedElement.Measure(CalculateAvailableSize(availableSize, orientation, stretch, maxItemsPerLine, layoutItemWidth, layoutItemHeight, minRowSpacing, minColumnSpacing));
             SetSize(realizedElement.DesiredSize(), layoutItemWidth, layoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
@@ -50,7 +50,7 @@ void UniformGridLayoutState::EnsureElementSize(
         else
         {
             // Not realized by flowlayout, so do this now!
-            if (const auto firstElement = context.GetOrCreateElementAt(0, winrt::ElementRealizationOptions::ForceCreate).as<winrt::FrameworkElement>())
+            if (const auto firstElement = context.GetOrCreateElementAt(0, winrt::ElementRealizationOptions::ForceCreate))
             {
                 firstElement.Measure(CalculateAvailableSize(availableSize,orientation, stretch, maxItemsPerLine, layoutItemWidth, layoutItemHeight, minRowSpacing, minColumnSpacing));
                 SetSize(firstElement.DesiredSize(), layoutItemWidth, layoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
@@ -69,20 +69,29 @@ winrt::Size UniformGridLayoutState::CalculateAvailableSize(const winrt::Size ava
     double minRowSpacing,
     double minColumnSpacing)
 {
-    if (orientation == winrt::Orientation::Horizontal) {
-        if (!isnan(itemWidth)) {
+    // Since some controls might have certain requirements when rendering (e.g. maintaining an aspect ratio),
+    // we will let elements know the actual size they will get within our layout and let them measure based on that assumption.
+    // That way we ensure that no gaps will be created within our layout because of a control deciding it doesn't need as much height (or width)
+    // for the column width (or row height) being provided.
+    if (orientation == winrt::Orientation::Horizontal)
+    {
+        if (!isnan(itemWidth))
+        {
             double allowedColumnWidth = itemWidth;
-            if (stretch != winrt::UniformGridLayoutItemsStretch::None) {
-                allowedColumnWidth += CalculateExtraPixelsPerColumn(maxItemsPerLine, availableSize.Width, itemWidth, minColumnSpacing);
+            if (stretch != winrt::UniformGridLayoutItemsStretch::None)
+            {
+                allowedColumnWidth += CalculateExtraPixelsInLine(maxItemsPerLine, availableSize.Width, itemWidth, minColumnSpacing);
             }
             return winrt::Size{ (float)allowedColumnWidth, availableSize.Height};
         }
     }
     else {
-        if (!isnan(itemHeight)) {
+        if (!isnan(itemHeight))
+        {
             double allowedRowHeight = itemHeight;
-            if (stretch != winrt::UniformGridLayoutItemsStretch::None) {
-                allowedRowHeight += CalculateExtraPixelsPerColumn(maxItemsPerLine, availableSize.Height, itemHeight, minRowSpacing);
+            if (stretch != winrt::UniformGridLayoutItemsStretch::None)
+            {
+                allowedRowHeight += CalculateExtraPixelsInLine(maxItemsPerLine, availableSize.Height, itemHeight, minRowSpacing);
             }
             return winrt::Size{availableSize.Width, (float)itemHeight};
         }
@@ -90,14 +99,22 @@ winrt::Size UniformGridLayoutState::CalculateAvailableSize(const winrt::Size ava
     return availableSize;
 }
 
-double UniformGridLayoutState::CalculateExtraPixelsPerColumn(unsigned int maxItemsPerLine,
+double UniformGridLayoutState::CalculateExtraPixelsInLine(unsigned int maxItemsPerLine,
     const float availableSizeMinor,
     const double itemSizeMinor,
     const double minorItemSpacing)
 {
-    const auto numItemsPerColumn = std::min(
-        maxItemsPerLine,
-        static_cast<unsigned int>(std::max(1.0, availableSizeMinor / (itemSizeMinor + minorItemSpacing))));
+    const auto numItemsPerColumn = [](unsigned int maxItemsPerLine, const float availableSizeMinor, const double itemSizeMinor, const double minorItemSpacing){
+        const unsigned int numItemsBasedOnSize = static_cast<unsigned int>(std::max(1.0, availableSizeMinor / (itemSizeMinor + minorItemSpacing)));
+        if (numItemsBasedOnSize == 0) {
+            return maxItemsPerLine;
+        }
+        else {
+            return std::min(
+                maxItemsPerLine,
+                numItemsBasedOnSize);
+        }
+    }(maxItemsPerLine,availableSizeMinor,itemSizeMinor,minorItemSpacing);
     const auto usedSpace = (numItemsPerColumn * (itemSizeMinor + minorItemSpacing)) - minorItemSpacing;
     const auto remainingSpace = ((int)(availableSizeMinor - usedSpace));
     return remainingSpace / ((int)numItemsPerColumn);
@@ -130,7 +147,7 @@ void UniformGridLayoutState::SetSize(
     double extraMinorPixelsForEachItem = 0.0;
     if (std::isfinite(availableSizeMinor))
     {
-        extraMinorPixelsForEachItem = CalculateExtraPixelsPerColumn(maxItemsPerLine, availableSizeMinor, itemSizeMinor, minorItemSpacing);
+        extraMinorPixelsForEachItem = CalculateExtraPixelsInLine(maxItemsPerLine, availableSizeMinor, itemSizeMinor, minorItemSpacing);
     }
 
     if (stretch == winrt::UniformGridLayoutItemsStretch::Fill)
