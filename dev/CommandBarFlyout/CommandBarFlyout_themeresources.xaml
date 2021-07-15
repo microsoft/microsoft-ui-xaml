@@ -83,7 +83,7 @@
             <StaticResource x:Key="CommandBarFlyoutBackground" ResourceKey="SystemControlBackgroundBaseLowBrush"/>
             <StaticResource x:Key="CommandBarFlyoutForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
             <StaticResource x:Key="CommandBarFlyoutBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackground" ResourceKey="SystemControlTransparentBrush"/>
+            <SolidColorBrush x:Key="CommandBarFlyoutAppBarButtonBackground" Opacity="0" Color="{ThemeResource SystemColorButtonFaceColor}"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush"/>
