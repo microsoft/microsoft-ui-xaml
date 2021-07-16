@@ -58,8 +58,7 @@
             <StackPanel Orientation="Vertical" contract5Present:Spacing="12" Grid.Column="4" Margin="0,0,12,0">
                 <TextBlock Text="NumberBox"/>
 
-                <controls:NumberBox Header="Normal" Text="123" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}" />
-                <controls:NumberBox Header="Placeholder" PlaceholderText="Placeholder" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}"/>
+               
             </StackPanel>
         </Grid>
 
