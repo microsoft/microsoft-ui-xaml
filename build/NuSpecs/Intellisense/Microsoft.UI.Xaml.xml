@@ -11,6 +11,11 @@
       <summary>Initializes a new instance of the AnimatedVisualPlayerAutomationPeer class.</summary>
       <param name="owner">The AnimatedVisualPlayer control instance to create the peer for.</param>
     </member>
+    <member name="T:Microsoft.UI.Xaml.Automation.Peers.BreadcrumbBarItemAutomationPeer" />
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.BreadcrumbBarItemAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.BreadcrumbBarItem)">
+      <param name="owner"></param>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.BreadcrumbBarItemAutomationPeer.Invoke" />
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.ColorPickerSliderAutomationPeer">
       <summary>Exposes ColorPickerSlider types to Microsoft UI Automation.</summary>
     </member>
@@ -42,9 +47,19 @@
       <summary>Gets the state, expanded or collapsed, of the DropDownButton.</summary>
       <returns>A value of the enumeration.</returns>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Automation.Peers.InfoBarAutomationPeer" />
-    <member name="M:Microsoft.UI.Xaml.Automation.Peers.InfoBarAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.InfoBar)">
+    <member name="T:Microsoft.UI.Xaml.Automation.Peers.ExpanderAutomationPeer" />
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.ExpanderAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.Expander)">
       <param name="owner"></param>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.ExpanderAutomationPeer.Collapse" />
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.ExpanderAutomationPeer.Expand" />
+    <member name="P:Microsoft.UI.Xaml.Automation.Peers.ExpanderAutomationPeer.ExpandCollapseState" />
+    <member name="T:Microsoft.UI.Xaml.Automation.Peers.InfoBarAutomationPeer">
+      <summary>Exposes InfoBar types to Microsoft UI Automation.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.InfoBarAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.InfoBar)">
+      <summary>Initializes a new instance of the InfoBarAutomationPeer class.</summary>
+      <param name="owner">The InfoBar control instance to create the peer for.</param>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.MenuBarAutomationPeer">
       <summary>Exposes MenuBar types to Microsoft UI Automation.</summary>
@@ -73,10 +88,6 @@
       <summary>Gets the state, expanded or collapsed, of the MenuBarItem.</summary>
       <returns>A value of the enumeration.</returns>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Automation.Peers.NavigationViewAutomationPeer" />
-    <member name="M:Microsoft.UI.Xaml.Automation.Peers.NavigationViewAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.NavigationView)">
-      <param name="owner"></param>
-    </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.NavigationViewItemAutomationPeer">
       <summary>Exposes NavigationViewItem types to Microsoft UI Automation.</summary>
     </member>
@@ -101,16 +112,19 @@
       <summary>Initializes a new instance of the NumberBoxAutomationPeer class.</summary>
       <param name="owner">The NumberBox control instance to create the peer for.</param>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Automation.Peers.PagerControlAutomationPeer" />
-    <member name="M:Microsoft.UI.Xaml.Automation.Peers.PagerControlAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.PagerControl)">
-      <param name="owner"></param>
-    </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.PersonPictureAutomationPeer">
       <summary>Exposes PersonPicture types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.PersonPictureAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.PersonPicture)">
       <summary>Initializes a new instance of the PersonPictureAutomationPeer class.</summary>
       <param name="owner">The PersonPicture control instance to create the peer for.</param>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Automation.Peers.PipsPagerAutomationPeer">
+      <summary>Exposes PipsPager types to Microsoft UI Automation.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.PipsPagerAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.PipsPager)">
+      <summary>Initializes a new instance of the PipsPagerAutomationPeer class.</summary>
+      <param name="owner">The PipsPager control instance to create the peer for.</param>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.ProgressBarAutomationPeer">
       <summary>Exposes ProgressBar types to Microsoft UI Automation.</summary>
@@ -148,10 +162,6 @@
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.RepeaterAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.ItemsRepeater)">
       <summary>Initializes a new instance of the RepeaterAutomationPeer class.</summary>
       <param name="owner">The ItemsRepeater control instance to create the peer for.</param>
-    </member>
-    <member name="T:Microsoft.UI.Xaml.Automation.Peers.ScrollPresenterAutomationPeer" />
-    <member name="M:Microsoft.UI.Xaml.Automation.Peers.ScrollPresenterAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter)">
-      <param name="owner"></param>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.SplitButtonAutomationPeer">
       <summary>Exposes SplitButton types to Microsoft UI Automation.</summary>
@@ -257,6 +267,67 @@
       <summary>Initializes a new instance of the TreeViewListAutomationPeer class.</summary>
       <param name="owner">The TreeViewList control instance to create the peer for.</param>
     </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.AnimatedIcon">
+      <summary>Represents an icon that displays and controls a visual that can animate in response to user interaction and visual state changes.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedIcon.#ctor">
+      <summary>Initializes a new instance of the AnimatedIcon class.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedIcon.GetState(Windows.UI.Xaml.DependencyObject)">
+      <summary>Retrieves the value of the AnimatedIcon.State" attached property for the specified DependencyObject.</summary>
+      <param name="object">The object from which the property value is retrieved.</param>
+      <returns>The current value of the AnimatedIcon.State" attached property on the specified dependency object.</returns>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedIcon.SetState(Windows.UI.Xaml.DependencyObject,System.String)">
+      <summary>Specifies the value of the AnimatedIcon.State" attached property for the specified DependencyObject.</summary>
+      <param name="object">The object for which the property value is specified.</param>
+      <param name="value">The value of the AnimatedIcon.State" attached property on the specified dependency object.</param>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedIcon.FallbackIconSource">
+      <summary>Gets or sets the static icon to use when the animated icon cannot run.</summary>
+      <returns>The static icon to use when the animated icon cannot run. The default is null.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedIcon.FallbackIconSourceProperty">
+      <summary>Identifies the FallbackIconSource dependency property.</summary>
+      <returns>The identifier for the FallbackIconSource dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedIcon.Source">
+      <summary>Gets or sets the animated visual shown by the AnimatedIcon object.</summary>
+      <returns>The animated visual shown by the AnimatedIcon. The default is null.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedIcon.SourceProperty">
+      <summary>Identifies the Source dependency property.</summary>
+      <returns>The identifier for the Source dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedIcon.State">
+      <summary>Property that the developer sets on AnimatedIcon.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedIcon.StateProperty">
+      <summary>Identifies the AnimatedIcon.State" XAML attached property.</summary>
+      <returns>The identifier for the AnimatedIcon.State" XAML attached property.</returns>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.AnimatedIconSource">
+      <summary>Represents a shareable object used to create an icon that displays and controls a visual that can animate in response to user interaction and visual state changes.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedIconSource.#ctor">
+      <summary>Initializes a new instance of the AnimatedIconSource class.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedIconSource.FallbackIconSource">
+      <summary>Gets or sets the static icon to use when the animated icon cannot run.</summary>
+      <returns>The static icon to use when the animated icon cannot run. The default is null.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedIconSource.FallbackIconSourceProperty">
+      <summary>Identifies the FallbackIconSource dependency property.</summary>
+      <returns>The identifier for the FallbackIconSource dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedIconSource.Source">
+      <summary>Gets or sets the animated visual shown by the AnimatedIconSource object.</summary>
+      <returns>The animated visual shown by the AnimatedIconSource. The default is null.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedIconSource.SourceProperty">
+      <summary>Identifies the Source dependency property.</summary>
+      <returns>The identifier for the Source dependency property.</returns>
+    </member>
     <member name="T:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer">
       <summary>An element that displays and controls an IAnimatedVisual.</summary>
     </member>
@@ -359,12 +430,190 @@
       <summary>Identifies the Stretch dependency property.</summary>
       <returns>The identifier for the Stretch dependency property.</returns>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.AnimationContext" />
-    <member name="F:Microsoft.UI.Xaml.Controls.AnimationContext.CollectionChangeAdd" />
-    <member name="F:Microsoft.UI.Xaml.Controls.AnimationContext.CollectionChangeRemove" />
-    <member name="F:Microsoft.UI.Xaml.Controls.AnimationContext.CollectionChangeReset" />
-    <member name="F:Microsoft.UI.Xaml.Controls.AnimationContext.LayoutTransition" />
-    <member name="F:Microsoft.UI.Xaml.Controls.AnimationContext.None" />
+    <member name="T:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedAcceptVisualSource">
+      <summary>Represents an animation for a check mark that can be used as an animated icon source.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedAcceptVisualSource.#ctor">
+      <summary>Initializes a new instance of the AnimatedAcceptVisualSource class.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedAcceptVisualSource.SetColorProperty(System.String,Windows.UI.Color)">
+      <summary>Sets the color of the animated visual for an AnimatedIcon.</summary>
+      <param name="propertyName">The property name of the color as defined in the JSON file for the animated icon.</param>
+      <param name="value">The color value the animated icon is being set to.</param>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedAcceptVisualSource.TryCreateAnimatedVisual(Windows.UI.Composition.Compositor,System.Object@)">
+      <summary>Attempts to create an instance of an AnimatedAcceptVisualSource object for an AnimatedIcon.</summary>
+      <param name="compositor">The Compositor used to create objects for the animated visual.</param>
+      <param name="diagnostics">Diagnostics information about the IAnimatedVisualSource implementation.
+
+This parameter is optional.</param>
+      <returns>An IAnimatedVisual, or null.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedAcceptVisualSource.Markers">
+      <summary>Provides a mapping from marker names to playback positions in the animated visual for an AnimatedIcon.</summary>
+      <returns>The collection of marker names and values as defined in the JSON file for the animated icon.</returns>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedBackVisualSource">
+      <summary>Represents an animation for a back arrow that can be used as an animated icon source.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedBackVisualSource.#ctor">
+      <summary>Initializes a new instance of the AnimatedBackVisualSource class.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedBackVisualSource.SetColorProperty(System.String,Windows.UI.Color)">
+      <summary>Sets the color of the animated visual for an AnimatedIcon.</summary>
+      <param name="propertyName">The property name of the color as defined in the JSON file for the animated icon.</param>
+      <param name="value">The color value the animated icon is being set to.</param>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedBackVisualSource.TryCreateAnimatedVisual(Windows.UI.Composition.Compositor,System.Object@)">
+      <summary>Attempts to create an instance of an AnimatedBackVisualSource object for an AnimatedIcon.</summary>
+      <param name="compositor">The Compositor used to create objects for the animated visual.</param>
+      <param name="diagnostics">Diagnostics information about the IAnimatedVisualSource implementation.
+
+This parameter is optional.</param>
+      <returns>An IAnimatedVisual, or null.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedBackVisualSource.Markers">
+      <summary>Provides a mapping from marker names to playback positions in the animated visual for an AnimatedIcon.</summary>
+      <returns>The collection of marker names and values as defined in the JSON file for the animated icon.</returns>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedChevronDownSmallVisualSource">
+      <summary>Represents an animation for a downward facing chevron that can be used as an animated icon source.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedChevronDownSmallVisualSource.#ctor">
+      <summary>Initializes a new instance of the AnimatedChevronDownSmallVisualSource class.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedChevronDownSmallVisualSource.SetColorProperty(System.String,Windows.UI.Color)">
+      <summary>Sets the color of the animated visual for an AnimatedIcon.</summary>
+      <param name="propertyName">The property name of the color as defined in the JSON file for the animated icon.</param>
+      <param name="value">The color value the animated icon is being set to.</param>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedChevronDownSmallVisualSource.TryCreateAnimatedVisual(Windows.UI.Composition.Compositor,System.Object@)">
+      <summary>Attempts to create an instance of an AnimatedChevronDownSmallVisualSource object for an AnimatedIcon.</summary>
+      <param name="compositor">The Compositor used to create objects for the animated visual.</param>
+      <param name="diagnostics">Diagnostics information about the IAnimatedVisualSource implementation.
+
+This parameter is optional.</param>
+      <returns>An IAnimatedVisual, or null.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedChevronDownSmallVisualSource.Markers">
+      <summary>Provides a mapping from marker names to playback positions in the animated visual for an AnimatedIcon.</summary>
+      <returns>The collection of marker names and values as defined in the JSON file for the animated icon.</returns>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedChevronRightDownSmallVisualSource">
+      <summary>Represents an animation for a chevron that rotates from right to down that can be used as an animated icon source.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedChevronRightDownSmallVisualSource.#ctor">
+      <summary>Initializes a new instance of the AnimatedChevronRightDownSmallVisualSource class.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedChevronRightDownSmallVisualSource.SetColorProperty(System.String,Windows.UI.Color)">
+      <summary>Sets the color of the animated visual for an AnimatedIcon.</summary>
+      <param name="propertyName">The property name of the color as defined in the JSON file for the animated icon.</param>
+      <param name="value">The color value the animated icon is being set to.</param>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedChevronRightDownSmallVisualSource.TryCreateAnimatedVisual(Windows.UI.Composition.Compositor,System.Object@)">
+      <summary>Attempts to create an instance of an AnimatedChevronRightDownSmallVisualSource object for an AnimatedIcon.</summary>
+      <param name="compositor">The Compositor used to create objects for the animated visual.</param>
+      <param name="diagnostics">Diagnostics information about the IAnimatedVisualSource implementation.
+
+This parameter is optional.</param>
+      <returns>An IAnimatedVisual, or null.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedChevronRightDownSmallVisualSource.Markers">
+      <summary>Provides a mapping from marker names to playback positions in the animated visual for an AnimatedIcon.</summary>
+      <returns>The collection of marker names and values as defined in the JSON file for the animated icon.</returns>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedChevronUpDownSmallVisualSource">
+      <summary>Represents an animation for a chevron that rotates from up to down that can be used as an animated icon source.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedChevronUpDownSmallVisualSource.#ctor">
+      <summary>Initializes a new instance of the AnimatedChevronUpDownSmallVisualSource class.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedChevronUpDownSmallVisualSource.SetColorProperty(System.String,Windows.UI.Color)">
+      <summary>Sets the color of the animated visual for an AnimatedIcon.</summary>
+      <param name="propertyName">The property name of the color as defined in the JSON file for the animated icon.</param>
+      <param name="value">The color value the animated icon is being set to.</param>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedChevronUpDownSmallVisualSource.TryCreateAnimatedVisual(Windows.UI.Composition.Compositor,System.Object@)">
+      <summary>Attempts to create an instance of an AnimatedChevronUpDownSmallVisualSource object for an AnimatedIcon.</summary>
+      <param name="compositor">The Compositor used to create objects for the animated visual.</param>
+      <param name="diagnostics">Diagnostics information about the IAnimatedVisualSource implementation.
+
+This parameter is optional.</param>
+      <returns>An IAnimatedVisual, or null.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedChevronUpDownSmallVisualSource.Markers">
+      <summary>Provides a mapping from marker names to playback positions in the animated visual for an AnimatedIcon.</summary>
+      <returns>The collection of marker names and values as defined in the JSON file for the animated icon.</returns>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedFindVisualSource">
+      <summary>Represents an animation for a magnifying glass that can be used as an animated icon source.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedFindVisualSource.#ctor">
+      <summary>Initializes a new instance of the AnimatedFindVisualSource class.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedFindVisualSource.SetColorProperty(System.String,Windows.UI.Color)">
+      <summary>Sets the color of the animated visual for an AnimatedIcon.</summary>
+      <param name="propertyName">The property name of the color as defined in the JSON file for the animated icon.</param>
+      <param name="value">The color value the animated icon is being set to.</param>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedFindVisualSource.TryCreateAnimatedVisual(Windows.UI.Composition.Compositor,System.Object@)">
+      <summary>Attempts to create an instance of an AnimatedFindVisualSource object for an AnimatedIcon.</summary>
+      <param name="compositor">The Compositor used to create objects for the animated visual.</param>
+      <param name="diagnostics">Diagnostics information about the IAnimatedVisualSource implementation.
+
+This parameter is optional.</param>
+      <returns>An IAnimatedVisual, or null.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedFindVisualSource.Markers">
+      <summary>Provides a mapping from marker names to playback positions in the animated visual for an AnimatedIcon.</summary>
+      <returns>The collection of marker names and values as defined in the JSON file for the animated icon.</returns>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedGlobalNavigationButtonVisualSource">
+      <summary>Represents an animation for a navigation menu that can be used as an animated icon source.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedGlobalNavigationButtonVisualSource.#ctor">
+      <summary>Initializes a new instance of the AnimatedGlobalNavigationButtonVisualSource class.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedGlobalNavigationButtonVisualSource.SetColorProperty(System.String,Windows.UI.Color)">
+      <summary>Sets the color of the animated visual for an AnimatedIcon.</summary>
+      <param name="propertyName">The property name of the color as defined in the JSON file for the animated icon.</param>
+      <param name="value">The color value the animated icon is being set to.</param>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedGlobalNavigationButtonVisualSource.TryCreateAnimatedVisual(Windows.UI.Composition.Compositor,System.Object@)">
+      <summary>Attempts to create an instance of an AnimatedGlobalNavigationButtonVisualSource object for an AnimatedIcon.</summary>
+      <param name="compositor">The Compositor used to create objects for the animated visual.</param>
+      <param name="diagnostics">Diagnostics information about the IAnimatedVisualSource implementation.
+
+This parameter is optional.</param>
+      <returns>An IAnimatedVisual, or null.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedGlobalNavigationButtonVisualSource.Markers">
+      <summary>Provides a mapping from marker names to playback positions in the animated visual for an AnimatedIcon.</summary>
+      <returns>The collection of marker names and values as defined in the JSON file for the animated icon.</returns>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedSettingsVisualSource">
+      <summary>Represents an animation for a settings icon that can be used as an animated icon source.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedSettingsVisualSource.#ctor">
+      <summary>Initializes a new instance of the AnimatedSettingsVisualSource class.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedSettingsVisualSource.SetColorProperty(System.String,Windows.UI.Color)">
+      <summary>Sets the color of the animated visual for an AnimatedIcon.</summary>
+      <param name="propertyName">The property name of the color as defined in the JSON file for the animated icon.</param>
+      <param name="value">The color value the animated icon is being set to.</param>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedSettingsVisualSource.TryCreateAnimatedVisual(Windows.UI.Composition.Compositor,System.Object@)">
+      <summary>Attempts to create an instance of an AnimatedSettingsVisualSource object for an AnimatedIcon.</summary>
+      <param name="compositor">The Compositor used to create objects for the animated visual.</param>
+      <param name="diagnostics">Diagnostics information about the IAnimatedVisualSource implementation.
+
+This parameter is optional.</param>
+      <returns>An IAnimatedVisual, or null.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedSettingsVisualSource.Markers">
+      <summary>Provides a mapping from marker names to playback positions in the animated visual for an AnimatedIcon.</summary>
+      <returns>The collection of marker names and values as defined in the JSON file for the animated icon.</returns>
+    </member>
     <member name="T:Microsoft.UI.Xaml.Controls.BitmapIconSource">
       <summary>Represents an icon source that uses a bitmap as its content.</summary>
     </member>
@@ -387,6 +636,18 @@
       <summary>Identifies the UriSource dependency property.</summary>
       <returns>The identifier for the UriSource dependency property.</returns>
     </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.BreadcrumbBar" />
+    <member name="E:Microsoft.UI.Xaml.Controls.BreadcrumbBar.ItemClicked" />
+    <member name="M:Microsoft.UI.Xaml.Controls.BreadcrumbBar.#ctor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.BreadcrumbBar.ItemsSource" />
+    <member name="P:Microsoft.UI.Xaml.Controls.BreadcrumbBar.ItemsSourceProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.BreadcrumbBar.ItemTemplate" />
+    <member name="P:Microsoft.UI.Xaml.Controls.BreadcrumbBar.ItemTemplateProperty" />
+    <member name="T:Microsoft.UI.Xaml.Controls.BreadcrumbBarItem" />
+    <member name="M:Microsoft.UI.Xaml.Controls.BreadcrumbBarItem.#ctor" />
+    <member name="T:Microsoft.UI.Xaml.Controls.BreadcrumbBarItemClickedEventArgs" />
+    <member name="P:Microsoft.UI.Xaml.Controls.BreadcrumbBarItemClickedEventArgs.Index" />
+    <member name="P:Microsoft.UI.Xaml.Controls.BreadcrumbBarItemClickedEventArgs.Item" />
     <member name="T:Microsoft.UI.Xaml.Controls.ColorChangedEventArgs">
       <summary>Provides event data for a ColorChanged event (see ColorPicker.ColorChanged" and ColorSpectrum.ColorChanged" ).</summary>
     </member>
@@ -610,6 +871,7 @@
     <member name="M:Microsoft.UI.Xaml.Controls.CommandBarFlyout.#ctor">
       <summary>Initializes a new instance of the CommandBarFlyout class.</summary>
     </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.CommandBarFlyout.AlwaysExpanded" />
     <member name="P:Microsoft.UI.Xaml.Controls.CommandBarFlyout.PrimaryCommands">
       <summary>Gets the collection of primary command elements for the CommandBarFlyout.</summary>
       <returns>The collection of primary command elements for the CommandBarFlyout. The default is an empty collection.</returns>
@@ -618,103 +880,14 @@
       <summary>Gets the collection of secondary command elements for the CommandBarFlyout.</summary>
       <returns>The collection of secondary command elements for the CommandBarFlyout. The default is an empty collection.</returns>
     </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.ControlsResourcesVersion" />
+    <member name="F:Microsoft.UI.Xaml.Controls.ControlsResourcesVersion.Version1" />
+    <member name="F:Microsoft.UI.Xaml.Controls.ControlsResourcesVersion.Version2" />
     <member name="T:Microsoft.UI.Xaml.Controls.DropDownButton">
       <summary>Represents a button that includes a chevron to indicate a menu can be opened.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.DropDownButton.#ctor">
       <summary>Initializes a new instance of the DropDownButton class.</summary>
-    </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.ElementAnimationCompleted">
-      <param name="sender"></param>
-      <param name="element"></param>
-    </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.ElementAnimator" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ElementAnimator.BoundsChangeAnimationCompleted" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ElementAnimator.HideAnimationCompleted" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ElementAnimator.ShowAnimationCompleted" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementAnimator.#ctor" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementAnimator.HasBoundsChangeAnimation(Windows.UI.Xaml.UIElement,Microsoft.UI.Xaml.Controls.AnimationContext,Windows.Foundation.Rect,Windows.Foundation.Rect)">
-      <param name="element"></param>
-      <param name="context"></param>
-      <param name="oldBounds"></param>
-      <param name="newBounds"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementAnimator.HasBoundsChangeAnimationCore(Windows.UI.Xaml.UIElement,Microsoft.UI.Xaml.Controls.AnimationContext,Windows.Foundation.Rect,Windows.Foundation.Rect)">
-      <param name="element"></param>
-      <param name="context"></param>
-      <param name="oldBounds"></param>
-      <param name="newBounds"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementAnimator.HasHideAnimation(Windows.UI.Xaml.UIElement,Microsoft.UI.Xaml.Controls.AnimationContext)">
-      <param name="element"></param>
-      <param name="context"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementAnimator.HasHideAnimationCore(Windows.UI.Xaml.UIElement,Microsoft.UI.Xaml.Controls.AnimationContext)">
-      <param name="element"></param>
-      <param name="context"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementAnimator.HasShowAnimation(Windows.UI.Xaml.UIElement,Microsoft.UI.Xaml.Controls.AnimationContext)">
-      <param name="element"></param>
-      <param name="context"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementAnimator.HasShowAnimationCore(Windows.UI.Xaml.UIElement,Microsoft.UI.Xaml.Controls.AnimationContext)">
-      <param name="element"></param>
-      <param name="context"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementAnimator.OnBoundsChangeAnimationCompleted(Windows.UI.Xaml.UIElement)">
-      <param name="element"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementAnimator.OnElementBoundsChanged(Windows.UI.Xaml.UIElement,Microsoft.UI.Xaml.Controls.AnimationContext,Windows.Foundation.Rect,Windows.Foundation.Rect)">
-      <param name="element"></param>
-      <param name="context"></param>
-      <param name="oldBounds"></param>
-      <param name="newBounds"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementAnimator.OnElementHidden(Windows.UI.Xaml.UIElement,Microsoft.UI.Xaml.Controls.AnimationContext)">
-      <param name="element"></param>
-      <param name="context"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementAnimator.OnElementShown(Windows.UI.Xaml.UIElement,Microsoft.UI.Xaml.Controls.AnimationContext)">
-      <param name="element"></param>
-      <param name="context"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementAnimator.OnHideAnimationCompleted(Windows.UI.Xaml.UIElement)">
-      <param name="element"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementAnimator.OnShowAnimationCompleted(Windows.UI.Xaml.UIElement)">
-      <param name="element"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementAnimator.StartBoundsChangeAnimation(Windows.UI.Xaml.UIElement,Microsoft.UI.Xaml.Controls.AnimationContext,Windows.Foundation.Rect,Windows.Foundation.Rect)">
-      <param name="element"></param>
-      <param name="context"></param>
-      <param name="oldBounds"></param>
-      <param name="newBounds"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementAnimator.StartHideAnimation(Windows.UI.Xaml.UIElement,Microsoft.UI.Xaml.Controls.AnimationContext)">
-      <param name="element"></param>
-      <param name="context"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementAnimator.StartShowAnimation(Windows.UI.Xaml.UIElement,Microsoft.UI.Xaml.Controls.AnimationContext)">
-      <param name="element"></param>
-      <param name="context"></param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ElementAnimator.HasBoundsChangeAnimationsPending" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ElementAnimator.HasHideAnimationsPending" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ElementAnimator.HasShowAnimationsPending" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ElementAnimator.SharedContext" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ElementFactory" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementFactory.#ctor" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementFactory.GetElement(Microsoft.UI.Xaml.Controls.ElementFactoryGetArgs)">
-      <param name="args"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementFactory.GetElementCore(Microsoft.UI.Xaml.Controls.ElementFactoryGetArgs)">
-      <param name="args"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementFactory.RecycleElement(Microsoft.UI.Xaml.Controls.ElementFactoryRecycleArgs)">
-      <param name="args"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ElementFactory.RecycleElementCore(Microsoft.UI.Xaml.Controls.ElementFactoryRecycleArgs)">
-      <param name="args"></param>
     </member>
     <member name="T:Microsoft.UI.Xaml.Controls.ElementFactoryGetArgs">
       <summary>Represents the optional arguments to use when calling an implementation of the GetElement object.</summary>
@@ -756,75 +929,134 @@
     <member name="F:Microsoft.UI.Xaml.Controls.ElementRealizationOptions.SuppressAutoRecycle">
       <summary>The element is ignored by the automatic recycling logic.</summary>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.FlowLayout" />
-    <member name="M:Microsoft.UI.Xaml.Controls.FlowLayout.#ctor" />
-    <member name="M:Microsoft.UI.Xaml.Controls.FlowLayout.GetAnchorForRealizationRect(Windows.Foundation.Size,Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext)">
-      <param name="availableSize"></param>
-      <param name="context"></param>
+    <member name="T:Microsoft.UI.Xaml.Controls.ExpandDirection">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.FlowLayout.GetAnchorForTargetElement(System.Int32,Windows.Foundation.Size,Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext)">
-      <param name="targetIndex"></param>
-      <param name="availableSize"></param>
-      <param name="context"></param>
+    <member name="F:Microsoft.UI.Xaml.Controls.ExpandDirection.Down" />
+    <member name="F:Microsoft.UI.Xaml.Controls.ExpandDirection.Up" />
+    <member name="T:Microsoft.UI.Xaml.Controls.Expander">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.FlowLayout.GetExtent(Windows.Foundation.Size,Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext,Windows.UI.Xaml.UIElement,System.Int32,Windows.Foundation.Rect,Windows.UI.Xaml.UIElement,System.Int32,Windows.Foundation.Rect)">
-      <param name="availableSize"></param>
-      <param name="context"></param>
-      <param name="firstRealized"></param>
-      <param name="firstRealizedItemIndex"></param>
-      <param name="firstRealizedLayoutBounds"></param>
-      <param name="lastRealized"></param>
-      <param name="lastRealizedItemIndex"></param>
-      <param name="lastRealizedLayoutBounds"></param>
+    <member name="E:Microsoft.UI.Xaml.Controls.Expander.Collapsed">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.FlowLayout.GetMeasureSize(System.Int32,Windows.Foundation.Size)">
-      <param name="index"></param>
-      <param name="availableSize"></param>
+    <member name="E:Microsoft.UI.Xaml.Controls.Expander.Expanding">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.FlowLayout.GetProvisionalArrangeSize(System.Int32,Windows.Foundation.Size,Windows.Foundation.Size)">
-      <param name="index"></param>
-      <param name="measureSize"></param>
-      <param name="desiredSize"></param>
+    <member name="M:Microsoft.UI.Xaml.Controls.Expander.#ctor">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.FlowLayout.OnElementMeasured(Windows.UI.Xaml.UIElement,System.Int32,Windows.Foundation.Size,Windows.Foundation.Size,Windows.Foundation.Size,Windows.Foundation.Size,Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext)">
-      <param name="element"></param>
-      <param name="index"></param>
-      <param name="availableSize"></param>
-      <param name="measureSize"></param>
-      <param name="desiredSize"></param>
-      <param name="provisionalArrangeSize"></param>
-      <param name="context"></param>
+    <member name="P:Microsoft.UI.Xaml.Controls.Expander.ExpandDirection">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.FlowLayout.OnLineArranged(System.Int32,System.Int32,System.Double,Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext)">
-      <param name="startIndex"></param>
-      <param name="countInLine"></param>
-      <param name="lineSize"></param>
-      <param name="context"></param>
+    <member name="P:Microsoft.UI.Xaml.Controls.Expander.ExpandDirectionProperty">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.FlowLayout.ShouldBreakLine(System.Int32,System.Double)">
-      <param name="index"></param>
-      <param name="remainingSpace"></param>
+    <member name="P:Microsoft.UI.Xaml.Controls.Expander.Header">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.FlowLayout.LineAlignment" />
-    <member name="P:Microsoft.UI.Xaml.Controls.FlowLayout.LineAlignmentProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.FlowLayout.MinColumnSpacing" />
-    <member name="P:Microsoft.UI.Xaml.Controls.FlowLayout.MinColumnSpacingProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.FlowLayout.MinRowSpacing" />
-    <member name="P:Microsoft.UI.Xaml.Controls.FlowLayout.MinRowSpacingProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.FlowLayout.Orientation" />
-    <member name="P:Microsoft.UI.Xaml.Controls.FlowLayout.OrientationProperty" />
-    <member name="T:Microsoft.UI.Xaml.Controls.FlowLayoutAnchorInfo" />
-    <member name="F:Microsoft.UI.Xaml.Controls.FlowLayoutAnchorInfo.Index" />
-    <member name="F:Microsoft.UI.Xaml.Controls.FlowLayoutAnchorInfo.Offset" />
-    <member name="T:Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment" />
-    <member name="F:Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment.Center" />
-    <member name="F:Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment.End" />
-    <member name="F:Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment.SpaceAround" />
-    <member name="F:Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment.SpaceBetween" />
-    <member name="F:Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment.SpaceEvenly" />
-    <member name="F:Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment.Start" />
-    <member name="T:Microsoft.UI.Xaml.Controls.FlowLayoutState" />
-    <member name="M:Microsoft.UI.Xaml.Controls.FlowLayoutState.#ctor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Expander.HeaderProperty">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.Expander.HeaderTemplate">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.Expander.HeaderTemplateProperty">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.Expander.HeaderTemplateSelector">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.Expander.HeaderTemplateSelectorProperty">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.Expander.IsExpanded">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.Expander.IsExpandedProperty">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.Expander.TemplateSettings">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.ExpanderCollapsedEventArgs">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.ExpanderExpandingEventArgs">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.ExpanderTemplateSettings">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.ExpanderTemplateSettings.ContentHeight">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.ExpanderTemplateSettings.NegativeContentHeight">
+      <summary>::: moniker range="winui-3.0-preview"
+&gt; [!CAUTION]
+&gt; This API is in development and considered experimental in the WinUI version selected. It might be altered or unavailable in other versions.
+::: moniker-end</summary>
+    </member>
     <member name="T:Microsoft.UI.Xaml.Controls.FontIconSource">
       <summary>Represents an icon source that uses a glyph from the specified font.</summary>
     </member>
@@ -888,7 +1120,7 @@
       <returns>The identifier for the MirroredWhenRightToLeft dependency property.</returns>
     </member>
     <member name="T:Microsoft.UI.Xaml.Controls.IAnimatedVisual">
-      <summary>An animated visual that can be played by the AnimatedVisualPlayer.</summary>
+      <summary>An animated Composition.Visual" that can be used by other objects, such as an AnimatedVisualPlayer or AnimatedIcon.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.IAnimatedVisual.Dispose">
       <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
@@ -906,7 +1138,7 @@
       <returns>The size of the animated visual.</returns>
     </member>
     <member name="T:Microsoft.UI.Xaml.Controls.IAnimatedVisualSource">
-      <summary>Provides animated visuals for the AnimatedVisualPlayer to play.</summary>
+      <summary>An animated Visual that can be used by other objects, such as an AnimatedVisualPlayer.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.IAnimatedVisualSource.TryCreateAnimatedVisual(Windows.UI.Composition.Compositor,System.Object@)">
       <summary>Attempts to create an instance of an animated visual.</summary>
@@ -914,11 +1146,22 @@
       <param name="diagnostics">An optional object containing diagnostics information about the result. The type and contents of the object depend on the implementation of IAnimatedVisualSource.</param>
       <returns>An IAnimatedVisual, or null.</returns>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.IApplicationViewSpanningRects" />
-    <member name="M:Microsoft.UI.Xaml.Controls.IApplicationViewSpanningRects.GetSpanningRects" />
+    <member name="T:Microsoft.UI.Xaml.Controls.IAnimatedVisualSource2">
+      <summary>An animated Visual that can be used by other objects, such as an AnimatedIcon.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.IAnimatedVisualSource2.SetColorProperty(System.String,Windows.UI.Color)">
+      <summary>Sets a color for the animated visual.</summary>
+      <param name="propertyName">The property name of the color as defined in the JSON file for the animated icon.</param>
+      <param name="value">The color value for the propertyName.</param>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.IAnimatedVisualSource2.Markers">
+      <summary>Gets a collection that provides a mapping of marker names to playback positions in the animation.</summary>
+      <returns>The collection of marker names and values defined in the JSON file for the animated icon.</returns>
+    </member>
     <member name="T:Microsoft.UI.Xaml.Controls.IconSource">
       <summary>Represents the base class for an icon source.</summary>
     </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.IconSource.CreateIconElement" />
     <member name="P:Microsoft.UI.Xaml.Controls.IconSource.Foreground">
       <summary>Gets or sets a brush that describes the foreground color.</summary>
       <returns>The brush that paints the foreground of the control. The default is null, (a null brush) which is evaluated as Transparent for rendering. However, this value is typically set by a default system resource at runtime, which is tied to the active theme and other settings.</returns>
@@ -933,13 +1176,6 @@
     <member name="E:Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource.AnimatedVisualInvalidated">
       <summary>Occurs when the animated visual previously provided by the IDynamicAnimatedVisualSource should be discarded.</summary>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.IElementFactoryShim" />
-    <member name="M:Microsoft.UI.Xaml.Controls.IElementFactoryShim.GetElement(Microsoft.UI.Xaml.Controls.ElementFactoryGetArgs)">
-      <param name="args"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.IElementFactoryShim.RecycleElement(Microsoft.UI.Xaml.Controls.ElementFactoryRecycleArgs)">
-      <param name="args"></param>
-    </member>
     <member name="T:Microsoft.UI.Xaml.Controls.IKeyIndexMapping">
       <summary>Provides methods that support mapping between an item's unique identifier and index.</summary>
     </member>
@@ -953,99 +1189,192 @@
       <param name="index">The index of the item to get the key for.</param>
       <returns>The unique identifier (key) for the item at the specified _index_.</returns>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.IndexPath" />
-    <member name="M:Microsoft.UI.Xaml.Controls.IndexPath.CompareTo(Microsoft.UI.Xaml.Controls.IndexPath)">
-      <param name="other"></param>
+    <member name="T:Microsoft.UI.Xaml.Controls.ImageIcon" />
+    <member name="M:Microsoft.UI.Xaml.Controls.ImageIcon.#ctor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ImageIcon.Source" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ImageIcon.SourceProperty" />
+    <member name="T:Microsoft.UI.Xaml.Controls.ImageIconSource" />
+    <member name="M:Microsoft.UI.Xaml.Controls.ImageIconSource.#ctor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ImageIconSource.ImageSource" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ImageIconSource.ImageSourceProperty" />
+    <member name="T:Microsoft.UI.Xaml.Controls.InfoBar">
+      <summary>An InfoBar is an inline notification for essential app-wide messages. The InfoBar will take up space in a layout and will not cover up other content or float on top of it. It supports rich content (including titles, messages, icons, and buttons) and can be configured to be user-dismissable or persistent.</summary>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.IndexPath.CreateFrom(System.Int32)">
-      <param name="index"></param>
+    <member name="E:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonClick">
+      <summary>Occurs after the close button is clicked in the InfoBar.</summary>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.IndexPath.CreateFrom(System.Int32,System.Int32)">
-      <param name="groupIndex"></param>
-      <param name="itemIndex"></param>
+    <member name="E:Microsoft.UI.Xaml.Controls.InfoBar.Closed">
+      <summary>Occurs after the InfoBar is closed.</summary>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.IndexPath.CreateFromIndices(System.Collections.Generic.IList{System.Int32})">
-      <param name="indices"></param>
+    <member name="E:Microsoft.UI.Xaml.Controls.InfoBar.Closing">
+      <summary>Occurs just before the InfoBar begins to close.</summary>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.IndexPath.GetAt(System.Int32)">
-      <param name="index"></param>
+    <member name="M:Microsoft.UI.Xaml.Controls.InfoBar.#ctor">
+      <summary>Initializes a new instance of the InfoBar class.</summary>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.IndexPath.GetSize" />
-    <member name="M:Microsoft.UI.Xaml.Controls.IndexPath.ToString" />
-    <member name="T:Microsoft.UI.Xaml.Controls.InfoBar" />
-    <member name="E:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonClick" />
-    <member name="E:Microsoft.UI.Xaml.Controls.InfoBar.Closed" />
-    <member name="E:Microsoft.UI.Xaml.Controls.InfoBar.Closing" />
-    <member name="M:Microsoft.UI.Xaml.Controls.InfoBar.#ctor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.ActionButton" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.ActionButtonProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonCommand" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonCommandParameter" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonCommandParameterProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonCommandProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonStyle" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonStyleProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.Content" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.ContentProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.ContentTemplate" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.ContentTemplateProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IconSource" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IconSourceProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsClosable" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsClosableProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsIconVisible" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsIconVisibleProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsOpen" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsOpenProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.Message" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.MessageProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.Severity" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.SeverityProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.TemplateSettings" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.TemplateSettingsProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.Title" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.TitleProperty" />
-    <member name="T:Microsoft.UI.Xaml.Controls.InfoBarClosedEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBarClosedEventArgs.Reason" />
-    <member name="T:Microsoft.UI.Xaml.Controls.InfoBarCloseReason" />
-    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarCloseReason.CloseButton" />
-    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarCloseReason.Programmatic" />
-    <member name="T:Microsoft.UI.Xaml.Controls.InfoBarClosingEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBarClosingEventArgs.Cancel" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBarClosingEventArgs.Reason" />
-    <member name="T:Microsoft.UI.Xaml.Controls.InfoBarSeverity" />
-    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error" />
-    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational" />
-    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarSeverity.Success" />
-    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning" />
-    <member name="T:Microsoft.UI.Xaml.Controls.InfoBarTemplateSettings" />
-    <member name="M:Microsoft.UI.Xaml.Controls.InfoBarTemplateSettings.#ctor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBarTemplateSettings.IconElement" />
-    <member name="P:Microsoft.UI.Xaml.Controls.InfoBarTemplateSettings.IconElementProperty" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.Dispose">
-      <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.ActionButton">
+      <summary>Gets or sets the action button of the InfoBar.</summary>
+      <returns>The action button of the InfoBar. The default is null.</returns>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.Pause" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.PlayAsync(System.Double,System.Double,System.Boolean)">
-      <param name="fromProgress"></param>
-      <param name="toProgress"></param>
-      <param name="looped"></param>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.ActionButtonProperty">
+      <summary>Identifies the ActionButton dependency property.</summary>
+      <returns>The identifier for the ActionButton dependency property.</returns>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.Resume" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.SetPlaybackRate(System.Double)">
-      <param name="playbackRate"></param>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonCommand">
+      <summary>Gets or sets the command to invoke when the close button is clicked in the InfoBar.</summary>
+      <returns>The command to invoke when the close button is clicked in the InfoBar. The default is null.</returns>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.SetProgress(System.Double)">
-      <param name="progress"></param>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonCommandParameter">
+      <summary>Gets or sets the parameter to pass to the command for the close button in the InfoBar.</summary>
+      <returns>The parameter to pass to the command for the close button in the InfoBar. The default is null.</returns>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.SetProgressObject(Windows.UI.Composition.CompositionPropertySet)">
-      <param name="compositionPropertySet"></param>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonCommandParameterProperty">
+      <summary>Identifies the CloseButtonCommandParameter dependency property.</summary>
+      <returns>The identifier for the CloseButtonCommandParameter dependency property.</returns>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.SetSize(Windows.Foundation.Size)">
-      <param name="size"></param>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonCommandProperty">
+      <summary>Identifies the CloseButtonCommand dependency property.</summary>
+      <returns>The identifier for the CloseButtonCommand dependency property.</returns>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.Stop" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonStyle">
+      <summary>Gets or sets the Style to apply to the close button in the InfoBar.</summary>
+      <returns>The Style to apply to the close button in the InfoBar.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonStyleProperty">
+      <summary>Identifies the CloseButtonStyle dependency property.</summary>
+      <returns>The identifier for the CloseButtonStyle dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.Content">
+      <summary>Gets or sets the XAML Content that is displayed below the title and message in the InfoBar.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.ContentProperty">
+      <summary>Identifies the Content dependency property.</summary>
+      <returns>The identifier for the Content dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.ContentTemplate">
+      <summary>Gets or sets the data template for the InfoBar.Content".</summary>
+      <returns>The data template that is used to display the content of the InfoBar.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.ContentTemplateProperty">
+      <summary>Identifies the ContentTemplate dependency property.</summary>
+      <returns>The identifier for the ContentTemplate dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IconSource">
+      <summary>Gets or sets the graphic content to appear alongside the title and message in the InfoBar.</summary>
+      <returns>The graphic content to appear alongside the title and message in the InfoBar.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IconSourceProperty">
+      <summary>Identifies the IconSource dependency property.</summary>
+      <returns>The identifier for the IconSource dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsClosable">
+      <summary>Gets or sets a value that indicates whether the user can close the InfoBar.</summary>
+      <returns>true if the user can close the InfoBar; otherwise, false. The default is true.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsClosableProperty">
+      <summary>Identifies the IsClosable dependency property.</summary>
+      <returns>The identifier for the IsClosable dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsIconVisible">
+      <summary>Gets or sets a value that indicates whether the icon is visible in the InfoBar.</summary>
+      <returns>true if the icon is visible; otherwise, false. The default is true.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsIconVisibleProperty">
+      <summary>Identifies the IsIconVisible dependency property.</summary>
+      <returns>The identifier for the IsIconVisible dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsOpen">
+      <summary>Gets or sets a value that indicates whether the InfoBar is open.</summary>
+      <returns>true if the InfoBar is open; otherwise, false. The default is false.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsOpenProperty">
+      <summary>Identifies the IsOpen dependency property.</summary>
+      <returns>The identifier for the IsOpen dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.Message">
+      <summary>Gets or sets the message of the InfoBar.</summary>
+      <returns>The message of the InfoBar. The default is an empty string.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.MessageProperty">
+      <summary>Identifies the Message dependency property.</summary>
+      <returns>The identifier for the Message dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.Severity">
+      <summary>Gets or sets the type of the InfoBar to apply consistent status color, icon, and assistive technology settings dependent on the criticality of the notification.</summary>
+      <returns>The style of the InfoBar that indicates the criticality of the notification. The default is Informational</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.SeverityProperty">
+      <summary>Identifies the Severity dependency property.</summary>
+      <returns>The identifier for the Severity dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.TemplateSettings">
+      <summary>Provides calculated values that can be referenced as TemplatedParent sources when defining templates for an InfoBar. Not intended for general use.</summary>
+      <returns>An object that provides calculated values for templates.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.TemplateSettingsProperty">
+      <summary>Identifies the TemplateSettings dependency property.</summary>
+      <returns>The identifier for the TemplateSettings dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.Title">
+      <summary>Gets or sets the title of the InfoBar.</summary>
+      <returns>The title of the InfoBar. The default is an empty string.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.TitleProperty">
+      <summary>Identifies the Title dependency property.</summary>
+      <returns>The identifier for the Title dependency property.</returns>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.InfoBarClosedEventArgs">
+      <summary>Provides data for the InfoBar.Closed" event.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBarClosedEventArgs.Reason">
+      <summary>Gets a constant that specifies whether the cause of the Closed event was due to user interaction (Close button click) or programmatic closure.</summary>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.InfoBarCloseReason">
+      <summary>Defines constants that indicate the cause of the InfoBar closure.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarCloseReason.CloseButton">
+      <summary>The InfoBar was closed by the user clicking the close button.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarCloseReason.Programmatic">
+      <summary>The InfoBar was programmatically closed.</summary>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.InfoBarClosingEventArgs">
+      <summary>Provides data for the InfoBar.Closing event.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBarClosingEventArgs.Cancel">
+      <summary>Gets or sets a value that indicates whether the Closing event should be canceled in the InfoBar.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBarClosingEventArgs.Reason">
+      <summary>Gets a constant that specifies whether the cause of the Closing event was due to user interaction (Close button click) or programmatic closure.</summary>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.InfoBarSeverity">
+      <summary>Defines constants that indicate the criticality of the InfoBar that is shown.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error">
+      <summary>Communicates that the InfoBar is displaying information regarding an error or problem that has occurred. For assistive technologies, they will follow the behavior set in the NotificationProcessing_ImportantAll constant.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational">
+      <summary>Communicates that the InfoBar is displaying general information that requires the user's attention. For assistive technologies, they will follow the behavior set in the Processing_All constant.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarSeverity.Success">
+      <summary>Communicates that the InfoBar is displaying information regarding a long-running and/or background task that has completed successfully. For assistive technologies, they will follow the behavior set in the Processing_All constant.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning">
+      <summary>Communicates that the InfoBar is displaying information regarding a condition that might cause a problem in the future. For assistive technologies, they will follow the behavior set in the NotificationProcessing_ImportantAll constant.</summary>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.InfoBarTemplateSettings">
+      <summary>Provides calculated values that can be referenced as TemplatedParent sources when defining templates for a InfoBar.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.InfoBarTemplateSettings.#ctor">
+      <summary>Provides calculated values that can be referenced as TemplatedParent sources when defining templates for a InfoBar.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBarTemplateSettings.IconElement">
+      <summary>Gets the icon element.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBarTemplateSettings.IconElementProperty">
+      <summary>Identifies the InfoBarTemplateSettings.IconElement" dependency property.</summary>
+      <returns>The identifier for the InfoBarTemplateSettings.IconElement" dependency property.</returns>
+    </member>
     <member name="T:Microsoft.UI.Xaml.Controls.ItemsRepeater">
       <summary>Represents a data-driven collection control that incorporates a flexible layout system, custom views, and virtualization, with no default UI or interaction policies.</summary>
     </member>
@@ -1076,8 +1405,6 @@
       <param name="index">The index of the item.</param>
       <returns>The UIElement that corresponds to the item at the specified index if the item is realized, or null if the item is not realized.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeater.Animator" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeater.AnimatorProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeater.Background">
       <summary>Gets or sets a brush that provides the background of the control.</summary>
       <returns>The brush that provides the background of the control. The default is null, (a null brush) which is evaluated as Transparent for rendering.</returns>
@@ -1270,18 +1597,6 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
       <summary>Implements the behavior of LayoutState in a derived or custom LayoutContext.</summary>
       <returns>The value that should be returned as LayoutState by the LayoutContext.</returns>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.LayoutPanel" />
-    <member name="M:Microsoft.UI.Xaml.Controls.LayoutPanel.#ctor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.LayoutPanel.BorderBrush" />
-    <member name="P:Microsoft.UI.Xaml.Controls.LayoutPanel.BorderBrushProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.LayoutPanel.BorderThickness" />
-    <member name="P:Microsoft.UI.Xaml.Controls.LayoutPanel.BorderThicknessProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.LayoutPanel.CornerRadius" />
-    <member name="P:Microsoft.UI.Xaml.Controls.LayoutPanel.CornerRadiusProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.LayoutPanel.Layout" />
-    <member name="P:Microsoft.UI.Xaml.Controls.LayoutPanel.LayoutProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.LayoutPanel.Padding" />
-    <member name="P:Microsoft.UI.Xaml.Controls.LayoutPanel.PaddingProperty" />
     <member name="T:Microsoft.UI.Xaml.Controls.MenuBar">
       <summary>Represents a specialized container that presents a set of menus in a horizontal row, typically at the top of an app window.</summary>
     </member>
@@ -1434,10 +1749,22 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
       <summary>Identifies the ExpandedModeThresholdWidth dependency property.</summary>
       <returns>The identifier for the ExpandedModeThresholdWidth dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.NavigationView.FooterMenuItems" />
-    <member name="P:Microsoft.UI.Xaml.Controls.NavigationView.FooterMenuItemsProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.NavigationView.FooterMenuItemsSource" />
-    <member name="P:Microsoft.UI.Xaml.Controls.NavigationView.FooterMenuItemsSourceProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.NavigationView.FooterMenuItems">
+      <summary>Gets the list of objects to be used as navigation items in the footer menu.</summary>
+      <returns>The collection of menu items displayed in the footer section of the NavigationView. The default is an empty collection.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.NavigationView.FooterMenuItemsProperty">
+      <summary>Identifies the FooterMenuItems dependency property.</summary>
+      <returns>The identifier for the FooterMenuItems dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.NavigationView.FooterMenuItemsSource">
+      <summary>Gets or sets the object that represents the navigation items to be used in the footer menu.</summary>
+      <returns>The object that is used to generate the content of the NavigationView FooterMenuItems. The default is null.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.NavigationView.FooterMenuItemsSourceProperty">
+      <summary>Identifies the FooterMenuItemsSource dependency property.</summary>
+      <returns>The identifier for the FooterMenuItemsSource dependency property.</returns>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.NavigationView.Header">
       <summary>Gets or sets the header content.</summary>
       <returns>The header content for the NavigationView.</returns>
@@ -1455,7 +1782,7 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
       <returns>The identifier for the HeaderTemplate dependency property.</returns>
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.NavigationView.IsBackButtonVisible">
-      <summary>Gets or sets a value that indicates whether the back button is enabled or disabled.</summary>
+      <summary>Gets or sets a value that indicates whether the back button is visible or not. Default value is "Auto", which indicates that button visibility depends on the DisplayMode setting of the NavigationView.</summary>
       <returns>A value of the enumeration that specifies the visibility of the NavigationView back button. The default is "Auto".</returns>
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.NavigationView.IsBackButtonVisibleProperty">
@@ -1722,7 +2049,7 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.NavigationViewItem.Icon">
       <summary>Gets or sets the icon to show next to the menu item text.</summary>
-      <returns>The icon to show next to the menu item text. The default in null.</returns>
+      <returns>The icon to show next to the menu item text. The default is null.</returns>
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.NavigationViewItem.IconProperty">
       <summary>Identifies the Icon dependency property.</summary>
@@ -1947,6 +2274,8 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
       <summary>Identifies the PaneToggleButtonVisibility dependency property.</summary>
       <returns>The identifier for the PaneToggleButtonVisibility dependency property.</returns>
     </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.NavigationViewTemplateSettings.PaneToggleButtonWidth" />
+    <member name="P:Microsoft.UI.Xaml.Controls.NavigationViewTemplateSettings.PaneToggleButtonWidthProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.NavigationViewTemplateSettings.SingleSelectionFollowsFocus">
       <summary>Gets the SelectionFollowsFocus value.</summary>
       <returns>The SelectionFollowsFocus value.</returns>
@@ -1955,6 +2284,8 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
       <summary>Identifies the SingleSelectionFollowsFocus dependency property.</summary>
       <returns>The identifier for the SingleSelectionFollowsFocus dependency property.</returns>
     </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.NavigationViewTemplateSettings.SmallerPaneToggleButtonWidth" />
+    <member name="P:Microsoft.UI.Xaml.Controls.NavigationViewTemplateSettings.SmallerPaneToggleButtonWidthProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.NavigationViewTemplateSettings.TopPadding">
       <summary>Gets the padding value of the top pane.</summary>
       <returns>The padding value of the top pane.</returns>
@@ -2048,8 +2379,6 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
       <summary>Identifies the HeaderTemplate dependency property.</summary>
       <returns>The identifier for the HeaderTemplate dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.NumberBox.InputScope" />
-    <member name="P:Microsoft.UI.Xaml.Controls.NumberBox.InputScopeProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.NumberBox.IsWrapEnabled">
       <summary>Toggles whether line breaking occurs if a line of text extends beyond the available width of the control.</summary>
     </member>
@@ -2128,8 +2457,6 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
     <member name="P:Microsoft.UI.Xaml.Controls.NumberBox.Text">
       <summary>Gets or sets the string type representation of the Value property.</summary>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.NumberBox.TextAlignment" />
-    <member name="P:Microsoft.UI.Xaml.Controls.NumberBox.TextAlignmentProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.NumberBox.TextProperty">
       <summary>Identifies the Text dependency property.</summary>
       <returns>The identifier for the Text dependency property.</returns>
@@ -2189,64 +2516,6 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
     <member name="P:Microsoft.UI.Xaml.Controls.NumberBoxValueChangedEventArgs.OldValue">
       <summary>Contains the old Value being replaced in a NumberBox.</summary>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.PagerControl" />
-    <member name="E:Microsoft.UI.Xaml.Controls.PagerControl.SelectedIndexChanged" />
-    <member name="M:Microsoft.UI.Xaml.Controls.PagerControl.#ctor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.ButtonPanelAlwaysShowFirstLastPageIndex" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.ButtonPanelAlwaysShowFirstLastPageIndexProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.DisplayMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.DisplayModeProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.FirstButtonCommand" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.FirstButtonCommandProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.FirstButtonStyle" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.FirstButtonStyleProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.FirstButtonVisibility" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.FirstButtonVisibilityProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.LastButtonCommand" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.LastButtonCommandProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.LastButtonStyle" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.LastButtonStyleProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.LastButtonVisibility" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.LastButtonVisibilityProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.NextButtonCommand" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.NextButtonCommandProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.NextButtonStyle" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.NextButtonStyleProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.NextButtonVisibility" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.NextButtonVisibilityProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.NumberOfPages" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.NumberOfPagesProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PagerInputCommand" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PagerInputCommandProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PrefixText" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PrefixTextProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PreviousButtonCommand" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PreviousButtonCommandProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PreviousButtonStyle" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PreviousButtonStyleProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PreviousButtonVisibility" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PreviousButtonVisibilityProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.SelectedPageIndex" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.SelectedPageIndexProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.SuffixText" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.SuffixTextProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.TemplateSettings" />
-    <member name="T:Microsoft.UI.Xaml.Controls.PagerControlButtonVisibility" />
-    <member name="F:Microsoft.UI.Xaml.Controls.PagerControlButtonVisibility.Hidden" />
-    <member name="F:Microsoft.UI.Xaml.Controls.PagerControlButtonVisibility.HiddenOnEdge" />
-    <member name="F:Microsoft.UI.Xaml.Controls.PagerControlButtonVisibility.Visible" />
-    <member name="T:Microsoft.UI.Xaml.Controls.PagerControlDisplayMode" />
-    <member name="F:Microsoft.UI.Xaml.Controls.PagerControlDisplayMode.Auto" />
-    <member name="F:Microsoft.UI.Xaml.Controls.PagerControlDisplayMode.ButtonPanel" />
-    <member name="F:Microsoft.UI.Xaml.Controls.PagerControlDisplayMode.ComboBox" />
-    <member name="F:Microsoft.UI.Xaml.Controls.PagerControlDisplayMode.NumberBox" />
-    <member name="T:Microsoft.UI.Xaml.Controls.PagerControlSelectedIndexChangedEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControlSelectedIndexChangedEventArgs.NewPageIndex" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControlSelectedIndexChangedEventArgs.PreviousPageIndex" />
-    <member name="T:Microsoft.UI.Xaml.Controls.PagerControlTemplateSettings" />
-    <member name="M:Microsoft.UI.Xaml.Controls.PagerControlTemplateSettings.#ctor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControlTemplateSettings.NumberPanelItems" />
-    <member name="P:Microsoft.UI.Xaml.Controls.PagerControlTemplateSettings.Pages" />
     <member name="T:Microsoft.UI.Xaml.Controls.ParallaxSourceOffsetKind">
       <summary>Defines constants that specify how the source offset values of a ParallaxView are interpreted.</summary>
     </member>
@@ -2490,6 +2759,124 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
     <member name="P:Microsoft.UI.Xaml.Controls.PersonPictureTemplateSettings.ActualInitials">
       <summary>Gets the contact's initials.</summary>
       <returns>The contact's initials.</returns>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.PipsPager">
+      <summary>Represents a control that enables navigation within linearly paginated content using a configurable collection of glyphs, each of which represents a single "page" within a limitless range.</summary>
+    </member>
+    <member name="E:Microsoft.UI.Xaml.Controls.PipsPager.SelectedIndexChanged">
+      <summary>Occurs after the selected index changes on the PipsPager.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.PipsPager.#ctor">
+      <summary>Initializes a new instance of the PipsPager class.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.MaxVisiblePips">
+      <summary>The maximum number of pips shown in the PipsPager at one time.</summary>
+      <returns>The maximum number of pips shown in the PipsPager at one time. The default value is 5.
+
+When possible, the PipsPager always centers itself on the selected pip.
+
+MaxVisiblePips should be set to a positive number. If set to 0, no pages will be visible to the user.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.MaxVisiblePipsProperty">
+      <summary>Identifies the MaxVisiblePips dependency property.</summary>
+      <returns>The identifier for the MaxVisiblePips dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.NextButtonStyle">
+      <summary>Gets or sets the style to apply to the Next button.</summary>
+      <returns>The style to apply to the Next button.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.NextButtonStyleProperty">
+      <summary>Identifies the NextButtonStyle dependency property.</summary>
+      <returns>The identifier for the NextButtonStyle dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.NextButtonVisibility">
+      <summary>Gets or sets the display state of the Next button.</summary>
+      <returns>The display state of the Previous button. The default value is 'Collapsed'.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.NextButtonVisibilityProperty">
+      <summary>Identifies the NextButtonVisibility dependency property.</summary>
+      <returns>The identifier for the NextButtonVisibility dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.NormalPipStyle">
+      <summary>Gets or sets the style for the default, unselected pips in the PipsPager.</summary>
+      <returns>The style for the default, unselected pips in the PipsPager.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.NormalPipStyleProperty">
+      <summary>Identifies the NormalPipStyle dependency property.</summary>
+      <returns>The identifier for the NormalPipStyle dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.NumberOfPages">
+      <summary>Gets or sets the maximum number of pages supported by the PipsPager.</summary>
+      <returns>The maximum number of pages supported by the PipsPager. The default is -1 (infinite).</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.NumberOfPagesProperty">
+      <summary>Identifies the NumberOfPages dependency property.</summary>
+      <returns>The identifier for the NormalPipStyle dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.Orientation">
+      <summary>Gets or sets the orientation of the pips and navigation buttons in the PipsPager.</summary>
+      <returns>The orientation of the pips and navigation buttons in the PipsPager. The default is Horizontal.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.OrientationProperty">
+      <summary>Identifies the Orientation dependency property.</summary>
+      <returns>The identifier for the Orientation dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.PreviousButtonStyle">
+      <summary>Gets or sets the style to apply to the Previous button.</summary>
+      <returns>The style to apply to the Previous button.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.PreviousButtonStyleProperty">
+      <summary>Identifies the PreviousButtonStyle dependency property.</summary>
+      <returns>The identifier for the PreviousButtonStyle dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.PreviousButtonVisibility">
+      <summary>Gets or sets the display state of the Previous button.</summary>
+      <returns>The display state of the Previous button. The default value is 'Collapsed'.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.PreviousButtonVisibilityProperty">
+      <summary>Identifies the PreviousButtonVisibility dependency property.</summary>
+      <returns>The identifier for the PreviousButtonVisibility dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.SelectedPageIndex">
+      <summary>Gets or sets the 0 based index of the currently selected pip in the PipsPager. A pip is always selected.</summary>
+      <returns>The 0 based index of the currently selected pip in the PipsPager. The default value is 0.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.SelectedPageIndexProperty">
+      <summary>Identifies the SelectedPageIndex dependency property.</summary>
+      <returns>The identifier for the SelectedPageIndex dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.SelectedPipStyle">
+      <summary>Gets or sets the style to apply to the selected pip in the PipsPager.</summary>
+      <returns>The style to apply to the selected pip in the PipsPager.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.SelectedPipStyleProperty">
+      <summary>Identifies the SelectedPipStyle dependency property.</summary>
+      <returns>The identifier for the SelectedPipStyle dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPager.TemplateSettings">
+      <summary>Provides calculated values that can be referenced as TemplatedParent sources when defining templates for a PipsPager. Not intended for general use.</summary>
+      <returns>An object that provides calculated values for templates.</returns>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.PipsPagerButtonVisibility">
+      <summary>Defines constants that specify how the navigation buttons of the PipsPager are displayed.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.PipsPagerButtonVisibility.Collapsed">
+      <summary>The button is not visible and does not take up layout space.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.PipsPagerButtonVisibility.Visible">
+      <summary>The navigation button is visible and enabled, but hidden when content is at one or the other extent. For example, the Previous button is hidden when the current page is the first page, and the Next button is hidden when the current page is the last page.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.PipsPagerButtonVisibility.VisibleOnPointerOver">
+      <summary>The button behavior is the same as Visible except the button is visible only when the pointer cursor is over the pager, or keyboard focus is inside the pager or on a navigation button.</summary>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.PipsPagerSelectedIndexChangedEventArgs">
+      <summary>Provides data for the PipsPager.SelectedIndexChanged" event.</summary>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.PipsPagerTemplateSettings">
+      <summary>Provides calculated values that can be referenced as TemplatedParent sources when defining templates for a PipsPager.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PipsPagerTemplateSettings.PipsPagerItems">
+      <summary>Gets or sets the list of integers to represent the pips in the PipsPager.</summary>
     </member>
     <member name="T:Microsoft.UI.Xaml.Controls.Primitives.AutoSuggestBoxHelper" />
     <member name="M:Microsoft.UI.Xaml.Controls.Primitives.AutoSuggestBoxHelper.GetKeepInteriorCornersSquare(Windows.UI.Xaml.Controls.AutoSuggestBox)">
@@ -2855,62 +3242,68 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
     </member>
     <member name="F:Microsoft.UI.Xaml.Controls.Primitives.CornerRadiusToThicknessConverterKind.FilterTopFromTopLeft" />
     <member name="F:Microsoft.UI.Xaml.Controls.Primitives.CornerRadiusToThicknessConverterKind.FilterTopFromTopRight" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.#ctor" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.GetHorizontalMargin(Windows.UI.Xaml.DependencyObject)">
-      <param name="object"></param>
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel">
+      <summary>Represents a panel that arranges its items horizontally if there is available space, otherwise vertically.</summary>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.GetVerticalMargin(Windows.UI.Xaml.DependencyObject)">
-      <param name="object"></param>
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.#ctor">
+      <summary>Initializes a new instance of the InfoBarPanel class.</summary>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.SetHorizontalMargin(Windows.UI.Xaml.DependencyObject,Windows.UI.Xaml.Thickness)">
-      <param name="object"></param>
-      <param name="value"></param>
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.GetHorizontalOrientationMargin(Windows.UI.Xaml.DependencyObject)">
+      <summary>Gets the HorizontalOrientationMargin from an object.</summary>
+      <param name="object">The object that has an HorizontalOrientationMargin.</param>
+      <returns>The object's HorizontalOrientationMargin.</returns>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.SetVerticalMargin(Windows.UI.Xaml.DependencyObject,Windows.UI.Xaml.Thickness)">
-      <param name="object"></param>
-      <param name="value"></param>
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.GetVerticalOrientationMargin(Windows.UI.Xaml.DependencyObject)">
+      <summary>Gets the VerticalOrientationMargin from an object.</summary>
+      <param name="object">The object that has an VerticalOrientationMargin.</param>
+      <returns>The object's VerticalOrientationMargin.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.HorizontalMargin" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.HorizontalMarginProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.VerticalMargin" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.VerticalMarginProperty" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.IScrollController" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.AddScrollVelocityRequested" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.InteractionInfoChanged" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.InteractionRequested" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.ScrollByRequested" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.ScrollToRequested" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.GetScrollAnimation(System.Int32,System.Numerics.Vector2,Windows.UI.Composition.CompositionAnimation)">
-      <param name="correlationId"></param>
-      <param name="currentPosition"></param>
-      <param name="defaultAnimation"></param>
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.SetHorizontalOrientationMargin(Windows.UI.Xaml.DependencyObject,Windows.UI.Xaml.Thickness)">
+      <summary>Sets the HorizontalOrientationMargin to an object.</summary>
+      <param name="object">The object that the HorizontalOrientationMargin value will be set to.</param>
+      <param name="value">The value of the HorizontalOrientationMargin.</param>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.NotifyScrollCompleted(System.Int32)">
-      <param name="correlationId"></param>
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.SetVerticalOrientationMargin(Windows.UI.Xaml.DependencyObject,Windows.UI.Xaml.Thickness)">
+      <summary>Sets the VerticalOrientationMargin to an object.</summary>
+      <param name="object">The object that the VerticalOrientationMargin value will be set to.</param>
+      <param name="value">The value of the VerticalOrientationMargin.</param>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.SetExpressionAnimationSources(Windows.UI.Composition.CompositionPropertySet,System.String,System.String,System.String,System.String)">
-      <param name="propertySet"></param>
-      <param name="minOffsetPropertyName"></param>
-      <param name="maxOffsetPropertyName"></param>
-      <param name="offsetPropertyName"></param>
-      <param name="multiplierPropertyName"></param>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.HorizontalOrientationMargin">
+      <summary>The margin of the InfoBarPanel when its items are horizontally aligned. This property is reserved for internal use and is not intended to be used in your code.</summary>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.SetScrollMode(Microsoft.UI.Xaml.Controls.ScrollingScrollMode)">
-      <param name="scrollMode"></param>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.HorizontalOrientationMarginProperty">
+      <summary>Gets the identifier for the InfoBar.HorizontalOrientationMargin dependency property.</summary>
+      <returns>The identifier for the InfoBar.HorizontalOrientationMargin dependency property.</returns>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.SetValues(System.Double,System.Double,System.Double,System.Double)">
-      <param name="minOffset"></param>
-      <param name="maxOffset"></param>
-      <param name="offset"></param>
-      <param name="viewport"></param>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.HorizontalOrientationPadding">
+      <summary>Gets and sets the distance between the edges of the InfoBarPanel and its children when the panel is oriented horizontally.</summary>
+      <returns>The distance between the edges of the InfoBarPanel and its children when the panel is oriented horizontally.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.AreScrollControllerInteractionsAllowed" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.AreScrollerInteractionsAllowed" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.InteractionElement" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.InteractionElementScrollOrientation" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.IsInteracting" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.IsInteractionElementRailEnabled" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.HorizontalOrientationPaddingProperty">
+      <summary>Gets the identifier for the InfoBar.HorizontalOrientationPadding dependency property.</summary>
+      <returns>The identifier for the InfoBar.HorizontalOrientationPadding dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.VerticalOrientationMargin">
+      <summary>The margin of the InfoBarPanel when its items are vertically aligned. This property is reserved for internal use and is not intended to be used in your code.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.VerticalOrientationMarginProperty">
+      <summary>Gets the identifier for the InfoBar.VerticalOrientationMargin dependency property.</summary>
+      <returns>The identifier for the InfoBar.VerticalOrientationMargin dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.VerticalOrientationPadding">
+      <summary>Gets and sets the distance between the edges of the InfoBarPanel and its children when the panel is oriented vertically.</summary>
+      <returns>The distance between the edges of the InfoBarPanel and its children when the panel is oriented vertically.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.VerticalOrientationPaddingProperty">
+      <summary>Gets the identifier for the InfoBar.VerticalOrientationPadding dependency property.</summary>
+      <returns>The identifier for the InfoBar.VerticalOrientationPadding dependency property.</returns>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.MonochromaticOverlayPresenter" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.MonochromaticOverlayPresenter.#ctor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.MonochromaticOverlayPresenter.ReplacementColor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.MonochromaticOverlayPresenter.ReplacementColorProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.MonochromaticOverlayPresenter.SourceElement" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.MonochromaticOverlayPresenter.SourceElementProperty" />
     <member name="T:Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenter">
       <summary>Represents the visual elements of a NavigationViewItem.</summary>
     </member>
@@ -2925,195 +3318,20 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
       <summary>Identifies the Icon dependency property.</summary>
       <returns>The identifier for the Icon dependency property.</returns>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint.#ctor(System.Double,System.Double,System.Double,System.Double,Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment)">
-      <param name="offset"></param>
-      <param name="interval"></param>
-      <param name="start"></param>
-      <param name="end"></param>
-      <param name="alignment"></param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint.End" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint.Interval" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint.Offset" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint.Start" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint.#ctor(System.Double,System.Double,System.Double,System.Double)">
-      <param name="offset"></param>
-      <param name="interval"></param>
-      <param name="start"></param>
-      <param name="end"></param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint.End" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint.Interval" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint.Offset" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint.Start" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs.#ctor(System.Single,System.Nullable{System.Single})">
-      <param name="offsetVelocity"></param>
-      <param name="inertiaDecayRate"></param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs.CorrelationId" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs.InertiaDecayRate" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs.OffsetVelocity" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs.#ctor(Windows.UI.Input.PointerPoint)">
-      <param name="pointerPoint"></param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs.Handled" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs.PointerPoint" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs.#ctor(System.Double,Microsoft.UI.Xaml.Controls.ScrollingScrollOptions)">
-      <param name="offsetDelta"></param>
-      <param name="options"></param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs.CorrelationId" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs.OffsetDelta" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs.Options" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs.#ctor(System.Double,Microsoft.UI.Xaml.Controls.ScrollingScrollOptions)">
-      <param name="offset"></param>
-      <param name="options"></param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs.CorrelationId" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs.Offset" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs.Options" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.AnchorRequested" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.BringingIntoView" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ExtentChanged" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollAnimationStarting" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollCompleted" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.StateChanged" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ViewChanged" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomAnimationStarting" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomCompleted" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.#ctor" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.AddScrollVelocity(System.Numerics.Vector2,System.Nullable{System.Numerics.Vector2})">
-      <param name="offsetsVelocity"></param>
-      <param name="inertiaDecayRate"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.AddZoomVelocity(System.Single,System.Nullable{System.Numerics.Vector2},System.Nullable{System.Single})">
-      <param name="zoomFactorVelocity"></param>
-      <param name="centerPoint"></param>
-      <param name="inertiaDecayRate"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.RegisterAnchorCandidate(Windows.UI.Xaml.UIElement)">
-      <param name="element"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollBy(System.Double,System.Double)">
-      <param name="horizontalOffsetDelta"></param>
-      <param name="verticalOffsetDelta"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollBy(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollingScrollOptions)">
-      <param name="horizontalOffsetDelta"></param>
-      <param name="verticalOffsetDelta"></param>
-      <param name="options"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollTo(System.Double,System.Double)">
-      <param name="horizontalOffset"></param>
-      <param name="verticalOffset"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollTo(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollingScrollOptions)">
-      <param name="horizontalOffset"></param>
-      <param name="verticalOffset"></param>
-      <param name="options"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.UnregisterAnchorCandidate(Windows.UI.Xaml.UIElement)">
-      <param name="element"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomBy(System.Single,System.Nullable{System.Numerics.Vector2})">
-      <param name="zoomFactorDelta"></param>
-      <param name="centerPoint"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomBy(System.Single,System.Nullable{System.Numerics.Vector2},Microsoft.UI.Xaml.Controls.ScrollingZoomOptions)">
-      <param name="zoomFactorDelta"></param>
-      <param name="centerPoint"></param>
-      <param name="options"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomTo(System.Single,System.Nullable{System.Numerics.Vector2})">
-      <param name="zoomFactor"></param>
-      <param name="centerPoint"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomTo(System.Single,System.Nullable{System.Numerics.Vector2},Microsoft.UI.Xaml.Controls.ScrollingZoomOptions)">
-      <param name="zoomFactor"></param>
-      <param name="centerPoint"></param>
-      <param name="options"></param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.Background" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.BackgroundProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.Content" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ContentOrientation" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ContentOrientationProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ContentProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.CurrentAnchor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ExpressionAnimationSources" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ExtentHeight" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ExtentWidth" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalAnchorRatio" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalAnchorRatioProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalOffset" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollChainMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollChainModeProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollController" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollModeProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollRailMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollRailModeProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalSnapPoints" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.IgnoredInputKinds" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.IgnoredInputKindsProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.MaxZoomFactor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.MaxZoomFactorProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.MinZoomFactor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.MinZoomFactorProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollableHeight" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollableWidth" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.State" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalAnchorRatio" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalAnchorRatioProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalOffset" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollChainMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollChainModeProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollController" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollModeProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollRailMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollRailModeProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalSnapPoints" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ViewportHeight" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ViewportWidth" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomChainMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomChainModeProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomFactor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomModeProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomSnapPoints" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint.#ctor(System.Double,Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment)">
-      <param name="snapPointValue"></param>
-      <param name="alignment"></param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint.Value" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointBase" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointBase.Alignment" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment" />
-    <member name="F:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment.Center" />
-    <member name="F:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment.Far" />
-    <member name="F:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment.Near" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.SnapPointBase" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenter.TemplateSettings" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenter.TemplateSettingsProperty" />
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenterTemplateSettings" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenterTemplateSettings.#ctor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenterTemplateSettings.IconWidth" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenterTemplateSettings.IconWidthProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenterTemplateSettings.SmallerIconWidth" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenterTemplateSettings.SmallerIconWidthProperty" />
     <member name="T:Microsoft.UI.Xaml.Controls.Primitives.TabViewListView">
       <summary>Represents the ListView corresponding to the TabStrip within the TabView.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.Primitives.TabViewListView.#ctor">
       <summary>Initializes a new instance of the TabViewListView class.</summary>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint.#ctor(System.Double)">
-      <param name="snapPointValue"></param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint.Value" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPointBase" />
     <member name="T:Microsoft.UI.Xaml.Controls.ProgressBar">
       <summary>Represents a control that indicates the progress of an operation.</summary>
     </member>
@@ -3192,15 +3410,11 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
       <returns>The delta in pixels.</returns>
     </member>
     <member name="T:Microsoft.UI.Xaml.Controls.ProgressRing">
-      <summary>Represents a control that indicates that an operation is ongoing. The typical visual appearance is a ring-shaped "spinner" that cycles an animation as progress continues.</summary>
+      <summary>Represents a control that indicates the progress of an operation. The typical visual appearance is a ring-shaped "spinner".</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.ProgressRing.#ctor">
       <summary>Initializes a new instance of the ProgressRing class.</summary>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.DeterminateSource" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.DeterminateSourceProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.IndeterminateSource" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.IndeterminateSourceProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.IsActive">
       <summary>Gets or sets a value that indicates whether the ProgressRing is showing progress.</summary>
       <returns>True if the ProgressRing is showing progress; otherwise, false. The default is false.</returns>
@@ -3209,18 +3423,42 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
       <summary>Identifies the IsActive dependency property.</summary>
       <returns>The identifier for the IsActive dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.IsIndeterminate" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.IsIndeterminateProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.Maximum" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.MaximumProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.Minimum" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.MinimumProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.IsIndeterminate">
+      <summary>Gets or sets a value that indicates whether the progress ring reports generic progress with a repeating pattern or reports progress based on the Value property.</summary>
+      <returns>true if the progress ring reports generic progress with a repeating pattern; false if the progress ring reports progress based on the Value property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.IsIndeterminateProperty">
+      <summary>Identifies the IsIndeterminate dependency property.</summary>
+      <returns>The identifier for the IsIndeterminate dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.Maximum">
+      <summary>Gets or sets the highest allowed Value of the range element.</summary>
+      <returns>The highest possible Value of the range element. The default is 100.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.MaximumProperty">
+      <summary>Identifies the Maximum dependency property.</summary>
+      <returns>The identifier for the Maximum dependency property.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.Minimum">
+      <summary>Gets or sets the minimum allowed Value of the range element.</summary>
+      <returns>Minimum allowed Value of the range element. The default is 0.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.MinimumProperty">
+      <summary>Identifies the Minimum dependency property.</summary>
+      <returns>The identifier for the Minimum dependency property.</returns>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.TemplateSettings">
       <summary>Gets an object that provides calculated values that can be referenced as TemplateBinding sources when defining templates for a ProgressRing control.</summary>
       <returns>An object that provides calculated values for templates.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.Value" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.ValueProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.Value">
+      <summary>Gets or sets the current magnitude of the progress ring.</summary>
+      <returns>The current magnitude of the progress ring. The default is 0.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.ValueProperty">
+      <summary>Identifies the Value dependency property.</summary>
+      <returns>The identifier for the Value dependency property.</returns>
+    </member>
     <member name="T:Microsoft.UI.Xaml.Controls.ProgressRingTemplateSettings">
       <summary>Provides calculated values that can be referenced as TemplatedParent sources when defining templates for a ProgressRing control. Not intended for general use.</summary>
     </member>
@@ -3320,6 +3558,14 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
     <member name="M:Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem.#ctor">
       <summary>Initializes a new instance of the RadioMenuFlyoutItem class.</summary>
     </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem.GetAreCheckStatesEnabled(Windows.UI.Xaml.Controls.MenuFlyoutSubItem)">
+      <param name="object"></param>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem.SetAreCheckStatesEnabled(Windows.UI.Xaml.Controls.MenuFlyoutSubItem,System.Boolean)">
+      <param name="object"></param>
+      <param name="value"></param>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem.AreCheckStatesEnabledProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem.GroupName">
       <summary>Gets or sets the name that specifies which RadioMenuFlyoutItem controls are mutually exclusive.</summary>
     </member>
@@ -3521,51 +3767,6 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
     <member name="M:Microsoft.UI.Xaml.Controls.RatingItemInfo.#ctor">
       <summary>Initializes a new instance of the RatingItemInfo class.</summary>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.RecyclePool" />
-    <member name="M:Microsoft.UI.Xaml.Controls.RecyclePool.#ctor" />
-    <member name="M:Microsoft.UI.Xaml.Controls.RecyclePool.GetPoolInstance(Windows.UI.Xaml.DataTemplate)">
-      <param name="dataTemplate"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.RecyclePool.PutElement(Windows.UI.Xaml.UIElement,System.String)">
-      <param name="element"></param>
-      <param name="key"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.RecyclePool.PutElement(Windows.UI.Xaml.UIElement,System.String,Windows.UI.Xaml.UIElement)">
-      <param name="element"></param>
-      <param name="key"></param>
-      <param name="owner"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.RecyclePool.PutElementCore(Windows.UI.Xaml.UIElement,System.String,Windows.UI.Xaml.UIElement)">
-      <param name="element"></param>
-      <param name="key"></param>
-      <param name="owner"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.RecyclePool.SetPoolInstance(Windows.UI.Xaml.DataTemplate,Microsoft.UI.Xaml.Controls.RecyclePool)">
-      <param name="dataTemplate"></param>
-      <param name="value"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.RecyclePool.TryGetElement(System.String)">
-      <param name="key"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.RecyclePool.TryGetElement(System.String,Windows.UI.Xaml.UIElement)">
-      <param name="key"></param>
-      <param name="owner"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.RecyclePool.TryGetElementCore(System.String,Windows.UI.Xaml.UIElement)">
-      <param name="key"></param>
-      <param name="owner"></param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.RecyclePool.PoolInstance" />
-    <member name="P:Microsoft.UI.Xaml.Controls.RecyclePool.PoolInstanceProperty" />
-    <member name="T:Microsoft.UI.Xaml.Controls.RecyclingElementFactory" />
-    <member name="E:Microsoft.UI.Xaml.Controls.RecyclingElementFactory.SelectTemplateKey" />
-    <member name="M:Microsoft.UI.Xaml.Controls.RecyclingElementFactory.#ctor" />
-    <member name="M:Microsoft.UI.Xaml.Controls.RecyclingElementFactory.OnSelectTemplateKeyCore(System.Object,Windows.UI.Xaml.UIElement)">
-      <param name="dataContext"></param>
-      <param name="owner"></param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.RecyclingElementFactory.RecyclePool" />
-    <member name="P:Microsoft.UI.Xaml.Controls.RecyclingElementFactory.Templates" />
     <member name="T:Microsoft.UI.Xaml.Controls.RefreshContainer">
       <summary>Represents a container control that provides a RefreshVisualizer and pull-to-refresh functionality for scrollable content.</summary>
     </member>
@@ -3702,301 +3903,15 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
     <member name="F:Microsoft.UI.Xaml.Controls.RefreshVisualizerState.Refreshing">
       <summary>The visualizer is being refreshed.</summary>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.RevealListViewItemPresenter" />
+    <member name="T:Microsoft.UI.Xaml.Controls.RevealListViewItemPresenter">
+      <summary>Represents a specialized ListViewItemPresenter that supports custom visual state management.
+
+&gt; [!NOTE]
+&gt; No longer required. Please use ListViewItemPresenter in Windows 10 April 2018 Update (version 1803) and newer.</summary>
+    </member>
     <member name="M:Microsoft.UI.Xaml.Controls.RevealListViewItemPresenter.#ctor">
       <summary>Initializes a new instance of the RevealListViewItemPresenter class.</summary>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingAnchorRequestedEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingAnchorRequestedEventArgs.AnchorCandidates" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingAnchorRequestedEventArgs.AnchorElement" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingAnimationMode" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingAnimationMode.Auto" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingAnimationMode.Disabled" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingAnimationMode.Enabled" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingBringingIntoViewEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingBringingIntoViewEventArgs.Cancel" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingBringingIntoViewEventArgs.CorrelationId" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingBringingIntoViewEventArgs.RequestEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingBringingIntoViewEventArgs.SnapPointsMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingBringingIntoViewEventArgs.TargetHorizontalOffset" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingBringingIntoViewEventArgs.TargetVerticalOffset" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingChainMode" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingChainMode.Always" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingChainMode.Auto" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingChainMode.Never" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingContentOrientation" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingContentOrientation.Both" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingContentOrientation.Horizontal" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingContentOrientation.None" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingContentOrientation.Vertical" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingInputKinds" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingInputKinds.All" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingInputKinds.Gamepad" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingInputKinds.Keyboard" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingInputKinds.MouseWheel" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingInputKinds.None" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingInputKinds.Pen" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingInputKinds.Touch" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingInteractionState" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingInteractionState.Animation" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingInteractionState.Idle" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingInteractionState.Inertia" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingInteractionState.Interaction" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingRailMode" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingRailMode.Disabled" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingRailMode.Enabled" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingScrollAnimationStartingEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingScrollAnimationStartingEventArgs.Animation" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingScrollAnimationStartingEventArgs.CorrelationId" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingScrollAnimationStartingEventArgs.EndPosition" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingScrollAnimationStartingEventArgs.StartPosition" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility.Auto" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility.Hidden" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility.Visible" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs.CorrelationId" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingScrollMode" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingScrollMode.Disabled" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingScrollMode.Enabled" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingScrollOptions" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingScrollOptions.#ctor(Microsoft.UI.Xaml.Controls.ScrollingAnimationMode)">
-      <param name="animationMode"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingScrollOptions.#ctor(Microsoft.UI.Xaml.Controls.ScrollingAnimationMode,Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode)">
-      <param name="animationMode"></param>
-      <param name="snapPointsMode"></param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingScrollOptions.AnimationMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingScrollOptions.SnapPointsMode" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode.Default" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode.Ignore" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingZoomAnimationStartingEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingZoomAnimationStartingEventArgs.Animation" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingZoomAnimationStartingEventArgs.CenterPoint" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingZoomAnimationStartingEventArgs.CorrelationId" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingZoomAnimationStartingEventArgs.EndZoomFactor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingZoomAnimationStartingEventArgs.StartZoomFactor" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs.CorrelationId" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingZoomMode" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingZoomMode.Disabled" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollingZoomMode.Enabled" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingZoomOptions" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingZoomOptions.#ctor(Microsoft.UI.Xaml.Controls.ScrollingAnimationMode)">
-      <param name="animationMode"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingZoomOptions.#ctor(Microsoft.UI.Xaml.Controls.ScrollingAnimationMode,Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode)">
-      <param name="animationMode"></param>
-      <param name="snapPointsMode"></param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingZoomOptions.AnimationMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingZoomOptions.SnapPointsMode" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollView" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollView.AnchorRequested" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollView.BringingIntoView" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollView.ExtentChanged" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollView.ScrollAnimationStarting" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollView.ScrollCompleted" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollView.StateChanged" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollView.ViewChanged" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollView.ZoomAnimationStarting" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollView.ZoomCompleted" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.#ctor" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.AddScrollVelocity(System.Numerics.Vector2,System.Nullable{System.Numerics.Vector2})">
-      <param name="offsetsVelocity"></param>
-      <param name="inertiaDecayRate"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.AddZoomVelocity(System.Single,System.Nullable{System.Numerics.Vector2},System.Nullable{System.Single})">
-      <param name="zoomFactorVelocity"></param>
-      <param name="centerPoint"></param>
-      <param name="inertiaDecayRate"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.RegisterAnchorCandidate(Windows.UI.Xaml.UIElement)">
-      <param name="element"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ScrollBy(System.Double,System.Double)">
-      <param name="horizontalOffsetDelta"></param>
-      <param name="verticalOffsetDelta"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ScrollBy(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollingScrollOptions)">
-      <param name="horizontalOffsetDelta"></param>
-      <param name="verticalOffsetDelta"></param>
-      <param name="options"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ScrollTo(System.Double,System.Double)">
-      <param name="horizontalOffset"></param>
-      <param name="verticalOffset"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ScrollTo(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollingScrollOptions)">
-      <param name="horizontalOffset"></param>
-      <param name="verticalOffset"></param>
-      <param name="options"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.UnregisterAnchorCandidate(Windows.UI.Xaml.UIElement)">
-      <param name="element"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ZoomBy(System.Single,System.Nullable{System.Numerics.Vector2})">
-      <param name="zoomFactorDelta"></param>
-      <param name="centerPoint"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ZoomBy(System.Single,System.Nullable{System.Numerics.Vector2},Microsoft.UI.Xaml.Controls.ScrollingZoomOptions)">
-      <param name="zoomFactorDelta"></param>
-      <param name="centerPoint"></param>
-      <param name="options"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ZoomTo(System.Single,System.Nullable{System.Numerics.Vector2})">
-      <param name="zoomFactor"></param>
-      <param name="centerPoint"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ZoomTo(System.Single,System.Nullable{System.Numerics.Vector2},Microsoft.UI.Xaml.Controls.ScrollingZoomOptions)">
-      <param name="zoomFactor"></param>
-      <param name="centerPoint"></param>
-      <param name="options"></param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ComputedHorizontalScrollBarVisibility" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ComputedHorizontalScrollBarVisibilityProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ComputedVerticalScrollBarVisibility" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ComputedVerticalScrollBarVisibilityProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.Content" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ContentOrientation" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ContentOrientationProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ContentProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.CurrentAnchor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ExpressionAnimationSources" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ExtentHeight" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ExtentWidth" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.HorizontalAnchorRatio" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.HorizontalAnchorRatioProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.HorizontalOffset" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.HorizontalScrollBarVisibility" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.HorizontalScrollBarVisibilityProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.HorizontalScrollChainMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.HorizontalScrollChainModeProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.HorizontalScrollMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.HorizontalScrollModeProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.HorizontalScrollRailMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.HorizontalScrollRailModeProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.IgnoredInputKinds" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.IgnoredInputKindsProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.MaxZoomFactor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.MaxZoomFactorProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.MinZoomFactor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.MinZoomFactorProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ScrollableHeight" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ScrollableWidth" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ScrollPresenterProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.State" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.VerticalAnchorRatio" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.VerticalAnchorRatioProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.VerticalOffset" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.VerticalScrollBarVisibility" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.VerticalScrollBarVisibilityProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.VerticalScrollChainMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.VerticalScrollChainModeProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.VerticalScrollMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.VerticalScrollModeProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.VerticalScrollRailMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.VerticalScrollRailModeProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ViewportHeight" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ViewportWidth" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ZoomChainMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ZoomChainModeProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ZoomFactor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ZoomMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ZoomModeProperty" />
-    <member name="T:Microsoft.UI.Xaml.Controls.SelectionModel" />
-    <member name="E:Microsoft.UI.Xaml.Controls.SelectionModel.ChildrenRequested" />
-    <member name="E:Microsoft.UI.Xaml.Controls.SelectionModel.PropertyChanged" />
-    <member name="E:Microsoft.UI.Xaml.Controls.SelectionModel.SelectionChanged" />
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.#ctor" />
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.ClearSelection" />
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.Deselect(System.Int32)">
-      <param name="index"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.Deselect(System.Int32,System.Int32)">
-      <param name="groupIndex"></param>
-      <param name="itemIndex"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.DeselectAt(Microsoft.UI.Xaml.Controls.IndexPath)">
-      <param name="index"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.DeselectRange(Microsoft.UI.Xaml.Controls.IndexPath,Microsoft.UI.Xaml.Controls.IndexPath)">
-      <param name="start"></param>
-      <param name="end"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.DeselectRangeFromAnchor(System.Int32)">
-      <param name="index"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.DeselectRangeFromAnchor(System.Int32,System.Int32)">
-      <param name="groupIndex"></param>
-      <param name="itemIndex"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.DeselectRangeFromAnchorTo(Microsoft.UI.Xaml.Controls.IndexPath)">
-      <param name="index"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.IsSelected(System.Int32)">
-      <param name="index"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.IsSelected(System.Int32,System.Int32)">
-      <param name="groupIndex"></param>
-      <param name="itemIndex"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.IsSelectedAt(Microsoft.UI.Xaml.Controls.IndexPath)">
-      <param name="index"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.OnPropertyChanged(System.String)">
-      <param name="propertyName"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.Select(System.Int32)">
-      <param name="index"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.Select(System.Int32,System.Int32)">
-      <param name="groupIndex"></param>
-      <param name="itemIndex"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.SelectAll" />
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.SelectAt(Microsoft.UI.Xaml.Controls.IndexPath)">
-      <param name="index"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.SelectRange(Microsoft.UI.Xaml.Controls.IndexPath,Microsoft.UI.Xaml.Controls.IndexPath)">
-      <param name="start"></param>
-      <param name="end"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.SelectRangeFromAnchor(System.Int32)">
-      <param name="index"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.SelectRangeFromAnchor(System.Int32,System.Int32)">
-      <param name="groupIndex"></param>
-      <param name="itemIndex"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.SelectRangeFromAnchorTo(Microsoft.UI.Xaml.Controls.IndexPath)">
-      <param name="index"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.SetAnchorIndex(System.Int32)">
-      <param name="index"></param>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SelectionModel.SetAnchorIndex(System.Int32,System.Int32)">
-      <param name="groupIndex"></param>
-      <param name="itemIndex"></param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.SelectionModel.AnchorIndex" />
-    <member name="P:Microsoft.UI.Xaml.Controls.SelectionModel.SelectedIndex" />
-    <member name="P:Microsoft.UI.Xaml.Controls.SelectionModel.SelectedIndices" />
-    <member name="P:Microsoft.UI.Xaml.Controls.SelectionModel.SelectedItem" />
-    <member name="P:Microsoft.UI.Xaml.Controls.SelectionModel.SelectedItems" />
-    <member name="P:Microsoft.UI.Xaml.Controls.SelectionModel.SingleSelect" />
-    <member name="P:Microsoft.UI.Xaml.Controls.SelectionModel.Source" />
-    <member name="T:Microsoft.UI.Xaml.Controls.SelectionModelChildrenRequestedEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.SelectionModelChildrenRequestedEventArgs.Children" />
-    <member name="P:Microsoft.UI.Xaml.Controls.SelectionModelChildrenRequestedEventArgs.Source" />
-    <member name="P:Microsoft.UI.Xaml.Controls.SelectionModelChildrenRequestedEventArgs.SourceIndex" />
-    <member name="T:Microsoft.UI.Xaml.Controls.SelectionModelSelectionChangedEventArgs" />
-    <member name="T:Microsoft.UI.Xaml.Controls.SelectTemplateEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.SelectTemplateEventArgs.DataContext" />
-    <member name="P:Microsoft.UI.Xaml.Controls.SelectTemplateEventArgs.Owner" />
-    <member name="P:Microsoft.UI.Xaml.Controls.SelectTemplateEventArgs.TemplateKey" />
     <member name="T:Microsoft.UI.Xaml.Controls.SplitButton">
       <summary>Represents a button with two parts that can be invoked separately. One part behaves like a standard button and the other part invokes a flyout.</summary>
     </member>
@@ -4039,8 +3954,6 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
     <member name="M:Microsoft.UI.Xaml.Controls.StackLayout.#ctor">
       <summary>Initializes a new instance of the StackLayout class.</summary>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.StackLayout.DisableVirtualization" />
-    <member name="P:Microsoft.UI.Xaml.Controls.StackLayout.DisableVirtualizationProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.StackLayout.Orientation">
       <summary>Gets or sets the axis along which items are laid out.</summary>
       <returns>One of the enumeration values that specifies the axis along which items are laid out. The default is Vertical.</returns>
@@ -4057,8 +3970,9 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
       <summary>Identifies the Spacing dependency property.</summary>
       <returns>The identifier for the Spacing dependency property.</returns>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.StackLayoutState" />
-    <member name="M:Microsoft.UI.Xaml.Controls.StackLayoutState.#ctor" />
+    <member name="T:Microsoft.UI.Xaml.Controls.StylesVersion" />
+    <member name="F:Microsoft.UI.Xaml.Controls.StylesVersion.Latest" />
+    <member name="F:Microsoft.UI.Xaml.Controls.StylesVersion.WinUI_2dot5" />
     <member name="T:Microsoft.UI.Xaml.Controls.SwipeBehaviorOnInvoked">
       <summary>Defines constants that specify how a SwipeControl behaves after a command is invoked.</summary>
     </member>
@@ -4191,7 +4105,8 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
       <summary>Initializes a new instance of the SwipeItems class.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.SwipeItems.Append(Microsoft.UI.Xaml.Controls.SwipeItem)">
-      <param name="value"></param>
+      <summary>Adds a new item to the collection.</summary>
+      <param name="value">The new item to add.</param>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.SwipeItems.Clear">
       <summary>Removes all items from the collection.</summary>
@@ -4205,20 +4120,25 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
       <param name="index">The integer index for the value to retrieve.</param>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.SwipeItems.GetMany(System.UInt32,Microsoft.UI.Xaml.Controls.SwipeItem[])">
-      <param name="startIndex"></param>
-      <param name="items"></param>
+      <summary>Retrieves multiple elements in a single pass through the iterator.</summary>
+      <param name="startIndex">The index from which to start retrieval.</param>
+      <param name="items">Provides the destination for the result. Size the initial array size as a "capacity" in order to specify how many results should be retrieved.</param>
+      <returns>The number of items retrieved.</returns>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.SwipeItems.GetView">
       <summary>Gets an immutable view into the collection.</summary>
       <returns>An object representing the immutable collection view.</returns>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.SwipeItems.IndexOf(Microsoft.UI.Xaml.Controls.SwipeItem,System.UInt32@)">
-      <param name="value"></param>
-      <param name="index"></param>
+      <summary>Retrieves the index of the specified item.</summary>
+      <param name="value">The value to find in the collection.</param>
+      <param name="index">The index of the item to find, if found.</param>
+      <returns>true if an item with the specified value was found; otherwise, false.</returns>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.SwipeItems.InsertAt(System.UInt32,Microsoft.UI.Xaml.Controls.SwipeItem)">
-      <param name="index"></param>
-      <param name="value"></param>
+      <summary>Inserts the specified item at the specified index.</summary>
+      <param name="index">The index at which to set the value.</param>
+      <param name="value">The value to set.</param>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.SwipeItems.RemoveAt(System.UInt32)">
       <summary>Removes the item at the specified index.</summary>
@@ -4228,11 +4148,13 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
       <summary>Removes the last item in the collection.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.SwipeItems.ReplaceAll(Microsoft.UI.Xaml.Controls.SwipeItem[])">
-      <param name="items"></param>
+      <summary>Initially clears the collection, then inserts the provided array as new items.</summary>
+      <param name="items">The new collection items.</param>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.SwipeItems.SetAt(System.UInt32,Microsoft.UI.Xaml.Controls.SwipeItem)">
-      <param name="index"></param>
-      <param name="value"></param>
+      <summary>Sets the value at the specified index to the value specified.</summary>
+      <param name="index">The index at which to set the value.</param>
+      <param name="value">The value to set.</param>
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.SwipeItems.Mode">
       <summary>Gets or sets a value that indicates the effect of a swipe interaction.</summary>
@@ -4270,13 +4192,13 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
       <returns>The identifier for the Symbol dependency property.</returns>
     </member>
     <member name="T:Microsoft.UI.Xaml.Controls.TabView">
-      <summary>The TabView control is a way to display a set of tabs and their respective content. Tab controls are useful for displaying several pages (or documents) of content while giving a user the capability to rearrange, open, or close new tabs. 
+      <summary>The TabView control is a way to display a set of tabs and their respective content. Tab controls are useful for displaying several pages (or documents) of content while giving a user the capability to rearrange, open, or close new tabs.
 
 **Is this the right control?**
 
-Use a TabView to help the user manage multiple app pages or documents within the same window. 
+Use a TabView to help the user manage multiple app pages or documents within the same window.
 
-Do not use a TabView to display a static set of tabs that the user cannot rearrange, open, or close. Use a Pivot or top NavigationView instead.</summary>
+Do not use a TabView to display a static set of tabs that the user cannot rearrange, open, or close. Use a NavigationView (NavigationViewPaneDisplayMode of Top) instead.</summary>
     </member>
     <member name="E:Microsoft.UI.Xaml.Controls.TabView.AddTabButtonClick">
       <summary>Occurs when the add (+) tab button has been clicked.</summary>
@@ -4922,12 +4844,12 @@ The hero content might be moved to the footer to avoid intersecting with the tai
     <member name="E:Microsoft.UI.Xaml.Controls.TreeView.ItemInvoked">
       <summary>Occurs when an item in the tree is invoked.</summary>
     </member>
-    <member name="E:Microsoft.UI.Xaml.Controls.TreeView.SelectionChanged" />
     <member name="M:Microsoft.UI.Xaml.Controls.TreeView.#ctor">
       <summary>Initializes a new instance of the TreeView control.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.TreeView.Collapse(Microsoft.UI.Xaml.Controls.TreeViewNode)">
-      <param name="value"></param>
+      <summary>Collapses the specified node in the tree.</summary>
+      <param name="value">The tree node to collapse.</param>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.TreeView.ContainerFromItem(System.Object)">
       <summary>Returns the container corresponding to the specified item.</summary>
@@ -4935,10 +4857,13 @@ The hero content might be moved to the footer to avoid intersecting with the tai
       <returns>A container that corresponds to the specified item, if the item has a container and exists in the collection; otherwise, null.</returns>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.TreeView.ContainerFromNode(Microsoft.UI.Xaml.Controls.TreeViewNode)">
-      <param name="node"></param>
+      <summary>Returns the container corresponding to the specified node.</summary>
+      <param name="node">The node to retrieve the container for.</param>
+      <returns>A container that corresponds to the specified node, if the node has a container and exists in the collection; otherwise, null.</returns>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.TreeView.Expand(Microsoft.UI.Xaml.Controls.TreeViewNode)">
-      <param name="value"></param>
+      <summary>Expands the specified node in the tree.</summary>
+      <param name="value">The tree node to expand.</param>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.TreeView.ItemFromContainer(Windows.UI.Xaml.DependencyObject)">
       <summary>Returns the item that corresponds to the specified, generated container.</summary>
@@ -4955,7 +4880,7 @@ The hero content might be moved to the footer to avoid intersecting with the tai
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TreeView.CanDragItems">
       <summary>Gets or sets a value that indicates whether items in the view can be dragged as data payload.</summary>
-      <returns>true if items in the view can be dragged as data payload; otherwise, false. The default is false.</returns>
+      <returns>true if items in the view can be dragged as data payload; otherwise, false. The default is true.</returns>
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TreeView.CanDragItemsProperty">
       <summary>Identifies the CanDragItems dependency property.</summary>
@@ -4963,7 +4888,7 @@ The hero content might be moved to the footer to avoid intersecting with the tai
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TreeView.CanReorderItems">
       <summary>Gets or sets a value that indicates whether items in the view can be reordered through user interaction.</summary>
-      <returns>true if items in the view can be reordered through user interaction; otherwise, false. The default is false.</returns>
+      <returns>true if items in the view can be reordered through user interaction; otherwise, false. The default is true.</returns>
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TreeView.CanReorderItemsProperty">
       <summary>Identifies the CanReorderItems dependency property.</summary>
@@ -5025,7 +4950,6 @@ The hero content might be moved to the footer to avoid intersecting with the tai
       <summary>Gets or sets the SelectedItem property of a TreeView.</summary>
       <returns>Gets or sets the selected item. Default value is null.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.TreeView.SelectedItemProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.TreeView.SelectedItems">
       <summary>Gets the currently selected items.</summary>
       <returns>A collection of the currently selected items. The default is an empty collection.</returns>
@@ -5278,9 +5202,6 @@ The hero content might be moved to the footer to avoid intersecting with the tai
       <summary>Gets or sets the node that is the parent of the current node.</summary>
       <returns>The node that is the parent of the current node.</returns>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.TreeViewSelectionChangedEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TreeViewSelectionChangedEventArgs.AddedItems" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TreeViewSelectionChangedEventArgs.RemovedItems" />
     <member name="T:Microsoft.UI.Xaml.Controls.TreeViewSelectionMode">
       <summary>Defines constants that specify the selection behavior for a TreeView instance.</summary>
     </member>
@@ -5528,8 +5449,6 @@ The hero content might be moved to the footer to avoid intersecting with the tai
     <member name="F:Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsStretch.Uniform">
       <summary>The item is sized to both fill the available space in the non-scrolling direction and maintain its aspect ratio.</summary>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.UniformGridLayoutState" />
-    <member name="M:Microsoft.UI.Xaml.Controls.UniformGridLayoutState.#ctor" />
     <member name="T:Microsoft.UI.Xaml.Controls.VirtualizingLayout">
       <summary>Represents the base class for an object that sizes and arranges child elements for a host and supports virtualization.</summary>
     </member>
@@ -5641,13 +5560,12 @@ The hero content might be moved to the footer to avoid intersecting with the tai
     <member name="M:Microsoft.UI.Xaml.Controls.XamlControlsResources.EnsureRevealLights(Windows.UI.Xaml.UIElement)">
       <param name="element"></param>
     </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.XamlControlsResources.ControlsResourcesVersion" />
+    <member name="P:Microsoft.UI.Xaml.Controls.XamlControlsResources.ControlsResourcesVersionProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.XamlControlsResources.UseCompactResources" />
     <member name="P:Microsoft.UI.Xaml.Controls.XamlControlsResources.UseCompactResourcesProperty" />
-    <member name="T:Microsoft.UI.Xaml.CustomAttributes.MUXContractPropertyAttribute" />
-    <member name="F:Microsoft.UI.Xaml.CustomAttributes.MUXContractPropertyAttribute.version" />
-    <member name="M:Microsoft.UI.Xaml.CustomAttributes.MUXContractPropertyAttribute.#ctor">
-      <summary>Initializes a new instance of the MUXContractPropertyAttribute class.</summary>
-    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.XamlControlsResources.Version" />
+    <member name="P:Microsoft.UI.Xaml.Controls.XamlControlsResources.VersionProperty" />
     <member name="T:Microsoft.UI.Xaml.CustomAttributes.MUXHasCustomActivationFactoryAttribute" />
     <member name="M:Microsoft.UI.Xaml.CustomAttributes.MUXHasCustomActivationFactoryAttribute.#ctor">
       <summary>Initializes a new instance of the MUXHasCustomActivationFactoryAttribute class.</summary>
@@ -5810,75 +5728,7 @@ The hero content might be moved to the footer to avoid intersecting with the tai
       <summary>Identifies the SpreadMethod dependency property.</summary>
       <returns>The identifier for the SpreadMethod dependency property.</returns>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Media.RevealBackgroundBrush">
-      <summary>Paints a control background with a reveal effect using composition brush and light effects.</summary>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Media.RevealBackgroundBrush.#ctor">
-      <summary>Initializes a new instance of the RevealBackgroundBrush class.</summary>
-    </member>
-    <member name="T:Microsoft.UI.Xaml.Media.RevealBorderBrush">
-      <summary>Paints a control border with a reveal effect using composition brush and light effects.</summary>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Media.RevealBorderBrush.#ctor">
-      <summary>Initializes a new instance of the RevealBorderBrush class.</summary>
-    </member>
-    <member name="T:Microsoft.UI.Xaml.Media.RevealBrush">
-      <summary>Base class for brushes that use composition effects and lighting to implement the reveal visual design treatment.</summary>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Media.RevealBrush.#ctor">
-      <summary>Provides base class initialization behavior for RevealBrush-derived classes.</summary>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Media.RevealBrush.GetState(Windows.UI.Xaml.UIElement)">
-      <summary>Gets the value of the RevealBrush.State XAML attached property for the target element.</summary>
-      <param name="element">The object from which the property value is read.</param>
-      <returns>The RevealBrush.State XAML attached property value of the specified object.</returns>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Media.RevealBrush.SetState(Windows.UI.Xaml.UIElement,Microsoft.UI.Xaml.Media.RevealBrushState)">
-      <summary>Sets the value of the RevealBrush.State XAML attached property for the target element.</summary>
-      <param name="element">The object for which the property value is set.</param>
-      <param name="value">One of the values from the enumeration.</param>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Media.RevealBrush.AlwaysUseFallback">
-      <summary>Gets or sets a value that specifies whether the brush is forced to the solid fallback color.</summary>
-      <returns>true to always replace the reveal effect with the solid fallback color. Otherwise, false. The default is false.</returns>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Media.RevealBrush.AlwaysUseFallbackProperty">
-      <summary>Identifies the AlwaysUseFallback dependency property.</summary>
-      <returns>The identifier for the AlwaysUseFallback dependency property.</returns>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Media.RevealBrush.Color">
-      <summary>Gets or sets a value that specifies the base background color for the brush.</summary>
-      <returns>The base background color for the brush. The default value is transparent white (0x00FFFFFF).</returns>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Media.RevealBrush.ColorProperty">
-      <summary>Identifies the Color dependency property.</summary>
-      <returns>The identifier for the Color dependency property.</returns>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Media.RevealBrush.State" />
-    <member name="P:Microsoft.UI.Xaml.Media.RevealBrush.StateProperty">
-      <summary>Identifies the RevealBrush.State attached property</summary>
-      <returns>The identifier for the RevealBrush.State attached property.</returns>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Media.RevealBrush.TargetTheme">
-      <summary>Gets or sets a value that specifies the theme used to draw the brush and light, to ensure that the correct composition effect recipe is used for the desired theme.</summary>
-      <returns>An ApplicationTheme value.</returns>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Media.RevealBrush.TargetThemeProperty">
-      <summary>Identifies the TargetTheme dependency property.</summary>
-      <returns>The identifier for the TargetTheme dependency property.</returns>
-    </member>
-    <member name="T:Microsoft.UI.Xaml.Media.RevealBrushState">
-      <summary>Defines constants that specify the pointer state of an element.</summary>
-    </member>
-    <member name="F:Microsoft.UI.Xaml.Media.RevealBrushState.Normal">
-      <summary>The element is in its default state.</summary>
-    </member>
-    <member name="F:Microsoft.UI.Xaml.Media.RevealBrushState.PointerOver">
-      <summary>The pointer is over the element.</summary>
-    </member>
-    <member name="F:Microsoft.UI.Xaml.Media.RevealBrushState.Pressed">
-      <summary>The element is pressed.</summary>
-    </member>
+    <member name="T:Microsoft.UI.Xaml.XamlContract" />
     <member name="T:Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider">
       <summary>Implements XAML schema context concepts that support XAML parsing.</summary>
     </member>

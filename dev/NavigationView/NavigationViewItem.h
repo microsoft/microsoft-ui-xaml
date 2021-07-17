@@ -26,6 +26,8 @@ public:
     // IFrameworkElementOverrides
     void OnApplyTemplate() override;
 
+    void OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&);
+
     // Property change callbacks
     void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -113,6 +115,8 @@ private:
     void HookInputEvents(const winrt::IControlProtected& controlProtected);
     void UnhookInputEvents();
     void UnhookEventsAndClearFields();
+
+    void PrepNavigationViewItem(const winrt::SplitView& splitView);
 
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};

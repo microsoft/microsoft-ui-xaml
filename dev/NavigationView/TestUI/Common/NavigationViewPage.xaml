@@ -26,6 +26,7 @@
                 DisplayModeChanged="NavView_DisplayModeChanged"
                 ItemInvoked="NavView_ItemInvoked"
                 SelectionChanged="NavView_SelectionChanged"
+                Header="TestHeader"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 CompactModeThresholdWidth="480"

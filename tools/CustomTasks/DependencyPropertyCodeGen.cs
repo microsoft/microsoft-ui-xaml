@@ -79,6 +79,11 @@ namespace CustomTasks
 
                 foreach (var type in types)
                 {
+                    if (!type.IsClass)
+                    {
+                        continue;
+                    }
+                    
                     var typeDefinition = new TypeDefinition();
                     typeDefinition.Type = type;
 
@@ -93,7 +98,7 @@ namespace CustomTasks
                     // If this type has DependencyProperty properties then write out the helpers
                     typeDefinition.HasHeaderFile = (props.Count > 0 || events.Count > 0);
                     typeDefinition.HasImplementationFile = typeDefinition.HasHeaderFile || (!typeDefinition.HasCustomActivationFactory && typeDefinition.NeedsActivationFactory);
-                    if ((typeDefinition.HasHeaderFile || typeDefinition.HasImplementationFile) && typeDefinition.Type.IsClass)
+                    if (typeDefinition.HasHeaderFile || typeDefinition.HasImplementationFile)
                     {
                         collectedMetadata.Add(typeDefinition);
                     }

@@ -96,8 +96,9 @@
                         <Grid
                             x:Name="BadgeGrid"
                             Visibility="Collapsed"
-                            VerticalAlignment="Bottom"
-                            HorizontalAlignment="Right">
+                            VerticalAlignment="Top"
+                            HorizontalAlignment="Right"
+                            Margin="{ThemeResource PersonPictureBadgeGridMargin}">
 
                             <Ellipse
                                 x:Name="BadgingBackgroundEllipse"

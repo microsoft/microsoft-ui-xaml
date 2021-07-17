@@ -126,7 +126,7 @@
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="IsTabStop" Value="True"/>
-        <Setter Property="Padding" Value="12,7,4,9"/>
+        <Setter Property="Padding" Value="12,8,4,8"/>
         <Setter Property="Height" Value="{ThemeResource AppBarThemeCompactHeight}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
@@ -382,9 +382,9 @@
                                 <TextBlock
                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                     FontSize="8"
-                                    Text="&#xE96E;"
+                                    Text="&#xE972;"
                                     VerticalAlignment="Center"
-                                    Padding="2,2,2,0"
+                                    Padding="2,1,2,0"
                                     HorizontalAlignment="Left"
                                     IsTextScaleFactorEnabled="False"
                                     AutomationProperties.AccessibilityView="Raw"/>

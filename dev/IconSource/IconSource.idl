@@ -1,6 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
+[bindable]
 [MUX_PUBLIC]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
@@ -43,7 +44,6 @@ unsealed runtimeclass FontIconSource : IconSource
     Double FontSize { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_DEFAULT_VALUE("winrt::FontFamily{ c_fontIconSourceDefaultFontFamily }")]
     Windows.UI.Xaml.Media.FontFamily FontFamily { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
@@ -114,7 +114,7 @@ unsealed runtimeclass ImageIconSource : IconSource
     static Windows.UI.Xaml.DependencyProperty ImageSourceProperty{ get; };
 }
 
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass AnimatedIconSource : IconSource

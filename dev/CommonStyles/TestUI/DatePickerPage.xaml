@@ -11,9 +11,10 @@
 
     <StackPanel Margin="12">
         <TextBlock Text="Sample DatePicker" Style="{ThemeResource StandardGroupHeader}"/>
-        <StackPanel Orientation="Horizontal">
+        <StackPanel Orientation="Vertical">
             <DatePicker Margin="0,23,10,0"/>
-            <DatePicker Header="DatePicker with header"/>
+            <DatePicker Header="DatePicker with header" Margin="0,23,10,0"/>
+            <DatePicker Header="Disabled DatePicker" Margin="0,23,10,0" IsEnabled="False" />
         </StackPanel>
     </StackPanel>
 

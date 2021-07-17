@@ -25,7 +25,7 @@
                         <Border x:Name="TestRadioButtonsBorder" BorderBrush="Black" BorderThickness="1">
                             <controls:RadioButtons x:Name="TestRadioButtons" AutomationProperties.Name="TestRadioButtons" AccessKey="r" Header="I'm the header" SelectionChanged="TestRadioButtons_SelectionChanged" GotFocus="TestRadioButtons_GotFocus" LostFocus="TestRadioButtons_LostFocus"/>
                         </Border>
-                        <controls:RadioButtons x:Name="SecondTestRadioButton" Header="A Second Radio Buttons, 0 selected">
+                        <controls:RadioButtons x:Name="SecondTestRadioButton" Header="More Radio Buttons">
                             <RadioButton x:Name="TheRadioButton">"I'm really a Radio Button"</RadioButton>
                             <x:String>I'm just a string</x:String>
                             <Button>And I'm a Button!</Button>

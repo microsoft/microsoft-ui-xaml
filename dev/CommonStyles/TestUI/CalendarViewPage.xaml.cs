@@ -134,14 +134,18 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void GetCalendarWidth_Click(object sender, RoutedEventArgs e)
+        private void GetCalendarSize_Click(object sender, RoutedEventArgs e)
         {
             calendarWidth.Text = PageCalendar2.Width.ToString();
+            calendarActualWidth.Text = PageCalendar2.ActualWidth.ToString();
+            calendarHeight.Text = PageCalendar2.Height.ToString();
+            calendarActualHeight.Text = PageCalendar2.ActualHeight.ToString();
         }
 
-        private void SetCalendarWidth_Click(object sender, RoutedEventArgs e)
+        private void SetCalendarSize_Click(object sender, RoutedEventArgs e)
         {
             PageCalendar2.Width = Double.Parse(calendarWidth.Text);
+            PageCalendar2.Height = Double.Parse(calendarHeight.Text);
         }
 
         private void SetDayItemMargin_Click(object sender, RoutedEventArgs e)

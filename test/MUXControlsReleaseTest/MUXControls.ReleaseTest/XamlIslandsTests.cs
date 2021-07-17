@@ -30,6 +30,7 @@ namespace MUXControls.ReleaseTest
         [TestProperty("Classification", "Integration")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("NugetPkgTestsOnly", "True")] // WPF apps don't properly pick up framework packages' contents.
+        [TestProperty("Ignore", "True")] // Remove once https://github.com/microsoft/microsoft-ui-xaml/issues/5152 is fixed.
         public static void ClassInitialize(TestContext testContext)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5))

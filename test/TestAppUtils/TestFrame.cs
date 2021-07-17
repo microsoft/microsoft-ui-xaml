@@ -28,6 +28,7 @@ namespace MUXControlsTestApp
         private Type _mainPageType = null;
         private ContentPresenter _pagePresenter = null;
         private CheckBox _keyInputReceived = null;
+        public Grid BackupThemeBackground { get; private set; }
 
         public TestFrame(Type mainPageType)
         {
@@ -80,6 +81,7 @@ namespace MUXControlsTestApp
 
             _rootViewbox = (Viewbox)GetTemplateChild("RootViewbox");
             _rootGrid = (Grid)GetTemplateChild("RootGrid");
+            BackupThemeBackground = (Grid)GetTemplateChild("BackupThemeBackground");
 
             // The root grid is in a Viewbox, which lays out its child with infinite
             // available size, so set the grid's dimensions to match the window's.

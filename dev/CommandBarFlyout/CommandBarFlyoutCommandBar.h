@@ -40,6 +40,8 @@ public:
     // IControlOverrides / IControlOverridesHelper
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 
+    void OnCommandBarElementDependencyPropertyChanged();
+
     bool m_commandBarFlyoutIsOpening{ false };
 
 private:
@@ -47,11 +49,14 @@ private:
     void DetachEventHandlers();
 
     void UpdateFlowsFromAndFlowsTo();
-    void UpdateUI(bool useTransitions = true);
-    void UpdateVisualState(bool useTransitions);
+    void UpdateUI(bool useTransitions = true, bool isForCommandBarElementDependencyPropertyChange = false);
+    void UpdateVisualState(bool useTransitions, bool isForCommandBarElementDependencyPropertyChange = false);
     void UpdateTemplateSettings();
     void EnsureAutomationSetCountAndPosition();
+    void EnsureLocalizedControlTypes();
+    void SetKnownCommandLocalizedControlTypes(winrt::ICommandBarElement const& command);
     void EnsureFocusedPrimaryCommand();
+    void PopulateAccessibleControls();
 
     void SetPresenterName(winrt::FlyoutPresenter const& presenter);
 
@@ -102,7 +107,6 @@ private:
     tracker_ref<winrt::Storyboard> m_openingStoryboard{ this };
     tracker_ref<winrt::Storyboard> m_closingStoryboard{ this };
     winrt::Storyboard::Completed_revoker m_openingStoryboardCompletedRevoker{};
-    winrt::Storyboard::Completed_revoker m_closingStoryboardCompletedRevoker{};
     winrt::Storyboard::Completed_revoker m_closingStoryboardCompletedCallbackRevoker{};
 
     bool m_secondaryItemsRootSized{ false };
@@ -113,4 +117,7 @@ private:
     winrt::Storyboard::Completed_revoker m_expandedDownToCollapsedStoryboardRevoker{};
     winrt::Storyboard::Completed_revoker m_collapsedToExpandedUpStoryboardRevoker{};
     winrt::Storyboard::Completed_revoker m_collapsedToExpandedDownStoryboardRevoker{};
+
+    winrt::IVector<winrt::Control> m_horizontallyAccessibleControls{ nullptr };
+    winrt::IVector<winrt::Control> m_verticallyAccessibleControls{ nullptr };
 };

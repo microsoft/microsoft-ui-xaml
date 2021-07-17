@@ -203,6 +203,7 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
+    <Thickness x:Key="AppBarToggleButtonBorderThemeThickness">1</Thickness>
     <Thickness x:Key="AppBarToggleButtonOverflowTextTouchMargin">0,9,0,12</Thickness>
     <Thickness x:Key="AppBarToggleButtonOverflowCheckTouchMargin">12,10,12,10</Thickness>
     <Thickness x:Key="AppBarToggleButtonOverflowCheckMargin">12,4,12,4</Thickness>
@@ -222,6 +223,7 @@
         <Setter Property="Background" Value="{ThemeResource AppBarToggleButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource AppBarToggleButtonForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource AppBarToggleButtonBorderThemeThickness}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />

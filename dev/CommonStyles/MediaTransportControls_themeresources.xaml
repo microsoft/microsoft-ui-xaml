@@ -22,6 +22,8 @@
             <x:Double x:Key="MediaTransportControlsAppBarButtonWidth">40</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderHeight">32</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderWidth">190</x:Double>
+            <x:Double x:Key="MediaTransportControlsMinWidth">296</x:Double>
+            <x:Double x:Key="MediaTransportControlsMaxWidth">720</x:Double>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
@@ -39,6 +41,8 @@
             <x:Double x:Key="MediaTransportControlsAppBarButtonWidth">40</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderHeight">32</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderWidth">190</x:Double>
+            <x:Double x:Key="MediaTransportControlsMinWidth">296</x:Double>
+            <x:Double x:Key="MediaTransportControlsMaxWidth">720</x:Double>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
@@ -56,6 +60,8 @@
             <x:Double x:Key="MediaTransportControlsAppBarButtonWidth">40</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderHeight">32</x:Double>
             <x:Double x:Key="MediaTransportControlsSliderWidth">190</x:Double>
+            <x:Double x:Key="MediaTransportControlsMinWidth">296</x:Double>
+            <x:Double x:Key="MediaTransportControlsMaxWidth">720</x:Double>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -66,6 +72,8 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="FlowDirection" Value="LeftToRight" />
         <Setter Property="Margin" Value="{ThemeResource MediaTransportControlsMargin}" />
+        <Setter Property="MaxWidth" Value="{ThemeResource MediaTransportControlsMaxWidth}" />
+        <Setter Property="MinWidth" Value="{ThemeResource MediaTransportControlsMinWidth}" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="IsTextScaleFactorEnabled" Value="False" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
@@ -216,8 +224,8 @@
                                 <VisualState x:Name="PlayState" />
                                 <VisualState x:Name="PauseState">
                                     <VisualState.Setters>
-                                        <Setter Target="PlayPauseSymbolLeft.Symbol" Value="Pause" />
-                                        <Setter Target="PlayPauseSymbol.Symbol" Value="Pause" />
+                                        <Setter Target="PlayPauseSymbolLeft.Glyph" Value="&#xF8AE;" />
+                                        <Setter Target="PlayPauseSymbol.Glyph" Value="&#xF8AE;" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -310,7 +318,7 @@
                                             <Thickness x:Key="AppBarButtonContentViewboxCollapsedMargin">0,12</Thickness>
                                         </AppBarButton.Resources>
                                         <AppBarButton.Icon>
-                                            <SymbolIcon x:Name="PlayPauseSymbolLeft" Symbol="Play" />
+                                            <FontIcon x:Name="PlayPauseSymbolLeft" Glyph="&#xF5B0;" />
                                         </AppBarButton.Icon>
                                     </AppBarButton>
                                 </Border>
@@ -369,23 +377,31 @@
                                                     <FontIcon Glyph="&#xED3C;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
-                                            <AppBarButton x:Name="PreviousTrackButton" Icon="Previous" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="3" Visibility="Collapsed" />
+                                            <AppBarButton x:Name="PreviousTrackButton" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="3" Visibility="Collapsed">
+                                                <AppBarButton.Icon>
+                                                    <FontIcon Glyph="&#xF8AC;" />
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
                                             <AppBarButton x:Name="RewindButton" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="1" Visibility="Collapsed">
                                                 <AppBarButton.Icon>
-                                                    <FontIcon Glyph="&#xEB9E;" />
+                                                    <FontIcon Glyph="&#xE627;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
                                             <AppBarButton x:Name="PlayPauseButton" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="23">
                                                 <AppBarButton.Icon>
-                                                    <SymbolIcon x:Name="PlayPauseSymbol" Symbol="Play" />
+                                                    <FontIcon x:Name="PlayPauseSymbol" Glyph="&#xF5B0;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
                                             <AppBarButton x:Name="FastForwardButton" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="1" Visibility="Collapsed">
                                                 <AppBarButton.Icon>
-                                                    <FontIcon Glyph="&#xEB9D;" />
+                                                    <FontIcon Glyph="&#xE628;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
-                                            <AppBarButton x:Name="NextTrackButton" Icon="Next" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="3" Visibility="Collapsed" />
+                                            <AppBarButton x:Name="NextTrackButton" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="3" Visibility="Collapsed">
+                                                <AppBarButton.Icon>
+                                                    <FontIcon Glyph="&#xF8AD;" />
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
                                             <AppBarButton x:Name="SkipForwardButton" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="5" Visibility="Collapsed">
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xED3D;" />
