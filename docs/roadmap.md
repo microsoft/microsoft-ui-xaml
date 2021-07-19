@@ -88,7 +88,7 @@ For questions or status updates on either features listed here, or features not 
 
 &#128311; - Available as experimental feature 
 
-&#129002; -  &#129002; goal 
+&#129002; -  Stretch goal 
 
 Blank -  Not available
 
@@ -117,8 +117,8 @@ Blank -  Not available
 | Animated Gif support                                   | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
 | VirtualSurfaceImageSource (VSIS) support               | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
 | In-app acrylic                                         | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
-| Background acrylic                                     |                                 |                                |  &#129002;\*\*                   | &#128994;                         |
-| XAML Islands                                           |                                 |                                | &#128311;\*\*\*                     | &#128994;                         |
+| Background acrylic                                     |                                 |                                |  &#129002;                 | &#128994;                         |
+| XAML Islands                                           |                                 |                                | &#128311;                     | &#128994;                         |
 | Contains new Windows 11 controls/styles from WinUI 2.6 |                                 |                                | &#128994;                           | &#128994;                         |
 | Reveal Highlight                                       |                                 |                                |                              |  &#129002;                     |
 | Media Controls (e.g. `<MediaPlayerElement>`)             |                                 |                                |                              | &#128994;                         |
