@@ -1,4 +1,4 @@
-$pgoBranch           = "master"
+$pgoBranch           = "main"
 $packageId           = "MUXPGODatabase"
 
 # Get release version

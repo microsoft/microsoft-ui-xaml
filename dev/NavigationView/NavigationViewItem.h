@@ -26,6 +26,8 @@ public:
     // IFrameworkElementOverrides
     void OnApplyTemplate() override;
 
+    void OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&);
+
     // Property change callbacks
     void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -92,6 +94,7 @@ private:
     void UpdateVisualStateForToolTip();
     void UpdateVisualStateForPointer();
     void UpdateVisualStateForChevron();
+    void UpdateVisualStateForClosedCompact();
 
     void UpdateVisualState(bool useTransitions);
     bool ShouldShowIcon();
@@ -99,6 +102,7 @@ private:
     bool ShouldEnableToolTip() const;
     bool IsOnLeftNav() const;
     bool IsOnTopPrimary() const;
+    bool IsOutOfControlBounds(const winrt::Point& point);
 
     void UpdateRepeaterItemsSource();
     void OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
@@ -111,6 +115,8 @@ private:
     void HookInputEvents(const winrt::IControlProtected& controlProtected);
     void UnhookInputEvents();
     void UnhookEventsAndClearFields();
+
+    void PrepNavigationViewItem(const winrt::SplitView& splitView);
 
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};

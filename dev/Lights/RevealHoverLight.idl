@@ -1,7 +1,7 @@
 namespace MU_PRIVATE_MEDIA_NAMESPACE
 {
 
-[WUXC_VERSION_INTERNAL]
+[MUX_INTERNAL]
 [webhosthidden]
 unsealed runtimeclass RevealHoverLight : Windows.UI.Xaml.Media.XamlLight
 {

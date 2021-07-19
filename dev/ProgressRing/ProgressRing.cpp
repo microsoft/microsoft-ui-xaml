@@ -69,7 +69,7 @@ void ProgressRing::OnForegroundPropertyChanged(const winrt::DependencyObject&, c
 {
     if (const auto foreground = Foreground().try_as<winrt::SolidColorBrush>())
     {
-        foreground.RegisterPropertyChangedCallback(winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnForegroundColorPropertyChanged });
+        m_foregroundColorPropertyChangedRevoker = RegisterPropertyChanged(foreground, winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnForegroundColorPropertyChanged });
     }
 
     OnForegroundColorPropertyChanged(nullptr, nullptr);
@@ -103,7 +103,7 @@ void ProgressRing::OnBackgroundPropertyChanged(const winrt::DependencyObject&, c
 {
     if (const auto background = Background().try_as<winrt::SolidColorBrush>())
     {
-        background.RegisterPropertyChangedCallback(winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnBackgroundColorPropertyChanged });
+        m_backgroundColorPropertyChangedRevoker = RegisterPropertyChanged(background, winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnBackgroundColorPropertyChanged });
     }
 
     OnBackgroundColorPropertyChanged(nullptr, nullptr);
@@ -305,8 +305,15 @@ void ProgressRing::UpdateLottieProgress()
         const double range = Maximum() - min;
         const double fromProgress = (m_oldValue - min) / range;
         const double toProgress = (value - min) / range;
+        if (fromProgress < toProgress)
+        {
+            const auto _ = player.PlayAsync(fromProgress, toProgress, false);
+        }
+        else
+        {
+            player.SetProgress(toProgress);
+        }
 
-        const auto _ = player.PlayAsync(fromProgress, toProgress, false);
         m_oldValue = value;
     }
 }

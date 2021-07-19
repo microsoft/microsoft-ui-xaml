@@ -108,6 +108,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\UniformGridLayoutDemo.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)RepeaterTestUIPage.xaml.cs">
@@ -199,6 +203,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Samples\LayoutSamples\NestedLayoutSamples\StoreMockData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\AnimationSamples\DefaultElementAnimator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\ItemsSourceSamples\ResetableCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\UniformGridLayoutDemo.cs">
+      <DependentUpon>UniformGridLayoutDemo.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="$(MSBuildThisFileDirectory)Images\recipe1.png" />

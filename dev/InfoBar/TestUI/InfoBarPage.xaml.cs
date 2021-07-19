@@ -3,248 +3,315 @@
 
 using System;
 using Windows.UI;
-using Windows.UI.Popups;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Controls;
+
+using IconSource = Microsoft.UI.Xaml.Controls.IconSource;
+using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
 
 namespace MUXControlsTestApp
 {
     [TopLevelTestPage(Name = "InfoBar")]
     public sealed partial class InfoBarPage : TestPage
     {
-        InfoBarSeverity severity;
-        IconSource icon;
-        String title;
-        String message;
-        String actionButtonContent;
-        String closeButtonContent;
-        Color color;
-        bool open;
-        bool cancel;
-        bool showClose;
+        private ButtonBase _actionButton = null;
+        private DispatcherTimer _timer = new DispatcherTimer();
+        private int _timerAction = 0;
 
         public InfoBarPage()
         {
             this.InitializeComponent();
+
+            _timer.Interval = new TimeSpan(0, 0, 8 /*sec*/);
+            _timer.Tick += Timer_Tick;
         }
 
-        private async void Test_ActionButtonClick(object sender, RoutedEventArgs e)
-        {
-            await new MessageDialog("Thank you, mate").ShowAsync();
-        }
-
-        private void Test_Closing(InfoBar sender, InfoBarClosingEventArgs args)
-        {
-            args.Cancel = cancel;
-        }
-
-        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void SeverityComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string severityName = e.AddedItems[0].ToString();
 
             switch (severityName)
             {
-                case "Critical":
-                    severity = InfoBarSeverity.Critical;
+                case "Error":
+                    TestInfoBar.Severity = InfoBarSeverity.Error;
                     break;
+
                 case "Warning":
-                    severity = InfoBarSeverity.Warning;
+                    TestInfoBar.Severity = InfoBarSeverity.Warning;
                     break;
-                case "Informational":
-                    severity = InfoBarSeverity.Informational;
-                    break;
+
                 case "Success":
-                    severity = InfoBarSeverity.Success;
+                    TestInfoBar.Severity = InfoBarSeverity.Success;
                     break;
-                case "Default":
-                    severity = InfoBarSeverity.Default;
-                    break;
-                case "None":
-                    severity = InfoBarSeverity.None;
+
+                case "Informational":
+                default:
+                    TestInfoBar.Severity = InfoBarSeverity.Informational;
                     break;
             }
         }
 
-        private void SeverityButton_Click(object sender, RoutedEventArgs e)
+        private void ActionButtonComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            TestInfoBar.Severity = severity;
+            if (TestInfoBar == null) return;
+
+            DiscardActionButton();
+
+            if (ActionButtonComboBox.SelectedIndex == 0)
+            {
+                TestInfoBar.ActionButton = null;
+            }
+            else if (ActionButtonComboBox.SelectedIndex == 1)
+            {
+                var button = new Button();
+                button.Content = "Action";
+                button.Click += ActionButton_Click;
+                _actionButton = TestInfoBar.ActionButton = button;
+            }
+            else if (ActionButtonComboBox.SelectedIndex == 2)
+            {
+                var link = new HyperlinkButton();
+                link.NavigateUri = new Uri("http://www.microsoft.com/");
+                link.Content = "Informational link";
+                link.Click += ActionButton_Click;
+                _actionButton = TestInfoBar.ActionButton = link;
+            }
+            else if (ActionButtonComboBox.SelectedIndex == 3)
+            {
+                var button = new Button();
+                button.Content = "Action";
+                button.HorizontalAlignment = HorizontalAlignment.Right;
+                button.Click += ActionButton_Click;
+                _actionButton = TestInfoBar.ActionButton = button;
+            }
+            else if (ActionButtonComboBox.SelectedIndex == 4)
+            {
+                var link = new HyperlinkButton();
+                link.NavigateUri = new Uri("http://www.microsoft.com/");
+                link.Content = "Informational link";
+                link.HorizontalAlignment = HorizontalAlignment.Right;
+                link.Click += ActionButton_Click;
+                _actionButton = TestInfoBar.ActionButton = link;
+            }
+
+            if (_actionButton != null)
+            {
+                // Workaround for GitHub Issue #4531.
+                _actionButton.TabIndex = 1;
+            }
+        }
+
+        private void ActionButton_Click(object sender, RoutedEventArgs e)
+        {
+            EventListBox.Items.Add("ActionButtonClick");
+
+            if (RemoveActionButtonOnInvokeCheckBox.IsChecked.Value)
+            {
+                ResetActionButtonProperty();
+            }
+        }
+
+        private void CollapseActionButtonProperty()
+        {
+            if (_actionButton != null)
+            {
+                _actionButton.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void DisableActionButtonProperty()
+        {
+            if (_actionButton != null)
+            {
+                _actionButton.IsEnabled = false;
+            }
+        }
+
+        private void ResetActionButtonProperty()
+        {
+            ActionButtonComboBox.SelectedIndex = 0;
+        }
+
+        private void DiscardActionButton()
+        {
+            if (_actionButton != null)
+            {
+                _actionButton.Click -= ActionButton_Click;
+                _actionButton = null;
+            }
+        }
+
+        private void Timer_Tick(object sender, object e)
+        {
+            _timer.Stop();
+
+            switch (_timerAction)
+            {
+                case 0:
+                    CollapseActionButtonProperty();
+                    break;
+                case 1:
+                    DisableActionButtonProperty();
+                    break;
+                case 2:
+                    ResetActionButtonProperty();
+                    break;
+                case 3:
+                    InfoBarParent.Children.Remove(TestInfoBar);
+                    AddInfoBarButton.IsEnabled = true;
+                    RemoveInfoBarAsynchronouslyButton.IsEnabled = false;
+                    break;
+            }
+
+            switch (_timerAction)
+            {
+                case 0:
+                case 1:
+                case 2:
+                    CollpaseActionButtonAsynchronouslyButton.IsEnabled = true;
+                    DisableActionButtonAsynchronouslyButton.IsEnabled = true;
+                    ResetActionButtonAsynchronouslyButton.IsEnabled = true;
+                    RemoveInfoBarAsynchronouslyButton.IsEnabled = true;
+                    break;
+                case 3:
+                    AddInfoBarButton.IsEnabled = true;
+                    break;
+            }
         }
 
         private void IconComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            string iconName = e.AddedItems[0].ToString();
+            if (TestInfoBar == null) return;
 
-            switch (iconName)
+            switch (e.AddedItems[0].ToString())
             {
-                case "Pin Icon":
-
-                    SymbolIconSource sym2 = new SymbolIconSource();
-                    sym2.Symbol = Symbol.Pin;
-
-                    icon = (IconSource)sym2;
+                case "Custom Icon":
+                    SymbolIconSource symbolIcon = new SymbolIconSource();
+                    symbolIcon.Symbol = Symbol.Pin;
+                    TestInfoBar.IconSource = (IconSource)symbolIcon;
                     break;
-                case "No Icon":
-                    SymbolIconSource sym3 = new SymbolIconSource();
-                    sym3.Symbol = new Symbol();
-                    icon = sym3;
+
+                case "Default Icon":
+                default:
+                    TestInfoBar.IconSource = null;
                     break;
             }
         }
 
-        private void IconButton_Click(object sender, RoutedEventArgs e)
+        public void OnCloseButtonClick(object sender, object args)
         {
-            TestInfoBar.IconSource = icon;
+            EventListBox.Items.Add("CloseButtonClick");
         }
 
-        private void TitleComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        public void OnClosing(object sender, InfoBarClosingEventArgs args)
         {
-            string iconName = e.AddedItems[0].ToString();
+            EventListBox.Items.Add("Closing: " + args.Reason);
 
-            switch (iconName)
+            if (CancelCheckBox.IsChecked.Value)
             {
-                case "Short Title":
-                    title = "Short Title.";
-                    break;
-                case "Long Title":
-                    title = "Long Title. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
-                    break;
-                case "No Title":
-                    title = null;
-                    break;
+                args.Cancel = true;
             }
         }
 
-        private void TitleButton_Click(object sender, RoutedEventArgs e)
+        public void OnClosed(object sender, InfoBarClosedEventArgs args)
         {
-            TestInfoBar.Title = title;
+            EventListBox.Items.Add("Closed: " + args.Reason);
         }
 
-        private void MessageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        public void ClearButtonClick(object sender, object args)
         {
-            string iconName = e.AddedItems[0].ToString();
+            EventListBox.Items.Clear();
+        }
 
-            switch (iconName)
+        private void CollapseActionButtonAsynchronouslyClick(object sender, object args)
+        {
+            StartAsynchronousAction(0);
+        }
+
+        private void DisableActionButtonAsynchronouslyClick(object sender, object args)
+        {
+            StartAsynchronousAction(1);
+        }
+
+        private void ResetActionButtonAsynchronouslyClick(object sender, object args)
+        {
+            StartAsynchronousAction(2);
+        }
+
+        private void AddInfoBarClick(object sender, object args)
+        {
+            InfoBarParent.Children.Insert(0, TestInfoBar);
+            AddInfoBarButton.IsEnabled = false;
+            CollpaseActionButtonAsynchronouslyButton.IsEnabled = true;
+            DisableActionButtonAsynchronouslyButton.IsEnabled = true;
+            ResetActionButtonAsynchronouslyButton.IsEnabled = true;
+            RemoveInfoBarAsynchronouslyButton.IsEnabled = true;
+        }
+
+        private void RemoveInfoBarAsynchronouslyClick(object sender, object args)
+        {
+            StartAsynchronousAction(3);
+        }
+
+        private void StartAsynchronousAction(int timerAction)
+        {
+            _timer.Start();
+            _timerAction = timerAction;
+
+            CollpaseActionButtonAsynchronouslyButton.IsEnabled = false;
+            DisableActionButtonAsynchronouslyButton.IsEnabled = false;
+            ResetActionButtonAsynchronouslyButton.IsEnabled = false;
+            AddInfoBarButton.IsEnabled = false;
+            RemoveInfoBarAsynchronouslyButton.IsEnabled = false;
+        }
+
+        public void SetForegroundClick(object sender, object args)
+        {
+            TestInfoBar.Foreground = new SolidColorBrush(Colors.Red);
+        }
+
+        public void HasCustomContentChanged(object sender, object args)
+        {
+            if (HasCustomContentCheckBox.IsChecked.Value)
             {
-                case "Short Message":
-                    message = "Short Message.";
-                    break;
-                case "Long Message":
-                    message = "Long Message. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
-                    break;
-                case "No Message":
-                    message = null;
-                    break;
+                var content = new CheckBox();
+                content.Content = "Custom Content";
+                content.Margin = new Thickness(0, 0, 0, 6);
+                AutomationProperties.SetName(content, "CustomContentCheckBox");
+                TestInfoBar.Content = content;
+            }
+            else
+            {
+                TestInfoBar.Content = null;
             }
         }
 
-        private void MessageButton_Click(object sender, RoutedEventArgs e)
+        public void CloseStyleChanged(object sender, object args)
         {
-            TestInfoBar.Message = message;
-        }
-
-        private void CloseButtonContentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            string iconName = e.AddedItems[0].ToString();
-
-            switch (iconName)
+            if (CloseButtonStyleCheckBox.IsChecked.Value)
             {
-                case "Short Text":
-                    closeButtonContent = "C:Short";
-                    break;
-                case "Long Text":
-                    closeButtonContent = "C:LongTextLorem ipsum dolor sit amet.";
-                    break;
-                case "No Text":
-                    closeButtonContent = null;
-                    break;
+                TestInfoBar.CloseButtonStyle = this.Resources["CustomCloseButtonStyle"] as Style;
+            }
+            else
+            {
+                TestInfoBar.CloseButtonStyle = Application.Current.Resources["InfoBarCloseButtonStyle"] as Style;
             }
         }
 
-        private void CloseButtonContent_Click(object sender, RoutedEventArgs e)
+        public void CustomBackgroundChanged(object sender, object args)
         {
-            TestInfoBar.CloseButtonContent = closeButtonContent;
-        }
-
-        private void ActionButtonContentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            string iconName = e.AddedItems[0].ToString();
-
-            switch (iconName)
+            if (CustomBackgroundCheckBox.IsChecked.Value)
             {
-                case "Short Text":
-                    actionButtonContent = "A:Short";
-                    break;
-                case "Long Text":
-                    actionButtonContent = "A:LongTextLorem ipsum dolor sit amet.";
-                    break;
-                case "No Text":
-                    actionButtonContent = null;
-                    break;
+                TestInfoBar.Background = new SolidColorBrush(Colors.Purple);
             }
-        }
-
-        private void ActionButtonContent_Click(object sender, RoutedEventArgs e)
-        {
-            TestInfoBar.ActionButtonContent = actionButtonContent;
-        }
-
-        private void IsOpen_Checked(object sender, RoutedEventArgs e)
-        {
-            open = true;
-        }
-
-        private void IsOpen_Unchecked(object sender, RoutedEventArgs e)
-        {
-            open = false;
-        }
-
-        private void IsOpenButton_Click(object sender, RoutedEventArgs e)
-        {
-            TestInfoBar.IsOpen = open;
-        }
-
-        private void ColorCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            string iconName = e.AddedItems[0].ToString();
-
-            switch (iconName)
+            else
             {
-                case "Purple":
-                    color = Color.FromArgb(255, 128, 0, 128);
-                    break;
-                case "No Color":
-                    color = Color.FromArgb(0, 0, 0, 0);
-                    break;
+                TestInfoBar.Background = new SolidColorBrush(Colors.Transparent);
             }
-        }
-
-        private void ColorButton_Click(object sender, RoutedEventArgs e)
-        {
-            TestInfoBar.StatusColor = color;
-        }
-
-        private void Cancel_Checked(object sender, RoutedEventArgs e)
-        {
-            cancel = true;
-        }
-
-        private void Cancel_Unchecked(object sender, RoutedEventArgs e)
-        {
-            cancel = false;
-        }
-        private void ShowClose_Checked(object sender, RoutedEventArgs e)
-        {
-            showClose = true;
-        }
-
-        private void ShowClose_Unchecked(object sender, RoutedEventArgs e)
-        {
-            showClose = false;
-        }
-
-        private void ShowCloseButton_Click(object sender, RoutedEventArgs e)
-        {
-            TestInfoBar.ShowCloseButton = showClose;
         }
     }
 }

@@ -50,6 +50,7 @@ namespace MUXControls.ReleaseTest
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Issue #4899: Test MUXControls.ReleaseTest.RepeaterNoCrashTest is unreliable 
         public void RepeaterNoCrashTest()
         {
             var button = new Button(FindElement.ByName("AddItemsButton"));
@@ -68,7 +69,7 @@ namespace MUXControls.ReleaseTest
             Wait.ForIdle();
 
             var textBlock = new TextBlock(FindElement.ByName("CheckBoxRectangleCornerRadiusValueTextBlock"));
-            Verify.AreEqual("2,2", textBlock.DocumentText);
+            Verify.AreEqual("4,4", textBlock.DocumentText);
         }
 
         [TestMethod]

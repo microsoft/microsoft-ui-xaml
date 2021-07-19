@@ -82,7 +82,7 @@ void TreeViewItemProperties::EnsureProperties()
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::TreeViewItem>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxValueIfNecessary(12.0),
+                ValueHelper<double>::BoxValueIfNecessary(8.0),
                 nullptr);
     }
     if (!s_HasUnrealizedChildrenProperty)

@@ -1,40 +1,108 @@
-# Instructions for upgrading a WinUI 3 Preview 1 app to use WinUI 3 Preview 2
+## Upgrading your WinUI 3 app from Preview 4 to Project Reunion 0.5 Preview 
 
-While it's possible to upgrade your Preview 1 application to use the new Preview 2 bits, please be careful and follow all steps in order below when doing so. The steps below outline the process that the team had to take while updating their own Preview 1 apps. 
+This is written for a developer who has an existing WinUI 3 Preview 4 app and wants to upgrade it to use WinUI 3 - Project Reunion 0.5 Preview. 
 
-If these steps don't work for you, feel free to [file an issue](https://github.com/microsoft/microsoft-ui-xaml/issues/new/choose). The easiest way to work around this is to just create a new Preview 2 project and copy your content over. 
+Before starting, make sure you have all the WinUI 3 - Project Reunion 0.5 Preview pre-requisites installed, including the Project Reunion VSIX and NuGet package. For installation instructions, see [this article](https://docs.microsoft.com/en-us/windows/apps/project-reunion/#set-up-your-development-environment). 
 
-## Upgrading steps
-1. Make sure all Preview 2 prerequisites are installed. See [installation instructions here](https://aka.ms/winui3/preview2#install-winui-30-preview-2).
-2. Use the NuGet package manager (right-click on the project and select “Manage NuGet Packages…” from the context menu) 
-3. Select the “Microsoft.WinUI” package, ensure that “Include prerelease” is checked, select the latest version of the package, and then click “Upgrade”, accepting prompts that appear  
-    - If you don't see the latest version of the WinUI 3 Preview 2 NuGet package, run the following command in your NuGet package manager console:
-    `install-package Microsoft.WinUI -Version 3.0.0-preview2.200713.0`
-4. If your project is a C# “Blank App (UWP)”, C# “Class Library (UWP)”, C# “Windows Runtime Component (UWP)”, C++ “Blank App (UWP)”, or C++ “Windows Runtime Component (UWP)” project, then **no further changes are necessary.**
-5.  If your project is a C# “Class Library (WinUI in Desktop)” project:
-    - Open the .csproj and change <TargetFramework>netcoreapp5.0</TargetFramework> to <TargetFramework>net5.0</TargetFramework> 
-6. If your project is a C# “Blank App, Packaged (WinUI in Desktop)” project :
-    - Open the .csproj in the main app project and change <TargetFramework>netcoreapp5.0</TargetFramework> to <TargetFramework>net5.0</TargetFramework>  
-    - Open the .wapproj in the associated Windows Application Packaging Project and make the following edits: 
-        - Add the following line to the first `<PropertyGroup>` element after `<Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />`:  
+### If your app is a C# Blank App (UWP):
 
-        ```xml
-         <AppxTargetsLocation Condition="'$(AppxTargetsLocation)'==''">$(MSBuildThisFileDirectory)build\</AppxTargetsLocation> 
-         ```
-
-        - Change `<Import Project="build\Microsoft.WinUI.AppX.targets" />` to `<Import Project="$(AppxTargetsLocation)Microsoft.WinUI.AppX.targets" /> `
-
-        - Create a new C# “Blank App, Packaged (WinUI in Desktop)” project, locate the folder containing the associated Windows Application Packaging Project, and copy the contents of the `“build\”` subdirectory (`LiftedWinRTClassRegistrations.xml` and `Microsoft.WinUI.AppX.targets`) into the corresponding `“build\”` subdirectory of your app’s associated Windows Application Packaging Project, overwriting any existing files when prompted.
-7. If your project is a C++ “Blank App, Packaged (WinUI in Desktop)” project:
-    - Open the .wapproj in the associated Windows Application Packaging Project and make the following edits: 
-
-        - Add the following line to the first `<PropertyGroup>` element after `<Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />`:  
-
-        ```xml
-        <AppxTargetsLocation Condition="'$(AppxTargetsLocation)'==''">$(MSBuildThisFileDirectory)build\</AppxTargetsLocation> 
-        ```
-        - Change `<Import Project="build\Microsoft.WinUI.AppX.targets" />` to `<Import Project="$(AppxTargetsLocation)Microsoft.WinUI.AppX.targets" />`
-
-        - Create a new C++ “Blank App, Packaged (WinUI in Desktop)” project, locate the folder containing the associated Windows Application Packaging Project, and copy the contents of the `“build\”` subdirectory (`LiftedWinRTClassRegistrations.xml` and `Microsoft.WinUI.AppX.targets`) into the corresponding `“build\”` subdirectory of your actual project’s associated Windows Application Packaging Project, overwriting any existing files when prompted 
+1. Go to Tools->Nuget Package Manager-> Package Manager Console in Visual Studio
+2. Type in ```uninstall-package Microsoft.WinUI -ProjectName {yourProject}```
+3. Type in ```install-package Microsoft.ProjectReunion -Version 0.5.0-prerelease -ProjectName {yourProject}```
 
 
+### If your app is a C# Blank App Packaged (WinUI in Desktop):
+
+Go to Tools->Nuget Package Manager-> Package Manager Console in Visual Studio
+
+  1. Type in ```uninstall-package Microsoft.WinUI -ProjectName {yourProject}```
+  2. Type in ```install-package Microsoft.ProjectReunion -Version 0.5.0-prerelease -ProjectName {yourProjectName}```
+  3. Type in ```install-package Microsoft.ProjectReunion.Foundation -Version 0.5.0-prerelease -ProjectName {yourProjectName}```
+  4. Type in ```install-package Microsoft.ProjectReunion.WinUI -Version 0.5.0-prerelease -ProjectName {yourProjectName}```
+  5. Make the following changes in your Application (package).wapproj:
+  
+  Add this section:
+  ```xml
+  <PropertyGroup>
+      <!--PackageReference.GeneratePathProperty does not support NUGET_PACKAGES env var...-->
+      <NuGetPackageRoot Condition="'$(NuGetPackageRoot)'==''">$(NUGET_PACKAGES)</NuGetPackageRoot>
+      <NuGetPackageRoot Condition="'$(NuGetPackageRoot)'==''">$(UserProfile)\.nuget\packages</NuGetPackageRoot>
+      <PkgMicrosoft_ProjectReunion Condition="'$(PkgMicrosoft_ProjectReunion)'==''">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'Microsoft.ProjectReunion', '0.5.0-prerelease'))</PkgMicrosoft_ProjectReunion>
+      <PkgMicrosoft_ProjectReunion Condition="!Exists($(PkgMicrosoft_ProjectReunion))">$(SolutionDir)packages\Microsoft.ProjectReunion.0.5.0-prerelease\</PkgMicrosoft_ProjectReunion>
+      <PkgMicrosoft_ProjectReunion_WinUI Condition="'$(PkgMicrosoft_ProjectReunion_WinUI)'==''">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'Microsoft.ProjectReunion.WinUI', '0.5.0-prerelease'))</PkgMicrosoft_ProjectReunion_WinUI>
+      <PkgMicrosoft_ProjectReunion_WinUI Condition="!Exists($(PkgMicrosoft_ProjectReunion_WinUI))">$(SolutionDir)packages\Microsoft.ProjectReunion.WinUI.0.5.0-prerelease\</PkgMicrosoft_ProjectReunion_WinUI>
+      <Microsoft_ProjectReunion_AppXReference_props>$([MSBuild]::NormalizeDirectory('$(PkgMicrosoft_ProjectReunion)', 'build'))Microsoft.ProjectReunion.AppXReference.props</Microsoft_ProjectReunion_AppXReference_props>
+      <Microsoft_WinUI_AppX_targets>$([MSBuild]::NormalizeDirectory('$(PkgMicrosoft_ProjectReunion_WinUI)', 'build'))Microsoft.WinUI.AppX.targets</Microsoft_WinUI_AppX_targets>
+    </PropertyGroup>
+    <ItemGroup>
+      <PackageReference Include="Microsoft.ProjectReunion" Version="[0.5.0-prerelease]" GeneratePathProperty="true">
+        <ExcludeAssets>all</ExcludeAssets>
+      </PackageReference>
+      <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="[0.5.0-prerelease]" GeneratePathProperty="true">
+        <ExcludeAssets>all</ExcludeAssets>
+      </PackageReference>
+    </ItemGroup>
+  ```
+  Then replace the following:
+  ```xml
+    <Import Project="$(AppxTargetsLocation)Microsoft.WinUI.AppX.targets" />
+  ```
+  with:
+  ```xml
+  <Import Project="$(Microsoft_ProjectReunion_AppXReference_props)" />
+  <Import Project="$(Microsoft_WinUI_AppX_targets)" />
+  ```
+
+
+### If your app is a C++ Blank App (UWP):
+
+ Go to Tools->Nuget Package Manager-> Package Manager Console in Visual Studio
+ 1. Type in ```uninstall-package Microsoft.WinUI -ProjectName {yourProject}```
+ 2. Type in ```install-package  Microsoft.ProjectReunion -Version 0.5.0-prerelease -ProjectName {yourProject}``` 
+ 3. Type in ```install-package Microsoft.ProjectReunion.Foundation -Version 0.5.0-prerelease  -ProjectName {yourProject}```
+ 4. Type in ```install-package Microsoft.ProjectReunion.WinUI -Version 0.5.0-prerelease  -ProjectName {yourProject}```
+
+### If your app is a C++ Blank App Packaged (WinUI in Desktop):
+
+  Go to Tools->Nuget Package Manager-> Package Manager Console in Visual Studio
+ 1. Type in ```uninstall-package Microsoft.WinUI -ProjectName {yourProject}```
+ 2. Type in ```install-package  Microsoft.ProjectReunion -Version 0.5.0-prerelease -ProjectName {yourProject}```  
+ 3. Type in ```install-package Microsoft.ProjectReunion.Foundation -Version 0.5.0-prerelease  -ProjectName {yourProject}```
+ 4. Type in ```install-package Microsoft.ProjectReunion.WinUI -Version 0.5.0-prerelease  -ProjectName {yourProject}```
+5. Make the following changes to your wapproj file:
+ 
+ Add this section:
+ 
+ ```xml
+  <PropertyGroup>
+    <!--PackageReference.GeneratePathProperty does not support NUGET_PACKAGES env var...-->
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)'==''">$(NUGET_PACKAGES)</NuGetPackageRoot>
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)'==''">$(UserProfile)\.nuget\packages</NuGetPackageRoot>
+    <PkgMicrosoft_ProjectReunion Condition="'$(PkgMicrosoft_ProjectReunion)'==''">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'Microsoft.ProjectReunion', '0.5.0-prerelease'))</PkgMicrosoft_ProjectReunion>
+    <PkgMicrosoft_ProjectReunion Condition="!Exists($(PkgMicrosoft_ProjectReunion))">$(SolutionDir)packages\Microsoft.ProjectReunion.0.5.0-prerelease\</PkgMicrosoft_ProjectReunion>
+    <PkgMicrosoft_ProjectReunion_WinUI Condition="'$(PkgMicrosoft_ProjectReunion_WinUI)'==''">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'Microsoft.ProjectReunion.WinUI', '0.5.0-prerelease'))</PkgMicrosoft_ProjectReunion_WinUI>
+    <PkgMicrosoft_ProjectReunion_WinUI Condition="!Exists($(PkgMicrosoft_ProjectReunion_WinUI))">$(SolutionDir)packages\Microsoft.ProjectReunion.WinUI.0.5.0-prerelease\</PkgMicrosoft_ProjectReunion_WinUI>
+    <Microsoft_ProjectReunion_AppXReference_props>$([MSBuild]::NormalizeDirectory('$(PkgMicrosoft_ProjectReunion)', 'build'))Microsoft.ProjectReunion.AppXReference.props</Microsoft_ProjectReunion_AppXReference_props>
+    <Microsoft_WinUI_AppX_targets>$([MSBuild]::NormalizeDirectory('$(PkgMicrosoft_ProjectReunion_WinUI)', 'build'))Microsoft.WinUI.AppX.targets</Microsoft_WinUI_AppX_targets>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ProjectReunion" Version="[0.5.0-prerelease]" GeneratePathProperty="true">
+      <ExcludeAssets>all</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="[0.5.0-prerelease]" GeneratePathProperty="true">
+      <ExcludeAssets>all</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+```
+
+Then replace the following:
+```xml
+  <Import Project="$(AppxTargetsLocation)Microsoft.WinUI.AppX.targets" />
+```
+
+with:
+
+```xml
+ <Import Project="$(Microsoft_ProjectReunion_AppXReference_props)" />
+ <Import Project="$(Microsoft_WinUI_AppX_targets)" />
+  ```

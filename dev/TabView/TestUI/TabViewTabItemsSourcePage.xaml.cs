@@ -39,7 +39,7 @@ namespace MUXControlsTestApp
 
         private void TabViewTabItemsSourcePage_Loaded(object sender, RoutedEventArgs e)
         {
-            innerListView = TabViewItemsSourceSample.FindElementOfTypeInSubtree<ListView>();
+            innerListView = TabViewItemsSourceSample.FindVisualChildByType<ListView>();
 
             for (int tabIndex = 0; tabIndex < initialTabsCount; tabIndex++)
             {

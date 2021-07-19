@@ -9,6 +9,5 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <StackPanel x:Name="layoutRoot">
-
     </StackPanel>
 </Page>

@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 [MUX_PROPERTY_NEEDS_DP_FIELD]
 runtimeclass ProgressBarTemplateSettings : Windows.UI.Xaml.DependencyObject
@@ -21,7 +21,7 @@ runtimeclass ProgressBarTemplateSettings : Windows.UI.Xaml.DependencyObject
     Double EllipseOffset{ get; };
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass ProgressBar : Windows.UI.Xaml.Controls.Primitives.RangeBase
 {
@@ -49,7 +49,7 @@ unsealed runtimeclass ProgressBar : Windows.UI.Xaml.Controls.Primitives.RangeBas
 namespace MU_XAP_NAMESPACE
 {
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass ProgressBarAutomationPeer : Windows.UI.Xaml.Automation.Peers.RangeBaseAutomationPeer
 {

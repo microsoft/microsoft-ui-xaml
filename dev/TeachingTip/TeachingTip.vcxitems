@@ -26,16 +26,37 @@
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)TeachingTip.xaml">
       <IsPublic>false</IsPublic>
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TeachingTip_v1.xaml">
+      <IsPublic>false</IsPublic>
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs1_themeresources.xaml">
       <IsPublic>false</IsPublic>
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs1_themeresources_v1.xaml">
+      <IsPublic>false</IsPublic>
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs2_themeresources.xaml">
       <IsPublic>false</IsPublic>
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>RS2</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs2_themeresources_v1.xaml">
+      <IsPublic>false</IsPublic>
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS2</Version>
       <Type>ThemeResources</Type>
     </Page>

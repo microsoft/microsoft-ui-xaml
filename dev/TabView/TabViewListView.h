@@ -14,6 +14,7 @@ public:
     winrt::DependencyObject GetContainerForItemOverride();
     bool IsItemItsOwnContainerOverride(winrt::IInspectable const& item);
     void OnItemsChanged(winrt::IInspectable const& item);
+    void PrepareContainerForItemOverride(const winrt::DependencyObject& element, const winrt::IInspectable& item);
 
 private:
     void OnContainerContentChanging(const winrt::IInspectable& sender, const winrt::ContainerContentChangingEventArgs& args);

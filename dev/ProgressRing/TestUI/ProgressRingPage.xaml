@@ -17,12 +17,18 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
         <StackPanel Orientation="Vertical">
-            <controls:ProgressRing
-                x:Name="TestProgressRing"
-                AutomationProperties.Name="TestProgressRing"
-                IsActive="{x:Bind ShowIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
-                IsIndeterminate="{x:Bind ShowIsIndeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
-            />
+            <StackPanel Orientation="Horizontal">
+                <controls:ProgressRing
+                    x:Name="TestProgressRing"
+                    AutomationProperties.Name="TestProgressRing"
+                    IsActive="{x:Bind ShowIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
+                    IsIndeterminate="{x:Bind ShowIsIndeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
+                />
+
+                <Grid VerticalAlignment="Stretch" Margin="5" Width="100" Height="100">
+                    <controls:ProgressRing IsActive="True" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                </Grid>
+            </StackPanel>
 
             <Grid Width="200px" HorizontalAlignment="Left">
                 <Grid.ColumnDefinitions>

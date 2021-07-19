@@ -16,13 +16,58 @@ jobs:
 - job: ${{ parameters.name }}
   dependsOn: ${{ parameters.dependsOn }}
   pool:
-    name: Package ES Lab E
+    vmImage: windows-latest
   strategy:
     maxParallel: 10
     matrix: ${{ parameters.matrix }}
+
+  variables:
+    artifactDownloadPath: $(Build.SourcesDirectory)\Artifacts
+    appxPackagesPath: $(artifactDownloadPath)\${{parameters.artifactName}}\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+    resultLogStagingPath: $(Build.ArtifactStagingDirectory)\Results\WACKTestResults-$(buildConfiguration)-$(buildPlatform)
       
   steps:
-  - task: PkgESWACKTests@10
+
+  - task: DownloadBuildArtifacts@0 
+    inputs: 
+      artifactName: ${{ parameters.artifactName }} 
+      downloadPath: '$(artifactDownloadPath)'
+      itemPattern: '**\*.appx'
+
+  - task: PkgESWACKTests@12
+    displayName: Run WACK tests for NugetPackageTestApp
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
-      AppxFolder: '$(artifactDownloadPath)\${{parameters.artifactName}}\$(BuildConfiguration)\$(BuildPlatform)\NugetPackageTestApp\AppPackages\NugetPackageTestApp_Test'
-      WACKFailbuild: true
+      PackageFilePath: '$(appxPackagesPath)\NugetPackageTestApp_Test\NugetPackageTestApp.appx'
+
+  - task: CopyFiles@2
+    displayName: 'Copy results for NugetPackageTestApp'
+    condition: succeededOrFailed()
+    inputs:
+      sourceFolder: $(appxPackagesPath)\NugetPackageTestApp_Test\
+      contents: '*.xml'
+      targetFolder: $(resultLogStagingPath)
+
+  - task: PkgESWACKTests@12
+    displayName: Run WACK tests for AppThatUsesMUXIndirectly
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    condition: succeededOrFailed()
+    inputs:
+      PackageFilePath: '$(appxPackagesPath)\AppThatUsesMUXIndirectly_Test\AppThatUsesMUXIndirectly.appx'
+
+  - task: CopyFiles@2
+    displayName: 'Copy results for AppThatUsesMUXIndirectly'
+    condition: succeededOrFailed()
+    inputs:
+      sourceFolder: $(appxPackagesPath)\AppThatUsesMUXIndirectly_Test\
+      contents: '*.xml'
+      targetFolder: $(resultLogStagingPath)
+
+  - task: PublishBuildArtifacts@1
+    displayName: Publish results
+    condition: succeededOrFailed()
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)\Results
+      artifactName: ${{ parameters.artifactName }}

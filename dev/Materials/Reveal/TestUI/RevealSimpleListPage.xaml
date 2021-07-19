@@ -14,7 +14,7 @@
         <ImageBrush x:Key="BGImageBrush" ImageSource="ms-appx:///Assets/SMPTE_WallpaperHD.png" Stretch="UniformToFill" />
         <DataTemplate x:Key="SettingsItemStyle" x:DataType="local:RevealItem">
             <RelativePanel Margin="12">
-                <TextBlock Name="IconBlock" Text="{x:Bind Icon}" FontFamily="Segoe MDL2 Assets" FontSize="24" VerticalAlignment="Center" Margin="0,0,12,0" RelativePanel.AlignVerticalCenterWithPanel="True" RelativePanel.AlignLeftWithPanel="True"/>
+                <TextBlock Name="IconBlock" Text="{x:Bind Icon}" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="24" VerticalAlignment="Center" Margin="0,0,12,0" RelativePanel.AlignVerticalCenterWithPanel="True" RelativePanel.AlignLeftWithPanel="True"/>
                 <TextBlock Name="HeaderBlock" Text="{x:Bind Header}" FontWeight="Bold" RelativePanel.RightOf="IconBlock" RelativePanel.AlignTopWithPanel="True"/>
                 <TextBlock Name="SubHeaderBlock" Text="{x:Bind SubHeader}" RelativePanel.RightOf="IconBlock" RelativePanel.Below="HeaderBlock"/>
             </RelativePanel>

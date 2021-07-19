@@ -30,9 +30,15 @@ NuGet package version:
 <!-- 
 Examples
 [Microsoft.UI.Xaml 2.4.0]
-[Microsoft.UI.Xaml.2.4.0-prerelease.200506001]
-[Microsoft.WinUI 3.0.0-preview1.200515.3] If you seeing your issue in preview1, please try preview2.
-[Microsoft.WinUI 3.0.0-preview2.200713.0]
+[Microsoft.UI.Xaml 2.5.0]
+[Microsoft.UI.Xaml.2.6.0-prerelease.210430001]
+[Microsoft.UI.Xaml 2.6.0]
+[Microsoft.WinUI 3.0.0-preview4.210210.4] 
+[WinUI 3 - Project Reunion 0.5 Preview: 0.5.0-prerelease] 
+[WinUI 3 - Project Reunion 0.5: 0.5.0] 
+[WinUI 3 - Project Reunion 0.5: 0.5.7] 
+[WinUI 3 - Project Reunion 0.8 Preview: 0.8.0-preview] 
+[WinUI 3 - Windows App SDK 0.8: 0.8.0] If you're seeing your issue in older previews of WinUI 3, please try this release.
 -->
 
 <!-- If you are using WinUI 3, please specify for which Windows app type you have encountered the issue. Leave blank if you didn't try that app type. -->
@@ -45,6 +51,7 @@ Windows app type:
 | Windows 10 version                  | Saw the problem? |
 | :--------------------------------- | :-------------------- |
 | Insider Build (xxxxx)              | <!-- Yes/No? -->   |
+| October 2020 Update (19042)        | <!-- Yes/No? -->   |
 | May 2020 Update (19041)            | <!-- Yes/No? -->   |
 | November 2019 Update (18363)       | <!-- Yes/No? -->   |
 | May 2019 Update (18362)            | <!-- Yes/No? -->   |

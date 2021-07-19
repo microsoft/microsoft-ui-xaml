@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 [MUX_PROPERTY_NEEDS_DP_FIELD]
 runtimeclass ProgressRingTemplateSettings : Windows.UI.Xaml.DependencyObject
@@ -12,7 +12,7 @@ runtimeclass ProgressRingTemplateSettings : Windows.UI.Xaml.DependencyObject
     Double MaxSideLength{ get; };
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Control
 {
@@ -26,20 +26,26 @@ unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("true")]
     Boolean IsIndeterminate{ get; set; };
 
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    IAnimatedVisualSource DeterminateSource{ get; set; };
+    [MUX_PREVIEW]
+    {
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        IAnimatedVisualSource DeterminateSource{ get; set; };
 
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    IAnimatedVisualSource IndeterminateSource{ get; set; };
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        IAnimatedVisualSource IndeterminateSource{ get; set; };
+    }
 
     [MUX_PROPERTY_NEEDS_DP_FIELD]
     ProgressRingTemplateSettings TemplateSettings{ get; };
 
     static Windows.UI.Xaml.DependencyProperty IsActiveProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsIndeterminateProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty DeterminateSourceProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty IndeterminateSourceProperty{ get; };
 
+    [MUX_PREVIEW]
+    {
+        static Windows.UI.Xaml.DependencyProperty DeterminateSourceProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty IndeterminateSourceProperty{ get; };
+    }
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("0.0")]
@@ -63,7 +69,7 @@ unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Control
 namespace MU_XAP_NAMESPACE
 {
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass ProgressRingAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer, Windows.UI.Xaml.Automation.Provider.IRangeValueProvider
 {

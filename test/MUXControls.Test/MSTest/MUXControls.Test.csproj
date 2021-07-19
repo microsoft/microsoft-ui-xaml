@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />
     <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="System.Diagnostics.Process" Version="4.3.0" />
     <PackageReference Include="System.Drawing.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.1" />
@@ -22,7 +23,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\testinfra\MUXTestInfra\MSTest\MUXTestInfra.MSTest.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft">
+      <HintPath>..\..\..\BuildOutput\Debug\x86\Microsoft.UI.Xaml\Microsoft.winmd</HintPath>
+    </Reference>
+  </ItemGroup>
   <Import Project="..\MUXControls.Test.Shared.projitems" />
-  <Import Project="..\..\..\dev\Pager\InteractionTests\Pager_InteractionTests.projitems" Label="Shared" />
   <Import Project="..\MUXControls.Test.Shared.targets" />
 </Project>

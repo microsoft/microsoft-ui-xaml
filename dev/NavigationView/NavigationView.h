@@ -156,6 +156,7 @@ private:
     inline NavigationViewTemplateSettings* GetTemplateSettings();
     inline bool IsNavigationViewListSingleSelectionFollowsFocus();
     inline void UpdateSingleSelectionFollowsFocusTemplateSetting();
+    void OnMenuItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnFooterItemsSourceCollectionChanged(const winrt::IInspectable &, const winrt::IInspectable &);
     void OnOverflowItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(winrt::IInspectable const& item);
@@ -167,6 +168,7 @@ private:
     void UpdateVisualStateForOverflowButton();
     void UpdateLeftNavigationOnlyVisualState(bool useTransitions);
     void UpdatePaneShadow();
+    void UpdatePaneOverlayGroup();
     void UpdateNavigationViewItemsFactory();
     void SyncItemTemplates();
     bool IsRootGridOfFlyout(const winrt::DependencyObject& element);
@@ -246,8 +248,10 @@ private:
     void UpdateFooterRepeaterItemsSource(bool sourceCollectionReseted, bool sourceCollectionChanged);
 
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
+    void OnItemsContainerSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& e);
     void UpdateAdaptiveLayout(double width, bool forceSetDisplayMode = false);
+    void UpdatePaneLayout();
     void SetDisplayMode(const winrt::NavigationViewDisplayMode& displayMode, bool forceSetDisplayMode = false);
    
     NavigationViewVisualStateDisplayMode GetVisualStateDisplayMode(const winrt::NavigationViewDisplayMode& displayMode);
@@ -272,7 +276,7 @@ private:
     void OnTitleBarIsVisibleChanged(const winrt::CoreApplicationViewTitleBar& sender, const winrt::IInspectable& args);
     void UpdateTitleBarPadding();
 
-    void OnAutoSuggestBoxSuggestionChosen(const winrt::AutoSuggestBox& sender, const winrt::Windows::UI::Xaml::Controls::AutoSuggestBoxSuggestionChosenEventArgs& args);
+    void OnAutoSuggestBoxQuerySubmitted(const winrt::AutoSuggestBox& sender, const winrt::Windows::UI::Xaml::Controls::AutoSuggestBoxQuerySubmittedEventArgs& args);
 
     void RaiseDisplayModeChanged(const winrt::NavigationViewDisplayMode& displayMode);
     void AnimateSelectionChanged(const winrt::IInspectable& currentItem);
@@ -327,12 +331,19 @@ private:
     void FocusNextUpItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args);
     void ApplyCustomMenuItemContainerStyling(const winrt::NavigationViewItemBase& nvib, const winrt::ItemsRepeater& ir, int index);
 
+    void SetDropShadow();
+    void UnsetDropShadow();
+    void ShadowCasterEaseOutStoryboard_Completed(const winrt::Grid& shadowCaster);
+
     com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
 
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };
     tracker_ref<winrt::SplitView> m_rootSplitView{ this };
     tracker_ref<winrt::NavigationViewItem> m_settingsItem{ this };
+    tracker_ref<winrt::RowDefinition> m_itemsContainerRow{ this };
+    tracker_ref<winrt::FrameworkElement> m_menuItemsScrollViewer{ this };
+    tracker_ref<winrt::FrameworkElement> m_footerItemsScrollViewer{ this };
     tracker_ref<winrt::UIElement> m_paneContentGrid{ this };
     tracker_ref<winrt::ColumnDefinition> m_paneToggleButtonIconGridColumn{ this };
     tracker_ref<winrt::FrameworkElement> m_paneTitleHolderFrameworkElement{ this };
@@ -348,6 +359,8 @@ private:
     tracker_ref<winrt::ItemsRepeater> m_topNavRepeaterOverflowView{ this };
     tracker_ref<winrt::Grid> m_topNavGrid{ this };
     tracker_ref<winrt::Border> m_topNavContentOverlayAreaGrid{ this };
+    tracker_ref<winrt::Grid> m_shadowCaster{ this };
+    tracker_ref<winrt::Storyboard> m_shadowCasterEaseOutStoryboard{ this };
 
     // Indicator animations
     tracker_ref<winrt::UIElement> m_prevIndicator{ this };
@@ -377,6 +390,7 @@ private:
     tracker_ref<winrt::ColumnDefinition> m_paneHeaderCloseButtonColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_paneHeaderToggleButtonColumn{ this };
     tracker_ref<winrt::RowDefinition> m_paneHeaderContentBorderRow{ this };
+    tracker_ref<winrt::FrameworkElement> m_itemsContainer{ this };
 
     tracker_ref<winrt::NavigationViewItem> m_lastItemExpandedIntoFlyout{ this };
 
@@ -396,7 +410,8 @@ private:
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedToken{};
     winrt::UIElement::AccessKeyInvoked_revoker m_accessKeyInvokedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_paneTitleHolderFrameworkElementSizeChangedRevoker{};
-    winrt::AutoSuggestBox::SuggestionChosen_revoker m_autoSuggestBoxSuggestionChosenRevoker{};
+    winrt::FrameworkElement::SizeChanged_revoker m_itemsContainerSizeChangedRevoker{};
+    winrt::AutoSuggestBox::QuerySubmitted_revoker m_autoSuggestBoxQuerySubmittedRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_leftNavItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_leftNavItemsRepeaterElementClearingRevoker{};
@@ -424,11 +439,14 @@ private:
     winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedRevoker{};
     winrt::SelectionModel::ChildrenRequested_revoker m_childrenRequestedRevoker{};
 
+    winrt::ItemsSourceView::CollectionChanged_revoker m_menuItemsCollectionChangedRevoker{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_footerItemsCollectionChangedRevoker{};
 
     winrt::ItemsSourceView::CollectionChanged_revoker m_topNavOverflowItemsCollectionChangedRevoker{};
 
     winrt::FlyoutBase::Closing_revoker m_flyoutClosingRevoker{};
+
+    winrt::Storyboard::Completed_revoker m_shadowCasterEaseOutStoryboardRevoker{};
 
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };
@@ -440,6 +458,7 @@ private:
     winrt::SelectionModel m_selectionModel{};
     winrt::IVector<winrt::IInspectable> m_selectionModelSource{};
 
+    winrt::ItemsSourceView m_menuItemsSource{ nullptr };
     winrt::ItemsSourceView m_footerItemsSource{ nullptr };
 
     bool m_appliedTemplate{ false };
@@ -478,5 +497,7 @@ private:
     bool m_OrientationChangedPendingAnimation{ false };
 
     bool m_TabKeyPrecedesFocusChange{ false };
+
+    bool m_isLeftPaneTitleEmpty{ false };
 };
 

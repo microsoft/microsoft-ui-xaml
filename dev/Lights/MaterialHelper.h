@@ -213,6 +213,7 @@ public:
     static void ResetFailedToAttachLightsCount();
 
 private:
+    bool IsFullScreenOrTabletModeImpl();
     void EnsureCompositionCapabilities();
     void EnsureSizeChangedHandler();
 
@@ -253,6 +254,8 @@ private:
     bool m_wasWindowHidden{};                           // True if we've received CoreWindow.VisiblityChanged w/ Visibility == false
     bool m_waitingForRenderingAfterBecomingVisible{};   // True if we got a VisibilityChanged(True) and are waiting for a CT.Rendering to complete the RS2 workaround for Bug 11159685
     bool m_energySaverStatusChangedRevokerValid{};
+    bool m_isFullScreenModeValid{};
+    bool m_isFullScreenMode{};
 
     event<std::function<void(com_ptr<MaterialHelperBase>, bool)>> m_policyChangedListeners;
     event<std::function<void(com_ptr<MaterialHelperBase>, bool)>> m_sizeChangedListeners;

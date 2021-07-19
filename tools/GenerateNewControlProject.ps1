@@ -59,16 +59,38 @@ foreach ($file in $files)
 # Add project to FeatureAreas.props
 $featureAreasProps = $muxControlsDir + "\FeatureAreas.props";
 [xml]$xml = Get-Content $featureAreasProps
-foreach ($group in $xml.Project.PropertyGroup)
+$featureEnabledName = "Feature" + $controlName + "Enabled"
+foreach ($group in $xml.Project.ChildNodes)
 {
-    if ($group.Attributes['Condition'].Value -ne $null -and $group.Attributes['Condition'].Value.Contains("(SolutionName) != 'MUXControlsInnerLoop'"))
+    if($group.NodeType -eq "Comment")
     {
-        $featureEnabledName = "Feature" + $controlName + "Enabled"
-        $enabled = $xml.CreateElement($featureEnabledName, $xml.Project.NamespaceURI);
-        $enabled.AppendChild($xml.CreateTextNode("true"))
-        $group.AppendChild($enabled);
+        # Get comment before list of all areas
+        if($null -ne $group.NextSibling.Attributes -and $null -ne $group.NextSibling.Attributes['Condition'].Value -and $group.NextSibling.Attributes['Condition'].Value.Contains("(SolutionName) != 'MUXControlsInnerLoop'"))
+        {
+            # Comment for dependencies
+            $controlDependenciesComment = $xml.CreateComment(" Dependencies for $($controlName) ")
+            $xml.Project.InsertBefore($controlDependenciesComment, $group);
+
+            # Control dependencies list
+            $controlDependenciesNode = $xml.CreateElement("PropertyGroup",$xml.Project.NamespaceURI);
+            $controlDependenciesCondition = "Exists('InnerLoopAreas.props') And `$(SolutionName) == 'MUXControlsInnerLoop' And `$(" + $featureEnabledName + ") == 'true'"
+            AddAttribute $xml $controlDependenciesNode "Condition" $controlDependenciesCondition
+            # Make node have empty content and not be a one liner
+            $controlDependenciesNode.InnerText = "";
+            $xml.Project.InsertBefore($controlDependenciesNode, $group);
+        }
+    }else
+    {
+        # Add new control to list of all controls to build
+        if ($null -ne $group.Attributes['Condition'].Value -and $group.Attributes['Condition'].Value.Contains("(SolutionName) != 'MUXControlsInnerLoop'"))
+        {
+            $enabled = $xml.CreateElement($featureEnabledName, $xml.Project.NamespaceURI);
+            $enabled.AppendChild($xml.CreateTextNode("true"));
+            $group.AppendChild($enabled);
+        }
     }
 }
+
 $xml.Save($featureAreasProps)
 
 # Add project to MUX.vcxproj
@@ -81,6 +103,7 @@ foreach ($group in $xml.Project.ImportGroup)
         $import = $xml.CreateElement("Import", $xml.Project.NamespaceURI);
         AddAttribute $xml $import "Project" "..\$controlName\$controlName.vcxitems"
         AddAttribute $xml $import "Label" "Shared"
+        AddAttribute $xml $import "Condition" "`$($($featureEnabledName)) == 'true' Or `$($($featureEnabledName)) == 'productOnly'"
         $group.AppendChild($import);
     }
 }
@@ -90,9 +113,9 @@ $xml.Save($muxProject)
 $testProject = $muxControlsDir + "\test\MUXControls.Test\MUXControls.Test.Shared.targets";
 [xml]$xml = Get-Content $testProject
 $import = $xml.CreateElement("Import", $xml.Project.NamespaceURI);
-AddAttribute $xml $import "Project" "`$(MSBuildThisFileDirectory)\..\..\dev\$controlName\InteractionTests\$($controlName)_InteractionTests.projitems" 
+AddAttribute $xml $import "Project" "..\..\dev\$controlName\InteractionTests\$($controlName)_InteractionTests.projitems" 
 AddAttribute $xml $import "Label" "Shared"
-AddAttribute $xml $import "Condition" "`$(Feature$($controlName)Enabled) == 'true'"
+AddAttribute $xml $import "Condition" "`$($($featureEnabledName)) == 'true'"
 $xml.Project.AppendChild($import);
 $xml.Save($testProject)
 
@@ -102,7 +125,17 @@ $testAppProject = $muxControlsDir + "\test\MUXControlsTestApp\MUXControlsTestApp
 $import = $xml.CreateElement("Import", $xml.Project.NamespaceURI);
 AddAttribute $xml $import "Project" "`$(MSBuildThisFileDirectory)\..\..\dev\$controlName\TestUI\$($controlName)_TestUI.projitems"
 AddAttribute $xml $import "Label" "Shared"
-AddAttribute $xml $import "Condition" "`$(Feature$($controlName)Enabled) == 'true'"
+AddAttribute $xml $import "Condition" "`$($($featureEnabledName)) == 'true'"
+$xml.Project.AppendChild($import);
+$xml.Save($testAppProject)
+
+# Add API test project
+$testAppProject = $muxControlsDir + "\test\MUXControlsTestApp\MUXControlsTestApp.Shared.targets";
+[xml]$xml = Get-Content $testAppProject
+$import = $xml.CreateElement("Import", $xml.Project.NamespaceURI);
+AddAttribute $xml $import "Project" "`$(MSBuildThisFileDirectory)\..\..\dev\$controlName\APITests\$($controlName)_APITests.projitems"
+AddAttribute $xml $import "Label" "Shared"
+AddAttribute $xml $import "Condition" "`$($($featureEnabledName)) == 'true'"
 $xml.Project.AppendChild($import);
 $xml.Save($testAppProject)
 
@@ -117,7 +150,7 @@ $id = get-random
 # We need double backslash for C# strings below
 $cleanMuxControlsDir = $muxControlsDir.Replace("\","\\") + "\\"
 
-echo "$cleanMuxControlsDir"
+Write-Output "$cleanMuxControlsDir"
 
 $assemblies=(
 	"System","EnvDTE","EnvDTE80"
@@ -158,16 +191,18 @@ namespace SolutionHelper
                 SolutionFolder newControlFolder = (SolutionFolder)devSolutionFolder.AddSolutionFolder("$controlName").Object;
 
                 Console.WriteLine("Adding projects:");
-                Console.WriteLine("Adding source");
+                Console.WriteLine(" -Adding source");
                 newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\$($controlName).vcxitems");
-                Console.WriteLine("Adding test UI");
+                Console.WriteLine(" -Adding API test");
+                newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\APITests\\$($controlName)_APITests.shproj");
+                Console.WriteLine(" -Adding test UI");
                 newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\TestUI\\$($controlName)_TestUI.shproj");
-                Console.WriteLine("Adding interactions test");
+                Console.WriteLine(" -Adding interactions test");
                 newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\InteractionTests\\$($controlName)_InteractionTests.shproj");
                 Console.WriteLine("Finished adding projects, saving solution");
 
                 solution.Close(true);
-                Console.WriteLine("Saved solution" + solutionName);
+                Console.WriteLine("Saved solution " + solutionName);
             }
         }
     }
@@ -189,4 +224,4 @@ $solutionPaths = $vspath + "\Common7\IDE\PublicAssemblies";
 
 Add-Type -ReferencedAssemblies $assemblies -TypeDefinition $source -Language CSharp
 
-iex "[SolutionHelper.SolutionRegister$id]::Main()"
+Invoke-Expression "[SolutionHelper.SolutionRegister$id]::Main()"

@@ -1,0 +1,36 @@
+﻿namespace MU_XC_NAMESPACE
+{
+[MUX_PUBLIC]
+[default_interface]
+[webhosthidden]
+runtimeclass BreadcrumbBarItemClickedEventArgs
+{
+    Int32 Index { get; };
+    Object Item { get; };
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass BreadcrumbBarItem : Windows.UI.Xaml.Controls.ContentControl
+{
+    BreadcrumbBarItem();
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass BreadcrumbBar : Windows.UI.Xaml.Controls.Control
+{
+    BreadcrumbBar();
+
+    Object ItemsSource{ get; set; };
+    Object ItemTemplate{ get; set; };
+
+    event Windows.Foundation.TypedEventHandler<BreadcrumbBar, BreadcrumbBarItemClickedEventArgs> ItemClicked;
+
+    static Windows.UI.Xaml.DependencyProperty ItemsSourceProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ItemTemplateProperty{ get; };
+}
+
+}

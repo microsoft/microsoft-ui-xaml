@@ -1,20 +1,15 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IRatingItemInfo", 9ccbe6a2-591e-47a0-a318-6a1f7947da2d)]
-[WUXC_CONSTRUCTOR_NAME("IRatingItemInfoFactory", b0fd43d6-cfec-43c8-9ac5-0b0d5e25d862)]
 unsealed runtimeclass RatingItemInfo : Windows.UI.Xaml.DependencyObject
 {
     RatingItemInfo();
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IRatingItemFontInfo", 054723e9-7989-4d5c-9d01-a7eb876f1071)]
-[WUXC_STATIC_NAME("IRatingItemFontInfoStatics", fb214f01-6434-4eeb-82ff-7ce5d40bf510)]
-[WUXC_CONSTRUCTOR_NAME("IRatingItemFontInfoFactory", 9603fe56-9e9f-40b5-bae1-4481bb73bcd3)]
 unsealed runtimeclass RatingItemFontInfo : RatingItemInfo
 {
     RatingItemFontInfo();
@@ -34,11 +29,8 @@ unsealed runtimeclass RatingItemFontInfo : RatingItemInfo
     static Windows.UI.Xaml.DependencyProperty UnsetGlyphProperty { get; };
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IRatingItemImageInfo", 25240e8c-e0d2-490e-b8f8-96c8ee0512b9)]
-[WUXC_STATIC_NAME("IRatingItemImageInfoStatics", 8438486b-4b1c-4123-ba0b-73484d68c338)]
-[WUXC_CONSTRUCTOR_NAME("IRatingItemImageInfoFactory", 269e03f2-da79-4787-9f4a-24a6fa56cde2)]
 unsealed runtimeclass RatingItemImageInfo : RatingItemInfo
 {
     RatingItemImageInfo();
@@ -58,11 +50,8 @@ unsealed runtimeclass RatingItemImageInfo : RatingItemInfo
     static Windows.UI.Xaml.DependencyProperty UnsetImageProperty { get; };
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IRatingControl", a7d91ca7-e5cf-4963-a24e-9673fe5ffdd5)]
-[WUXC_STATIC_NAME("IRatingControlStatics", d062d399-ad85-4c1c-b2c4-35dd4432275e)]
-[WUXC_CONSTRUCTOR_NAME("IRatingControlFactory", 18d81716-c542-4ccb-b347-5e62c5db782e)]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass RatingControl : Windows.UI.Xaml.Controls.Control

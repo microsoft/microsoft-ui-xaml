@@ -37,6 +37,8 @@ NumberBox::NumberBox()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NumberBox);
 
+    Loaded({ this, &NumberBox::OnLoaded });
+
     NumberFormatter(GetRegionalSettingsAwareDecimalFormatter());
 
     PointerWheelChanged({ this, &NumberBox::OnNumberBoxScroll });
@@ -46,6 +48,10 @@ NumberBox::NumberBox()
 
     SetDefaultStyleKey(this);
     SetDefaultInputScope();
+
+    // We are not revoking this since the event and the listener reside on the same object and as such have the same lifecycle.
+    // That means that as soon as the NumberBox gets removed so will the event and the listener.
+    this->RegisterPropertyChangedCallback(winrt::AutomationProperties::NameProperty(), { this , &NumberBox::OnAutomationPropertiesNamePropertyChanged });
 }
 
 void NumberBox::SetDefaultInputScope()
@@ -168,18 +174,6 @@ void NumberBox::OnApplyTemplate()
             }
 
             m_textBoxKeyUpRevoker = textBox.KeyUp(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyUp });
-
-            // Listen to NumberBox::CornerRadius changes so that we can enfore the T-rule for the textbox in SpinButtonPlacementMode::Inline.
-            // We need to explicitly go to the corresponding visual state each time the NumberBox' CornerRadius is changed in order for the new
-            // corner radius values to be filtered correctly.
-            // If we only go to the SpinButtonsVisible visual state whenever the SpinButtonPlacementMode is changed to Inline, all subsequent
-            // corner radius changes would apply to all four textbox corners (this can be easily seen in the CornerRadius test page of the MUXControlsTestApp).
-            // This will break the T-rule in the Inline SpinButtonPlacementMode.
-            if (SharedHelpers::IsControlCornerRadiusAvailable())
-            {
-                m_cornerRadiusChangedRevoker = RegisterPropertyChanged(*this,
-                    winrt::Control::CornerRadiusProperty(), { this, &NumberBox::OnCornerRadiusPropertyChanged });
-            }  
         }
         return textBox;
     }());
@@ -217,10 +211,11 @@ void NumberBox::OnApplyTemplate()
     // .NET rounds to 12 significant digits when displaying doubles, so we will do the same.
     m_displayRounder.SignificantDigits(12);
 
-    UpdateSpinButtonPlacement();
     UpdateSpinButtonEnabled();
 
     UpdateVisualStateForIsEnabledChange();
+
+    ReevaluateForwardedUIAName();
 
     if (ReadLocalValue(s_ValueProperty) == winrt::DependencyProperty::UnsetValue()
         && ReadLocalValue(s_TextProperty) != winrt::DependencyProperty::UnsetValue())
@@ -234,13 +229,10 @@ void NumberBox::OnApplyTemplate()
     }
 }
 
-void NumberBox::OnCornerRadiusPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+void NumberBox::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
-    if (this->SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline)
-    {
-        // Enforce T-rule for the textbox in Inline SpinButtonPlacementMode.
-        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsVisible", false);
-    }
+    // This is done OnLoaded so TextBox VisualStates can be updated properly.
+    UpdateSpinButtonPlacement();
 }
 
 void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -359,6 +351,32 @@ void NumberBox::OnValidationModePropertyChanged(const winrt::DependencyPropertyC
 void NumberBox::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&)
 {
     UpdateVisualStateForIsEnabledChange();
+}
+
+void NumberBox::OnAutomationPropertiesNamePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+{
+    ReevaluateForwardedUIAName();
+}
+
+void NumberBox::ReevaluateForwardedUIAName()
+{
+    if (const auto textBox = m_textBox.get())
+    {
+        const auto name = winrt::AutomationProperties::GetName(*this);
+        if (!name.empty())
+        {
+            // AutomationProperties.Name is a non empty string, we will use that value.
+            winrt::AutomationProperties::SetName(textBox, name);
+        }
+        else
+        {
+            if (const auto headerAsString = Header().try_as<winrt::IReference<winrt::hstring>>())
+            {
+                // Header is a string, we can use that as our UIA name.
+                winrt::AutomationProperties::SetName(textBox, headerAsString.Value());
+            }
+        }
+    }
 }
 
 void NumberBox::UpdateVisualStateForIsEnabledChange()
@@ -613,18 +631,21 @@ void NumberBox::UpdateTextToValue()
 void NumberBox::UpdateSpinButtonPlacement()
 {
     const auto spinButtonMode = SpinButtonPlacementMode();
+    auto state = L"SpinButtonsCollapsed";
 
     if (spinButtonMode == winrt::NumberBoxSpinButtonPlacementMode::Inline)
     {
-        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsVisible", false);
+        state = L"SpinButtonsVisible";
     }
     else if (spinButtonMode == winrt::NumberBoxSpinButtonPlacementMode::Compact)
     {
-        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsPopup", false);
+        state = L"SpinButtonsPopup";
     }
-    else
+
+    winrt::VisualStateManager::GoToState(*this, state, false);
+    if (const auto textbox = m_textBox.get())
     {
-        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsCollapsed", false);
+        winrt::VisualStateManager::GoToState(textbox, state, false);
     }
 }
 
@@ -686,6 +707,11 @@ void NumberBox::UpdateHeaderPresenterState()
         {
             // Header is not a string, so let's show header presenter
             shouldShowHeader = true;
+            // When our header isn't a string, we use the NumberBox's UIA name for the textbox's UIA name.
+            if (const auto textBox = m_textBox.get())
+            {
+                winrt::AutomationProperties::SetName(textBox, winrt::AutomationProperties::GetName(*this));
+            }
         }
     }
     if(const auto headerTemplate = HeaderTemplate())
@@ -706,6 +732,8 @@ void NumberBox::UpdateHeaderPresenterState()
     {
         headerPresenter.Visibility(shouldShowHeader ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
     }
+
+    ReevaluateForwardedUIAName();
 }
 
 void NumberBox::MoveCaretToTextEnd()

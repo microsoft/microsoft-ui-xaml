@@ -68,41 +68,50 @@ void ProgressBar::OnIsIndeterminatePropertyChanged(const winrt::DependencyProper
 
 void ProgressBar::OnShowPausedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    SetProgressBarIndicatorWidth();
     UpdateStates();
 }
 
 void ProgressBar::OnShowErrorPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    SetProgressBarIndicatorWidth();
     UpdateStates();
 }
 
 void ProgressBar::UpdateStates()
 {
-    if (ShowError() && IsIndeterminate())
+    if (IsIndeterminate())
     {
-        winrt::VisualStateManager::GoToState(*this, s_IndeterminateErrorStateName, true);
-    }
-    else if (ShowError())
-    {
-        winrt::VisualStateManager::GoToState(*this, s_ErrorStateName, true);
-    }
-    else if (ShowPaused() && IsIndeterminate())
-    {
-        winrt::VisualStateManager::GoToState(*this, s_IndeterminatePausedStateName, true);
-    }
-    else if (ShowPaused())
-    {
-        winrt::VisualStateManager::GoToState(*this, s_PausedStateName, true);
-    }
-    else if (IsIndeterminate())
-    {
+        if (ShowError())
+        {
+            winrt::VisualStateManager::GoToState(*this, s_IndeterminateErrorStateName, true);
+        }
+        else if (ShowPaused())
+        {
+            winrt::VisualStateManager::GoToState(*this, s_IndeterminatePausedStateName, true);
+        }
+        else
+        {
+            winrt::VisualStateManager::GoToState(*this, s_IndeterminateStateName, true);
+        }
         UpdateWidthBasedTemplateSettings();
-        winrt::VisualStateManager::GoToState(*this, s_IndeterminateStateName, true);
     }
-    else if (!IsIndeterminate())
+    else
     {
-        winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
+        if (ShowError())
+        {
+            winrt::VisualStateManager::GoToState(*this, s_ErrorStateName, true);
+        }
+        else if(ShowPaused())
+        {
+            winrt::VisualStateManager::GoToState(*this, s_PausedStateName, true);
+        }
+        else
+        {
+            winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
+        }
     }
+
 }
 
 void ProgressBar::SetProgressBarIndicatorWidth()
@@ -121,7 +130,14 @@ void ProgressBar::SetProgressBarIndicatorWidth()
 
             // Adds "Updating" state in between to trigger RepositionThemeAnimation Visual Transition
             // in ProgressBar.xaml when reverting back to previous state
-            winrt::VisualStateManager::GoToState(*this, s_UpdatingStateName, true);
+            if (ShowError())
+            {
+                winrt::VisualStateManager::GoToState(*this, s_UpdatingWithErrorStateName, true);
+            }
+            else
+            {
+                winrt::VisualStateManager::GoToState(*this, s_UpdatingStateName, true);
+            }
 
             if (IsIndeterminate())
             {
@@ -134,7 +150,15 @@ void ProgressBar::SetProgressBarIndicatorWidth()
 
                 if (auto&& indeterminateProgressBarIndicator2 = m_indeterminateProgressBarIndicator2.get())
                 {
-                    indeterminateProgressBarIndicator2.Width(progressBarWidth * 0.6); // 60% of ProgressBar Width
+                    if (ShowPaused() || ShowError()) // If IndeterminatePaused or IndeterminateError
+                    {
+                        indeterminateProgressBarIndicator2.Width(progressBarWidth); // 100% of ProgressBar Width
+                    }
+                    else
+                    {
+                        indeterminateProgressBarIndicator2.Width(progressBarWidth * 0.6); // 60% of ProgressBar Width
+                    }
+                    
                 }
             }
             else if (std::abs(maximum - minimum) > DBL_EPSILON)
@@ -180,7 +204,7 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
     templateSettings->Container2AnimationStartPosition(indeterminateProgressBarIndicatorWidth2 * -1.5); // Position at -150%
     templateSettings->Container2AnimationEndPosition(indeterminateProgressBarIndicatorWidth2 * 1.66); // Position at 166%
 
-    templateSettings->ContainerAnimationMidPosition(width * 0.2);
+    templateSettings->ContainerAnimationMidPosition(0);
 
     const auto rectangle = [width, height, padding = Padding()]()
     {

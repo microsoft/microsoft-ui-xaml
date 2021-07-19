@@ -23,5 +23,5 @@
   
        WriteLine("-filter " + MakeWindowsTypeFullName(type));
     }
-    WriteLine("-filter Microsoft.UI.Composition.Effects");
+    WriteLine("-filter Microsoft.UI.Private.Composition.Effects");
 #>

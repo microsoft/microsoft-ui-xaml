@@ -126,11 +126,11 @@
     <comment>English example: Community Rating, 3.3 of 6.</comment>
   </data>
   <data name="RatingUnset" xml:space="preserve">
-    <value>रेटिंग सेट नहीं</value>
+    <value>रेटिंग अनसेट</value>
     <comment>This text is used to show the number of stars none are selected.</comment>
   </data>
   <data name="RatingLocalizedControlType" xml:space="preserve">
-    <value>मूल्यांकन नियंत्रण</value>
+    <value>रेटिंग स्लाइडर</value>
     <comment>A simple description of the control for UIA</comment>
   </data>
 </root>

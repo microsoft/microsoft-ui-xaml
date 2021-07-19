@@ -1361,8 +1361,6 @@
         </Setter>
     </Style>
 
-    <Style TargetType="CommandBar" BasedOn="{StaticResource CommandBarRevealStyle}" />
-
     <Style TargetType="ListViewItem" x:Key="ListViewItemRevealStyle">
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />

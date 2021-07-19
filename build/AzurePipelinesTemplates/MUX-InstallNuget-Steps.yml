@@ -1,5 +1,5 @@
 parameters:
-  nugetVersion: 5.2.0
+  nugetVersion: 5.8.0
 
 steps:
   - task: NuGetToolInstaller@0

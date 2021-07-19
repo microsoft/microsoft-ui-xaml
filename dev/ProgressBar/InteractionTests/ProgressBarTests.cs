@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -42,6 +42,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void ChangeValueTest()
         {
             using (var setup = new TestSetupHelper("ProgressBar Tests"))
@@ -67,6 +68,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void UpdateIndicatorWidthTest()
         {
             using (var setup = new TestSetupHelper("ProgressBar Tests"))
@@ -82,12 +84,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 TextBlock widthInputText = FindElement.ByName<TextBlock>("WidthInputText");
                 TextBlock indicatorWidthText = FindElement.ByName<TextBlock>("IndicatorWidthText");
 
+                Button updateMinMaxButton = FindElement.ByName<Button>("UpdateMinMaxButton");
                 Button changeValueButton = FindElement.ByName<Button>("ChangeValueButton");
                 Button updateWidthButton = FindElement.ByName<Button>("UpdateWidthButton");
 
                 minimumInput.SetValue("0");
                 maximumInput.SetValue("100");
+                updateMinMaxButton.InvokeAndWait();
+
                 widthInput.SetValue("100");
+                updateWidthButton.InvokeAndWait();
 
                 Verify.AreEqual(progressBar.Minimum, 0);
                 Verify.AreEqual(progressBar.Maximum, 100);
@@ -116,6 +122,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 minimumInput.SetValue("10");
                 maximumInput.SetValue("16");
+                updateMinMaxButton.InvokeAndWait();
 
                 changeValueButton.InvokeAndWait();
 
@@ -123,11 +130,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 double adjustedValueFromRange = progressBar.Value - progressBar.Minimum;
                 double calculatedValue = (adjustedValueFromRange / range) * Convert.ToDouble(widthInputText.DocumentText);
 
-                Verify.AreEqual(calculatedValue, Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator Width is adjusted based on range and ProgressBar width");
+                Verify.IsLessThan(Math.Abs(calculatedValue - Convert.ToDouble(indicatorWidthText.DocumentText)), 0.5, "Indicator Width is adjusted based on range and ProgressBar width");
             }
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void UpdateMinMaxTest()
         {
             using (var setup = new TestSetupHelper("ProgressBar Tests"))
@@ -139,13 +147,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 double oldMinimumInputText = progressBar.Minimum;
                 double oldMaximumInputText = progressBar.Maximum;
 
+                Button updateMinMaxButton = FindElement.ByName<Button>("UpdateMinMaxButton");
                 Edit minimumInput = FindElement.ByName<Edit>("MinimumInput");
                 Edit maximumInput = FindElement.ByName<Edit>("MaximumInput");
 
                 minimumInput.SetValue("10");
                 maximumInput.SetValue("15");
-
-                Button updateMinMaxButton = FindElement.ByName<Button>("UpdateMinMaxButton");
                 updateMinMaxButton.InvokeAndWait();
 
                 double newMinimumInputText = progressBar.Minimum;
@@ -175,7 +182,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 minimumInput.SetValue("0.1");
                 maximumInput.SetValue("1.1");
-
                 updateMinMaxButton.InvokeAndWait();
 
                 double oldValue = progressBar.Value;
@@ -191,6 +197,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void ChangeStateTest()
         {
             using (var setup = new TestSetupHelper("ProgressBar Tests"))
@@ -253,6 +260,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void PaddingOffsetTest()
         {
             using (var setup = new TestSetupHelper("ProgressBar Tests"))
@@ -266,7 +274,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 TextBlock paddingLeftText = FindElement.ByName<TextBlock>("PaddingLeftText");
                 TextBlock paddingRightText = FindElement.ByName<TextBlock>("PaddingRightText");
-                TextBlock indicatorWidthText = FindElement.ByName<TextBlock>("IndicatorWidthText");     
+                TextBlock indicatorWidthText = FindElement.ByName<TextBlock>("IndicatorWidthText");
+                TextBlock widthInputText = FindElement.ByName<TextBlock>("WidthInputText");
 
                 paddingLeftInput.SetValue("0");
                 paddingRightInput.SetValue("0");
@@ -290,22 +299,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Button updateValueButton = FindElement.ByName<Button>("UpdateValueButton");
                 updateValueButton.InvokeAndWait();
 
-                double maxIndicatorWidth = progressBar.Value - Convert.ToDouble(paddingLeftText.DocumentText) - Convert.ToDouble(paddingRightText.DocumentText);
+                double maxIndicatorWidth = Convert.ToDouble(widthInputText.DocumentText) - Convert.ToDouble(paddingLeftText.DocumentText) - Convert.ToDouble(paddingRightText.DocumentText);
 
-                Verify.AreEqual(maxIndicatorWidth, Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator at max width is offset by Padding");
+                Verify.AreEqual(maxIndicatorWidth, Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator at max width is reduced by Padding");
             }
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void RetemplateUpdateIndicatorWidthTest()
         {
             using (var setup = new TestSetupHelper("ProgressBar Tests"))
             {
-                Log.Comment("Navigate to Progress Bar Re-template Page");
-
-                Button navigateToReTemplatePage = FindElement.ByName<Button>("NavigateToReTemplatePage");
-
-                Log.Comment("Set Re-template ProgressBar settings to default for testing");
+                //Log.Comment("Navigate to ProgressBar Re-template Page");
+                //Button navigateToReTemplatePage = FindElement.ByName<Button>("NavigateToReTemplatePage");
+                //Log.Comment("Set Re-template ProgressBar settings to default for testing");
 
                 RangeValueSpinner progressBar = FindElement.ByName<RangeValueSpinner>("TestProgressBar");
 
@@ -316,12 +324,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 TextBlock widthInputText = FindElement.ByName<TextBlock>("WidthInputText");
                 TextBlock indicatorWidthText = FindElement.ByName<TextBlock>("IndicatorWidthText");
 
+                Button updateMinMaxButton = FindElement.ByName<Button>("UpdateMinMaxButton");
                 Button changeValueButton = FindElement.ByName<Button>("ChangeValueButton");
                 Button updateWidthButton = FindElement.ByName<Button>("UpdateWidthButton");
 
                 minimumInput.SetValue("0");
                 maximumInput.SetValue("100");
+                updateMinMaxButton.InvokeAndWait();
+
                 widthInput.SetValue("100");
+                updateWidthButton.InvokeAndWait();
 
                 Verify.AreEqual(progressBar.Minimum, 0);
                 Verify.AreEqual(progressBar.Maximum, 100);
@@ -350,6 +362,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 minimumInput.SetValue("10");
                 maximumInput.SetValue("16");
+                updateMinMaxButton.InvokeAndWait();
 
                 changeValueButton.InvokeAndWait();
 
@@ -357,18 +370,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 double adjustedValueFromRange = progressBar.Value - progressBar.Minimum;
                 double calculatedValue = (adjustedValueFromRange / range) * Convert.ToDouble(widthInputText.DocumentText);
 
-                Verify.AreEqual(calculatedValue, Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator Width is adjusted based on range and Re-template ProgressBar width");
+                Verify.IsLessThan(Math.Abs(calculatedValue - Convert.ToDouble(indicatorWidthText.DocumentText)), 0.5, "Indicator Width is adjusted based on range and Re-template ProgressBar width");
             }
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void ReTemplateChangeStateTest()
         {
             using (var setup = new TestSetupHelper("ProgressBar Tests"))
             {
-                Log.Comment("Navigate to Progress Bar Re-template Page");
-
-                Button navigateToReTemplatePage = FindElement.ByName<Button>("NavigateToReTemplatePage");
+                //Log.Comment("Navigate to Progress Bar Re-template Page");
+                //Button navigateToReTemplatePage = FindElement.ByName<Button>("NavigateToReTemplatePage");
 
                 Log.Comment("Verify all properties are set to false by default for testing");
 

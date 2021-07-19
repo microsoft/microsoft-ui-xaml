@@ -41,6 +41,7 @@ public:
 
     // IFrameworkElement
     void OnApplyTemplate();
+    void OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&);
 
     void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -68,8 +69,10 @@ private:
     void OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
-    void OnCornerRadiusPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&);
+    void OnAutomationPropertiesNamePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
+
+    void ReevaluateForwardedUIAName();
 
     void ValidateInput();
     void CoerceMinimum();
@@ -108,8 +111,6 @@ private:
     winrt::TextBox::KeyUp_revoker m_textBoxKeyUpRevoker{};
     winrt::RepeatButton::Click_revoker m_popupUpButtonClickRevoker{};
     winrt::RepeatButton::Click_revoker m_popupDownButtonClickRevoker{};
-
-    PropertyChanged_revoker m_cornerRadiusChangedRevoker{};
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
 };

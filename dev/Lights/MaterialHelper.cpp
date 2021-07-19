@@ -894,9 +894,12 @@ void MaterialHelper::OnVisibilityChanged(const winrt::CoreWindow&, const winrt::
 // experience severe rendering lag in resize scenarios (Bug 13289165).
 void MaterialHelper::OnSizeChanged(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
 {
-    const bool isFullScreenOrTabletMode = IsFullScreenOrTabletMode();
-
     const auto strongThis = get_strong();
+
+    // When IsFullScreen changes we get a SizeChanged event.
+    strongThis->m_isFullScreenModeValid = false;
+
+    const bool isFullScreenOrTabletMode = strongThis->IsFullScreenOrTabletModeImpl();
     m_sizeChangedListeners(strongThis, isFullScreenOrTabletMode);
 }
 
@@ -1007,34 +1010,45 @@ bool MaterialHelper::RS2IsSafeToCreateNoise()
 /* static */
 bool MaterialHelper::IsFullScreenOrTabletMode()
 {
-    try
-    {
-        auto instance = LifetimeHandler::GetMaterialHelperInstance();
+    auto instance = LifetimeHandler::GetMaterialHelperInstance();
+    return instance->IsFullScreenOrTabletModeImpl();
+}
 
-        // ApplicationView::GetForCurrentView() is an expensive call - make sure to cache the ApplicationView
-        if (!instance->m_applicationView)
+bool MaterialHelper::IsFullScreenOrTabletModeImpl()
+{
+    if (!m_isFullScreenModeValid)
+    {
+        try
         {
-            instance->m_applicationView = winrt::ViewManagement::ApplicationView::GetForCurrentView();
+            // ApplicationView::GetForCurrentView() is an expensive call - make sure to cache the ApplicationView
+            if (!m_applicationView)
+            {
+                m_applicationView = winrt::ViewManagement::ApplicationView::GetForCurrentView();
+            }
+
+            // UIViewSettings::GetForCurrentView() is an expensive call - make sure to cache the UIViewSettings
+            if (!m_uiViewSettings)
+            {
+                m_uiViewSettings = winrt::ViewManagement::UIViewSettings::GetForCurrentView();
+            }
+
+            const bool isFullScreenMode = m_applicationView.IsFullScreenMode();
+            const bool isTabletMode = m_uiViewSettings.UserInteractionMode() == winrt::ViewManagement::UserInteractionMode::Touch;
+
+            m_isFullScreenMode = isFullScreenMode || isTabletMode;
+        }
+        catch (winrt::hresult_error)
+        {
+            // Calling GetForCurrentView on threads without a CoreWindow throws an error. This can happen in XamlIsland scenarios.
+            // In those cases assume that we are not in full screen or tablet mode for now.
+            // Task 19285526: In Islands, IsFullScreenOrTabletMode() can use ApplicationView or UIViewSettings.
+            m_isFullScreenMode = false;
         }
 
-        // UIViewSettings::GetForCurrentView() is an expensive call - make sure to cache the UIViewSettings
-        if (!instance->m_uiViewSettings)
-        {
-            instance->m_uiViewSettings = winrt::ViewManagement::UIViewSettings::GetForCurrentView();
-        }
-
-        const bool isFullScreenMode = instance->m_applicationView.IsFullScreenMode();
-        const bool isTabletMode = instance->m_uiViewSettings.UserInteractionMode() == winrt::ViewManagement::UserInteractionMode::Touch;
-
-        return isFullScreenMode || isTabletMode;
+        m_isFullScreenModeValid = true;
     }
-    catch (winrt::hresult_error)
-    {
-        // Calling GetForCurrentView on threads without a CoreWindow throws an error. This can happen in XamlIsland scenarios.
-        // In those cases assume that we are not in full screen or tablet mode for now.
-        // Task 19285526: In Islands, IsFullScreenOrTabletMode() can use ApplicationView or UIViewSettings.
-        return false;
-    }
+
+    return m_isFullScreenMode;
 }
 
 /* static */

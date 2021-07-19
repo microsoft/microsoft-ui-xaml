@@ -2,7 +2,7 @@
 {
 
 #ifdef ApplicableRangeType
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 enum SnapPointApplicableRangeType
 {
@@ -11,7 +11,7 @@ enum SnapPointApplicableRangeType
 };
 #endif
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 enum ScrollSnapPointsAlignment
 {
@@ -20,7 +20,7 @@ enum ScrollSnapPointsAlignment
     Far = 2,
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
@@ -33,7 +33,7 @@ unsealed runtimeclass SnapPointBase
 #endif
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
@@ -43,7 +43,7 @@ unsealed runtimeclass ScrollSnapPointBase
     ScrollSnapPointsAlignment Alignment { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
@@ -63,7 +63,7 @@ unsealed runtimeclass ScrollSnapPoint
     Double Value { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
@@ -92,7 +92,7 @@ unsealed runtimeclass RepeatedScrollSnapPoint
     Double End { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
@@ -101,7 +101,7 @@ unsealed runtimeclass ZoomSnapPointBase
 {
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
@@ -119,7 +119,7 @@ unsealed runtimeclass ZoomSnapPoint
     Double Value { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
@@ -146,7 +146,7 @@ unsealed runtimeclass RepeatedZoomSnapPoint
     Double End { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass ScrollControllerScrollToRequestedEventArgs
 {
@@ -157,7 +157,7 @@ runtimeclass ScrollControllerScrollToRequestedEventArgs
     Int32 CorrelationId { get; set; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass ScrollControllerScrollByRequestedEventArgs
 {
@@ -168,7 +168,7 @@ runtimeclass ScrollControllerScrollByRequestedEventArgs
     Int32 CorrelationId { get; set; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass ScrollControllerAddScrollVelocityRequestedEventArgs
 {
@@ -179,7 +179,7 @@ runtimeclass ScrollControllerAddScrollVelocityRequestedEventArgs
     Int32 CorrelationId { get; set; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass ScrollControllerInteractionRequestedEventArgs
 {
@@ -189,7 +189,7 @@ runtimeclass ScrollControllerInteractionRequestedEventArgs
     Boolean Handled { get; set; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 interface IScrollController
 {
@@ -211,7 +211,7 @@ interface IScrollController
     event Windows.Foundation.TypedEventHandler<IScrollController, Object> InteractionInfoChanged;
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [contentproperty("Content")]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
