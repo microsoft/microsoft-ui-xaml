@@ -32,6 +32,10 @@
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPressed" ResourceKey="TextFillColorTertiaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronForeground" ResourceKey="TextFillColorSecondaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronPointerOverForeground" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronPressedForeground" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronSubMenuOpenedForeground" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronDisabledForeground" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundChecked" ResourceKey="AccentFillColorDefaultBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush"/>
@@ -64,6 +68,10 @@
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPressed" ResourceKey="TextFillColorTertiaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronForeground" ResourceKey="TextFillColorSecondaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronPointerOverForeground" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronPressedForeground" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronSubMenuOpenedForeground" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronDisabledForeground" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundChecked" ResourceKey="AccentFillColorDefaultBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush"/>
@@ -83,18 +91,22 @@
             <StaticResource x:Key="CommandBarFlyoutBackground" ResourceKey="SystemControlBackgroundBaseLowBrush"/>
             <StaticResource x:Key="CommandBarFlyoutForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
             <StaticResource x:Key="CommandBarFlyoutBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush"/>
-            <SolidColorBrush x:Key="CommandBarFlyoutAppBarButtonBackground" Opacity="0" Color="{ThemeResource SystemColorButtonFaceColor}"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush"/>
+            <SolidColorBrush x:Key="CommandBarFlyoutAppBarButtonBackground" Opacity="0" Color="{ThemeResource SystemColorHighlightColor}"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundPointerOver" ResourceKey="SystemControlHighlightBaseHighBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush"/>
-            <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPressed" ResourceKey="SystemControlForegroundBaseHighBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronPointerOverForeground" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronPressedForeground" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronSubMenuOpenedForeground" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronDisabledForeground" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundChecked" ResourceKey="SystemControlHighlightAccentBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPointerOver" ResourceKey="SystemControlHighlightAccentBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPressed" ResourceKey="SystemControlHighlightBaseMediumLowBrush"/>
@@ -208,6 +220,7 @@
                                         <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
                                         <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
+                                        <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonSubItemChevronDisabledForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowNormal" />
@@ -217,6 +230,7 @@
                                         <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
                                         <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPointerOver}" />
+                                        <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonSubItemChevronPointerOverForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowPressed">
@@ -225,6 +239,7 @@
                                         <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPressed}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPressed}" />
                                         <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPressed}" />
+                                        <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonSubItemChevronPressedForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowSubMenuOpened">
@@ -233,6 +248,7 @@
                                         <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
                                         <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonKeyboardTextLabelForegroundPointerOver}" />
+                                        <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonSubItemChevronSubMenuOpenedForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
