@@ -138,7 +138,7 @@
             Visibility=Collapsed
             RenderSize=0,0
         [Windows.UI.Xaml.Controls.FontIcon]
-            Foreground=#CC000000
+            Foreground=#93000000
             Name=SubItemChevron
             Margin=12,0,12,0
             FocusVisualSecondaryThickness=1,1,1,1

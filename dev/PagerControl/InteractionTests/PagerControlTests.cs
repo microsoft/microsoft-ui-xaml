@@ -555,5 +555,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 VerifyAutoDisplayMode();
             }
         }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void VerifyButtonVisibilitySetInXAMLApplied()
+        {
+            using (var setup = new TestSetupHelper("PagerControl Tests"))
+            {
+                elements = new PagerControlTestPageElements();
+
+                // Invoke button
+                elements.GetCheckIfButtonsHiddenButton().Click();
+
+                Wait.ForIdle();
+                  
+                // Check result
+                Verify.AreEqual("Passed", elements.GetCheckIfButtonsHiddenLabel().GetText(), "Not all buttons where hidden and as such, the test result was not 'Passed'");
+            }
+        }
     }
 }

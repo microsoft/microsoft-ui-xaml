@@ -118,19 +118,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="BasicRatingString" xml:space="preserve">
-    <value>ការ​ចាត់​ថ្នាក់ %1 លើ %2</value>
+    <value>ការផ្ដល់ចំណាត់ថ្នាក់៖ %1​ នៃ %2</value>
     <comment>English example: Rating, 1.0 of 5.</comment>
   </data>
   <data name="CommunityRatingString" xml:space="preserve">
-    <value>ការ​ចាត់​ថ្នាក់​សហគមន៍ %1 លើ %2</value>
+    <value>ការផ្ដល់​ចំណាត់ថ្នាក់​សហគមន៍ %1 នៃ %2</value>
     <comment>English example: Community Rating, 3.3 of 6.</comment>
   </data>
   <data name="RatingUnset" xml:space="preserve">
-    <value>មិន​កំណត់​ការ​ចាត់​ថ្នាក់</value>
+    <value>មិនបានកំណត់ការ​ផ្តល់ចំណាត់ថ្នាក់</value>
     <comment>This text is used to show the number of stars none are selected.</comment>
   </data>
   <data name="RatingLocalizedControlType" xml:space="preserve">
-    <value>ការផ្តល់ចំណាត់ថ្នាក់របារំកិលកំរិត</value>
+    <value>របារំកិលការផ្តល់ចំណាត់ថ្នាក់</value>
     <comment>A simple description of the control for UIA</comment>
   </data>
 </root>

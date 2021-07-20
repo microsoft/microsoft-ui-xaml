@@ -14,6 +14,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Footer\PaneFooterTestPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Footer\PaneLayoutTestPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -110,6 +114,9 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)DialogWithNavView.xaml.cs">
       <DependentUpon>DialogWithNavView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Footer\PaneFooterTestPage.xaml.cs">
+      <DependentUpon>PaneFooterTestPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Footer\PaneLayoutTestPage.xaml.cs">
       <DependentUpon>PaneLayoutTestPage.xaml</DependentUpon>

@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 interface IAnimatedVisual
     requires Windows.Foundation.IClosable
@@ -11,7 +11,7 @@ interface IAnimatedVisual
     Windows.Foundation.TimeSpan Duration{ get; };
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 interface IAnimatedVisualSource
 {
@@ -20,7 +20,7 @@ interface IAnimatedVisualSource
         out Object diagnostics);
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 interface IDynamicAnimatedVisualSource
     requires IAnimatedVisualSource
@@ -28,7 +28,7 @@ interface IDynamicAnimatedVisualSource
     event Windows.Foundation.TypedEventHandler<IDynamicAnimatedVisualSource, Object> AnimatedVisualInvalidated;
 };
 
-[WUXC_VERSION_INTERNAL]
+[MUX_INTERNAL]
 [webhosthidden]
 interface ISelfPlayingAnimatedVisual
     requires IAnimatedVisual
@@ -43,7 +43,7 @@ interface ISelfPlayingAnimatedVisual
     void SetSize(Windows.Foundation.Size size);
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 [contentproperty("Source")]
 unsealed runtimeclass AnimatedVisualPlayer

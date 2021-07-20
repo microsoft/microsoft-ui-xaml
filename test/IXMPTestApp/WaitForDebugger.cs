@@ -26,6 +26,7 @@ namespace MUXControlsTestApp
     public class WaitForDebugger
     {
         [AssemblyInitialize]
+        [TestProperty("HelixWorkItemCreation", "CreateWorkItemPerTestClass")]
         public static void AssemblyInitialize(TestContext testContext)
         {
             if (testContext.Properties.Contains("WaitForDebugger") || testContext.Properties.Contains("WaitForAppDebugger"))

@@ -1,4 +1,11 @@
-﻿using Microsoft.Build.Framework;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+// This is no test coverage for BatchMergeXaml, MergedDictionary and StripNamespaces.
+// Please manually verify them if you make change on it. For example, checkout the buildoutput intermediate files 
+// and do the comparision between 19h1_generic_v1.prefixed.xaml and 19h1_generic_v1.xaml 
+
+using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
@@ -9,6 +16,8 @@ namespace CustomTasks
 {
     public class BatchMergeXaml : Task
     {
+        public string PagesFilteredBy { get; set; }
+
         [Required]
         public ITaskItem[] RS1Pages { get; set; }
 
@@ -26,6 +35,9 @@ namespace CustomTasks
 
         [Required]
         public ITaskItem[] N19H1Pages { get; set; }
+
+        [Required]
+        public ITaskItem[] T21H1Pages { get; set; }
 
         [Required]
         // The output file format is like rs1_themeresources.xaml, rs2_generic.xaml, rs2_compact_generic.xaml.
@@ -67,6 +79,12 @@ namespace CustomTasks
             {
                 foreach (ITaskItem item in items)
                 {
+                    if (!string.IsNullOrEmpty(PagesFilteredBy) && !item.GetMetadata(PagesFilteredBy).Equals("true", StringComparison.OrdinalIgnoreCase))
+                    {
+                        this.LogMessage(MessageImportance.Low, "Filtered item " + item.ItemSpec);
+                        continue;
+                    }
+
                     string file = item.ItemSpec;
                     if (File.Exists(file))
                     {
@@ -74,7 +92,7 @@ namespace CustomTasks
                     }
                     else
                     {
-                        Log.LogError("Can't find page file " + file);
+                        this.LogError("Can't find page file " + file);
                     }
                 }
             }
@@ -85,7 +103,7 @@ namespace CustomTasks
 
         private void MergeAndGenerateXaml(MergedDictionary mergedDictionary, List<string> files, string targetOSVersion, int apiVersion)
         {
-            Log.LogMessage("Merge and generate xaml Files for target os" + targetOSVersion);
+            this.LogMessage("Merge and generate xaml Files for target os" + targetOSVersion);
 
             foreach (string file in files)
             {
@@ -95,7 +113,7 @@ namespace CustomTasks
                 }
                 catch (Exception)
                 {
-                    Log.LogError("Exception found when merge file " + file);
+                    this.LogError("Exception found when merge file " + file);
                     throw;
                 }
             }
@@ -120,12 +138,12 @@ namespace CustomTasks
         {
             if (string.IsNullOrEmpty(OutputDirectory) || !Directory.Exists(OutputDirectory))
             {
-                Log.LogError("OutputDirectory is empty or not existing");
+                this.LogError("OutputDirectory is empty or not existing");
             }
 
             if (string.IsNullOrEmpty(PostfixForGeneratedFile))
             {
-                Log.LogError("PostfixForGeneratedFile is empty");
+                this.LogError("PostfixForGeneratedFile is empty");
             }
 
             postfixForPrefixedGeneratedFile = PostfixForGeneratedFile + ".prefixed";
@@ -138,6 +156,7 @@ namespace CustomTasks
                 ExecuteForTaskItems(RS4Pages, "RS4");
                 ExecuteForTaskItems(RS5Pages, "RS5");
                 ExecuteForTaskItems(N19H1Pages, "19H1");
+                ExecuteForTaskItems(T21H1Pages, "21H1");
             }
 
             var filesRead = new List<string>();
@@ -147,6 +166,7 @@ namespace CustomTasks
             filesRead.AddRange(RS4Pages.Select(item => item.ItemSpec));
             filesRead.AddRange(RS5Pages.Select(item => item.ItemSpec));
             filesRead.AddRange(N19H1Pages.Select(item => item.ItemSpec));
+            filesRead.AddRange(T21H1Pages.Select(item => item.ItemSpec));
 
             File.WriteAllLines(TlogReadFilesOutputPath, filesRead);
 

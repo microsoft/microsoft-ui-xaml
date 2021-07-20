@@ -505,6 +505,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
+        [TestProperty("Ignore", "True")] // Disabled due to #4576: Unreliable test
         public void GamepadCanEscapeAndDoesNotSelectWithFocus()
         {
             using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
@@ -644,6 +645,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 elements = new RadioButtonsTestPageElements();
                 SetItemType(RadioButtonsSourceType.RadioButton);
                 SetSource(RadioButtonsSourceLocation.ItemSource);
+
+                Log.Comment("Verify the header is set as the name for the RadioButtons control.");
+                UIObject groupElement = TryFindElement.ByName("More Radio Buttons");
+                Verify.IsTrue(groupElement.ControlType == ControlType.Group);
 
                 SelectByIndex(1);
                 VerifySelectedIndex(1);

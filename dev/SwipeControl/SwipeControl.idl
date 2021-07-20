@@ -6,7 +6,7 @@ runtimeclass SwipeControl;
 runtimeclass SwipeItemInvokedEventArgs;
 runtimeclass SwipeItem;
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
 enum SwipeBehaviorOnInvoked
 {
@@ -15,7 +15,7 @@ enum SwipeBehaviorOnInvoked
     RemainOpen = 2,
 };
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
 enum SwipeMode
 {
@@ -23,11 +23,8 @@ enum SwipeMode
     Execute = 1,
 };
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("ISwipeItems", b01726ff-969a-40d0-9f04-76084ce6d7b7)]
-[WUXC_STATIC_NAME("ISwipeItemsStatics", 376250df-48db-43e3-b0e9-089e5da9a114)]
-[WUXC_CONSTRUCTOR_NAME("ISwipeItemsFactory", 47c460ee-d5aa-445f-b31e-50c076c011b9)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass SwipeItems : Windows.UI.Xaml.DependencyObject, Windows.Foundation.Collections.IVector<SwipeItem>
 {
@@ -40,11 +37,8 @@ unsealed runtimeclass SwipeItems : Windows.UI.Xaml.DependencyObject, Windows.Fou
     static Windows.UI.Xaml.DependencyProperty ModeProperty { get; };
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("ISwipeControl", 9ee3d96f-6704-4823-aa15-1c143bc53cf7)]
-[WUXC_STATIC_NAME("ISwipeControlStatics", e57ae83c-2216-4717-9ef6-4662334c6501)]
-[WUXC_CONSTRUCTOR_NAME("ISwipeControlFactory", c0aaa3ae-d141-4e12-a728-5f95b507e7ab)]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass SwipeControl : Windows.UI.Xaml.Controls.ContentControl
@@ -63,19 +57,15 @@ unsealed runtimeclass SwipeControl : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty BottomItemsProperty { get; };
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("ISwipeItemInvokedEventArgs", c5b025f5-cb32-4733-8011-5d0d37f4550a)]
 runtimeclass SwipeItemInvokedEventArgs
 {
     SwipeControl SwipeControl { get; };
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("ISwipeItem", 836edadc-45c8-4a00-90a0-7107fa894a1b)]
-[WUXC_STATIC_NAME("ISwipeItemStatics", d0b44e96-2766-4d93-b5db-f5e1be832c2d)]
-[WUXC_CONSTRUCTOR_NAME("ISwipeItemFactory", 844bd61a-1716-4097-bba2-7526da22de39)]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass SwipeItem : Windows.UI.Xaml.DependencyObject

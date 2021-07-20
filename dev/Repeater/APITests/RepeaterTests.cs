@@ -31,6 +31,7 @@ using System.Threading;
 using System.Collections.Generic;
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -149,6 +150,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        public void ValidateNullItemsSource()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                string errorMessage = string.Empty;
+                ItemsRepeater repeater = new ItemsRepeater();
+                try
+                {
+                    repeater.GetOrCreateElement(0);
+                }
+                catch (COMException e)
+                {
+                    errorMessage = e.Message;
+                }
+                //Make sure that we threw E_FAIL
+                Verify.IsTrue(errorMessage.Contains("ItemSource doesn't have a value"));
+            });
+        }
+
+
+        [TestMethod]
         public void VerifyClearingItemsSourceClearsElements()
         {
             var data = new ObservableCollection<string>(Enumerable.Range(0, 4).Select(i => "Item #" + i));
@@ -171,7 +193,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 repeater.ItemsSource = null;
             });
 
-            foreach(var item in mapping)
+            foreach (var item in mapping)
             {
                 Verify.IsNull(item.Parent);
             }
@@ -603,19 +625,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             RunOnUIThread.Execute(() =>
             {
-                for(int i=0; i<10;i++)
+                for (int i = 0; i < 10; i++)
                 {
                     var element = repeater.TryGetElement(i) as Button;
                     Verify.AreEqual(i.ToString(), element.Content);
                 }
             });
         }
-    
+
         [TestMethod]
         public void VerifyRepeaterDoesNotLeakItemContainers()
         {
             ObservableCollection<int> items = new ObservableCollection<int>();
-            for(int i=0;i<10;i++)
+            for (int i = 0; i < 10; i++)
             {
                 items.Add(i);
             }
@@ -626,7 +648,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 var template = (DataTemplate)XamlReader.Load("<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
                     + "xmlns:local='using:MUXControlsTestApp.Samples'>"
-                    + "<local:DisposableUserControl Number='{Binding}'/>" 
+                    + "<local:DisposableUserControl Number='{Binding}'/>"
                     + "</DataTemplate>");
                 Verify.IsNotNull(template);
                 Verify.AreEqual(0, MUXControlsTestApp.Samples.DisposableUserControl.OpenItems, "Verify we start with 0 DisposableUserControl");
@@ -639,7 +661,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 };
 
                 Content = repeater;
-                
+
             });
 
             IdleSynchronizer.Wait();
@@ -693,7 +715,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Log.Comment("Scroll to end");
                 scrollViewer.ViewChanged += (object sender, ScrollViewerViewChangedEventArgs e) =>
                 {
-                    if(!e.IsIntermediate)
+                    if (!e.IsIntermediate)
                     {
                         Log.Comment("ScrollViewer scrolling finished");
                         scrollViewerScrolledEvent.Set();

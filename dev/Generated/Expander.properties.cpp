@@ -18,6 +18,7 @@ GlobalDependencyProperty ExpanderProperties::s_HeaderProperty{ nullptr };
 GlobalDependencyProperty ExpanderProperties::s_HeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty ExpanderProperties::s_HeaderTemplateSelectorProperty{ nullptr };
 GlobalDependencyProperty ExpanderProperties::s_IsExpandedProperty{ nullptr };
+GlobalDependencyProperty ExpanderProperties::s_TemplateSettingsProperty{ nullptr };
 
 ExpanderProperties::ExpanderProperties()
     : m_collapsedEventSource{static_cast<Expander*>(this)}
@@ -83,6 +84,17 @@ void ExpanderProperties::EnsureProperties()
                 ValueHelper<bool>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnIsExpandedPropertyChanged));
     }
+    if (!s_TemplateSettingsProperty)
+    {
+        s_TemplateSettingsProperty =
+            InitializeDependencyProperty(
+                L"TemplateSettings",
+                winrt::name_of<winrt::ExpanderTemplateSettings>(),
+                winrt::name_of<winrt::Expander>(),
+                false /* isAttached */,
+                ValueHelper<winrt::ExpanderTemplateSettings>::BoxedDefaultValue(),
+                nullptr);
+    }
 }
 
 void ExpanderProperties::ClearProperties()
@@ -92,6 +104,7 @@ void ExpanderProperties::ClearProperties()
     s_HeaderTemplateProperty = nullptr;
     s_HeaderTemplateSelectorProperty = nullptr;
     s_IsExpandedProperty = nullptr;
+    s_TemplateSettingsProperty = nullptr;
 }
 
 void ExpanderProperties::OnExpandDirectionPropertyChanged(
@@ -173,6 +186,19 @@ void ExpanderProperties::IsExpanded(bool value)
 bool ExpanderProperties::IsExpanded()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<Expander*>(this)->GetValue(s_IsExpandedProperty));
+}
+
+void ExpanderProperties::TemplateSettings(winrt::ExpanderTemplateSettings const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<Expander*>(this)->SetValue(s_TemplateSettingsProperty, ValueHelper<winrt::ExpanderTemplateSettings>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::ExpanderTemplateSettings ExpanderProperties::TemplateSettings()
+{
+    return ValueHelper<winrt::ExpanderTemplateSettings>::CastOrUnbox(static_cast<Expander*>(this)->GetValue(s_TemplateSettingsProperty));
 }
 
 winrt::event_token ExpanderProperties::Collapsed(winrt::TypedEventHandler<winrt::Expander, winrt::ExpanderCollapsedEventArgs> const& value)

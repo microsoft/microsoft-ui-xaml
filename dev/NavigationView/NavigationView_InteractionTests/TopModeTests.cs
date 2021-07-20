@@ -205,9 +205,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 Log.Comment("Get CornerRadius of the overflow menu.");
                 FindElement.ByName<Button>("GetOverflowMenuCornerRadiusButton").Invoke();
 
-                // A CornerRadius of (4,4,4,4) is the current default value for flyouts.
+                // A CornerRadius of (8,8,8,8) is the current default value for flyouts.
                 TextBlock overflowMenuCornerRadiusTextBlock = new TextBlock(FindElement.ByName("OverflowMenuCornerRadiusTextBlock"));
-                Verify.AreEqual("4,4,4,4", overflowMenuCornerRadiusTextBlock.DocumentText);
+                Verify.AreEqual("8,8,8,8", overflowMenuCornerRadiusTextBlock.DocumentText);
 
                 UIObject GetOverflowButton()
                 {
@@ -513,6 +513,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // 32134869: Temporarily disabling 
         public void TopPaddingTest()
         {
             // We cannot restrict the inner framesize for this test because it interacts with the titlebar area.
@@ -644,6 +645,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as Reveal styles are being deprecated.
         public void VerifyTopNavigationItemFocusVisualKindRevealTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Store Test" }))

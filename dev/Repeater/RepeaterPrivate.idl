@@ -3,19 +3,19 @@ namespace MU_PRIVATE_CONTROLS_NAMESPACE
 
 interface IRepeaterScrollingSurface;
 
-[WUXC_VERSION_INTERNAL]
+[MUX_INTERNAL]
 [webhosthidden]
 delegate void ConfigurationChangedEventHandler(IRepeaterScrollingSurface sender);
 
-[WUXC_VERSION_INTERNAL]
+[MUX_INTERNAL]
 [webhosthidden]
 delegate void PostArrangeEventHandler(IRepeaterScrollingSurface sender);
 
-[WUXC_VERSION_INTERNAL]
+[MUX_INTERNAL]
 [webhosthidden]
 delegate void ViewportChangedEventHandler(IRepeaterScrollingSurface sender, Boolean isFinal);
 
-[WUXC_VERSION_INTERNAL]
+[MUX_INTERNAL]
 [webhosthidden]
 interface IRepeaterScrollingSurface
 {

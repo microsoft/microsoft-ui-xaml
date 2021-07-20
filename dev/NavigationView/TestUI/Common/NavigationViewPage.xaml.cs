@@ -461,6 +461,16 @@ namespace MUXControlsTestApp
             TVItem.IsEnabled = false;
         }
 
+        private void FlowDirectionCheckbox_Checked(object sender, RoutedEventArgs e)
+        {
+            this.FlowDirection = FlowDirection.LeftToRight;
+        }
+
+        private void FlowDirectionCheckbox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            this.FlowDirection = FlowDirection.RightToLeft;
+        }
+
         private void IsTitleBarAutoPaddingEnabledCheckbox_Checked(object sender, RoutedEventArgs e)
         {
             NavView.IsTitleBarAutoPaddingEnabled = true;
@@ -746,7 +756,7 @@ namespace MUXControlsTestApp
 
         private void GetTopLevelNavViewItemContentPresenterMarginButton_Click(object sender, RoutedEventArgs e)
         {         
-            if (FindVisualChildByName(HomeItem, "ContentPresenter") is ContentPresenter presenter)
+            if (FindVisualChildByName(HasChildItem, "ContentPresenter") is ContentPresenter presenter)
             {
                 NavViewItemContentPresenterMarginTextBlock.Text = presenter.Margin.ToString();
             }
@@ -779,6 +789,20 @@ namespace MUXControlsTestApp
         private void PaneAutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
             SuggestionChosenCheckbox.IsChecked = true;
+        }
+
+        private void ScrollItemIntoViewButton_Click(object sender, RoutedEventArgs e)
+        {
+            var tag = Convert.ToString((ScrollItemIntoViewComboBox.SelectedItem as ComboBoxItem).Tag);
+            switch (tag)
+            {
+                case "Home":
+                    HomeItem.StartBringIntoView();
+                    break;
+                case "HasChildItem":
+                    HasChildItem.StartBringIntoView();
+                    break;
+            }
         }
     }
 }

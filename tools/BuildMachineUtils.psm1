@@ -70,7 +70,7 @@ function Queue-BuildOnMachine
         }
 
     $root = @{
-        "sourceBranch" = "refs/heads/master";
+        "sourceBranch" = "refs/heads/main";
         "definition" = @{
             "id" = $BuildId
         };

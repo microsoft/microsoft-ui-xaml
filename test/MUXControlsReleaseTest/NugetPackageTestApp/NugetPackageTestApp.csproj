@@ -93,6 +93,10 @@
     <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
   </PropertyGroup>
   <PropertyGroup>
+    <NoWarn>
+      $(NoWarn);
+      8305 <!-- 'x' is for evaluation purposes only and is subject to change or removal in future updates. -->
+    </NoWarn>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>

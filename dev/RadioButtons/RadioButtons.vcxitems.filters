@@ -7,6 +7,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ColumnMajorUniformToLargestGridLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtonsElementFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtonsTestHooks.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtonsAutomationPeer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtons.h" />
@@ -14,11 +15,15 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ColumnMajorUniformToLargestGridLayout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtonsElementFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtonsTestHooks.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtonsAutomationPeer.h" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)RadioButton.xaml" />
     <Page Include="$(MSBuildThisFileDirectory)RadioButtons.xaml" />
     <Page Include="$(MSBuildThisFileDirectory)RadioButtons_themeresources.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)RadioButton.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)RadioButtons_v1.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)RadioButtons_themeresources_v1.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)RadioButton_v1.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)RadioButtons.idl" />

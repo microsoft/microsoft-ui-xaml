@@ -15,20 +15,27 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\Expander.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ExpanderTemplateSettings.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Expander.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ExpanderAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ExpanderTemplateSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\Expander.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ExpanderTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Expander.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ExpanderAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ExpanderTemplateSettings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)Expander.xaml">
+      <ControlsResourcesVersion>Any</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)Expander_themeresources.xaml">
+      <ControlsResourcesVersion>Any</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>

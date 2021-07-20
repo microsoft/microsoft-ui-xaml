@@ -181,6 +181,9 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BackdropMaterialTestPage.xaml.h">
+      <DependentUpon>BackdropMaterialTestPage.xaml</DependentUpon>
+    </ClInclude>
     <ClInclude Include="CornerRadiusTestPage.xaml.h">
       <DependentUpon>CornerRadiusTestPage.xaml</DependentUpon>
     </ClInclude>
@@ -205,6 +208,9 @@
     <ApplicationDefinition Include="App.xaml">
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="BackdropMaterialTestPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="CornerRadiusTestPage.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -239,6 +245,9 @@
   <ItemGroup>
     <ClCompile Include="App.xaml.cpp">
       <DependentUpon>App.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="BackdropMaterialTestPage.xaml.cpp">
+      <DependentUpon>BackdropMaterialTestPage.xaml</DependentUpon>
     </ClCompile>
     <ClCompile Include="CornerRadiusTestPage.xaml.cpp">
       <DependentUpon>CornerRadiusTestPage.xaml</DependentUpon>

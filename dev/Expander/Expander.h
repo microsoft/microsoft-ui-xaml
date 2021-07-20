@@ -6,6 +6,8 @@
 #include "pch.h"
 #include "common.h"
 
+#include "ExpanderTemplateSettings.h"
+
 #include "Expander.g.h"
 #include "Expander.properties.h"
 
@@ -33,4 +35,7 @@ public:
 private:
     void UpdateExpandDirection(bool useTransitions);
     void UpdateExpandState(bool useTransitions);
+    void OnContentSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args);
+
+    winrt::Border::SizeChanged_revoker m_expanderContentSizeChangedRevoker{};
 };

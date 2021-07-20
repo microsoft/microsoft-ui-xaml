@@ -1,1 +1,0 @@
-This directory can be used to store local nupkg files to be consumed by the Release Test apps.

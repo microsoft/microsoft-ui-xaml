@@ -117,8 +117,8 @@ namespace MUXControlsTestApp
         {
             get;
         } = new List<Tuple<ApplicationHighContrastAdjustment, string>> {
-            new Tuple<ApplicationHighContrastAdjustment, string>(ApplicationHighContrastAdjustment.Auto, "Auto (unaware)"),
-            new Tuple<ApplicationHighContrastAdjustment, string>(ApplicationHighContrastAdjustment.None, "None (high-contrast aware)") };
+            new Tuple<ApplicationHighContrastAdjustment, string>(ApplicationHighContrastAdjustment.None, "None (high-contrast aware)"),
+            new Tuple<ApplicationHighContrastAdjustment, string>(ApplicationHighContrastAdjustment.Auto, "Auto (unaware)") };
 
         public MainPage()
         {
@@ -156,7 +156,7 @@ namespace MUXControlsTestApp
             LanguageChooser.SelectedIndex = locales.IndexOf("en-US");
             LongAnimationsDisabled.IsChecked = MUXControlsTestApp.App.DisableLongAnimations;
             FlowDirectionChooser.SelectedIndex = FlowDirections.IndexOf(GetRootFlowDirection());
-            AppHighContrastAdjustmentChooser.SelectedIndex = AppHighContrastAdjustments.FindIndex(a => a.Item1 == ApplicationHighContrastAdjustment.Auto); // default to unaware
+            AppHighContrastAdjustmentChooser.SelectedIndex = AppHighContrastAdjustments.FindIndex(a => a.Item1 == ApplicationHighContrastAdjustment.None); // default to aware
 
             // App remembers ExtendViewIntoTitleBar and the value persists true if test case aborted and didn't change it back
             // Always set it to false when app restarted

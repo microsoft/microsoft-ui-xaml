@@ -1,14 +1,14 @@
 namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass MenuBarItemFlyout : Windows.UI.Xaml.Controls.MenuFlyout
 {
     MenuBarItemFlyout();
 }
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 [contentproperty("Items")]
 unsealed runtimeclass MenuBarItem : Windows.UI.Xaml.Controls.Control
@@ -22,7 +22,7 @@ unsealed runtimeclass MenuBarItem : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty ItemsProperty { get; };
 }
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 [contentproperty("Items")]
 unsealed runtimeclass MenuBar : Windows.UI.Xaml.Controls.Control

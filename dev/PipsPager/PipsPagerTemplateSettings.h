@@ -11,6 +11,4 @@ class PipsPagerTemplateSettings :
     public winrt::implementation::PipsPagerTemplateSettingsT<PipsPagerTemplateSettings>,
     public PipsPagerTemplateSettingsProperties
 {
-public:
-    PipsPagerTemplateSettings() { };
 };

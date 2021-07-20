@@ -7,13 +7,30 @@
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
+thread_local std::unique_ptr<std::map<winrt::hstring, winrt::weak_ref<RadioMenuFlyoutItem>>> RadioMenuFlyoutItem::s_selectionMap;
+
 RadioMenuFlyoutItem::RadioMenuFlyoutItem()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_RadioMenuFlyoutItem);
 
     m_InternalIsCheckedChangedRevoker = RegisterPropertyChanged(*this, winrt::ToggleMenuFlyoutItem::IsCheckedProperty(), { this, &RadioMenuFlyoutItem::OnInternalIsCheckedChanged });
 
+    if (!s_selectionMap)
+    {
+        // Ensure that this object exists
+        s_selectionMap = std::make_unique<std::map<winrt::hstring, winrt::weak_ref<RadioMenuFlyoutItem>>>();
+    }
+
     SetDefaultStyleKey(this);
+}
+
+RadioMenuFlyoutItem::~RadioMenuFlyoutItem()
+{
+    // If this is the checked item, remove it from the lookup.
+    if (m_isChecked)
+    {
+        SharedHelpers::EraseIfExists(*s_selectionMap, m_groupName);
+    }
 }
 
 void RadioMenuFlyoutItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -27,8 +44,13 @@ void RadioMenuFlyoutItem::OnPropertyChanged(const winrt::DependencyPropertyChang
             m_isSafeUncheck = true;
             InternalIsChecked(IsChecked());
             m_isSafeUncheck = false;
-            UpdateSiblings();
+            UpdateCheckedItemInGroup();
         }
+        m_isChecked = IsChecked();
+    }
+    else if (property == s_GroupNameProperty)
+    {
+        m_groupName = GroupName();
     }
 }
 
@@ -50,31 +72,54 @@ void RadioMenuFlyoutItem::OnInternalIsCheckedChanged(const winrt::DependencyObje
     else if (!IsChecked())
     {
         IsChecked(true);
-        UpdateSiblings();
+        UpdateCheckedItemInGroup();
     }
 }
 
-void RadioMenuFlyoutItem::UpdateSiblings()
+void RadioMenuFlyoutItem::UpdateCheckedItemInGroup()
 {
     if (IsChecked())
     {
-        // Since this item is checked, uncheck all siblings
-        if (auto parent = winrt::VisualTreeHelper::GetParent(*this))
+        const auto groupName = GroupName();
+
+        if (const auto previousCheckedItemWeak = (*s_selectionMap)[groupName])
         {
-            const int childrenCount = winrt::VisualTreeHelper::GetChildrenCount(parent);
-            for (int i = 0; i < childrenCount; i++)
+            if (auto previousCheckedItem = previousCheckedItemWeak.get())
             {
-                auto child = winrt::VisualTreeHelper::GetChild(parent, i);
-                if (auto radioItem = child.try_as<winrt::RadioMenuFlyoutItem>())
-                {
-                    if (winrt::get_self<RadioMenuFlyoutItem>(radioItem) != this
-                        && radioItem.GroupName() == GroupName())
-                    {
-                        radioItem.IsChecked(false);
-                    }
-                }
+                // Uncheck the previously checked item.
+                previousCheckedItem->IsChecked(false);
             }
         }
+        (*s_selectionMap)[groupName] = this->get_weak();
+    }
+}
 
+void RadioMenuFlyoutItem::OnAreCheckStatesEnabledPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (unbox_value<bool>(args.NewValue()))
+    {
+        if (auto const& subMenu = sender.try_as<winrt::MenuFlyoutSubItem>())
+        {
+            // Every time the submenu is loaded, see if it contains a checked RadioMenuFlyoutItem or not.
+            subMenu.Loaded(
+            {
+                [subMenuWeak = winrt::make_weak(subMenu)](winrt::IInspectable const& sender, auto const&)
+                {
+                    if (auto subMenu = subMenuWeak.get())
+                    {
+                        bool isAnyItemChecked = false;
+                        for (auto const& item : subMenu.Items())
+                        {
+                            if (auto const& radioItem = item.try_as<winrt::RadioMenuFlyoutItem>())
+                            {
+                                isAnyItemChecked = isAnyItemChecked || radioItem.IsChecked();
+                            }
+                        }
+
+                        winrt::VisualStateManager::GoToState(subMenu, isAnyItemChecked ? L"Checked" : L"Unchecked", false);
+                    }
+                }
+            });
+        }
     }
 }

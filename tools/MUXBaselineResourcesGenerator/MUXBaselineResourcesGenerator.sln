@@ -1,0 +1,67 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31026.100
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MUXBaselineResourcesGenerator", "MUXBaselineResourcesGenerator\MUXBaselineResourcesGenerator.csproj", "{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug_test|ARM = Debug_test|ARM
+		Debug_test|ARM64 = Debug_test|ARM64
+		Debug_test|x64 = Debug_test|x64
+		Debug_test|x86 = Debug_test|x86
+		Debug|ARM = Debug|ARM
+		Debug|ARM64 = Debug|ARM64
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|ARM = Release|ARM
+		Release|ARM64 = Release|ARM64
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug_test|ARM.ActiveCfg = Debug_test|ARM
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug_test|ARM.Build.0 = Debug_test|ARM
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug_test|ARM.Deploy.0 = Debug_test|ARM
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug_test|ARM64.ActiveCfg = Debug_test|ARM64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug_test|ARM64.Build.0 = Debug_test|ARM64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug_test|ARM64.Deploy.0 = Debug_test|ARM64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug_test|x64.ActiveCfg = Debug_test|x64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug_test|x64.Build.0 = Debug_test|x64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug_test|x64.Deploy.0 = Debug_test|x64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug_test|x86.ActiveCfg = Debug_test|x86
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug_test|x86.Build.0 = Debug_test|x86
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug_test|x86.Deploy.0 = Debug_test|x86
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug|ARM.ActiveCfg = Debug|ARM
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug|ARM.Build.0 = Debug|ARM
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug|ARM.Deploy.0 = Debug|ARM
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug|ARM64.Build.0 = Debug|ARM64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug|ARM64.Deploy.0 = Debug|ARM64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug|x64.ActiveCfg = Debug|x64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug|x64.Build.0 = Debug|x64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug|x64.Deploy.0 = Debug|x64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug|x86.ActiveCfg = Debug|x86
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug|x86.Build.0 = Debug|x86
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Debug|x86.Deploy.0 = Debug|x86
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Release|ARM.ActiveCfg = Release|ARM
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Release|ARM.Build.0 = Release|ARM
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Release|ARM.Deploy.0 = Release|ARM
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Release|ARM64.ActiveCfg = Release|ARM64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Release|ARM64.Build.0 = Release|ARM64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Release|ARM64.Deploy.0 = Release|ARM64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Release|x64.ActiveCfg = Release|x64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Release|x64.Build.0 = Release|x64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Release|x64.Deploy.0 = Release|x64
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Release|x86.ActiveCfg = Release|x86
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Release|x86.Build.0 = Release|x86
+		{50ECB244-D6E3-46ED-AD0F-35F7E5EE34E0}.Release|x86.Deploy.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {348432E6-C730-4390-8059-785A744986CB}
+	EndGlobalSection
+EndGlobal

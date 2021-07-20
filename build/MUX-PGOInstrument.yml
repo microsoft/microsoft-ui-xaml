@@ -53,7 +53,7 @@ jobs:
     runTestJobName: 'RunFrameworkPkgTestsInHelix'
     helixType: 'test/frpkg'
     dependsOn: CreateNugetPackage
-    pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
+    useFrameworkPkg: true
     matrix:
       Release_x86:
         buildPlatform: 'x86'

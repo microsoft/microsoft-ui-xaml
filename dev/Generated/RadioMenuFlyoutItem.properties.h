@@ -9,15 +9,20 @@ class RadioMenuFlyoutItemProperties
 public:
     RadioMenuFlyoutItemProperties();
 
+    static void SetAreCheckStatesEnabled(winrt::MenuFlyoutSubItem const& target, bool value);
+    static bool GetAreCheckStatesEnabled(winrt::MenuFlyoutSubItem const& target);
+
     void GroupName(winrt::hstring const& value);
     winrt::hstring GroupName();
 
     void IsChecked(bool value);
     bool IsChecked();
 
+    static winrt::DependencyProperty AreCheckStatesEnabledProperty() { return s_AreCheckStatesEnabledProperty; }
     static winrt::DependencyProperty GroupNameProperty() { return s_GroupNameProperty; }
     static winrt::DependencyProperty IsCheckedProperty() { return s_IsCheckedProperty; }
 
+    static GlobalDependencyProperty s_AreCheckStatesEnabledProperty;
     static GlobalDependencyProperty s_GroupNameProperty;
     static GlobalDependencyProperty s_IsCheckedProperty;
 

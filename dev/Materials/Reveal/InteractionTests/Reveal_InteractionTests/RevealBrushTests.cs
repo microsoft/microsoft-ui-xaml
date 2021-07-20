@@ -629,6 +629,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabling as Reveal Brush is being deprecated
         public void RevealBrushFromMarkup()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))

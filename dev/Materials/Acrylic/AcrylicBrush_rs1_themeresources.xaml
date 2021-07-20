@@ -45,11 +45,6 @@
             <SolidColorBrush x:Key="SystemControlAltHighAcrylicWindowBrush" Color="{StaticResource SystemAltHighColor}" />
             <SolidColorBrush x:Key="SystemControlAltHighAcrylicElementBrush" Color="{StaticResource SystemAltHighColor}" />
             <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="#000000" Opacity="0.36" />
-            <StaticResource x:Key="SystemControlTransientBackgroundBrush" ResourceKey="SystemChromeMediumLowColor" />
-            <StaticResource x:Key="SystemControlTransientAcrylicElementBrush" ResourceKey="SystemChromeMediumLowColor" />
-            <SolidColorBrush x:Key="SystemControlTransientBackgroundInverseBrush" Color="#F2F2F2" />
-            <StaticResource x:Key="SystemControlBaseAcrylicBrush" ResourceKey="SystemChromeMediumLowColor" />
-            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.0419"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -92,11 +87,6 @@
             <SolidColorBrush x:Key="SystemControlAltHighAcrylicWindowBrush" Color="{StaticResource SystemAltHighColor}" />
             <SolidColorBrush x:Key="SystemControlAltHighAcrylicElementBrush" Color="{StaticResource SystemAltHighColor}" />
             <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="#000000" Opacity="0.14" />
-            <StaticResource x:Key="SystemControlTransientBackgroundBrush" ResourceKey="SystemChromeMediumLowColor" />
-            <StaticResource x:Key="SystemControlTransientAcrylicElementBrush" ResourceKey="SystemChromeMediumLowColor" />
-            <SolidColorBrush x:Key="SystemControlTransientBackgroundInverseBrush" Color="#2B2B2B" />
-            <StaticResource x:Key="SystemControlBaseAcrylicBrush" ResourceKey="SystemChromeMediumLowColor" />
-            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.5"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -139,11 +129,6 @@
             <SolidColorBrush x:Key="SystemControlAltHighAcrylicWindowBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="SystemControlAltHighAcrylicElementBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="SystemControlTransientBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="SystemControlTransientAcrylicElementBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="SystemControlTransientBackgroundInverseBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="SystemControlBaseAcrylicBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="{ThemeResource SystemColorWindowColor}"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 

@@ -1,10 +1,8 @@
 ﻿namespace MU_XAP_NAMESPACE
 {
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IRatingControlAutomationPeer", 3d14349a-9963-4a47-823c-f457cb3209d5)]
-[WUXC_CONSTRUCTOR_NAME("IRatingControlAutomationPeerFactory", f179f272-9846-4632-8b9c-be6fa8d3c9bb)]
 unsealed runtimeclass RatingControlAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {
     [method_name("CreateInstanceWithOwner")] RatingControlAutomationPeer(MU_XC_NAMESPACE.RatingControl owner);

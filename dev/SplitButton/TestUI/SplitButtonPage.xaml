@@ -54,7 +54,7 @@
 
                 <StackPanel Style="{ThemeResource StandardGroupingStackPanel}" Margin="0,8,0,0">
                     <TextBlock Text="Demo controls" Style="{ThemeResource StandardGroupHeader}"/>
-                    <controls:SplitButton Margin="0,12,0,0" Content="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="12">
+                    <controls:SplitButton Margin="0,12,0,0" Content="&#xE710;" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="12">
                         <controls:SplitButton.Flyout>
                             <Flyout>
                                 <TextBlock Text="This button has a glyph as content"/>

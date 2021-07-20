@@ -11,7 +11,7 @@
 #include "ExpanderAutomationPeer.properties.cpp"
 
 // WPF ExpanderAutomationPeer:
-// https://github.com/dotnet/wpf/blob/master/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Automation/Peers/ExpanderAutomationPeer.cs
+// https://github.com/dotnet/wpf/blob/main/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Automation/Peers/ExpanderAutomationPeer.cs
 
 ExpanderAutomationPeer::ExpanderAutomationPeer(winrt::Expander const& owner)
     : ReferenceTracker(owner)

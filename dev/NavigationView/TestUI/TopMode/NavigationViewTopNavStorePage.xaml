@@ -57,7 +57,7 @@
             </controls:NavigationView.AutoSuggestBox>
 
             <StackPanel Background="BurlyWood">
-                <ScrollViewer x:Name="ContentScrollViewer" VerticalAlignment="Top">
+                <ScrollViewer x:Name="ContentScrollViewer" VerticalAlignment="Top" VerticalScrollBarVisibility="Disabled">
                     <StackPanel x:Name="ContentStackPanel" Orientation="Vertical">
                         <StackPanel Orientation="Horizontal">
                             <Button x:Name="MoveContentUnderTopnav" AutomationProperties.Name="MoveContentUnderTopnavButton" Margin="1" Content="Move/Remove content under Top nav + Scrollviewer checkup" Click="MoveContentUnderTopnav_Click"/>

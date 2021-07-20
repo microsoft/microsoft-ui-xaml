@@ -1,11 +1,8 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IColorPicker", 6232e371-5c64-43cb-8b35-7f82dde36740)]
-[WUXC_STATIC_NAME("IColorPickerStatics", 67ca9be7-1574-451a-b6df-fe57d9d07b46)]
-[WUXC_CONSTRUCTOR_NAME("IColorPickerFactory", abae07ff-aecf-481d-9204-201c3894cd1b)]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass ColorPicker : Windows.UI.Xaml.Controls.Control

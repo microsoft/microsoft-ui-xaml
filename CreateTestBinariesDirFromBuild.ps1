@@ -161,7 +161,6 @@ else
     {   
         $shouldBuild = $shouldBuild -Or (DoesTaefAppXNeedBuild -MuxDllFile $muxDllFile -ProjectName "MUXControlsTestApp" -Platform $Platform -Flavor $Flavor)
         $shouldBuild = $shouldBuild -Or (DoesTaefAppXNeedBuild -MuxDllFile $muxDllFile -ProjectName "IXMPTestApp" -Platform $Platform -Flavor $Flavor)
-        $shouldBuild = $shouldBuild -Or (DoesAppXNeedBuild -MuxDllFile $muxDllFile -ProjectName "MUXControlsTestAppWPFPackage" -Platform $Platform -Flavor $Flavor -AppXPath "MUXControlsTestAppWPFPackage\AppPackages\MUXControlsTestAppWPFPackage_Test\MUXControlsTestAppWPFPackage.appx" -ExePath "MUXControlsTestAppWPF\MUXControlsTestAppWPF.exe" -ProjectPath "MUXControlsTestAppWPFPackage\MUXControlsTestAppWPFPackage.wapproj")
         if($shouldBuild)
         {
             $buildCmd = "$PSScriptRoot\build.cmd $($Platform.ToLower()) $($Flavor.ToLower()) /target test\MUXControlsTestApp\MUXControlsTestApp_TAEF:Publish /target test\IXMPTestApp\IXMPTestApp_TAEF:Publish /target test\MUXControlsTestAppWPF\MUXControlsTestAppWPFPackage:Publish"
@@ -171,6 +170,7 @@ else
     {
         $shouldBuild = $shouldBuild -Or (DoesAppXNeedBuild -MuxDllFile $muxDllFile -ProjectName "NugetPackageTestApp" -Platform $Platform -Flavor $Flavor -AppXPath "NugetPackageTestApp\AppPackages\NugetPackageTestApp_Test\NugetPackageTestApp.appx" -ExePath "NugetPackageTestApp\NugetPackageTestApp.exe" -ProjectPath "MUXControlsReleaseTest\NugetPackageTestApp\NugetPackageTestApp.csproj")
         $shouldBuild = $shouldBuild -Or (DoesAppXNeedBuild -MuxDllFile $muxDllFile -ProjectName "NugetPackageTestAppCX" -Platform $Platform -Flavor $Flavor -AppXPath "NugetPackageTestAppCX\AppPackages\NugetPackageTestAppCX_Test\NugetPackageTestAppCX.appx" -ExePath "NugetPackageTestAppCX\NugetPackageTestAppCX.exe" -ProjectPath "MUXControlsReleaseTest\NugetPackageTestAppCX\NugetPackageTestAppCX.csproj")
+        $shouldBuild = $shouldBuild -Or (DoesAppXNeedBuild -MuxDllFile $muxDllFile -ProjectName "WpfApp" -Platform $Platform -Flavor $Flavor -AppXPath "WpfApp.Package\AppPackages\WpfApp_Test\WpfApp.msix" -ExePath "WpfApp\WpfApp.exe" -ProjectPath "MUXControlsReleaseTest\XamlIslandsTestApp\WpfApp\WpfApp.Package.wapproj")
         if($shouldBuild)
         {
             $buildCmd = "$PSScriptRoot\build.cmd $($Platform.ToLower()) $($Flavor.ToLower()) /project D:\microsoft-ui-xaml\test\MUXControlsReleaseTest\MUXControlsReleaseTest.sln"

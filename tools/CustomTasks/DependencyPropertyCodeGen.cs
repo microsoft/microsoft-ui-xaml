@@ -79,6 +79,11 @@ namespace CustomTasks
 
                 foreach (var type in types)
                 {
+                    if (!type.IsClass)
+                    {
+                        continue;
+                    }
+                    
                     var typeDefinition = new TypeDefinition();
                     typeDefinition.Type = type;
 
@@ -348,7 +353,6 @@ namespace CustomTasks
                 switch (genericName)
                 {
                     case "System.Nullable": genericName = "IReference"; break;
-                    case "System.Collections.Generic.IList": genericName = "IVector"; break;
                     case "System.Collections.Generic.IList": genericName = "IVector"; break;
                     case "Windows.Foundation.TypedEventHandler": genericName = "TypedEventHandler"; break;
                     case "System.EventHandler": genericName = "EventHandler"; break;

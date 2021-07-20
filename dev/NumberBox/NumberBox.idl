@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 enum NumberBoxSpinButtonPlacementMode
 {
@@ -10,7 +10,7 @@ enum NumberBoxSpinButtonPlacementMode
     Inline
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 enum NumberBoxValidationMode
 {
@@ -18,7 +18,7 @@ enum NumberBoxValidationMode
     Disabled
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 runtimeclass NumberBoxValueChangedEventArgs
 {
@@ -26,7 +26,7 @@ runtimeclass NumberBoxValueChangedEventArgs
     Double NewValue{ get; };
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
 {
@@ -58,7 +58,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     Object Header;
     Windows.UI.Xaml.DataTemplate HeaderTemplate;
 
-    [WUXC_VERSION_PREVIEW]
+    [MUX_PREVIEW]
     {
         Windows.UI.Xaml.Input.InputScope InputScope;
     }
@@ -67,7 +67,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     Windows.UI.Xaml.Controls.Primitives.FlyoutBase SelectionFlyout;
     Windows.UI.Xaml.Media.SolidColorBrush SelectionHighlightColor;
 
-    [WUXC_VERSION_PREVIEW]
+    [MUX_PREVIEW]
     {
         [MUX_DEFAULT_VALUE("winrt::TextAlignment::Left")]
         Windows.UI.Xaml.TextAlignment TextAlignment;
@@ -109,7 +109,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
 
-    [WUXC_VERSION_PREVIEW]
+    [MUX_PREVIEW]
     {
         static Windows.UI.Xaml.DependencyProperty InputScopeProperty{ get; };
     }
@@ -118,7 +118,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty SelectionFlyoutProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SelectionHighlightColorProperty{ get; };
 
-    [WUXC_VERSION_PREVIEW]
+    [MUX_PREVIEW]
     {
         static Windows.UI.Xaml.DependencyProperty TextAlignmentProperty{ get; };
     }
@@ -140,7 +140,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
 namespace MU_XAP_NAMESPACE
 {
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass NumberBoxAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {

@@ -15,8 +15,12 @@ jobs:
   # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
   condition:
     eq(variables['useBuildOutputFromBuildId'],'')
-  pool:
-    name: 'windevbuildagents'
+  pool: 
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/microsoft/') }}:
+      name: WinDevPool-L
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/microsoft/') }}:
+      name: WinDevPoolOSS-L
+    demands: ImageOverride -equals WinDevVS16-9
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
@@ -61,84 +65,23 @@ jobs:
     displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
 
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+    parameters:
+      signOutput: true
 
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
-
-- job: SignBinariesAndPublishSymbols
-  dependsOn: Build
-  condition:
-    in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
-  pool:
-    name: Package ES Lab E
-
-  steps:
-  - task: PkgESSetupBuild@10
-    displayName: 'XESSetupBuild'
-    inputs:
-      productName: dep.controls
-      branchVersion: false
-      nugetVer: true
-
-  - task: DownloadBuildArtifacts@0
-    condition:
-      eq(variables['useBuildOutputFromBuildId'],'')
-    inputs:
-      artifactName: drop
-      downloadPath: '$(Build.ArtifactStagingDirectory)'
-
-  - task: DownloadBuildArtifacts@0
-    condition:
-      ne(variables['useBuildOutputFromBuildId'],'')
-    inputs:
-      buildType: specific
-      buildVersionToDownload: specific
-      project: $(System.TeamProjectId)
-      pipeline: $(System.DefinitionId)
-      buildId: $(useBuildOutputFromBuildId)
-      artifactName: drop
-      downloadPath: '$(Build.ArtifactStagingDirectory)'
-
-  - task: CmdLine@1
-    displayName: 'Display build machine environment variables'
-    inputs:
-      filename: 'set'
-
-  - script: cmd /c dir /s /b $(Build.ArtifactStagingDirectory)
-    displayName: Dump artifact staging directory
-
-  - template: AzurePipelinesTemplates\MUX-PopulateBuildDateAndRevision-Steps.yml
-
-  - task: powershell@2
-    inputs:
-      targetType: filePath
-      filePath: $(Build.SourcesDirectory)\tools\PublishSymbols\PublishSymbols.ps1
-      arguments: -localDirectory "$(Build.ArtifactStagingDirectory)\drop" -Verbose
-    displayName: 'Publish Symbols'
-
-  - task: PkgESCodeSign@10
-    displayName: CodeSign
-    env:
-      SYSTEM_ACCESSTOKEN: $(system.accesstoken)
-    inputs:
-      signConfigXml: '$(Build.SourcesDirectory)\build\SignConfig.xml'
-      inPathRoot: '$(Build.ArtifactStagingDirectory)\drop'
-      outPathRoot: '$(Build.ArtifactStagingDirectory)\drop'
-
-  # Re-publish signed artifacts to the drop.
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish artifact: drop'
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)\drop'
-      artifactName: 'drop'
 
 # Create Nuget Package
 - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
   parameters:
     jobName: CreateNugetPackage
-    dependsOn: SignBinariesAndPublishSymbols
-    signConfig: '$(Build.SourcesDirectory)\build\NuGetSignConfig.xml'
+    dependsOn: Build
+    signOutput: true
     useReleaseTag: '$(MUXFinalRelease)'
     prereleaseVersionTag: prerelease
+
+- template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
+  parameters:
+    dependsOn: Build
 
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
@@ -148,7 +91,7 @@ jobs:
     runTestJobName: 'RunNugetPkgTestsInHelix'
     helixType: 'test/nuget'
     dependsOn: CreateNugetPackage
-    pkgArtifactPath: '$(artifactDownloadPath)\drop'
+    useFrameworkPkg: false
 
 # Framework package tests
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
@@ -158,7 +101,7 @@ jobs:
     runTestJobName: 'RunFrameworkPkgTestsInHelix'
     helixType: 'test/frpkg'
     dependsOn: CreateNugetPackage
-    pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
+    useFrameworkPkg: true
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:

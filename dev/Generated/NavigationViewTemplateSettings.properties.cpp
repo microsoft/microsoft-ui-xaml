@@ -17,7 +17,9 @@ GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_BackButtonV
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_LeftPaneVisibilityProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_OverflowButtonVisibilityProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_PaneToggleButtonVisibilityProperty{ nullptr };
+GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_PaneToggleButtonWidthProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_SingleSelectionFollowsFocusProperty{ nullptr };
+GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_SmallerPaneToggleButtonWidthProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_TopPaddingProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_TopPaneVisibilityProperty{ nullptr };
 
@@ -72,6 +74,17 @@ void NavigationViewTemplateSettingsProperties::EnsureProperties()
                 ValueHelper<winrt::Visibility>::BoxValueIfNecessary(winrt::Visibility::Visible),
                 nullptr);
     }
+    if (!s_PaneToggleButtonWidthProperty)
+    {
+        s_PaneToggleButtonWidthProperty =
+            InitializeDependencyProperty(
+                L"PaneToggleButtonWidth",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::NavigationViewTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                nullptr);
+    }
     if (!s_SingleSelectionFollowsFocusProperty)
     {
         s_SingleSelectionFollowsFocusProperty =
@@ -81,6 +94,17 @@ void NavigationViewTemplateSettingsProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationViewTemplateSettings>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_SmallerPaneToggleButtonWidthProperty)
+    {
+        s_SmallerPaneToggleButtonWidthProperty =
+            InitializeDependencyProperty(
+                L"SmallerPaneToggleButtonWidth",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::NavigationViewTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_TopPaddingProperty)
@@ -113,7 +137,9 @@ void NavigationViewTemplateSettingsProperties::ClearProperties()
     s_LeftPaneVisibilityProperty = nullptr;
     s_OverflowButtonVisibilityProperty = nullptr;
     s_PaneToggleButtonVisibilityProperty = nullptr;
+    s_PaneToggleButtonWidthProperty = nullptr;
     s_SingleSelectionFollowsFocusProperty = nullptr;
+    s_SmallerPaneToggleButtonWidthProperty = nullptr;
     s_TopPaddingProperty = nullptr;
     s_TopPaneVisibilityProperty = nullptr;
 }
@@ -170,6 +196,19 @@ winrt::Visibility NavigationViewTemplateSettingsProperties::PaneToggleButtonVisi
     return ValueHelper<winrt::Visibility>::CastOrUnbox(static_cast<NavigationViewTemplateSettings*>(this)->GetValue(s_PaneToggleButtonVisibilityProperty));
 }
 
+void NavigationViewTemplateSettingsProperties::PaneToggleButtonWidth(double value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<NavigationViewTemplateSettings*>(this)->SetValue(s_PaneToggleButtonWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
+}
+
+double NavigationViewTemplateSettingsProperties::PaneToggleButtonWidth()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<NavigationViewTemplateSettings*>(this)->GetValue(s_PaneToggleButtonWidthProperty));
+}
+
 void NavigationViewTemplateSettingsProperties::SingleSelectionFollowsFocus(bool value)
 {
     [[gsl::suppress(con)]]
@@ -181,6 +220,19 @@ void NavigationViewTemplateSettingsProperties::SingleSelectionFollowsFocus(bool 
 bool NavigationViewTemplateSettingsProperties::SingleSelectionFollowsFocus()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<NavigationViewTemplateSettings*>(this)->GetValue(s_SingleSelectionFollowsFocusProperty));
+}
+
+void NavigationViewTemplateSettingsProperties::SmallerPaneToggleButtonWidth(double value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<NavigationViewTemplateSettings*>(this)->SetValue(s_SmallerPaneToggleButtonWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
+}
+
+double NavigationViewTemplateSettingsProperties::SmallerPaneToggleButtonWidth()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<NavigationViewTemplateSettings*>(this)->GetValue(s_SmallerPaneToggleButtonWidthProperty));
 }
 
 void NavigationViewTemplateSettingsProperties::TopPadding(double value)

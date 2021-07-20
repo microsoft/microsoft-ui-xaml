@@ -492,7 +492,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
             {
                 int height = FindElement.ById("AppsItem").BoundingRectangle.Height;
-                Verify.AreEqual(height, 40);
+                Verify.AreEqual(height, 36);
             }
         }
 
@@ -622,6 +622,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabling test as Reveal style is being deprecated
         public void LeftNavigationFocusKindRevealTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -1447,7 +1448,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                         }
 
                         Button navButton = new Button(FindElement.ById("TogglePaneButton"));
-                        Verify.AreEqual(320, navButton.BoundingRectangle.Width);
+                        Verify.AreEqual(312, navButton.BoundingRectangle.Width);
                     }
                 }
             }
@@ -1682,6 +1683,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // 32134869: Temporarily disabling 
         public void VerifyNavigationViewItemContentPresenterMargin()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -1690,10 +1692,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var getChildContentPresenterMarginButton = FindElement.ById<Button>("GetChildNavViewItemContentPresenterMarginButton");
                 var contentPresenterMarginTextBlock = new TextBlock(FindElement.ByName("NavViewItemContentPresenterMarginTextBlock"));
 
+                var scrollItemIntoViewComboBox = new ComboBox(FindElement.ByName("ScrollItemIntoViewComboBox"));
+                var scrollItemIntoViewButton = FindElement.ById<Button>("ScrollItemIntoViewButton");
+
                 // Switch the NavigationView to closed compact mode
                 Log.Comment("Switch NavigationView to closed compact mode");
                 SetNavViewWidth(ControlWidth.Medium);
                 Wait.ForIdle();
+
+                Log.Comment("Ensure test menu item is in view");
+                scrollItemIntoViewComboBox.SelectItemByName("HasChildItem");
+                Wait.ForIdle();
+                scrollItemIntoViewButton.InvokeAndWait();
 
                 // Verify that top-level items use the correct content margin
                 getTopLevelContentPresenterMarginButton.InvokeAndWait();
@@ -1703,19 +1713,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 Log.Comment("Expand item with children");
                 UIObject hasChildItem = FindElement.ByName("HasChildItem");
                 InputHelper.LeftClick(hasChildItem);
+                Wait.ForMilliseconds(100); // Give a little bit of time for the flyout to open, then wait for idle.
                 Wait.ForIdle();
 
                 getChildContentPresenterMarginButton.InvokeAndWait();
-                Verify.AreEqual("0,0,20,0", contentPresenterMarginTextBlock.DocumentText);
+                Verify.AreEqual("4,0,20,0", contentPresenterMarginTextBlock.DocumentText);
+
+                // Close opened flyout
+                InputHelper.LeftClick(hasChildItem);
+                Wait.ForIdle();
 
                 // Switch the NavigationView to expanded mode
                 Log.Comment("Switch NavigationView to expanded mode");
                 SetNavViewWidth(ControlWidth.Wide);
                 Wait.ForIdle();
 
+                Log.Comment("Ensure test menu item is in view");
+                scrollItemIntoViewComboBox.SelectItemByName("HasChildItem");
+                Wait.ForIdle();
+                scrollItemIntoViewButton.InvokeAndWait();
+
                 // Verify that top-level items use the correct content margin
                 getTopLevelContentPresenterMarginButton.InvokeAndWait();
-                Verify.AreEqual("0,0,20,0", contentPresenterMarginTextBlock.DocumentText);
+                Verify.AreEqual("4,0,20,0", contentPresenterMarginTextBlock.DocumentText);
             }
         }
 
@@ -1758,14 +1778,47 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     Log.Comment("Get CornerRadius of Menu Item 1's children menu flyout.");
                     FindElement.ByName<Button>("GetMenuItem1ChildrenFlyoutCornerRadiusButton").Invoke();
 
-                    // A CornerRadius of (4,4,4,4) is the current default value for flyouts.
+                    // A CornerRadius of (8,8,8,8) is the current default value for flyouts.
                     TextBlock menuItem1ChildrenFlyoutCornerRadiusTextBlock = new TextBlock(FindElement.ByName("MenuItem1ChildrenFlyoutCornerRadiusTextBlock"));
-                    Verify.AreEqual("4,4,4,4", menuItem1ChildrenFlyoutCornerRadiusTextBlock.DocumentText);
+                    Verify.AreEqual("8,8,8,8", menuItem1ChildrenFlyoutCornerRadiusTextBlock.DocumentText);
 
                     // Close flyout
                     InputHelper.LeftClick(item);
                     Wait.ForIdle();
                 }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyNavigationViewItemInPaneFooterHasTemplateSettingBindings()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "PaneFooterTestPage" }))
+            {
+                TextBlock paneFooterNavViewItemWidthTextBlock = new TextBlock(FindElement.ByName("PaneFooterNavViewItemWidth"));
+                ComboBox compactPaneLengthComboBox = new ComboBox(FindElement.ByName("CompactPaneLengthComboBox"));
+                UIObject getIconColumnWidth = FindElement.ByName("GetIconColumnWidth");
+
+                getIconColumnWidth.Click();
+
+                Log.Comment("Verify IconColumnWidth is binded correctly to SmallerIconWidthProperty");
+                Verify.AreEqual("40", paneFooterNavViewItemWidthTextBlock.DocumentText); 
+
+                Log.Comment("Change CompactPaneLength to 40px");
+                compactPaneLengthComboBox.SelectItemByName("40");
+                Wait.ForIdle();
+
+                getIconColumnWidth.Click();
+                Wait.ForIdle();
+
+                Verify.AreEqual("32", paneFooterNavViewItemWidthTextBlock.DocumentText);
+
+                Log.Comment("Change CompactPaneLength to 96px");
+                compactPaneLengthComboBox.SelectItemByName("96");
+                Wait.ForIdle();
+                getIconColumnWidth.Click();
+                Wait.ForIdle();
+
+                Verify.AreEqual("88", paneFooterNavViewItemWidthTextBlock.DocumentText);
             }
         }
     }

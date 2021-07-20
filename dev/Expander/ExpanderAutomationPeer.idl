@@ -1,7 +1,7 @@
 ﻿namespace MU_XAP_NAMESPACE
 {
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass ExpanderAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
 Windows.UI.Xaml.Automation.Provider.IExpandCollapseProvider

@@ -45,6 +45,7 @@
 // We can do so by making this define prior to including the header.
 #define CREATE_XAML_UI_PRESENTER_API
 #include <Windows.UI.Xaml.Hosting.ReferenceTracker.h>
+#include <Windows.Foundation.h>
 
 #include <WindowsNumerics.h>
 

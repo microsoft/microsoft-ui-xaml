@@ -1,11 +1,8 @@
 ﻿namespace MU_XCP_NAMESPACE
 {
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IColorSpectrum", ce46f271-f509-4f98-8288-e4942fb385df)]
-[WUXC_STATIC_NAME("IColorSpectrumStatics", 906bee7c-2cee-4e90-968b-f0a5bd691b4a)]
-[WUXC_CONSTRUCTOR_NAME("IColorSpectrumFactory", 90c7e61e-904d-42ab-b44f-e68dbf0cdee9)]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass ColorSpectrum : Windows.UI.Xaml.Controls.Control

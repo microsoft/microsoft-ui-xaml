@@ -9,6 +9,7 @@
     <Import_RootNamespace>TeachingTip_InteractionTests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)TeachingTipFocusTestPageElements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TeachingTipTestPageElements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TeachingTipTests.cs" />
   </ItemGroup>

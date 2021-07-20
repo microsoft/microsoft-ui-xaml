@@ -428,7 +428,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
             {
                 Log.Comment("Verify that button in PaneFooterContent exists");
-                VerifyElement.Found("FooterButton", FindBy.Id);
+                VerifyElement.Found("PaneFooterButton", FindBy.Id);
             }
         }
 
@@ -1022,23 +1022,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                 FindElement.ByName("NoItems").Click();
                 Wait.ForIdle();
-                VerifyHeights(40, 200);
+                // No menu items, so zero height
+                VerifyHeights(0, 160);
 
                 FindElement.ByName("NoFooter").Click();
                 Wait.ForIdle();
-                VerifyHeights(160, 40);
+                // No footer items, but a settings item => 40px height
+                VerifyHeights(368, 40);
 
                 FindElement.ByName("Both").Click();
                 Wait.ForIdle();
-                VerifyHeights(160, 200);
+                VerifyHeights(248, 160);
 
                 void VerifyHeights(int menuItemsHeight, int footerItemsHeight)
                 {
                     readResults.Click();
                     var result = resultTextBlock.GetText().Split(";");
 
-                    Verify.IsTrue(Math.Abs(menuItemsHeight - int.Parse(result[0])) < 4, "Expected: " + menuItemsHeight + ", Actual: " + result[0]);
-                    Verify.IsTrue(Math.Abs(footerItemsHeight - int.Parse(result[1])) < 4, "Expected: " + footerItemsHeight + ", Actual: " + result[1]);
+                    Verify.IsTrue(Math.Abs(menuItemsHeight - int.Parse(result[0])) < 4, "Expected menu: " + menuItemsHeight + ", Actual: " + result[0]);
+                    Verify.IsTrue(Math.Abs(footerItemsHeight - int.Parse(result[1])) < 4, "Expected footer: " + footerItemsHeight + ", Actual: " + result[1]);
                 }
             }
         }
@@ -1056,40 +1058,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var resetCollectionsButton = new Button(FindElement.ByName("ResetCollectionsButton"));
 
                 // Fill menu items
-                AddMenuItem(200, 200);
-                AddMenuItem(240, 200);
-                AddMenuItem(280, 200);
-                AddMenuItem(320, 200);
+                AddMenuItem(248, 160);
+                AddMenuItem(248, 160);
+                AddMenuItem(248, 160);
 
                 // Fill footer items
-                AddFooterItem(307, 240);
-                AddFooterItem(274, 274);
+                AddFooterItem(198, 200);
+                AddFooterItem(190, 204);
 
                 // Check that we reached equilibrium.
-                AddFooterItem(274, 274);
-                AddMenuItem(274, 274);
+                AddFooterItem(190, 204);
+                AddMenuItem(190, 204);
 
                 resetCollectionsButton.Click();
                 Wait.ForIdle();
-                VerifyHeights(160, 200);
+                VerifyHeights(248, 160);
 
-                void VerifyHeights(int menuItemsHeight, int footerItemsHeight)
+                void VerifyHeights(double menuItemsHeight, double footerItemsHeight)
                 {
                     readResults.Click();
                     var result = resultTextBlock.GetText().Split(";");
 
-                    Verify.IsTrue(Math.Abs(menuItemsHeight - int.Parse(result[0])) < 4, "Expected: " + menuItemsHeight + ", Actual: " + result[0]);
-                    Verify.IsTrue(Math.Abs(footerItemsHeight - int.Parse(result[1])) < 4, "Expected: " + footerItemsHeight + ", Actual: " + result[1]);
+                    Verify.IsTrue(Math.Abs(menuItemsHeight - double.Parse(result[0])) < 4, "Expected menu: " + menuItemsHeight + ", Actual: " + result[0]);
+                    Verify.IsTrue(Math.Abs(footerItemsHeight - double.Parse(result[1])) < 4, "Expected footer: " + footerItemsHeight + ", Actual: " + result[1]);
                 }
 
-                void AddMenuItem(int menuItemsHeight, int footerItemsHeight)
+                void AddMenuItem(double menuItemsHeight, double footerItemsHeight)
                 {
                     addMenuItemButton.Click();
                     Wait.ForIdle();
                     VerifyHeights(menuItemsHeight, footerItemsHeight);
                 }
 
-                void AddFooterItem(int menuItemsHeight, int footerItemsHeight)
+                void AddFooterItem(double menuItemsHeight, double footerItemsHeight)
                 {
                     addFooterItemButton.Click();
                     Wait.ForIdle();
@@ -1097,6 +1098,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 }
             }
         }
+
         [TestMethod]
         public void VerifyPaneLayoutDynamicallyUpdatingCollectionsFooterPrecedence()
         {
@@ -1110,26 +1112,72 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var resetCollectionsButton = new Button(FindElement.ByName("ResetCollectionsButton"));
 
                 // Fill footer items
-                AddFooterItem(160, 240);
-                AddFooterItem(160, 280);
-                AddFooterItem(160, 320);
-                AddFooterItem(160, 360);
-                AddFooterItem(160, 387);
-                // Reached maximum height
-                AddFooterItem(160, 387);
+                AddFooterItem(208, 200);
+                AddFooterItem(168, 240);
+                AddFooterItem(128, 280);
+                AddFooterItem(114, 284);
 
-                AddMenuItem(160, 387);
-                AddMenuItem(200, 347);
-                AddMenuItem(240, 307);
-                AddMenuItem(274, 274);
+                AddMenuItem(104, 290);
+                AddMenuItem(144, 250);
+                AddMenuItem(185, 210);
+
+                void VerifyHeights(double menuItemsHeight, double footerItemsHeight)
+                {
+                    readResults.Click();
+                    var result = resultTextBlock.GetText().Split(";");
+
+                    Verify.IsTrue(Math.Abs(menuItemsHeight - double.Parse(result[0])) < 4, "Expected menu: " + menuItemsHeight + ", Actual: " + result[0]);
+                    Verify.IsTrue(Math.Abs(footerItemsHeight - double.Parse(result[1])) < 4, "Expected footer: " + footerItemsHeight + ", Actual: " + result[1]);
+                }
+
+                void AddMenuItem(double menuItemsHeight, double footerItemsHeight)
+                {
+                    addMenuItemButton.Click();
+                    Wait.ForIdle();
+                    VerifyHeights(menuItemsHeight, footerItemsHeight);
+                }
+
+                void AddFooterItem(double menuItemsHeight, double footerItemsHeight)
+                {
+                    addFooterItemButton.Click();
+                    Wait.ForIdle();
+                    VerifyHeights(menuItemsHeight, footerItemsHeight);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyPaneLayoutSettingsDisabledNoGapMenuItems()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "PaneLayoutTestPage" }))
+            {
+                var readResults = new Button(FindElement.ByName("GetLayoutHeightsButton"));
+                var resultTextBlock = FindElement.ByName("LayoutHeightsReport");
+
+                var addMenuItemButton = new Button(FindElement.ByName("AddMenuItemButton"));
+                new Button(FindElement.ByName("ClearCollectionsButton")).Click();
+                new CheckBox(FindElement.ByName("IsSettingsEnabledCheckbox")).Uncheck();
+
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
+                AddMenuItem(408, 0);
 
                 void VerifyHeights(int menuItemsHeight, int footerItemsHeight)
                 {
                     readResults.Click();
                     var result = resultTextBlock.GetText().Split(";");
 
-                    Verify.IsTrue(Math.Abs(menuItemsHeight - int.Parse(result[0])) < 4, "Expected: " + menuItemsHeight + ", Actual: " + result[0]);
-                    Verify.IsTrue(Math.Abs(footerItemsHeight - int.Parse(result[1])) < 4, "Expected: " + footerItemsHeight + ", Actual: " + result[1]);
+                    Verify.IsTrue(Math.Abs(menuItemsHeight - int.Parse(result[0])) < 4, "Expected menu: " + menuItemsHeight + ", Actual: " + result[0]);
+                    Verify.IsTrue(Math.Abs(footerItemsHeight - int.Parse(result[1])) < 4, "Expected footer: " + footerItemsHeight + ", Actual: " + result[1]);
                 }
 
                 void AddMenuItem(int menuItemsHeight, int footerItemsHeight)
@@ -1137,6 +1185,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     addMenuItemButton.Click();
                     Wait.ForIdle();
                     VerifyHeights(menuItemsHeight, footerItemsHeight);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyPaneLayoutSettingsDisabledNoGapFooterItems()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "PaneLayoutTestPage" }))
+            {
+                var readResults = new Button(FindElement.ByName("GetLayoutHeightsButton"));
+                var resultTextBlock = FindElement.ByName("LayoutHeightsReport");
+
+                var addFooterItemButton = new Button(FindElement.ByName("AddFooterItemButton"));
+                new Button(FindElement.ByName("ClearCollectionsButton")).Click();
+                new CheckBox(FindElement.ByName("IsSettingsEnabledCheckbox")).Uncheck();
+
+                AddFooterItem(0, 40);
+                AddFooterItem(0, 80);
+                AddFooterItem(0,120);
+                AddFooterItem(0,160);
+                AddFooterItem(0,200);
+                AddFooterItem(0,240);
+                AddFooterItem(0,280);
+                AddFooterItem(0,320);
+                AddFooterItem(0,360);
+                AddFooterItem(0,400);
+                AddFooterItem(0,412);
+                AddFooterItem(0,412);
+
+                void VerifyHeights(int menuItemsHeight, int footerItemsHeight)
+                {
+                    readResults.Click();
+                    var result = resultTextBlock.GetText().Split(";");
+
+                    Verify.IsTrue(Math.Abs(menuItemsHeight - int.Parse(result[0])) < 4, "Expected menu: " + menuItemsHeight + ", Actual: " + result[0]);
+                    Verify.IsTrue(Math.Abs(footerItemsHeight - int.Parse(result[1])) < 4, "Expected footer: " + footerItemsHeight + ", Actual: " + result[1]);
                 }
 
                 void AddFooterItem(int menuItemsHeight, int footerItemsHeight)

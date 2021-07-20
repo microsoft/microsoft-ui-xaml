@@ -1,0 +1,19 @@
+﻿namespace MU_XCP_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass MonochromaticOverlayPresenter : Windows.UI.Xaml.Controls.Grid
+{
+    MonochromaticOverlayPresenter();
+
+    Windows.UI.Xaml.UIElement SourceElement { get; set; };
+    Windows.UI.Color ReplacementColor { get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty SourceElementProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ReplacementColorProperty{ get; };
+}
+
+}

@@ -24,17 +24,22 @@ public:
     void IsExpanded(bool value);
     bool IsExpanded();
 
+    void TemplateSettings(winrt::ExpanderTemplateSettings const& value);
+    winrt::ExpanderTemplateSettings TemplateSettings();
+
     static winrt::DependencyProperty ExpandDirectionProperty() { return s_ExpandDirectionProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
     static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
     static winrt::DependencyProperty HeaderTemplateSelectorProperty() { return s_HeaderTemplateSelectorProperty; }
     static winrt::DependencyProperty IsExpandedProperty() { return s_IsExpandedProperty; }
+    static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
 
     static GlobalDependencyProperty s_ExpandDirectionProperty;
     static GlobalDependencyProperty s_HeaderProperty;
     static GlobalDependencyProperty s_HeaderTemplateProperty;
     static GlobalDependencyProperty s_HeaderTemplateSelectorProperty;
     static GlobalDependencyProperty s_IsExpandedProperty;
+    static GlobalDependencyProperty s_TemplateSettingsProperty;
 
     winrt::event_token Collapsed(winrt::TypedEventHandler<winrt::Expander, winrt::ExpanderCollapsedEventArgs> const& value);
     void Collapsed(winrt::event_token const& token);
