@@ -120,7 +120,6 @@ Blank -  Not available
 | Background acrylic                                     |                                 |                                |  &#129002;                 | &#128994;                         |
 | XAML Islands                                           |                                 |                                | &#128311;                     | &#128994;                         |
 | Contains new Windows 11 controls/styles from WinUI 2.6 |                                 |                                | &#128994;                           | &#128994;                         |
-| Reveal Highlight                                       |                                 |                                |                              |  &#129002;                     |
 | Media Controls (e.g. `<MediaPlayerElement>`)             |                                 |                                |                              | &#128994;                         |
 | `<InkCanvas>`                                            |                                 |                                |                              | &#128994;                         |
 | `<MapControl>`                                           |                                 |                                |                              |  &#129002;                     |
