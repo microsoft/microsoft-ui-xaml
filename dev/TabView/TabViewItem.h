@@ -47,13 +47,11 @@ public:
 private:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::ToolTip> m_toolTip{ this };
-    tracker_ref<winrt::ContentPresenter> m_headerContentPresenter{ this };
     winrt::TabViewWidthMode m_tabViewWidthMode{ winrt::TabViewWidthMode::Equal };
     winrt::TabViewCloseButtonOverlayMode m_closeButtonOverlayMode{ winrt::TabViewCloseButtonOverlayMode::Auto };
 
     void UpdateCloseButton();
     void RequestClose();
-    void OnHeaderChanged();
     void OnIconSourceChanged();
     void UpdateWidthModeVisualState();
 
