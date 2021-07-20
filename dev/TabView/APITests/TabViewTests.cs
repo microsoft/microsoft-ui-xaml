@@ -280,7 +280,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        private static void VerifyTabWidthVisualStates(IList<object> items, bool isCompact)
+        private static void VerifyTabWidthVisualStates(TabView tabView, IList<object> items, bool isCompact)
         {
             var listView = VisualTreeUtils.FindVisualChildByName(tabView, "TabListView") as TabViewListView;
 
