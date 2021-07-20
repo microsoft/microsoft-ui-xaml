@@ -456,8 +456,8 @@ bool SharedHelpers::DoRectsIntersect(
     const winrt::Rect& rect1,
     const winrt::Rect& rect2)
 {
-    const auto doIntersect =
-        !(rect1.Width <= 0 || rect1.Height <= 0 || rect2.Width <= 0 || rect2.Height <= 0) &&
+    const bool doIntersect =
+        (rect1.Width > 0 && rect1.Height > 0 && rect2.Width > 0 && rect2.Height > 0) &&
         (rect2.X <= rect1.X + rect1.Width) &&
         (rect2.X + rect2.Width >= rect1.X) &&
         (rect2.Y <= rect1.Y + rect1.Height) &&
