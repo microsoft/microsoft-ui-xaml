@@ -53,6 +53,10 @@
                 <Button x:Name="ScrollTabViewToTheRight" AutomationProperties.Name="ScrollTabViewToTheRight" Content="Scroll TabView To the Right" Margin="0,0,0,8" Click="TabViewScrollToTheRightButton_Click" />
 
                 <Button x:Name="ShortLongTextButton" AutomationProperties.Name="ShortLongTextButton" Content="Short/Long Text" Margin="0,0,0,8" Click="ShortLongTextButton_Click" />
+                <StackPanel Orientation="Horizontal">
+                    <Button Click="SetColorsButton_Click" Content="Set Colors"/>
+                    <Button Click="ClearColorsButton_Click" Content="Clear Colors"/>
+                </StackPanel>
 
                 <Border HorizontalAlignment="Stretch" Height="3" Background="{ThemeResource SystemChromeGrayColor}" Margin="0,8,0,8"/>
 
@@ -162,7 +166,7 @@
                         </StackPanel>
                     </controls:TabViewItem>
 
-                    <controls:TabViewItem x:Name="SecondTab" Header="SecondTab" IsClosable="True">
+                    <controls:TabViewItem x:Name="SecondTab" Header="SecondTab" IsClosable="True" Foreground="Red" Background="Green">
                         <controls:TabViewItem.IconSource>
                             <controls:SymbolIconSource Symbol="Shop"/>
                         </controls:TabViewItem.IconSource>
