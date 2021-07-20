@@ -689,15 +689,14 @@
                                 Grid.Column="1"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Content="{TemplateBinding Header}"
                                 ContentTemplate="{TemplateBinding HeaderTemplate}"
                                 ContentTransitions="{TemplateBinding ContentTransitions}"
                                 FontWeight="{TemplateBinding FontWeight}"
                                 FontSize="{ThemeResource TabViewItemHeaderFontSize}"
                                 Foreground="{ThemeResource TabViewItemHeaderForeground}"
                                 OpticalMarginAlignment="TrimSideBearings"
-                                HighContrastAdjustment="None">
-                                <Border Child="{TemplateBinding Header}"/>
-                            </ContentPresenter>
+                                HighContrastAdjustment="None" />
 
                             <Button x:Name="CloseButton"
                                 Grid.Column="2"
