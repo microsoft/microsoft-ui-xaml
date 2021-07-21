@@ -2,11 +2,6 @@ var xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange =  function() {
     if (this.readyState == 4 && this.status == 200) {
         var xmlResp = this.responseXML;
-        console.log(this.responseXML);
-        // var js_markup = xmlResp.getElementsByTagName("javascriptIncludes")[0];
-
-        // var uhfScripts = document.getElementById('uhf-scripts');
-        // uhfScripts.innerHTML += js_markup.textContent;
 
         var header_markup = xmlResp.getElementsByTagName("headerHtml")[0];
         var footer_markup = xmlResp.getElementsByTagName("footerHtml")[0];
