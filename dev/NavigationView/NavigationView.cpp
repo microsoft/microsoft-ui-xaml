@@ -1474,6 +1474,11 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
         m_initialListSizeStateSet = false;
         ClosePane();
     }
+
+    if (displayMode == winrt::NavigationViewDisplayMode::Minimal)
+    {
+        ClosePane();
+    }
 }
 
 void NavigationView::UpdatePaneLayout()
@@ -1656,6 +1661,7 @@ void NavigationView::OpenPane()
             m_isOpenPaneForInteraction = false;
         });
     m_isOpenPaneForInteraction = true;
+
     IsPaneOpen(true);
 }
 
