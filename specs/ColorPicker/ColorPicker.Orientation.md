@@ -1,74 +1,64 @@
-ColorPicker (new `Orientation` property)
+ColorPicker.Orientation
 ===
 
 # Background
 
-This API is an update to the existing ColorPicker control. The aim of this new API is, to make the ColorPicker more versatile to use and provide different layouting ways to maximize the space available.
+The Xaml [ColorPicker](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.ColorPicker)
+control is a flyout that lets a user pick a color using a color spectrum, sliders, and text input.
+
+This spec has an update to the existing `ColorPicker` control. 
+The aim of this new API is, to make the ColorPicker more versatile to use and
+provide different layouting ways to maximize the space available
+by adding an `Orientation` property.
+
 
 # Conceptual pages (How To)
 
-_Additional content to add to the existing page_
-
 #### Specify the layout direction  
 
-Using the `Orientation` property, you can specify whether the ColorPicker should take up more vertical space or more horizontal space.
+Use the `Orientation` property to control whether the `ColorPicker` should take up
+more vertical space or more horizontal space.
 
 ```xaml
 <muxc:ColorPicker IsAlphaEnabled="True" Orientation="Vertical"/>
 ```
-![Vertical ColorPicker](./ColorPicker_VerticalMode.png)
+![Vertical ColorPicker](./images/ColorPicker_VerticalMode.png)
 
 ```xaml
 <muxc:ColorPicker IsAlphaEnabled="True" Orientation="Horizontal"/>
 ```
-![Horizontal ColorPicker](./ColorPicker_HorizontalMode.png)
+![Horizontal ColorPicker](./images/ColorPicker_HorizontalMode.png)
 
-| Orientation | Meaning |
-|-------------|---------|
-| Horizontal  | The sliders will be put to the side of the color spectrum.|
-| Vertical    | The sliders will be put underneath the color spectrum.|
+
 # API Pages
-
-
-## ColorPicker class
-
-N/A
-
 
 ## ColorPicker.Orientation property
 
-The orientation property specifies which way the way the parts of the ColorPicker will be laid out.
+Gets or sets the orientation in which the parts of the ColorPicker will be laid out.
+Defaults to `Vertical`.
 
-Using the orientation, you can specify whether the sliders should be laid out underneath the color area (vertical orientation) or to the side of it (horizontal orientation).
+Using the orientation, you can specify whether the editing controls should be laid out underneath
+the color area (vertical orientation) or to the side of it (horizontal orientation).
 
-_Spec note: internal comment about this property that won't go into the public docs._
+| Orientation | Meaning |
+|-------------|---------|
+| Horizontal  | The editing controls will be put to the side of the color spectrum.|
+| Vertical    | The editing controls will be put underneath the color spectrum.|
 
-Introduction to one or more usages of the MyExample.PropertyOne property.
-
-```c#
-...
-```
 
 # API Details
 
 ```c# (but really MIDL3)
+
 namespace Microsoft.UI.Xaml.Controls
 {
   [webhosthidden]
   unsealed runtimeclass ColorPicker
   {
-      /// Gets or sets the DisplayMode of the ColorPicker
-      Windows.UI.Xaml.Controls.Orientation Orientation = Windows.UI.Xaml.Controls.Orientation.Vertical;
+      // Existing ...
+
+      // Gets or sets the DisplayMode of the ColorPicker
+      Windows.UI.Xaml.Controls.Orientation Orientation
   }
 }
 ```
-
-# Appendix
-
-<!-- TEMPLATE
-  Anything else that you want to write down about implementation notes and for posterity,
-  but that isn't necessary to understand the purpose and usage of the API.
-
-  This or the Background section are a good place to describe alternative designs
-  and why they were rejected.
--->
