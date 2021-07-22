@@ -51,8 +51,6 @@
             <Thickness x:Key="IconInfoBadgePadding">4,4,4,4</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-    
-    <primitives:FullyRoundedCornerRadiusConverter x:Key="DefaultFullyRoundedCornerRadiusConverter"/>
 
     <Style TargetType="local:InfoBadge" x:Key="DefaultInfoBadgeStyle">
         <Setter Property="MinHeight" Value="{StaticResource InfoBadgeMinHeight}"/>
