@@ -23,6 +23,7 @@ unsealed runtimeclass InfoBadge : Windows.UI.Xaml.Controls.Control
     InfoBadge();
 
     [MUX_DEFAULT_VALUE("-1")]
+    [MUX_PROPERTY_VALIDATION_CALLBACK("CoerceToGreaterThanNegativeOne")]
     Int32 Value;
 
     IconSource IconSource;

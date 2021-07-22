@@ -8,6 +8,12 @@ using Microsoft.UI.Xaml.Controls;
 using MUXControlsTestApp.Utilities;
 using Windows.UI.Xaml.Controls;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
+using PathIconSource = Microsoft.UI.Xaml.Controls.PathIconSource;
+using BitmapIconSource = Microsoft.UI.Xaml.Controls.BitmapIconSource;
+using FontIconSource = Microsoft.UI.Xaml.Controls.FontIconSource;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -25,7 +31,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     public class InfoBadgeTests : ApiTestBase
     {
         [TestMethod]
-        public void BasicTest()
+        public void InfoBadgeDisplayKindTest()
         {
             InfoBadge infoBadge = null;
             SymbolIconSource symbolIconSource = null;
@@ -62,7 +68,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Content.UpdateLayout();
 
                 Verify.AreEqual(Visibility.Visible, textBlock.Visibility, "The value text block should be visible since the value is set to 10");
-                Verify.AreEqual(Visibility.Visible, iconViewBox.Visibility, "The icon presenter should be collapsed since we've set the icon source property but value is not -1");
+                Verify.AreEqual(Visibility.Collapsed, iconViewBox.Visibility, "The icon presenter should be collapsed since we've set the icon source property but value is not -1");
 
                 infoBadge.IconSource = null;
                 Content.UpdateLayout();
@@ -75,6 +81,97 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(Visibility.Collapsed, textBlock.Visibility, "The value text block should be collapsed since the value is set to -1");
                 Verify.AreEqual(Visibility.Collapsed, iconViewBox.Visibility, "The icon presenter should be collapsed since the value is set to null");
+            });
+        }
+
+        [TestMethod]
+        public void InfoBadgeSupportsAllIconTypes()
+        {
+            InfoBadge infoBadge = null;
+            SymbolIconSource symbolIconSource = null;
+            PathIconSource pathIconSource = null;
+            AnimatedIconSource animatedIconSource = null;
+            BitmapIconSource bitmapIconSource = null;
+            ImageIconSource imageIconSource = null;
+            FontIconSource fontIconSource = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                infoBadge = new InfoBadge();
+                symbolIconSource = new SymbolIconSource();
+                symbolIconSource.Symbol = Symbol.Setting;
+
+                fontIconSource = new FontIconSource();
+                fontIconSource.Glyph = "99+";
+                fontIconSource.FontFamily = new FontFamily("XamlAutoFontFamily");
+
+                bitmapIconSource = new BitmapIconSource();
+                bitmapIconSource.ShowAsMonochrome = false;
+                Uri bitmapUri = new Uri("ms-appx:/Assets/ingredient1.png");
+                bitmapIconSource.UriSource = bitmapUri;
+
+                imageIconSource = new ImageIconSource();
+                var imageUri = new Uri("https://raw.githubusercontent.com/DiemenDesign/LibreICONS/master/svg-color/libre-camera-panorama.svg");
+                imageIconSource.ImageSource = new SvgImageSource(imageUri);
+
+                pathIconSource = new PathIconSource();
+                var geometry = new RectangleGeometry();
+                geometry.Rect = new Windows.Foundation.Rect { Width = 5, Height = 2, X = 0, Y = 0 };
+                pathIconSource.Data = geometry;
+
+                animatedIconSource = new AnimatedIconSource();
+                animatedIconSource.Source = new AnimatedSettingsVisualSource();
+
+                Content = infoBadge;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Switch to Symbol Icon");
+                infoBadge.IconSource = symbolIconSource;
+                Content.UpdateLayout();
+
+                Log.Comment("Switch to Path Icon");
+                infoBadge.IconSource = pathIconSource;
+                Content.UpdateLayout();
+
+                Log.Comment("Switch to Font Icon");
+                infoBadge.IconSource = fontIconSource;
+                Content.UpdateLayout();
+
+                Log.Comment("Switch to bitmap Icon");
+                infoBadge.IconSource = bitmapIconSource;
+                Content.UpdateLayout();
+
+                Log.Comment("Switch to Image Icon");
+                infoBadge.IconSource = imageIconSource;
+                Content.UpdateLayout();
+
+                Log.Comment("Switch to Animated Icon");
+                infoBadge.IconSource = animatedIconSource;
+                Content.UpdateLayout();
+            });
+        }
+        [TestMethod]
+        public void InfoBadgeValueCoercedToNegativeOne()
+        {
+            InfoBadge infoBadge = null;
+            RunOnUIThread.Execute(() =>
+            {
+                infoBadge = new InfoBadge();
+                Content = infoBadge;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                infoBadge.Value = -10;
+                Verify.AreEqual(-1, infoBadge.Value);
             });
         }
     }

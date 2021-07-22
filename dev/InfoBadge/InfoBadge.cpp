@@ -91,3 +91,10 @@ void InfoBadge::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChang
 
     TemplateSettings().InfoBadgeCornerRadius(value);
 }
+
+
+void InfoBadge::CoerceToGreaterThanNegativeOne(int& value)
+{
+    // Property coercion for Value
+    value = std::max(value, -1);
+}

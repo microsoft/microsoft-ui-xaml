@@ -25,7 +25,7 @@
                 <controls:InfoBadge x:Name="DynamicInfoBadge"
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Top"
-                                    Value="{Binding ElementName=ValueNumberBox, Path=Value}"
+                                    Value="{Binding ElementName=ValueNumberBox, Path=Value, Mode=TwoWay}"
                                     Background="{StaticResource BackgroundColorPickerResultBrush}"
                                     Foreground="{StaticResource ForegroundColorPickerResultBrush}"/>
             </StackPanel>
@@ -55,8 +55,14 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="Value: " HorizontalAlignment="Right" VerticalAlignment="Center"/>
-            <controls:NumberBox x:Name="ValueNumberBox" Value="-1" Grid.Column="1"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock Text="Set Value: " HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <controls:NumberBox x:Name="ValueNumberBox" Value="-1" HorizontalAlignment="Right" VerticalAlignment="Center" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Left">
+                <TextBlock Text="value:" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding ElementName=DynamicInfoBadge, Path=Value}" VerticalAlignment="Center"/>
+            </StackPanel>
             <TextBlock Text="Icon: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="1"/>
             <ComboBox x:Name="IconComboBox" SelectedIndex="0" SelectionChanged="IconComboBoxSelectionChanged" Grid.Row="1" Grid.Column="1">
                 <ComboBoxItem x:Name="NullIcon"     Content="Null"/>
