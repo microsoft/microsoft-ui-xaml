@@ -1661,7 +1661,6 @@ void NavigationView::OpenPane()
             m_isOpenPaneForInteraction = false;
         });
     m_isOpenPaneForInteraction = true;
-
     IsPaneOpen(true);
 }
 
