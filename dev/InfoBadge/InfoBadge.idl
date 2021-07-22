@@ -27,14 +27,10 @@ unsealed runtimeclass InfoBadge : Windows.UI.Xaml.Controls.Control
 
     IconSource IconSource;
 
-    [MUX_DEFAULT_VALUE("false")]
-    Boolean IsOpen;
-
     InfoBadgeTemplateSettings TemplateSettings{ get; };
 
     static Windows.UI.Xaml.DependencyProperty ValueProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty IsOpenProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
 }
 

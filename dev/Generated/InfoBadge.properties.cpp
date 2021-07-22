@@ -14,7 +14,6 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 #include "InfoBadge.g.cpp"
 
 GlobalDependencyProperty InfoBadgeProperties::s_IconSourceProperty{ nullptr };
-GlobalDependencyProperty InfoBadgeProperties::s_IsOpenProperty{ nullptr };
 GlobalDependencyProperty InfoBadgeProperties::s_TemplateSettingsProperty{ nullptr };
 GlobalDependencyProperty InfoBadgeProperties::s_ValueProperty{ nullptr };
 
@@ -35,17 +34,6 @@ void InfoBadgeProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<winrt::IconSource>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnIconSourcePropertyChanged));
-    }
-    if (!s_IsOpenProperty)
-    {
-        s_IsOpenProperty =
-            InitializeDependencyProperty(
-                L"IsOpen",
-                winrt::name_of<bool>(),
-                winrt::name_of<winrt::InfoBadge>(),
-                false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(false),
-                winrt::PropertyChangedCallback(&OnIsOpenPropertyChanged));
     }
     if (!s_TemplateSettingsProperty)
     {
@@ -74,20 +62,11 @@ void InfoBadgeProperties::EnsureProperties()
 void InfoBadgeProperties::ClearProperties()
 {
     s_IconSourceProperty = nullptr;
-    s_IsOpenProperty = nullptr;
     s_TemplateSettingsProperty = nullptr;
     s_ValueProperty = nullptr;
 }
 
 void InfoBadgeProperties::OnIconSourcePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::InfoBadge>();
-    winrt::get_self<InfoBadge>(owner)->OnPropertyChanged(args);
-}
-
-void InfoBadgeProperties::OnIsOpenPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -122,19 +101,6 @@ void InfoBadgeProperties::IconSource(winrt::IconSource const& value)
 winrt::IconSource InfoBadgeProperties::IconSource()
 {
     return ValueHelper<winrt::IconSource>::CastOrUnbox(static_cast<InfoBadge*>(this)->GetValue(s_IconSourceProperty));
-}
-
-void InfoBadgeProperties::IsOpen(bool value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<InfoBadge*>(this)->SetValue(s_IsOpenProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
-    }
-}
-
-bool InfoBadgeProperties::IsOpen()
-{
-    return ValueHelper<bool>::CastOrUnbox(static_cast<InfoBadge*>(this)->GetValue(s_IsOpenProperty));
 }
 
 void InfoBadgeProperties::TemplateSettings(winrt::InfoBadgeTemplateSettings const& value)

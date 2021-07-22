@@ -24,7 +24,6 @@ void InfoBadge::OnApplyTemplate()
     winrt::IControlProtected controlProtected{ *this };
 
     OnDisplayKindPropertiesChanged();
-    OnIsOpenChanged();
 }
 
 winrt::Size InfoBadge::MeasureOverride(winrt::Size const& availableSize)
@@ -42,27 +41,21 @@ void InfoBadge::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArg
     auto const property = args.Property();
     winrt::Control const thisAsControl = *this;
 
-    if (property == winrt::InfoBadge::IsOpenProperty())
-    {
-        OnIsOpenChanged();
-    }
-    else if (property == winrt::InfoBadge::ValueProperty() ||
+    if (property == winrt::InfoBadge::ValueProperty() ||
              property == winrt::InfoBadge::IconSourceProperty())
     {
         OnDisplayKindPropertiesChanged();
     }
 }
 
-void InfoBadge::OnIsOpenChanged()
-{
-    winrt::Control const thisAsControl = *this;
-    winrt::VisualStateManager::GoToState(thisAsControl, IsOpen() ? L"Opened" : L"Closed", true);
-}
-
 void InfoBadge::OnDisplayKindPropertiesChanged()
 {
     winrt::Control const thisAsControl = *this;
-    if (auto const iconSource = IconSource())
+    if (Value() >= 0)
+    {
+    winrt::VisualStateManager::GoToState(thisAsControl, L"Value", true);
+    }
+    else if (auto const iconSource = IconSource())
     {
         TemplateSettings().IconElement(iconSource.CreateIconElement());
         if (auto const fontIconSource = iconSource.try_as<winrt::FontIconSource>())
@@ -73,10 +66,6 @@ void InfoBadge::OnDisplayKindPropertiesChanged()
         {
             winrt::VisualStateManager::GoToState(thisAsControl, L"Icon", true);
         }
-    }
-    else if (Value() >= 0)
-    {
-        winrt::VisualStateManager::GoToState(thisAsControl, L"Value", true);
     }
     else
     {

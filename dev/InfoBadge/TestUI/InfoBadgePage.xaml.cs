@@ -35,12 +35,6 @@ namespace MUXControlsTestApp
             iconForegroundBrush.Color = IconForegroundColorPicker.Color;
         }
 
-        public void SwapIsOpenButtonClicked(object sender, RoutedEventArgs args)
-        {
-            SwapIsOpen(InitiallyClosedInfoBadge);
-            SwapIsOpen(InitiallyOpenedInfoBadge);
-        }
-
         public void IconComboBoxSelectionChanged(object sender, SelectionChangedEventArgs args)
         {
             if (IconComboBox.SelectedItem == this.NullIcon)
@@ -76,24 +70,32 @@ namespace MUXControlsTestApp
         public void OnIconForegroundColorPickerColorChanged(object sender, ColorChangedEventArgs args)
         {
             iconForegroundBrush.Color = args.NewColor;
-            pageIconSource.Foreground = iconForegroundBrush;
+            if (pageIconSource != null)
+            {
+                pageIconSource.Foreground = iconForegroundBrush;
+            }
         }
 
         public void OnForegroundToNullButtonClicked(object sender, RoutedEventArgs args)
         {
-            pageIconSource.Foreground = null;
+            if (pageIconSource != null)
+            {
+                pageIconSource.Foreground = null;
+            }
         }
 
-        private void SwapIsOpen(InfoBadge badge)
+        public void OnClearForegroundButtonClicked(object sender, RoutedEventArgs args)
         {
-            badge.IsOpen = !badge.IsOpen;
+            if (pageIconSource != null)
+            {
+                pageIconSource.ClearValue(IconSource.ForegroundProperty);
+            }
         }
 
         private void UpdateIcon(IconSource iconSource)
         {
             pageIconSource = iconSource;
-            InitiallyClosedInfoBadge.IconSource = iconSource;
-            InitiallyOpenedInfoBadge.IconSource = iconSource;
+            DynamicInfoBadge.IconSource = iconSource;
         }
 
         private FontIconSource MakeFontIcon()
@@ -108,8 +110,8 @@ namespace MUXControlsTestApp
         private BitmapIconSource MakeBitmapIcon()
         {
             BitmapIconSource iconSource = new BitmapIconSource();
-            iconSource.ShowAsMonochrome = true;
-            Uri uri = new Uri("ms-appx:///Assets/ingredient2.png");
+            iconSource.ShowAsMonochrome = false;
+            Uri uri = new Uri("ms-appx:/Assets/ingredient1.png");
             iconSource.UriSource = uri;
             iconSource.Foreground = iconForegroundBrush;
             return iconSource;
@@ -118,7 +120,7 @@ namespace MUXControlsTestApp
         private ImageIconSource MakeImageIcon()
         {
             ImageIconSource iconSource = new ImageIconSource();
-            var uri = new Uri("ms-appx:///Assets/Nuclear_symbol.svg");
+            var uri = new Uri("https://raw.githubusercontent.com/DiemenDesign/LibreICONS/master/svg-color/libre-camera-panorama.svg");
             iconSource.ImageSource = new SvgImageSource(uri);
             iconSource.Foreground = iconForegroundBrush;
             return iconSource;
@@ -136,7 +138,7 @@ namespace MUXControlsTestApp
         {
             PathIconSource iconSource = new PathIconSource();
             var geometry = new RectangleGeometry();
-            geometry.Rect = new Windows.Foundation.Rect { Width=5, Height=5, X=0, Y=0 };
+            geometry.Rect = new Windows.Foundation.Rect { Width=5, Height=2, X=0, Y=0 };
             iconSource.Data = geometry;
             iconSource.Foreground = iconForegroundBrush;
             return iconSource;

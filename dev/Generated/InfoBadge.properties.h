@@ -12,9 +12,6 @@ public:
     void IconSource(winrt::IconSource const& value);
     winrt::IconSource IconSource();
 
-    void IsOpen(bool value);
-    bool IsOpen();
-
     void TemplateSettings(winrt::InfoBadgeTemplateSettings const& value);
     winrt::InfoBadgeTemplateSettings TemplateSettings();
 
@@ -22,12 +19,10 @@ public:
     int Value();
 
     static winrt::DependencyProperty IconSourceProperty() { return s_IconSourceProperty; }
-    static winrt::DependencyProperty IsOpenProperty() { return s_IsOpenProperty; }
     static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
     static winrt::DependencyProperty ValueProperty() { return s_ValueProperty; }
 
     static GlobalDependencyProperty s_IconSourceProperty;
-    static GlobalDependencyProperty s_IsOpenProperty;
     static GlobalDependencyProperty s_TemplateSettingsProperty;
     static GlobalDependencyProperty s_ValueProperty;
 
@@ -35,10 +30,6 @@ public:
     static void ClearProperties();
 
     static void OnIconSourcePropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnIsOpenPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

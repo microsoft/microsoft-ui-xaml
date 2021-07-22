@@ -21,33 +21,20 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <StackPanel contract5Present:Spacing="5">
-            <StackPanel Height="100" MinWidth="100" Background="LightPink" Padding="10">
-                <controls:InfoBadge x:Name="InitiallyClosedInfoBadge"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Top"
-                                    IsOpen="False"
-                                    Value="{Binding ElementName=ValueNumberBox, Path=Value}"
-                                    Background="{StaticResource BackgroundColorPickerResultBrush}"
-                                    Foreground="{StaticResource ForegroundColorPickerResultBrush}"/>
-            </StackPanel>
             <StackPanel Height="100" MinWidth="100" Background="LightGreen" Padding="10">
-                <controls:InfoBadge x:Name="InitiallyOpenedInfoBadge"
+                <controls:InfoBadge x:Name="DynamicInfoBadge"
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Top"
-                                    IsOpen="True"
                                     Value="{Binding ElementName=ValueNumberBox, Path=Value}"
                                     Background="{StaticResource BackgroundColorPickerResultBrush}"
                                     Foreground="{StaticResource ForegroundColorPickerResultBrush}"/>
             </StackPanel>
             <controls:InfoBadge x:Name="DefaultInfoBadge"
-                                IsOpen="True"
                                 HorizontalAlignment="Right"/>
             <controls:InfoBadge x:Name="DefaultValueInfoBadge"
-                                IsOpen="True"
                                 Value="5"
                                 HorizontalAlignment="Right"/>
             <controls:InfoBadge x:Name="DefaultIconInfoBadge"
-                                IsOpen="True"
                                 HorizontalAlignment="Right">
                 <controls:InfoBadge.IconSource>
                     <controls:SymbolIconSource Symbol="Setting"/>
@@ -68,12 +55,10 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="Swap IsOpen: " HorizontalAlignment="Right" VerticalAlignment="Center"/>
-            <Button Click="SwapIsOpenButtonClicked" Content="Swap" Grid.Column="1"/>
-            <TextBlock Text="Value: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="1"/>
-            <controls:NumberBox x:Name="ValueNumberBox" Value="-1" Grid.Row="1" Grid.Column="1"/>
-            <TextBlock Text="Icon: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="2"/>
-            <ComboBox x:Name="IconComboBox" SelectedIndex="0" SelectionChanged="IconComboBoxSelectionChanged" Grid.Row="2" Grid.Column="1">
+            <TextBlock Text="Value: " HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            <controls:NumberBox x:Name="ValueNumberBox" Value="-1" Grid.Column="1"/>
+            <TextBlock Text="Icon: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="1"/>
+            <ComboBox x:Name="IconComboBox" SelectedIndex="0" SelectionChanged="IconComboBoxSelectionChanged" Grid.Row="1" Grid.Column="1">
                 <ComboBoxItem x:Name="NullIcon"     Content="Null"/>
                 <ComboBoxItem x:Name="FontIcon"     Content="FontIcon"/>
                 <ComboBoxItem x:Name="BitmapIcon"   Content="BitmapIcon"/>
@@ -82,8 +67,8 @@
                 <ComboBoxItem x:Name="PathIcon"     Content="PathIcon"/>
                 <ComboBoxItem x:Name="AnimatedIcon" Content="AnimatedIcon"/>
             </ComboBox>
-            <TextBlock Text="Icon Foreground: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="3"/>
-            <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1">
+            <TextBlock Text="Icon Foreground: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="2"/>
+            <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1">
                 <Button>
                     <Button.Resources>
                         <SolidColorBrush x:Key="IconForegroundColorPickerResultBrush" Color="{Binding ElementName=IconForegroundColorPicker, Path=Color}"/>
@@ -96,9 +81,10 @@
                     </Button.Flyout>
                 </Button>
                 <Button Content="Foreground=Null" Click="OnForegroundToNullButtonClicked"/>
+                <Button Content="Clear Foreground" Click="OnClearForegroundButtonClicked"/>
             </StackPanel>
-            <TextBlock Text="Background: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="4"/>
-            <Button Grid.Row="4" Grid.Column="1">
+            <TextBlock Text="Background: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="3"/>
+            <Button Grid.Row="3" Grid.Column="1">
                 <Grid Background="{StaticResource BackgroundColorPickerResultBrush}" Height="20" Width="20"/>
                 <Button.Flyout>
                     <Flyout>
@@ -106,8 +92,8 @@
                     </Flyout>
                 </Button.Flyout>
             </Button>
-            <TextBlock Text="Foreground: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="5"/>
-            <Button Grid.Row="5" Grid.Column="1">
+            <TextBlock Text="Foreground: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="4"/>
+            <Button Grid.Row="4" Grid.Column="1">
                 <Grid Background="{StaticResource ForegroundColorPickerResultBrush}" Height="20" Width="20"/>
                 <Button.Flyout>
                     <Flyout>

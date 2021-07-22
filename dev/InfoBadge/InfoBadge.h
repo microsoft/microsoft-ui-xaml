@@ -27,7 +27,6 @@ public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
-    void OnIsOpenChanged();
     void OnDisplayKindPropertiesChanged();
     void OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args);
 };

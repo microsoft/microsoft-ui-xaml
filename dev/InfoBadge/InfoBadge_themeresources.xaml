@@ -9,6 +9,7 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
+            <StaticResource x:Key="InfoBadgeForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
             <StaticResource x:Key="InfoBadgeBackground" ResourceKey="SystemColorControlAccentBrush"/>
 
             <x:Double x:Key="InfoBadgeMinHeight">4</x:Double>
@@ -22,6 +23,7 @@
             <Thickness x:Key="IconInfoBadgePadding">4,4,4,4</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
+            <StaticResource x:Key="InfoBadgeForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
             <StaticResource x:Key="InfoBadgeBackground" ResourceKey="SystemColorControlAccentBrush"/>
 
             <x:Double x:Key="InfoBadgeMinHeight">4</x:Double>
@@ -35,6 +37,7 @@
             <Thickness x:Key="IconInfoBadgePadding">4,4,4,4</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
+            <StaticResource x:Key="InfoBadgeForeground" ResourceKey="SystemControlHighlightAltChromeWhiteBrush"/>
             <StaticResource x:Key="InfoBadgeBackground" ResourceKey="SystemColorControlAccentBrush"/>
 
             <x:Double x:Key="InfoBadgeMinHeight">4</x:Double>
@@ -55,24 +58,16 @@
         <Setter Property="MinHeight" Value="{StaticResource InfoBadgeMinHeight}"/>
         <Setter Property="MinWidth" Value="{StaticResource InfoBadgeMinWidth}"/>
         <Setter Property="MaxHeight" Value="{StaticResource InfoBadgeMaxHeight}"/>
-        <Setter Property="Background" Value="{ThemeResource SystemColorControlAccentBrush}"/>
+        <Setter Property="Background" Value="{ThemeResource InfoBadgeBackground}"/>
+        <Setter Property="Foreground" Value="{ThemeResource InfoBadgeForeground}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:InfoBadge">
                     <Grid x:Name="RootGrid"
-                          Visibility="Collapsed"
                           Background="{TemplateBinding Background}"
                           CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.InfoBadgeCornerRadius}"
                           Padding="{ThemeResource DotInfoBadgePadding}">
                         <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="OpenStates">
-                                <VisualState x:Name="Closed"/>
-                                <VisualState x:Name="Opened">
-                                    <VisualState.Setters>
-                                        <Setter Target="RootGrid.Visibility" Value="Visible"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
                             <VisualStateGroup x:Name="DisplayKindStates">
                                 <VisualState x:Name="Dot"/>
                                 <VisualState x:Name="Icon">
