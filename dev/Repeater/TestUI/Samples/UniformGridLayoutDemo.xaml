@@ -1,11 +1,12 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
-<Page
+<local:TestPage
     x:Class="MUXControlsTestApp.Samples.UniformGridLayoutDemo"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls">
 
-    <Page.Resources>
+    <local:TestPage.Resources>
         <!-- The Layout specifications used: -->
         <controls:UniformGridLayout x:Name="UniformGridLayout"
                                 MinRowSpacing="8" MinColumnSpacing="8"
@@ -19,9 +20,131 @@
                     FontSize="20"/>
             </Grid>
         </DataTemplate>
-    </Page.Resources>
+    </local:TestPage.Resources>
+    
     <StackPanel Orientation="Horizontal">
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" 
+        <StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Button AutomationProperties.Name="GetRepeaterActualHeightButton"
+                        Click="GetRepeaterActualHeightButtonClick" Margin="2">Get actual ItemsRepeater height</Button>
+                <TextBlock x:Name="RepeaterActualHeightLabel" AutomationProperties.Name="RepeaterActualHeightLabel" VerticalAlignment="Center" Margin="2"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="UniformGridLayout.MinColumnSpacing:" VerticalAlignment="Center" Margin="2"/>
+                <TextBox x:Name="UniformGridLayoutMinColumnSpacing" Text="8" AutomationProperties.Name="UniformGridLayoutMinColumnSpacing" Margin="2"/>
+                <Button AutomationProperties.Name="GetUniformGridLayoutMinColumnSpacing"
+                        Click="GetUniformGridLayoutMinColumnSpacingButtonClick" Margin="2">Get</Button>
+                <Button AutomationProperties.Name="SetUniformGridLayoutMinColumnSpacing"
+                        Click="SetUniformGridLayoutMinColumnSpacingButtonClick" Margin="2">Set</Button>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="UniformGridLayout.MinRowSpacing:" VerticalAlignment="Center" Margin="2"/>
+                <TextBox x:Name="UniformGridLayoutMinRowSpacing" Text="8" AutomationProperties.Name="UniformGridLayoutMinRowSpacing" Margin="2"/>
+                <Button AutomationProperties.Name="GetUniformGridLayoutMinRowSpacing"
+                        Click="GetUniformGridLayoutMinRowSpacingButtonClick" Margin="2">Get</Button>
+                <Button AutomationProperties.Name="SetUniformGridLayoutMinRowSpacing"
+                        Click="SetUniformGridLayoutMinRowSpacingButtonClick" Margin="2">Set</Button>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="UniformGridLayout.MinItemWidth:" VerticalAlignment="Center" Margin="2"/>
+                <TextBox x:Name="UniformGridLayoutMinItemWidth" Text="0" AutomationProperties.Name="UniformGridLayoutMinItemWidth" Margin="2"/>
+                <Button AutomationProperties.Name="GetUniformGridLayoutMinItemWidth"
+                        Click="GetUniformGridLayoutMinItemWidthButtonClick" Margin="2">Get</Button>
+                <Button AutomationProperties.Name="SetUniformGridLayoutMinItemWidth"
+                        Click="SetUniformGridLayoutMinItemWidthButtonClick" Margin="2">Set</Button>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="UniformGridLayout.MinItemHeight:" VerticalAlignment="Center" Margin="2"/>
+                <TextBox x:Name="UniformGridLayoutMinItemHeight" Text="0" AutomationProperties.Name="UniformGridLayoutMinItemHeight" Margin="2"/>
+                <Button AutomationProperties.Name="GetUniformGridLayoutMinItemHeight"
+                        Click="GetUniformGridLayoutMinItemHeightButtonClick" Margin="2">Get</Button>
+                <Button AutomationProperties.Name="SetUniformGridLayoutMinItemHeight"
+                        Click="SetUniformGridLayoutMinItemHeightButtonClick" Margin="2">Set</Button>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="UniformGridLayout.ItemsStretch:" VerticalAlignment="Center" Margin="2"/>
+                <ComboBox x:Name="CmbUniformGridLayoutItemsStretch" AutomationProperties.Name="CmbUniformGridLayoutItemsStretch" SelectedIndex="0" SelectionChanged="CmbUniformGridLayoutItemsStretch_SelectionChanged" Margin="2">
+                    <ComboBoxItem>None</ComboBoxItem>
+                    <ComboBoxItem>Fill</ComboBoxItem>
+                    <ComboBoxItem>Uniform</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="UniformGridLayout.ItemsJustification:" VerticalAlignment="Center" Margin="2"/>
+                <ComboBox x:Name="CmbUniformGridLayoutItemsJustification" AutomationProperties.Name="CmbUniformGridLayoutItemsJustification" SelectedIndex="0" SelectionChanged="CmbUniformGridLayoutItemsJustification_SelectionChanged" Margin="2">
+                    <ComboBoxItem>Start</ComboBoxItem>
+                    <ComboBoxItem>Center</ComboBoxItem>
+                    <ComboBoxItem>End</ComboBoxItem>
+                    <ComboBoxItem>SpaceAround</ComboBoxItem>
+                    <ComboBoxItem>SpaceBetween</ComboBoxItem>
+                    <ComboBoxItem>SpaceEvenly</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="UniformGridLayout.Orientation:" VerticalAlignment="Center" Margin="2"/>
+                <ComboBox x:Name="CmbUniformGridLayoutOrientation" AutomationProperties.Name="CmbUniformGridLayoutOrientation" SelectedIndex="1" SelectionChanged="CmbUniformGridLayoutOrientation_SelectionChanged" Margin="2">
+                    <ComboBoxItem>Vertical</ComboBoxItem>
+                    <ComboBoxItem>Horizontal</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="ScrollViewer.MaxWidth:" VerticalAlignment="Center" Margin="2"/>
+                <TextBox x:Name="ScrollViewerMaxWidth" Text="0" AutomationProperties.Name="ScrollViewerMaxWidth" Margin="2"/>
+                <Button AutomationProperties.Name="GetScrollViewerMaxWidth"
+                        Click="GetScrollViewerMaxWidthButtonClick" Margin="2">Get</Button>
+                <Button AutomationProperties.Name="SetScrollViewerMaxWidth"
+                        Click="SetScrollViewerMaxWidthButtonClick" Margin="2">Set</Button>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="ScrollViewer.MaxHeight:" VerticalAlignment="Center" Margin="2"/>
+                <TextBox x:Name="ScrollViewerMaxHeight" Text="0" AutomationProperties.Name="ScrollViewerMaxHeight" Margin="2"/>
+                <Button AutomationProperties.Name="GetScrollViewerMaxHeight"
+                        Click="GetScrollViewerMaxHeightButtonClick" Margin="2">Get</Button>
+                <Button AutomationProperties.Name="SetScrollViewerMaxHeight"
+                        Click="SetScrollViewerMaxHeightButtonClick" Margin="2">Set</Button>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="ScrollViewer.HorizontalOffset:" VerticalAlignment="Center" Margin="2"/>
+                <TextBox x:Name="ScrollViewerHorizontalOffset" Text="0" AutomationProperties.Name="ScrollViewerHorizontalOffset" Margin="2"/>
+                <Button AutomationProperties.Name="GetScrollViewerHorizontalOffset"
+                        Click="GetScrollViewerHorizontalOffsetButtonClick" Margin="2">Get</Button>
+                <Button AutomationProperties.Name="SetScrollViewerHorizontalOffset"
+                        Click="SetScrollViewerHorizontalOffsetButtonClick" Margin="2">Set</Button>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="ScrollViewer.VerticalOffset:" VerticalAlignment="Center" Margin="2"/>
+                <TextBox x:Name="ScrollViewerVerticalOffset" Text="0" AutomationProperties.Name="ScrollViewerVerticalOffset" Margin="2"/>
+                <Button AutomationProperties.Name="GetScrollViewerVerticalOffset"
+                        Click="GetScrollViewerVerticalOffsetButtonClick" Margin="2">Get</Button>
+                <Button AutomationProperties.Name="SetScrollViewerVerticalOffset"
+                        Click="SetScrollViewerVerticalOffsetButtonClick" Margin="2">Set</Button>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="ScrollViewer.HorizontalScrollBarVisibility:" VerticalAlignment="Center" Margin="2"/>
+                <ComboBox x:Name="CmbScrollViewerHorizontalScrollBarVisibility" AutomationProperties.Name="CmbScrollViewerHorizontalScrollBarVisibility" SelectedIndex="1" SelectionChanged="CmbScrollViewerHorizontalScrollBarVisibility_SelectionChanged" Margin="2">
+                    <ComboBoxItem>Disabled</ComboBoxItem>
+                    <ComboBoxItem>Auto</ComboBoxItem>
+                    <ComboBoxItem>Hidden</ComboBoxItem>
+                    <ComboBoxItem>Visible</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+        </StackPanel>
+
+        <ScrollViewer
+            x:Name="ScrollViewer"
+            HorizontalScrollBarVisibility="Auto" 
             HorizontalScrollMode="Auto" 
             IsVerticalScrollChainingEnabled="False"
             AutomationProperties.Name="RepeaterScrollViewer"
@@ -31,10 +154,5 @@
                 Layout="{StaticResource UniformGridLayout}"
                 ItemTemplate="{StaticResource SimpleElementTemplate}"/>
         </ScrollViewer>
-        <StackPanel>
-            <Button AutomationProperties.Name="GetRepeaterActualHeightButton"
-                    Click="GetRepeaterActualHeightButtonClick">Get actual Repeater height</Button>
-            <TextBlock x:Name="RepeaterActualHeightLabel" AutomationProperties.Name="RepeaterActualHeightLabel"/>
-        </StackPanel>
     </StackPanel>
-</Page>
+</local:TestPage>

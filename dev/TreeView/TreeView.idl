@@ -202,7 +202,7 @@ unsealed runtimeclass TreeViewItem : Windows.UI.Xaml.Controls.ListViewItem
     String ExpandedGlyph { get; set; };
     [MUX_DEFAULT_VALUE("\uE76C")]
     String CollapsedGlyph { get; set; };
-    [MUX_DEFAULT_VALUE("12.0")]
+    [MUX_DEFAULT_VALUE("8.0")]
     Double GlyphSize { get; set; };
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean IsExpanded { get; set; };

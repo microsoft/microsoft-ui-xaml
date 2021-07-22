@@ -377,7 +377,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         <CommandBar Background='Green' CornerRadius='5,10,5,10' IsOpen='False'>
                         <AppBarToggleButton Icon='Shuffle' Label='Shuffle'  />
                         <AppBarToggleButton Icon='RepeatAll' Label='Repeat' />
-                        <AppBarSeparator Margin='20,10,20,0' Foreground='Yellow'/>
+                        <AppBarSeparator Margin='20,10,20,0' Padding='16,12,15,12' Foreground='Yellow'/>
 
                         <CommandBar.Content>
                             <TextBlock Text='Now playing...' Margin='12,14'/>

@@ -127,6 +127,26 @@ namespace MUXControlsTestApp
             ComboBoxIsEnabledCheckBox.IsChecked = pagerComboBox?.IsEnabled;
         }
 
+        private void CheckIfButtonsHiddenButtonClicked(object sender, RoutedEventArgs args)
+        {
+            var rootGrid = VisualTreeHelper.GetChild(TemplateButtonVisibilitySetPager, 0);
+            var backButtonsPanel = VisualTreeHelper.GetChild(rootGrid, 0);
+            var firstPageButtonTemplatePager = VisualTreeHelper.GetChild(backButtonsPanel, 0) as Button;
+            var previousPageButtonTemplatePager = VisualTreeHelper.GetChild(backButtonsPanel, 1) as Button;
+
+            var forwardButtonsPanel = VisualTreeHelper.GetChild(rootGrid, 4);
+            var nextPageButtonTemplatePager = VisualTreeHelper.GetChild(forwardButtonsPanel, 0) as Button;
+            var lastPageButtonTemplatePager = VisualTreeHelper.GetChild(forwardButtonsPanel, 1) as Button;
+
+            int violationCount = 0;
+            violationCount += (firstPageButtonTemplatePager?.Visibility == Visibility.Collapsed || firstPageButton?.Opacity == 0) ? 0 : 1;
+            violationCount += (previousPageButtonTemplatePager?.Visibility == Visibility.Collapsed || previousPageButton?.Opacity == 0) ? 0 : 1;
+            violationCount += (nextPageButtonTemplatePager?.Visibility == Visibility.Collapsed || nextPageButton?.Opacity == 0) ? 0 : 1;
+            violationCount += (lastPageButtonTemplatePager?.Visibility == Visibility.Collapsed || lastPageButton?.Opacity == 0) ? 0 : 1;
+
+            CheckIfButtonsHiddenLabel.Text = violationCount == 0 ? "Passed" : "Failed";
+        }
+
         private void OnSelectedIndexChanged(PagerControl sender, PagerControlSelectedIndexChangedEventArgs args)
         {
             UpdateNumberPanelContentTextBlock(this, null);

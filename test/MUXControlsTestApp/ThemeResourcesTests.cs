@@ -31,7 +31,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using RatingControl = Microsoft.UI.Xaml.Controls.RatingControl;
-using PersonPicture = Microsoft.UI.Xaml.Controls.PersonPicture;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -50,7 +49,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyOverrides()
         {
             RatingControl ratingControl = null;
-            PersonPicture personPicture = null;
             Slider slider = null;
             Grid root = null;
 
@@ -60,13 +58,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 // 1) Override WinUI defined brush in App.Resources.
                 appResources["RatingControlCaptionForeground"] = new SolidColorBrush(Colors.Orange);
 
-                // 2) Override system brush used by WinUI ThemeResource.
-
-                ((ResourceDictionary)appResources.ThemeDictionaries["Light"])["SystemAltHighColor"] = Colors.Green;
-                ((ResourceDictionary)appResources.ThemeDictionaries["Default"])["SystemAltHighColor"] = Colors.Green;
-                ((ResourceDictionary)appResources.ThemeDictionaries["HighContrast"])["SystemColorButtonTextColor"] = Colors.Green;
-
-                // 3) Override brush name used by a system control
+                // 2) Override brush name used by a system control
                 appResources["SliderTrackValueFill"] = new SolidColorBrush(Colors.Purple);
 
                 root = new Grid {
@@ -77,7 +69,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 panel.Children.Add(slider = new Slider());
 
                 panel.Children.Add(ratingControl = new RatingControl() { Value = 2 });
-                panel.Children.Add(personPicture = new PersonPicture());
 
                 root.Children.Add(panel);
                 // Add an element over top to prevent stray mouse input from interfering.
@@ -99,11 +90,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(Colors.Orange, ((SolidColorBrush)ratingControl.Foreground).Color,
                     "Verify RatingControlCaptionForeground override in Application.Resources gets picked up by WinUI control");
 
-                // 2) Verify that overriding a system color used by a WinUI control works.
-                Verify.AreEqual(Colors.Green, ((SolidColorBrush)personPicture.Foreground).Color,
-                    "Verify PersonPictureForegroundThemeBrush (which uses SystemAltHighColor) overridden in Application.Resources gets picked up by WinUI control");
-
-                // 3) Verify that overriding a system brush used by a system control works.
+                // 2) Verify that overriding a system brush used by a system control works.
                 if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone1))
                 {
                     // Below code is comment because of bug 19180323 and we expect the code to be enabled again after test case is moved to nuget testapp

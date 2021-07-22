@@ -4,7 +4,7 @@ schedules:
   displayName: Weekly Sunday report
   branches:
     include:
-    - master
+    - main
   always: true
 jobs:
 - job: CreateUnreliableTestReport

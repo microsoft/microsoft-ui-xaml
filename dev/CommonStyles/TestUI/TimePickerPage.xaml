@@ -11,9 +11,10 @@
 
     <StackPanel Margin="12" VerticalAlignment="Top">
         <TextBlock Text="Sample TimePicker" Style="{ThemeResource StandardGroupHeader}"/>
-        <StackPanel Orientation="Horizontal">
-            <TimePicker Margin="0,23,8,0"/>
-            <TimePicker Header="TimePicker with header"/>
+        <StackPanel Orientation="Vertical">
+            <TimePicker Margin="0,23,10,0"/>
+            <TimePicker Margin="0,23,10,0" Header="TimePicker with header"/>
+            <TimePicker Margin="0,23,10,0" Header="Disabled TimePicker" IsEnabled="False"/>
         </StackPanel>
     </StackPanel>
 

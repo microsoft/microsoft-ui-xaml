@@ -8,7 +8,7 @@ unsealed runtimeclass CommandBarFlyout : Windows.UI.Xaml.Controls.Primitives.Fly
 {
     CommandBarFlyout();
 
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V2]
     {
         Boolean AlwaysExpanded{ get; set; };
     }

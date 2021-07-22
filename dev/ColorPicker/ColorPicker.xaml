@@ -97,16 +97,16 @@
                                                       Grid.Row="1"
                                                       contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                                                       contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}">
-                                                    <Grid x:Name="HorizontalTemplate" MinHeight="44">
+                                                    <Grid x:Name="HorizontalTemplate" MinHeight="38">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="Auto"/>
                                                             <ColumnDefinition Width="Auto"/>
                                                             <ColumnDefinition />
                                                         </Grid.ColumnDefinitions>
                                                         <Grid.RowDefinitions>
-                                                            <RowDefinition Height="18"/>
+                                                            <RowDefinition Height="14"/>
                                                             <RowDefinition Height="Auto"/>
-                                                            <RowDefinition Height="18"/>
+                                                            <RowDefinition Height="14"/>
                                                         </Grid.RowDefinitions>
                                                         <Rectangle x:Name="HorizontalTrackRect" Grid.ColumnSpan="3" Fill="Transparent" Height="{ThemeResource SliderTrackThemeHeight}" Grid.Row="1" Opacity="0"
                                                             contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
@@ -256,7 +256,7 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <StackPanel>
-                            <Grid x:Name="ColorSpectrumGrid">
+                            <Grid x:Name="ColorSpectrumGrid" Margin="0,0,0,15" >
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />
                                     <ColumnDefinition Width="Auto" />
@@ -310,7 +310,7 @@
                                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
                                 </Grid>
                             </Grid>
-                            <Grid Margin="0,12,0,0" x:Name="ThirdDimensionSliderGrid">
+                            <Grid x:Name="ThirdDimensionSliderGrid">
                                 <Rectangle Height="11" VerticalAlignment="Center"
                                            contract7Present:RadiusX="{Binding Source={ThemeResource ColorPickerSliderCornerRadius}, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                            contract7Present:RadiusY="{Binding Source={ThemeResource ColorPickerSliderCornerRadius}, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
@@ -322,7 +322,7 @@
                                 </Rectangle>
                                 <primitives:ColorPickerSlider x:Name="ThirdDimensionSlider" Minimum="0" Maximum="100" ColorChannel="Value" Style="{StaticResource ColorPickerSliderStyle}" IsThumbToolTipEnabled="False" />
                             </Grid>
-                            <Grid Margin="0,12,0,0" x:Name="AlphaSliderGrid">
+                            <Grid Margin="0,0,0,3" x:Name="AlphaSliderGrid">
                                 <Rectangle Height="11" VerticalAlignment="Center"
                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"

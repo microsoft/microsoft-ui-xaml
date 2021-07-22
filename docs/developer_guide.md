@@ -199,7 +199,7 @@ checks in order to pass on all versions.
 #### Visual tree verification tests
 
 ##### Update visual tree verification files
-Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xaml/tree/master/test/MUXControlsTestApp/verification) and we use them as the baseline for visual tree verifications. If you make UI changes, visual tree verification tests may fail since the new dump no longer matches with previous verification files. The verification files need to be updated to include your latest changes. A visual verification test automatically captures the new visual tree and uploads the dump to the test pipeline's artifacts. Below are the steps to replace existing verification files with the updated ones.
+Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xaml/tree/main/test/MUXControlsTestApp/verification) and we use them as the baseline for visual tree verifications. If you make UI changes, visual tree verification tests may fail since the new dump no longer matches with previous verification files. The verification files need to be updated to include your latest changes. A visual verification test automatically captures the new visual tree and uploads the dump to the test pipeline's artifacts. Below are the steps to replace existing verification files with the updated ones.
 
 1. Find your test run
 
@@ -207,25 +207,15 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 
     ![test fail page2](images/test_fail_page2.png)
 
-2. Download new verification files
+2. Identify your buildId
 
-    First, open the published build artifacts:
+    The Build Id for the azure dev ops build associated with your test run can be found in this page's url.
     
-    ![released artifacts](images/test_fail_page3.png)
-    
-    ###### [For Microsoft employees]
-    
-    If you are a Microsoft employee, you can directly view the content of the created `drop` folder containing the updated verification files in Azure Pipelines. From here download the `UpdatedVisualTreeVerificationFiles` folder and extract it locally.
-    
-    ###### [For external contributors]
-    
-    If you are an external contributor, you cannot directly download the new verification files but instead have to download the entire generated **drop** archive and unpack it (its size can be around 1 GB):
-
-    ![drop folder](images/test_pipeline_drop.png) 
+    ![BuildId Location](images/ADO_Build_ID.png)
 
 3. Diff & replace
 
-    Open a powershell command prompt and navigate to the `tools` directory of your Winui 2 project.  Call the `GenerateVisualVerificationUpdates` script passing in the `UpdatedVisualTreeVerificationFiles` folder that you downloaded in step two (make sure this folder contains only .xml verification files).
+    Open a powershell command prompt and navigate to the `tools` directory of your Winui 2 project.  Call the `GenerateVisualVerificationUpdates` script passing in the `BuildId` number that you identified in step two.
 
     This script does the logic for determining the required verification file updates and publishes them to the VerificationFiles folder within the project. If preferred, they can be published to a different location by passing the desired location as a second optional argument.
 
@@ -236,7 +226,7 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 ##### Create new visual tree tests
 1. Write a new test
 
-    Write a new test using [VisualTreeTestHelper](https://github.com/microsoft/microsoft-ui-xaml/blob/master/test/MUXControlsTestApp/VisualTreeTestHelper.cs). Quick example [here](https://github.com/microsoft/microsoft-ui-xaml/blob/master/dev/AutoSuggestBox/APITests/AutoSuggestBoxTests.cs#L69-L74).
+    Write a new test using [VisualTreeTestHelper](https://github.com/microsoft/microsoft-ui-xaml/blob/main/test/MUXControlsTestApp/VisualTreeTestHelper.cs). Quick example [here](https://github.com/microsoft/microsoft-ui-xaml/blob/main/dev/AutoSuggestBox/APITests/AutoSuggestBoxTests.cs#L69-L74).
 
 2. Run the test locally
 
