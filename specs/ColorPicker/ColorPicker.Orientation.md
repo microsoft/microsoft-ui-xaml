@@ -58,7 +58,7 @@ namespace Microsoft.UI.Xaml.Controls
       // Existing ...
 
       // Gets or sets the Orientation of the ColorPicker
-      Windows.UI.Xaml.Controls.Orientation Orientation
+      Windows.UI.Xaml.Controls.Orientation Orientation;
   }
 }
 ```
