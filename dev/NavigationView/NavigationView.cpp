@@ -1427,7 +1427,7 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
         {
             displayMode = winrt::NavigationViewDisplayMode::Expanded;
         }
-        else if (width < CompactModeThresholdWidth())
+        else if (width > 0 && width < CompactModeThresholdWidth())
         {
             displayMode = winrt::NavigationViewDisplayMode::Minimal;
         }
