@@ -25,8 +25,6 @@ public:
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-
-    void CoerceToGreaterThanNegativeOne(int& value);
 private:
     void OnDisplayKindPropertiesChanged();
     void OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args);

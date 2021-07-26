@@ -87,16 +87,6 @@ void InfoBadgeProperties::OnValuePropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::InfoBadge>();
-
-    auto value = winrt::unbox_value<int>(args.NewValue());
-    auto coercedValue = value;
-    winrt::get_self<InfoBadge>(owner)->CoerceToGreaterThanNegativeOne(coercedValue);
-    if (value != coercedValue)
-    {
-        sender.SetValue(args.Property(), winrt::box_value<int>(coercedValue));
-        return;
-    }
-
     winrt::get_self<InfoBadge>(owner)->OnPropertyChanged(args);
 }
 
@@ -130,9 +120,7 @@ void InfoBadgeProperties::Value(int value)
 {
     [[gsl::suppress(con)]]
     {
-    int coercedValue = value;
-    static_cast<InfoBadge*>(this)->CoerceToGreaterThanNegativeOne(coercedValue);
-    static_cast<InfoBadge*>(this)->SetValue(s_ValueProperty, ValueHelper<int>::BoxValueIfNecessary(coercedValue));
+    static_cast<InfoBadge*>(this)->SetValue(s_ValueProperty, ValueHelper<int>::BoxValueIfNecessary(value));
     }
 }
 

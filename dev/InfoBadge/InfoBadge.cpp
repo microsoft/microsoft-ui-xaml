@@ -41,6 +41,14 @@ void InfoBadge::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArg
     auto const property = args.Property();
     winrt::Control const thisAsControl = *this;
 
+    if (property == winrt::InfoBadge::ValueProperty())
+    {
+        if (Value() < -1)
+        {
+            throw winrt::hresult_out_of_bounds(L"Value must be equal to or greater than -1");
+        }
+    }
+
     if (property == winrt::InfoBadge::ValueProperty() ||
              property == winrt::InfoBadge::IconSourceProperty())
     {
@@ -79,22 +87,19 @@ void InfoBadge::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChang
     auto const value = [this]()
     {
         auto const cornerRadiusValue = ActualHeight() / 2;
-        if (ReadLocalValue(winrt::Control::CornerRadiusProperty()) == winrt::DependencyProperty::UnsetValue())
+        if (SharedHelpers::IsRS5OrHigher())
         {
-            return winrt::CornerRadius{ cornerRadiusValue, cornerRadiusValue, cornerRadiusValue, cornerRadiusValue };
+            if (ReadLocalValue(winrt::Control::CornerRadiusProperty()) == winrt::DependencyProperty::UnsetValue())
+            {
+                return winrt::CornerRadius{ cornerRadiusValue, cornerRadiusValue, cornerRadiusValue, cornerRadiusValue };
+            }
+            else
+            {
+                return CornerRadius();
+            }
         }
-        else
-        {
-            return CornerRadius();
-        }
+        return winrt::CornerRadius{ cornerRadiusValue, cornerRadiusValue, cornerRadiusValue, cornerRadiusValue };
     }();
 
     TemplateSettings().InfoBadgeCornerRadius(value);
-}
-
-
-void InfoBadge::CoerceToGreaterThanNegativeOne(int& value)
-{
-    // Property coercion for Value
-    value = std::max(value, -1);
 }

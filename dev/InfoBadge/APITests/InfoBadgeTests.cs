@@ -14,6 +14,7 @@ using FontIconSource = Microsoft.UI.Xaml.Controls.FontIconSource;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
+using System.Runtime.InteropServices;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -155,8 +156,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Content.UpdateLayout();
             });
         }
+
         [TestMethod]
-        public void InfoBadgeValueCoercedToNegativeOne()
+        public void InfoBadgeValueLessThanNegativeOneCrashes()
         {
             InfoBadge infoBadge = null;
             RunOnUIThread.Execute(() =>
@@ -170,8 +172,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                infoBadge.Value = -10;
-                Verify.AreEqual(-1, infoBadge.Value);
+                Verify.Throws<COMException>(() => { infoBadge.Value = -10; });
             });
         }
     }

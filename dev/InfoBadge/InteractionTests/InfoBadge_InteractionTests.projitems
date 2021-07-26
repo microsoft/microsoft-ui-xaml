@@ -9,7 +9,4 @@
   <PropertyGroup Label="Configuration">
     <Import_RootNamespace>InfoBadge_InteractionTests</Import_RootNamespace>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)InfoBadgeTests.cs" />
-  </ItemGroup>
 </Project>
