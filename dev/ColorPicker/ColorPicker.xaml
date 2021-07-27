@@ -10,14 +10,12 @@
     <Style TargetType="controls:ColorPicker" BasedOn="{StaticResource DefaultColorPickerStyle}"/>
     
     <Style x:Key="DefaultColorPickerStyle" TargetType="controls:ColorPicker">
-        <Setter Property="MaxWidth" Value="392" />
-        <Setter Property="MinWidth" Value="312" />
         <Setter Property="IsTabStop" Value="False" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:ColorPicker">
-                    <Grid Background="{TemplateBinding Background}">
+                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
                         <Grid.Resources>
                             <Style x:Key="ColorPickerSliderStyle" TargetType="primitives:ColorPickerSlider">
                                 <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}"/>
@@ -254,9 +252,44 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+                            <VisualStateGroup x:Name="Orientation">
+                                <VisualState x:Name="Horizontal">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.MinWidth" Value="{StaticResource ColorPickerVerticalOrientationMinWidth}"/>
+                                        <Setter Target="RootGrid.MaxWidth" Value="{StaticResource ColorPickerVerticalOrientationMaxWidth}"/>
+                                        <Setter Target="ThirdDimensionSliderGrid.(Grid.Row)" Value="1"/>
+                                        <Setter Target="AlphaSliderGrid.(Grid.Row)" Value="2"/>
+                                        <Setter Target="MoreEntriesPanel.(Grid.Row)" Value="3"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Vertical">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.MinHeight" Value="{StaticResource ColorPickerVerticalOrientationMinHeight}"/>
+                                        <Setter Target="RootGrid.MaxHeight" Value="{StaticResource ColorPickerVerticalOrientationMaxHeight}"/>
+                                        <Setter Target="ThirdDimensionSliderGrid.(Grid.Column)" Value="1"/>
+                                        <Setter Target="ThirdDimensionSliderGrid.Width" Value="200"/>
+                                        <Setter Target="AlphaSliderGrid.(Grid.Column)" Value="2"/>
+                                        <Setter Target="MoreEntriesPanel.(Grid.Column)" Value="3"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <StackPanel>
-                            <Grid x:Name="ColorSpectrumGrid" Margin="0,0,0,15" >
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <Grid x:Name="ColorSpectrumGrid" Margin="0,0,0,15">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />
                                     <ColumnDefinition Width="Auto" />
@@ -343,161 +376,163 @@
                                 </Rectangle>
                                 <primitives:ColorPickerSlider x:Name="AlphaSlider" Minimum="0" Maximum="100" ColorChannel="Alpha" Style="{StaticResource ColorPickerSliderStyle}" IsThumbToolTipEnabled="False" />
                             </Grid>
-                            <ToggleButton
-                                x:Name="MoreButton"
-                                MinHeight="32"
-                                MinWidth="120"
-                                Margin="0,12,0,0" 
-                                Padding="0"
-                                HorizontalAlignment="Right"
-                                HorizontalContentAlignment="Right">
-                                <ToggleButton.Content>
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,7">
-                                        <TextBlock x:Name="MoreButtonLabel" VerticalAlignment="Center" />
-                                        <FontIcon x:Name="MoreGlyph"
-                                            Margin="8,0,0,0"
-                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                            Glyph="&#xE70D;"
-                                            FontSize="12" />
-                                    </StackPanel>
-                                </ToggleButton.Content>
-                                <ToggleButton.Resources>
-                                    <ResourceDictionary>
-                                        <ResourceDictionary.ThemeDictionaries>
-                                            <ResourceDictionary x:Key="Default">
-                                                <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForeground" Color="{ThemeResource SystemBaseHighColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="{ThemeResource SystemBaseMediumColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundPressed" Color="{ThemeResource SystemBaseMediumLowColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundDisabled" Color="{ThemeResource SystemBaseMediumLowColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="{ThemeResource SystemBaseHighColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="{ThemeResource SystemBaseMediumColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="{ThemeResource SystemBaseMediumLowColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedDisabled" Color="{ThemeResource SystemBaseMediumLowColor}" />
-                                            </ResourceDictionary>
-                                            <ResourceDictionary x:Key="HighContrast">
-                                                <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForeground" Color="{ThemeResource SystemColorButtonTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushPressed" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundPressed" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="{ThemeResource SystemColorButtonTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="{ThemeResource SystemColorButtonTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
-                                            </ResourceDictionary>
-                                            <ResourceDictionary x:Key="Light">
-                                                <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForeground" Color="{ThemeResource SystemBaseHighColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="{ThemeResource SystemBaseMediumColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundPressed" Color="{ThemeResource SystemBaseMediumLowColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundDisabled" Color="{ThemeResource SystemBaseMediumLowColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="{ThemeResource SystemBaseHighColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="{ThemeResource SystemBaseMediumColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="{ThemeResource SystemBaseMediumLowColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedDisabled" Color="{ThemeResource SystemBaseMediumLowColor}" />
-                                            </ResourceDictionary>
-                                        </ResourceDictionary.ThemeDictionaries>
-                                    </ResourceDictionary>
-                                </ToggleButton.Resources>
-                            </ToggleButton>
-                            <Grid x:Name="TextEntryGrid" Visibility="Collapsed">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
-                                    <ColumnDefinition />
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <ComboBox Grid.Row="0" x:Name="ColorRepresentationComboBox" Width="120" Margin="0,12,0,0">
-                                    <ComboBoxItem x:Name="RGBComboBoxItem" Content="RGB" IsSelected="True"/>
-                                    <ComboBoxItem x:Name="HSVComboBoxItem" Content="HSV"/>
-                                </ComboBox>
-                                <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
-                                    <StackPanel x:Name="ColorChannelTextInputPanel">
-                                        <StackPanel x:Name="RgbPanel">
-                                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                                <TextBox x:Name="RedTextBox" Width="120" MaxLength="3" Text="255"/>
-                                                <TextBlock x:Name="RedLabel" Text="Red" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            <StackPanel x:Name="MoreEntriesPanel">
+                                <ToggleButton
+                                    x:Name="MoreButton"
+                                    MinHeight="32"
+                                    MinWidth="120"
+                                    Margin="0,12,0,0" 
+                                    Padding="0"
+                                    HorizontalAlignment="Right"
+                                    HorizontalContentAlignment="Right">
+                                    <ToggleButton.Content>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,7">
+                                            <TextBlock x:Name="MoreButtonLabel" VerticalAlignment="Center" />
+                                            <FontIcon x:Name="MoreGlyph"
+                                                Margin="8,0,0,0"
+                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                Glyph="&#xE70D;"
+                                                FontSize="12" />
+                                        </StackPanel>
+                                    </ToggleButton.Content>
+                                    <ToggleButton.Resources>
+                                        <ResourceDictionary>
+                                            <ResourceDictionary.ThemeDictionaries>
+                                                <ResourceDictionary x:Key="Default">
+                                                    <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForeground" Color="{ThemeResource SystemBaseHighColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="{ThemeResource SystemBaseMediumColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundPressed" Color="{ThemeResource SystemBaseMediumLowColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundDisabled" Color="{ThemeResource SystemBaseMediumLowColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="{ThemeResource SystemBaseHighColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="{ThemeResource SystemBaseMediumColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="{ThemeResource SystemBaseMediumLowColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedDisabled" Color="{ThemeResource SystemBaseMediumLowColor}" />
+                                                </ResourceDictionary>
+                                                <ResourceDictionary x:Key="HighContrast">
+                                                    <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForeground" Color="{ThemeResource SystemColorButtonTextColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushPressed" Color="{ThemeResource SystemColorHighlightColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundPressed" Color="{ThemeResource SystemColorHighlightColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="{ThemeResource SystemColorButtonTextColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="{ThemeResource SystemColorButtonTextColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="{ThemeResource SystemColorHighlightColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="{ThemeResource SystemColorHighlightColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
+                                                </ResourceDictionary>
+                                                <ResourceDictionary x:Key="Light">
+                                                    <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForeground" Color="{ThemeResource SystemBaseHighColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="{ThemeResource SystemBaseMediumColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundPressed" Color="{ThemeResource SystemBaseMediumLowColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundDisabled" Color="{ThemeResource SystemBaseMediumLowColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="{ThemeResource SystemBaseHighColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="{ThemeResource SystemBaseMediumColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="{ThemeResource SystemBaseMediumLowColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedDisabled" Color="{ThemeResource SystemBaseMediumLowColor}" />
+                                                </ResourceDictionary>
+                                            </ResourceDictionary.ThemeDictionaries>
+                                        </ResourceDictionary>
+                                    </ToggleButton.Resources>
+                                </ToggleButton>
+                                <Grid x:Name="TextEntryGrid" Visibility="Collapsed">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <ComboBox Grid.Row="0" x:Name="ColorRepresentationComboBox" Width="120" Margin="0,12,0,0">
+                                        <ComboBoxItem x:Name="RGBComboBoxItem" Content="RGB" IsSelected="True"/>
+                                        <ComboBoxItem x:Name="HSVComboBoxItem" Content="HSV"/>
+                                    </ComboBox>
+                                    <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
+                                        <StackPanel x:Name="ColorChannelTextInputPanel">
+                                            <StackPanel x:Name="RgbPanel">
+                                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                                    <TextBox x:Name="RedTextBox" Width="120" MaxLength="3" Text="255"/>
+                                                    <TextBlock x:Name="RedLabel" Text="Red" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                                    <TextBox x:Name="GreenTextBox" Width="120" MaxLength="3" Text="255"/>
+                                                    <TextBlock x:Name="GreenLabel" Text="Green" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                                    <TextBox x:Name="BlueTextBox" Width="120" MaxLength="3" Text="255"/>
+                                                    <TextBlock x:Name="BlueLabel" Text="Blue" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                </StackPanel>
                                             </StackPanel>
-                                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                                <TextBox x:Name="GreenTextBox" Width="120" MaxLength="3" Text="255"/>
-                                                <TextBlock x:Name="GreenLabel" Text="Green" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                            </StackPanel>
-                                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                                <TextBox x:Name="BlueTextBox" Width="120" MaxLength="3" Text="255"/>
-                                                <TextBlock x:Name="BlueLabel" Text="Blue" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                            <StackPanel x:Name="HsvPanel" Grid.Row="1" Visibility="Collapsed">
+                                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                                    <TextBox x:Name="HueTextBox" Width="120" MaxLength="3" Text="0"/>
+                                                    <TextBlock x:Name="HueLabel" Text="Hue" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                                    <TextBox x:Name="SaturationTextBox" Width="120" MaxLength="3" Text="0"/>
+                                                    <TextBlock x:Name="SaturationLabel" Text="Saturation" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                                    <TextBox x:Name="ValueTextBox" Width="120" MaxLength="3" Text="100"/>
+                                                    <TextBlock x:Name="ValueLabel" Text="Value" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                </StackPanel>
                                             </StackPanel>
                                         </StackPanel>
-                                        <StackPanel x:Name="HsvPanel" Grid.Row="1" Visibility="Collapsed">
-                                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                                <TextBox x:Name="HueTextBox" Width="120" MaxLength="3" Text="0"/>
-                                                <TextBlock x:Name="HueLabel" Text="Hue" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                            </StackPanel>
-                                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                                <TextBox x:Name="SaturationTextBox" Width="120" MaxLength="3" Text="0"/>
-                                                <TextBlock x:Name="SaturationLabel" Text="Saturation" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                            </StackPanel>
-                                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                                <TextBox x:Name="ValueTextBox" Width="120" MaxLength="3" Text="100"/>
-                                                <TextBlock x:Name="ValueLabel" Text="Value" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                            </StackPanel>
+                                        <StackPanel x:Name="AlphaPanel" Orientation="Horizontal" Margin="0,12,0,0">
+                                            <TextBox x:Name="AlphaTextBox" Width="120" MaxLength="4" Text="100%"/>
+                                            <TextBlock x:Name="AlphaLabel" Text="Opacity" VerticalAlignment="Center" Margin="8,0,0,0"/>
                                         </StackPanel>
                                     </StackPanel>
-                                    <StackPanel x:Name="AlphaPanel" Orientation="Horizontal" Margin="0,12,0,0">
-                                        <TextBox x:Name="AlphaTextBox" Width="120" MaxLength="4" Text="100%"/>
-                                        <TextBlock x:Name="AlphaLabel" Text="Opacity" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                    </StackPanel>
-                                </StackPanel>
-                                <TextBox x:Name="HexTextBox" Grid.Column="1" MaxLength="7" Text="#FFFFFF" Margin="0,12,0,0" Width="132" HorizontalAlignment="Right" VerticalAlignment="Top" />
-                            </Grid>
-                        </StackPanel>
+                                    <TextBox x:Name="HexTextBox" Grid.Column="1" MaxLength="7" Text="#FFFFFF" Margin="0,12,0,0" Width="132" HorizontalAlignment="Right" VerticalAlignment="Top" />
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
