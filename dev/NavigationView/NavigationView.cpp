@@ -1951,7 +1951,10 @@ void NavigationView::UpdatePaneTitleFrameworkElementParents()
             const auto third = SetPaneTitleFrameworkElementParent(paneTitleTopPane, paneTitleFrameworkElement, !isTopNavigationView || isPaneToggleButtonVisible);
             first ? first() : second ? second() : third ? third() : []() {}();
 
-            paneTitleTopPane.Visibility(third && paneTitleSize != 0 ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+            if (paneTitleTopPane)
+            {
+                paneTitleTopPane.Visibility(third && paneTitleSize != 0 ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+            }
         }
     }
 }
