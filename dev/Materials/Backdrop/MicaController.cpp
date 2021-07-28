@@ -12,6 +12,14 @@ MicaController::~MicaController()
     {
         try
         {
+            if (auto xamlWindow = target.try_as<winrt::Windows::UI::Xaml::Window>())
+            {
+                // Workaround for null ref exception in Window::get_SystemBackdrop when the Window is shutting down.
+                // GenerateRawElementProviderRuntimeId will trigger an exception caught below and thus prevent the 
+                // crashing target.SystemBackdrop() call.
+                auto runtimeId = winrt::Automation::Peers::AutomationPeer::GenerateRawElementProviderRuntimeId();
+            }
+
             // If we are going away and we own the backdrop, clear it.
             if (target.SystemBackdrop() == m_currentBrush)
             {
