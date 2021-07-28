@@ -2,10 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
+using System;
 using Windows.Foundation.Metadata;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 
@@ -15,9 +17,22 @@ namespace MUXControlsTestApp
 {
     public sealed partial class CommandBarFlyoutPage : TestPage
     {
+        private DispatcherTimer clearSecondaryCommandsTimer = new DispatcherTimer();
+        private CommandBarFlyout clearSecondaryCommandsFlyout;
+
+        private DispatcherTimer dynamicLabelTimer = new DispatcherTimer();
+        private AppBarButton dynamicLabelSecondaryCommand;
+        private string originalLabelSecondaryCommand;
+        private int dynamicLabelChangeCount;
+
         public CommandBarFlyoutPage()
         {
             this.InitializeComponent();
+
+            dynamicLabelTimer.Tick += DynamicLabelTimer_Tick;
+
+            clearSecondaryCommandsTimer.Interval = new TimeSpan(0, 0, 3 /*sec*/);
+            clearSecondaryCommandsTimer.Tick += ClearSecondaryCommandsTimer_Tick;
 
             if (ApiInformation.IsTypePresent("Windows.UI.Xaml.Input.KeyboardAccelerator"))
             {
@@ -92,6 +107,8 @@ namespace MUXControlsTestApp
         public void OnFlyoutClosed(object sender, object args)
         {
             IsFlyoutOpenCheckBox.IsChecked = false;
+            SetDynamicSecondaryCommand(null);
+            SetClearSecondaryCommandsFlyout(null);
         }
 
         private void RecordEvent(string eventString)
@@ -161,6 +178,30 @@ namespace MUXControlsTestApp
 
         private void ShowFlyoutAt(FlyoutBase flyout, FrameworkElement targetElement, FlyoutShowMode showMode = FlyoutShowMode.Transient)
         {
+            bool useSecondaryCommandDynamicLabel = (bool)UseSecondaryCommandDynamicLabelCheckBox.IsChecked;
+            bool clearSecondaryCommands = (bool)ClearSecondaryCommandsCheckBox.IsChecked;
+
+            if (useSecondaryCommandDynamicLabel || clearSecondaryCommands)
+            {
+                CommandBarFlyout commandBarFlyout = flyout as CommandBarFlyout;
+
+                if (commandBarFlyout != null)
+                {
+                    if (commandBarFlyout.SecondaryCommands != null && commandBarFlyout.SecondaryCommands.Count > 0)
+                    {
+                        if (useSecondaryCommandDynamicLabel)
+                        {
+                            SetDynamicSecondaryCommand(commandBarFlyout.SecondaryCommands[0] as AppBarButton);
+                        }
+
+                        if (clearSecondaryCommands)
+                        {
+                            SetClearSecondaryCommandsFlyout(commandBarFlyout);
+                        }
+                    }
+                }
+            }
+
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
                 flyout.ShowAt(targetElement, new FlyoutShowOptions { Placement = FlyoutPlacementMode.TopEdgeAlignedLeft, ShowMode = showMode });
@@ -169,6 +210,80 @@ namespace MUXControlsTestApp
             {
                 flyout.Placement = FlyoutPlacementMode.Top;
                 flyout.ShowAt(targetElement);
+            }
+        }
+
+        private void SetClearSecondaryCommandsFlyout(CommandBarFlyout commandBarFlyout)
+        {
+            if (commandBarFlyout == null)
+            {
+                clearSecondaryCommandsFlyout = null;
+                clearSecondaryCommandsTimer.Stop();
+            }
+            else
+            {
+                clearSecondaryCommandsFlyout = commandBarFlyout;
+                clearSecondaryCommandsTimer.Start();
+            }
+        }
+
+        private void SetDynamicSecondaryCommand(AppBarButton appBarButton)
+        {
+            if (appBarButton == null)
+            {
+                if (dynamicLabelSecondaryCommand != null)
+                {
+                    if (dynamicLabelSecondaryCommand.Label != originalLabelSecondaryCommand)
+                    {
+                        dynamicLabelSecondaryCommand.Label = originalLabelSecondaryCommand;
+                        SecondaryCommandDynamicLabelChangedCheckBox.IsChecked = true;
+                    }
+                    dynamicLabelSecondaryCommand = null;
+                    dynamicLabelTimer.Stop();
+                }
+            }
+            else
+            {
+                if (dynamicLabelSecondaryCommand == null)
+                {
+                    originalLabelSecondaryCommand = appBarButton.Label;
+                    dynamicLabelSecondaryCommand = appBarButton;
+                    dynamicLabelTimer.Interval = new TimeSpan(0, 0, 0, 0, int.Parse(DynamicLabelTimerIntervalTextBox.Text) /*msec*/);
+                    dynamicLabelChangeCount = int.Parse(DynamicLabelChangeCountTextBox.Text);
+                    dynamicLabelTimer.Start();
+                }
+            }
+        }
+
+        private void ClearSecondaryCommandsTimer_Tick(object sender, object e)
+        {
+            if (clearSecondaryCommandsFlyout != null)
+            {
+                clearSecondaryCommandsFlyout.SecondaryCommands.Clear();
+            }
+        }
+
+        private void DynamicLabelTimer_Tick(object sender, object e)
+        {
+            if (dynamicLabelSecondaryCommand != null)
+            {
+                if (dynamicLabelSecondaryCommand.Label == originalLabelSecondaryCommand)
+                {
+                    // Testing dynamic label expansion
+                    dynamicLabelSecondaryCommand.Label += " with an expanded label";
+                }
+                else
+                {
+                    // Testing dynamic label shrinkage
+                    dynamicLabelSecondaryCommand.Label = originalLabelSecondaryCommand;
+                }
+                
+                SecondaryCommandDynamicLabelChangedCheckBox.IsChecked = true;
+
+                if (--dynamicLabelChangeCount == 0)
+                {
+                    dynamicLabelTimer.Stop();
+                }
             }
         }
 

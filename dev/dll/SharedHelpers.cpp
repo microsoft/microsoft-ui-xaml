@@ -220,12 +220,6 @@ bool SharedHelpers::IsCompositionRadialGradientBrushAvailable()
     return s_isAvailable;
 }
 
-bool SharedHelpers::IsSelectionIndicatorModeAvailable()
-{
-    static bool s_isSelectionIndicatorModeAvailable = winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Controls.Primitives.ListViewItemPresenterSelectionIndicatorMode");
-    return s_isSelectionIndicatorModeAvailable;
-}
-
 template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
 {
     static bool isAPIContractVxAvailableInitialized = false;
@@ -462,8 +456,8 @@ bool SharedHelpers::DoRectsIntersect(
     const winrt::Rect& rect1,
     const winrt::Rect& rect2)
 {
-    const auto doIntersect =
-        !(rect1.Width <= 0 || rect1.Height <= 0 || rect2.Width <= 0 || rect2.Height <= 0) &&
+    const bool doIntersect =
+        (rect1.Width > 0 && rect1.Height > 0 && rect2.Width > 0 && rect2.Height > 0) &&
         (rect2.X <= rect1.X + rect1.Width) &&
         (rect2.X + rect2.Width >= rect1.X) &&
         (rect2.Y <= rect1.Y + rect1.Height) &&

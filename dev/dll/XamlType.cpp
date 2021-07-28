@@ -122,7 +122,7 @@ winrt::IXamlMember XamlTypeBase::GetMember(winrt::hstring const& name)
 {
     EnsureProperties();
 
-    for (auto& member : m_members)
+    for (const auto& member : m_members)
     {
         if (member.Name() == name)
         {
