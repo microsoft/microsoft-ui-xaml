@@ -32,6 +32,6 @@ private:
     winrt::IXamlType m_type{};
     bool m_isDependencyProperty{};
     bool m_isAttachable{};
-    std::function<winrt::IInspectable(winrt::IInspectable)> m_getter;
-    std::function<void(winrt::IInspectable, winrt::IInspectable)> m_setter;
+    std::function<winrt::IInspectable(winrt::IInspectable)> m_getter{};
+    std::function<void(winrt::IInspectable, winrt::IInspectable)> m_setter{};
 };
