@@ -192,6 +192,9 @@
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureAnimatedIconEnabled) == 'true'">
     <FeatureAnimatedVisualPlayerEnabled>productOnly</FeatureAnimatedVisualPlayerEnabled>
   </PropertyGroup>
+  <!-- Dependencies for InfoBadge -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureInfoBadgeEnabled) == 'true'">
+  </PropertyGroup>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
     <FeatureAnimatedVisualPlayerEnabled>true</FeatureAnimatedVisualPlayerEnabled>
@@ -243,6 +246,7 @@
     <FeatureImageIconEnabled>true</FeatureImageIconEnabled>
     <FeatureAnimatedIconEnabled>true</FeatureAnimatedIconEnabled>
     <FeatureMonochromaticOverlayPresenterEnabled>true</FeatureMonochromaticOverlayPresenterEnabled>
+    <FeatureInfoBadgeEnabled>true</FeatureInfoBadgeEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>
