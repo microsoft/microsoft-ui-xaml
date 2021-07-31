@@ -175,13 +175,13 @@
                                         </Setter>
 
                                         <Setter Target="MoreEntriesPanel.(Grid.Column)" Value="3"/>
+                                        <Setter Target="MoreButton.Margin" Value="0,0,0,12"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Vertical">
                                     <VisualState.Setters>
                                         <Setter Target="RootGrid.MinWidth" Value="{StaticResource ColorPickerVerticalOrientationMinWidth}"/>
                                         <Setter Target="RootGrid.MaxWidth" Value="{StaticResource ColorPickerVerticalOrientationMaxWidth}"/>
-                                        <Setter Target="MoreEntriesPanel.(Grid.Row)" Value="3"/>
                                         <Setter Target="ColorSpectrumGrid.Margin" Value="0,0,0,15"/>
 
                                         <Setter Target="ThirdDimensionSlider.Margin" Value="0,5,0,0"/>
@@ -200,7 +200,8 @@
                                         <Setter Target="AlphaSliderGradientBackgroundRectangle.Height" Value="11"/>
                                         <Setter Target="AlphaSliderGradientBackgroundRectangle.VerticalAlignment" Value="Center"/>
 
-                                        <Setter Target="MoreButton.Margin" Value="0,12,0,0"/>
+                                        <Setter Target="MoreEntriesPanel.(Grid.Row)" Value="3"/>
+                                        <Setter Target="MoreButton.Margin" Value="0,12,0,12"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -413,17 +414,18 @@
                                 <Grid x:Name="TextEntryGrid" Visibility="Collapsed">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition />
+                                        <ColumnDefinition Width="5"/>
                                         <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
-                                    <ComboBox Grid.Row="0" x:Name="ColorRepresentationComboBox" Width="120" Margin="0,12,0,0">
+                                    <ComboBox Grid.Row="0" x:Name="ColorRepresentationComboBox" Width="120">
                                         <ComboBoxItem x:Name="RGBComboBoxItem" Content="RGB" IsSelected="True"/>
                                         <ComboBoxItem x:Name="HSVComboBoxItem" Content="HSV"/>
                                     </ComboBox>
-                                    <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
+                                    <StackPanel Grid.Row="1" Grid.ColumnSpan="3">
                                         <StackPanel x:Name="ColorChannelTextInputPanel">
                                             <StackPanel x:Name="RgbPanel">
                                                 <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
@@ -459,7 +461,7 @@
                                             <TextBlock x:Name="AlphaLabel" Text="Opacity" VerticalAlignment="Center" Margin="8,0,0,0"/>
                                         </StackPanel>
                                     </StackPanel>
-                                    <TextBox x:Name="HexTextBox" Grid.Column="1" MaxLength="7" Text="#FFFFFF" Margin="0,12,0,0" Width="132" HorizontalAlignment="Right" VerticalAlignment="Top" />
+                                    <TextBox x:Name="HexTextBox" Grid.Column="2" MaxLength="7" Text="#FFFFFF" Width="132" HorizontalAlignment="Right" VerticalAlignment="Top" />
                                 </Grid>
                             </StackPanel>
                         </Grid>
