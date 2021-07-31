@@ -10,106 +10,13 @@
     <Style TargetType="controls:ColorPicker" BasedOn="{StaticResource DefaultColorPickerStyle}"/>
     
     <Style x:Key="DefaultColorPickerStyle" TargetType="controls:ColorPicker">
-        <Setter Property="MaxWidth" Value="392" />
-        <Setter Property="MinWidth" Value="312" />
         <Setter Property="IsTabStop" Value="False" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:ColorPicker">
-                    <Grid Background="{TemplateBinding Background}">
+                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
                         <Grid.Resources>
-                            <Style x:Key="ColorPickerSliderStyle" TargetType="primitives:ColorPickerSlider">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Slider">
-                                            <Grid Margin="0,5,0,0">
-                                                <Grid.Resources>
-                                                    <Style x:Key="SliderThumbStyle" TargetType="Thumb">
-                                                        <Setter Property="BorderThickness" Value="0"/>
-                                                        <Setter Property="Background" Value="{ThemeResource ColorPickerSliderThumbBackground}"/>
-                                                        <Setter Property="Template">
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType="Thumb">
-                                                                    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{ThemeResource SliderThumbCornerRadius}" />
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </Style>
-                                                </Grid.Resources>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="*"/>
-                                                </Grid.RowDefinitions>
-                                                <VisualStateManager.VisualStateGroups>
-                                                    <VisualStateGroup x:Name="CommonStates">
-                                                        <VisualState x:Name="Normal"/>
-                                                        <VisualState x:Name="Pressed">
-                                                            <VisualState.Setters>
-                                                                <Setter Target="HorizontalThumb.Background" Value="{ThemeResource ColorPickerSliderThumbBackgroundPressed}"/>
-                                                            </VisualState.Setters>
-                                                        </VisualState>
-                                                        <VisualState x:Name="Disabled">
-                                                            <VisualState.Setters>
-                                                                <Setter Target="HeaderContentPresenter.Foreground" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}"/>
-                                                                <Setter Target="HorizontalThumb.Background" Value="{ThemeResource ColorPickerSliderThumbBackgroundDisabled}"/>
-                                                                <Setter Target="HorizontalTrackRect.Fill" Value="{ThemeResource ColorPickerSliderTrackFillDisabled}"/>
-                                                                <Setter Target="HorizontalDecreaseRect.Fill" Value="{ThemeResource ColorPickerSliderTrackFillDisabled}"/>
-                                                            </VisualState.Setters>
-                                                        </VisualState>
-                                                        <VisualState x:Name="PointerOver">
-                                                            <VisualState.Setters>
-                                                                <Setter Target="HorizontalThumb.Background" Value="{ThemeResource ColorPickerSliderThumbBackgroundPointerOver}"/>
-                                                            </VisualState.Setters>
-                                                        </VisualState>
-                                                    </VisualStateGroup>
-                                                    <VisualStateGroup x:Name="FocusEngagementStates">
-                                                        <VisualState x:Name="FocusDisengaged"/>
-                                                        <VisualState x:Name="FocusEngagedHorizontal">
-                                                            <VisualState.Setters>
-                                                                <Setter Target="SliderContainer.(Control.IsTemplateFocusTarget)" Value="False"/>
-                                                                <Setter Target="HorizontalThumb.(Control.IsTemplateFocusTarget)" Value="True"/>
-                                                            </VisualState.Setters>
-                                                        </VisualState>
-                                                        <VisualState x:Name="FocusEngagedVertical">
-                                                            <VisualState.Setters>
-                                                                <Setter Target="SliderContainer.(Control.IsTemplateFocusTarget)" Value="False"/>
-                                                                <Setter Target="VerticalThumb.(Control.IsTemplateFocusTarget)" Value="True"/>
-                                                            </VisualState.Setters>
-                                                        </VisualState>
-                                                    </VisualStateGroup>
-                                                </VisualStateManager.VisualStateGroups>
-                                                <ContentPresenter x:Name="HeaderContentPresenter" ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Foreground="{ThemeResource SliderHeaderForeground}" FontWeight="{ThemeResource SliderHeaderThemeFontWeight}" Margin="{ThemeResource SliderHeaderThemeMargin}" TextWrapping="Wrap" Visibility="Collapsed" x:DeferLoadStrategy="Lazy"/>
-                                                <Grid x:Name="SliderContainer" Background="Transparent" Control.IsTemplateFocusTarget="True" Grid.Row="1">
-                                                    <Grid x:Name="HorizontalTemplate" MinHeight="44">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                            <ColumnDefinition />
-                                                        </Grid.ColumnDefinitions>
-                                                        <Grid.RowDefinitions>
-                                                            <RowDefinition Height="18"/>
-                                                            <RowDefinition Height="Auto"/>
-                                                            <RowDefinition Height="18"/>
-                                                        </Grid.RowDefinitions>
-                                                        <Rectangle x:Name="HorizontalTrackRect" Grid.ColumnSpan="3" Fill="Transparent" Height="{ThemeResource SliderTrackThemeHeight}" Grid.Row="1" Opacity="0"
-                                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                                            contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
-                                                        <Rectangle x:Name="HorizontalDecreaseRect" Fill="Transparent" Grid.Row="1" Opacity="0" />
-                                                        <Thumb x:Name="HorizontalThumb" AutomationProperties.AccessibilityView="Raw" Grid.Column="1" DataContext="{TemplateBinding Value}" Height="{ThemeResource SliderHorizontalThumbHeight}" Grid.Row="0" Grid.RowSpan="3" Style="{StaticResource SliderThumbStyle}" Width="{ThemeResource SliderHorizontalThumbWidth}">
-                                                            <ToolTipService.ToolTip>
-                                                                <ToolTip x:Name="ToolTip" VerticalOffset="20" />
-                                                            </ToolTipService.ToolTip>
-                                                        </Thumb>
-                                                    </Grid>
-                                                </Grid>
-                                            </Grid>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
                             <SolidColorBrush x:Name="CheckerColorBrush" Color="{ThemeResource SystemListLowColor}" />
                         </Grid.Resources>
                         <VisualStateManager.VisualStateGroups>
@@ -238,8 +145,81 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+                            <VisualStateGroup x:Name="Orientation">
+                                <VisualState x:Name="Horizontal">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.MinHeight" Value="{StaticResource ColorPickerVerticalOrientationMinHeight}"/>
+                                        <Setter Target="RootGrid.MaxHeight" Value="{StaticResource ColorPickerVerticalOrientationMaxHeight}"/>
+
+                                        <Setter Target="ThirdDimensionSliderGrid.(Grid.Column)" Value="1"/>
+                                        <Setter Target="ThirdDimensionSlider.Orientation" Value="Vertical"/>
+                                        <Setter Target="ThirdDimensionBackgroundRectangle.Width" Value="11"/>
+                                        <Setter Target="ThirdDimensionBackgroundRectangle.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="ThirdDimensionBackgroundRectangle.HorizontalAlignment" Value="Center"/>
+                                        <Setter Target="ThirdDimensionBackgroundRectangle.RenderTransform">
+                                            <Setter.Value>
+                                                <RotateTransform Angle="180"/>
+                                            </Setter.Value>
+                                        </Setter>
+
+                                        <Setter Target="AlphaSliderGrid.(Grid.Column)" Value="2"/>
+                                        <Setter Target="AlphaSlider.Orientation" Value="Vertical"/>
+                                        <Setter Target="AlphaSliderCheckeredBackgroundRectangle.Width" Value="11"/>
+                                        <Setter Target="AlphaSliderCheckeredBackgroundRectangle.HorizontalAlignment" Value="Center"/>
+                                        <Setter Target="AlphaSliderGradientBackgroundRectangle.Width" Value="11"/>
+                                        <Setter Target="AlphaSliderGradientBackgroundRectangle.HorizontalAlignment" Value="Center"/>
+                                        <Setter Target="AlphaSliderGradientBackgroundRectangle.RenderTransform">
+                                            <Setter.Value>
+                                                <RotateTransform Angle="180"/>
+                                            </Setter.Value>
+                                        </Setter>
+
+                                        <Setter Target="MoreEntriesPanel.(Grid.Column)" Value="3"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Vertical">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.MinWidth" Value="{StaticResource ColorPickerVerticalOrientationMinWidth}"/>
+                                        <Setter Target="RootGrid.MaxWidth" Value="{StaticResource ColorPickerVerticalOrientationMaxWidth}"/>
+                                        <Setter Target="MoreEntriesPanel.(Grid.Row)" Value="3"/>
+                                        <Setter Target="ColorSpectrumGrid.Margin" Value="0,0,0,15"/>
+
+                                        <Setter Target="ThirdDimensionSlider.Margin" Value="0,5,0,0"/>
+                                        <Setter Target="ThirdDimensionSliderGrid.(Grid.Row)" Value="1"/>
+                                        <Setter Target="ThirdDimensionSliderGrid.Margin" Value="0,12,0,0"/>
+                                        <Setter Target="ThirdDimensionSlider.Orientation" Value="Horizontal"/>
+                                        <Setter Target="ThirdDimensionBackgroundRectangle.Height" Value="11"/>
+                                        <Setter Target="ThirdDimensionBackgroundRectangle.VerticalAlignment" Value="Center"/>
+
+                                        <Setter Target="AlphaSliderGrid.(Grid.Row)" Value="2"/>
+                                        <Setter Target="AlphaSliderGrid.Margin" Value="0,12,0,0"/>
+                                        <Setter Target="AlphaSlider.Orientation" Value="Horizontal"/>
+                                        <Setter Target="AlphaSlider.Margin" Value="0,5,0,0"/>
+                                        <Setter Target="AlphaSliderCheckeredBackgroundRectangle.Height" Value="11"/>
+                                        <Setter Target="AlphaSliderCheckeredBackgroundRectangle.VerticalAlignment" Value="Center"/>
+                                        <Setter Target="AlphaSliderGradientBackgroundRectangle.Height" Value="11"/>
+                                        <Setter Target="AlphaSliderGradientBackgroundRectangle.VerticalAlignment" Value="Center"/>
+
+                                        <Setter Target="MoreButton.Margin" Value="0,12,0,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <StackPanel>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
                             <Grid x:Name="ColorSpectrumGrid">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />
@@ -294,8 +274,8 @@
                                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
                                 </Grid>
                             </Grid>
-                            <Grid Margin="0,12,0,0" x:Name="ThirdDimensionSliderGrid">
-                                <Rectangle Height="11" VerticalAlignment="Center"
+                            <Grid x:Name="ThirdDimensionSliderGrid">
+                                <Rectangle x:Name="ThirdDimensionBackgroundRectangle" RenderTransformOrigin="0.5, 0.5"
                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
@@ -306,8 +286,8 @@
                                 </Rectangle>
                                 <primitives:ColorPickerSlider x:Name="ThirdDimensionSlider" Minimum="0" Maximum="100" ColorChannel="Value" Style="{StaticResource ColorPickerSliderStyle}" IsThumbToolTipEnabled="False" />
                             </Grid>
-                            <Grid Margin="0,12,0,0" x:Name="AlphaSliderGrid">
-                                <Rectangle Height="11" VerticalAlignment="Center"
+                            <Grid x:Name="AlphaSliderGrid">
+                                <Rectangle x:Name="AlphaSliderCheckeredBackgroundRectangle" RenderTransformOrigin="0.5, 0.5"
                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
@@ -316,7 +296,7 @@
                                         <ImageBrush x:Name="AlphaSliderCheckeredBackgroundImageBrush" />
                                     </Rectangle.Fill>
                                 </Rectangle>
-                                <Rectangle x:Name="AlphaSliderBackgroundRectangle" Height="11" VerticalAlignment="Center"
+                                <Rectangle x:Name="AlphaSliderGradientBackgroundRectangle" RenderTransformOrigin="0.5, 0.5"
                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
@@ -327,161 +307,279 @@
                                 </Rectangle>
                                 <primitives:ColorPickerSlider x:Name="AlphaSlider" Minimum="0" Maximum="100" ColorChannel="Alpha" Style="{StaticResource ColorPickerSliderStyle}" IsThumbToolTipEnabled="False" />
                             </Grid>
-                            <ToggleButton
-                                x:Name="MoreButton"
-                                MinHeight="32"
-                                MinWidth="120"
-                                Margin="0,12,0,0" 
-                                Padding="0"
-                                HorizontalAlignment="Right"
-                                HorizontalContentAlignment="Right">
-                                <ToggleButton.Content>
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,7">
-                                        <TextBlock x:Name="MoreButtonLabel" VerticalAlignment="Center" />
-                                        <FontIcon x:Name="MoreGlyph"
-                                            Margin="8,0,0,0"
-                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                            Glyph="&#xE70D;"
-                                            FontSize="12" />
+                            <StackPanel x:Name="MoreEntriesPanel">
+                                <ToggleButton
+                                    x:Name="MoreButton"
+                                    MinHeight="32"
+                                    MinWidth="120"
+                                    Padding="0"
+                                    HorizontalAlignment="Right"
+                                    HorizontalContentAlignment="Right">
+                                    <ToggleButton.Content>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,7">
+                                            <TextBlock x:Name="MoreButtonLabel" VerticalAlignment="Center" />
+                                            <FontIcon x:Name="MoreGlyph"
+                                                Margin="8,0,0,0"
+                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                Glyph="&#xE70D;"
+                                                FontSize="12" />
+                                        </StackPanel>
+                                    </ToggleButton.Content>
+                                    <ToggleButton.Resources>
+                                        <ResourceDictionary>
+                                            <ResourceDictionary.ThemeDictionaries>
+                                                <ResourceDictionary x:Key="Default">
+                                                    <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForeground" Color="{ThemeResource SystemBaseHighColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="{ThemeResource SystemBaseMediumColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundPressed" Color="{ThemeResource SystemBaseMediumLowColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundDisabled" Color="{ThemeResource SystemBaseMediumLowColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="{ThemeResource SystemBaseHighColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="{ThemeResource SystemBaseMediumColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="{ThemeResource SystemBaseMediumLowColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedDisabled" Color="{ThemeResource SystemBaseMediumLowColor}" />
+                                                </ResourceDictionary>
+                                                <ResourceDictionary x:Key="HighContrast">
+                                                    <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForeground" Color="{ThemeResource SystemColorButtonTextColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushPressed" Color="{ThemeResource SystemColorHighlightColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundPressed" Color="{ThemeResource SystemColorHighlightColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="{ThemeResource SystemColorButtonTextColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="{ThemeResource SystemColorButtonTextColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="{ThemeResource SystemColorHighlightColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="{ThemeResource SystemColorHighlightColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
+                                                </ResourceDictionary>
+                                                <ResourceDictionary x:Key="Light">
+                                                    <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForeground" Color="{ThemeResource SystemBaseHighColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="{ThemeResource SystemBaseMediumColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundPressed" Color="{ThemeResource SystemBaseMediumLowColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundDisabled" Color="{ThemeResource SystemBaseMediumLowColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="{ThemeResource SystemBaseHighColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="{ThemeResource SystemBaseMediumColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="{ThemeResource SystemBaseMediumLowColor}" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedDisabled" Color="Transparent" />
+                                                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedDisabled" Color="{ThemeResource SystemBaseMediumLowColor}" />
+                                                </ResourceDictionary>
+                                            </ResourceDictionary.ThemeDictionaries>
+                                        </ResourceDictionary>
+                                    </ToggleButton.Resources>
+                                </ToggleButton>
+                                <Grid x:Name="TextEntryGrid" Visibility="Collapsed">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <ComboBox Grid.Row="0" x:Name="ColorRepresentationComboBox" Width="120" Margin="0,12,0,0">
+                                        <ComboBoxItem x:Name="RGBComboBoxItem" Content="RGB" IsSelected="True"/>
+                                        <ComboBoxItem x:Name="HSVComboBoxItem" Content="HSV"/>
+                                    </ComboBox>
+                                    <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
+                                        <StackPanel x:Name="ColorChannelTextInputPanel">
+                                            <StackPanel x:Name="RgbPanel">
+                                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                                    <TextBox x:Name="RedTextBox" Width="120" MaxLength="3" Text="255"/>
+                                                    <TextBlock x:Name="RedLabel" Text="Red" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                                    <TextBox x:Name="GreenTextBox" Width="120" MaxLength="3" Text="255"/>
+                                                    <TextBlock x:Name="GreenLabel" Text="Green" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                                    <TextBox x:Name="BlueTextBox" Width="120" MaxLength="3" Text="255"/>
+                                                    <TextBlock x:Name="BlueLabel" Text="Blue" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <StackPanel x:Name="HsvPanel" Grid.Row="1" Visibility="Collapsed">
+                                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                                    <TextBox x:Name="HueTextBox" Width="120" MaxLength="3" Text="0"/>
+                                                    <TextBlock x:Name="HueLabel" Text="Hue" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                                    <TextBox x:Name="SaturationTextBox" Width="120" MaxLength="3" Text="0"/>
+                                                    <TextBlock x:Name="SaturationLabel" Text="Saturation" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                                    <TextBox x:Name="ValueTextBox" Width="120" MaxLength="3" Text="100"/>
+                                                    <TextBlock x:Name="ValueLabel" Text="Value" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <StackPanel x:Name="AlphaPanel" Orientation="Horizontal" Margin="0,12,0,0">
+                                            <TextBox x:Name="AlphaTextBox" Width="120" MaxLength="4" Text="100%"/>
+                                            <TextBlock x:Name="AlphaLabel" Text="Opacity" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                        </StackPanel>
                                     </StackPanel>
-                                </ToggleButton.Content>
-                                <ToggleButton.Resources>
-                                    <ResourceDictionary>
-                                        <ResourceDictionary.ThemeDictionaries>
-                                            <ResourceDictionary x:Key="Default">
-                                                <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForeground" Color="{ThemeResource SystemBaseHighColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="{ThemeResource SystemBaseMediumColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundPressed" Color="{ThemeResource SystemBaseMediumLowColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundDisabled" Color="{ThemeResource SystemBaseMediumLowColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="{ThemeResource SystemBaseHighColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="{ThemeResource SystemBaseMediumColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="{ThemeResource SystemBaseMediumLowColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedDisabled" Color="{ThemeResource SystemBaseMediumLowColor}" />
-                                            </ResourceDictionary>
-                                            <ResourceDictionary x:Key="HighContrast">
-                                                <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForeground" Color="{ThemeResource SystemColorButtonTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushPressed" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundPressed" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="{ThemeResource SystemColorButtonTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="{ThemeResource SystemColorButtonTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
-                                            </ResourceDictionary>
-                                            <ResourceDictionary x:Key="Light">
-                                                <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForeground" Color="{ThemeResource SystemBaseHighColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="{ThemeResource SystemBaseMediumColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundPressed" Color="{ThemeResource SystemBaseMediumLowColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundDisabled" Color="{ThemeResource SystemBaseMediumLowColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="{ThemeResource SystemBaseHighColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="{ThemeResource SystemBaseMediumColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="{ThemeResource SystemBaseMediumLowColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedDisabled" Color="Transparent" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedDisabled" Color="{ThemeResource SystemBaseMediumLowColor}" />
-                                            </ResourceDictionary>
-                                        </ResourceDictionary.ThemeDictionaries>
-                                    </ResourceDictionary>
-                                </ToggleButton.Resources>
-                            </ToggleButton>
-                            <Grid x:Name="TextEntryGrid" Visibility="Collapsed">
+                                    <TextBox x:Name="HexTextBox" Grid.Column="1" MaxLength="7" Text="#FFFFFF" Margin="0,12,0,0" Width="132" HorizontalAlignment="Right" VerticalAlignment="Top" />
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ColorPickerSliderStyle" TargetType="primitives:ColorPickerSlider">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Grid>
+                        <Grid.Resources>
+                            <Style x:Key="SliderThumbStyle" TargetType="Thumb">
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Background" Value="{ThemeResource ColorPickerSliderThumbBackground}"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{ThemeResource SliderThumbCornerRadius}" />
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Grid.Resources>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="HorizontalThumb.Background" Value="{ThemeResource ColorPickerSliderThumbBackgroundPressed}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="HeaderContentPresenter.Foreground" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}"/>
+                                        <Setter Target="HorizontalThumb.Background" Value="{ThemeResource ColorPickerSliderThumbBackgroundDisabled}"/>
+                                        <Setter Target="HorizontalTrackRect.Fill" Value="{ThemeResource ColorPickerSliderTrackFillDisabled}"/>
+                                        <Setter Target="HorizontalDecreaseRect.Fill" Value="{ThemeResource ColorPickerSliderTrackFillDisabled}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="HorizontalThumb.Background" Value="{ThemeResource ColorPickerSliderThumbBackgroundPointerOver}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="FocusEngagementStates">
+                                <VisualState x:Name="FocusDisengaged"/>
+                                <VisualState x:Name="FocusEngagedHorizontal">
+                                    <VisualState.Setters>
+                                        <Setter Target="SliderContainer.(Control.IsTemplateFocusTarget)" Value="False"/>
+                                        <Setter Target="HorizontalThumb.(Control.IsTemplateFocusTarget)" Value="True"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="FocusEngagedVertical">
+                                    <VisualState.Setters>
+                                        <Setter Target="SliderContainer.(Control.IsTemplateFocusTarget)" Value="False"/>
+                                        <Setter Target="VerticalThumb.(Control.IsTemplateFocusTarget)" Value="True"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <ContentPresenter x:Name="HeaderContentPresenter" ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Foreground="{ThemeResource SliderHeaderForeground}" FontWeight="{ThemeResource SliderHeaderThemeFontWeight}" Margin="{ThemeResource SliderHeaderThemeMargin}" TextWrapping="Wrap" Visibility="Collapsed" x:DeferLoadStrategy="Lazy"/>
+                        <Grid x:Name="SliderContainer" Background="Transparent" Control.IsTemplateFocusTarget="True" Grid.Row="1">
+                            <Grid x:Name="HorizontalTemplate" MinHeight="44">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="18"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="18"/>
+                                </Grid.RowDefinitions>
+                                <Rectangle x:Name="HorizontalTrackRect" Grid.ColumnSpan="3" Fill="Transparent" Height="{ThemeResource SliderTrackThemeHeight}" Grid.Row="1" Opacity="0"
+                                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                                            contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
+                                <Rectangle x:Name="HorizontalDecreaseRect" Fill="Transparent" Grid.Row="1" Opacity="0" />
+                                <Thumb x:Name="HorizontalThumb" AutomationProperties.AccessibilityView="Raw" Grid.Column="1" DataContext="{TemplateBinding Value}" Height="{ThemeResource SliderHorizontalThumbHeight}" Grid.Row="0" Grid.RowSpan="3" Style="{StaticResource SliderThumbStyle}" Width="{ThemeResource SliderHorizontalThumbWidth}">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip x:Name="ToolTip" VerticalOffset="20" />
+                                    </ToolTipService.ToolTip>
+                                </Thumb>
+                            </Grid>
+                            <Grid x:Name="VerticalTemplate" MinHeight="38">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
-                                <ComboBox Grid.Row="0" x:Name="ColorRepresentationComboBox" Width="120" Margin="0,12,0,0">
-                                    <ComboBoxItem x:Name="RGBComboBoxItem" Content="RGB" IsSelected="True"/>
-                                    <ComboBoxItem x:Name="HSVComboBoxItem" Content="HSV"/>
-                                </ComboBox>
-                                <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
-                                    <StackPanel x:Name="ColorChannelTextInputPanel">
-                                        <StackPanel x:Name="RgbPanel">
-                                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                                <TextBox x:Name="RedTextBox" Width="120" MaxLength="3" Text="255"/>
-                                                <TextBlock x:Name="RedLabel" Text="Red" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                            </StackPanel>
-                                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                                <TextBox x:Name="GreenTextBox" Width="120" MaxLength="3" Text="255"/>
-                                                <TextBlock x:Name="GreenLabel" Text="Green" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                            </StackPanel>
-                                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                                <TextBox x:Name="BlueTextBox" Width="120" MaxLength="3" Text="255"/>
-                                                <TextBlock x:Name="BlueLabel" Text="Blue" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                            </StackPanel>
-                                        </StackPanel>
-                                        <StackPanel x:Name="HsvPanel" Grid.Row="1" Visibility="Collapsed">
-                                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                                <TextBox x:Name="HueTextBox" Width="120" MaxLength="3" Text="0"/>
-                                                <TextBlock x:Name="HueLabel" Text="Hue" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                            </StackPanel>
-                                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                                <TextBox x:Name="SaturationTextBox" Width="120" MaxLength="3" Text="0"/>
-                                                <TextBlock x:Name="SaturationLabel" Text="Saturation" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                            </StackPanel>
-                                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                                <TextBox x:Name="ValueTextBox" Width="120" MaxLength="3" Text="100"/>
-                                                <TextBlock x:Name="ValueLabel" Text="Value" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                            </StackPanel>
-                                        </StackPanel>
-                                    </StackPanel>
-                                    <StackPanel x:Name="AlphaPanel" Orientation="Horizontal" Margin="0,12,0,0">
-                                        <TextBox x:Name="AlphaTextBox" Width="120" MaxLength="4" Text="100%"/>
-                                        <TextBlock x:Name="AlphaLabel" Text="Opacity" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                    </StackPanel>
-                                </StackPanel>
-                                <TextBox x:Name="HexTextBox" Grid.Column="1" MaxLength="7" Text="#FFFFFF" Margin="0,12,0,0" Width="132" HorizontalAlignment="Right" VerticalAlignment="Top" />
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="{ThemeResource SliderPreContentMargin}" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="{ThemeResource SliderPostContentMargin}" />
+                                </Grid.ColumnDefinitions>
+
+                                <Rectangle x:Name="VerticalTrackRect" Grid.RowSpan="3" Fill="Transparent" Width="{ThemeResource SliderTrackThemeHeight}" Grid.Column="1" Opacity="0"
+                                    contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                    contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                    contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                    contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
+                                <Rectangle x:Name="VerticalDecreaseRect" Fill="Transparent" Grid.Column="1" Grid.Row="2" Opacity="0" />
+                                <Thumb x:Name="VerticalThumb" AutomationProperties.AccessibilityView="Raw" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" DataContext="{TemplateBinding Value}" Height="{ThemeResource SliderHorizontalThumbHeight}" Style="{StaticResource SliderThumbStyle}" Width="{ThemeResource SliderHorizontalThumbWidth}">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip x:Name="VerticalToolTip" VerticalOffset="20" />
+                                    </ToolTipService.ToolTip>
+                                </Thumb>
                             </Grid>
-                        </StackPanel>
+                        </Grid>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
