@@ -57,9 +57,9 @@
                         <Button AutomationProperties.AutomationId="PreviousColorBlueButton" Content="Blue" Click="PreviousColorBlueButton_Click" Margin="5,0,0,0" />
                     </StackPanel>
                     <Button AutomationProperties.AutomationId="PreviousColorCurrentColorButton" Content="Current color" Click="PreviousColorCurrentColorButton_Click" Margin="0,5,0,0" />
-                    <ComboBox AutomationProperties.AutomationId="OrientationComboBox" Header="Orientation" SelectionChanged="OrientationComboBox_SelectionChanged" SelectedIndex="1">
-                        <ComboBoxItem AutomationProperties.AutomationId="OrientationHorizontal" IsSelected="True">Horizontal</ComboBoxItem>
-                        <ComboBoxItem AutomationProperties.AutomationId="OrientationVertical">Vertical</ComboBoxItem>
+                    <ComboBox AutomationProperties.AutomationId="OrientationComboBox" Header="Orientation" SelectionChanged="OrientationComboBox_SelectionChanged">
+                        <ComboBoxItem AutomationProperties.AutomationId="OrientationHorizontal">Horizontal</ComboBoxItem>
+                        <ComboBoxItem AutomationProperties.AutomationId="OrientationVertical" IsSelected="True">Vertical</ComboBoxItem>
                     </ComboBox>
                     <CheckBox AutomationProperties.AutomationId="AlphaEnabledCheckBox" Content="Is alpha enabled" IsChecked="{Binding IsAlphaEnabled, ElementName=ColorPicker, Mode=TwoWay}" />
                     <CheckBox AutomationProperties.AutomationId="ColorSpectrumVisibleCheckBox" Content="Is color spectrum visible" IsChecked="{Binding IsColorSpectrumVisible, ElementName=ColorPicker, Mode=TwoWay}" />

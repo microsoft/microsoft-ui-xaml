@@ -443,7 +443,6 @@ void ColorPicker::UpdateOrientation(winrt::Orientation const& newOrientation)
     {
         winrt::VisualStateManager::GoToState(*this, L"Vertical", true);
     }
-    UpdateLayout();
 }
 
 void ColorPicker::UpdateVisualState(bool useTransitions)

@@ -45,8 +45,12 @@ unsealed runtimeclass ColorPicker : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("winrt::ColorSpectrumComponents::HueSaturation")]
     ColorSpectrumComponents ColorSpectrumComponents { get; set; };
     event Windows.Foundation.TypedEventHandler<ColorPicker, ColorChangedEventArgs> ColorChanged;
-    [MUX_DEFAULT_VALUE("winrt::Orientation::Vertical")]
-    Windows.UI.Xaml.Controls.Orientation Orientation;
+
+    [MUX_PUBLIC_V2]
+    {
+        [MUX_DEFAULT_VALUE("winrt::Orientation::Vertical")]
+        Windows.UI.Xaml.Controls.Orientation Orientation;
+    }
 
     static Windows.UI.Xaml.DependencyProperty ColorProperty { get; };
     static Windows.UI.Xaml.DependencyProperty PreviousColorProperty { get; };
@@ -67,7 +71,10 @@ unsealed runtimeclass ColorPicker : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty MaxValueProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ColorSpectrumShapeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ColorSpectrumComponentsProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty OrientationProperty{ get; };
+    [MUX_PUBLIC_V2]
+    {
+        static Windows.UI.Xaml.DependencyProperty OrientationProperty{ get; };
+    }
 }
 
 }
