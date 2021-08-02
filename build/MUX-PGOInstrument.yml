@@ -8,10 +8,7 @@ variables:
 jobs:
 - job: Build
   pool: 
-    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/microsoft/') }}:
-      name: WinDevPool-L
-    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/microsoft/') }}:
-      name: WinDevPoolOSS-L
+    name: WinDevPool-L
     demands: ImageOverride -equals WinDevVS16-9
   timeoutInMinutes: 120
   strategy:
