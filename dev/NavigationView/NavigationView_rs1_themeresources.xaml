@@ -308,7 +308,6 @@
     <Thickness x:Key="TopNavigationViewItemOnOverflowExpandChevronPadding">12,0,12,0</Thickness>
 
     <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
-    <CornerRadius x:Key="NavigationViewPaneContentGridCornerRadius">0,8,8,0</CornerRadius>
     <CornerRadius x:Key="TopNavigationViewContentGridCornerRadius">0</CornerRadius>
     <CornerRadius x:Key="NavigationViewMinimalContentGridCornerRadius">0</CornerRadius>
 

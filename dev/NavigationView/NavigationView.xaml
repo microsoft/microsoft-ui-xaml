@@ -472,7 +472,7 @@
                                 OpenPaneLength="{TemplateBinding OpenPaneLength}"
                                 PaneBackground="{ThemeResource NavigationViewDefaultPaneBackground}"
                                 Grid.Row="1"
-                                contract7Present:CornerRadius="{ThemeResource NavigationViewPaneContentGridCornerRadius}">
+                                contract7Present:CornerRadius="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}">
                                 
                                 <SplitView.Pane>
                                     <Grid 
