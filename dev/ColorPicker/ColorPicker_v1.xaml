@@ -15,7 +15,9 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:ColorPicker">
-                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
+                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}"
+                        MaxWidth="{StaticResource ColorPickerVerticalOrientationMaxWidth}"
+                        MinWidth="{StaticResource ColorPickerVerticalOrientationMinWidth}">
                         <Grid.Resources>
                             <SolidColorBrush x:Name="CheckerColorBrush" Color="{ThemeResource SystemListLowColor}" />
                         </Grid.Resources>
@@ -146,16 +148,25 @@
                                 </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="Orientation">
+                                <VisualState x:Name="Vertical"/>
                                 <VisualState x:Name="Horizontal">
                                     <VisualState.Setters>
                                         <Setter Target="RootGrid.MinHeight" Value="{StaticResource ColorPickerVerticalOrientationMinHeight}"/>
                                         <Setter Target="RootGrid.MaxHeight" Value="{StaticResource ColorPickerVerticalOrientationMaxHeight}"/>
+                                        <Setter Target="RootGrid.MinWidth" Value="0"/>
+                                        <Setter Target="RootGrid.MaxWidth" Value="10000"/>
 
+                                        <Setter Target="ColorSpectrumGrid.Margin" Value="0,0,0,0"/>
+
+                                        <Setter Target="ThirdDimensionSlider.Margin" Value="0,0,0,0"/>
                                         <Setter Target="ThirdDimensionSliderGrid.(Grid.Column)" Value="1"/>
+                                        <Setter Target="ThirdDimensionSliderGrid.(Grid.Row)" Value="0"/>
+                                        <Setter Target="ThirdDimensionSliderGrid.Margin" Value="0,0,0,0"/>
                                         <Setter Target="ThirdDimensionSlider.Orientation" Value="Vertical"/>
+                                        <Setter Target="ThirdDimensionBackgroundRectangle.Height" Value="Auto"/>
                                         <Setter Target="ThirdDimensionBackgroundRectangle.Width" Value="11"/>
-                                        <Setter Target="ThirdDimensionBackgroundRectangle.VerticalAlignment" Value="Stretch"/>
                                         <Setter Target="ThirdDimensionBackgroundRectangle.HorizontalAlignment" Value="Center"/>
+                                        <Setter Target="ThirdDimensionBackgroundRectangle.VerticalAlignment" Value="Stretch"/>
                                         <Setter Target="ThirdDimensionBackgroundRectangle.RenderTransform">
                                             <Setter.Value>
                                                 <RotateTransform Angle="180"/>
@@ -163,11 +174,18 @@
                                         </Setter>
 
                                         <Setter Target="AlphaSliderGrid.(Grid.Column)" Value="2"/>
+                                        <Setter Target="AlphaSliderGrid.(Grid.Row)" Value="0"/>
+                                        <Setter Target="AlphaSliderGrid.Margin" Value="0,0,0,0"/>
+                                        <Setter Target="AlphaSlider.Margin" Value="0,0,0,0"/>
                                         <Setter Target="AlphaSlider.Orientation" Value="Vertical"/>
+                                        <Setter Target="AlphaSliderCheckeredBackgroundRectangle.Height" Value="Auto"/>
                                         <Setter Target="AlphaSliderCheckeredBackgroundRectangle.Width" Value="11"/>
                                         <Setter Target="AlphaSliderCheckeredBackgroundRectangle.HorizontalAlignment" Value="Center"/>
+                                        <Setter Target="AlphaSliderCheckeredBackgroundRectangle.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="AlphaSliderGradientBackgroundRectangle.Height" Value="Auto"/>
                                         <Setter Target="AlphaSliderGradientBackgroundRectangle.Width" Value="11"/>
                                         <Setter Target="AlphaSliderGradientBackgroundRectangle.HorizontalAlignment" Value="Center"/>
+                                        <Setter Target="AlphaSliderGradientBackgroundRectangle.VerticalAlignment" Value="Stretch"/>
                                         <Setter Target="AlphaSliderGradientBackgroundRectangle.RenderTransform">
                                             <Setter.Value>
                                                 <RotateTransform Angle="180"/>
@@ -175,33 +193,9 @@
                                         </Setter>
 
                                         <Setter Target="MoreEntriesPanel.(Grid.Column)" Value="3"/>
+                                        <Setter Target="MoreEntriesPanel.(Grid.Row)" Value="0"/>
+                                        <Setter Target="MoreEntriesPanel.Margin" Value="0,0,0,0"/>
                                         <Setter Target="MoreButton.Margin" Value="0,0,0,12"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="Vertical">
-                                    <VisualState.Setters>
-                                        <Setter Target="RootGrid.MinWidth" Value="{StaticResource ColorPickerVerticalOrientationMinWidth}"/>
-                                        <Setter Target="RootGrid.MaxWidth" Value="{StaticResource ColorPickerVerticalOrientationMaxWidth}"/>
-                                        <Setter Target="ColorSpectrumGrid.Margin" Value="0,0,0,15"/>
-
-                                        <Setter Target="ThirdDimensionSlider.Margin" Value="0,5,0,0"/>
-                                        <Setter Target="ThirdDimensionSliderGrid.(Grid.Row)" Value="1"/>
-                                        <Setter Target="ThirdDimensionSliderGrid.Margin" Value="0,12,0,0"/>
-                                        <Setter Target="ThirdDimensionSlider.Orientation" Value="Horizontal"/>
-                                        <Setter Target="ThirdDimensionBackgroundRectangle.Height" Value="11"/>
-                                        <Setter Target="ThirdDimensionBackgroundRectangle.VerticalAlignment" Value="Center"/>
-
-                                        <Setter Target="AlphaSliderGrid.(Grid.Row)" Value="2"/>
-                                        <Setter Target="AlphaSliderGrid.Margin" Value="0,12,0,0"/>
-                                        <Setter Target="AlphaSlider.Orientation" Value="Horizontal"/>
-                                        <Setter Target="AlphaSlider.Margin" Value="0,5,0,0"/>
-                                        <Setter Target="AlphaSliderCheckeredBackgroundRectangle.Height" Value="11"/>
-                                        <Setter Target="AlphaSliderCheckeredBackgroundRectangle.VerticalAlignment" Value="Center"/>
-                                        <Setter Target="AlphaSliderGradientBackgroundRectangle.Height" Value="11"/>
-                                        <Setter Target="AlphaSliderGradientBackgroundRectangle.VerticalAlignment" Value="Center"/>
-
-                                        <Setter Target="MoreEntriesPanel.(Grid.Row)" Value="3"/>
-                                        <Setter Target="MoreButton.Margin" Value="0,12,0,12"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -221,7 +215,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <Grid x:Name="ColorSpectrumGrid">
+                            <Grid x:Name="ColorSpectrumGrid" Margin="0,0,0,15">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />
                                     <ColumnDefinition Width="Auto" />
@@ -275,8 +269,8 @@
                                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
                                 </Grid>
                             </Grid>
-                            <Grid x:Name="ThirdDimensionSliderGrid">
-                                <Rectangle x:Name="ThirdDimensionBackgroundRectangle" RenderTransformOrigin="0.5, 0.5"
+                            <Grid x:Name="ThirdDimensionSliderGrid" Grid.Row="1" Margin="0,12,0,0">
+                                <Rectangle x:Name="ThirdDimensionBackgroundRectangle" RenderTransformOrigin="0.5, 0.5" Height="11" VerticalAlignment="Center"
                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
@@ -285,10 +279,10 @@
                                         <LinearGradientBrush x:Name="ThirdDimensionSliderGradientBrush" />
                                     </Rectangle.Fill>
                                 </Rectangle>
-                                <primitives:ColorPickerSlider x:Name="ThirdDimensionSlider" Minimum="0" Maximum="100" ColorChannel="Value" Style="{StaticResource ColorPickerSliderStyle}" IsThumbToolTipEnabled="False" />
+                                <primitives:ColorPickerSlider x:Name="ThirdDimensionSlider" Minimum="0" Maximum="100" Margin="0,5,0,0" ColorChannel="Value" Orientation="Horizontal" Style="{StaticResource ColorPickerSliderStyle}" IsThumbToolTipEnabled="False" />
                             </Grid>
-                            <Grid x:Name="AlphaSliderGrid">
-                                <Rectangle x:Name="AlphaSliderCheckeredBackgroundRectangle" RenderTransformOrigin="0.5, 0.5"
+                            <Grid x:Name="AlphaSliderGrid" Grid.Row="2" Margin="0,12,0,0">
+                                <Rectangle x:Name="AlphaSliderCheckeredBackgroundRectangle" RenderTransformOrigin="0.5, 0.5" Height="11" VerticalAlignment="Center"
                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
@@ -297,7 +291,7 @@
                                         <ImageBrush x:Name="AlphaSliderCheckeredBackgroundImageBrush" />
                                     </Rectangle.Fill>
                                 </Rectangle>
-                                <Rectangle x:Name="AlphaSliderGradientBackgroundRectangle" RenderTransformOrigin="0.5, 0.5"
+                                <Rectangle x:Name="AlphaSliderGradientBackgroundRectangle" RenderTransformOrigin="0.5, 0.5" Height="11" VerticalAlignment="Center"
                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
@@ -306,9 +300,9 @@
                                         <LinearGradientBrush x:Name="AlphaSliderGradientBrush" />
                                     </Rectangle.Fill>
                                 </Rectangle>
-                                <primitives:ColorPickerSlider x:Name="AlphaSlider" Minimum="0" Maximum="100" ColorChannel="Alpha" Style="{StaticResource ColorPickerSliderStyle}" IsThumbToolTipEnabled="False" />
+                                <primitives:ColorPickerSlider x:Name="AlphaSlider" Minimum="0" Maximum="100" Margin="0,5,0,0" ColorChannel="Alpha" Orientation="Horizontal" Style="{StaticResource ColorPickerSliderStyle}" IsThumbToolTipEnabled="False" />
                             </Grid>
-                            <StackPanel x:Name="MoreEntriesPanel">
+                            <StackPanel x:Name="MoreEntriesPanel" Grid.Row="3" Margin="0,12,0,12">
                                 <ToggleButton
                                     x:Name="MoreButton"
                                     MinHeight="32"

@@ -253,7 +253,6 @@ void ColorPicker::OnApplyTemplate()
     UpdateVisualState(false /* useTransitions */);
     InitializeColor();
     UpdatePreviousColorRectangle();
-    UpdateOrientation(Orientation());
 }
 
 void ColorPicker::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
@@ -304,7 +303,7 @@ void ColorPicker::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs co
     }
     else if (property == s_OrientationProperty)
     {
-        UpdateOrientation(unbox_value<winrt::Orientation>(args.NewValue()));
+        OnUpdateOrientation(args);
     }
 }
 
@@ -433,9 +432,9 @@ void ColorPicker::OnColorSpectrumComponentsChanged(winrt::DependencyPropertyChan
     SetThirdDimensionSliderChannel();
 }
 
-void ColorPicker::UpdateOrientation(winrt::Orientation const& newOrientation)
+void ColorPicker::OnUpdateOrientation(winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    if (newOrientation == winrt::Orientation::Horizontal)
+    if (unbox_value<winrt::Orientation>(args.NewValue()) == winrt::Orientation::Horizontal)
     {
         winrt::VisualStateManager::GoToState(*this, L"Horizontal", true);
     }
