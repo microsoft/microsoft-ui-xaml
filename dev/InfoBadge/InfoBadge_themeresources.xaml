@@ -87,7 +87,7 @@
                                 <VisualState x:Name="Value">
                                     <VisualState.Setters>
                                         <Setter Target="ValueTextBlock.Visibility" Value="Visible"/>
-                                        <Setter Target="IconPresenter.Margin" Value="{ThemeResource ValueInfoBadgeTextMargin}"/>
+                                        <Setter Target="ValueTextBlock.Margin" Value="{ThemeResource ValueInfoBadgeTextMargin}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
