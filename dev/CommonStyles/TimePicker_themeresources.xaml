@@ -61,13 +61,13 @@
             <StaticResource x:Key="TimePickerButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
 
             <StaticResource x:Key="TimePickerButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-            <StaticResource x:Key="TimePickerButtonForegroundDefault" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="TimePickerButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="TimePickerButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
             <StaticResource x:Key="TimePickerButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="TimePickerButtonBackgroundFocused" ResourceKey="SystemControlHighlightAccentBrush" />
 
             <StaticResource x:Key="TimePickerButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="TimePickerButtonForegroundDefault" ResourceKey="SystemControlHighlightBaseHighBrush" />
             <StaticResource x:Key="TimePickerButtonForegroundPointerOver" ResourceKey="SystemControlHighlightBaseHighBrush" />
             <StaticResource x:Key="TimePickerButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
             <StaticResource x:Key="TimePickerButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
