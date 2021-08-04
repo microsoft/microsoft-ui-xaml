@@ -16,6 +16,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 GlobalDependencyProperty NavigationViewItemProperties::s_CompactPaneLengthProperty{ nullptr };
 GlobalDependencyProperty NavigationViewItemProperties::s_HasUnrealizedChildrenProperty{ nullptr };
 GlobalDependencyProperty NavigationViewItemProperties::s_IconProperty{ nullptr };
+GlobalDependencyProperty NavigationViewItemProperties::s_InfoBadgeProperty{ nullptr };
 GlobalDependencyProperty NavigationViewItemProperties::s_IsChildSelectedProperty{ nullptr };
 GlobalDependencyProperty NavigationViewItemProperties::s_IsExpandedProperty{ nullptr };
 GlobalDependencyProperty NavigationViewItemProperties::s_MenuItemsProperty{ nullptr };
@@ -62,6 +63,17 @@ void NavigationViewItemProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<winrt::IconElement>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnIconPropertyChanged));
+    }
+    if (!s_InfoBadgeProperty)
+    {
+        s_InfoBadgeProperty =
+            InitializeDependencyProperty(
+                L"InfoBadge",
+                winrt::name_of<winrt::InfoBadge>(),
+                winrt::name_of<winrt::NavigationViewItem>(),
+                false /* isAttached */,
+                ValueHelper<winrt::InfoBadge>::BoxedDefaultValue(),
+                nullptr);
     }
     if (!s_IsChildSelectedProperty)
     {
@@ -125,6 +137,7 @@ void NavigationViewItemProperties::ClearProperties()
     s_CompactPaneLengthProperty = nullptr;
     s_HasUnrealizedChildrenProperty = nullptr;
     s_IconProperty = nullptr;
+    s_InfoBadgeProperty = nullptr;
     s_IsChildSelectedProperty = nullptr;
     s_IsExpandedProperty = nullptr;
     s_MenuItemsProperty = nullptr;
@@ -210,6 +223,19 @@ void NavigationViewItemProperties::Icon(winrt::IconElement const& value)
 winrt::IconElement NavigationViewItemProperties::Icon()
 {
     return ValueHelper<winrt::IconElement>::CastOrUnbox(static_cast<NavigationViewItem*>(this)->GetValue(s_IconProperty));
+}
+
+void NavigationViewItemProperties::InfoBadge(winrt::InfoBadge const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<NavigationViewItem*>(this)->SetValue(s_InfoBadgeProperty, ValueHelper<winrt::InfoBadge>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::InfoBadge NavigationViewItemProperties::InfoBadge()
+{
+    return ValueHelper<winrt::InfoBadge>::CastOrUnbox(static_cast<NavigationViewItem*>(this)->GetValue(s_InfoBadgeProperty));
 }
 
 void NavigationViewItemProperties::IsChildSelected(bool value)

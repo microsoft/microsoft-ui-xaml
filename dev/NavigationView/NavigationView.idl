@@ -354,6 +354,13 @@ unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
         static Windows.UI.Xaml.DependencyProperty MenuItemsProperty{ get; };
         static Windows.UI.Xaml.DependencyProperty MenuItemsSourceProperty{ get; };
     }
+
+    [MUX_PREVIEW]
+    {
+        InfoBadge InfoBadge{ get; set; };
+
+        static Windows.UI.Xaml.DependencyProperty InfoBadgeProperty{ get; };
+    }
 }
 
 [MUX_PUBLIC]

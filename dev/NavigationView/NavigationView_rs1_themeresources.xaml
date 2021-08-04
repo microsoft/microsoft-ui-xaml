@@ -732,10 +732,12 @@
                             <Grid
                                 x:Name="ContentGrid"
                                 MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"
+                                Margin="0,0,14,0"
                                 HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
@@ -768,7 +770,7 @@
 
                                 <Grid
                                     x:Name="ExpandCollapseChevron"
-                                    Grid.Column="2"
+                                    Grid.Column="3"
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
                                     Width="40"
@@ -796,6 +798,11 @@
                                         </local:AnimatedIcon.RenderTransform>
                                     </local:AnimatedIcon>
                                 </Grid>
+                                <Border
+                                    x:Name="InfoBadgePresenter"
+                                    Grid.Column="2"
+                                    Child="{TemplateBinding InfoBadge}"
+                                    VerticalAlignment="Center"/>
                             </Grid>
                         </Grid>
                     </Grid>
@@ -886,6 +893,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
                                 <RowDefinition x:Name="IconRow" Height="Auto" />
@@ -905,6 +913,10 @@
                                     Foreground="{TemplateBinding Foreground}"
                                     local:AnimatedIcon.State="Normal" />
                             </Viewbox>
+                            <Border
+                                Child="{TemplateBinding InfoBadge}"
+                                Grid.Column="2"
+                                VerticalAlignment="Center"/>
                         </Grid>
                     </Grid>
                 </ControlTemplate>
@@ -1085,6 +1097,7 @@
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Viewbox 
                                 x:Name="IconBox" 
@@ -1114,7 +1127,7 @@
                                 AutomationProperties.AccessibilityView="Raw"/>
                             <Grid
                                 x:Name="ExpandCollapseChevron"
-                                Grid.Column="2"
+                                Grid.Column="3"
                                 Visibility="Collapsed"
                                 HorizontalAlignment="Right"
                                 Width="40"
@@ -1142,6 +1155,7 @@
                                     </local:AnimatedIcon.RenderTransform>
                                 </local:AnimatedIcon>
                             </Grid>
+                            <Border Child="{TemplateBinding InfoBadge}" Grid.Column="2" VerticalAlignment="Center"/>
                         </Grid>
                         <Grid 
                             x:Name="SelectionIndicatorGrid"
