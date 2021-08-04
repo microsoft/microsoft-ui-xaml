@@ -123,14 +123,42 @@ namespace MUXControlsTestApp
             CalendarViewSelectionMode selectionMode;
             if (Enum.TryParse<CalendarViewSelectionMode>((sender as ComboBox).SelectedItem.ToString(), out selectionMode))
             {
-                if (PageCalendar != null)
+                if (PageCalendar != null && PageCalendar.SelectionMode != selectionMode)
                 {
                     PageCalendar.SelectionMode = selectionMode;
                 }
-                if (PageCalendar2 != null)
+                if (PageCalendar2 != null && PageCalendar2.SelectionMode != selectionMode)
                 {
                     PageCalendar2.SelectionMode = selectionMode;
                 }
+            }
+        }
+
+        private void FirstDayOfWeek_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Windows.Globalization.DayOfWeek weekDay = firstDayOfWeek.SelectedIndex == 0 ? Windows.Globalization.DayOfWeek.Sunday : Windows.Globalization.DayOfWeek.Monday;
+
+            if (PageCalendar != null && PageCalendar.FirstDayOfWeek != weekDay)
+            {
+                PageCalendar.FirstDayOfWeek = weekDay;
+            }
+            if (PageCalendar2 != null && PageCalendar2.FirstDayOfWeek != weekDay)
+            {
+                PageCalendar2.FirstDayOfWeek = weekDay;
+            }
+        }
+
+        private void Language_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string newLanguage = language.SelectedValue as string;
+
+            if (PageCalendar != null && newLanguage != PageCalendar.Language)
+            {
+                PageCalendar.Language = newLanguage;
+            }
+            if (PageCalendar2 != null && newLanguage != PageCalendar2.Language)
+            {
+                PageCalendar2.Language = newLanguage;
             }
         }
 
