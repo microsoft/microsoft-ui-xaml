@@ -6,7 +6,7 @@ jobs:
   dependsOn:
     - ${{ parameters.dependsOn }}
   pool:
-    name: Package ES Lab E
+    name: WinDevPool-S
   variables:
     windowsPublicsWinmdVersion: 0.0.2
     internalSDKFeedUrl: https://pkgs.dev.azure.com/microsoft/WinUI/_packaging/WinUIInternalWindowsSDK/nuget/v3/index.json
@@ -37,35 +37,35 @@ jobs:
     # This artifact is not consumed by anyone, but it is useful for debugging purposes.
 
   # Push the VPacks:
-  - task: PkgESVPack@10
+  - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_x64'
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\x64'
       description: 'MicrosoftUIXamlInbox_x64'
       pushPkgName: 'MicrosoftUIXamlInbox_x64'
       version: $(vpackversion)
-  - task: PkgESVPack@10
+  - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_x86'
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\x86'
       description: 'MicrosoftUIXamlInbox_x86'
       pushPkgName: 'MicrosoftUIXamlInbox_x86'
       version: $(vpackversion)
-  - task: PkgESVPack@10
+  - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_arm'
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\arm'
       description: 'MicrosoftUIXamlInbox_arm'
       pushPkgName: 'MicrosoftUIXamlInbox_arm'
       version: $(vpackversion)
-  - task: PkgESVPack@10
+  - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_arm64'
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\arm64'
       description: 'MicrosoftUIXamlInbox_arm64'
       pushPkgName: 'MicrosoftUIXamlInbox_arm64'
       version: $(vpackversion)
-  - task: PkgESVPack@10
+  - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInboxWinmd'
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\winmd'
