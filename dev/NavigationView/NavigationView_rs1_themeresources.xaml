@@ -285,6 +285,7 @@
     <Thickness x:Key="NavigationViewHeaderMargin">56,44,0,0</Thickness>
     <Thickness x:Key="NavigationViewContentPresenterMargin">0</Thickness>
     <Thickness x:Key="NavigationViewContentMargin">0</Thickness>
+    <Thickness x:Key="NavigationViewMinimalContentMargin">0</Thickness>
     <Thickness x:Key="TopNavigationViewContentMargin">0</Thickness>
     <Thickness x:Key="NavigationViewPaneTitlePresenterMargin">8,4,0,0</Thickness>
     <Thickness x:Key="NavigationViewItemMargin">0</Thickness>
