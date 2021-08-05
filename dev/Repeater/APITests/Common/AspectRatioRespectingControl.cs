@@ -10,13 +10,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
     {
         protected override Size MeasureOverride(Size availableSize)
         {
-            return base.MeasureOverride(TwoByOneifySize(availableSize));
+            return TwoByOneifySize(availableSize));
         }
 
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            return base.ArrangeOverride(TwoByOneifySize(finalSize));
+            return TwoByOneifySize(finalSize));
         }
 
         private Size TwoByOneifySize(Size initialSize)
