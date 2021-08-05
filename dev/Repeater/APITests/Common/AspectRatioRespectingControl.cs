@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 {
+    [Data.Bindable]
     class AspectRatioRespectingControl : ContentPresenter
     {
         protected override Size MeasureOverride(Size availableSize)
