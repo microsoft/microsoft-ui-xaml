@@ -551,7 +551,7 @@
                                     BorderBrush=[NULL]
                                     Background=[NULL]
                                     Name=ContentPresenter
-                                    Margin=8,-1,12,-1
+                                    Margin=8,-1,12,0
                                     FocusVisualSecondaryThickness=1,1,1,1
                                     FocusVisualSecondaryBrush=#B3FFFFFF
                                     FocusVisualPrimaryThickness=2,2,2,2
@@ -791,7 +791,7 @@
                                     BorderBrush=[NULL]
                                     Background=[NULL]
                                     Name=ContentPresenter
-                                    Margin=8,-1,12,-1
+                                    Margin=8,-1,12,0
                                     FocusVisualSecondaryThickness=1,1,1,1
                                     FocusVisualSecondaryBrush=#B3FFFFFF
                                     FocusVisualPrimaryThickness=2,2,2,2
@@ -1236,7 +1236,7 @@
                           BorderBrush=[NULL]
                           Background=[NULL]
                           Name=ContentPresenter
-                          Margin=8,-1,12,-1
+                          Margin=8,-1,12,0
                           FocusVisualSecondaryThickness=1,1,1,1
                           FocusVisualSecondaryBrush=#B3FFFFFF
                           FocusVisualPrimaryThickness=2,2,2,2
