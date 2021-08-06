@@ -1582,7 +1582,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             return (DataTemplate)XamlReader.Load(
                        string.Format(@"<DataTemplate  
                             xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-                            xmlns:repeaterCommon='using:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common'>
+                            xmlns:repeaterCommon='using:MUXControls.ApiTests.RepeaterTests.Common'>
                            {0}
                         </DataTemplate>", content));
         }

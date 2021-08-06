@@ -4,9 +4,10 @@ using System.Text;
 using Windows.Foundation;
 using Windows.UI.Xaml.Controls;
 
-namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
+namespace MUXControls.ApiTests.RepeaterTests.Common
 {
-    class AspectRatioRespectingControl : ContentPresenter
+    [Windows.UI.Xaml.Data.Bindable]
+    public class AspectRatioRespectingControl : ContentPresenter
     {
         protected override Size MeasureOverride(Size availableSize)
         {
