@@ -21,7 +21,7 @@
         <ScrollViewer AutomationProperties.AutomationId="ColorPickerScrollViewer" Height="500"
             HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible" IsVerticalRailEnabled="True">
             <StackPanel>
-                <controls:ColorPicker x:Name="ColorPicker" IsAlphaEnabled="True" ColorChanged="ColorPicker_ColorChanged" />
+                <controls:ColorPicker x:Name="ColorPicker" IsAlphaEnabled="True" ColorChanged="ColorPicker_ColorChanged" Width="312"/>
                 <TextBlock Text="Text" Width="500"/>
             </StackPanel>
         </ScrollViewer>
@@ -89,7 +89,7 @@
                         <ComboBoxItem AutomationProperties.AutomationId="ColorSpectrumComponentsValueHue">(Value, Hue)</ComboBoxItem>
                         <ComboBoxItem AutomationProperties.AutomationId="ColorSpectrumComponentsValueSaturation">(Value, Saturation)</ComboBoxItem>
                     </ComboBox>
-                    <Slider AutomationProperties.AutomationId="ControlWidthSlider" Header="Control width" Minimum="312" Maximum="392" Value="{Binding Width, ElementName=ColorPicker, Mode=TwoWay}" />
+                    <Slider AutomationProperties.AutomationId="ControlWidthSlider" Header="Control width" Minimum="312" Maximum="1000" Value="{Binding Width, ElementName=ColorPicker, Mode=TwoWay}" />
                 </StackPanel>
             </ScrollViewer>
         </Grid>
