@@ -37,6 +37,21 @@ private:
     double m_effectiveItemWidth{ 0.0 };
     double m_effectiveItemHeight{ 0.0 };
 
+    winrt::Size CalculateAvailableSize(const winrt::Size availableSize,
+        const winrt::Orientation orientation,
+        const winrt::UniformGridLayoutItemsStretch& stretch,
+        const unsigned int maxItemsPerLine,
+        const double itemWidth,
+        const double itemHeight,
+        double minRowSpacing,
+        double minColumnSpacing);
+
+    double CalculateExtraPixelsInLine(unsigned int maxItemsPerLine,
+        const float availableSizeMinor,
+        const double itemSizeMinor,
+        const double minorItemSpacing);
+
+
     void SetSize(const winrt::Size& desiredItemSize,
         const double itemWidth,
         const double itemHeight,
