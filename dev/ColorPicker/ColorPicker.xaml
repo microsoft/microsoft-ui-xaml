@@ -155,11 +155,11 @@
                                         <Setter Target="RootGrid.MaxHeight" Value="{StaticResource ColorPickerVerticalOrientationMaxHeight}"/>
                                         <Setter Target="RootGrid.MinWidth" Value="0"/>
                                         <Setter Target="RootGrid.MaxWidth" Value="10000"/>
-                                        <Setter Target="ColorSpectrumGrid.Margin" Value="0,0,0,0"/>
+                                        <Setter Target="ColorSpectrumGrid.Margin" Value="0"/>
 
                                         <Setter Target="ThirdDimensionSliderGrid.(Grid.Column)" Value="1"/>
                                         <Setter Target="ThirdDimensionSliderGrid.(Grid.Row)" Value="0"/>
-                                        <Setter Target="ThirdDimensionSlider.Margin" Value="0,0,0,0"/>
+                                        <Setter Target="ThirdDimensionSlider.Margin" Value="0"/>
                                         <Setter Target="ThirdDimensionSlider.Orientation" Value="Vertical"/>
                                         <Setter Target="ThirdDimensionBackgroundRectangle.Height" Value="Auto"/>
                                         <Setter Target="ThirdDimensionBackgroundRectangle.Width" Value="11"/>
@@ -174,7 +174,7 @@
                                         <Setter Target="AlphaSliderGrid.(Grid.Column)" Value="2"/>
                                         <Setter Target="AlphaSliderGrid.(Grid.Row)" Value="0"/>
                                         <Setter Target="AlphaSlider.Orientation" Value="Vertical"/>
-                                        <Setter Target="AlphaSlider.Margin" Value="0,0,0,0"/>
+                                        <Setter Target="AlphaSlider.Margin" Value="0"/>
                                         <Setter Target="AlphaSliderCheckeredBackgroundRectangle.Height" Value="Auto"/>
                                         <Setter Target="AlphaSliderCheckeredBackgroundRectangle.Width" Value="11"/>
                                         <Setter Target="AlphaSliderCheckeredBackgroundRectangle.HorizontalAlignment" Value="Center"/>
@@ -191,7 +191,7 @@
                                     
                                         <Setter Target="MoreEntriesPanel.(Grid.Column)" Value="3"/>
                                         <Setter Target="MoreEntriesPanel.(Grid.Row)" Value="0"/>
-                                        <Setter Target="MoreEntriesPanel.Margin" Value="0,0,0,0"/>
+                                        <Setter Target="MoreEntriesPanel.Margin" Value="0"/>
                                         <Setter Target="MoreButton.Margin" Value="0,0,0,12"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -476,14 +476,13 @@
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Thumb">
                                             <Border BorderBrush="{ThemeResource SliderThumbBorderBrush}"
-                                                                            BorderThickness="{TemplateBinding BorderThickness}"
-                                                                            Background="{ThemeResource SliderOuterThumbBackground}"
-                                                                            CornerRadius="{ThemeResource SliderThumbCornerRadius}">
-                                                <Ellipse
-                                                                            x:Name="SliderInnerThumb"
-                                                                            Fill="{TemplateBinding Background}"                                                  
-                                                                            Width="{ThemeResource ColorPickerSliderInnerThumbWidth}"
-                                                                            Height="{ThemeResource ColorPickerSliderInnerThumbHeight}">
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                Background="{ThemeResource SliderOuterThumbBackground}"
+                                                CornerRadius="{ThemeResource SliderThumbCornerRadius}">
+                                                <Ellipse x:Name="SliderInnerThumb"
+                                                    Fill="{TemplateBinding Background}"                                                  
+                                                    Width="{ThemeResource ColorPickerSliderInnerThumbWidth}"
+                                                    Height="{ThemeResource ColorPickerSliderInnerThumbHeight}">
                                                 </Ellipse>
                                             </Border>
                                         </ControlTemplate>
@@ -535,11 +534,11 @@
                         </VisualStateManager.VisualStateGroups>
                         <ContentPresenter x:Name="HeaderContentPresenter" ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Foreground="{ThemeResource SliderHeaderForeground}" FontWeight="{ThemeResource SliderHeaderThemeFontWeight}" Margin="{ThemeResource SliderHeaderThemeMargin}" TextWrapping="Wrap" Visibility="Collapsed" x:DeferLoadStrategy="Lazy"/>
                         <Grid x:Name="SliderContainer"
-                                                      Background="Transparent"
-                                                      Control.IsTemplateFocusTarget="True"
-                                                      Grid.Row="1"
-                                                      contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                                      contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}">
+                            Background="Transparent"
+                            Control.IsTemplateFocusTarget="True"
+                            Grid.Row="1"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}">
                             <Grid x:Name="HorizontalTemplate" MinHeight="38">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -552,10 +551,10 @@
                                     <RowDefinition Height="14"/>
                                 </Grid.RowDefinitions>
                                 <Rectangle x:Name="HorizontalTrackRect" Grid.ColumnSpan="3" Fill="Transparent" Height="{ThemeResource SliderTrackThemeHeight}" Grid.Row="1" Opacity="0"
-                                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                                            contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
+                                    contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                    contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                    contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                    contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
                                 <Rectangle x:Name="HorizontalDecreaseRect" Fill="Transparent" Grid.Row="1" Opacity="0" />
                                 <Thumb x:Name="HorizontalThumb" AutomationProperties.AccessibilityView="Raw" Grid.Column="1" DataContext="{TemplateBinding Value}" Height="{ThemeResource SliderHorizontalThumbHeight}" Grid.Row="0" Grid.RowSpan="3" Style="{StaticResource SliderThumbStyle}" Width="{ThemeResource SliderHorizontalThumbWidth}">
                                     <ToolTipService.ToolTip>

@@ -303,7 +303,7 @@ void ColorPicker::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs co
     }
     else if (property == s_OrientationProperty)
     {
-        OnUpdateOrientation(args);
+        OnOrientationChanged(args);
     }
 }
 
@@ -432,7 +432,7 @@ void ColorPicker::OnColorSpectrumComponentsChanged(winrt::DependencyPropertyChan
     SetThirdDimensionSliderChannel();
 }
 
-void ColorPicker::OnUpdateOrientation(winrt::DependencyPropertyChangedEventArgs const& args)
+void ColorPicker::OnOrientationChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
     if (unbox_value<winrt::Orientation>(args.NewValue()) == winrt::Orientation::Horizontal)
     {
