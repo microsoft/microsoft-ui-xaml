@@ -434,14 +434,7 @@ void ColorPicker::OnColorSpectrumComponentsChanged(winrt::DependencyPropertyChan
 
 void ColorPicker::OnOrientationChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    if (unbox_value<winrt::Orientation>(args.NewValue()) == winrt::Orientation::Horizontal)
-    {
-        winrt::VisualStateManager::GoToState(*this, L"Horizontal", true);
-    }
-    else
-    {
-        winrt::VisualStateManager::GoToState(*this, L"Vertical", true);
-    }
+    UpdateVisualState(true);
 }
 
 void ColorPicker::UpdateVisualState(bool useTransitions)
@@ -478,6 +471,7 @@ void ColorPicker::UpdateVisualState(bool useTransitions)
     winrt::VisualStateManager::GoToState(*this, isAlphaEnabled && IsAlphaTextInputVisible() ? L"AlphaTextInputVisible" : L"AlphaTextInputCollapsed", useTransitions);
     winrt::VisualStateManager::GoToState(*this, IsHexInputVisible() ? L"HexInputVisible" : L"HexInputCollapsed", useTransitions);
     winrt::VisualStateManager::GoToState(*this, isAlphaEnabled ? L"AlphaEnabled" : L"AlphaDisabled", useTransitions);
+    winrt::VisualStateManager::GoToState(*this, Orientation() == winrt::Orientation::Horizontal ? L"Horizontal" : L"Vertical", useTransitions);
 }
 
 void ColorPicker::InitializeColor()
