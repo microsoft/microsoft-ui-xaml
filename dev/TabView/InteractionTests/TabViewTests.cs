@@ -719,9 +719,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 CloseTabAndVerifyWidth("Tab 3", 500, "False;False;");
 
-                CloseTabAndVerifyWidth("Tab 5", 410, "False;False;");
+                CloseTabAndVerifyWidth("Tab 5", 420, "False;False;");
 
-                CloseTabAndVerifyWidth("Tab 4", 410, "False;False;");
+                CloseTabAndVerifyWidth("Tab 4", 450, "False;False;");
 
                 Log.Comment("Leaving the pointer exited area");
                 var readTabViewWidthButton = new Button(FindElement.ByName("GetActualWidthButton"));
@@ -750,6 +750,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 var tabviewWidth = new TextBlock(FindElement.ByName("TabViewWidth"));
 
+                Log.Comment("TabView width:" + tabviewWidth.GetText());
                 return Double.Parse(tabviewWidth.GetText());
             }
         }
