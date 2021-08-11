@@ -302,6 +302,14 @@
         }
 
         var winRtType = new WinRtType(type);
+        
+        // ICommand is special cased to use the Native Windows.UI.Xaml.Input.ICommand
+        // instead of the managed System.Windows.Input.ICommand.
+        if (winRtType.MetadataFullName.Contains("System.Windows.Input.ICommand"))
+        {
+            winRtType.MetadataFullName = "Windows.UI.Xaml.Input.ICommand";
+        }
+
         FunctionCallWithLineBreaks("XamlMetadataProvider::RegisterXamlType", () =>
         {
             WriteLine("/* Arg1 TypeName */ ");
@@ -360,6 +368,14 @@
             StatementBlock(() =>
             {
                 var winRtType = new WinRtType(type);
+
+                // ICommand is special cased to use the Native Windows.UI.Xaml.Input.ICommand
+                // instead of the managed System.Windows.Input.ICommand.
+                if (winRtType.MetadataFullName.Contains("System.Windows.Input.ICommand"))
+                {
+                    winRtType.MetadataFullName = "Windows.UI.Xaml.Input.ICommand";
+                }
+
                 if(exploreBaseAndProperties)
                 {
                     FunctionCallWithLineBreaks("auto xamlType = winrt::make_self<XamlType>", () =>
