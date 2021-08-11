@@ -15,7 +15,7 @@ steps:
     inputs:
       targetType: filePath
       filePath: build\Install-WindowsSdkISO.ps1
-      arguments: ${{ parameters.insiderSdkVersion }}
+      arguments: ${{ parameters.insiderSdkVersion }} -SkipDebuggers
     displayName: 'Install Windows SDK (${{ parameters.insiderSdkVersion }})'
 
   # - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2

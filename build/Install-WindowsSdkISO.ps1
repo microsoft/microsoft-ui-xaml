@@ -1,12 +1,18 @@
 [CmdletBinding()]
-param([Parameter(Mandatory=$true, Position=0)]
-      [string]$buildNumber)
+param(
+    [Parameter(Mandatory=$true, Position=0)][string]$buildNumber,
+    [switch]$SkipDebuggers
+)
 
-# Ensure the error action preference is set to the default for PowerShell3, 'Stop'
 $ErrorActionPreference = 'Stop'
 
+$WindowsSDKOptions = @("OptionId.UWPCpp", "OptionId.DesktopCPPx64", "OptionId.DesktopCPPx86", "OptionId.DesktopCPPARM64", "OptionId.DesktopCPPARM")
+if(!$SkipDebuggers)
+{
+    $WindowsSDKOptions += "OptionId.WindowsDesktopDebuggers"
+}
+
 # Constants
-$WindowsSDKOptions = @("OptionId.UWPCpp", "OptionId.DesktopCPPx64", "OptionId.DesktopCPPx86", "OptionId.DesktopCPPARM64", "OptionId.DesktopCPPARM", "OptionId.WindowsDesktopDebuggers")
 $WindowsSDKRegPath = "HKLM:\Software\WOW6432Node\Microsoft\Windows Kits\Installed Roots"
 $WindowsSDKRegRootKey = "KitsRoot10"
 $WindowsSDKVersion = "10.0.$buildNumber.0"
