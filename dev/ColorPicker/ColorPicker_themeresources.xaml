@@ -39,7 +39,7 @@
     <x:Double x:Key="ColorPickerVerticalOrientationMaxWidth">392</x:Double>
     <x:Double x:Key="ColorPickerVerticalOrientationMinHeight">312</x:Double>
     <x:Double x:Key="ColorPickerVerticalOrientationMaxHeight">392</x:Double>
-
+    <x:Double x:Key="ColorPickerTextInputHorizontalOrientationMargin ">122</x:Double>
     <Style x:Key="ColorPickerBorderStyle" TargetType="Shape">
         <Setter Property="Stroke" Value="{ThemeResource ColorPickerBorderBrush}" />
         <Setter Property="StrokeThickness" Value="2" />
