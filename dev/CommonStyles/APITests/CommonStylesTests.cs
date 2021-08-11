@@ -322,12 +322,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // https://github.com/microsoft/microsoft-ui-xaml/issues/4320
-        //Task 30789390: Re-enable disabled tests
+        // Task 30789390: Re-enable AppBarToggleButton disabled test
         [TestMethod]
         public void VerifyVisualTreeForControlsInCommonStyles()
         {
             var controlsToVerify = new List<string> {
-                "AppBarButton", "AppBarToggleButton", "Button", "CheckBox",
+                "AppBarButton", /*"AppBarToggleButton",*/ "Button", "CheckBox",
                 "CommandBar", "ContentDialog", "DatePicker", "FlipView", "ListViewItem",
                 "PasswordBox", "Pivot", "PivotItem", "RichEditBox", "Slider", "SplitView",
                 "TextBox", "TimePicker", "ToolTip", "ToggleButton", "ToggleSwitch"};
@@ -391,7 +391,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        //[TestProperty("Ignore", "True")] // Disabled due to #2210: Unreliable test: CommonStylesApiTests.VerifyVisualTreeForCommandBarOverflowMenu
         public void VerifyVisualTreeForCommandBarOverflowMenu()
         {
             StackPanel root = null;
@@ -454,8 +453,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class CommonStylesVisualTreeTestSamples
     {
-        // https://github.com/microsoft/microsoft-ui-xaml/issues/4320
-        //Task 30789390: Re-enable disabled tests
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // The default theme is different on OneCore, leading to a test failure.
         public void VerifyVisualTreeForAppBarAndAppBarToggleButton()
@@ -525,7 +522,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 theme: Theme.Light);
         }
 
-        // TODO: fix failing tests after color updates[TestMethod]
         [TestMethod]
         // [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // The default theme is different on OneCore, leading to a test failure.
         public void VerifyVisualTreeExampleWithCustomerFilter()
