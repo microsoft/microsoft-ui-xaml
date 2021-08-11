@@ -39,7 +39,6 @@ foreach ($file in (Get-ChildItem -r:$recursive "$SearchDir\*.pdb"))
 
     for ($i = 0; $i -lt $allFiles.Length; $i++)
     {
-        #Write-Host $allFiles[$i]
         if ($allFiles[$i].StartsWith($SourceRoot, [StringComparison]::OrdinalIgnoreCase))
         {
             $relative = $allFiles[$i].Substring($SourceRoot.Length).TrimStart("\")
