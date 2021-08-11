@@ -71,16 +71,6 @@ interface IPopup4
     event Windows.Foundation.EventHandler<Object> ActualPlacementChanged;
 };
 
-[MUX_INTERNAL]
-[webhosthidden]
-[uuid(98ffd442-a3f5-534c-906d-88b72a78126b)]
-interface IAutomationPropertiesStatics9
-{
-    Windows.UI.Xaml.DependencyProperty ControlTypeProperty{ get; };
-    Windows.UI.Xaml.Automation.Peers.AutomationControlType GetControlType(Windows.UI.Xaml.UIElement element);
-    void SetControlType(Windows.UI.Xaml.UIElement element, Windows.UI.Xaml.Automation.Peers.AutomationControlType value);
-};
-
 [MUX_PUBLIC]
 [webhosthidden]
 static runtimeclass CommandBarFlyoutCommandBarAutomationProperties
