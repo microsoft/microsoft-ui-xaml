@@ -14,23 +14,23 @@ jobs:
   strategy:
     maxParallel: 10
     matrix:
-      Debug_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
+      # Debug_x86:
+      #   buildPlatform: 'x86'
+      #   buildConfiguration: 'Debug'
       Release_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Release'
         PGOBuildMode: 'Optimize'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-        PGOBuildMode: 'Optimize'
-      Release_Arm:
-        buildPlatform: 'arm'
-        buildConfiguration: 'Release'
-      Release_Arm64:
-        buildPlatform: 'arm64'
-        buildConfiguration: 'Release'
+      # Release_x64:
+      #   buildPlatform: 'x64'
+      #   buildConfiguration: 'Release'
+      #   PGOBuildMode: 'Optimize'
+      # Release_Arm:
+      #   buildPlatform: 'arm'
+      #   buildConfiguration: 'Release'
+      # Release_Arm64:
+      #   buildPlatform: 'arm64'
+      #   buildConfiguration: 'Release'
 
   variables:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
@@ -40,13 +40,13 @@ jobs:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
-- template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
-  parameters:
-    name: 'RunTestsInHelix'
-    dependsOn: Build
-    condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
-    testSuite: 'DevTestSuite'
-    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+# - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
+#   parameters:
+#     name: 'RunTestsInHelix'
+#     dependsOn: Build
+#     condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+#     testSuite: 'DevTestSuite'
+#     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
 # Create Nuget Package
 - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
@@ -55,31 +55,31 @@ jobs:
     dependsOn: Build
     prereleaseVersionTag: ci
 
-# Build solution that depends on nuget package
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildNugetPkgTests'
-    buildArtifactName: 'NugetPkgTestsDrop'
-    runTestJobName: 'RunNugetPkgTestsInHelix'
-    helixType: 'test/nuget'
-    dependsOn: CreateNugetPackage
-    useFrameworkPkg: false
+# # Build solution that depends on nuget package
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     buildJobName: 'BuildNugetPkgTests'
+#     buildArtifactName: 'NugetPkgTestsDrop'
+#     runTestJobName: 'RunNugetPkgTestsInHelix'
+#     helixType: 'test/nuget'
+#     dependsOn: CreateNugetPackage
+#     useFrameworkPkg: false
 
-# Framework package tests
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildFrameworkPkgTests'
-    buildArtifactName: 'FrameworkPkgTestsDrop'
-    runTestJobName: 'RunFrameworkPkgTestsInHelix'
-    helixType: 'test/frpkg'
-    dependsOn: CreateNugetPackage
-    useFrameworkPkg: true
+# # Framework package tests
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     buildJobName: 'BuildFrameworkPkgTests'
+#     buildArtifactName: 'FrameworkPkgTestsDrop'
+#     runTestJobName: 'RunFrameworkPkgTestsInHelix'
+#     helixType: 'test/frpkg'
+#     dependsOn: CreateNugetPackage
+#     useFrameworkPkg: true
 
-- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
-  parameters:
-    dependsOn:
-    - RunTestsInHelix
-    - RunNugetPkgTestsInHelix
-    - RunFrameworkPkgTestsInHelix
-    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
-    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+# - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+#   parameters:
+#     dependsOn:
+#     - RunTestsInHelix
+#     - RunNugetPkgTestsInHelix
+#     - RunFrameworkPkgTestsInHelix
+#     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+#     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
