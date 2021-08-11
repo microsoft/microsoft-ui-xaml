@@ -15,7 +15,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:ColorPicker">
-                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" Margin="24"
+                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" Padding="0,4"
                         MaxWidth="{StaticResource ColorPickerVerticalOrientationMaxWidth}"
                         MinWidth="{StaticResource ColorPickerVerticalOrientationMinWidth}">
                         <Grid.Resources>
@@ -205,13 +205,10 @@
                                         <Setter Target="HexTextBox.HorizontalAlignment" Value="Left"/>
                                         <Setter Target="HexTextBox.Width" Value="120"/>
 
-                                        <!-- These line below are crashing the control... -->
-                                        <!--
                                         <Setter Target="RgbTextLabelColumn.Width" Value="{ThemeResource ColorPickerTextInputHorizontalOrientationMargin}"/>
                                         <Setter Target="HsvTextLabelColumn.Width" Value="{ThemeResource ColorPickerTextInputHorizontalOrientationMargin}"/>
                                         <Setter Target="AlphaTextLabelColumn.Width" Value="{ThemeResource ColorPickerTextInputHorizontalOrientationMargin}"/>
-                                        -->
-                                        </VisualState.Setters>
+                                    </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
