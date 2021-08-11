@@ -17,6 +17,7 @@
       Background=#00FFFFFF
       BorderBrush=#00FFFFFF
       BorderThickness=1,1,1,1
+      CornerRadius=4,4,4,4
       FocusVisualPrimaryBrush=#E4000000
       FocusVisualPrimaryThickness=2,2,2,2
       FocusVisualSecondaryBrush=#B3FFFFFF
@@ -45,7 +46,7 @@
           Background=#00FFFFFF
           BorderBrush=#00FFFFFF
           BorderThickness=1,1,1,1
-          CornerRadius=0,0,0,0
+          CornerRadius=4,4,4,4
           FocusVisualPrimaryBrush=#E4000000
           FocusVisualPrimaryThickness=2,2,2,2
           FocusVisualSecondaryBrush=#B3FFFFFF
@@ -141,5 +142,16 @@
             Margin=38,0,12,0
             Name=OverflowTextLabel
             Padding=0,5,0,8
+            RenderSize=0,0
+            Visibility=Collapsed
+        [Windows.UI.Xaml.Controls.TextBlock]
+            FocusVisualPrimaryBrush=#E4000000
+            FocusVisualPrimaryThickness=2,2,2,2
+            FocusVisualSecondaryBrush=#B3FFFFFF
+            FocusVisualSecondaryThickness=1,1,1,1
+            Foreground=#9E000000
+            Margin=24,0,12,0
+            Name=KeyboardAcceleratorTextLabel
+            Padding=0,0,0,0
             RenderSize=0,0
             Visibility=Collapsed
