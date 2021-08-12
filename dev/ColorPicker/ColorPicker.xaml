@@ -174,7 +174,7 @@
 
                                         <Setter Target="AlphaSliderGrid.(Grid.Column)" Value="2"/>
                                         <Setter Target="AlphaSliderGrid.(Grid.Row)" Value="0"/>
-                                        <Setter Target="AlphaSliderGrid.Margin" Value="6,0,16,0"/>
+                                        <Setter Target="AlphaSliderGrid.Margin" Value="0,0,16,0"/>
                                         <Setter Target="AlphaSlider.Orientation" Value="Vertical"/>
                                         <Setter Target="AlphaSlider.Margin" Value="0"/>
                                         <Setter Target="AlphaSliderCheckeredBackgroundRectangle.Height" Value="Auto"/>

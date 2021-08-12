@@ -462,7 +462,7 @@ void ColorPicker::UpdateVisualState(bool useTransitions)
     winrt::VisualStateManager::GoToState(*this, isAlphaEnabled && IsAlphaSliderVisible() ? L"AlphaSliderVisible" : L"AlphaSliderCollapsed", useTransitions);
     // More button is disabled in horizontal orientation; only respect IsMoreButtonVisible states when switching to Vertical orientation.
     winrt::VisualStateManager::GoToState(*this, IsMoreButtonVisible() && isVerticalOrientation ? L"MoreButtonVisible" : L"MoreButtonCollapsed", useTransitions);
-    winrt::VisualStateManager::GoToState(*this, !IsMoreButtonVisible() || m_textEntryGridOpened ? L"TextEntryGridVisible" : L"TextEntryGridCollapsed", useTransitions);
+    winrt::VisualStateManager::GoToState(*this, !IsMoreButtonVisible() || m_textEntryGridOpened || !isVerticalOrientation ? L"TextEntryGridVisible" : L"TextEntryGridCollapsed", useTransitions);
 
     if (auto&& colorRepresentationComboBox = m_colorRepresentationComboBox.get())
     {

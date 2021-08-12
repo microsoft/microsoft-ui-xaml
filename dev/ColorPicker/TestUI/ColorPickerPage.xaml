@@ -22,7 +22,7 @@
             HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible" IsVerticalRailEnabled="True">
             <StackPanel>
                 <controls:ColorPicker x:Name="ColorPicker" IsAlphaEnabled="True" ColorChanged="ColorPicker_ColorChanged" Width="312"/>
-                <TextBlock Text="Text" Width="500"/>
+                <TextBlock Text="Text"/>
             </StackPanel>
         </ScrollViewer>
         
