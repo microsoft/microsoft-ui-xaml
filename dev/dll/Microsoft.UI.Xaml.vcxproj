@@ -817,6 +817,7 @@
     <PropertyGroup>
       <WinUIGitHubUrl>https://github.com/microsoft/microsoft-ui-xaml</WinUIGitHubUrl>
       <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://microsoft.visualstudio.com/DefaultCollection/WinUI/_git/microsoft-ui-xaml-staging'" >$(WinUIGitHubUrl)</ScmRepositoryUrl>
+      <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://microsoft.visualstudio.com/WinUI/_git/microsoft-ui-xaml-staging'" >$(WinUIGitHubUrl)</ScmRepositoryUrl>
       <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://dev.azure.com/microsoft/WinUI/_git/microsoft-ui-xaml-staging'" >$(WinUIGitHubUrl)</ScmRepositoryUrl>
     </PropertyGroup>
 
