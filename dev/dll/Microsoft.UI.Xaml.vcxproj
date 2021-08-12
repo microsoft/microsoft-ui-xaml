@@ -808,6 +808,27 @@
       </ClCompile>
     </ItemGroup>
   </Target>
+
+
+  <Target Name="_TranslateAzureDevOpsUrlToGitHubUrl"
+          DependsOnTargets="$(SourceControlManagerUrlTranslationTargets)"
+          BeforeTargets="SourceControlManagerPublishTranslatedUrls">
+
+    <PropertyGroup>
+      <WinUIGitHubUrl>https://github.com/microsoft/microsoft-ui-xaml</WinUIGitHubUrl>
+      <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://microsoft.visualstudio.com/DefaultCollection/WinUI/_git/microsoft-ui-xaml-staging'" >$(WinUIGitHubUrl)</ScmRepositoryUrl>
+      <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://dev.azure.com/microsoft/WinUI/_git/microsoft-ui-xaml-staging'" >$(WinUIGitHubUrl)</ScmRepositoryUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <SourceRoot Update="@(SourceRoot)">
+        <ScmRepositoryUrl>$(ScmRepositoryUrl)</ScmRepositoryUrl>
+      </SourceRoot>
+    </ItemGroup>
+  </Target>
+
+
+
   <PropertyGroup>
     <ProjectMergedIdl>$(IntermediateOutputPath)\Microsoft.UI.Xaml.idl</ProjectMergedIdl>
   </PropertyGroup>
