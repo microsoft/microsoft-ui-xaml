@@ -37,7 +37,7 @@ void ColorPicker::OnApplyTemplate()
 
     m_alphaSlider.set(GetTemplateChildT<winrt::ColorPickerSlider>(L"AlphaSlider", thisAsControlProtected));
     m_alphaSliderGradientBrush.set(GetTemplateChildT<winrt::LinearGradientBrush>(L"AlphaSliderGradientBrush", thisAsControlProtected));
-    m_alphaSliderBackgroundRectangle.set(GetTemplateChildT<winrt::Rectangle>(L"AlphaSliderGradientBackgroundRectangle", thisAsControlProtected));
+    m_alphaSliderBackgroundRectangle.set(GetTemplateChildT<winrt::Rectangle>(L"AlphaSliderBackgroundRectangle", thisAsControlProtected));
     m_alphaSliderCheckeredBackgroundImageBrush.set(GetTemplateChildT<winrt::ImageBrush>(L"AlphaSliderCheckeredBackgroundImageBrush", thisAsControlProtected));
 
     m_moreButton.set(GetTemplateChildT<winrt::ButtonBase>(L"MoreButton", thisAsControlProtected));

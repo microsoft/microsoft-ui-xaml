@@ -182,11 +182,11 @@
                                         <Setter Target="AlphaSliderCheckeredBackgroundRectangle.Width" Value="11"/>
                                         <Setter Target="AlphaSliderCheckeredBackgroundRectangle.HorizontalAlignment" Value="Center"/>
                                         <Setter Target="AlphaSliderCheckeredBackgroundRectangle.VerticalAlignment" Value="Stretch"/>
-                                        <Setter Target="AlphaSliderGradientBackgroundRectangle.Height" Value="Auto"/>
-                                        <Setter Target="AlphaSliderGradientBackgroundRectangle.Width" Value="11"/>
-                                        <Setter Target="AlphaSliderGradientBackgroundRectangle.HorizontalAlignment" Value="Center"/>
-                                        <Setter Target="AlphaSliderGradientBackgroundRectangle.VerticalAlignment" Value="Stretch"/>
-                                        <Setter Target="AlphaSliderGradientBackgroundRectangle.RenderTransform">
+                                        <Setter Target="AlphaSliderBackgroundRectangle.Height" Value="Auto"/>
+                                        <Setter Target="AlphaSliderBackgroundRectangle.Width" Value="11"/>
+                                        <Setter Target="AlphaSliderBackgroundRectangle.HorizontalAlignment" Value="Center"/>
+                                        <Setter Target="AlphaSliderBackgroundRectangle.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="AlphaSliderBackgroundRectangle.RenderTransform">
                                             <Setter.Value>
                                                 <RotateTransform Angle="180"/>
                                             </Setter.Value>
@@ -304,7 +304,7 @@
                                         <ImageBrush x:Name="AlphaSliderCheckeredBackgroundImageBrush" />
                                     </Rectangle.Fill>
                                 </Rectangle>
-                                <Rectangle x:Name="AlphaSliderGradientBackgroundRectangle" RenderTransformOrigin="0.5, 0.5" Height="11" VerticalAlignment="Center"
+                                <Rectangle x:Name="AlphaSliderBackgroundRectangle" RenderTransformOrigin="0.5, 0.5" Height="11" VerticalAlignment="Center"
                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
