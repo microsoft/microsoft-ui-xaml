@@ -49,8 +49,10 @@ the color area (vertical orientation) or to the side of it (horizontal orientati
 When the `Orientation` property is set to `Horizontal`, the ColorPicker will NOT respect the IsMoreButton enabled property.
 Instead, the text input fields will always be displayed to the side of the ColorPicker.
 In addition to that, when in `Horizontal` mode, when the text input fields are being used, there will be a margin of `122px` to the right of the input fields.
-This margin accounts for the different localizations of the different localizations of the labels of said fields and ensures that those labels will not be cut off. This margin is determined by the `ColorPickerTextInputHorizontalOrientationMargin` lightweight styling resource.
-If your app is only targeting the english market, you can override this resource and set the margin to `74px`.
+This margin accounts for the different localizations of the different localizations of the labels of said fields and ensures that those labels will not be cut off.
+This margin is determined by the `ColorPickerTextInputHorizontalOrientationMargin` lightweight styling resource.
+If your app is only available in English, you can override this resource and set the margin to `74px` to improve the horizontal footprint of the control.
+The resource does have not have any effect when the `Orientation` is set to `Vertical`.
 
 # API Details
 
