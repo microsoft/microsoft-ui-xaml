@@ -247,6 +247,7 @@
     <FeatureAnimatedIconEnabled>true</FeatureAnimatedIconEnabled>
     <FeatureMonochromaticOverlayPresenterEnabled>true</FeatureMonochromaticOverlayPresenterEnabled>
     <FeatureInfoBadgeEnabled>true</FeatureInfoBadgeEnabled>
+    <FeatureWebView2Enabled Condition="'$(Platform)' != 'ARM'">true</FeatureWebView2Enabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>

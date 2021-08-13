@@ -56,6 +56,7 @@ namespace RuntimeProfiler
         ProfId_ImageIcon,
         ProfId_AnimatedIcon,
         ProfId_InfoBadge,
+        ProfId_WebView2,
         ProfId_Size // ProfId_Size is the last always. 
     } ProfilerClassId;
 
