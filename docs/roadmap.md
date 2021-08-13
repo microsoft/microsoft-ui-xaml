@@ -2,7 +2,7 @@
 
 WinUI is the modern native UI platform for Windows. This document outlines the prospective roadmap for WinUI through 2021. WinUI is under active development by the Windows developer platform team and the roadmap will continue to evolve based on market changes and customer feedback, so please note that the plans outlined here aren't exhaustive or guaranteed. We welcome your feedback on the roadmap: please feel free to contribute to existing issues or [file a new issue](https://github.com/microsoft/microsoft-ui-xaml/issues).
 
-**Note: For a detailed look at the target availability dates for certain features in WinUI 3, see [our feature roadmap](#winui-30-feature-roadmap).**
+**Note: For a detailed look at the target availability dates for certain features in WinUI 3, see [our feature roadmap](#winui-3-feature-roadmap).**
 
 WinUI continues to advance and improve across both generations of the technology: 
 
