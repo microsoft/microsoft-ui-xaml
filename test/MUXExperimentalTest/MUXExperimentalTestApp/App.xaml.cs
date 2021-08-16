@@ -63,6 +63,8 @@ namespace MUXExperimentalTestApp
                 Window.Current.Content = rootFrame;
             }
 
+            Microsoft.UI.Xaml.Controls.BackdropMaterial.SetApplyToRootOrPageBackground(rootFrame, true);
+
             if (e.PrelaunchActivated == false)
             {
                 if (rootFrame.Content == null)

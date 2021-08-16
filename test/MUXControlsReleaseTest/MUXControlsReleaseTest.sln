@@ -41,11 +41,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UwpApp", "XamlIslandsTestAp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WpfApp", "XamlIslandsTestApp\WpfApp\WpfApp.csproj", "{BBF64CD0-9E73-4669-B42B-EE6BD986877C}"
 EndProject
-Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "WpfApp.Package", "XamlIslandsTestApp\WpfApp\WpfApp.Package.wapproj", "{4454B583-39A0-4A91-881C-2078FA26C447}"
+Temporarily_Excluded_Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "WpfApp.Package", "XamlIslandsTestApp\WpfApp\WpfApp.Package.wapproj", "{4454B583-39A0-4A91-881C-2078FA26C447}"
 	ProjectSection(ProjectDependencies) = postProject
 		{51654A14-2759-4DD0-96E2-DD05084BA720} = {51654A14-2759-4DD0-96E2-DD05084BA720}
 	EndProjectSection
-EndProject
+EndTemporarily_Excluded_Project
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MUXTestInfra", "MUXTestInfra", "{8BC8219D-1669-4147-9941-1CA911D0A958}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MUXTestInfra.Shared", "..\testinfra\MUXTestInfra\MUXTestInfra.Shared.shproj", "{107794D7-4BE0-407E-A76C-EFA46D1E9F93}"
@@ -391,6 +391,8 @@ Global
 		{BBF64CD0-9E73-4669-B42B-EE6BD986877C}.Release|x64.Build.0 = Release|x64
 		{BBF64CD0-9E73-4669-B42B-EE6BD986877C}.Release|x86.ActiveCfg = Release|x86
 		{BBF64CD0-9E73-4669-B42B-EE6BD986877C}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	Temporarily_Excluded_GlobalSection_ProjectConfigurationPlatforms
 		{4454B583-39A0-4A91-881C-2078FA26C447}.Debug_test|ARM.ActiveCfg = Release|x86
 		{4454B583-39A0-4A91-881C-2078FA26C447}.Debug_test|arm64.ActiveCfg = Debug|x64
 		{4454B583-39A0-4A91-881C-2078FA26C447}.Debug_test|x64.ActiveCfg = Debug|x64
@@ -417,7 +419,7 @@ Global
 		{4454B583-39A0-4A91-881C-2078FA26C447}.Release|x86.ActiveCfg = Release|x86
 		{4454B583-39A0-4A91-881C-2078FA26C447}.Release|x86.Build.0 = Release|x86
 		{4454B583-39A0-4A91-881C-2078FA26C447}.Release|x86.Deploy.0 = Release|x86
-	EndGlobalSection
+	EndTemporarily_Excluded_GlobalSection_ProjectConfigurationPlatforms
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
@@ -432,9 +434,11 @@ Global
 		{94DF1545-C2FD-41DC-B68D-2C16D6BA3FD4} = {8BC8219D-1669-4147-9941-1CA911D0A958}
 		{51654A14-2759-4DD0-96E2-DD05084BA720} = {24B82701-D5C4-43BA-A35B-B20194CBF42D}
 		{BBF64CD0-9E73-4669-B42B-EE6BD986877C} = {24B82701-D5C4-43BA-A35B-B20194CBF42D}
-		{4454B583-39A0-4A91-881C-2078FA26C447} = {24B82701-D5C4-43BA-A35B-B20194CBF42D}
 		{107794D7-4BE0-407E-A76C-EFA46D1E9F93} = {8BC8219D-1669-4147-9941-1CA911D0A958}
 	EndGlobalSection
+	Temporarily_Excluded_GlobalSection_NestedProjects
+		{4454B583-39A0-4A91-881C-2078FA26C447} = {24B82701-D5C4-43BA-A35B-B20194CBF42D}
+	EndTemporarily_Excluded_GlobalSection_NestedProjects
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E45DFF44-1BEF-4538-9DC4-E0FC5B89B857}
 	EndGlobalSection

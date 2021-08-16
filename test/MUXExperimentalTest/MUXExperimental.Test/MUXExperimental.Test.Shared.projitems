@@ -123,4 +123,5 @@
     <VisualStudioVersion>15.0</VisualStudioVersion>
   </PropertyGroup>
   <Import Project="..\..\..\dev\SampleControl\InteractionTests\SampleControl_InteractionTests.projitems" Label="Shared" />
+  <Import Project="..\..\..\dev\TitleBar\InteractionTests\TitleBar_InteractionTests.projitems" Label="Shared" />
 </Project>

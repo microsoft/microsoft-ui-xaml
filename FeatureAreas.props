@@ -196,6 +196,9 @@
   <!-- Dependencies for SampleControl -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureSampleControlEnabled) == 'true'">
   </PropertyGroup>
+  <!-- Dependencies for TitleBar -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTitleBarEnabled) == 'true'">
+  </PropertyGroup>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
     <FeatureAnimatedVisualPlayerEnabled>true</FeatureAnimatedVisualPlayerEnabled>
@@ -248,6 +251,7 @@
     <FeatureAnimatedIconEnabled>true</FeatureAnimatedIconEnabled>
     <FeatureMonochromaticOverlayPresenterEnabled>true</FeatureMonochromaticOverlayPresenterEnabled>
     <FeatureSampleControlEnabled>true</FeatureSampleControlEnabled>
+    <FeatureTitleBarEnabled>true</FeatureTitleBarEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>

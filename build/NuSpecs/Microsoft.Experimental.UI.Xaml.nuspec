@@ -11,7 +11,7 @@
     <projectUrl>https://github.com/microsoft/microsoft-ui-xaml</projectUrl>
     <iconUrl>https://aka.ms/winui_icon</iconUrl>
     <dependencies>
-      <dependency id="Microsoft.UI.Xaml" version="2.5.0" />
+      <dependency id="Microsoft.UI.Xaml" version="2.6.1" />
     </dependencies>
   </metadata>
   <files>

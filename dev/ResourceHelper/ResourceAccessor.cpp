@@ -5,6 +5,8 @@
 #include "common.h"
 #include "ResourceAccessor.h"
 
+PCWSTR ResourceAccessor::c_resourceLocWinUI{ L"Microsoft.UI.Xaml/Resources" };
+
 #ifdef MUX_EXPERIMENTAL
 PCWSTR ResourceAccessor::c_resourceLoc{ L"Microsoft.Experimental.UI.Xaml/Resources" };
 #else
@@ -39,6 +41,18 @@ winrt::hstring ResourceAccessor::GetLocalizedStringResource(const wstring_view &
     static winrt::ResourceContext s_resourceContext = winrt::ResourceContext::GetForViewIndependentUse();
 
     return s_resourceMap.GetValue(resourceName, s_resourceContext).ValueAsString();
+}
+
+winrt::hstring ResourceAccessor::GetLocalizedStringResourceFromWinUI(const wstring_view& resourceName)
+{
+    static winrt::ResourceMap s_resourceMapWinUI = []() {
+        const auto packageResourceMap = winrt::ResourceManager::Current().AllResourceMaps().Lookup(MUXCONTROLS_PACKAGE_NAME);
+        return packageResourceMap.GetSubtree(ResourceAccessor::c_resourceLocWinUI);
+    }();
+
+    static winrt::ResourceContext s_resourceContext = winrt::ResourceContext::GetForViewIndependentUse();
+
+    return s_resourceMapWinUI.GetValue(resourceName, s_resourceContext).ValueAsString();
 }
 
 winrt::LoadedImageSurface ResourceAccessor::GetImageSurface(const wstring_view &assetName, winrt::Size imageSize)

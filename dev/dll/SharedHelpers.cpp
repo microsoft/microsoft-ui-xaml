@@ -535,7 +535,7 @@ bool SharedHelpers::IsAncestor(
     return false;
 }
 
-#ifdef ICONSOURCE_INCLUDED
+#if defined(ICONSOURCE_INCLUDED) || defined(TITLEBAR_INCLUDED)
 
 winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& iconSource)
 {
@@ -591,7 +591,7 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         }
         return bitmapIcon;
     }
-#ifdef IMAGEICON_INCLUDED
+#if defined(IMAGEICON_INCLUDED) || defined(TITLEBAR_INCLUDED)
     else if (auto imageIconSource = iconSource.try_as<winrt::ImageIconSource>())
     {
         winrt::ImageIcon imageIcon;
@@ -620,7 +620,7 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         }
         return pathIcon;
     }
-#ifdef ANIMATEDICON_INCLUDED
+#if defined(ANIMATEDICON_INCLUDED) || defined(TITLEBAR_INCLUDED)
     else if (auto animatedIconSource = iconSource.try_as<winrt::AnimatedIconSource>())
     {
         winrt::AnimatedIcon animatedIcon;

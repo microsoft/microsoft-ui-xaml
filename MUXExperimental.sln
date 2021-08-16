@@ -55,22 +55,40 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MSTest", "MSTest", "{85C7AE
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MUXTestInfra.MSTest", "test\testinfra\MUXTestInfra\MSTest\MUXTestInfra.MSTest.csproj", "{E9BC58A3-A066-4120-9E8B-611DC8DE4600}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommonStyles", "dev\CommonStyles\CommonStyles.vcxitems", "{3A07FA59-C5C1-4B46-8B31-043F9CA91226}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TitleBar", "TitleBar", "{EF60F757-9BD4-4D53-A3C7-6860C67CE4B4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TitleBar", "dev\TitleBar\TitleBar.vcxitems", "{B122B4A6-BA38-4738-984B-3DAB2177D5E2}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TitleBar_TestUI", "dev\TitleBar\TestUI\TitleBar_TestUI.shproj", "{0C05E2F0-F21F-4E60-A5BD-B4F5EB655C1D}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TitleBar_InteractionTests", "dev\TitleBar\InteractionTests\TitleBar_InteractionTests.shproj", "{AEC0BAEE-7A86-4539-9E07-A5363F7B9A8C}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\SampleControl\TestUI\SampleControl_TestUI.projitems*{05361409-7fbb-4296-996f-2e591857d84a}*SharedItemsImports = 13
+		dev\TitleBar\TestUI\TitleBar_TestUI.projitems*{0c05e2f0-f21f-4e60-a5bd-b4f5eb655c1d}*SharedItemsImports = 13
 		dev\SampleControl\InteractionTests\SampleControl_InteractionTests.projitems*{30120040-3eb8-404d-9344-5e99e34b6090}*SharedItemsImports = 13
 		dev\Collections\Collections.vcxitems*{395a71a1-4327-477b-85d4-af0851732ccb}*SharedItemsImports = 9
+		dev\CommonStyles\CommonStyles.vcxitems*{3a07fa59-c5c1-4b46-8b31-043f9ca91226}*SharedItemsImports = 9
 		dev\ResourceHelper\ResourceHelper.vcxitems*{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}*SharedItemsImports = 9
 		dev\Collections\Collections.vcxitems*{4647fa1b-124e-4447-af56-4016ab6faf4a}*SharedItemsImports = 4
+		dev\CommonStyles\CommonStyles.vcxitems*{4647fa1b-124e-4447-af56-4016ab6faf4a}*SharedItemsImports = 4
 		dev\ResourceHelper\ResourceHelper.vcxitems*{4647fa1b-124e-4447-af56-4016ab6faf4a}*SharedItemsImports = 4
 		dev\SampleControl\SampleControl.vcxitems*{4647fa1b-124e-4447-af56-4016ab6faf4a}*SharedItemsImports = 4
+		dev\TitleBar\TitleBar.vcxitems*{4647fa1b-124e-4447-af56-4016ab6faf4a}*SharedItemsImports = 4
 		dev\SampleControl\APITests\SampleControl_APITests.projitems*{65521a02-7166-48be-b524-8f8f0ecc3a76}*SharedItemsImports = 13
 		dev\Common\Common.vcxitems*{80ad7f51-8997-47b9-bb41-078b81cff9b0}*SharedItemsImports = 9
 		dev\SampleControl\InteractionTests\SampleControl_InteractionTests.projitems*{815c5f42-3deb-4dcb-b143-1c088fce97f9}*SharedItemsImports = 13
+		dev\TitleBar\InteractionTests\TitleBar_InteractionTests.projitems*{815c5f42-3deb-4dcb-b143-1c088fce97f9}*SharedItemsImports = 13
 		test\MUXExperimentalTest\MUXExperimental.Test\MUXExperimental.Test.Shared.projitems*{815c5f42-3deb-4dcb-b143-1c088fce97f9}*SharedItemsImports = 13
 		dev\CommonManaged\CommonManaged.projitems*{85a134e5-c83f-44a4-80df-59f6ebf6c60d}*SharedItemsImports = 13
 		dev\SampleControl\SampleControl.vcxitems*{a329fb8a-3093-4050-83d3-4d9f5847f3b8}*SharedItemsImports = 9
+		dev\TitleBar\InteractionTests\TitleBar_InteractionTests.projitems*{aec0baee-7a86-4539-9e07-a5363f7b9a8c}*SharedItemsImports = 13
+		dev\TitleBar\TitleBar.vcxitems*{b122b4a6-ba38-4738-984b-3dab2177d5e2}*SharedItemsImports = 9
 		dev\SampleControl\TestUI\SampleControl_TestUI.projitems*{cca3696f-5cac-421d-8528-4d9122b4d240}*SharedItemsImports = 4
+		dev\TitleBar\TestUI\TitleBar_TestUI.projitems*{cca3696f-5cac-421d-8528-4d9122b4d240}*SharedItemsImports = 4
 		test\TestAppUtils\TestAppUtils.projitems*{cca3696f-5cac-421d-8528-4d9122b4d240}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -291,6 +309,11 @@ Global
 		{AD9D5064-9E3C-43FB-9B3A-DD1E44301021} = {CCF338CD-58F3-4C91-8674-14DA5ADFD8EE}
 		{85C7AE5E-F4C5-4FEE-82A9-881FA2251649} = {CCF338CD-58F3-4C91-8674-14DA5ADFD8EE}
 		{E9BC58A3-A066-4120-9E8B-611DC8DE4600} = {85C7AE5E-F4C5-4FEE-82A9-881FA2251649}
+		{3A07FA59-C5C1-4B46-8B31-043F9CA91226} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
+		{EF60F757-9BD4-4D53-A3C7-6860C67CE4B4} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
+		{B122B4A6-BA38-4738-984B-3DAB2177D5E2} = {EF60F757-9BD4-4D53-A3C7-6860C67CE4B4}
+		{0C05E2F0-F21F-4E60-A5BD-B4F5EB655C1D} = {EF60F757-9BD4-4D53-A3C7-6860C67CE4B4}
+		{AEC0BAEE-7A86-4539-9E07-A5363F7B9A8C} = {EF60F757-9BD4-4D53-A3C7-6860C67CE4B4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}

@@ -17,6 +17,12 @@ namespace MUXExperimentalTestApp
                     Name = "SampleControl Tests",
                     PageType = typeof(SampleControlPage),
                 },
+                
+                new TestDeclaration()
+                {
+                    Name = "TitleBar Tests",
+                    PageType = typeof(TitleBarPage),
+                },
             };
         }
 

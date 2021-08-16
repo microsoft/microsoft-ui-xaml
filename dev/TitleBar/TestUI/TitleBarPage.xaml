@@ -1,0 +1,23 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.TitleBarPage"
+    x:Name="TitleBarTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:exp="using:Microsoft.Experimental.UI.Xaml.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+        <StackPanel Orientation="Vertical">
+            <CheckBox x:Name="IsBackButtonVisibleCheckBox" Content="Back Button Visible" Checked="IsBackButtonVisibleCheckBox_CheckedChanged" Unchecked="IsBackButtonVisibleCheckBox_CheckedChanged"/>
+            <CheckBox x:Name="IsBackEnabledCheckBox" Content="Back Button Enabled" Checked="IsBackEnabledCheckBox_CheckedChanged" Unchecked="IsBackEnabledCheckBox_CheckedChanged"/>
+            <TextBlock x:Name="BackRequestedTextBox"/>
+            <CheckBox x:Name="SetIconCheckBox" IsChecked="True" Content="Set Icon" Checked="SetIconCheckBox_CheckedChanged" Unchecked="SetIconCheckBox_CheckedChanged"/>
+            <CheckBox x:Name="SetTitleCheckBox" IsChecked="True" Content="Set Title" Checked="SetTitleCheckBox_CheckedChanged" Unchecked="SetTitleCheckBox_CheckedChanged"/>
+            <CheckBox x:Name="CustomContentCheckBox" Content="CustomContent" Checked="CustomContentCheckBox_CheckedChanged" Unchecked="CustomContentCheckBox_CheckedChanged"/>
+        </StackPanel>
+    </Grid>
+</local:TestPage>
