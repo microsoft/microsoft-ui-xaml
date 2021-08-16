@@ -633,31 +633,32 @@
                                 </SplitView.Pane>
 
                                 <SplitView.Content>
-                                    <Grid
-                                        x:Name="ContentGrid"
-                                        BorderBrush="{ThemeResource NavigationViewContentGridBorderBrush}"
-                                        BorderThickness="{ThemeResource NavigationViewContentGridBorderThickness}"
-                                        Background="{ThemeResource NavigationViewContentBackground}"
-                                        Margin="{ThemeResource NavigationViewContentMargin}"
-                                        contract7Present:CornerRadius="{ThemeResource NavigationViewContentGridCornerRadius}">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="*" />
-                                        </Grid.RowDefinitions>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
+                                    <Grid Margin="{ThemeResource NavigationViewContentMargin}">
+                                        <Grid
+                                            x:Name="ContentGridBackground"
+                                            BorderBrush="{ThemeResource NavigationViewContentGridBorderBrush}"
+                                            BorderThickness="{ThemeResource NavigationViewContentGridBorderThickness}"
+                                            Background="{ThemeResource NavigationViewContentBackground}"
+                                            contract7Present:CornerRadius="{ThemeResource NavigationViewContentGridCornerRadius}" />
+                                        <Grid x:Name="ContentGrid">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="*" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
 
-                                        <Grid x:Name="ContentTopPadding"
+                                            <Grid x:Name="ContentTopPadding"
                                             Grid.ColumnSpan="2"
                                             Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPadding}"
                                             Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}"/>
 
-                                        <Grid x:Name="ContentLeftPadding" Grid.Row="1"/>
+                                            <Grid x:Name="ContentLeftPadding" Grid.Row="1"/>
 
-                                        <ContentControl
+                                            <ContentControl
                                             x:Name="HeaderContent"
                                             Grid.Row="1"
                                             Grid.Column="1"
@@ -669,14 +670,16 @@
                                             HorizontalContentAlignment="Stretch"
                                             Style="{StaticResource NavigationViewTitleHeaderContentControlTextStyle}"/>
 
-                                        <ContentPresenter
+                                            <ContentPresenter
                                             x:Name="ContentPresenter"
                                             AutomationProperties.LandmarkType="Main"
                                             Grid.Row="2"
                                             Grid.ColumnSpan="2"
                                             Content="{TemplateBinding Content}"
                                             Margin="{ThemeResource NavigationViewContentPresenterMargin}"/>
+                                        </Grid>
                                     </Grid>
+                                    
                                 </SplitView.Content>
                             </SplitView>
 
