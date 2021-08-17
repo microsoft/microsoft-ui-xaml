@@ -61,7 +61,7 @@
   </ItemGroup>
   <ItemGroup Condition="'$(Platform)' != 'ARM'">
     <PackageReference Include="Microsoft.Web.WebView2">
-      <Version>1.0.865-prerelease</Version>
+      <Version>1.0.955-prerelease</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="..\MUXControlsTestApp.Shared.projitems" />
