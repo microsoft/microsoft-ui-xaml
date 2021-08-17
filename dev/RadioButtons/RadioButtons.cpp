@@ -86,7 +86,7 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
         {
             // If focus is coming from outside the repeater, put focus on the selected item.
             auto const oldFocusedElement = args.OldFocusedElement();
-            if (!oldFocusedElement || repeater != winrt::VisualTreeHelper::GetParent(oldFocusedElement))
+            if (!IsRepeaterOwnedElement(oldFocusedElement, repeater))
             {
                 if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
                 {
@@ -100,15 +100,19 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
                 }
             }
 
-            // Focus was already in the repeater: in On RS3+ Selection follows focus unless control is held down.
+            // Focus was already in the repeater: On RS3+ Selection follows focus unless control is held down.
             else if (SharedHelpers::IsRS3OrHigher() &&
                 (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
                     winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
             {
                 if (auto const newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
                 {
-                    Select(repeater.GetElementIndex(newFocusedElementAsUIE));
-                    args.Handled(true);
+                    int index;
+                    if (TryGetRepeaterElementIndex(newFocusedElementAsUIE, repeater, index))
+                    {
+                        Select(index);
+                        args.Handled(true);
+                    }
                 }
             }
         }
@@ -219,15 +223,17 @@ void RadioButtons::OnAccessKeyInvoked(const winrt::UIElement&, const winrt::Acce
         {
             if (auto const repeater = m_repeater.get())
             {
-                if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
+                if (auto const selectedItem = TryGetRadioButtonAsUIElement(m_selectedIndex, repeater))
                 {
                     if (auto const selectedItemAsControl = selectedItem.try_as<winrt::Control>())
                     {
                         return args.Handled(selectedItemAsControl.Focus(winrt::FocusState::Programmatic));
                     }
+                    
                 }
             }
         }
+
         // If we don't have a selected index, focus the RadioButton's which under normal
         // circumstances will put focus on the first radio button.
         args.Handled(this->Focus(winrt::FocusState::Programmatic));
@@ -256,7 +262,9 @@ bool RadioButtons::HandleEdgeCaseFocus(bool first, const winrt::IInspectable& so
                 return -1;
             }();
 
-            if (repeater.GetElementIndex(sourceAsUIElement) == index)
+            int sourceRepeaterElementIndex;
+            if (TryGetRepeaterElementIndex(sourceAsUIElement, repeater, sourceRepeaterElementIndex)
+                && sourceRepeaterElementIndex == index)
             {
                 return true;
             }
@@ -274,22 +282,23 @@ winrt::FindNextElementOptions RadioButtons::GetFindNextElementOptions()
 
 void RadioButtons::OnRepeaterElementPrepared(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementPreparedEventArgs& args)
 {
-    if (auto const element = args.Element())
+    if (auto const element = TryGetRadioButtonAsUIElement(args.Element()))
     {
-        if (auto const toggleButton = element.try_as<winrt::ToggleButton>())
+        if (auto const elementAsToggle = element.try_as<winrt::ToggleButton>())
         {
             auto childHandlers = winrt::make_self<ChildHandlers>();
-            childHandlers->checkedRevoker = toggleButton.Checked(winrt::auto_revoke, { this, &RadioButtons::OnChildChecked });
-            childHandlers->uncheckedRevoker = toggleButton.Unchecked(winrt::auto_revoke, { this, &RadioButtons::OnChildUnchecked });
-                
-            toggleButton.SetValue(s_childHandlersProperty, childHandlers.as<winrt::IInspectable>());
+            childHandlers->checkedRevoker = elementAsToggle.Checked(winrt::auto_revoke, { this, &RadioButtons::OnChildChecked });
+            childHandlers->uncheckedRevoker = elementAsToggle.Unchecked(winrt::auto_revoke, { this, &RadioButtons::OnChildUnchecked });
 
-            // If the developer adds a checked toggle button to the collection, update selection to this item.
-            if (SharedHelpers::IsTrue(toggleButton.IsChecked()))
+            elementAsToggle.SetValue(s_childHandlersProperty, childHandlers.as<winrt::IInspectable>());
+
+            // If the developer adds a checked radio button to the collection, update selection to this item.
+            if (SharedHelpers::IsTrue(elementAsToggle.IsChecked()))
             {
                 Select(args.Index());
             }
         }
+        
         if (auto const repeater = m_repeater.get())
         {
             if (auto const itemSourceView = repeater.ItemsSourceView())
@@ -303,13 +312,13 @@ void RadioButtons::OnRepeaterElementPrepared(const winrt::ItemsRepeater&, const 
 
 void RadioButtons::OnRepeaterElementClearing(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementClearingEventArgs& args)
 {
-    if (auto const element = args.Element())
+    if (auto const element = TryGetRadioButtonAsUIElement(args.Element()))
     {
-        element.SetValue(s_childHandlersProperty, nullptr);
-
-        // If the removed element was the selected one, update selection to -1
         if (auto const elementAsToggle = element.try_as<winrt::ToggleButton>())
         {
+            elementAsToggle.SetValue(s_childHandlersProperty, nullptr);
+
+            // If the removed element was the selected one, update selection to -1
             if (SharedHelpers::IsTrue(elementAsToggle.IsChecked()))
             {
                 Select(-1);
@@ -320,13 +329,13 @@ void RadioButtons::OnRepeaterElementClearing(const winrt::ItemsRepeater&, const 
 
 void RadioButtons::OnRepeaterElementIndexChanged(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args)
 {
-    if (auto const element = args.Element())
+    if (auto const element = TryGetRadioButtonAsUIElement(args.Element()))
     {
         element.SetValue(winrt::AutomationProperties::PositionInSetProperty(), box_value(args.NewIndex() + 1));
 
-        // When the selected item's index changes, update selection to match
         if (auto const elementAsToggle = element.try_as<winrt::ToggleButton>())
         {
+            // When the selected item's index changes, update selection to match
             if (SharedHelpers::IsTrue(elementAsToggle.IsChecked()))
             {
                 Select(args.NewIndex());
@@ -344,7 +353,7 @@ void RadioButtons::OnRepeaterCollectionChanged(const winrt::IInspectable&, const
             auto const count = itemSourceView.Count();
             for (auto index = 0; index < count; index++)
             {
-                if (auto const element = repeater.TryGetElement(index))
+                if (auto const element = TryGetRadioButtonAsUIElement(index, repeater))
                 {
                     element.SetValue(winrt::AutomationProperties::SizeOfSetProperty(), box_value(count));
                 }
@@ -375,7 +384,20 @@ void RadioButtons::Select(int index)
 
         SelectedIndex(m_selectedIndex);
         SelectedItem(newSelectedItem);
-        m_selectionChangedEventSource(*this, winrt::SelectionChangedEventArgs({ previousSelectedItem }, { newSelectedItem }));
+
+        auto const previousSelectedItems = winrt::make<Vector<winrt::IInspectable>>();
+        if (previousSelectedItem)
+        {
+            previousSelectedItems.Append(previousSelectedItem);
+        }
+
+        auto const newSelectedItems = winrt::make<Vector<winrt::IInspectable>>();
+        if (newSelectedItem)
+        {
+            newSelectedItems.Append(newSelectedItem);
+        }
+
+        m_selectionChangedEventSource(*this, winrt::SelectionChangedEventArgs(previousSelectedItems, newSelectedItems));
     }
 }
 
@@ -383,13 +405,14 @@ winrt::IInspectable RadioButtons::GetDataAtIndex(int index, bool containerIsChec
 {
     if (auto const repeater = m_repeater.get())
     {
-        if (auto const item = repeater.TryGetElement(index))
+        if (auto const element = TryGetRadioButtonAsUIElement(index, repeater))
         {
-            if (auto const itemAsToggleButton = item.try_as<winrt::ToggleButton>())
+            if (auto const elementAsToggle = element.try_as<winrt::ToggleButton>())
             {
-                itemAsToggleButton.IsChecked(containerIsChecked);
+                elementAsToggle.IsChecked(containerIsChecked);
             }
         }
+
         if (index >= 0)
         {
             if (auto const itemsSourceView = repeater.ItemsSourceView())
@@ -404,20 +427,6 @@ winrt::IInspectable RadioButtons::GetDataAtIndex(int index, bool containerIsChec
     return static_cast<winrt::IInspectable>(nullptr);
 }
 
-void RadioButtons::OnChildChecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&)
-{
-    if (!m_currentlySelecting)
-    {
-        if (auto const repeater = m_repeater.get())
-        {
-            if (auto const senderAsUIE = sender.as<winrt::UIElement>())
-            {
-                Select(repeater.GetElementIndex(senderAsUIE));
-            }
-        }
-    }
-}
-
 void RadioButtons::OnChildUnchecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&)
 {
     if (!m_currentlySelecting)
@@ -426,9 +435,31 @@ void RadioButtons::OnChildUnchecked(const winrt::IInspectable& sender, const win
         {
             if (auto const senderAsUIE = sender.as<winrt::UIElement>())
             {
-                if (m_selectedIndex == repeater.GetElementIndex(senderAsUIE))
+                int index;
+                if (TryGetRepeaterElementIndex(senderAsUIE, repeater, index))
                 {
-                    Select(-1);
+                    if (m_selectedIndex == index)
+                    {
+                        Select(-1);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void RadioButtons::OnChildChecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&)
+{
+    if (!m_currentlySelecting)
+    {
+        if (auto const repeater = m_repeater.get())
+        {
+            if (auto const senderAsUIE = sender.as<winrt::UIElement>())
+            {
+                int index;
+                if (TryGetRepeaterElementIndex(senderAsUIE, repeater, index))
+                {
+                    Select(index);
                 }
             }
         }
@@ -451,23 +482,24 @@ bool RadioButtons::MoveFocus(int indexIncrement)
     {
         if (auto const focusedElement = winrt::FocusManager::GetFocusedElement().try_as<winrt::UIElement>())
         {
-            auto focusedIndex = repeater.GetElementIndex(focusedElement);
-            
-            if (focusedIndex >= 0)
+            int focusedIndex;
+            if (TryGetRepeaterElementIndex(focusedElement, repeater, focusedIndex)
+                && focusedIndex >= 0)
             {
                 focusedIndex += indexIncrement;
                 auto const itemCount = repeater.ItemsSourceView().Count();
                 while (focusedIndex >= 0 && focusedIndex < itemCount)
                 {
-                    if (auto const item = repeater.TryGetElement(focusedIndex))
+                    if (auto const element = TryGetRadioButtonAsUIElement(focusedIndex, repeater))
                     {
-                        if (auto const itemAsControl = item.try_as<winrt::IControl>())
+                        if (auto const elementAsControl = element.try_as<winrt::Control>())
                         {
-                            if (itemAsControl.Focus(winrt::FocusState::Programmatic))
+                            if (elementAsControl.Focus(winrt::FocusState::Programmatic))
                             {
                                 return true;
                             }
                         }
+                        
                     }
                     focusedIndex += indexIncrement;
                 }
@@ -508,7 +540,9 @@ winrt::UIElement RadioButtons::ContainerFromIndex(int index)
 {
     if (auto const repeater = m_repeater.get())
     {
-        return repeater.TryGetElement(index);
+        // We return the actual RadioButton here as the parent grid wrapper is just an implementation detail
+        // and conceptually, the RadioButton control is the container.
+        return TryGetRadioButtonAsUIElement(index, repeater);
     }
     return nullptr;
 }
@@ -560,6 +594,58 @@ void RadioButtons::UpdateSelectedItem()
             }
         }
     }
+}
+
+winrt::UIElement RadioButtons::TryGetRadioButtonAsUIElement(const winrt::UIElement& repaterElement)
+{
+    if (auto const elementAsPanel = repaterElement.try_as<winrt::Panel>())
+    {
+        if (elementAsPanel.Children().Size() >= 1)
+        {
+            return elementAsPanel.Children().GetAt(0).try_as<winrt::UIElement>();
+        }
+    }
+
+    return nullptr;
+}
+
+winrt::UIElement RadioButtons::TryGetRadioButtonAsUIElement(int repeaterElementIndex, const winrt::ItemsRepeater& repeater)
+{
+    if (auto const repeaterElement = repeater.TryGetElement(repeaterElementIndex))
+    {
+        return TryGetRadioButtonAsUIElement(repeaterElement);
+    }
+
+    return nullptr;
+}
+
+winrt::UIElement RadioButtons::TryGetRepeaterElement(const winrt::UIElement& radioButton)
+{
+    return winrt::VisualTreeHelper::GetParent(radioButton).try_as<winrt::UIElement>();
+}
+
+bool RadioButtons::TryGetRepeaterElementIndex(const winrt::UIElement& radioButton, const winrt::ItemsRepeater& repeater, int& index)
+{
+    if (auto const repeaterElement = TryGetRepeaterElement(radioButton))
+    {
+        index = repeater.GetElementIndex(repeaterElement);
+        return true;
+    }
+
+    return false;
+}
+
+bool RadioButtons::IsRepeaterOwnedElement(const winrt::DependencyObject& element, const winrt::ItemsRepeater& repeater)
+{
+    if (auto const elementAsUIE = element.try_as<winrt::UIElement>())
+    {
+        if (auto const repeaterElement = TryGetRepeaterElement(elementAsUIE))
+        {
+            return repeater == winrt::VisualTreeHelper::GetParent(repeaterElement);
+        }
+    }
+
+    return false;
 }
 
 void RadioButtons::UpdateItemTemplate()
@@ -632,7 +718,6 @@ int RadioButtons::GetLargerColumns()
     }
     return -1;
 }
-
 
 void RadioButtons::AttachToLayoutChanged()
 {

@@ -82,6 +82,80 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void ValidateSelectionChangedEvent()
+        {
+            int testCaseNumber = -1; // No valid test case
+            int selectionChangedRaisedCounter = 0;
+
+            RadioButtons radioButtons = null;
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons = new RadioButtons();
+                radioButtons.Items.Add("0");
+                radioButtons.Items.Add("1");
+                radioButtons.Items.Add("2");
+
+                Log.Comment("Register SelectionChanged event handler");
+                radioButtons.SelectionChanged += OnSelectionChangedEvent;
+
+                Content = radioButtons;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Select item \"1\" as the initial selection");
+                testCaseNumber = 0;
+                radioButtons.SelectedIndex = 1;
+
+                Verify.AreEqual(1, selectionChangedRaisedCounter, "The SelectionChanged event should have been raised 1 time in total");
+
+                Log.Comment("Select item \"2\"");
+                testCaseNumber = 1;
+                radioButtons.SelectedIndex = 2;
+                Verify.AreEqual(2, selectionChangedRaisedCounter, "The SelectionChanged event should have been raised 2 times in total");
+
+                Log.Comment("Clear selection");
+                testCaseNumber = 2;
+                radioButtons.SelectedIndex = -1;
+                Verify.AreEqual(3, selectionChangedRaisedCounter, "The SelectionChanged event should have been raised 3 times in total");
+            });
+
+            void OnSelectionChangedEvent(object sender, SelectionChangedEventArgs e)
+            {
+                selectionChangedRaisedCounter++;
+
+                bool testCondition = false;
+                switch (testCaseNumber)
+                {
+                    case 0: // Verify selection of item "1" as initial selection
+                        testCondition = e.AddedItems.Count == 1 && e.AddedItems[0] is string s1 && s1 == "1";
+                        Verify.IsTrue(testCondition, "Initial selection: SelectionChangedEventArgs.AddedItems should have contained the single item \"1\"");
+
+                        testCondition = e.RemovedItems.Count == 0;
+                        Verify.IsTrue(testCondition, "Initial selection: SelectionChangedEventArgs.RemovedItems should have been empty");
+                        break;
+                    case 1: // Verify selection of item "2" while item "1" is selected
+                        testCondition = e.AddedItems.Count == 1 && e.AddedItems[0] is string s2 && s2 == "2";
+                        Verify.IsTrue(testCondition, "Updated selection: SelectionChangedEventArgs.AddedItems should have contained the single item \"2\"");
+
+                        testCondition = e.RemovedItems.Count == 1 && e.RemovedItems[0] is string s3 && s3 == "1";
+                        Verify.IsTrue(testCondition, "Updated selection: SelectionChangedEventArgs.RemovedItem should have contained the single item \"1\"");
+                        break;
+                    case 2: // Verify clearing selection
+                        testCondition = e.AddedItems.Count == 0;
+                        Verify.IsTrue(testCondition, "Cleared selection: SelectionChangedEventArgs.AddedItems should have been empty");
+
+                        testCondition = e.RemovedItems.Count == 1 && e.RemovedItems[0] is string s4 && s4 == "2";
+                        Verify.IsTrue(testCondition, "Cleared selection: SelectionChangedEventArgs.RemovedItems should have contained the single item \"2\"");
+                        break;
+                }
+            }
+        }
+
+        [TestMethod]
         public void VerifyIsEnabledChangeUpdatesVisualState()
         {
             RadioButtons radioButtons = null; ;

@@ -57,6 +57,13 @@ namespace MUXControlsTestApp
 
         private void TestRadioButtons_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (LogRadioButtonsEventsCheckBox.IsChecked is bool logEvents && logEvents
+                && DisplayLogsCheckBox.IsChecked is bool displayLogs && displayLogs)
+            {
+                // This log message is used in RadioButtons' interaction test(s).
+                RadioButtonsEventsList.Items.Add("TestRadioButtons: SelectionChanged");
+            }
+
             var index = TestRadioButtons.SelectedIndex;
             SelectedIndexTextBlock.Text = index.ToString();
             if (TestRadioButtons.SelectedItem != null)
@@ -68,7 +75,7 @@ namespace MUXControlsTestApp
                 SelectedItemTextBlock.Text = "null";
             }
 
-            if (index > 0)
+            if (index >= 0)
             {
                 var radioButton = TestRadioButtons.ContainerFromIndex(index);
                 if (radioButton != null)
@@ -93,8 +100,12 @@ namespace MUXControlsTestApp
         {
             var stackPanel = VisualTreeHelper.GetChild(TestRadioButtons, 0);
             var repeater = (ItemsRepeater)VisualTreeHelper.GetChild(stackPanel, 1);
-            FocusedIndexTextBlock.Text = repeater.GetElementIndex((UIElement)e.OriginalSource).ToString();
-            RadioButtonsHasFocusCheckBox.IsChecked = true;
+
+            if (VisualTreeHelper.GetParent((UIElement)e.OriginalSource) is Grid parentGrid)
+            {
+                FocusedIndexTextBlock.Text = repeater.GetElementIndex(parentGrid).ToString();
+                RadioButtonsHasFocusCheckBox.IsChecked = true;
+            }
         }
 
         private void TestRadioButtons_LostFocus(object sender, RoutedEventArgs e)
@@ -238,7 +249,10 @@ namespace MUXControlsTestApp
         {
             var stackPanel = VisualTreeHelper.GetChild(TestRadioButtons, 0);
             var repeater = (ItemsRepeater)VisualTreeHelper.GetChild(stackPanel, 1);
-            ((Control)repeater.TryGetElement(TestRadioButtons.SelectedIndex)).Focus(FocusState.Keyboard);
+
+            var rootGrid = repeater.TryGetElement(TestRadioButtons.SelectedIndex) as Grid;
+            var radioButton = VisualTreeHelper.GetChild(rootGrid, 0) as Control;
+            radioButton.Focus(FocusState.Keyboard);
         }
 
         private void SetBorderWidthButton_Click(object sender, RoutedEventArgs e)
@@ -270,6 +284,7 @@ namespace MUXControlsTestApp
 
         private void ClearRadioButtonsEventsButton_Click(object sender, RoutedEventArgs e)
         {
+            RadioButtonsEventsList.Items.Clear();
         }
 
         private void UpdateRadioButtonsSource()

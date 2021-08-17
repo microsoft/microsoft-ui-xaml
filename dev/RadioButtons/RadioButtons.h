@@ -57,10 +57,17 @@ private:
     void OnRepeaterElementClearing(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementClearingEventArgs& args);
     void OnRepeaterElementIndexChanged(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args);
     void OnRepeaterCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
-    void OnChildChecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnChildUnchecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnChildChecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&);
+    void OnChildUnchecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&);
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnAccessKeyInvoked(const winrt::UIElement&, const winrt::AccessKeyInvokedEventArgs& args);
+
+    winrt::UIElement TryGetRepeaterElement(const winrt::UIElement& radioButton);
+    bool TryGetRepeaterElementIndex(const winrt::UIElement& radioButton, const winrt::ItemsRepeater& repeater, int& index);
+    winrt::UIElement TryGetRadioButtonAsUIElement(const winrt::UIElement& repeaterElement);
+    winrt::UIElement TryGetRadioButtonAsUIElement(int repeaterElementIndex, const winrt::ItemsRepeater& repeater);
+
+    bool IsRepeaterOwnedElement(const winrt::DependencyObject& element, const winrt::ItemsRepeater& repeater);
 
     void OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&);
     void UpdateVisualStateForIsEnabledChange();
