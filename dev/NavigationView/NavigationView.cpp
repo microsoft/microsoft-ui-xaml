@@ -1427,7 +1427,7 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
         {
             displayMode = winrt::NavigationViewDisplayMode::Expanded;
         }
-        else if (width > 0 && width < CompactModeThresholdWidth())
+        else if (width < CompactModeThresholdWidth())
         {
             displayMode = winrt::NavigationViewDisplayMode::Minimal;
         }
@@ -1472,11 +1472,6 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
         && displayMode == winrt::NavigationViewDisplayMode::Compact)
     {
         m_initialListSizeStateSet = false;
-        ClosePane();
-    }
-
-    if (displayMode == winrt::NavigationViewDisplayMode::Minimal)
-    {
         ClosePane();
     }
 }
