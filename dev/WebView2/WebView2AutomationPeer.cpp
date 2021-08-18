@@ -69,7 +69,7 @@ public:
     }
 
     HRESULT STDMETHODCALLTYPE get_ProviderOptions(
-        __RPC__out enum ProviderOptions* pRetVal) override
+        __RPC__out enum ProviderOptions* pRetVal) noexcept override
     {
         *pRetVal = ProviderOptions_ServerSideProvider | ProviderOptions_UseComThreading
             | ProviderOptions_OverrideProvider;
@@ -79,7 +79,7 @@ public:
 
     HRESULT STDMETHODCALLTYPE GetPatternProvider(
         PATTERNID patternId,
-        __RPC__deref_out_opt IUnknown** pRetVal) override
+        __RPC__deref_out_opt IUnknown** pRetVal) noexcept override
     {
         *pRetVal = nullptr;
         return S_OK;
@@ -87,7 +87,7 @@ public:
 
     HRESULT STDMETHODCALLTYPE GetPropertyValue(
         PROPERTYID propertyId,
-        __RPC__out VARIANT* pRetVal) override
+        __RPC__out VARIANT* pRetVal) noexcept override
     {
         if (propertyId == UIA_IsControlElementPropertyId) {
             pRetVal->vt = VT_BOOL;
@@ -104,20 +104,19 @@ public:
     }
 
     HRESULT STDMETHODCALLTYPE get_HostRawElementProvider(
-        __RPC__deref_out_opt IRawElementProviderSimple** pRetVal) override
+        __RPC__deref_out_opt IRawElementProviderSimple** pRetVal) noexcept override
     {
         return m_child->get_HostRawElementProvider(pRetVal);
-        return S_OK;
     }
 
-    HRESULT STDMETHODCALLTYPE ShowContextMenu(void) override
+    HRESULT STDMETHODCALLTYPE ShowContextMenu(void) noexcept override
     {
         return S_OK;
     }
 
     HRESULT STDMETHODCALLTYPE Navigate(
         /* [in] */ enum NavigateDirection direction,
-        /* [retval][out] */ __RPC__deref_out_opt IRawElementProviderFragment** pRetVal) override
+        /* [retval][out] */ __RPC__deref_out_opt IRawElementProviderFragment** pRetVal) noexcept override
     {
         if (direction == NavigateDirection_Parent)
         {
@@ -155,7 +154,7 @@ public:
     }
 
     HRESULT STDMETHODCALLTYPE get_BoundingRectangle(
-        /* [retval][out] */ __RPC__out struct UiaRect* pRetVal) override
+        /* [retval][out] */ __RPC__out struct UiaRect* pRetVal) noexcept override
     {
         auto bounds = m_parent.GetBoundingRectangle();
         pRetVal->left = bounds.X;
@@ -173,7 +172,7 @@ public:
     }
 
     HRESULT STDMETHODCALLTYPE GetEmbeddedFragmentRoots(
-        /* [retval][out] */ __RPC__deref_out_opt SAFEARRAY** pRetVal) override
+        /* [retval][out] */ __RPC__deref_out_opt SAFEARRAY** pRetVal) noexcept override
     {
         *pRetVal = nullptr;
         return S_OK;
@@ -185,7 +184,7 @@ public:
     }
 
     /* [propget] */ HRESULT STDMETHODCALLTYPE get_FragmentRoot(
-        /* [retval][out] */ __RPC__deref_out_opt IRawElementProviderFragmentRoot** pRetVal) override
+        /* [retval][out] */ __RPC__deref_out_opt IRawElementProviderFragmentRoot** pRetVal) noexcept override
     {
         *pRetVal = nullptr;
         return S_OK;
@@ -194,14 +193,14 @@ public:
     HRESULT STDMETHODCALLTYPE ElementProviderFromPoint(
         /* [in] */ double x,
         /* [in] */ double y,
-        /* [retval][out] */ __RPC__deref_out_opt IRawElementProviderFragment** pRetVal) override
+        /* [retval][out] */ __RPC__deref_out_opt IRawElementProviderFragment** pRetVal) noexcept override
     {
         *pRetVal = get_strong().detach();
         return S_OK;
     }
 
     HRESULT STDMETHODCALLTYPE GetFocus(
-        /* [retval][out] */ __RPC__deref_out_opt IRawElementProviderFragment** pRetVal) override
+        /* [retval][out] */ __RPC__deref_out_opt IRawElementProviderFragment** pRetVal) noexcept override
     {
         return E_NOTIMPL;
     }
