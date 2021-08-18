@@ -26,6 +26,7 @@ using System.Runtime.InteropServices;
 using TextBlock = Microsoft.Windows.Apps.Test.Foundation.Controls.TextBlock;
 using Button = Microsoft.Windows.Apps.Test.Foundation.Controls.Button;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
@@ -255,6 +256,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 CompleteTestButton.Invoke();
                 waiter.TryWait();
+            }
+
+            for (int i = 0; i <= 2; i++)
+            {
+                if (expectedValue != result.Value)
+                {
+                    Log.Comment($"CompleteTestAndWaitForResult: Expected '{expectedValue}', result was '{result.Value}'. Waiting...");
+                    Thread.Sleep(TimeSpan.FromMilliseconds(500));
+                }
             }
 
             Verify.AreEqual(expectedValue, result.Value);
