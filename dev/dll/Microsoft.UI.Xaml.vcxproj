@@ -624,8 +624,8 @@
     <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.74\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.74\build\native\MUXCustomBuildTasks.targets')" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Platform)' != 'ARM'">    
-    <Import Project="..\..\packages\Microsoft.Web.WebView2.1.0.955-prerelease\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebView2.1.0.955-prerelease\build\native\Microsoft.Web.WebView2.targets')"/>
+  <ImportGroup Condition="'$(Platform)' != 'ARM'">
+    <Import Project="..\..\packages\Microsoft.Web.WebView2.1.0.955-prerelease\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebView2.1.0.955-prerelease\build\native\Microsoft.Web.WebView2.targets')" />
   </ImportGroup>
   <PropertyGroup>
     <MergedWinmdDirectory>$(OutDir)Merged</MergedWinmdDirectory>

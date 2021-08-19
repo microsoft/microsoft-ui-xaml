@@ -275,4 +275,34 @@ private:
     winrt::Point m_webViewScaledSize{};
     // Last known position of the host window
     POINT m_hostWindowPosition{};
+
+    // Manually delay load functions to avoid WACK exceptions.
+    BOOL (WINAPI* m_fnClientToScreen)(_In_ HWND hWnd, _Inout_ LPPOINT lpPoint);
+    LRESULT (WINAPI* m_fnSendMessageW)(
+        _In_ HWND hWnd,
+        _In_ UINT Msg,
+        _Pre_maybenull_ _Post_valid_ WPARAM wParam,
+        _Pre_maybenull_ _Post_valid_ LPARAM lParam);
+    HWND (WINAPI* m_fnCreateWindowExW)(
+        _In_ DWORD dwExStyle,
+        _In_opt_ LPCWSTR lpClassName,
+        _In_opt_ LPCWSTR lpWindowName,
+        _In_ DWORD dwStyle,
+        _In_ int X,
+        _In_ int Y,
+        _In_ int nWidth,
+        _In_ int nHeight,
+        _In_opt_ HWND hWndParent,
+        _In_opt_ HMENU hMenu,
+        _In_opt_ HINSTANCE hInstance,
+        _In_opt_ LPVOID lpParam);
+    LRESULT (WINAPI* m_fnDefWindowProcW)(
+        _In_ HWND hWnd,
+        _In_ UINT Msg,
+        _In_ WPARAM wParam,
+        _In_ LPARAM lParam);
+    HWND (WINAPI *m_fnGetFocus)(
+        VOID);
+    ATOM (WINAPI *m_fnRegisterClassW)(
+        _In_ CONST WNDCLASSW* lpWndClass);
 };

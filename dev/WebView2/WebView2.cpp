@@ -27,6 +27,16 @@ using namespace Microsoft::WRL;
 
 WebView2::WebView2()
 {
+    if (HMODULE user32module = LoadLibraryW(L"user32.dll"))
+    {
+        m_fnClientToScreen = (decltype(m_fnClientToScreen))GetProcAddress(user32module, "ClientToScreen");
+        m_fnSendMessageW = (decltype(m_fnSendMessageW))GetProcAddress(user32module, "SendMessageW");
+        m_fnCreateWindowExW = (decltype(m_fnCreateWindowExW))GetProcAddress(user32module, "CreateWindowExW");
+        m_fnDefWindowProcW = (decltype(m_fnDefWindowProcW))GetProcAddress(user32module, "DefWindowProcW");
+        m_fnGetFocus = (decltype(m_fnGetFocus))GetProcAddress(user32module, "GetFocus");
+        m_fnRegisterClassW = (decltype(m_fnRegisterClassW))GetProcAddress(user32module, "RegisterClassW");
+    }
+
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_WebView2);
 
     m_loadedRevoker = Loaded(winrt::auto_revoke, { this, &WebView2::OnLoaded });
@@ -503,7 +513,7 @@ HWND WebView2::GetActiveInputWindowHwnd() noexcept
 {
     if (!m_inputWindowHwnd)
     {
-        auto inputWindowHwnd = ::GetFocus();
+        auto inputWindowHwnd = m_fnGetFocus();
         if (!inputWindowHwnd)
         {
             winrt::check_hresult(HRESULT_FROM_WIN32(::GetLastError()));
@@ -785,12 +795,12 @@ HWND WebView2::EnsureTemporaryHostHwnd()
         const wchar_t CLASS_NAME[] = L"WEBVIEW2_TEMP_PARENT";
         HINSTANCE hInstance = ::GetModuleHandleW(NULL);
         WNDCLASSW wc = { };
-        wc.lpfnWndProc = DefWindowProcW;
+        wc.lpfnWndProc = m_fnDefWindowProcW;
         wc.hInstance = hInstance;
         wc.lpszClassName = CLASS_NAME;
-        RegisterClassW(&wc);
+        m_fnRegisterClassW(&wc);
 
-        m_tempHostHwnd = CreateWindowEx(
+        m_tempHostHwnd = m_fnCreateWindowExW(
             0,
             CLASS_NAME,                     // Window class
             L"Webview2 Temporary Parent",   // Window text
@@ -1309,7 +1319,7 @@ void WebView2::HandleAcceleratorKeyActivated(const winrt::Windows::UI::Core::Cor
         const WPARAM wparam = VK_TAB;
         const LPARAM lparam = MAKELPARAM(0x0001, 0x000f);  // flags copied from matching WM_KEYDOWN
 
-        LRESULT result = ::SendMessageW(GetActiveInputWindowHwnd(), message, wparam, lparam);
+        LRESULT result = m_fnSendMessageW(GetActiveInputWindowHwnd(), message, wparam, lparam);
         if (!result)
         {
             winrt::check_hresult(HRESULT_FROM_WIN32(::GetLastError()));
@@ -1796,7 +1806,7 @@ void WebView2::CheckAndUpdateWindowPosition()
     }
 
     POINT windowPosition = { 0, 0 };
-    ::ClientToScreen(hostWindow, &windowPosition);
+    m_fnClientToScreen(hostWindow, &windowPosition);
     if (m_hostWindowPosition.x != windowPosition.x || m_hostWindowPosition.y != windowPosition.y)
     {
         m_hostWindowPosition.x = windowPosition.x;
