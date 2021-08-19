@@ -245,18 +245,11 @@ else
     $pstTime = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $pstZone)
     # Split version into yyMM.dd because appx versions can't be greater than 65535
     # Also store submission requires that the revision field stay 0, so our scheme is:
-    #    A.ByyMM.ddNNN
+    #    B.yyMM.ddNNN
     # compared to nuget version which is:
     #    A.B.yyMMddNN
     # We could consider dropping the B part out of the minor section if we need to because
-    # it's part of the package name, but we'll try to keep it in for now. We also omit the "B"
-    # part when it's 0 because the appx version doesn't allow the minor version to have a 0 prefix.
-    # Also note that we trim 0s off the beginning of the day because appx versions can't start with 0.
-    if ($versionMinor -eq 0)
-    {
-        $versionMinor = ""
-    }
-
+    # it's part of the package name, but we'll try to keep it in for now.
     if (-not $builddate_yymm)
     {
         $builddate_yymm = ($pstTime).ToString("yyMM")
@@ -269,7 +262,7 @@ else
     # Pad subversion up to 3 digits
     $subversionPadded = $subversion.ToString("000")
 
-    $version = "${versionMajor}.${versionMinor}" + $builddate_yymm + "." + $builddate_dd.TrimStart("0") + "$subversionPadded.0"
+    $version = "${versionMinor}." + $builddate_yymm + "." + $builddate_dd.TrimStart("0") + "$subversionPadded.0"
 
     Write-Verbose "Version = $version"
 }
