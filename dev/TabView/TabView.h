@@ -212,4 +212,5 @@ private:
     winrt::hstring m_tabCloseButtonTooltipText{};
 
     winrt::Size previousAvailableSize{};
+    bool moveFocusToLastAddedItem{ false };
 };

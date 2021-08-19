@@ -422,6 +422,10 @@ void TabView::OnCloseButtonOverlayModePropertyChanged(const winrt::DependencyPro
 
 void TabView::OnAddButtonClick(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
 {
+    moveFocusToLastAddedItem = true;
+    auto scopeGuard = gsl::finally([this]() {
+        moveFocusToLastAddedItem = false;
+    });
     m_addTabButtonClickEventSource(*this, args);
 }
 
@@ -691,6 +695,20 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
         }
         else
         {
+            if (const auto newItem = TabItems().GetAt(args.Index()).try_as<TabViewItem>())
+            {
+                newItem->OnTabViewWidthModeChanged(TabWidthMode());
+                newItem->SetParentTabView(*this);
+
+                // Item was added as a result of the AddTab button being pressed.
+                // To allow users using narrator know of the new item, move focus to item.
+                if (moveFocusToLastAddedItem)
+                {
+                    // Not sure why, but only both lines in combination give us the wanted effect
+                    winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Left);
+                    winrt::FocusManager::TryFocusAsync(*newItem, winrt::FocusState::Programmatic);
+                }
+            }
             UpdateTabWidths();
             SetTabSeparatorOpacity(numItems - 1);
         }
@@ -839,6 +857,17 @@ void TabView::RequestCloseTab(winrt::TabViewItem const& container, bool updateTa
 {
     if (auto&& listView = m_listView.get())
     {
+        // Move focus accordingly so we focus the next logical item.
+        const auto positionOfTVI = listView.IndexFromContainer(container);
+        if (positionOfTVI < GetItemCount() - 1)
+        {
+            winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Right);
+        }
+        else
+        {
+            winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Left);
+        }
+
         auto args = winrt::make_self<TabViewTabCloseRequestedEventArgs>(listView.ItemFromContainer(container), container);
 
         m_tabCloseRequestedEventSource(*this, *args);
