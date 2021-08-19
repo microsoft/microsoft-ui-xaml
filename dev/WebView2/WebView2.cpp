@@ -29,12 +29,12 @@ WebView2::WebView2()
 {
     if (HMODULE user32module = LoadLibraryW(L"user32.dll"))
     {
-        m_fnClientToScreen = (decltype(m_fnClientToScreen))GetProcAddress(user32module, "ClientToScreen");
-        m_fnSendMessageW = (decltype(m_fnSendMessageW))GetProcAddress(user32module, "SendMessageW");
-        m_fnCreateWindowExW = (decltype(m_fnCreateWindowExW))GetProcAddress(user32module, "CreateWindowExW");
-        m_fnDefWindowProcW = (decltype(m_fnDefWindowProcW))GetProcAddress(user32module, "DefWindowProcW");
-        m_fnGetFocus = (decltype(m_fnGetFocus))GetProcAddress(user32module, "GetFocus");
-        m_fnRegisterClassW = (decltype(m_fnRegisterClassW))GetProcAddress(user32module, "RegisterClassW");
+        m_fnClientToScreen = reinterpret_cast<decltype(m_fnClientToScreen)>(GetProcAddress(user32module, "ClientToScreen"));
+        m_fnSendMessageW = reinterpret_cast<decltype(m_fnSendMessageW)>(GetProcAddress(user32module, "SendMessageW"));
+        m_fnCreateWindowExW = reinterpret_cast<decltype(m_fnCreateWindowExW)>(GetProcAddress(user32module, "CreateWindowExW"));
+        m_fnDefWindowProcW = reinterpret_cast<decltype(m_fnDefWindowProcW)>(GetProcAddress(user32module, "DefWindowProcW"));
+        m_fnGetFocus = reinterpret_cast<decltype(m_fnGetFocus)>(GetProcAddress(user32module, "GetFocus"));
+        m_fnRegisterClassW = reinterpret_cast<decltype(m_fnRegisterClassW)>(GetProcAddress(user32module, "RegisterClassW"));
     }
 
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_WebView2);

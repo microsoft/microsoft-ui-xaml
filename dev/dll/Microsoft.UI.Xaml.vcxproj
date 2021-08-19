@@ -217,7 +217,7 @@
       <ModuleDefinitionFile>Microsoft.UI.Xaml.def</ModuleDefinitionFile>
       <GenerateDebugInformation Condition="'$(Configuration)'=='Debug'">$(GenerateDebugInformation)</GenerateDebugInformation>
       <GenerateDebugInformation Condition="'$(Configuration)'=='Release'">DebugFull</GenerateDebugInformation>
-      <AdditionalDependencies>mincore.lib;dxguid.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mincore.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!-- Microsoft.winmd will contain the definition of both public, preview and private types. -->
       <WindowsMetadataFile>$(OutDir)\Microsoft.winmd</WindowsMetadataFile>
       <GenerateMapFile>true</GenerateMapFile>
