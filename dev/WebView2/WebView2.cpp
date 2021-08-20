@@ -27,7 +27,7 @@ using namespace Microsoft::WRL;
 
 WebView2::WebView2()
 {
-    if (HMODULE user32module = LoadLibraryW(L"user32.dll"))
+    if (auto user32module = GetModuleHandleW(L"user32.dll"))
     {
         m_fnClientToScreen = reinterpret_cast<decltype(m_fnClientToScreen)>(GetProcAddress(user32module, "ClientToScreen"));
         m_fnSendMessageW = reinterpret_cast<decltype(m_fnSendMessageW)>(GetProcAddress(user32module, "SendMessageW"));
@@ -704,7 +704,7 @@ winrt::IAsyncAction WebView2::CreateCoreEnvironment() noexcept
 
     if (!m_options)
     {
-        // NOTE: To enable Anaheim logging, use: L"--no-sandbox --enable-features=msEmbeddedBrowserVisualHosting --enable-logging=stderr --v=1"
+        // NOTE: To enable Anaheim logging, add:  --enable-logging=stderr --v=1
         m_options = winrt::CoreWebView2EnvironmentOptions();
         m_options.AdditionalBrowserArguments(L"--enable-features=msEmbeddedBrowserVisualHosting");
 

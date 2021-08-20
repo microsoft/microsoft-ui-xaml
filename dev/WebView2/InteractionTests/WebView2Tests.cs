@@ -142,8 +142,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     // Note: Starting with SDK 0.9.488 / Edge version 83, evergreen WebView no longer
                     //       targets the Stable browser channel. Instead, it targets another set of binaries, 
                     //       branded Evergreen WebView2 Runtime. (see https://docs.microsoft.com/en-us/microsoft-edge/webview2/releasenotes)
-                    //       
-                    //       Accordingly, Update mini_installer args to install WV2Runtime instead of full browser.
                     string installerArgs_WV2Runtime = "/silent /install";
                     Log.Comment(@"WebView2Tests Init: Installing WebView2 runtime: '{0} {1}'", installer, installerArgs_WV2Runtime);
                     ProcessStartInfo installerStartInfo = new ProcessStartInfo(installer, installerArgs_WV2Runtime);

@@ -202,7 +202,7 @@ private:
     HWND m_inputWindowHwnd{ nullptr };
     winrt::hstring m_stopNavigateOnUriChanged{};
     bool m_canGoPropSetInternally{};
-#if TODO
+#if WINUI3
     winrt::IExpSystemVisualBridge m_systemVisualBridge;
 #endif
     winrt::Windows::UI::Composition::SpriteVisual m_visual{ nullptr };
@@ -266,7 +266,7 @@ private:
 
     bool m_isImplicitCreationInProgress{};    // True while we are creating CWV2 due to Source property being set
     bool m_isExplicitCreationInProgress{};    // True while we are creating CWV2 due to EnsureCoreWebView2Async() being called
-    std::unique_ptr<AsyncWebViewOperations> m_creationInProgressAsync{ nullptr };      // Awaitable object any for currently active creation. There should be only one active operation at a time.
+    std::unique_ptr<AsyncWebViewOperations> m_creationInProgressAsync{ nullptr };      // Awaitable object for any currently active creation. There should be only one active operation at a time.
 
     float m_rasterizationScale{};
     // The last known WebView rect position, scaled for DPI
