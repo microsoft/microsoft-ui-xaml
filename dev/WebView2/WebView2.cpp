@@ -23,8 +23,6 @@
 #include <winuser.h>
 #include <uiautomationclient.h>
 
-using namespace Microsoft::WRL;
-
 WebView2::WebView2()
 {
     if (auto user32module = GetModuleHandleW(L"user32.dll"))
