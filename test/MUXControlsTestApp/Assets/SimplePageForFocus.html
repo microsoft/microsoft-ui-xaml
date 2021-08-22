@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Page For Focus</title>
+    <style>
+    </style>
+    <script>
+        var control1HasFocus = false;
+        var control2HasFocus = false;
+
+        var mouseButtons =
+        {
+            "left": 0,
+            "middle": 1,
+            "right": 2
+        };
+
+        var colorMappings =
+        {
+            "left": "#ff0000", //red
+            "middle": "#00ff00", //green
+            "right": "#0000ff", //blue
+            "control1_has_focus": "#800080", //purple
+            "control2_has_focus": "#008080", //teal
+            "no_control_has_focus": "#00FF00" //lime
+        };
+
+
+        function changeColor(color)
+        {
+            document.getElementById("rectangle").style.backgroundColor = color;
+        };
+
+        var changeColorLeftClick = () => { changeColor(colorMappings.left); }     // red
+        var changeColorMiddleClick = () => { changeColor(colorMappings.middle); } // green
+        var changeColorRightClick = () => { changeColor(colorMappings.right); }   // blue
+        var changeColorControl1HasFocus = () => { changeColor(colorMappings.control1_has_focus); }     // purple
+        var changeColorControl2HasFocus = () => { changeColor(colorMappings.control2_has_focus); }     // teal
+        var changeColorNoControlHasFocus = () => { changeColor(colorMappings.no_control_has_focus); }     // lime
+
+        function onGotFocus(x)
+        {
+            if (x.id == "hyperLink1")
+            {
+                control1HasFocus = true;
+                changeColorControl1HasFocus();
+                console.log("w1 got focus");
+            }
+            else if (x.id == "textInput1")
+            {
+                control2HasFocus = true;
+                changeColorControl2HasFocus();
+                console.log("w2 got focus");
+            }
+        };
+
+        function getFocus()
+        {
+            if (document.hasFocus())
+            {
+                var id = document.activeElement.id;
+                if (id == "hyperLink1")
+                {
+                    return 'w1';
+                }
+                else if (id == "textInput1")
+                {
+                    return 'w2';
+                }
+                else
+                {
+                    return 'unhandledWebviewControl';
+                }
+            }
+            else
+            {
+                return 'n/a';
+            }
+        };
+
+        function onGotBlur(x)
+        {
+            if (x.id == "hyperLink1")
+            {
+                control1HasFocus = false;
+                changeColorControl1HasFocus();
+                console.log("w1 got blur");
+            }
+            else if (x.id == "textInput1")
+            {
+                control2HasFocus = false;
+                changeColorControl2HasFocus();
+                console.log("w2 got blur");
+            }
+
+           if (control1HasFocus == false && control2HasFocus == false)
+           {
+               changeColorNoControlHasFocus();
+               console.log("No control has focus");
+           }
+        };
+
+        function handleVisibilityChange()
+        {
+           window.chrome.webview.postMessage("Visibility state is now " + document.visibilityState);
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange, false);
+    </script>
+</head>
+<body>
+    <div id="rectangle" style="width:100px; height:100px; background-color:#ff8000"></div>
+    <a style="font-size:50px" id="hyperLink1" href="http://www.bing.com" onblur="onGotBlur(this)" onfocus="onGotFocus(this)">[w1] Visit Bing!</a> 
+    <form>
+        [w2]: <input style="font-size:50px" type="text" id="textInput1" onblur="onGotBlur(this)" onfocus="onGotFocus(this)"><br>
+    </form>
+    <p>
+        <b><i><font size="4">Legend:</font></i></b><br>
+        <i><font size="3">x1, x2: XAML TabStops / w1, w2: Web TabStops</font></i><br>
+        <i><font size="3" color="#ff8000">ORANGE: initial state</font></i><br>
+        <i><font size="3" color="#800080">PURPLE: w1 has focus</font></i><br>
+        <i><font size="3" color="#008080">TEAL: w2 has focus</font></i><br>
+        <i><font size="3" color="#00ff00">LIME: no web control has focus</font></i><br>
+    </p>
+
+    <script>
+    </script>
+
+</body>
+</html>

@@ -209,6 +209,72 @@ inline ScopedBatchCompleted_revoker RegisterScopedBatchCompleted(winrt::Composit
     return { object, value };
 }
 
+// Hold a strong ref to the xamlRoot while we're registered so that the changed revoker works.
+// This can be removed when internal bug #21302432 is fixed.
+struct XamlRootChanged_revoker
+{
+    XamlRootChanged_revoker() noexcept = default;
+    XamlRootChanged_revoker(XamlRootChanged_revoker const&) = delete;
+    XamlRootChanged_revoker& operator=(XamlRootChanged_revoker const&) = delete;
+    XamlRootChanged_revoker(XamlRootChanged_revoker&& other) noexcept
+    {
+        move_from(other);
+    }
+
+    XamlRootChanged_revoker& operator=(XamlRootChanged_revoker&& other) noexcept
+    {
+        move_from(other);
+        return *this;
+    }
+
+    XamlRootChanged_revoker(winrt::XamlRoot const& object, winrt::event_token token) :
+        m_object(object),
+        m_token(token)
+    {}
+
+    ~XamlRootChanged_revoker() noexcept
+    {
+        revoke();
+    }
+
+    void revoke() noexcept
+    {
+        if (!m_object)
+        {
+            return;
+        }
+
+        m_object.Changed(m_token);
+        m_object = nullptr;
+    }
+
+    explicit operator bool() const noexcept
+    {
+        return static_cast<bool>(m_object);
+    }
+private:
+    void move_from(XamlRootChanged_revoker& other)
+    {
+        if (this != &other)
+        {
+            revoke();
+            m_object = other.m_object;
+            m_token = other.m_token;
+            other.m_object = nullptr;
+            other.m_token.value = 0;
+        }
+    }
+
+    winrt::XamlRoot m_object{ nullptr };
+    winrt::event_token m_token{};
+};
+
+inline XamlRootChanged_revoker RegisterXamlRootChanged(winrt::XamlRoot const& object, winrt::TypedEventHandler<winrt::XamlRoot, winrt::XamlRootChangedEventArgs> const& handler)
+{
+    const auto value = object.Changed(handler);
+    return { object, value };
+}
+
 struct PropertyChanged_revoker
 {
    PropertyChanged_revoker() noexcept = default;
