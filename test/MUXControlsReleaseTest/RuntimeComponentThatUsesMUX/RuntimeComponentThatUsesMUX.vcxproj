@@ -145,6 +145,8 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="..\..\..\packages\Microsoft.UI.Xaml.2.1.190606001\build\native\Microsoft.UI.Xaml.targets" Condition="Exists('..\..\..\packages\Microsoft.UI.Xaml.2.1.190606001\build\native\Microsoft.UI.Xaml.targets')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Platform)' != 'ARM'">
     <Import Project="..\..\..\packages\Microsoft.Web.WebView2.1.0.955-prerelease\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\..\packages\Microsoft.Web.WebView2.1.0.955-prerelease\build\native\Microsoft.Web.WebView2.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
