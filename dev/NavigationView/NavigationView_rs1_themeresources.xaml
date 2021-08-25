@@ -649,7 +649,7 @@
                                 <VisualState x:Name="InfoBadgeVisible" />
                                 <VisualState x:Name="InfoBadgeCollapsed">
                                     <VisualState.Setters>
-                                        <Setter Target="InfoBadgePresenter.Visibility" Value="Collapsed" />
+                                        <!--<Setter Target="InfoBadgePresenter.Visibility" Value="Collapsed" />-->
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -718,11 +718,11 @@
                                 <VisualState x:Name="ClosedCompactAndTopLevelItem">
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenter.Margin" Value="{ThemeResource NavigationViewCompactItemContentPresenterMargin}" />
-                                        <Setter Target="InfoBadgePresenter.(Grid.Column)" Value="0"/>
+                                        <!--<Setter Target="InfoBadgePresenter.(Grid.Column)" Value="0"/>
                                         <Setter Target="InfoBadgePresenter.(Grid.ColumnSpan)" Value="4"/>
                                         <Setter Target="InfoBadgePresenter.VerticalAlignment" Value="Top"/>
                                         <Setter Target="InfoBadgePresenter.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="InfoBadgePresenter.Margin" Value="0,2,-12,0"/>
+                                        <Setter Target="InfoBadgePresenter.Margin" Value="0,2,-12,0"/>-->
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -815,12 +815,12 @@
                                     </local:AnimatedIcon>
                                 </Grid>
 
-                                <ContentPresenter
+                                <!--<ContentPresenter
                                     x:Name="InfoBadgePresenter"
                                     Grid.Column="2"
                                     VerticalAlignment="Center">
-                                    <Border Child="{TemplateBinding InfoBadge}"/>
-                                </ContentPresenter>
+                                    <Border />
+                                </ContentPresenter>-->
                             </Grid>
                         </Grid>
                     </Grid>
@@ -927,16 +927,17 @@
                                 HorizontalAlignment="Center">
                                 <ContentPresenter 
                                     x:Name="Icon" 
-                                    Content="{TemplateBinding Icon}"
                                     Foreground="{TemplateBinding Foreground}"
-                                    local:AnimatedIcon.State="Normal" />
+                                    local:AnimatedIcon.State="Normal">
+                                    <Border Child="{TemplateBinding Icon}"/>
+                                </ContentPresenter>
                             </Viewbox>
-                            <ContentPresenter
+                            <!--<ContentPresenter
                                 x:Name="InfoBadgePresenter"
                                 Grid.Column="2"
                                 VerticalAlignment="Center">
-                                <Border Child="{TemplateBinding InfoBadge}"/>
-                            </ContentPresenter>
+                                <Border />
+                            </ContentPresenter>-->
                         </Grid>
                     </Grid>
                 </ControlTemplate>
@@ -1053,7 +1054,7 @@
                                 <VisualState x:Name="InfoBadgeVisible" />
                                 <VisualState x:Name="InfoBadgeCollapsed">
                                     <VisualState.Setters>
-                                        <Setter Target="InfoBadgePresenter.Visibility" Value="Collapsed" />
+                                        <!--<Setter Target="InfoBadgePresenter.Visibility" Value="Collapsed" />-->
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -1136,9 +1137,10 @@
                                 HorizontalAlignment="Center">
                                 <ContentPresenter 
                                     x:Name="Icon" 
-                                    Content="{TemplateBinding Icon}"
                                     Foreground="{TemplateBinding Foreground}"
-                                    local:AnimatedIcon.State="Normal"/>
+                                    local:AnimatedIcon.State="Normal">
+                                    <Border Child="{TemplateBinding Icon}"/>
+                                </ContentPresenter>
                             </Viewbox>
                             <ContentPresenter
                                 x:Name="ContentPresenter"
@@ -1183,9 +1185,9 @@
                                     </local:AnimatedIcon.RenderTransform>
                                 </local:AnimatedIcon>
                             </Grid>
-                            <ContentPresenter x:Name="InfoBadgePresenter" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="-16,0,2,13">
-                                <Border Child="{TemplateBinding InfoBadge}"/>
-                            </ContentPresenter>
+                            <!--<ContentPresenter x:Name="InfoBadgePresenter" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="-16,0,2,13">
+                                <Border />
+                            </ContentPresenter>-->
                         </Grid>
                         <Grid 
                             x:Name="SelectionIndicatorGrid"
@@ -1300,7 +1302,7 @@
                                 <VisualState x:Name="InfoBadgeVisible" />
                                 <VisualState x:Name="InfoBadgeCollapsed">
                                     <VisualState.Setters>
-                                        <Setter Target="InfoBadgePresenter.Visibility" Value="Collapsed" />
+                                        <!--<Setter Target="InfoBadgePresenter.Visibility" Value="Collapsed" />-->
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -1398,9 +1400,10 @@
                                     HorizontalAlignment="Center">
                                     <ContentPresenter 
                                         x:Name="Icon" 
-                                        Content="{TemplateBinding Icon}"
                                         Foreground="{TemplateBinding Foreground}"
-                                        local:AnimatedIcon.State="Normal" />
+                                        local:AnimatedIcon.State="Normal" >
+                                        <Border Child="{TemplateBinding Icon}"/>
+                                    </ContentPresenter>
                                 </Viewbox>
                                 <ContentPresenter
                                     x:Name="ContentPresenter"
@@ -1447,9 +1450,9 @@
                                     </local:AnimatedIcon>
                                 </Grid>
 
-                                <ContentPresenter x:Name="InfoBadgePresenter" Grid.Column="2" VerticalAlignment="Center">
-                                    <Border Child="{TemplateBinding InfoBadge}"/>
-                                </ContentPresenter>
+                                <!--<ContentPresenter x:Name="InfoBadgePresenter" Grid.Column="2" VerticalAlignment="Center">
+                                    <Border />
+                                </ContentPresenter>-->
                             </Grid>
                         </Grid>
                     </Grid>
