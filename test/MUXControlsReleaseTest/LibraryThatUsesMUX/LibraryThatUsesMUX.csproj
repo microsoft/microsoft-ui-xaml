@@ -147,6 +147,22 @@
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
+  <!-- Targets to help compile against  the WebView2 nupkg even though they don't yet support Arm32 compilation -->
+  <Target Name="RemoveCopyLocal" BeforeTargets="_CopyFilesMarkedCopyLocal" Condition="'$(Platform)'=='ARM'">
+    <Message Text="***Removing ReferenceCopyLocalPaths*** PRE: @(ReferenceCopyLocalPaths)"/>
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"/>
+    </ItemGroup>
+    <Message Text="***Removing ReferenceCopyLocalPaths*** POST: @(ReferenceCopyLocalPaths)"/>
+  </Target>
+  <Target Name="RemoveWebView2Loaderdll" BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectoryAlways" Condition="'$(Platform)'=='ARM'">
+    <Message Text="***Removing _SourceItemsToCopyToOutputDirectoryAlways*** PRE: @(_SourceItemsToCopyToOutputDirectoryAlways)"/>
+    <ItemGroup>
+      <_SourceItemsToCopyToOutputDirectoryAlways Remove="@(_SourceItemsToCopyToOutputDirectoryAlways)" Condition="'%(Filename)%(Extension)' == 'WebView2Loader.dll'"/>
+    </ItemGroup>
+    <Message Text="***Removing _SourceItemsToCopyToOutputDirectoryAlways*** POST: @(_SourceItemsToCopyToOutputDirectoryAlways)"/>
+  </Target>
+
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

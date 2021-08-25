@@ -51,6 +51,7 @@ Windows app type:
 | Windows version                    | Saw the problem? |
 | :--------------------------------- | :-------------------- |
 | Insider Build (xxxxx)              | <!-- Yes/No? -->   |
+| May 2021 Update (19043)            | <!-- Yes/No? -->   |
 | October 2020 Update (19042)        | <!-- Yes/No? -->   |
 | May 2020 Update (19041)            | <!-- Yes/No? -->   |
 | November 2019 Update (18363)       | <!-- Yes/No? -->   |

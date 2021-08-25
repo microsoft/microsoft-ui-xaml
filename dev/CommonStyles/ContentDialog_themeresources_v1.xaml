@@ -157,12 +157,18 @@
                                 <VisualState x:Name="DialogHidden" />
                                 <VisualState x:Name="DialogShowing">
                                     <VisualState.Setters>
+                                        <Setter Target="PrimaryButton.IsTabStop" Value="True"/>
+                                        <Setter Target="SecondaryButton.IsTabStop" Value="True"/>
+                                        <Setter Target="CloseButton.IsTabStop" Value="True"/>
                                         <Setter Target="LayoutRoot.Visibility" Value="Visible" />
                                         <Setter Target="BackgroundElement.TabFocusNavigation" Value="Cycle" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="DialogShowingWithoutSmokeLayer">
                                     <VisualState.Setters>
+                                        <Setter Target="PrimaryButton.IsTabStop" Value="True"/>
+                                        <Setter Target="SecondaryButton.IsTabStop" Value="True"/>
+                                        <Setter Target="CloseButton.IsTabStop" Value="True"/>
                                         <Setter Target="LayoutRoot.Visibility" Value="Visible" />
                                         <Setter Target="LayoutRoot.Background" Value="{x:Null}" />
                                     </VisualState.Setters>
@@ -319,9 +325,9 @@
                                             <ColumnDefinition Width="0.5*" />
                                             <ColumnDefinition />
                                         </Grid.ColumnDefinitions>
-                                        <Button x:Name="PrimaryButton" Content="{TemplateBinding PrimaryButtonText}" IsEnabled="{TemplateBinding IsPrimaryButtonEnabled}" Style="{TemplateBinding PrimaryButtonStyle}" ElementSoundMode="FocusOnly" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,2,0" Grid.Column="0" />
-                                        <Button x:Name="SecondaryButton" Content="{TemplateBinding SecondaryButtonText}" IsEnabled="{TemplateBinding IsSecondaryButtonEnabled}" Style="{TemplateBinding SecondaryButtonStyle}" ElementSoundMode="FocusOnly" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2,0,2,0" Grid.Column="1" Grid.ColumnSpan="2" />
-                                        <Button x:Name="CloseButton" Content="{TemplateBinding CloseButtonText}" Style="{TemplateBinding CloseButtonStyle}" ElementSoundMode="FocusOnly" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2,0,0,0" Grid.Column="3" />
+                                        <Button x:Name="PrimaryButton" Content="{TemplateBinding PrimaryButtonText}" IsEnabled="{TemplateBinding IsPrimaryButtonEnabled}" IsTabStop="False" Style="{TemplateBinding PrimaryButtonStyle}" ElementSoundMode="FocusOnly" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,2,0" Grid.Column="0" />
+                                        <Button x:Name="SecondaryButton" Content="{TemplateBinding SecondaryButtonText}" IsEnabled="{TemplateBinding IsSecondaryButtonEnabled}" IsTabStop="False" Style="{TemplateBinding SecondaryButtonStyle}" ElementSoundMode="FocusOnly" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2,0,2,0" Grid.Column="1" Grid.ColumnSpan="2" />
+                                        <Button x:Name="CloseButton" Content="{TemplateBinding CloseButtonText}" IsTabStop="False" Style="{TemplateBinding CloseButtonStyle}" ElementSoundMode="FocusOnly" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2,0,0,0" Grid.Column="3" />
                                     </Grid>
                                 </Grid>
                             </Border>

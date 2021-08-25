@@ -6,20 +6,12 @@ name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: LocalizationHandoff
   pool:
-    name: Package ES Standard Build
+    vmImage: 'windows-2019'
   variables:
     resourceStagingDirectory: '$(Build.ArtifactStagingDirectory)\LocStaging'
     resourceOutputDirectory: '$(Build.ArtifactStagingDirectory)\LocOutput'
 
   steps:
-  - task: PkgESSetupBuild@10
-    displayName: 'XESSetupBuild'
-    inputs:
-      productName: dep.controls
-      branchVersion: true
-      nugetVer: true
-      useDfs: false
-
   - powershell: |
       & "$env:Build_SourcesDirectory\build\Localization\PrepLocFilesForUpload.ps1" `
         -DestinationFilePath '${{ variables.resourceStagingDirectory }}'

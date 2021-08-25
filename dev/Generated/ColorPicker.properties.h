@@ -63,6 +63,9 @@ public:
     void MinValue(int value);
     int MinValue();
 
+    void Orientation(winrt::Orientation const& value);
+    winrt::Orientation Orientation();
+
     void PreviousColor(winrt::IReference<winrt::Color> const& value);
     winrt::IReference<winrt::Color> PreviousColor();
 
@@ -84,6 +87,7 @@ public:
     static winrt::DependencyProperty MinHueProperty() { return s_MinHueProperty; }
     static winrt::DependencyProperty MinSaturationProperty() { return s_MinSaturationProperty; }
     static winrt::DependencyProperty MinValueProperty() { return s_MinValueProperty; }
+    static winrt::DependencyProperty OrientationProperty() { return s_OrientationProperty; }
     static winrt::DependencyProperty PreviousColorProperty() { return s_PreviousColorProperty; }
 
     static GlobalDependencyProperty s_ColorProperty;
@@ -104,6 +108,7 @@ public:
     static GlobalDependencyProperty s_MinHueProperty;
     static GlobalDependencyProperty s_MinSaturationProperty;
     static GlobalDependencyProperty s_MinValueProperty;
+    static GlobalDependencyProperty s_OrientationProperty;
     static GlobalDependencyProperty s_PreviousColorProperty;
 
     winrt::event_token ColorChanged(winrt::TypedEventHandler<winrt::ColorPicker, winrt::ColorChangedEventArgs> const& value);
@@ -183,6 +188,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnMinValuePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnOrientationPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
