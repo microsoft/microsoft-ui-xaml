@@ -157,11 +157,3 @@ void NavigationViewItemPresenter::UpdateClosedCompactVisualState(bool isTopLevel
 
     winrt::VisualStateManager::GoToState(*this, stateName, false /*useTransitions*/);
 }
-
-void NavigationViewItemPresenter::UnparentInfoBadge()
-{
-    if (auto const infoBadgePresenter = m_infoBadgePresenter.get())
-    {
-        infoBadgePresenter.Content(nullptr);
-    }
-}

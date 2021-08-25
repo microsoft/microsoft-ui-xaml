@@ -629,16 +629,6 @@ bool NavigationViewItem::HasChildren()
         || HasUnrealizedChildren();
 }
 
-void NavigationViewItem::UnparentInfoBadge()
-{
-    if (auto const navigationViewItemPresenter = m_navigationViewItemPresenter.get())
-    {
-
-        auto const navigationViewItemPresenterImpl = winrt::get_self<NavigationViewItemPresenter>(navigationViewItemPresenter);
-        navigationViewItemPresenterImpl->UnparentInfoBadge();
-    }
-}
-
 bool NavigationViewItem::ShouldShowIcon()
 {
     return static_cast<bool>(Icon());

@@ -63,7 +63,6 @@ public:
     bool IsRepeaterVisible() const;
     void PropagateDepthToChildren(int depth);
     bool HasChildren();
-    void UnparentInfoBadge();
 
 private:
     winrt::UIElement const GetPresenterOrItem() const;
