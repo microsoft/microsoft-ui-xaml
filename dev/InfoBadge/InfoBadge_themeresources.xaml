@@ -108,7 +108,7 @@
     </Style>
 
     <Style TargetType="local:InfoBadge" x:Key="AttentionDotInfoBadgeStyle" BasedOn="{StaticResource DefaultInfoBadgeStyle}">
-        <Setter Property="Background" Value="{ThemeResource SystemColorHighlightBrush}"/>
+        <Setter Property="Background" Value="{ThemeResource SystemFillColorAttentionBrush}"/>
     </Style>
 
     <Style TargetType="local:InfoBadge" x:Key="AttentionValueInfoBadgeStyle" BasedOn="{StaticResource AttentionDotInfoBadgeStyle}"/>
@@ -123,7 +123,7 @@
     </Style>
 
     <Style TargetType="local:InfoBadge" x:Key="InformationalDotInfoBadgeStyle" BasedOn="{StaticResource DefaultInfoBadgeStyle}">
-        <Setter Property="Background" Value="{ThemeResource SystemColorHighlightBrush}"/>
+        <Setter Property="Background" Value="{ThemeResource SystemFillColorAttentionBrush}"/>
     </Style>
 
     <Style TargetType="local:InfoBadge" x:Key="InformationalValueInfoBadgeStyle" BasedOn="{StaticResource InformationalDotInfoBadgeStyle}"/>
