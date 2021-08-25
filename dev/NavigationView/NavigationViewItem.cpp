@@ -290,6 +290,11 @@ void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyCh
     UpdateVisualStateNoTransition();
 }
 
+void NavigationViewItem::OnInfoBadgePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateVisualStateForInfoBadge();
+}
+
 void NavigationViewItem::OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateRepeaterItemsSource();
@@ -320,6 +325,15 @@ void NavigationViewItem::UpdateVisualStateForIconAndContent(bool showIcon, bool 
     if (auto const presenter = m_navigationViewItemPresenter.get())
     {
         auto stateName = showIcon ? (showContent ? L"IconOnLeft" : L"IconOnly") : L"ContentOnly";
+        winrt::VisualStateManager::GoToState(presenter, stateName, false /*useTransitions*/);
+    }
+}
+
+void NavigationViewItem::UpdateVisualStateForInfoBadge()
+{
+    if (auto const presenter = m_navigationViewItemPresenter.get())
+    {
+        auto stateName = ShouldShowInfoBadge() ? L"InfoBadgeVisible" : L"InfoBadgeCollapsed";
         winrt::VisualStateManager::GoToState(presenter, stateName, false /*useTransitions*/);
     }
 }
@@ -503,6 +517,8 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
 
     UpdateVisualStateForIconAndContent(shouldShowIcon, shouldShowContent);
 
+    UpdateVisualStateForInfoBadge();
+
     // visual state for focus state. top navigation use it to provide different visual for selected and selected+focused
     UpdateVisualStateForKeyboardFocusedState();
 
@@ -613,9 +629,24 @@ bool NavigationViewItem::HasChildren()
         || HasUnrealizedChildren();
 }
 
+void NavigationViewItem::UnparentInfoBadge()
+{
+    if (auto const navigationViewItemPresenter = m_navigationViewItemPresenter.get())
+    {
+
+        auto const navigationViewItemPresenterImpl = winrt::get_self<NavigationViewItemPresenter>(navigationViewItemPresenter);
+        navigationViewItemPresenterImpl->UnparentInfoBadge();
+    }
+}
+
 bool NavigationViewItem::ShouldShowIcon()
 {
     return static_cast<bool>(Icon());
+}
+
+bool NavigationViewItem::ShouldShowInfoBadge()
+{
+    return static_cast<bool>(InfoBadge());
 }
 
 bool NavigationViewItem::ShouldEnableToolTip() const

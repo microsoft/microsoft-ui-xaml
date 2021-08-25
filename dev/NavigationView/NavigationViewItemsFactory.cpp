@@ -155,4 +155,11 @@ void NavigationViewItemsFactory::UnlinkElementFromParent(winrt::ElementFactoryRe
             children.RemoveAt(childIndex);
         }
     }
+
+    if (auto const elementAsNVIPresenter = args.Element().try_as<winrt::NavigationViewItem>())
+    {
+        auto const nviImpl = winrt::get_self<NavigationViewItem>(elementAsNVIPresenter);
+        //Doesn't fix the issue.
+        //nviImpl->UnparentInfoBadge();
+    }
 }

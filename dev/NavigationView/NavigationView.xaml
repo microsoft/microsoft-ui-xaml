@@ -747,7 +747,7 @@
                             InfoBadge="{TemplateBinding InfoBadge}"
                             ContentTransitions="{TemplateBinding ContentTransitions}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Padding="{TemplateBinding Padding}"
+                            Padding="{TemplateBinding Padding}" 
                             Foreground="{TemplateBinding Foreground}"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
