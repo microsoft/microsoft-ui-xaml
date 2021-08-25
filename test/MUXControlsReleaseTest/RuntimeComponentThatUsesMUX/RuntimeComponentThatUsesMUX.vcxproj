@@ -95,6 +95,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
       <ModuleDefinitionFile>RuntimeComponentThatUsesMUX.def</ModuleDefinitionFile>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='ARM'">%(AdditionalLibraryDirectories);..\..\..\packages\Microsoft.Web.WebView2.1.0.955-prerelease\build\native\x86</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
@@ -155,6 +156,21 @@
     <Error Condition="!Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.targets'))" />
     <Error Condition="!Exists('..\..\..\packages\Microsoft.UI.Xaml.2.1.190606001\build\native\Microsoft.UI.Xaml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.UI.Xaml.2.1.190606001\build\native\Microsoft.UI.Xaml.targets'))" />
     <Error Condition="!Exists('..\..\..\packages\Microsoft.Web.WebView2.1.0.955-prerelease\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Web.WebView2.1.0.955-prerelease\build\native\Microsoft.Web.WebView2.targets'))" />
+  </Target>
+  <!-- Targets to help compile against  the WebView2 nupkg even though they don't yet support Arm32 compilation -->
+  <Target Name="RemoveCopyLocal" BeforeTargets="_CopyFilesMarkedCopyLocal" Condition="'$(Platform)'=='ARM'">
+    <Message Text="***Removing ReferenceCopyLocalPaths*** PRE: @(ReferenceCopyLocalPaths)"/>
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"/>
+    </ItemGroup>
+    <Message Text="***Removing ReferenceCopyLocalPaths*** POST: @(ReferenceCopyLocalPaths)"/>
+  </Target>
+  <Target Name="RemoveWebView2Loaderdll" BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectoryAlways" Condition="'$(Platform)'=='ARM'">
+    <Message Text="***Removing _SourceItemsToCopyToOutputDirectoryAlways*** PRE: @(_SourceItemsToCopyToOutputDirectoryAlways)"/>
+    <ItemGroup>
+      <_SourceItemsToCopyToOutputDirectoryAlways Remove="@(_SourceItemsToCopyToOutputDirectoryAlways)" Condition="'%(Filename)%(Extension)' == 'WebView2Loader.dll'"/>
+    </ItemGroup>
+    <Message Text="***Removing _SourceItemsToCopyToOutputDirectoryAlways*** POST: @(_SourceItemsToCopyToOutputDirectoryAlways)"/>
   </Target>
   <Target Name="AfterBuild">
     <PropertyGroup>
