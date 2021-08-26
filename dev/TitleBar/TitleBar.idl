@@ -17,6 +17,7 @@ unsealed runtimeclass TitleBar : Windows.UI.Xaml.Controls.Control
 
     Boolean IsBackEnabled{ get; set; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Object CustomContent{ get; set; };
 
     TitleBarTemplateSettings TemplateSettings{ get; };
@@ -40,7 +41,15 @@ unsealed runtimeclass TitleBarTemplateSettings : Windows.UI.Xaml.DependencyObjec
 
     Windows.UI.Xaml.Controls.IconElement IconElement;
 
+    [MUX_DEFAULT_VALUE("c_titleColumnGridLengthDefault")]
+    Windows.UI.Xaml.GridLength TitleColumnGridLength;
+
+    [MUX_DEFAULT_VALUE("c_customColumnGridLengthDefault")]
+    Windows.UI.Xaml.GridLength CustomColumnGridLength;
+
     static Windows.UI.Xaml.DependencyProperty IconElementProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty TitleColumnGridLengthProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty CustomColumnGridLengthProperty{ get; };
 }
 
 [MUX_EXPERIMENTAL]

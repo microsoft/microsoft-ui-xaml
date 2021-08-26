@@ -13,7 +13,9 @@ namespace winrt::Microsoft::Experimental::UI::Xaml::Controls
 
 #include "TitleBarTemplateSettings.g.cpp"
 
+GlobalDependencyProperty TitleBarTemplateSettingsProperties::s_CustomColumnGridLengthProperty{ nullptr };
 GlobalDependencyProperty TitleBarTemplateSettingsProperties::s_IconElementProperty{ nullptr };
+GlobalDependencyProperty TitleBarTemplateSettingsProperties::s_TitleColumnGridLengthProperty{ nullptr };
 
 TitleBarTemplateSettingsProperties::TitleBarTemplateSettingsProperties()
 {
@@ -22,6 +24,17 @@ TitleBarTemplateSettingsProperties::TitleBarTemplateSettingsProperties()
 
 void TitleBarTemplateSettingsProperties::EnsureProperties()
 {
+    if (!s_CustomColumnGridLengthProperty)
+    {
+        s_CustomColumnGridLengthProperty =
+            InitializeDependencyProperty(
+                L"CustomColumnGridLength",
+                winrt::name_of<winrt::GridLength>(),
+                winrt::name_of<winrt::TitleBarTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<winrt::GridLength>::BoxValueIfNecessary(c_customColumnGridLengthDefault),
+                nullptr);
+    }
     if (!s_IconElementProperty)
     {
         s_IconElementProperty =
@@ -33,11 +46,37 @@ void TitleBarTemplateSettingsProperties::EnsureProperties()
                 ValueHelper<winrt::IconElement>::BoxedDefaultValue(),
                 nullptr);
     }
+    if (!s_TitleColumnGridLengthProperty)
+    {
+        s_TitleColumnGridLengthProperty =
+            InitializeDependencyProperty(
+                L"TitleColumnGridLength",
+                winrt::name_of<winrt::GridLength>(),
+                winrt::name_of<winrt::TitleBarTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<winrt::GridLength>::BoxValueIfNecessary(c_titleColumnGridLengthDefault),
+                nullptr);
+    }
 }
 
 void TitleBarTemplateSettingsProperties::ClearProperties()
 {
+    s_CustomColumnGridLengthProperty = nullptr;
     s_IconElementProperty = nullptr;
+    s_TitleColumnGridLengthProperty = nullptr;
+}
+
+void TitleBarTemplateSettingsProperties::CustomColumnGridLength(winrt::GridLength const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TitleBarTemplateSettings*>(this)->SetValue(s_CustomColumnGridLengthProperty, ValueHelper<winrt::GridLength>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::GridLength TitleBarTemplateSettingsProperties::CustomColumnGridLength()
+{
+    return ValueHelper<winrt::GridLength>::CastOrUnbox(static_cast<TitleBarTemplateSettings*>(this)->GetValue(s_CustomColumnGridLengthProperty));
 }
 
 void TitleBarTemplateSettingsProperties::IconElement(winrt::IconElement const& value)
@@ -51,4 +90,17 @@ void TitleBarTemplateSettingsProperties::IconElement(winrt::IconElement const& v
 winrt::IconElement TitleBarTemplateSettingsProperties::IconElement()
 {
     return ValueHelper<winrt::IconElement>::CastOrUnbox(static_cast<TitleBarTemplateSettings*>(this)->GetValue(s_IconElementProperty));
+}
+
+void TitleBarTemplateSettingsProperties::TitleColumnGridLength(winrt::GridLength const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TitleBarTemplateSettings*>(this)->SetValue(s_TitleColumnGridLengthProperty, ValueHelper<winrt::GridLength>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::GridLength TitleBarTemplateSettingsProperties::TitleColumnGridLength()
+{
+    return ValueHelper<winrt::GridLength>::CastOrUnbox(static_cast<TitleBarTemplateSettings*>(this)->GetValue(s_TitleColumnGridLengthProperty));
 }

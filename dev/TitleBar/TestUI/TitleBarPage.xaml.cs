@@ -88,12 +88,19 @@ namespace MUXControlsTestApp
             {
                 if (CustomContentCheckBox.IsChecked.Value)
                 {
-                    var button = new Button();
-                    button.Content = "Click Me";
-                    button.FontSize = 12;
-                    button.Height = 28;
-                    button.HorizontalAlignment = HorizontalAlignment.Right;
-                    _titleBar.CustomContent = button;
+                    string xaml =
+                    @"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width='Auto'/>
+                            <ColumnDefinition Width='*' />
+                         </Grid.ColumnDefinitions >
+
+                         <Button Content='Left'/>
+                         <Button Grid.Column='1' Content='Right' HorizontalAlignment='Right'/>
+                    </Grid>";
+
+                    var element = XamlReader.Load(xaml);
+                    _titleBar.CustomContent = element;
                 }
                 else
                 {

@@ -9,12 +9,22 @@ class TitleBarTemplateSettingsProperties
 public:
     TitleBarTemplateSettingsProperties();
 
+    void CustomColumnGridLength(winrt::GridLength const& value);
+    winrt::GridLength CustomColumnGridLength();
+
     void IconElement(winrt::IconElement const& value);
     winrt::IconElement IconElement();
 
-    static winrt::DependencyProperty IconElementProperty() { return s_IconElementProperty; }
+    void TitleColumnGridLength(winrt::GridLength const& value);
+    winrt::GridLength TitleColumnGridLength();
 
+    static winrt::DependencyProperty CustomColumnGridLengthProperty() { return s_CustomColumnGridLengthProperty; }
+    static winrt::DependencyProperty IconElementProperty() { return s_IconElementProperty; }
+    static winrt::DependencyProperty TitleColumnGridLengthProperty() { return s_TitleColumnGridLengthProperty; }
+
+    static GlobalDependencyProperty s_CustomColumnGridLengthProperty;
     static GlobalDependencyProperty s_IconElementProperty;
+    static GlobalDependencyProperty s_TitleColumnGridLengthProperty;
 
     static void EnsureProperties();
     static void ClearProperties();

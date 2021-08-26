@@ -12,7 +12,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:TitleBar">
 
-                    <Grid x:Name="LayoutRoot" Height="32" Background="Transparent">
+                    <Grid x:Name="LayoutRoot" Height="{ThemeResource TitleBarCompactHeight}" Background="Transparent">
                         <VisualStateManager.VisualStateGroups>
 
                             <VisualStateGroup x:Name="ActivationStateGroup">
@@ -20,6 +20,7 @@
                                 <VisualState x:Name="Deactivated">
                                     <VisualState.Setters>
                                         <Setter Target="TitleText.Foreground" Value="{ThemeResource TitleBarDeactivatedForegroundBrush}"/>
+                                        <Setter Target="BackButton.Foreground" Value="{ThemeResource TitleBarDeactivatedForegroundBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -29,7 +30,7 @@
                                 <VisualState x:Name="BackButtonCollapsed">
                                     <VisualState.Setters>
                                         <Setter Target="BackButton.Visibility" Value="Collapsed"/>
-                                        <Setter Target="Icon.Margin" Value="12,0,0,0"/>
+                                        <Setter Target="Icon.Margin" Value="16,0,0,0"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -52,6 +53,15 @@
                                 </VisualState>
                             </VisualStateGroup>
 
+                            <VisualStateGroup x:Name="HeightGroup">
+                                <VisualState x:Name="CompactHeight"/>
+                                <VisualState x:Name="ExpandedHeight">
+                                    <VisualState.Setters>
+                                        <Setter Target="LayoutRoot.Height" Value="{ThemeResource TitleBarExpandedHeight}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
                         </VisualStateManager.VisualStateGroups>
 
                         <Grid.ColumnDefinitions>
@@ -64,8 +74,8 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/> <!-- 0: back button -->
                                 <ColumnDefinition Width="Auto"/> <!-- 1: icon -->
-                                <ColumnDefinition Width="Auto"/> <!-- 2: title -->
-                                <ColumnDefinition Width="*"/>    <!-- 3: custom content -->
+                                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TitleColumnGridLength}"/> <!-- 2: title -->
+                                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.CustomColumnGridLength}"/>    <!-- 3: custom content -->
                             </Grid.ColumnDefinitions>
                             
                             <Button x:Name="BackButton"
@@ -79,7 +89,7 @@
                                 VerticalAlignment="Center"
                                 MaxWidth="16"
                                 MaxHeight="16"
-                                Margin="8,0,0,0"
+                                Margin="4,0,0,0"
                                 Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}" />
 
                             <TextBlock x:Name="TitleText"
@@ -91,15 +101,15 @@
                                 TextWrapping="NoWrap"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
-                                Margin="8,0,12,2"
+                                Margin="16,0,16,2"
                                 MinWidth="48"/>
 
-                            <Grid x:Name="DragRegion"
+                                <Grid x:Name="DragRegion"
                                 Grid.Column="1"
                                 Grid.ColumnSpan="3"
                                 Background="Transparent"/>
 
-                                <ContentPresenter x:Name="CustomContentPresenter"
+                            <ContentPresenter x:Name="CustomContentPresenter"
                                 Grid.Column="3"
                                 Content="{TemplateBinding CustomContent}"/>
 

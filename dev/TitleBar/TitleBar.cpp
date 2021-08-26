@@ -14,6 +14,8 @@ TitleBar::TitleBar()
 
     SetDefaultStyleKey(this);
 
+    SizeChanged({ this, &TitleBar::OnSizeChanged });
+
     if (const auto currentView = winrt::CoreApplication::GetCurrentView())
     {
         if (const auto coreTitleBar = currentView.TitleBar())
@@ -26,6 +28,12 @@ TitleBar::TitleBar()
     if (const auto window = winrt::Window::Current())
     {
         window.Activated({ this, &TitleBar::OnWindowActivated });
+    }
+
+    if (winrt::IFrameworkElement6 frameworkElement6 = *this)
+    {
+        m_actualThemeChangedRevoker = frameworkElement6.ActualThemeChanged(winrt::auto_revoke,
+                [this](auto&&, auto&&) { UpdateTheme(); });
     }
 }
 
@@ -46,20 +54,12 @@ void TitleBar::OnApplyTemplate()
         }
     }
 
-    if (const auto appView = winrt::ApplicationView::GetForCurrentView())
-    {
-        if (const auto titleBar = appView.TitleBar())
-        {
-            const auto transparentColor = box_value<winrt::Windows::UI::Color>(winrt::Windows::UI::Colors::Transparent()).as<winrt::IReference<winrt::Color>>();
-
-            titleBar.ButtonBackgroundColor(transparentColor);
-            titleBar.ButtonInactiveBackgroundColor(transparentColor);
-        }
-    }
-
     m_layoutRoot.set(GetTemplateChildT<winrt::Grid>(L"LayoutRoot", controlProtected));
     m_leftPaddingColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"LeftPaddingColumn", controlProtected));
     m_rightPaddingColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"RightPaddingColumn", controlProtected));
+
+    m_titleTextBlock.set(GetTemplateChildT<winrt::TextBlock>(L"TitleText", controlProtected));
+    m_customArea.set(GetTemplateChildT<winrt::FrameworkElement>(L"CustomContentPresenter", controlProtected));
 
     if (const auto window = winrt::Window::Current())
     {
@@ -89,13 +89,14 @@ void TitleBar::OnApplyTemplate()
         const auto backButtonTooltipText = ResourceAccessor::GetLocalizedStringResourceFromWinUI(SR_NavigationBackButtonToolTip);
         tooltip.Content(box_value(backButtonTooltipText));
         winrt::ToolTipService::SetToolTip(backButton, tooltip);
-
     }
 
     UpdateVisibility();
+    UpdateHeight();
     UpdatePadding();
     UpdateIcon();
     UpdateBackButton();
+    UpdateTheme();
 }
 
 void TitleBar::OnBackButtonClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -111,6 +112,44 @@ void TitleBar::OnIconSourcePropertyChanged(const winrt::DependencyPropertyChange
 void TitleBar::OnIsBackButtonVisiblePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateBackButton();
+}
+
+void TitleBar::OnCustomContentPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateHeight();
+}
+
+void TitleBar::OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
+{
+    const auto titleTextBlock = m_titleTextBlock.get();
+    const auto customArea = m_customArea.get();
+    if (titleTextBlock && customArea)
+    {
+        auto const templateSettings = winrt::get_self<::TitleBarTemplateSettings>(TemplateSettings());
+
+        if (m_isTitleSquished)
+        {
+            // If the title column has * sizing but it's not trimmed anymore, then give the extra space back to the custom area.
+            if (!titleTextBlock.IsTextTrimmed())
+            {
+                templateSettings->TitleColumnGridLength({ 1, winrt::GridUnitType::Auto });
+                templateSettings->CustomColumnGridLength({ 1, winrt::GridUnitType::Star });
+
+                m_isTitleSquished = false;
+            }
+        }
+        else
+        {
+            // If the custom area is at its minimum width, switch the title column to be * sized so it squishes instead.
+            if (!m_isTitleSquished && customArea.DesiredSize().Width >= customArea.ActualWidth())
+            {
+                templateSettings->TitleColumnGridLength({ 1, winrt::GridUnitType::Star });
+                templateSettings->CustomColumnGridLength({ 1, winrt::GridUnitType::Auto });
+
+                m_isTitleSquished = true;
+            }
+        }
+    }
 }
 
 void TitleBar::OnWindowActivated(const winrt::IInspectable& sender, const winrt::WindowActivatedEventArgs& args)
@@ -165,6 +204,13 @@ void TitleBar::UpdateVisibility()
     }
 }
 
+void TitleBar::UpdateHeight()
+{
+    winrt::VisualStateManager::GoToState(*this,
+        (CustomContent() == nullptr) ? L"CompactHeight" : L"ExpandedHeight",
+        false);
+}
+
 void TitleBar::UpdatePadding()
 {
     if (const auto currentView = winrt::CoreApplication::GetCurrentView())
@@ -180,6 +226,41 @@ void TitleBar::UpdatePadding()
             {
                 rightColumn.Width(winrt::GridLengthHelper::FromPixels(coreTitleBar.SystemOverlayRightInset()));
             }
+        }
+    }
+}
+
+void TitleBar::UpdateTheme()
+{
+    if (const auto appView = winrt::ApplicationView::GetForCurrentView())
+    {
+        if (const auto titleBar = appView.TitleBar())
+        {
+            // rest colors
+            const auto buttonForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonForegroundColor")).as<winrt::Color>();
+            titleBar.ButtonForegroundColor(buttonForegroundColor);
+
+            const auto buttonBackgroundColor = ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonBackgroundColor")).as<winrt::Color>();
+            titleBar.ButtonBackgroundColor(buttonBackgroundColor);
+            titleBar.ButtonInactiveBackgroundColor(buttonBackgroundColor);
+
+            // hover colors
+            const auto buttonHoverForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonHoverForegroundColor")).as<winrt::Color>();
+            titleBar.ButtonHoverForegroundColor(buttonHoverForegroundColor);
+
+            const auto buttonHoverBackgroundColor = ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonHoverBackgroundColor")).as<winrt::Color>();
+            titleBar.ButtonHoverBackgroundColor(buttonHoverBackgroundColor);
+
+            // pressed colors
+            const auto buttonPressedForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonPressedForegroundColor")).as<winrt::Color>();
+            titleBar.ButtonPressedForegroundColor(buttonPressedForegroundColor);
+
+            const auto buttonPressedBackgroundColor = ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonPressedBackgroundColor")).as<winrt::Color>();
+            titleBar.ButtonPressedBackgroundColor(buttonPressedBackgroundColor);
+
+            // inactive foreground
+            const auto buttonInactiveForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonInactiveForegroundColor")).as<winrt::Color>();
+            titleBar.ButtonInactiveForegroundColor(buttonInactiveForegroundColor);
         }
     }
 }

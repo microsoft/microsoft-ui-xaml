@@ -49,6 +49,10 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
+    static void OnCustomContentPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
     static void OnIconSourcePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);

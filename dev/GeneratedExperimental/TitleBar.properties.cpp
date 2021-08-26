@@ -37,7 +37,7 @@ void TitleBarProperties::EnsureProperties()
                 winrt::name_of<winrt::TitleBar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnCustomContentPropertyChanged));
     }
     if (!s_IconSourceProperty)
     {
@@ -104,6 +104,14 @@ void TitleBarProperties::ClearProperties()
     s_IsBackEnabledProperty = nullptr;
     s_TemplateSettingsProperty = nullptr;
     s_TitleProperty = nullptr;
+}
+
+void TitleBarProperties::OnCustomContentPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TitleBar>();
+    winrt::get_self<TitleBar>(owner)->OnCustomContentPropertyChanged(args);
 }
 
 void TitleBarProperties::OnIconSourcePropertyChanged(
