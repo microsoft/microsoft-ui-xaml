@@ -10,7 +10,7 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <StaticResource x:Key="InfoBadgeForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
-            <StaticResource x:Key="InfoBadgeBackground" ResourceKey="SystemColorControlAccentBrush"/>
+            <StaticResource x:Key="InfoBadgeBackground" ResourceKey="AccentFillColorDefaultBrush"/>
 
             <x:Double x:Key="InfoBadgeMinHeight">4</x:Double>
             <x:Double x:Key="InfoBadgeMinWidth">4</x:Double>
@@ -25,7 +25,7 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="InfoBadgeForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
-            <StaticResource x:Key="InfoBadgeBackground" ResourceKey="SystemColorControlAccentBrush"/>
+            <StaticResource x:Key="InfoBadgeBackground" ResourceKey="AccentFillColorDefaultBrush"/>
 
             <x:Double x:Key="InfoBadgeMinHeight">4</x:Double>
             <x:Double x:Key="InfoBadgeMinWidth">4</x:Double>
@@ -40,7 +40,7 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="InfoBadgeForeground" ResourceKey="SystemControlHighlightAltChromeWhiteBrush"/>
-            <StaticResource x:Key="InfoBadgeBackground" ResourceKey="SystemColorControlAccentBrush"/>
+            <StaticResource x:Key="InfoBadgeBackground" ResourceKey="AccentFillColorDefaultBrush"/>
 
             <x:Double x:Key="InfoBadgeMinHeight">4</x:Double>
             <x:Double x:Key="InfoBadgeMinWidth">4</x:Double>
