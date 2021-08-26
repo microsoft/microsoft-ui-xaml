@@ -1801,7 +1801,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 getIconColumnWidth.Click();
 
                 Log.Comment("Verify IconColumnWidth is binded correctly to SmallerIconWidthProperty");
-                Verify.AreEqual("40", paneFooterNavViewItemWidthTextBlock.DocumentText); 
+                Verify.AreEqual("26", paneFooterNavViewItemWidthTextBlock.DocumentText); 
 
                 Log.Comment("Change CompactPaneLength to 40px");
                 compactPaneLengthComboBox.SelectItemByName("40");
@@ -1810,7 +1810,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 getIconColumnWidth.Click();
                 Wait.ForIdle();
 
-                Verify.AreEqual("32", paneFooterNavViewItemWidthTextBlock.DocumentText);
+                Verify.AreEqual("18", paneFooterNavViewItemWidthTextBlock.DocumentText);
 
                 Log.Comment("Change CompactPaneLength to 96px");
                 compactPaneLengthComboBox.SelectItemByName("96");
@@ -1818,7 +1818,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 getIconColumnWidth.Click();
                 Wait.ForIdle();
 
-                Verify.AreEqual("88", paneFooterNavViewItemWidthTextBlock.DocumentText);
+                Verify.AreEqual("74", paneFooterNavViewItemWidthTextBlock.DocumentText);
             }
         }
     }

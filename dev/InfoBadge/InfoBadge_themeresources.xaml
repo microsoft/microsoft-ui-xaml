@@ -62,6 +62,7 @@
         <Setter Property="Background" Value="{ThemeResource InfoBadgeBackground}"/>
         <Setter Property="Foreground" Value="{ThemeResource InfoBadgeForeground}"/>
         <Setter Property="Padding" Value="{ThemeResource InfoBadgePadding}"/>
+        <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:InfoBadge">
