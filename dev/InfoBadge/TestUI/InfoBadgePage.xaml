@@ -63,31 +63,31 @@
                 <StackPanel contract5Present:Spacing="2">
                     <TextBlock Text="Attention styles:"/>
                     <controls:InfoBadge Style="{StaticResource AttentionIconInfoBadgeStyle}" HorizontalAlignment="Right"/>
-                    <controls:InfoBadge Style="{StaticResource AttentionValueInfoBadgeStyle}" HorizontalAlignment="Right"/>
+                    <controls:InfoBadge Style="{StaticResource AttentionValueInfoBadgeStyle}" HorizontalAlignment="Right" Value="10"/>
                     <controls:InfoBadge Style="{StaticResource AttentionDotInfoBadgeStyle}" HorizontalAlignment="Right"/>
                 </StackPanel>
                 <StackPanel contract5Present:Spacing="2">
                     <TextBlock Text="Informational styles:"/>
                     <controls:InfoBadge Style="{StaticResource InformationalIconInfoBadgeStyle}" HorizontalAlignment="Right"/>
-                    <controls:InfoBadge Style="{StaticResource InformationalValueInfoBadgeStyle}" HorizontalAlignment="Right"/>
+                    <controls:InfoBadge Style="{StaticResource InformationalValueInfoBadgeStyle}" HorizontalAlignment="Right" Value="10"/>
                     <controls:InfoBadge Style="{StaticResource InformationalDotInfoBadgeStyle}" HorizontalAlignment="Right"/>
                 </StackPanel>
                 <StackPanel contract5Present:Spacing="2">
                     <TextBlock Text="Success styles:"/>
                     <controls:InfoBadge Style="{StaticResource SuccessIconInfoBadgeStyle}" HorizontalAlignment="Right"/>
-                    <controls:InfoBadge Style="{StaticResource SuccessValueInfoBadgeStyle}" HorizontalAlignment="Right"/>
+                    <controls:InfoBadge Style="{StaticResource SuccessValueInfoBadgeStyle}" HorizontalAlignment="Right" Value="10"/>
                     <controls:InfoBadge Style="{StaticResource SuccessDotInfoBadgeStyle}" HorizontalAlignment="Right"/>
                 </StackPanel>
                 <StackPanel contract5Present:Spacing="2">
                     <TextBlock Text="Caution styles:"/>
                     <controls:InfoBadge Style="{StaticResource CautionIconInfoBadgeStyle}" HorizontalAlignment="Right"/>
-                    <controls:InfoBadge Style="{StaticResource CautionValueInfoBadgeStyle}" HorizontalAlignment="Right"/>
+                    <controls:InfoBadge Style="{StaticResource CautionValueInfoBadgeStyle}" HorizontalAlignment="Right" Value="10"/>
                     <controls:InfoBadge Style="{StaticResource CautionDotInfoBadgeStyle}" HorizontalAlignment="Right"/>
                 </StackPanel>
                 <StackPanel contract5Present:Spacing="2">
                     <TextBlock Text="Critical styles:"/>
                     <controls:InfoBadge Style="{StaticResource CriticalIconInfoBadgeStyle}" HorizontalAlignment="Right"/>
-                    <controls:InfoBadge Style="{StaticResource CriticalValueInfoBadgeStyle}" HorizontalAlignment="Right"/>
+                    <controls:InfoBadge Style="{StaticResource CriticalValueInfoBadgeStyle}" HorizontalAlignment="Right" Value="10"/>
                     <controls:InfoBadge Style="{StaticResource CriticalDotInfoBadgeStyle}" HorizontalAlignment="Right"/>
                 </StackPanel>
             </StackPanel>

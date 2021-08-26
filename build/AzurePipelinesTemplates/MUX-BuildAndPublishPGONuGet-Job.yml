@@ -50,5 +50,8 @@ jobs:
     displayName: 'NuGet push'
     inputs:
       command: push
-      publishVstsFeed: 66f07283-7714-4cbf-be8f-73dfb782cfdc/1ea232aa-2b5d-4b2d-a163-a803b8f889db
+      nuGetFeedType: external
       packagesToPush: $(Build.ArtifactStagingDirectory)/*.nupkg
+      publishFeedCredentials: MUX-Dependencies
+      feedsToUse: config
+      nugetConfigPath: '$(Build.SourcesDirectory)/NuGet.config'
