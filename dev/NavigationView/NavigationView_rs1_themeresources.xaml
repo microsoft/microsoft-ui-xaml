@@ -294,17 +294,17 @@
     <Thickness x:Key="NavigationViewCompactItemSeparatorMargin">0,3,0,4</Thickness>
     <Thickness x:Key="TopNavigationViewItemSeparatorMargin">3,0,4,0</Thickness>
     <Thickness x:Key="TopNavigationViewOverflowButtonMargin">0</Thickness>
-    <Thickness x:Key="NavigationViewItemContentPresenterMargin">18,-1,20,-1</Thickness>
+    <Thickness x:Key="NavigationViewItemContentPresenterMargin">4,-1,20,-1</Thickness>
     <Thickness x:Key="NavigationViewCompactItemContentPresenterMargin">0,0,0,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemContentPresenterMargin">8,-1,12,-1</Thickness>
     <Thickness x:Key="TopNavigationViewItemContentOnlyContentPresenterMargin">12,0</Thickness>
-    <Thickness x:Key="NavigationViewItemExpandChevronMargin">0</Thickness>
+    <Thickness x:Key="NavigationViewItemExpandChevronMargin">0,0,-14,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemExpandChevronMargin">-16,0,0,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemIconOnlyExpandChevronMargin">0,0,0,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemContentOnlyExpandChevronMargin">-12,0,0,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemOnOverflowContentPresenterMargin">12,0,20,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemOnOverflowNoIconContentPresenterMargin">16,0,20,0</Thickness>
-    <Thickness x:Key="TopNavigationViewItemOnOverflowExpandChevronMargin">-4,0,6,0</Thickness>
+    <Thickness x:Key="TopNavigationViewItemOnOverflowExpandChevronMargin">-4,0,-8,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemOnOverflowExpandChevronPadding">12,0,12,0</Thickness>
 
     <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
@@ -719,11 +719,12 @@
                                 <VisualState x:Name="ClosedCompactAndTopLevelItem">
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenter.Margin" Value="{ThemeResource NavigationViewCompactItemContentPresenterMargin}" />
+                                        <Setter Target="ContentGrid.Margin" Value="0,0,0,0" />
                                         <Setter Target="InfoBadgePresenter.(Grid.Column)" Value="0"/>
                                         <Setter Target="InfoBadgePresenter.(Grid.ColumnSpan)" Value="4"/>
                                         <Setter Target="InfoBadgePresenter.VerticalAlignment" Value="Top"/>
                                         <Setter Target="InfoBadgePresenter.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="InfoBadgePresenter.Margin" Value="0,2,-12,0"/>
+                                        <Setter Target="InfoBadgePresenter.Margin" Value="0,2,2,0"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -760,7 +761,7 @@
                                 <Border x:Name="IconColumn" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SmallerIconWidth}">
                                     <Viewbox x:Name="IconBox"
                                         Height="{ThemeResource NavigationViewItemOnLeftIconBoxHeight}"
-                                        HorizontalAlignment="Right"
+                                        HorizontalAlignment="Center"
                                         Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
                                         <ContentPresenter 
                                             x:Name="Icon"
