@@ -33,8 +33,6 @@ public:
 
     void UpdateClosedCompactVisualState(bool isTopLevelItem, bool isClosedCompact);
 
-    void UnparentInfoBadge();
-
 private:
     NavigationViewItem * GetNavigationViewItem();
     void UpdateMargin();
