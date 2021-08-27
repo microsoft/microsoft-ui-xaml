@@ -294,17 +294,17 @@
     <Thickness x:Key="NavigationViewCompactItemSeparatorMargin">0,3,0,4</Thickness>
     <Thickness x:Key="TopNavigationViewItemSeparatorMargin">3,0,4,0</Thickness>
     <Thickness x:Key="TopNavigationViewOverflowButtonMargin">0</Thickness>
-    <Thickness x:Key="NavigationViewItemContentPresenterMargin">4,-1,20,-1</Thickness>
+    <Thickness x:Key="NavigationViewItemContentPresenterMargin">4,-1,8,-1</Thickness>
     <Thickness x:Key="NavigationViewCompactItemContentPresenterMargin">0,0,0,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemContentPresenterMargin">8,-1,12,-1</Thickness>
     <Thickness x:Key="TopNavigationViewItemContentOnlyContentPresenterMargin">12,0</Thickness>
-    <Thickness x:Key="NavigationViewItemExpandChevronMargin">0</Thickness>
+    <Thickness x:Key="NavigationViewItemExpandChevronMargin">0,0,-14,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemExpandChevronMargin">-16,0,0,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemIconOnlyExpandChevronMargin">0,0,0,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemContentOnlyExpandChevronMargin">-12,0,0,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemOnOverflowContentPresenterMargin">12,0,20,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemOnOverflowNoIconContentPresenterMargin">16,0,20,0</Thickness>
-    <Thickness x:Key="TopNavigationViewItemOnOverflowExpandChevronMargin">-4,0,6,0</Thickness>
+    <Thickness x:Key="TopNavigationViewItemOnOverflowExpandChevronMargin">-4,0,-8,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemOnOverflowExpandChevronPadding">12,0,12,0</Thickness>
 
     <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
@@ -645,6 +645,16 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="InfoBadgeStates">
+                                <VisualState x:Name="InfoBadgeVisible" />
+                                <VisualState x:Name="InfoBadgeCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="InfoBadgePresenter.Visibility" Value="Collapsed" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            
                             <VisualStateGroup x:Name="ChevronStates">
                                 <VisualState x:Name="ChevronHidden"/>
                                 <VisualState x:Name="ChevronVisibleOpen">
@@ -709,6 +719,12 @@
                                 <VisualState x:Name="ClosedCompactAndTopLevelItem">
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenter.Margin" Value="{ThemeResource NavigationViewCompactItemContentPresenterMargin}" />
+                                        <Setter Target="ContentGrid.Margin" Value="0,0,0,0" />
+                                        <Setter Target="InfoBadgePresenter.(Grid.Column)" Value="0"/>
+                                        <Setter Target="InfoBadgePresenter.(Grid.ColumnSpan)" Value="4"/>
+                                        <Setter Target="InfoBadgePresenter.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="InfoBadgePresenter.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="InfoBadgePresenter.Margin" Value="0,2,2,0"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -733,10 +749,12 @@
                             <Grid
                                 x:Name="ContentGrid"
                                 MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"
+                                Margin="0,0,14,0"
                                 HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
@@ -746,10 +764,11 @@
                                         HorizontalAlignment="Center"
                                         Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
                                         <ContentPresenter 
-                                            x:Name="Icon" 
+                                            x:Name="Icon"
                                             Content="{TemplateBinding Icon}"
                                             Foreground="{TemplateBinding Foreground}"
                                             local:AnimatedIcon.State="Normal"/>
+
                                     </Viewbox>
                                 </Border>
 
@@ -769,7 +788,7 @@
 
                                 <Grid
                                     x:Name="ExpandCollapseChevron"
-                                    Grid.Column="2"
+                                    Grid.Column="3"
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
                                     Width="40"
@@ -797,6 +816,13 @@
                                         </local:AnimatedIcon.RenderTransform>
                                     </local:AnimatedIcon>
                                 </Grid>
+
+                                <ContentPresenter
+                                    x:Name="InfoBadgePresenter"
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    Content="{TemplateBinding InfoBadge}"/>
+
                             </Grid>
                         </Grid>
                     </Grid>
@@ -887,6 +913,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
                                 <RowDefinition x:Name="IconRow" Height="Auto" />
@@ -901,11 +928,18 @@
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Center">
                                 <ContentPresenter 
-                                    x:Name="Icon" 
+                                    x:Name="Icon"
                                     Content="{TemplateBinding Icon}"
                                     Foreground="{TemplateBinding Foreground}"
-                                    local:AnimatedIcon.State="Normal" />
+                                    local:AnimatedIcon.State="Normal"/>
+
                             </Viewbox>
+                            <ContentPresenter
+                                x:Name="InfoBadgePresenter"
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding InfoBadge}"/>
+
                         </Grid>
                     </Grid>
                 </ControlTemplate>
@@ -1018,6 +1052,14 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+                            <VisualStateGroup x:Name="InfoBadgeStates">
+                                <VisualState x:Name="InfoBadgeVisible" />
+                                <VisualState x:Name="InfoBadgeCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="InfoBadgePresenter.Visibility" Value="Collapsed" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                             <VisualStateGroup x:Name="ChevronStates">
                                 <VisualState x:Name="ChevronHidden"/>
                                 <VisualState x:Name="ChevronVisibleOpen">
@@ -1086,6 +1128,7 @@
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Viewbox 
                                 x:Name="IconBox" 
@@ -1095,10 +1138,11 @@
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Center">
                                 <ContentPresenter 
-                                    x:Name="Icon" 
+                                    x:Name="Icon"
                                     Content="{TemplateBinding Icon}"
                                     Foreground="{TemplateBinding Foreground}"
                                     local:AnimatedIcon.State="Normal"/>
+
                             </Viewbox>
                             <ContentPresenter
                                 x:Name="ContentPresenter"
@@ -1143,6 +1187,8 @@
                                     </local:AnimatedIcon.RenderTransform>
                                 </local:AnimatedIcon>
                             </Grid>
+                            <ContentPresenter x:Name="InfoBadgePresenter" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="-16,0,2,13" Content="{TemplateBinding InfoBadge}"/>
+
                         </Grid>
                         <Grid 
                             x:Name="SelectionIndicatorGrid"
@@ -1253,6 +1299,14 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+                            <VisualStateGroup x:Name="InfoBadgeStates">
+                                <VisualState x:Name="InfoBadgeVisible" />
+                                <VisualState x:Name="InfoBadgeCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="InfoBadgePresenter.Visibility" Value="Collapsed" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                             <VisualStateGroup x:Name="ChevronStates">
                                 <VisualState x:Name="ChevronHidden"/>
                                 <VisualState x:Name="ChevronVisibleOpen">
@@ -1330,10 +1384,12 @@
                                 contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                 contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"/>
                             </Grid>
-                            <Grid x:Name="ContentGrid">
+                            <Grid x:Name="ContentGrid"
+                                Margin="0,0,14,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <Viewbox 
@@ -1344,10 +1400,11 @@
                                     VerticalAlignment="Center"
                                     HorizontalAlignment="Center">
                                     <ContentPresenter 
-                                        x:Name="Icon" 
+                                        x:Name="Icon"
                                         Content="{TemplateBinding Icon}"
                                         Foreground="{TemplateBinding Foreground}"
                                         local:AnimatedIcon.State="Normal" />
+
                                 </Viewbox>
                                 <ContentPresenter
                                     x:Name="ContentPresenter"
@@ -1364,7 +1421,7 @@
                                     AutomationProperties.AccessibilityView="Raw"/>
                                 <Grid
                                     x:Name="ExpandCollapseChevron"
-                                    Grid.Column="2"
+                                    Grid.Column="3"
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
                                     Width="40"
@@ -1393,6 +1450,9 @@
                                         </local:AnimatedIcon.RenderTransform>
                                     </local:AnimatedIcon>
                                 </Grid>
+
+                                <ContentPresenter x:Name="InfoBadgePresenter" Grid.Column="2" VerticalAlignment="Center" Content="{TemplateBinding InfoBadge}"/>
+
                             </Grid>
                         </Grid>
                     </Grid>

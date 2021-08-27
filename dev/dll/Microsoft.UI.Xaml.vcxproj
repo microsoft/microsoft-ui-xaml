@@ -98,6 +98,7 @@
     <Import Project="..\Common\Common.vcxitems" Label="Shared" />
     <Import Project="..\CommonStyles\CommonStyles.vcxitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true' Or $(FeatureCommonStylesEnabled) == 'productOnly'" />
     <Import Project="..\RatingControl\RatingControl.vcxitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true' Or $(FeatureRatingControlEnabled) == 'productOnly'" />
+    <Import Project="..\InfoBadge\InfoBadge.vcxitems" Label="Shared" Condition="$(FeatureInfoBadgeEnabled) == 'true' Or $(FeatureInfoBadgeEnabled) == 'productOnly'" />
     <Import Project="..\NavigationView\NavigationView.vcxitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true' Or $(FeatureNavigationViewEnabled) == 'productOnly'" />
     <Import Project="..\ColorPicker\ColorPicker.vcxitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true' Or $(FeatureColorPickerEnabled) == 'productOnly'" />
     <Import Project="..\Collections\Collections.vcxitems" Label="Shared" Condition="$(FeatureCollectionsEnabled) == 'true' Or $(FeatureCollectionsEnabled) == 'productOnly'" />
@@ -148,7 +149,6 @@
     <Import Project="..\ImageIcon\ImageIcon.vcxitems" Label="Shared" Condition="$(FeatureImageIconEnabled) == 'true' Or $(FeatureImageIconEnabled) == 'productOnly'" />
     <Import Project="..\AnimatedIcon\AnimatedIcon.vcxitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true' Or $(FeatureAnimatedIconEnabled) == 'productOnly'" />
     <Import Project="..\MonochromaticOverlayPresenter\MonochromaticOverlayPresenter.vcxitems" Label="Shared" Condition="$(FeatureMonochromaticOverlayPresenterEnabled) == 'true' Or $(FeatureMonochromaticOverlayPresenterEnabled) == 'productOnly'" />
-    <Import Project="..\InfoBadge\InfoBadge.vcxitems" Label="Shared" Condition="$(FeatureInfoBadgeEnabled) == 'true' Or $(FeatureInfoBadgeEnabled) == 'productOnly'" />
     <Import Project="..\WebView2\WebView2.vcxitems" Label="Shared" Condition="($(FeatureWebView2Enabled) == 'true' Or $(FeatureWebView2Enabled) == 'productOnly')" />
   </ImportGroup>
   <ItemGroup>

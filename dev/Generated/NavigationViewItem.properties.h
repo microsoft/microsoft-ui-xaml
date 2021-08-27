@@ -18,6 +18,9 @@ public:
     void Icon(winrt::IconElement const& value);
     winrt::IconElement Icon();
 
+    void InfoBadge(winrt::InfoBadge const& value);
+    winrt::InfoBadge InfoBadge();
+
     void IsChildSelected(bool value);
     bool IsChildSelected();
 
@@ -36,6 +39,7 @@ public:
     static winrt::DependencyProperty CompactPaneLengthProperty() { return s_CompactPaneLengthProperty; }
     static winrt::DependencyProperty HasUnrealizedChildrenProperty() { return s_HasUnrealizedChildrenProperty; }
     static winrt::DependencyProperty IconProperty() { return s_IconProperty; }
+    static winrt::DependencyProperty InfoBadgeProperty() { return s_InfoBadgeProperty; }
     static winrt::DependencyProperty IsChildSelectedProperty() { return s_IsChildSelectedProperty; }
     static winrt::DependencyProperty IsExpandedProperty() { return s_IsExpandedProperty; }
     static winrt::DependencyProperty MenuItemsProperty() { return s_MenuItemsProperty; }
@@ -45,6 +49,7 @@ public:
     static GlobalDependencyProperty s_CompactPaneLengthProperty;
     static GlobalDependencyProperty s_HasUnrealizedChildrenProperty;
     static GlobalDependencyProperty s_IconProperty;
+    static GlobalDependencyProperty s_InfoBadgeProperty;
     static GlobalDependencyProperty s_IsChildSelectedProperty;
     static GlobalDependencyProperty s_IsExpandedProperty;
     static GlobalDependencyProperty s_MenuItemsProperty;
@@ -59,6 +64,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnIconPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnInfoBadgePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

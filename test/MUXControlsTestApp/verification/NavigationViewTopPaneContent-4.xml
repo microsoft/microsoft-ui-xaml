@@ -655,6 +655,21 @@
                                       RenderSize=0,0
                                       Visibility=Visible
                                       Width=12
+                                [Windows.UI.Xaml.Controls.ContentPresenter]
+                                    Background=[NULL]
+                                    BorderBrush=[NULL]
+                                    BorderThickness=0,0,0,0
+                                    CornerRadius=0,0,0,0
+                                    FocusVisualPrimaryBrush=#E4000000
+                                    FocusVisualPrimaryThickness=2,2,2,2
+                                    FocusVisualSecondaryBrush=#B3FFFFFF
+                                    FocusVisualSecondaryThickness=1,1,1,1
+                                    Foreground=#E4000000
+                                    Margin=-16,0,2,13
+                                    Name=InfoBadgePresenter
+                                    Padding=0,0,0,0
+                                    RenderSize=0,0
+                                    Visibility=Collapsed
                               [Windows.UI.Xaml.Controls.Grid]
                                   Background=[NULL]
                                   BorderBrush=[NULL]
@@ -893,6 +908,21 @@
                                       RenderSize=0,0
                                       Visibility=Visible
                                       Width=12
+                                [Windows.UI.Xaml.Controls.ContentPresenter]
+                                    Background=[NULL]
+                                    BorderBrush=[NULL]
+                                    BorderThickness=0,0,0,0
+                                    CornerRadius=0,0,0,0
+                                    FocusVisualPrimaryBrush=#E4000000
+                                    FocusVisualPrimaryThickness=2,2,2,2
+                                    FocusVisualSecondaryBrush=#B3FFFFFF
+                                    FocusVisualSecondaryThickness=1,1,1,1
+                                    Foreground=#E4000000
+                                    Margin=-16,0,2,13
+                                    Name=InfoBadgePresenter
+                                    Padding=0,0,0,0
+                                    RenderSize=0,0
+                                    Visibility=Collapsed
                               [Windows.UI.Xaml.Controls.Grid]
                                   Background=[NULL]
                                   BorderBrush=[NULL]
@@ -1706,6 +1736,21 @@
                             RenderSize=0,0
                             Visibility=Visible
                             Width=12
+                      [Windows.UI.Xaml.Controls.ContentPresenter]
+                          Background=[NULL]
+                          BorderBrush=[NULL]
+                          BorderThickness=0,0,0,0
+                          CornerRadius=0,0,0,0
+                          FocusVisualPrimaryBrush=#E4000000
+                          FocusVisualPrimaryThickness=2,2,2,2
+                          FocusVisualSecondaryBrush=#B3FFFFFF
+                          FocusVisualSecondaryThickness=1,1,1,1
+                          Foreground=#E4000000
+                          Margin=-16,0,2,13
+                          Name=InfoBadgePresenter
+                          Padding=0,0,0,0
+                          RenderSize=0,0
+                          Visibility=Collapsed
                     [Windows.UI.Xaml.Controls.Grid]
                         Background=[NULL]
                         BorderBrush=[NULL]

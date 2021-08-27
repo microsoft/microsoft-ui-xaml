@@ -10,6 +10,10 @@
     <Import_RootNamespace>NavigationView_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewInfoBadge.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)DialogWithNavView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -112,6 +116,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewInfoBadge.xaml.cs">
+      <DependentUpon>NavigationViewInfoBadge.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)DialogWithNavView.xaml.cs">
       <DependentUpon>DialogWithNavView.xaml</DependentUpon>
     </Compile>
@@ -194,7 +201,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Common\" />
     <Folder Include="$(MSBuildThisFileDirectory)CustomResources\" />
     <Folder Include="$(MSBuildThisFileDirectory)Regression\" />
     <Folder Include="$(MSBuildThisFileDirectory)TopMode\" />

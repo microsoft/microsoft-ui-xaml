@@ -38,7 +38,11 @@
                 BackRequested="NavView_BackRequested"
                 AccessKey="H">
             <muxcontrols:NavigationView.MenuItems>
-                <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home"/>
+                <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home">
+                    <muxcontrols:NavigationViewItem.InfoBadge>
+                        <muxcontrols:InfoBadge Value="2"/>
+                    </muxcontrols:NavigationViewItem.InfoBadge>
+                </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" />
                 <muxcontrols:NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
                 <muxcontrols:NavigationViewItemSeparator />
