@@ -30,7 +30,7 @@
                 </StackPanel>
             </muxcontrols:NavigationView>
         </StackPanel>
-        <StackPanel>
+        <StackPanel Padding="10">
             <CheckBox
                 IsChecked="{Binding IsPaneOpen, ElementName=NavView, Mode=TwoWay}"
                 x:Name="IsLeftMinimalPaneOpenCheckBox"

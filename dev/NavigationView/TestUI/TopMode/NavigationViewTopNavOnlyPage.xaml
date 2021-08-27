@@ -55,7 +55,7 @@
                                 IsChecked="{Binding IsPaneOpen, ElementName=NavView, Mode=TwoWay}"
                                 Margin="5" />
                         <CheckBox x:Name="BackButtonVisibilityCheckbox" AutomationProperties.Name="BackButtonVisibilityCheckbox" Content="Back Visible" Checked="BackButtonVisibilityCheckbox_Checked" Unchecked="BackButtonVisibilityCheckbox_Unchecked" IsChecked="True" Margin="5"/>
-                        <TextBlock VerticalAlignment="Center">BackButtonHolder width:</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="BackButtonHolder width:"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <ComboBox x:Name="PaneDisplayModeCombobox"

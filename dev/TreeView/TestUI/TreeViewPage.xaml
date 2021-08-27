@@ -103,7 +103,7 @@
                     <Border x:Name="DropTarget" HorizontalAlignment="Left" Width="400" Height="40" Background="Silver" AllowDrop="True" Drop="DropTarget_Drop" DragOver="DropTarget_DragOver" AutomationProperties.Name="DropTarget" >
                         <TextBlock x:Name="DropTargetTextBlock" AutomationProperties.Name="DropTargetTextBlock" />
                     </Border>
-                    <Border x:Name="DraggableElement" Background="LightBlue" HorizontalAlignment="Left" Width="400" Height="40" CanDrag="True" AutomationProperties.Name="DraggableElement"  >
+                    <Border x:Name="DraggableElement" Background="{ThemeResource SystemAccentColor}" HorizontalAlignment="Left" Width="400" Height="40" CanDrag="True" AutomationProperties.Name="DraggableElement"  >
                         <TextBlock Text="Drag Me" />
                     </Border>
                 </StackPanel>

@@ -6,11 +6,11 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:media="using:Microsoft.UI.Xaml.Media"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 5)"
     mc:Ignorable="d"
     >
 
-    <StackPanel Orientation="Vertical" Width="800" Height="600" Name="RootCanvas">
+    <StackPanel Orientation="Vertical" Padding="10" Name="RootCanvas">
         <StackPanel Orientation="Horizontal">
             <TextBlock Text="TestResult: "/>
             <TextBox x:Name="TestResult" AutomationProperties.AutomationId="TestResult" IsReadOnly="true" Width="200"/>
@@ -20,17 +20,15 @@
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
             <Border BorderBrush="Gray" BorderThickness="1" Margin="10">
-                <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Vertical" Padding="10" contract5Present:Spacing="10">
                     <Border BorderBrush="Silver">
                         <TextBlock FontSize="12" Text="Create Reveal Brush then enable Effects" HorizontalAlignment="Center" Padding="2"/>
                     </Border>
-                    <StackPanel Orientation="Vertical">
+                    <StackPanel Orientation="Vertical" contract5Present:Spacing="5">
                         <ToggleButton x:Name="SimluateDisabledByPolicyToggleButton" IsThreeState="False" AutomationProperties.AutomationId="SimluateDisabledByPolicyToggleButton" AutomationProperties.Name="SimluateDisabledByPolicyToggleButton" Content="SimulateDisabledByPolicy" Checked="SimluateDisabledByPolicyToggleButton_Checked" Unchecked="SimluateDisabledByPolicyToggleButton_Unchecked" />
-                        <StackPanel>
-                            <Button x:Name="AddRevealButton" Content="Add Reveal Button" AutomationProperties.AutomationId="AddRevealButton" AutomationProperties.Name="AddRevealButton" Click="AddRevealButton_Click"/>
-                            <Button x:Name="RemoveRevealButton" Content="Remove Reveal Button" AutomationProperties.AutomationId="RemoveRevealButton" AutomationProperties.Name="RemoveRevealButton" Click="RemoveRevealButton_Click"/>
-                            <Button x:Name="AddBackRevealButton" Content="Add Back Reveal Button" AutomationProperties.AutomationId="AddBackRevealButton" AutomationProperties.Name="AddBackRevealButton" Click="AddBackRevealButton_Click"/>
-                        </StackPanel>
+                        <Button x:Name="AddRevealButton" Content="Add Reveal Button" AutomationProperties.AutomationId="AddRevealButton" AutomationProperties.Name="AddRevealButton" Click="AddRevealButton_Click"/>
+                        <Button x:Name="RemoveRevealButton" Content="Remove Reveal Button" AutomationProperties.AutomationId="RemoveRevealButton" AutomationProperties.Name="RemoveRevealButton" Click="RemoveRevealButton_Click"/>
+                        <Button x:Name="AddBackRevealButton" Content="Add Back Reveal Button" AutomationProperties.AutomationId="AddBackRevealButton" AutomationProperties.Name="AddBackRevealButton" Click="AddBackRevealButton_Click"/>
                     </StackPanel>
                     <StackPanel x:Name="Test1_RevealButtonContainer" Orientation="Horizontal" >
                     </StackPanel>

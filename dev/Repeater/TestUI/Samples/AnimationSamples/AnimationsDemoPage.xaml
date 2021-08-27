@@ -43,38 +43,38 @@
                 <StackPanel Margin="10">
                     <Button x:Name="goBack" Margin="0 0 0 25">Back</Button>
                     
-                    <TextBlock>Commands:</TextBlock>
+                    <TextBlock Text="Commands:"/>
                     <TextBox x:Name="commands" Height="75" Margin="0 0 0 25"></TextBox>
                     
-                    <TextBlock>ItemsRepeater Alignment:</TextBlock>
+                    <TextBlock Text="ItemsRepeater Alignment:"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"  Margin="0 0 0 25">
                         <RadioButton>Top</RadioButton>
                         <RadioButton>Center</RadioButton>
                         <RadioButton>Bottom</RadioButton>
                     </StackPanel>
                     
-                    <TextBlock>Tracked edge:</TextBlock>
+                    <TextBlock Text="Tracked edge:"/>
                     <Slider x:Name="trackedEdge" Maximum="1" StepFrequency="0.5" TickFrequency="0.5" Margin="25 0 25 25" />
                     
-                    <TextBlock>Layout:</TextBlock>
+                    <TextBlock Text="Layout:"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"  Margin="0 0 0 25">
                         <RadioButton x:Name="stackLayout" IsChecked="True" GroupName="FlowLayout">Stack</RadioButton>
                         <RadioButton x:Name="gridLayout" GroupName="FlowLayout">Grid</RadioButton>
                     </StackPanel>
                     
-                    <TextBlock>Reset:</TextBlock>
+                    <TextBlock Text="Reset:"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 0 0 25">
                         <RadioButton x:Name="withUniqueId" GroupName="UniqueId" IsChecked="True">With Unique Id</RadioButton>
                         <RadioButton x:Name="withoutUniqueId" GroupName="UniqueId" Margin="0 0 25 0">Without Unique Id</RadioButton>
                     </StackPanel>
                     
-                    <TextBlock>Animator:</TextBlock>
+                    <TextBlock Text="Animator:"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 0 0 25">
                         <RadioButton>Default</RadioButton>
                         <RadioButton>Custom</RadioButton>
                     </StackPanel>
 
-                    <TextBlock>Animation Slowdown Factor:</TextBlock>
+                    <TextBlock Text="Animation Slowdown Factor:"/>
                     <Slider x:Name="animationSlowdown" Minimum="1" Maximum="10" StepFrequency="1" TickFrequency="1" Value="1" Margin="25 0 25 25" />
                     
                 </StackPanel>

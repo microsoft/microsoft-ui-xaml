@@ -30,7 +30,7 @@
                 </ScrollViewer>
             </controls:ItemsRepeaterScrollHost>
             <StackPanel Grid.Column="2">
-                <TextBlock x:Name="tb">10</TextBlock>
+                <TextBlock x:Name="tb" Text="10"/>
                 <Button Content="BringIntoView" x:Name="bringIntoView"/>
                 <TextBox x:Name="indexTb" Text="0" />
                 <TextBox x:Name="countTb" Text="3" />

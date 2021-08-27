@@ -31,13 +31,13 @@
                 <Button x:Name="goBackButton">Back</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <TextBlock>OldStartingIndex:</TextBlock>
+                <TextBlock Text="OldStartingIndex:"/>
                 <TextBox x:Name="oldStartIndex" Text="0" />
-                <TextBlock>OldCount:</TextBlock>
+                <TextBlock Text="OldCount:"/>
                 <TextBox x:Name="oldCount" Text="0" />
-                <TextBlock>NewStartingIndex:</TextBlock>
+                <TextBlock Text="NewStartingIndex:"/>
                 <TextBox x:Name="newStartIndex" Text="0" />
-                <TextBlock>NewCount:</TextBlock>
+                <TextBlock Text="NewCount:"/>
                 <TextBox x:Name="newCount" Text="0" />
             </StackPanel>
             <StackPanel Orientation="Horizontal">

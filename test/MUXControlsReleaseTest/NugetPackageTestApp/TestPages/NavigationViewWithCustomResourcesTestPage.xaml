@@ -27,9 +27,9 @@
 
         <StackPanel Orientation="Horizontal" Margin="2" Grid.ColumnSpan="2">
             <Button x:Name="btnGetHeaderContentMargins" AutomationProperties.Name="btnGetHeaderContentMargins" Margin="2" Content="Get HeaderContent Margins" Click="BtnGetHeaderContentMargins_Click"/>
-            <TextBlock Margin="2" VerticalAlignment="Center">Top HeaderContent.Margin:</TextBlock>
+            <TextBlock Margin="2" VerticalAlignment="Center" Text="Top HeaderContent.Margin:"/>
             <TextBlock x:Name="tblTopHeaderContentMarginResult" AutomationProperties.Name="tblTopHeaderContentMarginResult" Margin="2" VerticalAlignment="Center"/>
-            <TextBlock Margin="2" VerticalAlignment="Center">LeftMinimal HeaderContent.Margin:</TextBlock>
+            <TextBlock Margin="2" VerticalAlignment="Center" Text="LeftMinimal HeaderContent.Margin:"/>
             <TextBlock x:Name="tblLeftMinimalHeaderContentMarginResult" AutomationProperties.Name="tblLeftMinimalHeaderContentMarginResult" VerticalAlignment="Center"/>
         </StackPanel>
 
