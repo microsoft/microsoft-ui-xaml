@@ -886,7 +886,7 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReset,
     {
         if (const auto repeater = m_leftNavFooterMenuRepeater.get())
         {
-            UpdateItemsRepeaterItemsSource(m_leftNavFooterMenuRepeater.get(), m_selectionModelSource.GetAt(1));
+            UpdateItemsRepeaterItemsSource(repeater, m_selectionModelSource.GetAt(1));
 
             // Footer items changed and we need to recalculate the layout.
             // However repeater "lags" behind, so we need to force it to reevaluate itself now.
@@ -1224,6 +1224,19 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
             return NavigationViewRepeaterPosition::LeftNav;
         }();
         nvibImpl->Position(position);
+
+        // Propagate selection
+        if (auto const selectedContainer = GetContainerForIndexPath(m_selectionModel.SelectedIndex()))
+        {
+            if (nvib == selectedContainer)
+            {
+                if (!IsSelectionSuppressed(nvib))
+                {
+                    ChangeSelectStatusForItem(nvib, true);
+                }
+                AnimateSelectionChanged(nvib);
+            }
+        }
 
         if (auto const parentNVI = GetParentNavigationViewItemForContainer(nvib))
         {
@@ -4055,10 +4068,7 @@ void NavigationView::OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::
     {
         if (!IsSelectionSuppressed(item))
         {
-            if (auto navViewItem = NavigationViewItemOrSettingsContentFromData(item))
-            {
-                navViewItem.IsSelected(true);
-            }
+            ChangeSelectStatusForItem(item, true);
         }
         AnimateSelectionChanged(item);
     }
@@ -4983,16 +4993,66 @@ winrt::UIElement NavigationView::SearchEntireTreeForContainer(const winrt::Items
 
 winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data, bool isFooterRepeater)
 {
-    for (int i = 0; i < GetContainerCountInRepeater(rootRepeater); i++)
+    bool areChildrenRealized = false;
+    if (DoesRepeaterHaveRealizedContainers(rootRepeater))
     {
-        if (auto const container = rootRepeater.TryGetElement(i))
+        areChildrenRealized = true;
+        for (int i = 0; i < GetContainerCountInRepeater(rootRepeater); i++)
         {
-            if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
+            if (auto const container = rootRepeater.TryGetElement(i))
+            {
+                if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
+                {
+                    auto const ip = winrt::make<IndexPath>(std::vector<int>({ isFooterRepeater ? c_footerMenuBlockIndex : c_mainMenuBlockIndex, i }));
+                    if (auto const indexPath = SearchEntireTreeForIndexPath(nvi, data, ip))
+                    {
+                        return indexPath;
+                    }
+                }
+            }
+        }
+    }
+
+    //If children are not realized, manually realize and search.
+    if (!areChildrenRealized)
+    {
+        if (auto const dataSource = rootRepeater.ItemsSourceView())
+        {
+            for (int i = 0; i < dataSource.Count(); i++)
             {
                 auto const ip = winrt::make<IndexPath>(std::vector<int>({ isFooterRepeater ? c_footerMenuBlockIndex : c_mainMenuBlockIndex, i }));
-                if (auto const indexPath = SearchEntireTreeForIndexPath(nvi, data, ip))
+                auto const childData = dataSource.GetAt(i);
+                if (childData == data)
                 {
-                    return indexPath;
+                    return ip;
+                }
+                else
+                {
+                    // Resolve databinding for item and search through that item's children
+                    if (auto const nvib = ResolveContainerForItem(childData, i))
+                    {
+                        if (auto const nvi = nvib.try_as<winrt::NavigationViewItem>())
+                        {
+                            // Process x:bind
+                            if (auto extension = CachedVisualTreeHelpers::GetDataTemplateComponent(nvi))
+                            {
+                                // Clear out old data. 
+                                extension.Recycle();
+                                int nextPhase = VirtualizationInfo::PhaseReachedEnd;
+                                // Run Phase 0
+                                extension.ProcessBindings(childData, i, 0 /* currentPhase */, nextPhase);
+
+                                // TODO: If nextPhase is not -1, ProcessBinding for all the phases
+                            }
+
+                            if (auto const foundIndexPath = SearchEntireTreeForIndexPath(nvi, data, ip))
+                            {
+                                return foundIndexPath;
+                            }
+
+                            //TODO: Recycle container!
+                        }
+                    }
                 }
             }
         }
