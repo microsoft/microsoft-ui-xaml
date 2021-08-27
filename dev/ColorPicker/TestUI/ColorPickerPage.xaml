@@ -12,7 +12,7 @@
 
     <Grid x:Name="Root" Background="{ThemeResource SystemControlBackgroundAltHighBrush}" Margin="12">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
@@ -21,7 +21,7 @@
         <ScrollViewer AutomationProperties.AutomationId="ColorPickerScrollViewer" Height="500"
             HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible" IsVerticalRailEnabled="True">
             <StackPanel>
-                <controls:ColorPicker x:Name="ColorPicker" IsAlphaEnabled="True" ColorChanged="ColorPicker_ColorChanged" Width="312"/>
+                <controls:ColorPicker x:Name="ColorPicker" IsAlphaEnabled="True" ColorChanged="ColorPicker_ColorChanged" />
                 <TextBlock Text="Text"/>
             </StackPanel>
         </ScrollViewer>

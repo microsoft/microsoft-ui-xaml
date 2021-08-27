@@ -156,10 +156,11 @@
                                         <Setter Target="RootGrid.MinWidth" Value="0"/>
                                         <Setter Target="RootGrid.MaxWidth" Value="10000"/>
                                         <Setter Target="ColorSpectrumGrid.Margin" Value="0"/>
-                                        <Setter Target="ColorPreviewRectangleGrid.Margin" Value="16,0"/>
+                                        <Setter Target="ColorPreviewRectangleGrid.Margin" Value="12,0,16,0"/>
 
                                         <Setter Target="ThirdDimensionSliderGrid.(Grid.Column)" Value="1"/>
                                         <Setter Target="ThirdDimensionSliderGrid.(Grid.Row)" Value="0"/>
+                                        <Setter Target="ThirdDimensionSliderGrid.Margin" Value="0,0,6,0" />
                                         <Setter Target="ThirdDimensionSlider.Margin" Value="0"/>
                                         <Setter Target="ThirdDimensionSlider.Orientation" Value="Vertical"/>
                                         <Setter Target="ThirdDimensionBackgroundRectangle.Height" Value="Auto"/>
