@@ -933,8 +933,8 @@
                                         <TranslateTransform x:Name="OverflowContentTransform" />
                                     </CommandBarOverflowPresenter.RenderTransform>
                                     <CommandBarOverflowPresenter.Resources>
-                                        <Style TargetType="AppBarButton" BasedOn="{StaticResource AppBarButtonOverflowStyle}" />
-                                        <Style TargetType="AppBarToggleButton" BasedOn="{StaticResource AppBarToggleButtonOverflowStyle}" />
+                                        <Style TargetType="AppBarButton" BasedOn="{ThemeResource AppBarButtonOverflowStyle}" />
+                                        <Style TargetType="AppBarToggleButton" BasedOn="{ThemeResource AppBarToggleButtonOverflowStyle}" />
                                     </CommandBarOverflowPresenter.Resources>
                                 </contract12NotPresent:CommandBarOverflowPresenter>
                                 <!--For 21H1 and up, we'll need to wrap the clip and presenter in a Grid which will host the Drop Shadow.-->
@@ -957,8 +957,8 @@
                                             <TranslateTransform x:Name="OverflowContentTransform" />
                                         </CommandBarOverflowPresenter.RenderTransform>
                                         <CommandBarOverflowPresenter.Resources>
-                                            <Style TargetType="AppBarButton" BasedOn="{StaticResource AppBarButtonOverflowStyle}" />
-                                            <Style TargetType="AppBarToggleButton" BasedOn="{StaticResource AppBarToggleButtonOverflowStyle}" />
+                                            <Style TargetType="AppBarButton" BasedOn="{ThemeResource AppBarButtonOverflowStyle}" />
+                                            <Style TargetType="AppBarToggleButton" BasedOn="{ThemeResource AppBarToggleButtonOverflowStyle}" />
                                         </CommandBarOverflowPresenter.Resources>
                                     </CommandBarOverflowPresenter>
                                 </contract12Present:Grid>
