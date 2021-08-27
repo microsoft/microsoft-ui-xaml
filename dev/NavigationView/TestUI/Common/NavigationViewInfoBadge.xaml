@@ -14,7 +14,7 @@
         <muxcontrols:NavigationView x:Name="NavView2" PaneDisplayMode="Top">
             <muxcontrols:NavigationView.MenuItems>
                 <muxcontrols:NavigationViewItem>
-                    Attention
+                    Attention Super long name for testing purposes
                     <muxcontrols:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xEA38;" />
                     </muxcontrols:NavigationViewItem.Icon>
@@ -1964,7 +1964,7 @@
             <muxcontrols:NavigationView.MenuItems>
 
                 <muxcontrols:NavigationViewItem>
-                    Attention
+                    Attention Super long content for testing purposes
                     <muxcontrols:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xEA38;" />
                     </muxcontrols:NavigationViewItem.Icon>
@@ -3877,7 +3877,7 @@
                 </muxcontrols:NavigationViewItem>
 
                 <muxcontrols:NavigationViewItem>
-                    Attention
+                    Attention Super long name for testing purposes
                     <muxcontrols:NavigationViewItem.InfoBadge>
                         <muxcontrols:InfoBadge Style="{StaticResource AttentionValueInfoBadgeStyle}" Value="22"/>
                     </muxcontrols:NavigationViewItem.InfoBadge>

@@ -13,7 +13,7 @@
     <Grid>
         <muxcontrols:NavigationView x:Name="navview" ItemInvoked="{x:Bind ClickedItem}" Expanding="OnItemExpanding" Collapsed="OnItemCollapsed" PaneDisplayMode="Left" IsSettingsVisible="False">
             <muxcontrols:NavigationView.MenuItems>
-                <muxcontrols:NavigationViewItem Content="Menu Item 1" x:Name="MI1" SelectsOnInvoked="False"  Icon="Home">
+                <muxcontrols:NavigationViewItem Content="Menu Item 1, super long text for testing purposes" x:Name="MI1" SelectsOnInvoked="False"  Icon="Home">
                     <muxcontrols:NavigationViewItem.MenuItems>
                         <muxcontrols:NavigationViewItem Content="Menu Item 2" x:Name="MI2" SelectsOnInvoked="False" Icon="Save">
                             <muxcontrols:NavigationViewItem.MenuItems>
