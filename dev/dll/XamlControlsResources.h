@@ -21,4 +21,5 @@ public:
 private:
     void UpdateSource();
     bool IsControlsResourcesVersion2();
+    void UpdateTintLuminosityOpacity(winrt::Windows::UI::Xaml::Media::AcrylicBrush brush, double luminosityValue);
 };
