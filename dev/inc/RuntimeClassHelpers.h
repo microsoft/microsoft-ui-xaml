@@ -79,7 +79,7 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
         return this->m_inner;
     }
 
-    HRESULT __stdcall NonDelegatingQueryInterface(GUID const& riid, void** value) noexcept
+    int32_t __stdcall NonDelegatingQueryInterface(winrt::guid const& riid, void** value) noexcept
     {
         // In order for the reference tracking mechanism to work, we actually need to hand out XAML's
         // implementation of IWeakReferenceSource. However there are some bugs on RS2 where XAML calls
@@ -113,8 +113,9 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
 
     // TEMP-BEGIN
 
-    HRESULT __stdcall QueryInterface(GUID const& id, void** object) noexcept
+    HRESULT __stdcall QueryInterface(GUID const& id_abi, void** object) noexcept
     {
+        auto& id = reinterpret_cast<winrt::guid const&>(id_abi);
         if (this->outer())
         {
             return this->outer()->QueryInterface(id, object);
