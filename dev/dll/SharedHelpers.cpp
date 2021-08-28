@@ -127,14 +127,6 @@ bool SharedHelpers::IsFlyoutShowOptionsAvailable()
     return s_isFlyoutShowOptionsAvailable;
 }
 
-bool SharedHelpers::IsScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable()
-{
-    static bool s_isScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable =
-        Is19H1OrHigher() ||
-        winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.ScrollViewer", L"ReduceViewportForCoreInputViewOcclusions");
-    return s_isScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable;
-}
-
 bool SharedHelpers::IsScrollContentPresenterSizesContentToTemplatedParentAvailable()
 {
     static bool s_isScrollContentPresenterSizesContentToTemplatedParentAvailable =

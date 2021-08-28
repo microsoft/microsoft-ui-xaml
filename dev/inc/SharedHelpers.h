@@ -37,8 +37,6 @@ public:
 
     static bool IsFlyoutShowOptionsAvailable();
 
-    static bool IsScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable();
-
     static bool IsScrollContentPresenterSizesContentToTemplatedParentAvailable();
 
     static bool IsBringIntoViewOptionsVerticalAlignmentRatioAvailable();

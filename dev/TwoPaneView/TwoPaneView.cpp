@@ -76,11 +76,6 @@ void TwoPaneView::SetScrollViewerProperties(std::wstring_view const& scrollViewe
             {
                 revoker = scrollViewer.Loaded(winrt::auto_revoke, { this, &TwoPaneView::OnScrollViewerLoaded });
             }
-
-            if (SharedHelpers::IsScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable())
-            {
-                scrollViewer.ReduceViewportForCoreInputViewOcclusions(true);
-            }
         }
     }
 }
