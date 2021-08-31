@@ -164,7 +164,7 @@
                                         <Setter Target="ThirdDimensionSlider.Margin" Value="0"/>
                                         <Setter Target="ThirdDimensionSlider.Orientation" Value="Vertical"/>
                                         <Setter Target="ThirdDimensionBackgroundRectangle.Height" Value="Auto"/>
-                                        <Setter Target="ThirdDimensionBackgroundRectangle.Width" Value="11"/>
+                                        <Setter Target="ThirdDimensionBackgroundRectangle.Width" Value="12"/>
                                         <Setter Target="ThirdDimensionBackgroundRectangle.HorizontalAlignment" Value="Center"/>
                                         <Setter Target="ThirdDimensionBackgroundRectangle.VerticalAlignment" Value="Stretch"/>
                                         <Setter Target="ThirdDimensionBackgroundRectangle.RenderTransform">
@@ -179,11 +179,11 @@
                                         <Setter Target="AlphaSlider.Orientation" Value="Vertical"/>
                                         <Setter Target="AlphaSlider.Margin" Value="0"/>
                                         <Setter Target="AlphaSliderCheckeredBackgroundRectangle.Height" Value="Auto"/>
-                                        <Setter Target="AlphaSliderCheckeredBackgroundRectangle.Width" Value="11"/>
+                                        <Setter Target="AlphaSliderCheckeredBackgroundRectangle.Width" Value="12"/>
                                         <Setter Target="AlphaSliderCheckeredBackgroundRectangle.HorizontalAlignment" Value="Center"/>
                                         <Setter Target="AlphaSliderCheckeredBackgroundRectangle.VerticalAlignment" Value="Stretch"/>
                                         <Setter Target="AlphaSliderBackgroundRectangle.Height" Value="Auto"/>
-                                        <Setter Target="AlphaSliderBackgroundRectangle.Width" Value="11"/>
+                                        <Setter Target="AlphaSliderBackgroundRectangle.Width" Value="12"/>
                                         <Setter Target="AlphaSliderBackgroundRectangle.HorizontalAlignment" Value="Center"/>
                                         <Setter Target="AlphaSliderBackgroundRectangle.VerticalAlignment" Value="Stretch"/>
                                         <Setter Target="AlphaSliderBackgroundRectangle.RenderTransform">
@@ -283,7 +283,7 @@
                                 </Grid>
                             </Grid>
                             <Grid x:Name="ThirdDimensionSliderGrid" Grid.Row="1">
-                                <Rectangle x:Name="ThirdDimensionBackgroundRectangle" RenderTransformOrigin="0.5, 0.5" Height="11" VerticalAlignment="Center"
+                                <Rectangle x:Name="ThirdDimensionBackgroundRectangle" RenderTransformOrigin="0.5, 0.5" Height="12" VerticalAlignment="Center"
                                            contract7Present:RadiusX="{Binding Source={ThemeResource ColorPickerSliderCornerRadius}, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                            contract7Present:RadiusY="{Binding Source={ThemeResource ColorPickerSliderCornerRadius}, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ColorPickerSliderCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
@@ -295,7 +295,7 @@
                                 <primitives:ColorPickerSlider x:Name="ThirdDimensionSlider" Minimum="0" Maximum="100" Margin="0,5,0,0" ColorChannel="Value" Orientation="Horizontal" Style="{StaticResource ColorPickerSliderStyle}" IsThumbToolTipEnabled="False" />
                             </Grid>
                             <Grid Margin="0,0,0,3" x:Name="AlphaSliderGrid" Grid.Row="2">
-                                <Rectangle x:Name="AlphaSliderCheckeredBackgroundRectangle" RenderTransformOrigin="0.5, 0.5" Height="11" VerticalAlignment="Center"
+                                <Rectangle x:Name="AlphaSliderCheckeredBackgroundRectangle" RenderTransformOrigin="0.5, 0.5" Height="12" VerticalAlignment="Center"
                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
@@ -304,7 +304,7 @@
                                         <ImageBrush x:Name="AlphaSliderCheckeredBackgroundImageBrush" />
                                     </Rectangle.Fill>
                                 </Rectangle>
-                                <Rectangle x:Name="AlphaSliderBackgroundRectangle" RenderTransformOrigin="0.5, 0.5" Height="11" VerticalAlignment="Center"
+                                <Rectangle x:Name="AlphaSliderBackgroundRectangle" RenderTransformOrigin="0.5, 0.5" Height="12" VerticalAlignment="Center"
                                            contract7Present:RadiusX="{Binding Source={ThemeResource ColorPickerSliderCornerRadius}, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                            contract7Present:RadiusY="{Binding Source={ThemeResource ColorPickerSliderCornerRadius}, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ColorPickerSliderCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
