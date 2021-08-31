@@ -361,9 +361,6 @@
     <Thickness x:Key="ComboBoxPadding">12,5,0,7</Thickness>
     <Thickness x:Key="ComboBoxEditableTextPadding">11,5,38,6</Thickness>
 
-    <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">7</CornerRadius>
-    <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4</CornerRadius>
-    <CornerRadius x:Key="ComboBoxItemCornerRadius">3</CornerRadius>
     <CornerRadius x:Key="ComboBoxItemPillCornerRadius">1.5</CornerRadius>
     
     <FontWeight x:Key="ComboBoxHeaderThemeFontWeight">Normal</FontWeight>
@@ -640,7 +637,7 @@
                             Background="{ThemeResource ComboBoxBackgroundFocused}"
                             BorderBrush="{ThemeResource ComboBoxBackgroundBorderBrushFocused}"
                             BorderThickness="{StaticResource ComboBoxBackgroundBorderThicknessFocused}"
-                            contract7Present:CornerRadius="{StaticResource ComboBoxHiglightBorderCornerRadius}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                             Opacity="0" />
 
@@ -704,7 +701,7 @@
                             Background="Transparent"
                             Margin="4,4,4,4"
                             Visibility="Collapsed"
-                            contract7Present:CornerRadius="{StaticResource ComboBoxDropDownButtonBackgroundCornerRadius}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                             Width="30"
                             HorizontalAlignment="Right"
@@ -783,7 +780,7 @@
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="-3"/>
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ComboBoxItemCornerRadius}"/>
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBoxItem">

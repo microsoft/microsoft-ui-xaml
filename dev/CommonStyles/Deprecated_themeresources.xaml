@@ -60,6 +60,10 @@
             <StaticResource x:Key="ExpanderDisabledBorderBrush" ResourceKey="ExpanderBorderBrush" />
             <Thickness x:Key="ExpanderBorderThickness">1</Thickness>
             
+            <CornerRadius x:Key="ListViewItemCornerRadius">4</CornerRadius>
+            <CornerRadius x:Key="ListViewItemCheckBoxCornerRadius">4</CornerRadius>
+            <CornerRadius x:Key='GridViewItemCornerRadius'>4</CornerRadius>
+            <CornerRadius x:Key='GridViewItemCheckBoxCornerRadius'>4</CornerRadius>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="TopNavigationViewItemRevealBackgroundFocused" ResourceKey="SystemControlHighlightAccentBrush" />
@@ -114,6 +118,11 @@
             <StaticResource x:Key="ExpanderDisabledForeground" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="ExpanderDisabledBorderBrush" ResourceKey="ExpanderBorderBrush" />
             <Thickness x:Key="ExpanderBorderThickness">1</Thickness>
+
+            <CornerRadius x:Key="ListViewItemCornerRadius">4</CornerRadius>
+            <CornerRadius x:Key="ListViewItemCheckBoxCornerRadius">4</CornerRadius>
+            <CornerRadius x:Key='GridViewItemCornerRadius'>4</CornerRadius>
+            <CornerRadius x:Key='GridViewItemCheckBoxCornerRadius'>4</CornerRadius>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <!-- System high contrast colors -->
@@ -179,6 +188,11 @@
             <StaticResource x:Key="ExpanderDisabledForeground" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="ExpanderDisabledBorderBrush" ResourceKey="TextFillColorDisabledBrush" />
             <Thickness x:Key="ExpanderBorderThickness">2</Thickness>
+
+            <CornerRadius x:Key="ListViewItemCornerRadius">4</CornerRadius>
+            <CornerRadius x:Key="ListViewItemCheckBoxCornerRadius">4</CornerRadius>
+            <CornerRadius x:Key='GridViewItemCornerRadius'>4</CornerRadius>
+            <CornerRadius x:Key='GridViewItemCheckBoxCornerRadius'>4</CornerRadius>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -211,6 +225,10 @@
     <Thickness x:Key="ExpanderDropdownDownBorderThickness">1,0,1,1</Thickness>
     <Thickness x:Key="ExpanderDropdownUpBorderThickness">1,1,1,0</Thickness>
     
+    <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">8</CornerRadius>
+    <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4</CornerRadius>
+    <CornerRadius x:Key="ComboBoxItemCornerRadius">4</CornerRadius>
+
     <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="MUX_NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus">
         <Setter Property="Template">
             <Setter.Value>

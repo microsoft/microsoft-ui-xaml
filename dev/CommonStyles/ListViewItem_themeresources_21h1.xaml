@@ -58,9 +58,7 @@
             <SolidColorBrush x:Key="ListViewItemSelectedForegroundThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="ListViewItemSelectedPointerOverBackgroundThemeBrush" Color="#FF5F37BE" />
             <SolidColorBrush x:Key="ListViewItemSelectedPointerOverBorderThemeBrush" Color="#FF5F37BE" />
-            
-            <CornerRadius x:Key="ListViewItemCornerRadius">4</CornerRadius>
-            <CornerRadius x:Key="ListViewItemCheckBoxCornerRadius">3</CornerRadius>
+
             <CornerRadius x:Key="ListViewItemSelectionIndicatorCornerRadius">1.5</CornerRadius>
             <StaticResource x:Key="ListViewItemCheckPressedBrush" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemCheckDisabledBrush" ResourceKey="TextOnAccentFillColorDisabledBrush" />
@@ -137,8 +135,6 @@
             <SolidColorBrush x:Key="ListViewItemSelectedPointerOverBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="ListViewItemSelectedPointerOverBorderThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
 
-            <CornerRadius x:Key="ListViewItemCornerRadius">4</CornerRadius>
-            <CornerRadius x:Key="ListViewItemCheckBoxCornerRadius">3</CornerRadius>
             <CornerRadius x:Key="ListViewItemSelectionIndicatorCornerRadius">1.5</CornerRadius>
             <SolidColorBrush x:Key="ListViewItemCheckPressedBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="ListViewItemCheckDisabledBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
@@ -214,8 +210,6 @@
             <SolidColorBrush x:Key="ListViewItemSelectedPointerOverBackgroundThemeBrush" Color="#FF5F37BE" />
             <SolidColorBrush x:Key="ListViewItemSelectedPointerOverBorderThemeBrush" Color="#FF5F37BE" />
 
-            <CornerRadius x:Key="ListViewItemCornerRadius">4</CornerRadius>
-            <CornerRadius x:Key="ListViewItemCheckBoxCornerRadius">3</CornerRadius>
             <CornerRadius x:Key="ListViewItemSelectionIndicatorCornerRadius">1.5</CornerRadius>
             <StaticResource x:Key="ListViewItemCheckPressedBrush" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemCheckDisabledBrush" ResourceKey="TextOnAccentFillColorDisabledBrush" />
@@ -295,7 +289,7 @@
                         VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                         ContentMargin="{TemplateBinding Padding}"
                         CheckMode="{ThemeResource ListViewItemCheckMode}"
-                        CornerRadius='{ThemeResource ListViewItemCornerRadius}'
+                        CornerRadius='{ThemeResource ControlCornerRadius}'
                         CheckPressedBrush='{ThemeResource ListViewItemCheckPressedBrush}'
                         CheckDisabledBrush='{ThemeResource ListViewItemCheckDisabledBrush}'
                         CheckBoxPointerOverBrush='{ThemeResource ListViewItemCheckBoxPointerOverBrush}'
@@ -309,7 +303,7 @@
                         CheckBoxPointerOverBorderBrush='{ThemeResource ListViewItemCheckBoxPointerOverBorderBrush}'
                         CheckBoxPressedBorderBrush='{ThemeResource ListViewItemCheckBoxPressedBorderBrush}'
                         CheckBoxDisabledBorderBrush='{ThemeResource ListViewItemCheckBoxDisabledBorderBrush}'
-                        CheckBoxCornerRadius='{ThemeResource ListViewItemCheckBoxCornerRadius}'
+                        CheckBoxCornerRadius='{ThemeResource ControlCornerRadius}'
                         SelectionIndicatorCornerRadius='{ThemeResource ListViewItemSelectionIndicatorCornerRadius}'
                         SelectionIndicatorVisualEnabled='{ThemeResource ListViewItemSelectionIndicatorVisualEnabled}'
                         SelectionIndicatorBrush='{ThemeResource ListViewItemSelectionIndicatorBrush}'

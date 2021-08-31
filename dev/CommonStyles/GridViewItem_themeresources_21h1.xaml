@@ -3,8 +3,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <CornerRadius x:Key='GridViewItemCornerRadius'>4</CornerRadius>
-            <CornerRadius x:Key='GridViewItemCheckBoxCornerRadius'>3</CornerRadius>
             <Thickness x:Key='GridViewItemSelectedBorderThickness'>2</Thickness>
             <StaticResource x:Key="GridViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="GridViewItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
@@ -41,8 +39,6 @@
             <StaticResource x:Key="GridViewItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorSecondaryBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <CornerRadius x:Key='GridViewItemCornerRadius'>4</CornerRadius>
-            <CornerRadius x:Key='GridViewItemCheckBoxCornerRadius'>3</CornerRadius>
             <Thickness x:Key='GridViewItemSelectedBorderThickness'>2</Thickness>
             <SolidColorBrush x:Key="GridViewItemBackground" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="GridViewItemForeground" Color="{ThemeResource SystemColorWindowTextColor}" />
@@ -79,8 +75,6 @@
             <SolidColorBrush x:Key="GridViewItemBackgroundSelectedDisabled" Color="{ThemeResource SystemColorWindowColor}" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <CornerRadius x:Key='GridViewItemCornerRadius'>4</CornerRadius>
-            <CornerRadius x:Key='GridViewItemCheckBoxCornerRadius'>3</CornerRadius>
             <Thickness x:Key='GridViewItemSelectedBorderThickness'>2</Thickness>
             <StaticResource x:Key="GridViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="GridViewItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
@@ -174,8 +168,8 @@
                         CheckMode='{ThemeResource GridViewItemCheckMode}'
                         SelectedBorderThickness='{ThemeResource GridViewItemSelectedBorderThickness}'
                         SelectedPointerOverBorderBrush='{ThemeResource GridViewItemSelectedPointerOverBorderBrush}'
-                        CornerRadius='{ThemeResource GridViewItemCornerRadius}'
-                        CheckBoxCornerRadius='{ThemeResource GridViewItemCheckBoxCornerRadius}'
+                        CornerRadius='{ThemeResource ControlCornerRadius}'
+                        CheckBoxCornerRadius='{ThemeResource ControlCornerRadius}'
                         CheckPressedBrush='{ThemeResource GridViewItemCheckPressedBrush}'
                         CheckDisabledBrush='{ThemeResource GridViewItemCheckDisabledBrush}'
                         CheckBoxPointerOverBrush='{ThemeResource GridViewItemCheckBoxPointerOverBrush}'
