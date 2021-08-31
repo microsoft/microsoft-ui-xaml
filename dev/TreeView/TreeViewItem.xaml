@@ -126,8 +126,8 @@
                             Opacity="0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
-                            contract7Present:RadiusX="2"
-                            contract7Present:RadiusY="2"/>
+                            contract7Present:RadiusX="1.5"
+                            contract7Present:RadiusY="1.5"/>
 
 
                         <Grid x:Name="MultiSelectGrid" Padding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.Indentation}">

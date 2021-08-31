@@ -235,7 +235,7 @@
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="MinHeight" Value="0" />
         <Setter Property="Margin" Value="2,4,2,4" />
-        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
     </Style>
 
     <Style x:Key="InkToolbarCommonButtonStyle" TargetType="ToggleButton">
