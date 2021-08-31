@@ -328,32 +328,26 @@ void ColorSpectrum::RaiseColorChanged()
 {
     const winrt::Color newColor = Color();
 
-    if (m_oldColor.A != newColor.A ||
-        m_oldColor.R != newColor.R ||
-        m_oldColor.G != newColor.G ||
-        m_oldColor.B != newColor.B)
+    auto colorChangedEventArgs = winrt::make_self<ColorChangedEventArgs>();
+
+    colorChangedEventArgs->OldColor(m_oldColor);
+    colorChangedEventArgs->NewColor(newColor);
+
+    m_colorChangedEventSource(*this, *colorChangedEventArgs);
+
+    if (DownlevelHelper::ToDisplayNameExists())
     {
-        auto colorChangedEventArgs = winrt::make_self<ColorChangedEventArgs>();
-
-        colorChangedEventArgs->OldColor(m_oldColor);
-        colorChangedEventArgs->NewColor(newColor);
-
-        m_colorChangedEventSource(*this, *colorChangedEventArgs);
-
-        if (DownlevelHelper::ToDisplayNameExists())
+        if (auto&& colorNameToolTip = m_colorNameToolTip.get())
         {
-            if (auto&& colorNameToolTip = m_colorNameToolTip.get())
-            {
-                colorNameToolTip.Content(box_value(winrt::ColorHelper::ToDisplayName(newColor)));
-            }
+            colorNameToolTip.Content(box_value(winrt::ColorHelper::ToDisplayName(newColor)));
         }
+    }
 
-        auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
-        if (peer)
-        {
-            winrt::ColorSpectrumAutomationPeer colorSpectrumPeer = peer.as<winrt::ColorSpectrumAutomationPeer>();
-            winrt::get_self<ColorSpectrumAutomationPeer>(colorSpectrumPeer)->RaisePropertyChangedEvent(m_oldColor, newColor, m_oldHsvColor, HsvColor());
-        }
+    auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
+    if (peer)
+    {
+        winrt::ColorSpectrumAutomationPeer colorSpectrumPeer = peer.as<winrt::ColorSpectrumAutomationPeer>();
+        winrt::get_self<ColorSpectrumAutomationPeer>(colorSpectrumPeer)->RaisePropertyChangedEvent(m_oldColor, newColor, m_oldHsvColor, HsvColor());
     }
 }
 
