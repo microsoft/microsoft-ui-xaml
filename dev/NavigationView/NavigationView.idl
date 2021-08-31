@@ -142,7 +142,9 @@ unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.Dependenc
     Windows.UI.Xaml.Visibility LeftPaneVisibility { get; };
     Boolean SingleSelectionFollowsFocus { get; };
     Double PaneToggleButtonWidth{ get; };
-    Double SmallerPaneToggleButtonWidth{ get; };   
+    Double SmallerPaneToggleButtonWidth{ get; };
+    [MUX_DEFAULT_VALUE("320.0")]
+    Double OpenPaneWidth{ get; };
 
     static Windows.UI.Xaml.DependencyProperty TopPaddingProperty { get; };
     static Windows.UI.Xaml.DependencyProperty OverflowButtonVisibilityProperty { get; };
@@ -153,6 +155,7 @@ unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.Dependenc
     static Windows.UI.Xaml.DependencyProperty SingleSelectionFollowsFocusProperty { get; };
     static Windows.UI.Xaml.DependencyProperty PaneToggleButtonWidthProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SmallerPaneToggleButtonWidthProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty OpenPaneWidthProperty{ get; };
 }
 
 [MUX_PUBLIC]
