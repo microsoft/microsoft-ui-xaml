@@ -251,6 +251,7 @@ private:
     void OnItemsContainerSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& e);
     void UpdateAdaptiveLayout(double width, bool forceSetDisplayMode = false);
+    void UpdateOpenPaneWidth(double width);
     void UpdatePaneLayout();
     void SetDisplayMode(const winrt::NavigationViewDisplayMode& displayMode, bool forceSetDisplayMode = false);
    
@@ -499,5 +500,7 @@ private:
     bool m_TabKeyPrecedesFocusChange{ false };
 
     bool m_isLeftPaneTitleEmpty{ false };
+
+    double m_openPaneWidth{ 320.0 };
 };
 
