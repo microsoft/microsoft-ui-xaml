@@ -1325,7 +1325,7 @@
                             Margin=1,1,1,1
                             Name=PlaceholderTextContentPresenter
                             Padding=10,5,6,6
-                            RenderSize=214,30
+                            RenderSize=210,30
                             Visibility=Visible
                           [Windows.UI.Xaml.Controls.ContentPresenter]
                               Background=[NULL]
