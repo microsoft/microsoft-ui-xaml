@@ -1402,28 +1402,13 @@ void NavigationView::OnItemsContainerSizeChanged(const winrt::IInspectable& send
 
 void NavigationView::UpdateOpenPaneWidth(double width)
 {
-    // In top nav, there is no adaptive pane layout
-    if (IsTopNavigationView())
+    if (!IsTopNavigationView() && m_rootSplitView)
     {
-        return;
-    }
+        m_openPaneWidth = std::max(0.0, std::min(width, OpenPaneLength()));
 
-    if (!m_rootSplitView)
-    {
-        return;
+        const auto templateSettings = GetTemplateSettings();
+        templateSettings->OpenPaneWidth(m_openPaneWidth);
     }
-
-    if (width > 0 && width < OpenPaneLength())
-    {
-        m_openPaneWidth = width;
-    }
-    else
-    {
-        m_openPaneWidth = OpenPaneLength();
-    }
-
-    const auto templateSettings = GetTemplateSettings();
-    templateSettings->OpenPaneWidth(m_openPaneWidth);
 }
 
 // forceSetDisplayMode: On first call to SetDisplayMode, force setting to initial values
