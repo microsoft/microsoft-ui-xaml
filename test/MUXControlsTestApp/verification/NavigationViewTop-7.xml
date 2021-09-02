@@ -1407,7 +1407,7 @@
               Padding=0,0,0,0
               RenderSize=0,0
               Visibility=Collapsed
-              Width=120
+              Width=320
             [Windows.UI.Xaml.Controls.Border]
                 Background=[NULL]
                 BorderBrush=[NULL]
@@ -1764,6 +1764,6 @@
           Margin=0,0,0,0
           Name=ShadowCaster
           Padding=0,0,0,0
-          RenderSize=120,600
+          RenderSize=320,600
           Visibility=Visible
-          Width=120
+          Width=320

@@ -469,7 +469,7 @@
                                 DisplayMode="Inline"
                                 IsPaneOpen="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsPaneOpen, Mode=TwoWay}"
                                 IsTabStop="False"
-                                OpenPaneLength="{TemplateBinding OpenPaneLength}"
+                                OpenPaneLength="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.OpenPaneWidth}"
                                 PaneBackground="{ThemeResource NavigationViewDefaultPaneBackground}"
                                 Grid.Row="1"
                                 contract7Present:CornerRadius="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}">
@@ -683,7 +683,7 @@
                             <Grid
                                 x:Name="ShadowCaster"
                                 Grid.RowSpan="2"
-                                Width="{TemplateBinding OpenPaneLength}"
+                                Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.OpenPaneWidth}"
                                 HorizontalAlignment="Left">
                                 <Grid.RenderTransform>
                                     <CompositeTransform x:Name="ShadowCasterTransform" />

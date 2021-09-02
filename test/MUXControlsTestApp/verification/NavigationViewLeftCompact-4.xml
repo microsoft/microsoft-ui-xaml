@@ -678,7 +678,7 @@
                       Margin=0,0,0,0
                       Name=PaneHeaderContentBorder
                       Padding=0,0,0,0
-                      RenderSize=80,40
+                      RenderSize=280,40
                       Visibility=Collapsed
                     [Windows.UI.Xaml.Controls.ContentPresenter]
                         Background=[NULL]
@@ -692,7 +692,7 @@
                         Foreground=#E4000000
                         Margin=0,0,0,0
                         Padding=0,0,0,0
-                        RenderSize=80,40
+                        RenderSize=280,40
                         Visibility=Visible
                 [Windows.UI.Xaml.Controls.Grid]
                     Background=[NULL]
