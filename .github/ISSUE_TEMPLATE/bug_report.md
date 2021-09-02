@@ -48,9 +48,10 @@ Windows app type:
 | <!-- Yes/No? --> | <!-- Yes/No? --> |
 
 <!-- Which Windows versions did you see the issue on? Leave blank if you didn't try that version. -->
-| Windows 10 version                  | Saw the problem? |
+| Windows version                    | Saw the problem? |
 | :--------------------------------- | :-------------------- |
 | Insider Build (xxxxx)              | <!-- Yes/No? -->   |
+| May 2021 Update (19043)            | <!-- Yes/No? -->   |
 | October 2020 Update (19042)        | <!-- Yes/No? -->   |
 | May 2020 Update (19041)            | <!-- Yes/No? -->   |
 | November 2019 Update (18363)       | <!-- Yes/No? -->   |

@@ -20,6 +20,11 @@
     <PackageReference Include="System.Drawing.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.1" />
   </ItemGroup>
+  <ItemGroup Condition="'$(Platform)' != 'ARM'">
+    <PackageReference Include="Microsoft.Web.WebView2">
+      <Version>1.0.955-prerelease</Version>
+    </PackageReference>
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\testinfra\MUXTestInfra\MSTest\MUXTestInfra.MSTest.csproj" />
   </ItemGroup>

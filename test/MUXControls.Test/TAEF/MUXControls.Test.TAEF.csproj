@@ -16,6 +16,9 @@
          For simplicity's sake, we'll always get them from the x86 folder, but the CoreClr binaries are the same everywhere. -->
     <TaefRootDirectory>$(NuGetPackageRoot)taef.redist.wlk\10.31.180822002\build\Binaries\x86\CoreClr\</TaefRootDirectory>
   </PropertyGroup>
+  <ItemGroup Condition="'$(Platform)' != 'ARM'">
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.955-prerelease" />
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="TE.Managed">
       <HintPath>$(TaefRootDirectory)TE.Managed.dll</HintPath>

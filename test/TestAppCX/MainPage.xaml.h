@@ -27,5 +27,6 @@ namespace TestAppCX
         void GoToCornerRadiusTestPage(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
         void GoToTreeViewTestPage(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
         void GoToBackdropMaterialTestPage(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+        void GoToWebView2TestPage(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
     };
 }

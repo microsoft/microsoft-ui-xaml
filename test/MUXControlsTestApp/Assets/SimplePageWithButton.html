@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Page With Button</title>
+    <style>
+        h1 {
+            background-color: #0080ff
+        }
+
+        h2 {
+            background-color: #00ff80
+        }
+        .largeButton {
+        display: block;
+        width: 100%;
+        border: none;
+        background-color: #4CAF50;
+        color: white;
+        padding: 14px 28px;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: center;
+        }
+
+        .largeButton:hover {
+        background-color: #ddd;
+        color: black;
+        }
+    </style>
+    <script>
+        var mouseButtons =
+        {
+            "left": 0,
+            "middle": 1,
+            "right": 2,
+            "back": 3,      // aka X1Button
+            "forward": 4    // aka X2Button
+        };
+
+        var postLeftClick = () => { window.chrome.webview.postMessage("Left mouse button clicked."); }
+        var postMiddleClick = () => { window.chrome.webview.postMessage("Middle mouse button clicked."); }
+        var postRightClick = () => { window.chrome.webview.postMessage("Right mouse button clicked."); }
+        var postBackClick = () => { window.chrome.webview.postMessage("First X mouse button clicked."); }
+        var postForwardClick = () => { window.chrome.webview.postMessage("Second X mouse button clicked."); }
+        
+        function mousebuttonpressed(event)
+        {
+            event.preventDefault();
+            switch (event.button)
+            {
+                case mouseButtons.left:
+                    postLeftClick();
+                    console.log("Left click happened");
+                    break;
+                case mouseButtons.middle:
+                    postMiddleClick();
+                    console.log("Middle click happened");
+                    break;
+                case mouseButtons.right:
+                    postRightClick();
+                    console.log("Right click happened");
+                    break;
+                case mouseButtons.back:
+                    postBackClick();
+                    console.log("First X click happened");
+                    break;
+                case mouseButtons.forward:
+                    postForwardClick();
+                    console.log("Second X click happened");
+                    break;
+                default:
+                    console.error("Cannot identify click");
+            }
+        };
+    </script>
+</head>
+<body>
+    <input id="button" type="submit" name="button" class="largeButton" onmousedown="mousebuttonpressed(event);" oncontextmenu="return false;" value="Click test" />
+
+    <script>
+    </script>
+</body>
+</html>

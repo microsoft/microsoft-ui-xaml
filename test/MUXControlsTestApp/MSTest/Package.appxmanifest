@@ -28,5 +28,7 @@
     <uap6:Capability Name="graphicsCapture" />
     <uap:Capability Name="musicLibrary" />
     <uap:Capability Name="picturesLibrary"/>
+    <uap:Capability Name="enterpriseAuthentication"/>
+    <Capability Name="privateNetworkClientServer"/>
   </Capabilities>
 </Package>
