@@ -20,6 +20,11 @@
             <x:Double x:Key="ContentDialogMaxWidth">548</x:Double>
             <x:Double x:Key="ContentDialogMinHeight">184</x:Double>
             <x:Double x:Key="ContentDialogMaxHeight">756</x:Double>
+
+            <GridLength x:Key="ContentDialogButtonSpacing">8</GridLength>
+            <Thickness x:Key="ContentDialogTitleMargin">0,0,0,12</Thickness>
+            <Thickness x:Key="ContentDialogPadding">24</Thickness>
+            <Thickness x:Key="ContentDialogSeparatorThickness">0,0,0,1</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="ContentDialogForeground" ResourceKey="SystemColorWindowTextColorBrush" />
@@ -34,6 +39,11 @@
             <x:Double x:Key="ContentDialogMaxWidth">548</x:Double>
             <x:Double x:Key="ContentDialogMinHeight">184</x:Double>
             <x:Double x:Key="ContentDialogMaxHeight">756</x:Double>
+
+            <GridLength x:Key="ContentDialogButtonSpacing">8</GridLength>
+            <Thickness x:Key="ContentDialogTitleMargin">0,0,0,12</Thickness>
+            <Thickness x:Key="ContentDialogPadding">24</Thickness>
+            <Thickness x:Key="ContentDialogSeparatorThickness">0,0,0,1</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="ContentDialogForeground" ResourceKey="TextFillColorPrimaryBrush" />
@@ -48,13 +58,13 @@
             <x:Double x:Key="ContentDialogMaxWidth">548</x:Double>
             <x:Double x:Key="ContentDialogMinHeight">184</x:Double>
             <x:Double x:Key="ContentDialogMaxHeight">756</x:Double>
+
+            <GridLength x:Key="ContentDialogButtonSpacing">8</GridLength>
+            <Thickness x:Key="ContentDialogTitleMargin">0,0,0,12</Thickness>
+            <Thickness x:Key="ContentDialogPadding">24</Thickness>
+            <Thickness x:Key="ContentDialogSeparatorThickness">0,0,0,1</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-
-    <GridLength x:Key="ContentDialogButtonSpacing">8</GridLength>
-    <Thickness x:Key="ContentDialogTitleMargin">0,0,0,12</Thickness>
-    <Thickness x:Key="ContentDialogPadding">24</Thickness>
-    <Thickness x:Key="ContentDialogSeparatorThickness">0,0,0,1</Thickness>
 
     <Style TargetType="ContentDialog" BasedOn="{StaticResource DefaultContentDialogStyle}" />
 
@@ -148,7 +158,7 @@
                             <VisualStateGroup x:Name="ButtonsVisibilityStates">
                                 <VisualState x:Name="AllVisible" >
                                     <VisualState.Setters>
-                                        <Setter Target="FirstSpacer.Width" Value="{StaticResource ContentDialogButtonSpacing}" />
+                                        <Setter Target="FirstSpacer.Width" Value="{ThemeResource ContentDialogButtonSpacing}" />
                                         <Setter Target="SecondaryColumn.Width" Value="*" />
                                         <Setter Target="SecondaryButton.(Grid.Column)" Value="2" />
                                     </VisualState.Setters>
@@ -255,8 +265,8 @@
                                         IsTabStop="False">
                                         <Grid
                                             Background="{ThemeResource ContentDialogTopOverlay}"
-                                            Padding="{StaticResource ContentDialogPadding}"
-                                            BorderThickness="{StaticResource ContentDialogSeparatorThickness}"
+                                            Padding="{ThemeResource ContentDialogPadding}"
+                                            BorderThickness="{ThemeResource ContentDialogSeparatorThickness}"
                                             BorderBrush="{ThemeResource ContentDialogSeparatorBorderBrush}">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
@@ -264,7 +274,7 @@
                                             </Grid.RowDefinitions>
                                             <ContentControl
                                                 x:Name="Title"
-                                                Margin="{StaticResource ContentDialogTitleMargin}"
+                                                Margin="{ThemeResource ContentDialogTitleMargin}"
                                                 Content="{TemplateBinding Title}"
                                                 ContentTemplate="{TemplateBinding TitleTemplate}"
                                                 FontSize="20"
@@ -305,13 +315,13 @@
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Bottom"
                                         XYFocusKeyboardNavigation="Enabled"
-                                        Padding="{StaticResource ContentDialogPadding}"
+                                        Padding="{ThemeResource ContentDialogPadding}"
                                         Background="{TemplateBinding Background}">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition x:Name="PrimaryColumn" Width="*" />
                                             <ColumnDefinition x:Name="FirstSpacer" Width="0" />
                                             <ColumnDefinition x:Name="SecondaryColumn" Width="0" />
-                                            <ColumnDefinition x:Name="SecondSpacer" Width="{StaticResource ContentDialogButtonSpacing}" />
+                                            <ColumnDefinition x:Name="SecondSpacer" Width="{ThemeResource ContentDialogButtonSpacing}" />
                                             <ColumnDefinition x:Name="CloseColumn" Width="*" />
                                         </Grid.ColumnDefinitions>
                                         <Button
