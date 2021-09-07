@@ -42,6 +42,7 @@
             <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
 
+            <TextTrimming x:Key="MenuFlyoutItemTextTrimming">Clip</TextTrimming>
             <Thickness x:Key="MenuFlyoutItemBorderThickness">0</Thickness>
             <Thickness x:Key="MenuFlyoutSubItemBorderThickness">0</Thickness>
 
@@ -128,6 +129,7 @@
             <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
             <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">2</Thickness>
 
+            <TextTrimming x:Key="MenuFlyoutItemTextTrimming">Clip</TextTrimming>
             <Thickness x:Key="MenuFlyoutItemBorderThickness">0</Thickness>
             <Thickness x:Key="MenuFlyoutSubItemBorderThickness">0</Thickness>
 
@@ -214,6 +216,7 @@
             <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
             <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
 
+            <TextTrimming x:Key="MenuFlyoutItemTextTrimming">Clip</TextTrimming>
             <Thickness x:Key="MenuFlyoutItemBorderThickness">0</Thickness>
             <Thickness x:Key="MenuFlyoutSubItemBorderThickness">0</Thickness>
 
@@ -432,7 +435,7 @@
                         </Viewbox>
                         <TextBlock x:Name="TextBlock"
                             Text="{TemplateBinding Text}"
-                            TextTrimming="Clip"
+                            TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}"
                             Foreground="{TemplateBinding Foreground}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -574,7 +577,7 @@
                             x:Name="TextBlock"
                             Grid.Column="1"
                             Text="{TemplateBinding Text}"
-                            TextTrimming="Clip"
+                            TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}"
                             Foreground="{TemplateBinding Foreground}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -710,7 +713,7 @@
                                 Grid.Column="0"
                                 Foreground="{TemplateBinding Foreground}"
                                 Text="{TemplateBinding Text}"
-                                TextTrimming="Clip"
+                                TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                             <FontIcon x:Name="SubItemChevron"
@@ -857,7 +860,7 @@
                         </Viewbox>
                         <TextBlock x:Name="TextBlock"
                             Text="{TemplateBinding Text}"
-                            TextTrimming="Clip"
+                            TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}"
                             Foreground="{TemplateBinding Foreground}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -1000,7 +1003,7 @@
                         <TextBlock x:Name="TextBlock"
                             Grid.Column="1"
                             Text="{TemplateBinding Text}"
-                            TextTrimming="Clip"
+                            TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}"
                             Foreground="{TemplateBinding Foreground}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -1140,7 +1143,7 @@
                                 Grid.Column="0"
                                 Foreground="{TemplateBinding Foreground}"
                                 Text="{TemplateBinding Text}"
-                                TextTrimming="Clip"
+                                TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                             <FontIcon x:Name="SubItemChevron"

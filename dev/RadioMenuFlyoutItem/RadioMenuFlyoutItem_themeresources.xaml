@@ -132,7 +132,7 @@
                             x:Name="TextBlock"
                             Grid.Column="1"
                             Text="{TemplateBinding Text}"
-                            TextTrimming="Clip"
+                            TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}"
                             Foreground="{TemplateBinding Foreground}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -279,7 +279,7 @@
                                 Grid.Column="1"
                                 Foreground="{TemplateBinding Foreground}"
                                 Text="{TemplateBinding Text}"
-                                TextTrimming="Clip"
+                                TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                             <FontIcon x:Name="SubItemChevron"
