@@ -255,7 +255,7 @@ void XamlControlsResources::UpdateTintLuminosityOpacity(winrt::Windows::UI::Xaml
     {
         // On 19h1 and 19h2 there is a heap corruption bug that occurs when setting the TintLuminosityOpacity via the property,
         // So we'll set it by the DP instead.
-        //brush.SetValue(winrt::Windows::UI::Xaml::Media::AcrylicBrush::TintLuminosityOpacityProperty(), box_value(luminosityValue));
+        brush.SetValue(winrt::Windows::UI::Xaml::Media::AcrylicBrush::TintLuminosityOpacityProperty(), box_value(luminosityValue));
     }
 }
 
