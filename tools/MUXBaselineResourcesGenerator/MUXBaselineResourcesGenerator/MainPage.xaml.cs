@@ -79,7 +79,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var resourcesKeys = new HashSet<string>();
 
-            var resourceDictionaries = new XamlControlsResources() { };
+            var resourceDictionaries = new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version2};
 
             foreach (var dictionaryName in resourceDictionaries.ThemeDictionaries.Keys)
             {

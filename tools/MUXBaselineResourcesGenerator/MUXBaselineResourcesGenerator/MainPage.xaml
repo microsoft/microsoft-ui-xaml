@@ -12,7 +12,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Horizontal" Spacing="10">
-            <Button Content="Retrieve Baseline Resources from WinUI 2.5 stable" Name="RetrieveResources" Click="RetrieveResources_Click"/>
+            <Button Content="Retrieve Baseline Resources from WinUI 2.6 stable" Name="RetrieveResources" Click="RetrieveResources_Click"/>
             <Button Content="Copy" Name="Copy" Click="Copy_Click" />
         </StackPanel>
 
