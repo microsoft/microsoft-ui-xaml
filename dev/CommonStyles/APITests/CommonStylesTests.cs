@@ -87,7 +87,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 EnsureNoMissingThemeResources(
-                BaselineResources.BaselineResourcesList,
+                BaselineResources.BaselineResourcesList2dot6dot2StableV2,
                 new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version2 });
             });
         }
@@ -105,7 +105,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 EnsureNoMissingThemeResources(
-                BaselineResources.BaselineResourcesList,
+                BaselineResources.BaselineResourcesList2dot5Stable,
                 new XamlControlsResources() { ControlsResourcesVersion = ControlsResourcesVersion.Version1 });
             });
         }
