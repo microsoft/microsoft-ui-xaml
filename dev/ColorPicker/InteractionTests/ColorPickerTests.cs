@@ -507,6 +507,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void VerifyHsvUpdatesOnSpectrumSelection()
+        {
+            using (var setup = SetupColorPickerTest())
+            {
+                setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrum(0.5, 0.5));
+                VerifySelectedColorIsNear(127, 255, 252);
+                VerifySelectionEllipseIsNear(127, 127);
+               
+                WriteInTextBox(ValueTextBoxAutomationId, "0");
+                VerifySelectedColorIsNear(0, 0, 0);
+
+                setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrum(0.25, 0.25));
+                VerifySelectedColorIsNear(0, 0, 0);
+
+                Verify.AreEqual("89", (new Edit(FindElement.ById(HueTextBoxAutomationId))).Value);
+                Verify.AreEqual("75", (new Edit(FindElement.ById(SaturationTextBoxAutomationId))).Value);
+                Verify.AreEqual("0", (new Edit(FindElement.ById(ValueTextBoxAutomationId))).Value);
+            }
+        }
+
+        [TestMethod]
         public void CanSelectPreviousColor()
         {
             using (var setup = SetupColorPickerTest(TestOptions.DisableColorSpectrumLoadWait))
