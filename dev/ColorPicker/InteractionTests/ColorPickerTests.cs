@@ -489,19 +489,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             // We snap to the nearest HSV value and then derive the RGB value and ellipse position from that,
             // so we're bound to run into rounding errors along the way, which is what accounts for the slightly
             // different values we get in RTL where our x-axis is flipped.
-            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrum(0.5, 0.5));
+            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrumAndWaitForColorChange(0.5, 0.5));
             VerifySelectedColorIsNear(127, 255, 252);
             VerifySelectionEllipseIsNear(127, 127);
-            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrum(0.25, 0.25));
+            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrumAndWaitForColorChange(0.25, 0.25));
             VerifySelectedColorIsNear(163, isRTL ? 63 : 255, isRTL ? 255 : 63);
             VerifySelectionEllipseIsNear(isRTL ? 194 : 63, 63);
-            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrum(0.75, 0.25));
+            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrumAndWaitForColorChange(0.75, 0.25));
             VerifySelectedColorIsNear(151, isRTL ? 255 : 63, isRTL ? 63 : 255);
             VerifySelectionEllipseIsNear(isRTL ? 66 : 191, 63);
-            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrum(0.25, 0.75));
+            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrumAndWaitForColorChange(0.25, 0.75));
             VerifySelectedColorIsNear(224, isRTL ? 191 : 255, isRTL ? 255 : 191);
             VerifySelectionEllipseIsNear(isRTL ? 194 : 63, 192);
-            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrum(0.75, 0.75));
+            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrumAndWaitForColorChange(0.75, 0.75));
             VerifySelectedColorIsNear(220, isRTL ? 255 : 191, isRTL ? 191 : 255);
             VerifySelectionEllipseIsNear(isRTL ? 66 : 191, 192);
         }
@@ -511,18 +511,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = SetupColorPickerTest())
             {
-                setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrum(0.5, 0.5));
+                TapOnColorSpectrumAndWaitForColorChange(0.5, 0.5);
                 VerifySelectedColorIsNear(127, 255, 252);
                 VerifySelectionEllipseIsNear(127, 127);
                
                 WriteInTextBox(ValueTextBoxAutomationId, "0");
                 VerifySelectedColorIsNear(0, 0, 0);
 
-                setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrum(0.25, 0.25));
+                // Since Value is 0, the RGB value stays black and does not trigger the colorChangedEvent,
+                // so this helper function is used instead.
+                TapOnColorSpectrum(0.25, 0.25);
+                Wait.ForIdle();
+
+                VerifySelectedColorIsNear(0, 0, 0);
+                
+                Verify.AreEqual("90", (new Edit(FindElement.ById(HueTextBoxAutomationId))).Value);
+                Verify.AreEqual("75", (new Edit(FindElement.ById(SaturationTextBoxAutomationId))).Value);
+                Verify.AreEqual("0", (new Edit(FindElement.ById(ValueTextBoxAutomationId))).Value);
+
+                TapOnColorSpectrum(0.75, 0.75);
+                Wait.ForIdle();
+
                 VerifySelectedColorIsNear(0, 0, 0);
 
-                Verify.AreEqual("89", (new Edit(FindElement.ById(HueTextBoxAutomationId))).Value);
-                Verify.AreEqual("75", (new Edit(FindElement.ById(SaturationTextBoxAutomationId))).Value);
+                Verify.AreEqual("270", (new Edit(FindElement.ById(HueTextBoxAutomationId))).Value);
+                Verify.AreEqual("25", (new Edit(FindElement.ById(SaturationTextBoxAutomationId))).Value);
                 Verify.AreEqual("0", (new Edit(FindElement.ById(ValueTextBoxAutomationId))).Value);
             }
         }
@@ -990,7 +1003,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = SetupColorPickerTest())
             {
-                TapOnColorSpectrum(0.5, 0.5);
+                TapOnColorSpectrumAndWaitForColorChange(0.5, 0.5);
                 VerifyElementIsFocused(ColorSpectrumAutomationId);
             }
         }
@@ -1362,6 +1375,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         private void TapOnColorSpectrum(double xPercent, double yPercent)
+        {
+            ColorSpectrum colorSpectrum = new ColorSpectrum(FindElement.ById(ColorSpectrumAutomationId));
+
+            int colorSpectrumWidth = colorSpectrum.BoundingRectangle.Width;
+            int colorSpectrumHeight = colorSpectrum.BoundingRectangle.Height;
+
+            double xPosition = xPercent * (colorSpectrumWidth - 1);
+            double yPosition = yPercent * (colorSpectrumHeight - 1);
+
+            InputHelper.Tap(colorSpectrum, xPosition, yPosition);
+        }
+
+        private void TapOnColorSpectrumAndWaitForColorChange(double xPercent, double yPercent)
         {
             ColorSpectrum colorSpectrum = new ColorSpectrum(FindElement.ById(ColorSpectrumAutomationId));
 
