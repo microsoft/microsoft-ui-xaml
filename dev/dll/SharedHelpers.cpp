@@ -43,6 +43,11 @@ bool SharedHelpers::Is21H1OrHigher()
     return IsAPIContractV14Available();
 }
 
+bool SharedHelpers::Is20H1OrHigher()
+{
+    return IsAPIContractV10Available();
+}
+
 bool SharedHelpers::IsVanadiumOrHigher()
 {
     return IsAPIContractV9Available();
@@ -237,6 +242,11 @@ template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
 bool SharedHelpers::IsAPIContractV14Available()
 {
     return IsAPIContractVxAvailable<14>();
+}
+
+bool SharedHelpers::IsAPIContractV10Available()
+{
+    return IsAPIContractVxAvailable<10>();
 }
 
 bool SharedHelpers::IsAPIContractV9Available()
