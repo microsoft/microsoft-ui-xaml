@@ -124,7 +124,7 @@
     </Style>
 
     <Style TargetType="local:InfoBadge" x:Key="InformationalDotInfoBadgeStyle" BasedOn="{StaticResource DefaultInfoBadgeStyle}">
-        <Setter Property="Background" Value="{ThemeResource SystemFillColorAttentionBrush}"/>
+        <Setter Property="Background" Value="{ThemeResource SystemFillColorSolidNeutralBrush}"/>
     </Style>
 
     <Style TargetType="local:InfoBadge" x:Key="InformationalValueInfoBadgeStyle" BasedOn="{StaticResource InformationalDotInfoBadgeStyle}"/>
