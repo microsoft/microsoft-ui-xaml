@@ -247,7 +247,10 @@
     <FeatureAnimatedIconEnabled>true</FeatureAnimatedIconEnabled>
     <FeatureMonochromaticOverlayPresenterEnabled>true</FeatureMonochromaticOverlayPresenterEnabled>
     <FeatureInfoBadgeEnabled>true</FeatureInfoBadgeEnabled>
+    <!-- Webview2 has been removed for the 2.7 release. -->
     <FeatureWebView2Enabled Condition="'$(Platform)' != 'ARM'">true</FeatureWebView2Enabled>
+    <!--<FeatureWebView2Enabled>false</FeatureWebView2Enabled>-->
+  
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>
