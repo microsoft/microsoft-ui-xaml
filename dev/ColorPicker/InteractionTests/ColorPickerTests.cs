@@ -524,19 +524,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 VerifySelectedColorIsNear(0, 0, 0);
+
+                // Allowing +/-1 devation
+                const double errorMargin = 1;
                 
-                Verify.AreEqual("90", (new Edit(FindElement.ById(HueTextBoxAutomationId))).Value);
-                Verify.AreEqual("75", (new Edit(FindElement.ById(SaturationTextBoxAutomationId))).Value);
-                Verify.AreEqual("0", (new Edit(FindElement.ById(ValueTextBoxAutomationId))).Value);
+                Verify.IsLessThanOrEqual(90 - Double.Parse((new Edit(FindElement.ById(HueTextBoxAutomationId))).Value), errorMargin);
+                Verify.IsLessThanOrEqual(75- Double.Parse((new Edit(FindElement.ById(SaturationTextBoxAutomationId))).Value), errorMargin);
+                Verify.IsLessThanOrEqual(0 - Double.Parse((new Edit(FindElement.ById(ValueTextBoxAutomationId))).Value), errorMargin);
 
                 TapOnColorSpectrum(0.75, 0.75);
                 Wait.ForIdle();
 
                 VerifySelectedColorIsNear(0, 0, 0);
 
-                Verify.AreEqual("270", (new Edit(FindElement.ById(HueTextBoxAutomationId))).Value);
-                Verify.AreEqual("25", (new Edit(FindElement.ById(SaturationTextBoxAutomationId))).Value);
-                Verify.AreEqual("0", (new Edit(FindElement.ById(ValueTextBoxAutomationId))).Value);
+                Verify.IsLessThanOrEqual(270 - Double.Parse((new Edit(FindElement.ById(HueTextBoxAutomationId))).Value), errorMargin);
+                Verify.IsLessThanOrEqual(25 - Double.Parse((new Edit(FindElement.ById(SaturationTextBoxAutomationId))).Value), errorMargin);
+                Verify.IsLessThanOrEqual(0 - Double.Parse((new Edit(FindElement.ById(ValueTextBoxAutomationId))).Value), errorMargin);
             }
         }
 
