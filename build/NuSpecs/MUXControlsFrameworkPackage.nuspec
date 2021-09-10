@@ -15,9 +15,9 @@
     <iconUrl>https://aka.ms/winui_icon</iconUrl>
 
     <!--WebView2 has been removed for the 2.7 release-->
-    <dependencies>
+    <!-- <dependencies>
       <dependency id="Microsoft.Web.WebView2" version="[1.0.955-prerelease,)" />
-    </dependencies>  
+    </dependencies>   -->
   </metadata>
   <files>
     <file src="readme.txt"/>
