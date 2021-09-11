@@ -363,7 +363,7 @@ unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
         static Windows.UI.Xaml.DependencyProperty MenuItemsSourceProperty{ get; };
     }
 
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V2]
     {
         [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         InfoBadge InfoBadge{ get; set; };
