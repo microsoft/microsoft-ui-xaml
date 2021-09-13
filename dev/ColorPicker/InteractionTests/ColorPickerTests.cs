@@ -528,9 +528,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Allowing +/-1 devation
                 const double errorMargin = 1;
                 
-                Verify.IsLessThanOrEqual(90 - Double.Parse((new Edit(FindElement.ById(HueTextBoxAutomationId))).Value), errorMargin);
-                Verify.IsLessThanOrEqual(75- Double.Parse((new Edit(FindElement.ById(SaturationTextBoxAutomationId))).Value), errorMargin);
-                Verify.IsLessThanOrEqual(0 - Double.Parse((new Edit(FindElement.ById(ValueTextBoxAutomationId))).Value), errorMargin);
+                Verify.IsLessThanOrEqual(Math.Abs(90 - Double.Parse((new Edit(FindElement.ById(HueTextBoxAutomationId))).Value)), errorMargin);
+                Verify.IsLessThanOrEqual(Math.Abs(75 - Double.Parse((new Edit(FindElement.ById(SaturationTextBoxAutomationId))).Value)), errorMargin);
+                Verify.IsLessThanOrEqual(Math.Abs(0 - Double.Parse((new Edit(FindElement.ById(ValueTextBoxAutomationId))).Value)), errorMargin);
 
                 TapOnColorSpectrum(0.75, 0.75);
                 Wait.ForIdle();
