@@ -272,7 +272,7 @@
     <x:Double x:Key="MenuFlyoutSeparatorHeight">1</x:Double>
     <Thickness x:Key="MenuFlyoutPresenterThemePadding">0,2,0,2</Thickness>
     <x:Double x:Key="MenuFlyoutThemeMinHeight">32</x:Double>
-    <Thickness x:Key="MenuFlyoutItemChevronMargin">24,0,0,0</Thickness>
+    <Thickness x:Key="MenuFlyoutItemChevronMargin">24,0,0,-1</Thickness>
     <Thickness x:Key="MenuFlyoutSeparatorThemePadding">-4,1,-4,1</Thickness>
     <Thickness x:Key="MenuFlyoutItemMargin">4,2,4,2</Thickness>
     <Thickness x:Key="MenuFlyoutItemThemePadding">11,8,11,9</Thickness>
@@ -718,7 +718,7 @@
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                             <FontIcon x:Name="SubItemChevron"
                                 Grid.Column="1"
-                                Glyph="&#xE0E3;"
+                                Glyph="&#xE974;"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 FontSize="12"
                                 AutomationProperties.AccessibilityView="Raw"
@@ -1148,7 +1148,7 @@
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                             <FontIcon x:Name="SubItemChevron"
                                 Grid.Column="1"
-                                Glyph="&#xE0E3;"
+                                Glyph="&#xE974;"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 FontSize="12"
                                 AutomationProperties.AccessibilityView="Raw"
