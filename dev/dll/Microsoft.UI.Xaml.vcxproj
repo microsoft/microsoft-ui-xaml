@@ -10,6 +10,7 @@
   <Import Project="$(MSBuildProjectDirectory)\..\..\environment.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\ProjectConfigurations.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\version.props" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\build\HybridCRT.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</ProjectGuid>
     <Keyword>DynamicLibrary</Keyword>
@@ -223,6 +224,10 @@
       <GenerateMapFile>true</GenerateMapFile>
       <LinkTimeCodeGeneration Condition="'$(Configuration)'=='Release'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <AdditionalOptions Condition="'$(Configuration)'=='Release'">/debugtype:cv,fixup %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_x64_Desktop)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x86'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_x86_Desktop)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='arm'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_arm_Desktop)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='arm64'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_arm64_Desktop)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
       <DisableSpecificWarnings>4100;4189;4467;4702;6326;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -885,14 +890,12 @@
     <Error Condition="!Exists('..\..\packages\Microsoft.Web.WebView2.1.0.955-prerelease\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Web.WebView2.1.0.955-prerelease\build\native\Microsoft.Web.WebView2.targets'))" />
   </Target>
   <!-- We want to generate SourceLink urls to GitHub even if we build against the AzDO repo -->
-  <Target Name="_TranslateAzureDevOpsUrlToGitHubUrl"
-          DependsOnTargets="$(SourceControlManagerUrlTranslationTargets)"
-          BeforeTargets="SourceControlManagerPublishTranslatedUrls">
+  <Target Name="_TranslateAzureDevOpsUrlToGitHubUrl" DependsOnTargets="$(SourceControlManagerUrlTranslationTargets)" BeforeTargets="SourceControlManagerPublishTranslatedUrls">
     <PropertyGroup>
       <WinUIGitHubUrl>https://github.com/microsoft/microsoft-ui-xaml</WinUIGitHubUrl>
-      <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://microsoft.visualstudio.com/DefaultCollection/WinUI/_git/microsoft-ui-xaml-staging'" >$(WinUIGitHubUrl)</ScmRepositoryUrl>
-      <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://microsoft.visualstudio.com/WinUI/_git/microsoft-ui-xaml-staging'" >$(WinUIGitHubUrl)</ScmRepositoryUrl>
-      <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://dev.azure.com/microsoft/WinUI/_git/microsoft-ui-xaml-staging'" >$(WinUIGitHubUrl)</ScmRepositoryUrl>
+      <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://microsoft.visualstudio.com/DefaultCollection/WinUI/_git/microsoft-ui-xaml-staging'">$(WinUIGitHubUrl)</ScmRepositoryUrl>
+      <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://microsoft.visualstudio.com/WinUI/_git/microsoft-ui-xaml-staging'">$(WinUIGitHubUrl)</ScmRepositoryUrl>
+      <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://dev.azure.com/microsoft/WinUI/_git/microsoft-ui-xaml-staging'">$(WinUIGitHubUrl)</ScmRepositoryUrl>
     </PropertyGroup>
     <ItemGroup>
       <SourceRoot Update="@(SourceRoot)">
