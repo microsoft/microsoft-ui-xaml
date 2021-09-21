@@ -104,7 +104,8 @@ void ColorPickerSlider::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
     const IncrementDirection direction =
         ((args.Key() == winrt::VirtualKey::Left && !shouldInvertHorizontalDirection) ||
             (args.Key() == winrt::VirtualKey::Right && shouldInvertHorizontalDirection) ||
-            args.Key() == winrt::VirtualKey::Up) ?
+            (Orientation() == winrt::Orientation::Horizontal && args.Key() == winrt::VirtualKey::Up) ||
+            (Orientation() == winrt::Orientation::Vertical && args.Key() == winrt::VirtualKey::Down)) ?
         IncrementDirection::Lower :
         IncrementDirection::Higher;
 
