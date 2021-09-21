@@ -142,7 +142,7 @@ unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.Dependenc
     Windows.UI.Xaml.Visibility LeftPaneVisibility { get; };
     Boolean SingleSelectionFollowsFocus { get; };
     Double PaneToggleButtonWidth{ get; };
-    Double SmallerPaneToggleButtonWidth{ get; };   
+    Double SmallerPaneToggleButtonWidth{ get; };    
 
     static Windows.UI.Xaml.DependencyProperty TopPaddingProperty { get; };
     static Windows.UI.Xaml.DependencyProperty OverflowButtonVisibilityProperty { get; };
@@ -153,6 +153,14 @@ unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.Dependenc
     static Windows.UI.Xaml.DependencyProperty SingleSelectionFollowsFocusProperty { get; };
     static Windows.UI.Xaml.DependencyProperty PaneToggleButtonWidthProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SmallerPaneToggleButtonWidthProperty{ get; };
+
+    [MUX_PREVIEW]
+    {
+        [MUX_DEFAULT_VALUE("320.0")]
+        Double OpenPaneWidth{ get; };
+
+        static Windows.UI.Xaml.DependencyProperty OpenPaneWidthProperty{ get; };
+    }
 }
 
 [MUX_PUBLIC]
@@ -353,6 +361,14 @@ unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
         static Windows.UI.Xaml.DependencyProperty IsChildSelectedProperty{ get; };
         static Windows.UI.Xaml.DependencyProperty MenuItemsProperty{ get; };
         static Windows.UI.Xaml.DependencyProperty MenuItemsSourceProperty{ get; };
+    }
+
+    [MUX_PUBLIC_V2]
+    {
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        InfoBadge InfoBadge{ get; set; };
+
+        static Windows.UI.Xaml.DependencyProperty InfoBadgeProperty{ get; };
     }
 }
 

@@ -327,11 +327,17 @@ void ColorSpectrum::SetColor()
 void ColorSpectrum::RaiseColorChanged()
 {
     const winrt::Color newColor = Color();
-
-    if (m_oldColor.A != newColor.A ||
+    const auto colorChanged =
+        m_oldColor.A != newColor.A ||
         m_oldColor.R != newColor.R ||
         m_oldColor.G != newColor.G ||
-        m_oldColor.B != newColor.B)
+        m_oldColor.B != newColor.B;
+    const auto areBothColorsBlack =
+        (m_oldColor.R == newColor.R && newColor.R == 0) ||
+        (m_oldColor.G == newColor.G && newColor.G == 0) ||
+        (m_oldColor.B == newColor.B && newColor.B == 0);
+
+    if (colorChanged || areBothColorsBlack)
     {
         auto colorChangedEventArgs = winrt::make_self<ColorChangedEventArgs>();
 

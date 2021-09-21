@@ -51,36 +51,46 @@ namespace SystemBackdropComponentInternal
         m_capabilities = winrt::Windows::UI::Composition::CompositionCapabilities::GetForCurrentView();
         m_capabilitiesEventRevoker = { m_capabilities, m_capabilities.Changed([&](auto&&, auto&&)
             {
-                m_dispatcherQueue.TryEnqueue([&]()
-                    {
-                        if (m_capabilities.AreEffectsFast())
-                        {
-                            m_policy->SetIncompatibleGraphicsDevice(false);
-                        }
-                        else
-                        {
-                            m_policy->SetIncompatibleGraphicsDevice(true);
-                        }
+                auto capabilitiesWeakRef = winrt::make_weak(m_capabilities);
 
-                        ActivateOrDeactivateController();
+                m_dispatcherQueue.TryEnqueue([capabilitiesWeakRef, this]()
+                    {
+                        if (auto capabilities = capabilitiesWeakRef.get())
+                        {
+                            if (capabilities.AreEffectsFast())
+                            {
+                                m_policy->SetIncompatibleGraphicsDevice(false);
+                            }
+                            else
+                            {
+                                m_policy->SetIncompatibleGraphicsDevice(true);
+                            }
+
+                            ActivateOrDeactivateController();
+                        }
                     });
             }) };
 
         m_uiSettings = winrt::Windows::UI::ViewManagement::UISettings();
         m_uiSettingsEventRevoker = m_uiSettings.AdvancedEffectsEnabledChanged(winrt::auto_revoke, [&](auto&&, auto&&)
             {
-                m_dispatcherQueue.TryEnqueue([&]()
-                    {
-                        if (m_uiSettings.AdvancedEffectsEnabled())
-                        {
-                            m_policy->SetTransparencyDisabled(false);
-                        }
-                        else
-                        {
-                            m_policy->SetTransparencyDisabled(true);
-                        }
+                auto uiSettingsWeakRef = winrt::make_weak(m_uiSettings);
 
-                        ActivateOrDeactivateController();
+                m_dispatcherQueue.TryEnqueue([uiSettingsWeakRef, this]()
+                    {
+                        if (auto uiSettings = uiSettingsWeakRef.get())
+                        {
+                            if (uiSettings.AdvancedEffectsEnabled())
+                            {
+                                m_policy->SetTransparencyDisabled(false);
+                            }
+                            else
+                            {
+                                m_policy->SetTransparencyDisabled(true);
+                            }
+
+                            ActivateOrDeactivateController();
+                        }
                     });
             });
     }

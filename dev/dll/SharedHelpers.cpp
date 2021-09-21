@@ -43,6 +43,11 @@ bool SharedHelpers::Is21H1OrHigher()
     return IsAPIContractV14Available();
 }
 
+bool SharedHelpers::Is20H1OrHigher()
+{
+    return IsAPIContractV10Available();
+}
+
 bool SharedHelpers::IsVanadiumOrHigher()
 {
     return IsAPIContractV9Available();
@@ -125,14 +130,6 @@ bool SharedHelpers::IsFlyoutShowOptionsAvailable()
         Is19H1OrHigher() ||
         winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Primitives.FlyoutShowOptions");
     return s_isFlyoutShowOptionsAvailable;
-}
-
-bool SharedHelpers::IsScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable()
-{
-    static bool s_isScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable =
-        Is19H1OrHigher() ||
-        winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.ScrollViewer", L"ReduceViewportForCoreInputViewOcclusions");
-    return s_isScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable;
 }
 
 bool SharedHelpers::IsScrollContentPresenterSizesContentToTemplatedParentAvailable()
@@ -237,6 +234,11 @@ template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
 bool SharedHelpers::IsAPIContractV14Available()
 {
     return IsAPIContractVxAvailable<14>();
+}
+
+bool SharedHelpers::IsAPIContractV10Available()
+{
+    return IsAPIContractVxAvailable<10>();
 }
 
 bool SharedHelpers::IsAPIContractV9Available()

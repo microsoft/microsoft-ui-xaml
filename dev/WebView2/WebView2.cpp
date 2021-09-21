@@ -22,6 +22,7 @@
 
 #include <winuser.h>
 #include <uiautomationclient.h>
+#include <WebView2Interop.h>
 
 WebView2::WebView2()
 {

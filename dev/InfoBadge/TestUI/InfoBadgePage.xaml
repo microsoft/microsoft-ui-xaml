@@ -34,12 +34,63 @@
             <controls:InfoBadge x:Name="DefaultValueInfoBadge"
                                 Value="5"
                                 HorizontalAlignment="Right"/>
+            <controls:InfoBadge x:Name="DefaultFontIconInfoBadge1"
+                                HorizontalAlignment="Right">
+                <controls:InfoBadge.IconSource>
+                    <controls:FontIconSource FontFamily="XamlAutoFontFamily" Glyph="9"/>
+                </controls:InfoBadge.IconSource>
+            </controls:InfoBadge>
+            <controls:InfoBadge x:Name="DefaultFontIconInfoBadge2"
+                                HorizontalAlignment="Right">
+                <controls:InfoBadge.IconSource>
+                    <controls:FontIconSource FontFamily="XamlAutoFontFamily" Glyph="99+"/>
+                </controls:InfoBadge.IconSource>
+            </controls:InfoBadge>
+            <controls:InfoBadge x:Name="DefaultFontIconInfoBadge3"
+                                HorizontalAlignment="Right">
+                <controls:InfoBadge.IconSource>
+                    <controls:FontIconSource Glyph="&#xEA38;"/>
+                </controls:InfoBadge.IconSource>
+            </controls:InfoBadge>
             <controls:InfoBadge x:Name="DefaultIconInfoBadge"
                                 HorizontalAlignment="Right">
                 <controls:InfoBadge.IconSource>
                     <controls:SymbolIconSource Symbol="Setting"/>
                 </controls:InfoBadge.IconSource>
             </controls:InfoBadge>
+
+            <StackPanel Orientation="Horizontal" contract5Present:Spacing="5">
+                <StackPanel contract5Present:Spacing="2">
+                    <TextBlock Text="Attention styles:"/>
+                    <controls:InfoBadge Style="{StaticResource AttentionIconInfoBadgeStyle}" HorizontalAlignment="Right"/>
+                    <controls:InfoBadge Style="{StaticResource AttentionValueInfoBadgeStyle}" HorizontalAlignment="Right" Value="10"/>
+                    <controls:InfoBadge Style="{StaticResource AttentionDotInfoBadgeStyle}" HorizontalAlignment="Right"/>
+                </StackPanel>
+                <StackPanel contract5Present:Spacing="2">
+                    <TextBlock Text="Informational styles:"/>
+                    <controls:InfoBadge Style="{StaticResource InformationalIconInfoBadgeStyle}" HorizontalAlignment="Right"/>
+                    <controls:InfoBadge Style="{StaticResource InformationalValueInfoBadgeStyle}" HorizontalAlignment="Right" Value="10"/>
+                    <controls:InfoBadge Style="{StaticResource InformationalDotInfoBadgeStyle}" HorizontalAlignment="Right"/>
+                </StackPanel>
+                <StackPanel contract5Present:Spacing="2">
+                    <TextBlock Text="Success styles:"/>
+                    <controls:InfoBadge Style="{StaticResource SuccessIconInfoBadgeStyle}" HorizontalAlignment="Right"/>
+                    <controls:InfoBadge Style="{StaticResource SuccessValueInfoBadgeStyle}" HorizontalAlignment="Right" Value="10"/>
+                    <controls:InfoBadge Style="{StaticResource SuccessDotInfoBadgeStyle}" HorizontalAlignment="Right"/>
+                </StackPanel>
+                <StackPanel contract5Present:Spacing="2">
+                    <TextBlock Text="Caution styles:"/>
+                    <controls:InfoBadge Style="{StaticResource CautionIconInfoBadgeStyle}" HorizontalAlignment="Right"/>
+                    <controls:InfoBadge Style="{StaticResource CautionValueInfoBadgeStyle}" HorizontalAlignment="Right" Value="10"/>
+                    <controls:InfoBadge Style="{StaticResource CautionDotInfoBadgeStyle}" HorizontalAlignment="Right"/>
+                </StackPanel>
+                <StackPanel contract5Present:Spacing="2">
+                    <TextBlock Text="Critical styles:"/>
+                    <controls:InfoBadge Style="{StaticResource CriticalIconInfoBadgeStyle}" HorizontalAlignment="Right"/>
+                    <controls:InfoBadge Style="{StaticResource CriticalValueInfoBadgeStyle}" HorizontalAlignment="Right" Value="10"/>
+                    <controls:InfoBadge Style="{StaticResource CriticalDotInfoBadgeStyle}" HorizontalAlignment="Right"/>
+                </StackPanel>
+            </StackPanel>
         </StackPanel>
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
