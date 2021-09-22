@@ -1,0 +1,86 @@
+name: Bug report (NEW)
+description: File a bug report
+title: 
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For bugs related to UWP or the app models, please open a bug on the [Project Reunion repository](https://github.com/microsoft/ProjectReunion)
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Describe the bug
+      description: Please enter a short, clear description of the bug.
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Steps to reproduce the bug
+      description: Please provide any required setup and steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+  - type: textarea
+    attributes:
+      label: Expected behavior
+      description: Please provide a description of what you expected to happen
+  - type: textarea
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots here to help explain your problem
+  - type: input
+    validations:
+      required: true
+    attributes:
+      label: CLI version
+      description: |
+        Run the command `npx react-native --version` in your terminal and copy the results here
+      value: "npx react-native --version"
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Environment
+      description: |
+        Run the command `npx react-native info` in your terminal and copy the results here
+      value: "npx react-native info"
+      render: markdown
+  - type: checkboxes
+    attributes:
+      label: Windows app type
+      description: If you are using WinUI 3, please specify for which Windows app type you have encountered the issue.
+      options:
+        - label: "UWP"
+        - label: "Win32"
+  - type: dropdown
+    attributes:
+      label: Device form factor
+      description: Which device form factors did you see the issue on?
+      multiple: true
+      options:
+        - "Desktop"
+        - "Xbox"
+        - "Surface Hub"
+        - "IoT"
+  - type: dropdown
+    attributes:
+      label: Windows version
+      description: Which Windows versions did you see the issue on?
+      multiple: true
+      options:
+        - "Insider Build (xxxxx)"
+        - "May 2021 Update (19043)"
+        - "October 2020 Update (19042)"
+        - "May 2020 Update (19041)"
+        - "November 2019 Update (18363)"
+        - "May 2019 Update (18362)"
+        - "October 2018 Update (17763)"
+        - "April 2018 Update (17134)"
+        - "Fall Creators Update (16299)"
+        - "Creators Update (15063)"
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: Enter any other applicable info here
