@@ -30,23 +30,6 @@ body:
     attributes:
       label: Screenshots
       description: If applicable, add screenshots here to help explain your problem
-  - type: input
-    validations:
-      required: true
-    attributes:
-      label: CLI version
-      description: |
-        Run the command `npx react-native --version` in your terminal and copy the results here
-      value: "npx react-native --version"
-  - type: textarea
-    validations:
-      required: true
-    attributes:
-      label: Environment
-      description: |
-        Run the command `npx react-native info` in your terminal and copy the results here
-      value: "npx react-native info"
-      render: markdown
   - type: checkboxes
     attributes:
       label: Windows app type
