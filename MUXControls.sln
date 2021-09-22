@@ -673,6 +673,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WebView2_TestUI", "dev\WebV
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WebView2_InteractionTests", "dev\WebView2\InteractionTests\WebView2_InteractionTests.shproj", "{2B05A80E-7C01-449C-8345-7D3B3B2143E5}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ProgressRing_APITests", "dev\ProgressRing\APITests\ProgressRing_APITests.shproj", "{222EF6F6-0845-49E7-81F2-9686CEF85C67}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
@@ -699,6 +701,7 @@ Global
 		dev\Materials\Reveal\InteractionTests\Reveal_InteractionTests\Reveal_InteractionTests.projitems*{1f2872e7-28c9-4c01-88ed-73c43ee1c9a4}*SharedItemsImports = 13
 		dev\InfoBadge\TestUI\InfoBadge_TestUI.projitems*{1f30cac6-7efb-4ce9-b119-64821c117cb9}*SharedItemsImports = 13
 		dev\ScrollView\TestUI\ScrollView_TestUI.projitems*{20c52fd5-62fd-53b4-a4a0-995c9b5a014d}*SharedItemsImports = 13
+		dev\ProgressRing\APITests\ProgressRing_APITests.projitems*{222ef6f6-0845-49e7-81f2-9686cef85c67}*SharedItemsImports = 13
 		dev\PagerControl\TestUI\PagerControl_TestUI.projitems*{225c4174-3141-49b8-ade2-c7d3408d5103}*SharedItemsImports = 13
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\ScrollViewerIRefreshInfoProviderAdapter.vcxitems*{22a3d1c4-4d1c-4b04-b695-8fec39bfed86}*SharedItemsImports = 9
 		dev\Interactions\ButtonInteraction\ButtonInteraction.vcxitems*{2459bc06-2ae5-4c65-ba73-ab28090b6fab}*SharedItemsImports = 9
@@ -938,6 +941,7 @@ Global
 		dev\PipsPager\APITests\PipsPager_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\PipsPager\TestUI\PipsPager_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\ProgressBar\TestUI\ProgressBar_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\ProgressRing\APITests\ProgressRing_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\ProgressRing\TestUI\ProgressRing_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\PullToRefresh\RefreshContainer\TestUI\RefreshContainer_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\PullToRefresh\RefreshVisualizer\APITests\RefreshVisualizer_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
@@ -1038,6 +1042,7 @@ Global
 		dev\PipsPager\APITests\PipsPager_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\PipsPager\TestUI\PipsPager_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\ProgressBar\TestUI\ProgressBar_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\ProgressRing\APITests\ProgressRing_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\ProgressRing\TestUI\ProgressRing_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\PullToRefresh\RefreshContainer\TestUI\RefreshContainer_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\PullToRefresh\RefreshVisualizer\APITests\RefreshVisualizer_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
@@ -1677,6 +1682,7 @@ Global
 		{AD144714-93FC-4281-B500-A5C2193DBC60} = {1E54C076-7240-463A-A1B1-404187ABCDEB}
 		{3E535832-73B4-45B2-B550-34CB14B2C262} = {1E54C076-7240-463A-A1B1-404187ABCDEB}
 		{2B05A80E-7C01-449C-8345-7D3B3B2143E5} = {1E54C076-7240-463A-A1B1-404187ABCDEB}
+		{222EF6F6-0845-49E7-81F2-9686CEF85C67} = {4194505E-4848-4FC4-97D1-0BABF32A11C4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}
