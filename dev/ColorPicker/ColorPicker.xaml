@@ -197,6 +197,7 @@
 
                                         <Setter Target="ColorRepresentationComboBox.(Grid.Row)" Value="1"/>
                                         <Setter Target="ColorTextInputPanels.(Grid.Row)" Value="2"/>
+                                        <Setter Target="HexTextBox.TabIndex" Value="3"/>
                                         <Setter Target="HexTextBox.(Grid.Row)" Value="0"/>
                                         <Setter Target="HexTextBox.(Grid.Column)" Value="0"/>
                                         <Setter Target="HexTextBox.(Grid.ColumnSpan)" Value="3"/>
@@ -244,7 +245,8 @@
                                     MaxValue="{TemplateBinding MaxValue}"
                                     Shape="{TemplateBinding ColorSpectrumShape}"
                                     Components="{TemplateBinding ColorSpectrumComponents}"
-                                    contract7Present:CornerRadius="{TemplateBinding CornerRadius}" />
+                                    contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                    TabIndex="0"/>
                                 <Grid x:Name="ColorPreviewRectangleGrid" Grid.Column="1" Grid.Row="0" Width="44" Margin="12,0,0,0">
                                     <Grid.RowDefinitions>
                                         <RowDefinition />
@@ -290,7 +292,7 @@
                                         <LinearGradientBrush x:Name="ThirdDimensionSliderGradientBrush" />
                                     </Rectangle.Fill>
                                 </Rectangle>
-                                <primitives:ColorPickerSlider x:Name="ThirdDimensionSlider" Minimum="0" Maximum="100" ColorChannel="Value" Orientation="Horizontal" Style="{StaticResource ColorPickerSliderStyle}" IsThumbToolTipEnabled="False" />
+                                <primitives:ColorPickerSlider x:Name="ThirdDimensionSlider" Minimum="0" Maximum="100" ColorChannel="Value" Orientation="Horizontal" Style="{StaticResource ColorPickerSliderStyle}" IsThumbToolTipEnabled="False" TabIndex="1"/>
                             </Grid>
                             <Grid Margin="0,0,0,16" x:Name="AlphaSliderGrid" Grid.Row="2">
                                 <Rectangle x:Name="AlphaSliderCheckeredBackgroundRectangle" RenderTransformOrigin="0.5, 0.5" Height="12" VerticalAlignment="Center"
@@ -311,7 +313,7 @@
                                         <LinearGradientBrush x:Name="AlphaSliderGradientBrush" />
                                     </Rectangle.Fill>
                                 </Rectangle>
-                                <primitives:ColorPickerSlider x:Name="AlphaSlider" Minimum="0" Maximum="100" ColorChannel="Alpha" Orientation="Horizontal" Style="{StaticResource ColorPickerSliderStyle}" IsThumbToolTipEnabled="False" />
+                                <primitives:ColorPickerSlider x:Name="AlphaSlider" Minimum="0" Maximum="100" ColorChannel="Alpha" Orientation="Horizontal" Style="{StaticResource ColorPickerSliderStyle}" IsThumbToolTipEnabled="False" TabIndex="2"/>
                             </Grid>
                             <StackPanel x:Name="MoreEntriesPanel" Grid.Row="3" Margin="0,0,0,12">
                                 <ToggleButton
@@ -427,7 +429,7 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
-                                    <ComboBox Grid.Row="0" x:Name="ColorRepresentationComboBox" Width="120">
+                                    <ComboBox Grid.Row="0" x:Name="ColorRepresentationComboBox" Width="120" TabIndex="4">
                                         <ComboBoxItem x:Name="RGBComboBoxItem" Content="RGB" IsSelected="True"/>
                                         <ComboBoxItem x:Name="HSVComboBoxItem" Content="HSV"/>
                                     </ComboBox>
@@ -444,11 +446,11 @@
                                                     <RowDefinition/>
                                                     <RowDefinition/>
                                                 </Grid.RowDefinitions>
-                                                <TextBox x:Name="RedTextBox" Grid.Row="0" Grid.Column="0" Width="120" MaxLength="3" Text="255" Margin="0,12,0,0"/>
+                                                <TextBox x:Name="RedTextBox" Grid.Row="0" Grid.Column="0" Width="120" MaxLength="3" Text="255" Margin="0,12,0,0" />
                                                 <TextBlock x:Name="RedLabel" Grid.Row="0" Grid.Column="2" Text="Red" VerticalAlignment="Center" Margin="0,12,0,0"/>
-                                                <TextBox x:Name="GreenTextBox" Grid.Row="1" Grid.Column="0" Width="120" MaxLength="3" Text="255" Margin="0,12,0,0"/>
+                                                <TextBox x:Name="GreenTextBox" Grid.Row="1" Grid.Column="0" Width="120" MaxLength="3" Text="255" Margin="0,12,0,0" />
                                                 <TextBlock x:Name="GreenLabel" Grid.Row="1" Grid.Column="2" Text="Green" VerticalAlignment="Center" Margin="0,12,0,0"/>
-                                                <TextBox x:Name="BlueTextBox" Grid.Row="2" Grid.Column="0" Width="120" MaxLength="3" Text="255" Margin="0,12,0,0"/>
+                                                <TextBox x:Name="BlueTextBox" Grid.Row="2" Grid.Column="0" Width="120" MaxLength="3" Text="255" Margin="0,12,0,0" />
                                                 <TextBlock x:Name="BlueLabel" Grid.Row="2" Grid.Column="2" Text="Blue" VerticalAlignment="Center" Margin="0,12,0,0"/>
                                             </Grid>
                                             <Grid x:Name="HsvPanel" Visibility="Collapsed">
@@ -462,11 +464,11 @@
                                                     <RowDefinition/>
                                                     <RowDefinition/>
                                                 </Grid.RowDefinitions>
-                                                <TextBox x:Name="HueTextBox" Grid.Row="0" Grid.Column="0" Width="120" MaxLength="3" Text="0" Margin="0,12,0,0"/>
+                                                <TextBox x:Name="HueTextBox" Grid.Row="0" Grid.Column="0" Width="120" MaxLength="3" Text="0" Margin="0,12,0,0" />
                                                 <TextBlock x:Name="HueLabel" Grid.Row="0" Grid.Column="2" Text="Hue" VerticalAlignment="Center" Margin="0,12,0,0"/>
-                                                <TextBox x:Name="SaturationTextBox" Grid.Row="1" Grid.Column="0" Width="120" MaxLength="3" Text="0" Margin="0,12,0,0"/>
+                                                <TextBox x:Name="SaturationTextBox" Grid.Row="1" Grid.Column="0" Width="120" MaxLength="3" Text="0" Margin="0,12,0,0" />
                                                 <TextBlock x:Name="SaturationLabel" Grid.Row="1" Grid.Column="2" Text="Saturation" VerticalAlignment="Center" Margin="0,12,0,0"/>
-                                                <TextBox x:Name="ValueTextBox" Grid.Row="2" Grid.Column="0" Width="120" MaxLength="3" Text="100" Margin="0,12,0,0"/>
+                                                <TextBox x:Name="ValueTextBox" Grid.Row="2" Grid.Column="0" Width="120" MaxLength="3" Text="100" Margin="0,12,0,0" />
                                                 <TextBlock x:Name="ValueLabel" Grid.Row="2" Grid.Column="2" Text="Value" VerticalAlignment="Center" Margin="0,12,0,0"/>
                                             </Grid>
                                         </StackPanel>
@@ -479,11 +481,11 @@
                                             <Grid.RowDefinitions>
                                                 <RowDefinition/>
                                             </Grid.RowDefinitions>
-                                            <TextBox x:Name="AlphaTextBox" Width="120" MaxLength="4" Text="100%"/>
+                                            <TextBox x:Name="AlphaTextBox" Width="120" MaxLength="4" Text="100%" />
                                             <TextBlock x:Name="AlphaLabel" Grid.Column="2"  Text="Opacity" VerticalAlignment="Center"/>
                                         </Grid>
                                     </StackPanel>
-                                    <TextBox x:Name="HexTextBox" Grid.Column="2" MaxLength="7" Text="#FFFFFF" Width="132" HorizontalAlignment="Right" VerticalAlignment="Top" />
+                                    <TextBox x:Name="HexTextBox" Grid.Column="2" MaxLength="7" Text="#FFFFFF" Width="132" HorizontalAlignment="Right" VerticalAlignment="Top"/>
                                 </Grid>
                             </StackPanel>
                         </Grid>

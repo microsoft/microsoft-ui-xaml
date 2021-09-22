@@ -1300,6 +1300,87 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             LocalizationHelper.CompareStringSets(englishStrings, otherLanguageStrings);
         }
 
+        [TestMethod]
+        public void VerifyTabFocusOrder()
+        {
+            using (var setup = SetupColorPickerTest(TestOptions.EnableAlpha | TestOptions.DisableColorSpectrumLoadWait))
+            {
+                Log.Comment("Give initial keyboard focus to the color spectrum.");
+                FindElement.ById(ColorSpectrumAutomationId).SetFocus();
+                Wait.ForIdle();
+
+                Log.Comment("Give keyboard focus to the value slider using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(ThirdDimensionAutomationId);
+
+                Log.Comment("Give keyboard focus to the alpha slider using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(AlphaSliderAutomationId);
+
+                Log.Comment("Give keyboard focus to the Color Representation ComboBox using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(ColorRepresentationComboBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the red text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(RedTextBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the green text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(GreenTextBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the blue text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(BlueTextBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the alpha text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(AlphaTextBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the hex text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(HexTextBoxAutomationId);
+
+                SetIsHorizontalOrientation(true);
+
+                Log.Comment("Give initial keyboard focus to the color spectrum.");
+                FindElement.ById(ColorSpectrumAutomationId).SetFocus();
+                Wait.ForIdle();
+
+                Log.Comment("Give keyboard focus to the value slider using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(ThirdDimensionAutomationId);
+
+                Log.Comment("Give keyboard focus to the alpha slider using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(AlphaSliderAutomationId);
+
+                Log.Comment("Give keyboard focus to the hex text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(HexTextBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the Color Representation ComboBox using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(ColorRepresentationComboBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the red text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(RedTextBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the green text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(GreenTextBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the blue text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(BlueTextBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the alpha text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(AlphaTextBoxAutomationId);
+            }
+        }
+
         private void GetLocalizedText(IList<string> stringList)
         {
             ColorSpectrum colorSpectrum = new ColorSpectrum(FindElement.ById(ColorSpectrumAutomationId));
