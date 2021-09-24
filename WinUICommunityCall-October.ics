@@ -4,34 +4,34 @@ VERSION:2.0
 METHOD:PUBLISH
 X-MS-OLK-FORCEINSPECTOROPEN:TRUE
 BEGIN:VTIMEZONE
-TZID:Eastern Standard Time
+TZID:Pacific Standard Time
 BEGIN:STANDARD
 DTSTART:16011104T020000
 RRULE:FREQ=YEARLY;BYDAY=1SU;BYMONTH=11
-TZOFFSETFROM:-0400
-TZOFFSETTO:-0500
+TZOFFSETFROM:-0700
+TZOFFSETTO:-0800
 END:STANDARD
 BEGIN:DAYLIGHT
 DTSTART:16010311T020000
 RRULE:FREQ=YEARLY;BYDAY=2SU;BYMONTH=3
-TZOFFSETFROM:-0500
-TZOFFSETTO:-0400
+TZOFFSETFROM:-0800
+TZOFFSETTO:-0700
 END:DAYLIGHT
 END:VTIMEZONE
 BEGIN:VEVENT
 CLASS:PUBLIC
-CREATED:20210621T190245Z
-DESCRIPTION:Join us for the June 2021 edition of the WinUI Community Call\,
+CREATED:20210923T235734Z
+DESCRIPTION:Join us for the October 2021 edition of the WinUI Community Call\,
 	 where the WinUI team welcomes community members\, ecosystem partners\, an
 	d folks all across our team to answer all of your questions about WinUI.\n
-	\n \n\nWatch on YouTube: https://youtu.be/9EOKxjFyY68\n\n
-DTEND;TZID="Eastern Standard Time":20210630T130000
+	\n \n\nWatch on YouTube: https://youtu.be/h4apI79wt4o\n\n
+DTEND;TZID="Pacific Standard Time":20211020T100000
 DTSTAMP:20210621T190245Z
-DTSTART;TZID="Eastern Standard Time":20210630T120000
-LAST-MODIFIED:20210621T190245Z
+DTSTART;TZID="Pacific Standard Time":20211020T090000
+LAST-MODIFIED:20210923T235734Z
 PRIORITY:5
 SEQUENCE:0
-SUMMARY;LANGUAGE=en-us:WinUI Community Call - June 2021
+SUMMARY;LANGUAGE=en-us:WinUI Community Call - October 2021
 TRANSP:OPAQUE
 UID:040000008200E00074C5B7101A82E00800000000CB0BF2074B64D701000000000000000
 	01000000027E29D01A99C924DBD5CF1594EC24150
@@ -55,19 +55,14 @@ X-ALT-DESC;FMTTYPE=text/html:<html xmlns:v="urn:schemas-microsoft-com:vml"
 	o:idmap v:ext="edit" data="1" />\n</o:shapelayout></xml><![endif]-->\n</he
 	ad>\n<body lang="EN-US" link="#0563C1" vlink="#954F72" style="word-wrap:br
 	eak-word">\n<div class="WordSection1">\n<p class="MsoNormal">Join us for t
-	he June 2021 edition of the WinUI Community Call\, where the WinUI team we
+	he October 2021 edition of the WinUI Community Call\, where the WinUI team we
 	lcomes community members\, ecosystem partners\, and folks all across our t
 	eam to answer all of your questions about WinUI.<o:p></o:p></p>\n<p class=
 	"MsoNormal"><o:p>&nbsp\;</o:p></p>\n<p class="MsoNormal">Watch on YouTube:
-	 <a href="https://youtu.be/9EOKxjFyY68">https://youtu.be/9EOKxjFyY68</a><o
+	 <a href="https://youtu.be/h4apI79wt4o">https://youtu.be/h4apI79wt4o</a><o
 	:p></o:p></p>\n</div>\n</body>\n</html>\n
 X-MICROSOFT-CDO-BUSYSTATUS:BUSY
 X-MICROSOFT-CDO-IMPORTANCE:1
 X-MICROSOFT-DISALLOW-COUNTER:FALSE
-BEGIN:VALARM
-TRIGGER:-PT15M
-ACTION:DISPLAY
-DESCRIPTION:Reminder
-END:VALARM
 END:VEVENT
 END:VCALENDAR
