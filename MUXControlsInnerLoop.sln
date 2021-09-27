@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29009.5
@@ -494,6 +494,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "InfoBadge_TestUI", "dev\Inf
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "InfoBadge_InteractionTests", "dev\InfoBadge\InteractionTests\InfoBadge_InteractionTests.shproj", "{F55AB8BF-F828-4A2E-BCDF-68F22AED35C3}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ProgressRing_APITests", "dev\ProgressRing\APITests\ProgressRing_APITests.shproj", "{222EF6F6-0845-49E7-81F2-9686CEF85C67}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
@@ -520,6 +522,7 @@ Global
 		dev\Materials\Reveal\InteractionTests\Reveal_InteractionTests\Reveal_InteractionTests.projitems*{1f2872e7-28c9-4c01-88ed-73c43ee1c9a4}*SharedItemsImports = 13
 		dev\InfoBadge\TestUI\InfoBadge_TestUI.projitems*{1f30cac6-7efb-4ce9-b119-64821c117cb9}*SharedItemsImports = 13
 		dev\ScrollView\TestUI\ScrollView_TestUI.projitems*{20c52fd5-62fd-53b4-a4a0-995c9b5a014d}*SharedItemsImports = 13
+		dev\ProgressRing\APITests\ProgressRing_APITests.projitems*{222ef6f6-0845-49e7-81f2-9686cef85c67}*SharedItemsImports = 13
 		dev\PagerControl\TestUI\PagerControl_TestUI.projitems*{225c4174-3141-49b8-ade2-c7d3408d5103}*SharedItemsImports = 13
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\ScrollViewerIRefreshInfoProviderAdapter.vcxitems*{22a3d1c4-4d1c-4b04-b695-8fec39bfed86}*SharedItemsImports = 9
 		dev\Interactions\ButtonInteraction\ButtonInteraction.vcxitems*{2459bc06-2ae5-4c65-ba73-ab28090b6fab}*SharedItemsImports = 9
@@ -1158,6 +1161,7 @@ Global
 		{D83F60A3-EB44-46F2-8EE7-B28C90004E5F} = {FFCAAB60-C938-40C5-90E4-115584B22CDF}
 		{1F30CAC6-7EFB-4CE9-B119-64821C117CB9} = {FFCAAB60-C938-40C5-90E4-115584B22CDF}
 		{F55AB8BF-F828-4A2E-BCDF-68F22AED35C3} = {FFCAAB60-C938-40C5-90E4-115584B22CDF}
+		{222EF6F6-0845-49E7-81F2-9686CEF85C67} = {5A911304-2863-4A73-8023-26EFCB4E01DA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}

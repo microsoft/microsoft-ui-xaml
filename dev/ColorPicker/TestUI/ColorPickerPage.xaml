@@ -64,7 +64,7 @@
                     <CheckBox AutomationProperties.AutomationId="AlphaEnabledCheckBox" Content="Is alpha enabled" IsChecked="{Binding IsAlphaEnabled, ElementName=ColorPicker, Mode=TwoWay}" />
                     <CheckBox AutomationProperties.AutomationId="ColorSpectrumVisibleCheckBox" Content="Is color spectrum visible" IsChecked="{Binding IsColorSpectrumVisible, ElementName=ColorPicker, Mode=TwoWay}" />
                     <CheckBox AutomationProperties.AutomationId="ColorPreviewVisibleCheckBox" Content="Is color preview visible" IsChecked="{Binding IsColorPreviewVisible, ElementName=ColorPicker, Mode=TwoWay}" />
-                    <CheckBox AutomationProperties.AutomationId="ColorSliderVisibleCheckBox" Content="Is color slider visible" IsChecked="{Binding IsColorSliderVisible, ElementName=ColorPicker, Mode=TwoWay}" />
+                    <CheckBox AutomationProperties.AutomationId="ColorSliderVisibleCheckBox" Content="Is color slider visible" IsChecked="{Binding IsColorSliderVisible, ElementName=ColorPicker, Mode=TwoWay}" TabIndex="0"/>
                     <CheckBox AutomationProperties.AutomationId="AlphaSliderVisibleCheckBox" Content="Is alpha slider visible" IsChecked="{Binding IsAlphaSliderVisible, ElementName=ColorPicker, Mode=TwoWay}" />
                     <CheckBox AutomationProperties.AutomationId="MoreButtonVisibleCheckBox" Content="Is more button visible" IsChecked="{Binding IsMoreButtonVisible, ElementName=ColorPicker, Mode=TwoWay}" />
                     <CheckBox AutomationProperties.AutomationId="ColorChannelTextInputVisibleCheckBox" Content="Is color channel text input visible" IsChecked="{Binding IsColorChannelTextInputVisible, ElementName=ColorPicker, Mode=TwoWay}" />
@@ -221,7 +221,7 @@
                         <TextBlock Text="BorderBrush:" VerticalAlignment="Center" Margin="0,0,10,0" />
                         <TextBlock AutomationProperties.AutomationId="MoreButtonBorderBrushTextBlock" x:Name="MoreButtonBorderBrushTextBlock" />
                     </StackPanel>
-                    <CheckBox AutomationProperties.AutomationId="ColorSpectrumLoadedCheckBox" x:Name="ColorSpectrumLoadedCheckBox" IsChecked="False" Content="ColorSpectrum loaded" />
+                    <CheckBox AutomationProperties.AutomationId="ColorSpectrumLoadedCheckBox" x:Name="ColorSpectrumLoadedCheckBox" IsChecked="False" Content="ColorSpectrum loaded" TabIndex="0"/>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="ColorSpectrum width:" VerticalAlignment="Center" Margin="0,0,10,0" />
                         <TextBlock AutomationProperties.AutomationId="WidthTextBlock" x:Name="WidthTextBlock" />
