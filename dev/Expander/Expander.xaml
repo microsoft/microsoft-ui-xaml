@@ -20,17 +20,15 @@
                Without this override, the narrator user that focuses the expander on a touch screen will see that pressing "Tab"
                doesn't work how they would expect.-->
         <Setter Property="IsTabStop" Value="False"/>
-        <Setter Property="Background" Value="{ThemeResource ExpanderBackground}" />
+        <Setter Property="Background" Value="{ThemeResource ExpanderContentBackground}" />
         <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
         <Setter Property="MinWidth" Value="{ThemeResource FlyoutThemeMinWidth}" />
-        <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}" />
         <Setter Property="MinHeight" Value="{StaticResource ExpanderMinHeight}" />
-        <Setter Property="BorderThickness" Value="{ThemeResource ExpanderBorderThickness}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource ExpanderBorderBrush}" />
-        <Setter Property="Padding" Value="{StaticResource ExpanderHeaderPadding}" />
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="HorizontalContentAlignment" Value="Left" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="BorderThickness" Value="{ThemeResource ExpanderContentDownBorderThickness}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ExpanderContentBorderBrush}" />
+        <Setter Property="Padding" Value="{StaticResource ExpanderContentPadding}" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -110,7 +108,7 @@
                                 <VisualState x:Name="Up">
                                     <VisualState.Setters>
                                         <Setter Target="ExpanderHeader.Style" Value="{StaticResource ExpanderHeaderUpStyle}" />
-                                        <Setter Target="ExpanderContent.BorderThickness" Value="{StaticResource ExpanderDropdownUpBorderThickness}" />
+                                        <Setter Target="ExpanderContent.BorderThickness" Value="{StaticResource ExpanderContentUpBorderThickness}" />
                                         <contract7Present:Setter Target="ExpanderContent.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                         <Setter Target="ExpanderHeader.(Grid.Row)" Value="1" />
                                         <Setter Target="ExpanderContentClip.(Grid.Row)" Value="0" />
@@ -128,36 +126,36 @@
                         <ToggleButton
                             x:Name="ExpanderHeader"
                             AutomationProperties.AutomationId="ExpanderToggleButton"
-                            Background="{TemplateBinding Background}"
+                            Background="{ThemeResource ExpanderHeaderBackground}"
                             contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{ThemeResource ExpanderHeaderBorderBrush}"
+                            BorderThickness="{ThemeResource ExpanderHeaderBorderThickness}"
                             MinHeight="{TemplateBinding MinHeight}"
-                            MinWidth="{TemplateBinding MinWidth}"
-                            MaxWidth="{TemplateBinding MaxWidth}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             IsEnabled="{TemplateBinding IsEnabled}"
-                            Padding="{TemplateBinding Padding}"
+                            Padding="{StaticResource ExpanderHeaderPadding}"
                             Style="{StaticResource ExpanderHeaderDownStyle}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="{StaticResource ExpanderHeaderHorizontalContentAlignment}"
+                            VerticalContentAlignment="{StaticResource ExpanderHeaderVerticalContentAlignment}"
                             Content="{TemplateBinding Header}"
                             ContentTemplate="{TemplateBinding HeaderTemplate}"
                             ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
-                            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                             IsChecked="{Binding Path=IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" />
                         <!-- The clip is a composition clip applied in code -->
                         <Border x:Name="ExpanderContentClip" Grid.Row="1">
                             <Border
-                                x:Name="ExpanderContent"                         
+                                x:Name="ExpanderContent"
                                 Visibility="Collapsed"
-                                Background="{ThemeResource ExpanderDropDownBackground}"
+                                Background="{TemplateBinding Background}"
                                 contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
                                 contract7Present:CornerRadius="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}"
-                                BorderBrush="{ThemeResource ExpanderDropDownBorderBrush}"
-                                BorderThickness="{StaticResource ExpanderDropdownDownBorderThickness}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{StaticResource ExpanderContentDownBorderThickness}"
                                 MinHeight="{TemplateBinding MinHeight}"
-                                MinWidth="{TemplateBinding MinWidth}"
-                                MaxWidth="{TemplateBinding MaxWidth}"
-                                Padding="{StaticResource ExpanderContentPadding}">
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Padding="{TemplateBinding Padding}">
                                 <ContentPresenter
                                     Content="{TemplateBinding Content}"
                                     ContentTemplate="{TemplateBinding ContentTemplate}"

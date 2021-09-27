@@ -15,5 +15,6 @@ public:
     using AnimatedIconSourceProperties::EnsureProperties;
     using AnimatedIconSourceProperties::ClearProperties;
 
+    winrt::DependencyProperty GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty);
     winrt::IconElement CreateIconElementCore();
 };

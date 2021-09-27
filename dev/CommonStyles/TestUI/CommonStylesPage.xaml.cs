@@ -56,8 +56,8 @@ namespace MUXControlsTestApp
         }
         private void SliderDensityTest_Click(object sender, RoutedEventArgs e)
         {
-            string expectSliderPreContentMargin = "15";
-            string expectSliderPostContentMargin = "15";
+            string expectSliderPreContentMargin = "14";
+            string expectSliderPostContentMargin = "14";
             string expectSliderHorizontalHeight = "32";
             string expectSliderVerticalWidth = "32";
 
@@ -121,9 +121,9 @@ namespace MUXControlsTestApp
             var contentPresenter = (ContentPresenter)root.FindName("HeaderContentPresenter");
             simpleVerify.IsTrue(contentPresenter != null, "HeaderContentPresenter can't be found");
 
-            string expectedHeaderMargin = "0,0,0,0";
-            string expectToggleSwitchPreContentMargin = "6";
-            string expectToggleSwitchPostContentMargin = "6";
+            string expectedHeaderMargin = "0,0,0,4";
+            string expectToggleSwitchPreContentMargin = "10";
+            string expectToggleSwitchPostContentMargin = "10";
 
             if (contentPresenter != null)
             {

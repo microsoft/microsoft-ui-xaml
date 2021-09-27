@@ -54,7 +54,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="ChevronIcon.(AnimatedIcon.State)" Value="PointerOver"/>
+                                        <Setter Target="ChevronIcon.(local:AnimatedIcon.State)" Value="PointerOver"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -74,7 +74,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="ChevronIcon.(AnimatedIcon.State)" Value="Pressed"/>
+                                        <Setter Target="ChevronIcon.(local:AnimatedIcon.State)" Value="Pressed"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -95,7 +95,7 @@
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <!-- DisabledVisual Should be handled by the control, not the animated icon. -->
-                                        <Setter Target="ChevronIcon.(AnimatedIcon.State)" Value="Normal"/>
+                                        <Setter Target="ChevronIcon.(local:AnimatedIcon.State)" Value="Normal"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -114,13 +114,12 @@
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             AutomationProperties.AccessibilityView="Raw" />
 
-                        <local:AnimatedIcon x:Name="ChevronIcon" Grid.Column="1" Margin="8,0,0,0" AutomationProperties.AccessibilityView="Raw" local:AnimatedIcon.State="Normal" Width="12" Height="12">
+                        <local:AnimatedIcon x:Name="ChevronIcon" Grid.Column="1" Margin="8,0,0,0" AutomationProperties.AccessibilityView="Raw" local:AnimatedIcon.State="Normal" Width="12" Height="12" Foreground="{ThemeResource DropDownButtonForegroundSecondary}">
                             <animatedvisuals:AnimatedChevronDownSmallVisualSource/>
                             <local:AnimatedIcon.FallbackIconSource>
                                 <local:FontIconSource
                                     FontSize="8"
                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                    Foreground="{ThemeResource ButtonForegroundPressed}"
                                     Glyph="&#xE96E;"
                                     IsTextScaleFactorEnabled="False"/>
                             </local:AnimatedIcon.FallbackIconSource>

@@ -7,6 +7,7 @@ parameters:
   helixType: 'test/nuget'
   test_matrix: ''
   useFrameworkPkg: false
+  taefQuery: ''
   matrix:
     Debug_x86:
       buildPlatform: 'x86'
@@ -30,8 +31,12 @@ jobs:
     - ${{if parameters.dependsOn }}:
       - ${{ parameters.dependsOn }}
 
-  pool:
-    vmImage: 'windows-2019'
+  pool: 
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPoolOSS-S
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPool-S
+    demands: ImageOverride -equals WinDevVS16-9
   strategy:
     maxParallel: 10
     matrix: ${{ parameters.matrix }}
@@ -77,6 +82,11 @@ jobs:
 
   - template: MUX-BuildProject-Steps.yml
     parameters:
+      solutionPath: test\MUXControlsReleaseTest\RuntimeComponentThatUsesMUX\RuntimeComponentThatUsesMUX.sln
+      artifactName: ${{ parameters.buildArtifactName }}
+
+  - template: MUX-BuildProject-Steps.yml
+    parameters:
       solutionPath: $(solutionPath)
       artifactName: ${{ parameters.buildArtifactName }}
 
@@ -92,6 +102,8 @@ jobs:
       testSuite: 'NugetTestSuite'
       helixType: ${{ parameters.helixType }}
       artifactName: ${{ parameters.buildArtifactName }}
+      ${{if eq(parameters.useFrameworkPkg, 'true')}}:
+        taefQuery: "(not (@NugetPkgTestsOnly = 'true'))"
       rerunPassesRequiredToAvoidFailure: 5
       ${{if ne(parameters.test_matrix, '') }}:
         matrix: ${{ parameters.test_matrix }}

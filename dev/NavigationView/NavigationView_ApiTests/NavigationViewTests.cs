@@ -29,6 +29,8 @@ using NavigationViewBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationVie
 using System.Collections.ObjectModel;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Composition;
+using Windows.UI.Xaml.Markup;
+using System.Collections.Generic;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -662,6 +664,68 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(menuItem2, navView.SelectedItem);
             });
         }
+
+        [TestMethod]
+        public void VerifyClosedCompactVisualState()
+        {
+            NavigationView navView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                Content = navView;
+
+                var template = (DataTemplate)XamlReader.Load(@"
+                    <DataTemplate
+                        xmlns ='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                        <controls:NavigationViewItem
+                            Content='Item'>
+                            <controls:NavigationViewItem.Icon>
+                                <SymbolIcon Symbol='Home' />
+                            </controls:NavigationViewItem.Icon>
+                         </controls:NavigationViewItem>
+                      </DataTemplate>");
+                navView.MenuItemTemplate = template;
+                navView.IsPaneOpen = false;
+                navView.IsSettingsVisible = false;
+
+                RoutedEventHandler loaded = null;
+                loaded = (object sender, RoutedEventArgs args) =>
+                {
+                    navView.Loaded -= loaded;
+
+                    var items = new List<object>() { new object() }; ;
+                    navView.MenuItemsSource = items;
+                };
+                navView.Loaded += loaded;
+
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var footerRepeater = VisualTreeUtils.FindVisualChildByName(navView, "MenuItemsHost") as FrameworkElement;
+                var menuItem = VisualTreeHelper.GetChild(footerRepeater, 0) as FrameworkElement;
+                var menuItemLayoutRoot = VisualTreeHelper.GetChild(menuItem, 0) as FrameworkElement;
+                var navItemPresenter = VisualTreeHelper.GetChild(menuItemLayoutRoot, 0) as FrameworkElement;
+                var navItemPresenterLayoutRoot = VisualTreeHelper.GetChild(navItemPresenter, 0) as FrameworkElement;
+                var statesGroups = VisualStateManager.GetVisualStateGroups(navItemPresenterLayoutRoot);
+
+                string navItemPresenter1CurrentState = null;
+                foreach (var visualStateGroup in statesGroups)
+                {
+                    if (visualStateGroup.Name == "PaneAndTopLevelItemStates")
+                    {
+                        navItemPresenter1CurrentState = visualStateGroup.CurrentState.Name;
+                    }
+                }
+
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", navItemPresenter1CurrentState);
+            });
+        }
+
 
         [TestMethod]
         public void VerifyNavigationItemUIAType()

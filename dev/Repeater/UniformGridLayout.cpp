@@ -131,9 +131,7 @@ winrt::FlowLayoutAnchorInfo UniformGridLayout::Algorithm_GetAnchorForRealization
     {
         const auto gridState = GetAsGridState(context.LayoutState());
         const auto lastExtent = gridState->FlowAlgorithm().LastExtent();
-        const int itemsPerLine = std::min( // note use of unsigned ints
-            std::max(1u, static_cast<unsigned int>(Minor(availableSize) / GetMinorSizeWithSpacing(context))),
-            std::max(1u, m_maximumRowsOrColumns));
+        const int itemsPerLine = GetItemsPerLine(availableSize, context);
         const double majorSize = (itemsCount / itemsPerLine) * (double)(GetMajorSizeWithSpacing(context));
         const double realizationWindowStartWithinExtent = (double)(MajorStart(realizationRect) - MajorStart(lastExtent));
         if ((realizationWindowStartWithinExtent + MajorSize(realizationRect)) >= 0 && realizationWindowStartWithinExtent <= majorSize)
@@ -163,9 +161,7 @@ winrt::FlowLayoutAnchorInfo UniformGridLayout::Algorithm_GetAnchorForTargetEleme
     const int count = context.ItemCount();
     if (targetIndex >= 0 && targetIndex < count)
     {
-        const int itemsPerLine = std::min( // note use of unsigned ints
-            std::max(1u, static_cast<unsigned int>(Minor(availableSize) / GetMinorSizeWithSpacing(context))),
-            std::max(1u, m_maximumRowsOrColumns));
+        const int itemsPerLine = GetItemsPerLine(availableSize, context);
         const int indexOfFirstInLine = (targetIndex / itemsPerLine) * itemsPerLine;
         index = indexOfFirstInLine;
         auto state = GetAsGridState(context.LayoutState());
@@ -193,16 +189,15 @@ winrt::Rect UniformGridLayout::Algorithm_GetExtent(
 
     auto extent = winrt::Rect{};
 
-
     // Constants
     const int itemsCount = context.ItemCount();
     const float availableSizeMinor = Minor(availableSize);
     const int itemsPerLine =
         std::min( // note use of unsigned ints
             std::max(1u, std::isfinite(availableSizeMinor)
-                ? static_cast<unsigned int>(availableSizeMinor / GetMinorSizeWithSpacing(context))
+                ? static_cast<unsigned int>((availableSizeMinor + MinItemSpacing()) / GetMinorSizeWithSpacing(context))
                 : itemsCount),
-        std::max(1u, m_maximumRowsOrColumns));
+            std::max(1u, m_maximumRowsOrColumns));
     const float lineSize = GetMajorSizeWithSpacing(context);
 
     if (itemsCount > 0)
@@ -286,6 +281,15 @@ void UniformGridLayout::OnPropertyChanged(const winrt::DependencyPropertyChanged
 
 #pragma region private helpers
 
+int UniformGridLayout::GetItemsPerLine(winrt::Size const& availableSize, winrt::VirtualizingLayoutContext const& context)
+{
+    const int itemsPerLine = std::min( // note use of unsigned ints
+        std::max(1u, static_cast<unsigned int>((Minor(availableSize) + MinItemSpacing()) / GetMinorSizeWithSpacing(context))),
+        std::max(1u, m_maximumRowsOrColumns));
+
+    return itemsPerLine;
+}
+
 float UniformGridLayout::GetMinorSizeWithSpacing(winrt::VirtualizingLayoutContext const& context)
 {
     const auto minItemSpacing = MinItemSpacing();
@@ -310,9 +314,7 @@ winrt::Rect UniformGridLayout::GetLayoutRectForDataIndex(
     const winrt::Rect& lastExtent,
     const winrt::VirtualizingLayoutContext& context)
 {
-    const int itemsPerLine = std::min( //note use of unsigned ints
-        std::max(1u, static_cast<unsigned int>(Minor(availableSize) / GetMinorSizeWithSpacing(context))),
-        std::max(1u, m_maximumRowsOrColumns));
+    const int itemsPerLine = GetItemsPerLine(availableSize, context);
     const int rowIndex = static_cast<int>(index / itemsPerLine);
     const int indexInRow = index - (rowIndex * itemsPerLine);
 

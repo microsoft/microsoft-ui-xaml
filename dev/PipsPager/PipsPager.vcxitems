@@ -38,11 +38,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)PipsPager_21h1_themeresources.xaml">
-      <ControlsResourcesVersion>Any</ControlsResourcesVersion>
-      <Version>21H1</Version>
-      <Type>ThemeResources</Type>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)PipsPager.idl" />

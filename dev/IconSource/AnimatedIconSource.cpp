@@ -22,5 +22,25 @@ winrt::IconElement AnimatedIconSource::CreateIconElementCore()
     {
         animatedIcon.Foreground(newForeground);
     }
+    animatedIcon.MirroredWhenRightToLeft(MirroredWhenRightToLeft());
+
     return animatedIcon;
+}
+
+winrt::DependencyProperty AnimatedIconSource::GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty)
+{
+    if (sourceProperty == s_SourceProperty)
+    {
+        return winrt::AnimatedIcon::SourceProperty();
+    }
+    else if (sourceProperty == s_FallbackIconSourceProperty)
+    {
+        return winrt::AnimatedIcon::FallbackIconSourceProperty();
+    }
+    else if (sourceProperty == s_MirroredWhenRightToLeftProperty)
+    {
+        return winrt::AnimatedIcon::MirroredWhenRightToLeftProperty();
+    }
+
+    return __super::GetIconElementPropertyCore(sourceProperty);
 }

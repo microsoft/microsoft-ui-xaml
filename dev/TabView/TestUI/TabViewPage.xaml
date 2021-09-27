@@ -17,7 +17,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Padding="12" Background="{ThemeResource SystemChromeMediumLowColor}" Width="250">
+            <StackPanel Padding="12" Width="250">
                 <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
                 <CheckBox x:Name="IsClosableCheckBox" AutomationProperties.Name="IsClosableCheckBox" Checked="IsClosableCheckBox_CheckChanged" Unchecked="IsClosableCheckBox_CheckChanged" IsChecked="True" Content="IsClosable on first tab"/>
                 <CheckBox x:Name="HandleTabCloseRequestedCheckBox" AutomationProperties.Name="HandleTabCloseRequestedCheckBox" Content="Handle TabView tab close" IsChecked="True"/>
@@ -53,6 +53,10 @@
                 <Button x:Name="ScrollTabViewToTheRight" AutomationProperties.Name="ScrollTabViewToTheRight" Content="Scroll TabView To the Right" Margin="0,0,0,8" Click="TabViewScrollToTheRightButton_Click" />
 
                 <Button x:Name="ShortLongTextButton" AutomationProperties.Name="ShortLongTextButton" Content="Short/Long Text" Margin="0,0,0,8" Click="ShortLongTextButton_Click" />
+                <StackPanel Orientation="Horizontal">
+                    <Button Click="SetColorsButton_Click" Content="Set Colors"/>
+                    <Button Click="ClearColorsButton_Click" Content="Clear Colors"/>
+                </StackPanel>
 
                 <Border HorizontalAlignment="Stretch" Height="3" Background="{ThemeResource SystemChromeGrayColor}" Margin="0,8,0,8"/>
 
@@ -109,11 +113,6 @@
                     <Button x:Name="GetScrollIncreaseButtonToolTipButton" AutomationProperties.Name="GetScrollIncreaseButtonToolTipButton" Content="TooltipScrollIncreaseButton" Click="GetScrollIncreaseButtonToolTipButton_Click"/>
                     <TextBlock x:Name="ScrollIncreaseButtonToolTipTextBlock" AutomationProperties.Name="ScrollIncreaseButtonToolTipTextBlock" Margin="4,0,0,0" Text=""/>
                 </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                    <Button x:Name="GetSecondTabHeaderForegroundButton" AutomationProperties.Name="GetSecondTabHeaderForegroundButton" Content="SecondTabHeaderForeground" Click="GetSecondTabHeaderForegroundButton_Click" />
-                    <TextBlock x:Name="SecondTabHeaderForegroundTextBlock" AutomationProperties.Name="SecondTabHeaderForegroundTextBlock" Margin="4,0,0,0" Text=""/>
-                </StackPanel>
             </StackPanel>
 
             <Grid Grid.Column="1">
@@ -141,8 +140,8 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Middle" Margin="6,3,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="2" Text="Right" Margin="6,3,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="Middle" Margin="6,3,6,0" VerticalAlignment="Center" FontSize="14"/>
+                            <TextBlock Grid.Column="2" Text="Right" Margin="6,3,6,0" VerticalAlignment="Center" FontSize="14"/>
                         </Grid>
                     </controls:TabView.TabStripFooter>
 
@@ -151,7 +150,7 @@
                             <controls:SymbolIconSource Symbol="Home"/>
                         </controls:TabViewItem.IconSource>
 
-                        <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
+                        <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
                             <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
                             <StackPanel Orientation="Horizontal">
                                 <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton"
@@ -167,11 +166,7 @@
                         </StackPanel>
                     </controls:TabViewItem>
 
-                    <controls:TabViewItem x:Name="SecondTab" Header="SecondTab" IsClosable="True">
-                        <controls:TabViewItem.Resources>
-                            <!-- Do not remove or change this! We are verifying this resource in a TabView InteractionTest. -->
-                            <SolidColorBrush x:Key="TabViewItemHeaderForeground" Color="#FF008000" />
-                        </controls:TabViewItem.Resources>
+                    <controls:TabViewItem x:Name="SecondTab" Header="SecondTab" IsClosable="True" Foreground="Red" Background="Green">
                         <controls:TabViewItem.IconSource>
                             <controls:SymbolIconSource Symbol="Shop"/>
                         </controls:TabViewItem.IconSource>

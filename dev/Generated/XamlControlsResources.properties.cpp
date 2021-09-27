@@ -32,7 +32,7 @@ void XamlControlsResourcesProperties::EnsureProperties()
                 winrt::name_of<winrt::ControlsResourcesVersion>(),
                 winrt::name_of<winrt::XamlControlsResources>(),
                 false /* isAttached */,
-                ValueHelper<winrt::ControlsResourcesVersion>::BoxValueIfNecessary(winrt::ControlsResourcesVersion::Version1),
+                ValueHelper<winrt::ControlsResourcesVersion>::BoxValueIfNecessary(winrt::ControlsResourcesVersion::Version2),
                 winrt::PropertyChangedCallback(&OnControlsResourcesVersionPropertyChanged));
     }
     if (!s_UseCompactResourcesProperty)
@@ -54,7 +54,7 @@ void XamlControlsResourcesProperties::EnsureProperties()
                 winrt::name_of<winrt::StylesVersion>(),
                 winrt::name_of<winrt::XamlControlsResources>(),
                 false /* isAttached */,
-                ValueHelper<winrt::StylesVersion>::BoxValueIfNecessary(winrt::StylesVersion::WinUI_2dot5),
+                ValueHelper<winrt::StylesVersion>::BoxValueIfNecessary(winrt::StylesVersion::Latest),
                 winrt::PropertyChangedCallback(&OnVersionPropertyChanged));
     }
 }

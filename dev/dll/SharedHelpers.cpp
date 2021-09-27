@@ -40,7 +40,12 @@ bool SharedHelpers::IsInDesignModeV2()
 // logical helpers
 bool SharedHelpers::Is21H1OrHigher()
 {
-    return IsAPIContractV13Available();
+    return IsAPIContractV14Available();
+}
+
+bool SharedHelpers::Is20H1OrHigher()
+{
+    return IsAPIContractV10Available();
 }
 
 bool SharedHelpers::IsVanadiumOrHigher()
@@ -125,14 +130,6 @@ bool SharedHelpers::IsFlyoutShowOptionsAvailable()
         Is19H1OrHigher() ||
         winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Primitives.FlyoutShowOptions");
     return s_isFlyoutShowOptionsAvailable;
-}
-
-bool SharedHelpers::IsScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable()
-{
-    static bool s_isScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable =
-        Is19H1OrHigher() ||
-        winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.ScrollViewer", L"ReduceViewportForCoreInputViewOcclusions");
-    return s_isScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable;
 }
 
 bool SharedHelpers::IsScrollContentPresenterSizesContentToTemplatedParentAvailable()
@@ -220,12 +217,6 @@ bool SharedHelpers::IsCompositionRadialGradientBrushAvailable()
     return s_isAvailable;
 }
 
-bool SharedHelpers::IsSelectionIndicatorModeAvailable()
-{
-    static bool s_isSelectionIndicatorModeAvailable = winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Controls.Primitives.ListViewItemPresenterSelectionIndicatorMode");
-    return s_isSelectionIndicatorModeAvailable;
-}
-
 template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
 {
     static bool isAPIContractVxAvailableInitialized = false;
@@ -240,9 +231,14 @@ template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
 }
 
 // base helpers
-bool SharedHelpers::IsAPIContractV13Available()
+bool SharedHelpers::IsAPIContractV14Available()
 {
-    return IsAPIContractVxAvailable<13>();
+    return IsAPIContractVxAvailable<14>();
+}
+
+bool SharedHelpers::IsAPIContractV10Available()
+{
+    return IsAPIContractVxAvailable<10>();
 }
 
 bool SharedHelpers::IsAPIContractV9Available()
@@ -462,8 +458,8 @@ bool SharedHelpers::DoRectsIntersect(
     const winrt::Rect& rect1,
     const winrt::Rect& rect2)
 {
-    const auto doIntersect =
-        !(rect1.Width <= 0 || rect1.Height <= 0 || rect2.Width <= 0 || rect2.Height <= 0) &&
+    const bool doIntersect =
+        (rect1.Width > 0 && rect1.Height > 0 && rect2.Width > 0 && rect2.Height > 0) &&
         (rect2.X <= rect1.X + rect1.Width) &&
         (rect2.X + rect2.Width >= rect1.X) &&
         (rect2.Y <= rect1.Y + rect1.Height) &&
@@ -534,6 +530,116 @@ bool SharedHelpers::IsAncestor(
 
     return false;
 }
+
+#ifdef ICONSOURCE_INCLUDED
+
+winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& iconSource)
+{
+    if (auto fontIconSource = iconSource.try_as<winrt::FontIconSource>())
+    {
+        winrt::FontIcon fontIcon;
+
+        fontIcon.Glyph(fontIconSource.Glyph());
+        fontIcon.FontSize(fontIconSource.FontSize());
+        if (const auto newForeground = fontIconSource.Foreground())
+        {
+            fontIcon.Foreground(newForeground);
+        }
+
+        if (fontIconSource.FontFamily())
+        {
+            fontIcon.FontFamily(fontIconSource.FontFamily());
+        }
+
+        fontIcon.FontWeight(fontIconSource.FontWeight());
+        fontIcon.FontStyle(fontIconSource.FontStyle());
+        fontIcon.IsTextScaleFactorEnabled(fontIconSource.IsTextScaleFactorEnabled());
+        fontIcon.MirroredWhenRightToLeft(fontIconSource.MirroredWhenRightToLeft());
+
+        return fontIcon;
+    }
+    else if (auto symbolIconSource = iconSource.try_as<winrt::SymbolIconSource>())
+    {
+        winrt::SymbolIcon symbolIcon;
+        symbolIcon.Symbol(symbolIconSource.Symbol());
+        if (const auto newForeground = symbolIconSource.Foreground())
+        {
+            symbolIcon.Foreground(newForeground);
+        }
+        return symbolIcon;
+    }
+    else if (auto bitmapIconSource = iconSource.try_as<winrt::BitmapIconSource>())
+    {
+        winrt::BitmapIcon bitmapIcon;
+
+        if (bitmapIconSource.UriSource())
+        {
+            bitmapIcon.UriSource(bitmapIconSource.UriSource());
+        }
+
+        if (winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.BitmapIcon", L"ShowAsMonochrome"))
+        {
+            bitmapIcon.ShowAsMonochrome(bitmapIconSource.ShowAsMonochrome());
+        }
+        if (const auto newForeground = bitmapIconSource.Foreground())
+        {
+            bitmapIcon.Foreground(newForeground);
+        }
+        return bitmapIcon;
+    }
+#ifdef IMAGEICON_INCLUDED
+    else if (auto imageIconSource = iconSource.try_as<winrt::ImageIconSource>())
+    {
+        winrt::ImageIcon imageIcon;
+        if (const auto imageSource = imageIconSource.ImageSource())
+        {
+            imageIcon.Source(imageSource);
+        }
+        if (const auto newForeground = imageIconSource.Foreground())
+        {
+            imageIcon.Foreground(newForeground);
+        }
+        return imageIcon;
+    }
+#endif
+    else if (auto pathIconSource = iconSource.try_as<winrt::PathIconSource>())
+    {
+        winrt::PathIcon pathIcon;
+
+        if (pathIconSource.Data())
+        {
+            pathIcon.Data(pathIconSource.Data());
+        }
+        if (const auto newForeground = pathIconSource.Foreground())
+        {
+            pathIcon.Foreground(newForeground);
+        }
+        return pathIcon;
+    }
+#ifdef ANIMATEDICON_INCLUDED
+    else if (auto animatedIconSource = iconSource.try_as<winrt::AnimatedIconSource>())
+    {
+        winrt::AnimatedIcon animatedIcon;
+        if (auto const source = animatedIconSource.Source())
+        {
+            animatedIcon.Source(source);
+        }
+        if (auto const fallbackIconSource = animatedIconSource.FallbackIconSource())
+        {
+            animatedIcon.FallbackIconSource(fallbackIconSource);
+        }
+        if (const auto newForeground = animatedIconSource.Foreground())
+        {
+            animatedIcon.Foreground(newForeground);
+        }
+        return animatedIcon;
+    }
+#endif
+
+    return nullptr;
+}
+
+#endif
 
 void SharedHelpers::SetBinding(
     std::wstring_view const& pathString,

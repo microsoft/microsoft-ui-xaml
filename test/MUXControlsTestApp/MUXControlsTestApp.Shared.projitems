@@ -146,6 +146,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ladybug.wmv" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\libre-camera-panorama.svg" />
     <None Include="$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx" />
   </ItemGroup>
@@ -226,6 +227,7 @@
     <Content Include="$(MSBuildThisFileDirectory)Assets\SplitView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Swipe.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\TeachingTip.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\WebView2.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\LargeTile.scale-100.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\LargeTile.scale-125.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\LargeTile.scale-150.png" />
@@ -265,6 +267,7 @@
     <Content Include="$(MSBuildThisFileDirectory)Assets\TimePicker.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\ToolTip.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\TreeView.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\WebView2.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\AutoSave.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\LargeWisteria.jpg" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\rating_disabled.png" />
@@ -285,6 +288,14 @@
     <Content Include="$(MSBuildThisFileDirectory)\Properties\App.rd.xml" />
     <Content Include="$(MSBuildThisFileDirectory)\verification\*.xml" />
     <Content Include="$(MSBuildThisFileDirectory)\..\..\dev\dll\DensityStyles\Compact.xaml" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\SimpleInputPage.html" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\SimplePage.html" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\SimplePageForFocus.html" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\SimplePageWithButton.html" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\SimplePageWithImage.html" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\SimplePageWithManyButtons.html" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\SimplePageWithScrollableColoredBlocks.html" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\SimplePageWithText.html" />
   </ItemGroup>
   <ItemGroup>
     <AppContent Include="@(Content)" />

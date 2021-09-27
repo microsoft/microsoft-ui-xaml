@@ -54,6 +54,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" Text="ComboBox" Style="{StaticResource SideHeader}"/>
@@ -495,6 +496,29 @@
             </Grid>
             <Grid Grid.Column="2" Grid.Row="16" Style="{StaticResource RightColumn}">
                 <Button Content="AccentButton" Style="{StaticResource AccentButtonStyle}" MinWidth="100"/>
+            </Grid>
+            <TextBlock Grid.Row="17" Text="NumberBox" Style="{StaticResource SideHeader}" />
+            <Grid Grid.Column="1" Grid.Row="17" Style="{StaticResource LeftColumn}">
+                <controls:NumberBox SpinButtonPlacementMode="Inline">
+                    <controls:NumberBox.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <x:Double x:Key="TextControlBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <x:Double x:Key="TextControlBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <x:Double x:Key="TextControlBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </controls:NumberBox.Resources>
+                </controls:NumberBox>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="17" Style="{StaticResource RightColumn}">
+                <controls:NumberBox SpinButtonPlacementMode="Inline" />
             </Grid>
         </Grid>
     </ScrollViewer>

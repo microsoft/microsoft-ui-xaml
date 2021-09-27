@@ -55,6 +55,9 @@ private:
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
     tracker_ref<winrt::AnimatedVisualPlayer> m_player{ this };
 
+    PropertyChanged_revoker m_foregroundColorPropertyChangedRevoker{};
+    PropertyChanged_revoker m_backgroundColorPropertyChangedRevoker{};
+
     double m_oldValue{ 0 };
     bool m_rangeBasePropertyUpdating{ false };
 };

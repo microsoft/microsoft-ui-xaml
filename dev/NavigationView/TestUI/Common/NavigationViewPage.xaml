@@ -26,6 +26,7 @@
                 DisplayModeChanged="NavView_DisplayModeChanged"
                 ItemInvoked="NavView_ItemInvoked"
                 SelectionChanged="NavView_SelectionChanged"
+                Header="TestHeader"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 CompactModeThresholdWidth="480"
@@ -37,7 +38,11 @@
                 BackRequested="NavView_BackRequested"
                 AccessKey="H">
             <muxcontrols:NavigationView.MenuItems>
-                <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home"/>
+                <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home">
+                    <muxcontrols:NavigationViewItem.InfoBadge>
+                        <muxcontrols:InfoBadge Value="2"/>
+                    </muxcontrols:NavigationViewItem.InfoBadge>
+                </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" />
                 <muxcontrols:NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
                 <muxcontrols:NavigationViewItemSeparator />
@@ -207,6 +212,7 @@
                         <TextBlock x:Name="ToggleButtonBackgroundColor" AutomationProperties.Name="ToggleButtonBackgroundColor"  Margin="5"/>
                         <CheckBox x:Name="MoviesEnabledCheckbox" AutomationProperties.Name="MoviesEnabledCheckbox" Content="Movies+TV Enabled" Checked="MoviesEnabledCheckbox_Checked" Unchecked="MoviesEnabledCheckbox_Unchecked" IsChecked="True"  Margin="5"/>
                         <Button x:Name="SetHeaderButton" AutomationProperties.Name="SetHeaderButton" Content="Set Header" Click="SetHeaderButton_Click"/>
+                        <CheckBox IsChecked="True" Checked="FlowDirectionCheckbox_Checked" Unchecked="FlowDirectionCheckbox_Unchecked" Content="Is LeftToRight"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
@@ -322,10 +328,11 @@ Nullam egestas, orci sed molestie aliquet, diam ex euismod risus, ac dapibus qua
 
             <muxcontrols:NavigationView.PaneFooter>
                 <StackPanel Background="Plum">
-                    <Button x:Name="PaneFooterButton" AutomationProperties.Name="PaneFooterButton" Content="PaneFooter Button" Margin="5"/>
+                    <Button x:Name="PaneFooterButton" AutomationProperties.Name="PaneFooterButton" Content="PaneFooter Button" Margin="8"/>
                     <muxcontrols:NavigationViewItem x:Name="PaneFooterNavigationViewItem"
                                                     AutomationProperties.Name="PaneFooterNavigationViewItem"
-                                                    Content="NVI" /> 
+                                                    Content="NVI"
+                                                    Icon="Accept"/> 
                 </StackPanel>
             </muxcontrols:NavigationView.PaneFooter>
         </muxcontrols:NavigationView>

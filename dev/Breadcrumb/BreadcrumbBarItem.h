@@ -99,7 +99,7 @@ private:
     tracker_ref<winrt::BreadcrumbBar> m_parentBreadcrumb{ this };
 
     // Flyout content for ellipsis item
-    tracker_ref<winrt::FlyoutBase> m_ellipsisFlyout{ this };
+    tracker_ref<winrt::Flyout> m_ellipsisFlyout{ this };
     tracker_ref<winrt::ItemsRepeater> m_ellipsisItemsRepeater{ this };
     tracker_ref<winrt::DataTemplate> m_ellipsisDropDownItemDataTemplate{ this };
     com_ptr<BreadcrumbElementFactory> m_ellipsisElementFactory{ nullptr };
@@ -156,9 +156,9 @@ private:
     // Template Parts
     static constexpr std::wstring_view s_ellipsisItemsRepeaterPartName{ L"PART_EllipsisItemsRepeater"sv };
     static constexpr std::wstring_view s_itemButtonPartName{ L"PART_ItemButton"sv };
+    static constexpr std::wstring_view s_itemEllipsisFlyoutPartName{ L"PART_EllipsisFlyout"sv };
 
     // Automation Names
     static constexpr std::wstring_view s_ellipsisFlyoutAutomationName{ L"EllipsisFlyout"sv };
-    static constexpr std::wstring_view s_ellipsisItemAutomationName{ L"EllipsisItem"sv };
     static constexpr std::wstring_view s_ellipsisItemsRepeaterAutomationName{ L"EllipsisItemsRepeater"sv };
 };

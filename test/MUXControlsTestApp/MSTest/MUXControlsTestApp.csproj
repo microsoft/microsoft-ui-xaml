@@ -7,7 +7,7 @@
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundle>Never</AppxBundle>
-    <AppInstallerUpdateFrequency>1</AppInstallerUpdateFrequency>
+    <AppInstallerUpdateFrequency>0</AppInstallerUpdateFrequency>
     <AppInstallerCheckForUpdateFrequency>OnApplicationRun</AppInstallerCheckForUpdateFrequency>
     <GenerateAppxPackageOnBuild>True</GenerateAppxPackageOnBuild>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
@@ -23,7 +23,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(XES_DFSDROP)' == ''">
     <PackageReference Include="MUXCustomBuildTasks">
-      <Version>1.0.67</Version>
+      <Version>1.0.74</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Net.Native.Compiler">
       <Version>2.2.3</Version>
@@ -57,6 +57,11 @@
     </PackageReference>
     <PackageReference Include="Win2D.uwp">
       <Version>1.22.0</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2">
+      <Version>1.0.1018-prerelease</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="..\MUXControlsTestApp.Shared.projitems" />

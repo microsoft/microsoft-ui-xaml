@@ -16,27 +16,10 @@ winrt::CompositionEffectBrush AcrylicBrushFactory::CreateBackdropAcrylicEffectBr
     winrt::Color const& initialFallbackColor,
     bool willTintColorAlwaysBeOpaque)
 {
-    // Pass nullptr to let it auto-calculate luminosity opacity.
-    const winrt::Color initialLuminosityColor = GetLuminosityColor(initialTintColor, nullptr);
-
     return CreateBackdropAcrylicEffectBrushWithLuminosity(
         compositor,
         initialTintColor,
-        initialLuminosityColor,
-        initialFallbackColor,
-        willTintColorAlwaysBeOpaque);
-
-    // Update tintColor's alpha with the modifier
-    winrt::Color tintColor = initialTintColor;
-    const double tintOpacityModifier = GetTintOpacityModifier(tintColor);
-    tintColor.A = static_cast<uint8_t>(round(tintOpacityModifier * tintColor.A));
-
-    return AcrylicBrush::CreateAcrylicBrushWorker(
-        compositor,
-        false, // useWindowAcrylic
-        false, // useCrossFadeEffect
-        tintColor,
-        initialLuminosityColor,
+        nullptr, // luminosityOpacity. Pass nullptr to let it auto-calculate luminosity opacity.
         initialFallbackColor,
         willTintColorAlwaysBeOpaque);
 }
@@ -44,10 +27,12 @@ winrt::CompositionEffectBrush AcrylicBrushFactory::CreateBackdropAcrylicEffectBr
 winrt::CompositionEffectBrush AcrylicBrushFactory::CreateBackdropAcrylicEffectBrushWithLuminosity(
     winrt::Compositor const& compositor,
     winrt::Color const& initialTintColor,
-    winrt::Color const& initialLuminosityColor,
+    winrt::IReference<double> const& luminosityOpacity,
     winrt::Color const& initialFallbackColor,
     bool willTintColorAlwaysBeOpaque)
 {
+    const winrt::Color initialLuminosityColor = GetLuminosityColor(initialTintColor, luminosityOpacity);
+    
     // Update tintColor's alpha with the modifier
     winrt::Color tintColor = initialTintColor;
     const double tintOpacityModifier = GetTintOpacityModifier(tintColor);

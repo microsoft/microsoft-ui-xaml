@@ -12,6 +12,9 @@ public:
     void FallbackIconSource(winrt::IconSource const& value);
     winrt::IconSource FallbackIconSource();
 
+    void MirroredWhenRightToLeft(bool value);
+    bool MirroredWhenRightToLeft();
+
     void Source(winrt::IAnimatedVisualSource2 const& value);
     winrt::IAnimatedVisualSource2 Source();
 
@@ -19,10 +22,12 @@ public:
     static winrt::hstring GetState(winrt::DependencyObject const& target);
 
     static winrt::DependencyProperty FallbackIconSourceProperty() { return s_FallbackIconSourceProperty; }
+    static winrt::DependencyProperty MirroredWhenRightToLeftProperty() { return s_MirroredWhenRightToLeftProperty; }
     static winrt::DependencyProperty SourceProperty() { return s_SourceProperty; }
     static winrt::DependencyProperty StateProperty() { return s_StateProperty; }
 
     static GlobalDependencyProperty s_FallbackIconSourceProperty;
+    static GlobalDependencyProperty s_MirroredWhenRightToLeftProperty;
     static GlobalDependencyProperty s_SourceProperty;
     static GlobalDependencyProperty s_StateProperty;
 
@@ -30,6 +35,10 @@ public:
     static void ClearProperties();
 
     static void OnFallbackIconSourcePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMirroredWhenRightToLeftPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

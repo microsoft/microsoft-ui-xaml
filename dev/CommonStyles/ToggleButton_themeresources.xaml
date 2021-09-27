@@ -7,14 +7,15 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <Thickness x:Key="ToggleButtonBorderThemeThickness">1</Thickness>
+            <contract7Present:BackgroundSizing x:Key="ToggleButtonCheckedStateBackgroundSizing">OuterBorderEdge</contract7Present:BackgroundSizing>
             <StaticResource x:Key="ToggleButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
-            <StaticResource x:Key="ToggleButtonBackgroundChecked" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ToggleButtonBackgroundCheckedPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="ToggleButtonBackgroundCheckedPressed" ResourceKey="AccentAAFillColorTertiaryBrush" />
-            <StaticResource x:Key="ToggleButtonBackgroundCheckedDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ToggleButtonBackgroundChecked" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="ToggleButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="ToggleButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+            <StaticResource x:Key="ToggleButtonBackgroundCheckedDisabled" ResourceKey="AccentFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundIndeterminate" ResourceKey="ControlFillColorDefaultBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundIndeterminatePointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundIndeterminatePressed" ResourceKey="ControlFillColorTertiaryBrush" />
@@ -23,10 +24,10 @@
             <StaticResource x:Key="ToggleButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ToggleButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="ToggleButtonForegroundChecked" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
-            <StaticResource x:Key="ToggleButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
-            <StaticResource x:Key="ToggleButtonForegroundCheckedPressed" ResourceKey="TextOnAccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="ToggleButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentAAFillColorDisabled" />
+            <StaticResource x:Key="ToggleButtonForegroundChecked" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <StaticResource x:Key="ToggleButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <StaticResource x:Key="ToggleButtonForegroundCheckedPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="ToggleButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentFillColorDisabled" />
             <StaticResource x:Key="ToggleButtonForegroundIndeterminate" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ToggleButtonForegroundIndeterminatePointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ToggleButtonForegroundIndeterminatePressed" ResourceKey="TextFillColorSecondaryBrush" />
@@ -64,13 +65,15 @@
             <SolidColorBrush x:Key="ToggleButtonPressedForegroundThemeBrush" Color="#FF000000" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
+            <Thickness x:Key="ToggleButtonBorderThemeThickness">1</Thickness>
+            <contract7Present:BackgroundSizing x:Key="ToggleButtonCheckedStateBackgroundSizing">OuterBorderEdge</contract7Present:BackgroundSizing>
             <StaticResource x:Key="ToggleButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-            <StaticResource x:Key="ToggleButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-            <StaticResource x:Key="ToggleButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
+            <StaticResource x:Key="ToggleButtonBackgroundPointerOver" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="ToggleButtonBackgroundPressed" ResourceKey="SystemColorHighlightTextColorBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundChecked" ResourceKey="SystemControlHighlightAccentBrush" />
-            <StaticResource x:Key="ToggleButtonBackgroundCheckedPointerOver" ResourceKey="SystemControlHighlightAccentBrush" />
-            <StaticResource x:Key="ToggleButtonBackgroundCheckedPressed" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
+            <StaticResource x:Key="ToggleButtonBackgroundCheckedPointerOver" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="ToggleButtonBackgroundCheckedPressed" ResourceKey="SystemColorHighlightTextColorBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundCheckedDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundIndeterminate" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundIndeterminatePointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
@@ -81,8 +84,8 @@
             <StaticResource x:Key="ToggleButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
             <StaticResource x:Key="ToggleButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="ToggleButtonForegroundChecked" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-            <StaticResource x:Key="ToggleButtonForegroundCheckedPointerOver" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-            <StaticResource x:Key="ToggleButtonForegroundCheckedPressed" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
+            <StaticResource x:Key="ToggleButtonForegroundCheckedPointerOver" ResourceKey="SystemColorButtonFaceColorBrush" />
+            <StaticResource x:Key="ToggleButtonForegroundCheckedPressed" ResourceKey="SystemColorHighlightColorBrush" />
             <StaticResource x:Key="ToggleButtonForegroundCheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="ToggleButtonForegroundIndeterminate" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="ToggleButtonForegroundIndeterminatePointerOver" ResourceKey="SystemControlHighlightBaseHighBrush" />
@@ -90,17 +93,17 @@
             <StaticResource x:Key="ToggleButtonForegroundIndeterminateDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="ToggleButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
             <StaticResource x:Key="ToggleButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
-            <StaticResource x:Key="ToggleButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
+            <StaticResource x:Key="ToggleButtonBorderBrushPressed" ResourceKey="SystemColorHighlightTextColorBrush" />
             <StaticResource x:Key="ToggleButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
             <StaticResource x:Key="ToggleButtonBorderBrushChecked" ResourceKey="SystemControlHighlightAltTransparentBrush" />
-            <StaticResource x:Key="ToggleButtonBorderBrushCheckedPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
-            <StaticResource x:Key="ToggleButtonBorderBrushCheckedPressed" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="ToggleButtonBorderBrushCheckedPointerOver" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="ToggleButtonBorderBrushCheckedPressed" ResourceKey="SystemColorHighlightTextColorBrush" />
             <StaticResource x:Key="ToggleButtonBorderBrushCheckedDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
             <StaticResource x:Key="ToggleButtonBorderBrushIndeterminate" ResourceKey="SystemControlForegroundTransparentBrush" />
             <StaticResource x:Key="ToggleButtonBorderBrushIndeterminatePointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="ToggleButtonBorderBrushIndeterminatePressed" ResourceKey="SystemControlHighlightTransparentBrush" />
             <StaticResource x:Key="ToggleButtonBorderBrushIndeterminateDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
-            <Thickness x:Key="ToggleButtonBorderThemeThickness">1</Thickness>
+           
             <SolidColorBrush x:Key="ToggleButtonBackgroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="ToggleButtonBorderThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="ToggleButtonCheckedBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
@@ -122,14 +125,15 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <Thickness x:Key="ToggleButtonBorderThemeThickness">1</Thickness>
+            <contract7Present:BackgroundSizing x:Key="ToggleButtonCheckedStateBackgroundSizing">OuterBorderEdge</contract7Present:BackgroundSizing>
             <StaticResource x:Key="ToggleButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
-            <StaticResource x:Key="ToggleButtonBackgroundChecked" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ToggleButtonBackgroundCheckedPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="ToggleButtonBackgroundCheckedPressed" ResourceKey="AccentAAFillColorTertiaryBrush" />
-            <StaticResource x:Key="ToggleButtonBackgroundCheckedDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ToggleButtonBackgroundChecked" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="ToggleButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="ToggleButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+            <StaticResource x:Key="ToggleButtonBackgroundCheckedDisabled" ResourceKey="AccentFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundIndeterminate" ResourceKey="ControlFillColorDefaultBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundIndeterminatePointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundIndeterminatePressed" ResourceKey="ControlFillColorTertiaryBrush" />
@@ -138,10 +142,10 @@
             <StaticResource x:Key="ToggleButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ToggleButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ToggleButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="ToggleButtonForegroundChecked" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
-            <StaticResource x:Key="ToggleButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
-            <StaticResource x:Key="ToggleButtonForegroundCheckedPressed" ResourceKey="TextOnAccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="ToggleButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentAAFillColorDisabled" />
+            <StaticResource x:Key="ToggleButtonForegroundChecked" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <StaticResource x:Key="ToggleButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <StaticResource x:Key="ToggleButtonForegroundCheckedPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="ToggleButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentFillColorDisabled" />
             <StaticResource x:Key="ToggleButtonForegroundIndeterminate" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ToggleButtonForegroundIndeterminatePointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ToggleButtonForegroundIndeterminatePressed" ResourceKey="TextFillColorSecondaryBrush" />
@@ -275,7 +279,7 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushChecked}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BackgroundSizing">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="OuterBorderEdge" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonCheckedStateBackgroundSizing}" />
                                         </contract7Present:ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -291,7 +295,7 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundCheckedPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BackgroundSizing">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="OuterBorderEdge" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonCheckedStateBackgroundSizing}" />
                                         </contract7Present:ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -307,7 +311,7 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushCheckedPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BackgroundSizing">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="OuterBorderEdge" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonCheckedStateBackgroundSizing}" />
                                         </contract7Present:ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>

@@ -23,8 +23,6 @@
     -->
     <Assembly Name="*Application*" Dynamic="Required All" />
 
-    <Namespace Name="Microsoft.UI.Xaml.Controls.AnimatedVisuals" Dynamic="Excluded"/>
-    
     <!-- Add your application specific runtime directives here. -->
 
 

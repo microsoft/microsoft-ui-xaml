@@ -19,6 +19,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Axe.Windows" Version="1.0.4" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1018-prerelease" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="TE.Managed">

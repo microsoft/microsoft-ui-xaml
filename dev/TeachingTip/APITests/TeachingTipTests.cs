@@ -85,9 +85,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 {
                     var popup = TeachingTipTestHooks.GetPopup(teachingTip);
-                    var child = popup.Child;
-                    var grandChild = VisualTreeHelper.GetChild(child, 0);
-                    Verify.AreSame(blueBrush, ((Grid)grandChild).Background, "Checking TeachingTip.Background TemplateBinding works");
+                    var rootGrid = popup.Child;
+                    var tailOcclusionGrid = VisualTreeHelper.GetChild(rootGrid, 0);
+                    var contentRootGrid = VisualTreeHelper.GetChild(tailOcclusionGrid, 0);
+                    Verify.AreSame(blueBrush, ((Grid)contentRootGrid).Background, "Checking TeachingTip.Background TemplateBinding works");
                 }
 
                 {
@@ -96,16 +97,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     Log.Comment("Checking LightDismiss TeachingTip Background is using resource for first invocation");
 
-                    Grid tailEdgeBorder = VisualTreeUtils.FindVisualChildByName(child, "TailEdgeBorder") as Grid;
                     Polygon tailPolygon = VisualTreeUtils.FindVisualChildByName(child, "TailPolygon") as Polygon;
-                    Polygon topTailPolygonHighlight = VisualTreeUtils.FindVisualChildByName(child, "TopTailPolygonHighlight") as Polygon;
                     Grid contentRootGrid = VisualTreeUtils.FindVisualChildByName(child, "ContentRootGrid") as Grid;
                     ContentPresenter mainContentPresenter = VisualTreeUtils.FindVisualChildByName(child, "MainContentPresenter") as ContentPresenter;
                     Border heroContentBorder = VisualTreeUtils.FindVisualChildByName(child, "HeroContentBorder") as Border;
 
-                    VerifyLightDismissTipBackground(tailEdgeBorder.Background, "TailEdgeBorder");
                     VerifyLightDismissTipBackground(tailPolygon.Fill, "TailPolygon");
-                    VerifyLightDismissTipBackground(topTailPolygonHighlight.Fill, "TopTailPolygonHighlight");
                     VerifyLightDismissTipBackground(contentRootGrid.Background, "ContentRootGrid");
                     VerifyLightDismissTipBackground(mainContentPresenter.Background, "MainContentPresenter");
                     VerifyLightDismissTipBackground(heroContentBorder.Background, "HeroContentBorder");
@@ -140,16 +137,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var popup = TeachingTipTestHooks.GetPopup(teachingTip);
                 var child = popup.Child as Grid;
 
-                Grid tailEdgeBorder = VisualTreeUtils.FindVisualChildByName(child, "TailEdgeBorder") as Grid;
                 Polygon tailPolygon = VisualTreeUtils.FindVisualChildByName(child, "TailPolygon") as Polygon;
-                Polygon topTailPolygonHighlight = VisualTreeUtils.FindVisualChildByName(child, "TopTailPolygonHighlight") as Polygon;
                 Grid contentRootGrid = VisualTreeUtils.FindVisualChildByName(child, "ContentRootGrid") as Grid;
                 ContentPresenter mainContentPresenter = VisualTreeUtils.FindVisualChildByName(child, "MainContentPresenter") as ContentPresenter;
                 Border heroContentBorder = VisualTreeUtils.FindVisualChildByName(child, "HeroContentBorder") as Border;
 
-                VerifyBackgroundChanged(tailEdgeBorder.Background, "TailEdgeBorder");
                 VerifyBackgroundChanged(tailPolygon.Fill, "TailPolygon");
-                VerifyBackgroundChanged(topTailPolygonHighlight.Fill, "TopTailPolygonHighlight");
                 VerifyBackgroundChanged(contentRootGrid.Background, "ContentRootGrid");
                 VerifyBackgroundChanged(mainContentPresenter.Background, "MainContentPresenter");
                 VerifyBackgroundChanged(heroContentBorder.Background, "HeroContentBorder");
@@ -240,6 +233,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifySubTitleBlockVisibilityOnInitialUnset()
+        {
+            TeachingTip teachingTip = null;
+            RunOnUIThread.Execute(() =>
+            {
+                teachingTip = new TeachingTip();
+                teachingTip.IsOpen = true;
+                Content = teachingTip;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("", teachingTip.Title);
+                Verify.AreEqual(Visibility.Collapsed,
+                    TeachingTipTestHooks.GetTitleVisibility(teachingTip));
+                Verify.AreEqual("", teachingTip.Subtitle);
+                Verify.AreEqual(Visibility.Collapsed,
+                    TeachingTipTestHooks.GetSubtitleVisibility(teachingTip));
+            });
+        }
 
         [TestMethod]
         public void TeachingTipHeroContentPlacementTest()

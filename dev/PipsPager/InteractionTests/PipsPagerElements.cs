@@ -19,6 +19,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private UIObject PipsPager;
         private UIObject NextPageButton;
         private UIObject PreviousPageButton;
+        private Button RetrievePipsPagerButtonSizesButton;
         private ComboBox PreviousPageButtonVisibilityComboBox;
         private ComboBox NextPageButtonVisibilityComboBox;
         private ComboBox NumberOfPagesComboBox;
@@ -33,7 +34,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private TextBlock CurrentNumberOfPagesTextBlock;
         private TextBlock CurrentMaxVisualIndicatorsTextBlock;
         private TextBlock CurrentOrientationTextBlock;
-
+        private TextBlock HorizontalOrientationPipsPagerButtonWidthTextBlock;
+        private TextBlock HorizontalOrientationPipsPagerButtonHeightTextBlock;
+        private TextBlock VerticalOrientationPipsPagerButtonWidthTextBlock;
+        private TextBlock VerticalOrientationPipsPagerButtonHeightTextBlock;
         public UIObject GetPipsPager()
         {
             return GetElement(ref PipsPager, "TestPipsPager");
@@ -111,6 +115,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public TextBlock GetCurrentOrientationTextBlock()
         {
             return GetElement(ref CurrentOrientationTextBlock, "CurrentOrientationTextBlock");
+        }
+
+        public TextBlock GetHorizontalOrientationPipsPagerButtonWidthTextBlock()
+        {
+            return GetElement(ref HorizontalOrientationPipsPagerButtonWidthTextBlock, "HorizontalOrientationPipsPagerButtonWidthTextBlock");
+        }
+        public TextBlock GetHorizontalOrientationPipsPagerButtonHeightTextBlock()
+        {
+            return GetElement(ref HorizontalOrientationPipsPagerButtonHeightTextBlock, "HorizontalOrientationPipsPagerButtonHeightTextBlock");
+        }
+        public TextBlock GetVerticalOrientationPipsPagerButtonWidthTextBlock()
+        {
+            return GetElement(ref VerticalOrientationPipsPagerButtonWidthTextBlock, "VerticalOrientationPipsPagerButtonWidthTextBlock");
+        }
+        public TextBlock GetVerticalOrientationPipsPagerButtonHeightTextBlock()
+        {
+            return GetElement(ref VerticalOrientationPipsPagerButtonHeightTextBlock, "VerticalOrientationPipsPagerButtonHeightTextBlock");
+        }
+
+        public Button GetPipsPagerButtonSizesButton()
+        {
+            return GetElement(ref RetrievePipsPagerButtonSizesButton, "GetPipsPagersButtonSizesButton");
         }
 
         public UIObject GetPipWithPageNumber(string elementName)

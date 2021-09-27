@@ -255,9 +255,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        public void VerifyStackLayoutCycleShortcut()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                int measureCount = 0;
+                int arrangeCount = 0;
+                var repeater = new ItemsRepeater();
+                var mockStackLayout = new MockStackLayout();
+
+                mockStackLayout.MeasureLayoutFunc = (size, context) =>
+                {
+                    // Simulating variable sized children that cause
+                    // the ItemsRepeater's layout to not settle.
+                    // This would normally cause a layout cycle but the use
+                    // of ItemsRepeater::m_stackLayoutMeasureCounter avoids it.
+                    mockStackLayout.InvalidateMeasure();
+                    measureCount++;
+                    return new Size(100, 200 + measureCount);
+                };
+                mockStackLayout.ArrangeLayoutFunc = (size, context) =>
+                {
+                    arrangeCount++;
+                    return new Size(100, 200 + arrangeCount);
+                };
+                
+                repeater.Layout = mockStackLayout;
+                repeater.ItemsSource = Enumerable.Range(0, 10);
+                repeater.ItemTemplate = GetDataTemplate("<Button Content='{Binding}' Height='200'/>");
+
+                Content = repeater;
+                Content.UpdateLayout();
+            });
+        }
+
+        [TestMethod]
         public void VerifyUniformGridLayoutDoesntCrashWhenTryingToScrollToEnd()
         {
-
             ItemsRepeater repeater = null;
             ScrollViewer scrollViewer = null;
             RunOnUIThread.Execute(() =>

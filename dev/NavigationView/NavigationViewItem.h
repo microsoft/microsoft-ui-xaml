@@ -26,9 +26,12 @@ public:
     // IFrameworkElementOverrides
     void OnApplyTemplate() override;
 
+    void OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&);
+
     // Property change callbacks
     void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnInfoBadgePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHasUnrealizedChildrenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -87,14 +90,17 @@ private:
     void UpdateIsClosedCompact();
 
     void UpdateVisualStateForIconAndContent(bool showIcon, bool showContent);
+    void UpdateVisualStateForInfoBadge();
     void UpdateVisualStateForNavigationViewPositionChange();
     void UpdateVisualStateForKeyboardFocusedState();
     void UpdateVisualStateForToolTip();
     void UpdateVisualStateForPointer();
     void UpdateVisualStateForChevron();
+    void UpdateVisualStateForClosedCompact();
 
     void UpdateVisualState(bool useTransitions);
     bool ShouldShowIcon();
+    bool ShouldShowInfoBadge();
     bool ShouldShowContent();
     bool ShouldEnableToolTip() const;
     bool IsOnLeftNav() const;
@@ -112,6 +118,8 @@ private:
     void HookInputEvents(const winrt::IControlProtected& controlProtected);
     void UnhookInputEvents();
     void UnhookEventsAndClearFields();
+
+    void PrepNavigationViewItem(const winrt::SplitView& splitView);
 
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};

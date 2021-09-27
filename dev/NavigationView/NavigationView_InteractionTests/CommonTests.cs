@@ -1693,6 +1693,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // 32134869: Temporarily disabling 
         public void VerifyNavigationViewItemContentPresenterMargin()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -1795,6 +1796,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     InputHelper.LeftClick(item);
                     Wait.ForIdle();
                 }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyNavigationViewItemInPaneFooterHasTemplateSettingBindings()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "PaneFooterTestPage" }))
+            {
+                TextBlock paneFooterNavViewItemWidthTextBlock = new TextBlock(FindElement.ByName("PaneFooterNavViewItemWidth"));
+                ComboBox compactPaneLengthComboBox = new ComboBox(FindElement.ByName("CompactPaneLengthComboBox"));
+                UIObject getIconColumnWidth = FindElement.ByName("GetIconColumnWidth");
+
+                getIconColumnWidth.Click();
+
+                Log.Comment("Verify IconColumnWidth is binded correctly to SmallerIconWidthProperty");
+                Verify.AreEqual("40", paneFooterNavViewItemWidthTextBlock.DocumentText); 
+
+                Log.Comment("Change CompactPaneLength to 40px");
+                compactPaneLengthComboBox.SelectItemByName("40");
+                Wait.ForIdle();
+
+                getIconColumnWidth.Click();
+                Wait.ForIdle();
+
+                Verify.AreEqual("32", paneFooterNavViewItemWidthTextBlock.DocumentText);
+
+                Log.Comment("Change CompactPaneLength to 96px");
+                compactPaneLengthComboBox.SelectItemByName("96");
+                Wait.ForIdle();
+                getIconColumnWidth.Click();
+                Wait.ForIdle();
+
+                Verify.AreEqual("88", paneFooterNavViewItemWidthTextBlock.DocumentText);
             }
         }
     }

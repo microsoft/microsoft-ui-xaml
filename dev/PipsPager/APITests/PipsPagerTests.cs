@@ -37,7 +37,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var selectionPeer = peer as ISelectionProvider;
                 Verify.AreEqual(false, selectionPeer.CanSelectMultiple);
                 Verify.AreEqual(true, selectionPeer.IsSelectionRequired);
-                Verify.AreEqual(AutomationLandmarkType.Navigation, peer.GetLandmarkType());
             });
         }
 

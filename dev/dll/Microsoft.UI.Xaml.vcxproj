@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\FeatureAreas.props" />
-  <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props')" />
   <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props')" />
   <Import Project="..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.props" Condition="Exists('..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.props')" />
@@ -98,6 +98,7 @@
     <Import Project="..\Common\Common.vcxitems" Label="Shared" />
     <Import Project="..\CommonStyles\CommonStyles.vcxitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true' Or $(FeatureCommonStylesEnabled) == 'productOnly'" />
     <Import Project="..\RatingControl\RatingControl.vcxitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true' Or $(FeatureRatingControlEnabled) == 'productOnly'" />
+    <Import Project="..\InfoBadge\InfoBadge.vcxitems" Label="Shared" Condition="$(FeatureInfoBadgeEnabled) == 'true' Or $(FeatureInfoBadgeEnabled) == 'productOnly'" />
     <Import Project="..\NavigationView\NavigationView.vcxitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true' Or $(FeatureNavigationViewEnabled) == 'productOnly'" />
     <Import Project="..\ColorPicker\ColorPicker.vcxitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true' Or $(FeatureColorPickerEnabled) == 'productOnly'" />
     <Import Project="..\Collections\Collections.vcxitems" Label="Shared" Condition="$(FeatureCollectionsEnabled) == 'true' Or $(FeatureCollectionsEnabled) == 'productOnly'" />
@@ -111,6 +112,7 @@
     <Import Project="..\MenuBar\MenuBar.vcxitems" Label="Shared" Condition="$(FeatureMenuBarEnabled) == 'true' Or $(FeatureMenuBarEnabled) == 'productOnly'" />
     <Import Project="..\Materials\Acrylic\AcrylicBrush.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
     <Import Project="..\Materials\Reveal\RevealBrush.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
+    <Import Project="..\Materials\Backdrop\SystemBackdropComponent.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
     <Import Project="..\TreeView\TreeView.vcxitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true' Or $(FeatureTreeViewEnabled) == 'productOnly'" />
     <Import Project="..\Telemetry\Telemetry.vcxitems" Label="Shared" />
     <Import Project="..\ParallaxView\ParallaxView.vcxitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true' Or $(FeatureParallaxViewEnabled) == 'productOnly'" />
@@ -128,25 +130,13 @@
     <Import Project="..\IconSource\IconSource.vcxitems" Label="Shared" Condition="$(FeatureIconSourceEnabled) == 'true' Or $(FeatureIconSourceEnabled) == 'productOnly'" />
     <Import Project="..\Interactions\ButtonInteraction\ButtonInteraction.vcxitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' Or $(FeatureInteractionsEnabled) == 'productOnly'" />
     <Import Project="..\Interactions\SliderInteraction\SliderInteraction.vcxitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' Or $(FeatureInteractionsEnabled) == 'productOnly'" />
-    <Import Project="..\MenuFlyout\MenuFlyout.vcxitems" Label="Shared" Condition="$(FeatureMenuFlyoutEnabled) == 'true' Or $(FeatureMenuFlyoutEnabled) == 'productOnly'" />
     <Import Project="..\TeachingTip\TeachingTip.vcxitems" Label="Shared" Condition="$(FeatureTeachingTipEnabled) == 'true' Or $(FeatureTeachingTipEnabled) == 'productOnly'" />
     <Import Project="..\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems" Label="Shared" Condition="$(FeatureRadioMenuFlyoutItemEnabled) == 'true' Or $(FeatureRadioMenuFlyoutItemEnabled) == 'productOnly'" />
     <Import Project="..\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" Condition="$(FeatureAnimatedVisualPlayerEnabled) == 'true' Or $(FeatureAnimatedVisualPlayerEnabled) == 'productOnly'" />
     <Import Project="..\TabView\TabView.vcxitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true' Or $(FeatureTabViewEnabled) == 'productOnly'" />
     <Import Project="..\AutoSuggestBox\AutoSuggestBox.vcxitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true' Or $(FeatureAutoSuggestBoxEnabled) == 'productOnly'" />
-    <Import Project="..\CheckBox\CheckBox.vcxitems" Label="Shared" Condition="$(FeatureCheckBoxEnabled) == 'true' Or $(FeatureCheckBoxEnabled) == 'productOnly'" />
-    <Import Project="..\CalendarDatePicker\CalendarDatePicker.vcxitems" Label="Shared" Condition="$(FeatureCalendarDatePickerEnabled) == 'true' Or $(FeatureCalendarDatePickerEnabled) == 'productOnly'" />
-    <Import Project="..\DatePicker\DatePicker.vcxitems" Label="Shared" Condition="$(FeatureCalendarDatePickerEnabled) == 'true' Or $(FeatureCalendarDatePickerEnabled) == 'productOnly'" />
-    <Import Project="..\Slider\Slider.vcxitems" Label="Shared" Condition="$(FeatureSliderEnabled) == 'true' Or $(FeatureSliderEnabled) == 'productOnly'" />
-    <Import Project="..\TimePicker\TimePicker.vcxitems" Label="Shared" Condition="$(FeatureTimePickerEnabled) == 'true' Or $(FeatureTimePickerEnabled) == 'productOnly'" />
-    <Import Project="..\ToolTip\ToolTip.vcxitems" Label="Shared" Condition="$(FeatureToolTipEnabled) == 'true' Or $(FeatureToolTipEnabled) == 'productOnly'" />
-    <Import Project="..\FlipView\FlipView.vcxitems" Label="Shared" Condition="$(FeatureFlipViewEnabled) == 'true' Or $(FeatureFlipViewEnabled) == 'productOnly'" />
     <Import Project="..\ComboBox\ComboBox.vcxitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true' Or $(FeatureComboBoxEnabled) == 'productOnly'" />
-    <Import Project="..\Pivot\Pivot.vcxitems" Label="Shared" Condition="$(FeaturePivotEnabled) == 'true' Or $(FeaturePivotEnabled) == 'productOnly'" />
-    <Import Project="..\ScrollBar\ScrollBar.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true' Or $(FeatureScrollBarEnabled) == 'productOnly'" />
-    <Import Project="..\CalendarView\CalendarView.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true' Or $(FeatureScrollBarEnabled) == 'productOnly'" />
-    <Import Project="..\SplitView\SplitView.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true' Or $(FeatureScrollBarEnabled) == 'productOnly'" />
-    <Import Project="..\ContentDialog\ContentDialog.vcxitems" Label="Shared" Condition="$(FeatureContentDialogEnabled) == 'true' Or $(FeatureContentDialogEnabled) == 'productOnly'" />
+    <Import Project="..\SplitView\SplitView.vcxitems" Label="Shared" Condition="$(FeatureSplitViewEnabled) == 'true' Or $(FeatureSplitViewEnabled) == 'productOnly'" />
     <Import Project="..\ProgressBar\ProgressBar.vcxitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true' Or $(FeatureProgressBarEnabled) == 'productOnly'" />
     <Import Project="..\ProgressRing\ProgressRing.vcxitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true' Or $(FeatureProgressRingEnabled) == 'productOnly'" />
     <Import Project="..\NumberBox\NumberBox.vcxitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true' Or $(FeatureNumberBoxEnabled) == 'productOnly'" />
@@ -158,6 +148,8 @@
     <Import Project="..\PipsPager\PipsPager.vcxitems" Label="Shared" Condition="$(FeaturePipsPagerEnabled) == 'true' Or $(FeaturePipsPagerEnabled) == 'productOnly'" />
     <Import Project="..\ImageIcon\ImageIcon.vcxitems" Label="Shared" Condition="$(FeatureImageIconEnabled) == 'true' Or $(FeatureImageIconEnabled) == 'productOnly'" />
     <Import Project="..\AnimatedIcon\AnimatedIcon.vcxitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true' Or $(FeatureAnimatedIconEnabled) == 'productOnly'" />
+    <Import Project="..\MonochromaticOverlayPresenter\MonochromaticOverlayPresenter.vcxitems" Label="Shared" Condition="$(FeatureMonochromaticOverlayPresenterEnabled) == 'true' Or $(FeatureMonochromaticOverlayPresenterEnabled) == 'productOnly'" />
+    <Import Project="..\WebView2\WebView2.vcxitems" Label="Shared" Condition="($(FeatureWebView2Enabled) == 'true' Or $(FeatureWebView2Enabled) == 'productOnly')" />
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
@@ -219,6 +211,7 @@
       <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..;$(MSBuildProjectDirectory)\..\..\idl;$(MiniWindowsSDKIncludePath)</AdditionalIncludeDirectories>
       <Enumclass>false</Enumclass>
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">%(PreprocessorDefinitions);DEBUG;DBG</PreprocessorDefinitions>
+      <AdditionalOptions>%(AdditionalOptions) /noattributename</AdditionalOptions>
     </Midl>
     <Link>
       <ModuleDefinitionFile>Microsoft.UI.Xaml.def</ModuleDefinitionFile>
@@ -237,12 +230,15 @@
       <DisableSpecificWarnings>4505;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>
         %(AdditionalIncludeDirectories);
+        $(WindowsSDK_IncludePath)\winrt;
         $(MSBuildProjectDirectory)\..\inc;
         $(MSBuildProjectDirectory)\..\Generated;
         $(OutDir);
       </AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>
-        $(GeneratedFilesDir)\winrt;
+        $(MSBuildProjectDirectory);
+        $(MSBuildProjectDirectory)\..\dev\WebView2;
+        $(GeneratedFilesDir);
         $(GeneratedFilesDir)\Automation\Peers;
         $(GeneratedFilesDir)\Controls;
         $(GeneratedFilesDir)\Controls\Primitives;
@@ -269,6 +265,7 @@
       <StringPooling Condition="'$(Configuration)'=='Release'">true</StringPooling>
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">DEBUG;DBG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions>DISABLE_WINRT_DEPRECATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WINAPI_FAMILY=WINAPI_FAMILY_DESKTOP_APP</PreprocessorDefinitions>
       <Optimization Condition="'$(Configuration)'=='Release'">MinSpace</Optimization>
       <ConformanceMode>true</ConformanceMode>
       <!-- Disable multi-proc building on low powered machines, such as the lab machines -->
@@ -382,37 +379,73 @@
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredFor21H1ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs2_themeresources.xaml;$(OutDir)rs2_compact_themeresources.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs2_themeresources.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS2ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs3_themeresources.xaml;$(OutDir)rs3_compact_themeresources.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs3_themeresources.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS3ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs4_themeresources.xaml;$(OutDir)rs4_compact_themeresources.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs4_themeresources.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS4ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs5_themeresources.xaml;$(OutDir)rs5_compact_themeresources.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs5_themeresources.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS5ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)19h1_themeresources.xaml;$(OutDir)19h1_compact_themeresources.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)19h1_themeresources.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)21h1_themeresources.xaml;$(OutDir)21h1_compact_themeresources.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)21h1_themeresources.xaml">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor21H1ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)rs2_compact_themeresources.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS2ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)rs3_compact_themeresources.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS3ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)rs4_compact_themeresources.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS4ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)rs5_compact_themeresources.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS5ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)19h1_compact_themeresources.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)21h1_compact_themeresources.xaml" Condition="$(MUXFinalRelease) != 'true'">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
@@ -454,37 +487,73 @@
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredFor21H1ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs2_themeresources_v1.xaml;$(OutDir)rs2_compact_themeresources_v1.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs2_themeresources_v1.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS2ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs3_themeresources_v1.xaml;$(OutDir)rs3_compact_themeresources_v1.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs3_themeresources_v1.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS3ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs4_themeresources_v1.xaml;$(OutDir)rs4_compact_themeresources_v1.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs4_themeresources_v1.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS4ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs5_themeresources_v1.xaml;$(OutDir)rs5_compact_themeresources_v1.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs5_themeresources_v1.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS5ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)19h1_themeresources_v1.xaml;$(OutDir)19h1_compact_themeresources_v1.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)19h1_themeresources_v1.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)21h1_themeresources_v1.xaml;$(OutDir)21h1_compact_themeresources_v1.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)21h1_themeresources_v1.xaml">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor21H1ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)rs2_compact_themeresources_v1.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS2ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)rs3_compact_themeresources_v1.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS3ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)rs4_compact_themeresources_v1.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS4ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)rs5_compact_themeresources_v1.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS5ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)19h1_compact_themeresources_v1.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)21h1_compact_themeresources_v1.xaml" Condition="$(MUXFinalRelease) != 'true'">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
@@ -516,15 +585,6 @@
     <Natvis Include="$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.natvis">
     </Natvis>
     -->
-    <Page Update="D:\repos\microsoft-ui-xaml\dev\ProgressBar\ProgressBar_themeresources.xaml">
-      <FileType>Document</FileType>
-    </Page>
-    <Page Update="T:\repos\microsoft-ui-xaml\dev\Breadcrumb\BreadcrumbBar.xaml">
-      <FileType>Document</FileType>
-    </Page>
-    <Page Update="T:\repos\microsoft-ui-xaml\dev\Breadcrumb\BreadcrumbBar_themeresources.xaml">
-      <FileType>Document</FileType>
-    </Page>
   </ItemGroup>
   <Import Project="$(CppTargetsFilePath)" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" />
@@ -559,9 +619,10 @@
     <Import Project="..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.targets" Condition="Exists('..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.targets')" />
     <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets')" />
     <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets')" />
-    <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Condition="'$(PGOBuildMode)' == 'Optimize'" Project="..\..\packages\$(PGODatabaseId).$(PGODatabaseVersion)\build\PGO.targets" />
-    <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.71\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.71\build\native\MUXCustomBuildTasks.targets')" />
+    <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.74\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.74\build\native\MUXCustomBuildTasks.targets')" />
+    <Import Project="..\..\packages\Microsoft.Web.WebView2.1.0.1018-prerelease\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1018-prerelease\build\native\Microsoft.Web.WebView2.targets')" />
   </ImportGroup>
   <PropertyGroup>
     <MergedWinmdDirectory>$(OutDir)Merged</MergedWinmdDirectory>
@@ -771,7 +832,7 @@
   <Target Name="CreateReferenceWinmds" BeforeTargets="XamlMetadataCodeGenMUX">
     <ItemGroup>
       <T4ParameterValues Include="ReferenceWinmds">
-        <Value>@(CppWinRTPlatformWinMDReferences)</Value>
+        <Value>@(_MidlReferencesDistinct)</Value>
       </T4ParameterValues>
     </ItemGroup>
   </Target>
@@ -797,7 +858,7 @@
     </CreateItem>
   </Target>
   <Target Name="RunDependencyPropertyCodeGen" AfterTargets="CppWinRTMakeComponentProjection" BeforeTargets="ClCompile" Inputs="$(OutDir)Microsoft.winmd" Outputs="@(DependencyPropertyCodeGenOutputs);$(MSBuildProjectDirectory)\..\Generated\AcrylicBrush.properties.cpp">
-    <DependencyPropertyCodeGen WinMDInput="$(OutDir)Microsoft.winmd" References="@(CppWinRTPlatformWinMDReferences)" OutputDirectory="$(MSBuildProjectDirectory)\..\Generated" />
+    <DependencyPropertyCodeGen WinMDInput="$(OutDir)Microsoft.winmd" References="@(_MidlReferencesDistinct)" OutputDirectory="$(MSBuildProjectDirectory)\..\Generated" />
     <Touch Files="@(DependencyPropertyCodeGenOutputs)" />
   </Target>
   <Target Name="WorkAroundFastUpToDateCheckBug" AfterTargets="_GenerateProjectPriFileCore" Inputs="$(OutDir)$(TargetName).pri" Outputs="$(OutDir)$(TargetName).dll" Condition="Exists('$(OutDir)$(TargetName).dll')">
@@ -815,9 +876,26 @@
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets'))" />
-    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.targets'))" />
-    <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.71\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.71\build\native\MUXCustomBuildTasks.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.74\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.74\build\native\MUXCustomBuildTasks.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1018-prerelease\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Web.WebView2.1.0.1018-prerelease\build\native\Microsoft.Web.WebView2.targets'))" />
+  </Target>
+  <!-- We want to generate SourceLink urls to GitHub even if we build against the AzDO repo -->
+  <Target Name="_TranslateAzureDevOpsUrlToGitHubUrl"
+          DependsOnTargets="$(SourceControlManagerUrlTranslationTargets)"
+          BeforeTargets="SourceControlManagerPublishTranslatedUrls">
+    <PropertyGroup>
+      <WinUIGitHubUrl>https://github.com/microsoft/microsoft-ui-xaml</WinUIGitHubUrl>
+      <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://microsoft.visualstudio.com/DefaultCollection/WinUI/_git/microsoft-ui-xaml-staging'" >$(WinUIGitHubUrl)</ScmRepositoryUrl>
+      <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://microsoft.visualstudio.com/WinUI/_git/microsoft-ui-xaml-staging'" >$(WinUIGitHubUrl)</ScmRepositoryUrl>
+      <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://dev.azure.com/microsoft/WinUI/_git/microsoft-ui-xaml-staging'" >$(WinUIGitHubUrl)</ScmRepositoryUrl>
+    </PropertyGroup>
+    <ItemGroup>
+      <SourceRoot Update="@(SourceRoot)">
+        <ScmRepositoryUrl>$(ScmRepositoryUrl)</ScmRepositoryUrl>
+      </SourceRoot>
+    </ItemGroup>
   </Target>
   <Target Name="RunBinSkim" AfterTargets="AfterBuild" Condition="'$(Configuration)'=='Release'">
     <PropertyGroup>

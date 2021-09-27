@@ -1,14 +1,14 @@
 # Windows UI Library Roadmap
 
-WinUI is the native UI platform for Windows 10. This document outlines the prospective roadmap for WinUI through 2020 and into 2021. WinUI is under active development by the Windows developer platform team and the roadmap will continue to evolve based on market changes and customer feedback, so please note that the plans outlined here aren't exhaustive or guaranteed. We welcome your feedback on the roadmap: please feel free to contribute to existing issues or [file a new issue](https://github.com/microsoft/microsoft-ui-xaml/issues).
+WinUI is the modern native UI platform for Windows. This document outlines the prospective roadmap for WinUI through 2021. WinUI is under active development by the Windows developer platform team and the roadmap will continue to evolve based on market changes and customer feedback, so please note that the plans outlined here aren't exhaustive or guaranteed. We welcome your feedback on the roadmap: please feel free to contribute to existing issues or [file a new issue](https://github.com/microsoft/microsoft-ui-xaml/issues).
 
-**Note: For a detailed look at the target availability dates for certain features in WinUI 3, see [our feature roadmap](#winui-30-feature-roadmap).**
+**Note: For a detailed look at the target availability dates for certain features in WinUI 3, see [our feature roadmap](#winui-3-feature-roadmap).**
 
 WinUI continues to advance and improve across both generations of the technology: 
 
 1. **WinUI 2**: The 2nd generation of the WinUI stack for UWP apps, consisting of a XAML and Visual Layer built directly into the Windows 10 operating system, and a controls library built on top of the OS, delivered via NuGet, and hosted at this repository. 
 
-2. **WinUI 3**: A new, 3rd generation of WinUI that ships the entire WinUI stack decoupled from the operating system and usable in either Win32 or UWP apps.
+2. **WinUI 3**: A new, 3rd generation of WinUI that ships the entire WinUI stack decoupled from the operating system as a part of the [Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk/). 
 
 ### Benefits of WinUI 
 
@@ -22,7 +22,7 @@ WinUI is Microsoft's main focus for native, accessible Windows UI and controls a
 It will also support the latest composition and rendering innovations like vector animations, effects, shadows and lighting.
 
 3. **Backward compatibility for new features**  
-New WinUI features will continue to be backward-compatible with a wide range of Windows 10 versions. Once WinUI 3.0 is available, you can start building and shipping apps with new features immediately as soon as they're released, without having to wait for your users to be running the latest update of Windows 10.
+New WinUI features will continue to be backward-compatible with a wide range of Windows 10 and 11 versions. With WinUI 3, you can start building and shipping apps with new features immediately as soon as they're released, without having to wait for your users to be running the latest update of Windows.
 
 4. **Native development support**  
 WinUI can be used with .NET, but doesn't depend on .NET: WinUI is 100% C++ and can be used in unmanaged Windows apps, for example using standard C++17 via [C++/WinRT](https://docs.microsoft.com/windows/uwp/cpp-and-winrt-apis/).
@@ -31,126 +31,95 @@ WinUI can be used with .NET, but doesn't depend on .NET: WinUI is 100% C++ and c
 WinUI is planned to ship roughly every 4 months, with monthly pre-release builds.  This is more of a guideline than a rule, but that is what the team strives for.
 
 6. **Open source development and community engagement**  
- The WinUI 2 Controls Library is already open source on GitHub, and we plan to add the full WinUI 3 XAML framework into this repo in the coming months. You can engage directly with Microsoft's core engineering team and contribute bug reports, feature ideas, and even code: see the [Contribution Guide](../CONTRIBUTING.md) for more info.  You can also try out the monthly pre-release builds to see new in-development features and help shape their final form.  
+ The WinUI 2 Controls Library is already open source on GitHub, and we're planning to add the full WinUI 3 framework into this repo as well. You can engage directly with Microsoft's core engineering team and contribute bug reports, feature ideas, and even code: see the [Contribution Guide](../CONTRIBUTING.md) for more info.  You can also try out the monthly pre-release builds to see new in-development features and help shape their final form.  
  
 ## WinUI 2 Controls Library
 
-The next release of the **WinUI 2 Controls Library** will be v2.5, ETA late 2020. 
+The next release of the **WinUI 2 Controls Library** will be v2.7, ETA Fall 2021. 
 
-WinUI 2.5 will include new Xaml features and fixes for UWP apps on Windows 10.  You can find a list of currently planned work in the [WinUI 2.5 milestone](https://github.com/microsoft/microsoft-ui-xaml/milestone/10).
+WinUI 2.7 will include new Xaml features and fixes for UWP apps.  You can find a list of currently planned work in the [WinUI 2.7 milestone](https://github.com/microsoft/microsoft-ui-xaml/milestone/12).
 
 For installation instructions see [Getting started with the Windows UI Library](https://docs.microsoft.com/en-us/windows/apps/winui/winui2/getting-started).
 
 
 ## WinUI 3
 
-**WinUI 3** is the next generation of native Windows UI, consisting of all the major UX layers of Windows 10 decoupled and shipping as a standalone solution for you to use. 
+**WinUI 3** is the next generation of native Windows UI, consisting of all the major UX layers of Windows decoupled and shipping as a standalone solution for you to use. 
 
 It focuses on enabling three main use cases:
 
 1. **Modernizing existing apps**
-    * Enabling you to extend existing Win32 (WPF, WinForms, MFC..) apps with modern Windows 10 UI at your own pace using the upcoming latest version of [Xaml Islands](https://docs.microsoft.com/windows/apps/desktop/modernize/xaml-islands). Developers who currently use WinUI 2 will be able to easily move to WinUI 3, and take advantage of everything the 3rd generation has to offer
+    * Enabling you to extend existing Win32 (WPF, WinForms, MFC...) apps with modern Windows UI at your own pace using the upcoming release of [Xaml Islands](https://docs.microsoft.com/windows/apps/desktop/modernize/xaml-islands). Developers who currently use WinUI 2 for their app UX will be able to easily move to WinUI 3, as their syntax and capabilities are very similar
 2. **Creating new Windows apps**
-    * Enabling you to easily create new modern Windows apps with your choice of app model (Win32 or UWP) and language (.NET or C++)
+    * Enabling you to easily create new modern Windows apps with the flexibility offered by the Windows App SDK
 3. **Enabling other frameworks**
     * Providing the native implementation for other frameworks like [React Native](https://github.com/Microsoft/react-native-windows) when running on Windows
 
-WinUI 3 is currently in development, and the team recently released WinUI 3 Preview 3, which is a pre-release version that works with Win32 and UWP apps. Preview 3 is available for anyone to try, but note that it has limitations and known issues, so it is not equipped for production apps. Get started or read more about Preview 3 here: 
+WinUI 3 is available as a part of the [Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk) for building stable and supported desktop/Win32 apps for production scenarios. The latest release is the Windows App SDK 0.8, which you can download and read more about at the documentation linked below:
 
-[WinUI 3.0 Preview 3 (November 2020)](https://docs.microsoft.com/windows/apps/winui/winui3/)
+[Stable release channel for the Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk/stable-channel)
 
-The 3rd generation of WinUI has some key benefits over the 2nd generation, including:
+There's also a version of WinUI 3 available that includes experimental features. You can read more about the Windows App SDK Preview at the following documentation. Note that preview releases have limitations and known issues, so they are not equipped for production apps. 
 
-- **Flexible desktop development**  
-WinUI 3 will let you more easily mix and match the right combination of:
-    * **Language**: C# (.NET 5), C++ 17
-    * **App model**: UWP, Win32
-    * **Packaging**: [MSIX](https://docs.microsoft.com/windows/msix/) (AppX for the Microsoft Store), unpackaged  (xcopy, MSI, etc.)
-    * **Interop**: use WinUI 3 to extend existing WPF, WinForms, and MFC apps with modern Fluent UI
-
-- **A native Windows target for web and cross-platform frameworks**  
-WinUI 3 is better optimized for libraries and frameworks to build on.  
-For example, the new high-performance C++ [React Native Windows](https://github.com/Microsoft/react-native-windows) implementation is [currently working on using WinUI 3 as its base](https://microsoft.github.io/react-native-windows/docs/next/winui3).
-
-**Conceptual overview on how WinUI 3 relates to WinUI 2 and other technologies:**
-
-![WinUI 3 platform](images/winui3-concept.jpg)
-
-WinUI 3 is a UI layer that takes the decoupled UWP XAML Visual Layer, the WinUI 2 library, and combines it with more modern features and capabilities. This layer can be used in any Desktop app or UWP app. 
-
-> You can watch Ryan Demopoulos’ guest keynote at UnoConf 2020, entitled *WinUI and Project Reunion: The Present and the Future*, for more details:
-https://youtu.be/nbqe9uHWT_c?t=2056
-
-The existing UWP XAML APIs that ship as part of the OS will no longer receive new feature updates. They will still receive security updates and critical fixes according to the Windows 10 support lifecycle.
-
-The Universal Windows Platform contains more than just the XAML framework (e.g. application and security model, media pipeline, Xbox and Windows 10 shell integrations, broad device support) and will continue to evolve.
-
-[**Project Reunion**](https://github.com/microsoft/ProjectReunion) is a set of libraries, frameworks, components, and tools that you can use in your apps to access powerful Windows platform functionality from all kinds of apps on many versions of Windows. **WinUI 3 will be a component of Project Reunion** as it brings modern UI to a variety of Windows app types. 
+[Experimental release channel for the Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk/experimental-channel).
+ 
 
 
-### Updating your apps to use WinUI 3
+## WinUI 3 Feature Roadmap
+The image below lists out what the WinUI team plans to ship in 2021.
 
-Creating a new WinUI 3 app will be easy using new [Visual Studio 2019 project templates](https://docs.microsoft.com/windows/apps/winui/winui3/#project-templates-for-winui-3). 
+The Windows App SDK ships experimental, preview, and stable builds (with WinUI 3 as a component). You can read more about the shipping schedule and cadence in our [Release Channels doc](https://docs.microsoft.com/windows/apps/windows-app-sdk/release-channels). For more details on when specific features will become available, see the feature roadmap table below. 
 
-For existing UWP XAML apps there will be some updates required when migrating to WinUI 3. These updates will require little effort, with the bulk of most project changes involving find-and-replace namespace changes. We'd love to hear your thoughts on the developer experience in the [WinUI 3.0 tooling discussion issue](https://github.com/microsoft/microsoft-ui-xaml/issues/1045).
+For WinUI 2, you can plan to see frequent pre-releases (see our [Releases](https://github.com/microsoft/microsoft-ui-xaml/releases) page for more info), along with three stable releases this year.
 
-### WinUI 3.0 Timelines and Milestones
+![Winui roadmap](images/roadmap0621.jpg)
 
-WinUI 3 will release as a series of preview releases throughout 2020, culminating with our first supported, production-ready release shipping in March 2021. 
 
-As we move towards releasing a stable, supported version of WinUI 3, we're looking to transition into a release cadence that includes more frequent pre-releases alongside less frequent stable releases, similar to the release cadence of WinUI 2.x. 
-
-See the image below for a more detailed look at our plans for getting WinUI 3.0 to market:
-
-![Winui roadmap](images/winui-roadmap.jpg)
-
-## WinUI 3.0 Feature Roadmap
 We know that for many of our developers, the choice to adopt WinUI 3 is dependent on certain features and capabilities. The table below outlines the status on WinUI 3 features, and the expected date they'll be available to you. 
 
-As we begin moving towards releasing preview and stable packages in parallel, you'll see in the feature roadmap below that some features remain "preview" features during stable releases. This means that the feature is not stable/bug-free enough to be included in the stable release, but will be available in the corresponding pre-release package. 
+In the feature roadmap table below, some features remain "experimental" features during stable releases. This means that the feature is not stable/bug-free enough to be included in the stable release, but will be available in the corresponding experimental build. 
 
 **Please note: This is a living document, and the information below can and likely will change as the project continues development. The feature availability dates listed here are the team's current goals and expectations, but are not promises or guarantees.**
 
-For questions or status updates on either features listed here, or features not on this list, you can file an issue on [our repo](https://github.com/microsoft/microsoft-ui-xaml/issues/new?assignees=&labels=question&template=question.md&title=Question%3A+%5Byour+question+here%5D) or ask during our [monthly community calls](communitycalls/WinUICommunityCall.ics). 
+For questions or status updates on either features listed here, or features not on this list, you can file an issue on [our repo](https://github.com/microsoft/microsoft-ui-xaml/issues/new?assignees=&labels=question&template=question.md&title=Question%3A+%5Byour+question+here%5D) or ask during our [monthly community calls](https://aka.ms/winuicall). 
 
 ### Legend
 &#128994; - Available as supported feature
 
-&#128311; - Available as preview feature 
+&#128311; - Available as experimental feature 
 
-&#129002; - Stretch goal 
+&#129002; -  Stretch goal 
 
 Blank -  Not available
 
 
-**Preview 3** is our latest release. 
+**WinUI 3 - Windows App SDK 0.8** is our latest release. 
 
-| Customer Capability                                                         | Preview 3 (Nov 2020)                | Preview 4 (Feb 2021)                | Reunion 0.5 (March 2021)            | Reunion 0.8 (May 2021)              | Planned for a future update         |
-|-----------------------------------------------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|
-| WinUI 3 in Desktop (Win32) apps                                             | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
-| WinUI 3 in UWP apps                                                         | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> |
-| Supports MSIX Deployment                                                    | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
-| WinUI 3 works downlevel to Windows 10 version 1809 and above                | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
-| Supports the latest .NET                                                    | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
-| `<SwapChainPanel>`                                                          | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
-| Chromium-based WebView2                                                     | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
-| Title bar customization                                                     | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
-| Fluent Shadows                                                              | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
-| ARM64 support                                                               | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
-| Input validation for data fields                                            | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> |
-| Supports multiple top-level windows                                         | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> |
-| Drag and drop                                                               | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
-| Off-thread input for SwapChainPanels                                        | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
-| RenderTargetBitmap                                                          | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
-| Mouse cursor customization                                                  | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
-| Animated Gif support                                                        | <div align="center">&#128311;</div> | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
-| VirtualSurfaceImageSource (VSIS) support                                    |                                     | <div align="center">&#128311;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> | <div align="center">&#128994;</div> |
-| Supports non-MSIX deployment                                                |                                     |                                     |                                     |                                     | <div align="center">&#128994;</div> |
-| XAML Islands                                                                |                                     |                                     |                                     |                                     | <div align="center">&#128994;</div> |
-| Works on Windows 10X                                                        |                                     |                                     |                                     |                                     | <div align="center">&#128994;</div> |
-| Works on additional Windows form factors (Xbox, HoloLens, IoT, Surface Hub) |                                     |                                     |                                     |                                     | <div align="center">&#128994;</div> |
-| Acrylic material                                                            |                                     |                                     |                                     |                                     | <div align="center">&#128994;</div> |
-| Reveal Highlight                                                            |                                     |                                     |                                     |                                     | <div align="center">&#129002;</div> |
-| Media Controls                                                              |                                     |                                     |                                     |                                     | <div align="center">&#128994;</div> |
-| `<InkCanvas>`                                                               |                                     |                                     |                                     |                                     | <div align="center">&#128994;</div> |
-| `<Map Control>`                                                             |                                     |                                     |                                     |                                     | <div align="center">&#129002;</div> |
+| Customer Capability                                    | Project Reunion 0.5 <br/>(March 2021) | Windows App SDK 0.8 <br/>(June 2021) | Windows App SDK 1.0 <br/>(Q4 2021) | Planned for a future update |
+| ------------------------------------------------------ | -------------------------------- | ------------------------------- | ----------------------------- | --------------------------- |
+| Supported in any app using the Windows App SDK         | &#128994;                              | &#128994;                             | &#128994;                           |      &#128994;                       |
+| Supports MSIX Deployment                               | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
+| Supports Unpackaged (non-MSIX) Deployment              |                                 |                                | &#128994;                           | &#128994;                         |
+| Works downlevel to Windows 10 version 1809 and above   | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
+| Supports the latest .NET                               | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
+| ARM64 support                                          | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
+| `<SwapChainPanel> `                                      | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
+| Intellisense, Hot Reload, Live Visual Tree             | &#128311;                              | &#128311;                             | &#128994;                           | &#128994;                         |
+| Chromium-based WebView2                                | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
+| Title bar customization                                | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
+| Fluent Shadows                                         | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
+| Input validation for data fields                       | &#128311;                              | &#128311;                             | &#128311;                           | &#128994;                         |
+| Supports multiple top-level windows on the same thread | &#128311;                              | &#128311;                             | &#128994;                           | &#128994;                         |
+| Support multiple top-level windows on separate threads | &#128311;                              | &#128311;                             | &#128311;                           | &#128994;                         |
+| Drag and drop                                          | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
+| RenderTargetBitmap                                     | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
+| Mouse cursor customization                             | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
+| Animated Gif support                                   | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
+| VirtualSurfaceImageSource (VSIS) support               | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
+| In-app acrylic                                         | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
+| Background acrylic                                     |                                 |                                |  &#129002;                 | &#128994;                         |
+| Contains new Windows 11 controls/styles from WinUI 2.6 |                                 |                                | &#128994;                           | &#128994;                         |
+| XAML Islands                                           |                                 |                                |                    | &#128994;                         |
+| Media Controls (e.g. `<MediaPlayerElement>`)             |                                 |                                |                              | &#128994;                         |
+| `<InkCanvas>`                                            |                                 |                                |                              | &#128994;                         |
+| `<MapControl>`                                           |                                 |                                |                              |  &#129002;                     |

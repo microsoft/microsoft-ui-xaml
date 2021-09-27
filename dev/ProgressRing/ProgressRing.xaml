@@ -14,6 +14,7 @@
         <Setter Property="MinWidth" Value="16" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
         <Setter Property="Maximum" Value="100" />
         <Setter Property="Template">
             <Setter.Value>
@@ -24,6 +25,7 @@
                                 <VisualState x:Name="Inactive">
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.Opacity" Value="0" />
+                                        <Setter Target="LottiePlayer.(AutomationProperties.AccessibilityView)" Value="Raw" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="DeterminateActive"/>
