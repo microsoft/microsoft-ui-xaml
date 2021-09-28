@@ -33,6 +33,7 @@
   <PropertyGroup>
     <XamlWinmdName>Microsoft.UI.Xaml.winmd</XamlWinmdName>
     <XamlCompactXbfName>Microsoft.UI.Xaml\DensityStyles\Compact.xbf</XamlCompactXbfName>
+    <WebView2UseWinRT Condition="'$(WebView2UseWinRT)' ==''">true</WebView2UseWinRT>
   </PropertyGroup>
   <Target Name="_FixWinmdCopyLocal" AfterTargets="ResolveNuGetPackageAssets">
     <ItemGroup>
