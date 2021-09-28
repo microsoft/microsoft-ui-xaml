@@ -2,13 +2,13 @@ name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 variables:
   minimumExpectedTestsExecutedCount: 35  # Sanity check for minimum expected tests to be reported
 jobs:
-- job: ComponentDetection
-  pool:
-    vmImage: 'windows-2019'
+# - job: ComponentDetection
+#   pool:
+#     vmImage: 'windows-2019'
 
-  steps:
-  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-    displayName: 'Component Detection'
+#   steps:
+#   - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+#     displayName: 'Component Detection'
 
 - job: Build
   # Skip the build job if we are reusing the output of a previous build.
