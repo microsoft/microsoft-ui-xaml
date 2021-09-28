@@ -32,7 +32,7 @@ steps:
       displayName: First Party StoreSign Framework Package
       inputs:
         ConnectedServiceName: WinUISigning
-        FolderPath: '${{ parameters.buildOutputDir }}\$config\$platform\FrameworkPackage'
+        FolderPath: '${{ parameters.buildOutputDir }}\$(buildConfiguration)\$(buildPlatform)\FrameworkPackage'
         Pattern: |
           *.appx
         signConfigType: 'inlineSignParams'
