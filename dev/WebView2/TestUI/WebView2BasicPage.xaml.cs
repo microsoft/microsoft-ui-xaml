@@ -507,7 +507,7 @@ namespace MUXControlsTestApp
             // if there are more webviews than just default one, remove them
             if (WebView2Collection.Children.Count > 1)
             {
-                RemoveAllButDefaultWebViewControl();
+                RemoveWebViewControls(true /* keep default webview */);
             }
 
             var MyWebView2 = FindName("MyWebView2") as WebView2;
@@ -886,24 +886,10 @@ namespace MUXControlsTestApp
             webview.CoreWebView2Initialized -= OnCoreWebView2Initialized;
         }
 
-        void RemoveAllButDefaultWebViewControl()
+        void RemoveWebViewControls(bool keepDefault = false)
         {
-            for (int i = WebView2Collection.Children.Count - 1; i > 0; i--)
-            {
-                StackPanel webviewStackPanel = WebView2Collection.Children[i] as StackPanel;
-                Debug.Assert(webviewStackPanel != null);
-                string stackPanelName = webviewStackPanel.Name;
-                string webviewName = stackPanelName.Replace("StackPanel", ""); // as per convention, stackpanel name is foowebviewStackPanel
-                var webview = FindName(webviewName) as WebView2;
-                RemoveWebViewEventHandlers(webview);
-
-                WebView2Collection.Children.RemoveAt(i);
-            }
-        }
-
-        void RemoveAllWebViewControls()
-        {
-            for (int i = WebView2Collection.Children.Count - 1; i >= 0; i--)
+            int lastToRemove = keepDefault ? 1 : 0;
+            for (int i = WebView2Collection.Children.Count - 1; i >= lastToRemove; i--)
             {
                 StackPanel webviewStackPanel = WebView2Collection.Children[i] as StackPanel;
                 Debug.Assert(webviewStackPanel != null);
@@ -913,6 +899,7 @@ namespace MUXControlsTestApp
                 if (webview != null)
                 {
                     RemoveWebViewEventHandlers(webview);
+                    webview.Close();
                 }
 
                 WebView2Collection.Children.RemoveAt(i);
@@ -925,10 +912,10 @@ namespace MUXControlsTestApp
         // This is because the UIA tree from the browser HWND does not get disconnected synchronously on WebView2 Element destruction,
         // and its presence after leaving the test page prevents the test runner from activating (also via UIA) the next test.
         // 
-        // TODO_WebView2: Work with Anaheim to provide a "Disconnect" method on CoreWebView2 that syncrhonously removes web UIA tree. 
+        // TODO_WebView2: Work with Anaheim to provide a "Disconnect" method on CoreWebView2 that synchronously removes web UIA tree. 
         private async Task CleanupWebViewElements()
         {
-            RemoveAllWebViewControls();
+            RemoveWebViewControls();
             GC.Collect();
             await Task.Delay(3000);
             _areWebviewElementsCleanedUp = true;
