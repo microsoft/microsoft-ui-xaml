@@ -1775,7 +1775,7 @@ namespace MUXControlsTestApp
                             // The "Edg" token identifies the Chromium Edge browser
                             // For more information, see https://docs.microsoft.com/en-us/microsoft-edge/web-platform/user-agent-guidance
                             logger.Verify(userAgent.Contains("Edg"),
-                                string.Format("Test {0}: Expected a valid UserAgent", selectedTest.ToString()));
+                                string.Format("Test {0}: Expected a valid UserAgent, got {1}", selectedTest.ToString(), userAgent));
                         }
                         break;
 
