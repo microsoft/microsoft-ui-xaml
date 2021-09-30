@@ -639,9 +639,9 @@
                             x:Load="False"
                             Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
                             VerticalAlignment="Bottom"
-                            Margin="-4,0,0,0"
                             Visibility="Collapsed"
-                            Data="M0 4H4V0C4 2.20914 2.20914 4 0 4Z" />
+                            Margin="-4,0,-4,0"
+                            Data="M0 4H8V0H4C4 2.20914 2.20914 4 0 4Z" />
 
                         <Path x:Name="RightRadiusRenderArc"
                             x:Load="False"
@@ -660,8 +660,8 @@
                             Visibility="Collapsed"
                             Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
                             VerticalAlignment="Bottom"
-                            Margin="0,0,-4,0"
-                            Data="M4 4H0V0C0 2.20914 1.79086 4 4 4Z"/>
+                            Margin="-4,0,-4,0"
+                            Data="M8 4H0V0H4C4 2.20914 5.79086 4 8 4Z"/>
 
                         <Border x:Name="TabSeparator"
                             HorizontalAlignment="Right"
