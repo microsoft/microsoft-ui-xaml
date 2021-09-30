@@ -2041,6 +2041,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public static void UserAgentTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("UserAgentTest");
+                CompleteTestAndWaitForResult("UserAgentTest");
+            }
+        }
+
         private static void BeginSubTest(string testName, string testDescription)
         {
             Log.Comment(Environment.NewLine + testName + ": " + testDescription);
