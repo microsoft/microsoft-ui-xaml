@@ -35,10 +35,10 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <Thickness x:Key="FlipViewButtonBorderThemeThickness">1</Thickness>
-            <StaticResource x:Key="FlipViewBackground" ResourceKey="SystemColorButtonFaceBrush" />
+            <StaticResource x:Key="FlipViewBackground" ResourceKey="SystemColorButtonFaceColorBrush" />
 
-            <StaticResource x:Key="FlipViewNextPreviousButtonBackground" ResourceKey="SystemColorButtonFaceBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPointerOver" ResourceKey="SystemColorHighlightBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousButtonBackground" ResourceKey="SystemColorButtonFaceColorBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
             <StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPressed" ResourceKey="SystemColorHighlightColorBrush" />
 
             <StaticResource x:Key="FlipViewNextPreviousArrowForeground" ResourceKey="SystemColorButtonTextColorBrush" />
