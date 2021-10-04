@@ -45,8 +45,9 @@ steps:
                 "ToolVersion" : "1.0"
             }
           ]
-    - task: PublishSymbols@2 # We only publish symbols to microsoftpublicsymbols for signed builds.
-      displayName: 'Publish symbols'
+    # We only publish symbols to microsoftpublicsymbols for signed builds.
+    - task: PublishSymbols@2  # Publish symbols to public Microsoft Symbol Server
+      displayName: 'Publish symbols (public)'
       inputs:
         SearchPattern: $(buildOutputDir)/$(buildConfiguration)/$(buildPlatform)/**/*.pdb
         SymbolServerType: 'TeamServices'
@@ -54,6 +55,11 @@ steps:
         LIB: $(Build.SourcesDirectory)
         ArtifactServices_Symbol_AccountName: microsoftpublicsymbols
         ArtifactServices_Symbol_PAT: $(WinUILab-Pipeline-PAT)
+    - task: PublishSymbols@2 # Publish symbols to internal symweb
+      displayName: 'Publish symbols (internal)'
+      inputs:
+        SearchPattern: $(buildOutputDir)/$(buildConfiguration)/$(buildPlatform)/**/*.pdb
+        SymbolServerType: 'TeamServices'
 
   - template: MUX-MakeFrameworkPackages-Steps.yml
     parameters:
