@@ -30,18 +30,9 @@
                         contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-                                    <VisualState.Setters>
-                                        <Setter Target="ContentPresenterGrid.Background" Value="{ThemeResource TreeViewItemBackground}" />
-                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TreeViewItemForeground}" />
-                                        <Setter Target="SelectionIndicator.Fill" Value="{ThemeResource TreeViewItemSelectionIndicatorForeground}" />
-                                        <Setter Target="CollapsedGlyph.Foreground" Value="{ThemeResource TreeViewItemForeground}" />
-                                        <Setter Target="ExpandedGlyph.Foreground" Value="{ThemeResource TreeViewItemForeground}" />
-                                        <Setter Target="ContentPresenterGrid.BorderBrush" Value="{ThemeResource TreeViewItemBorderBrush}" />
-                                        <Setter Target="SelectionIndicator.Opacity" Value="0" />
-                                    </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="PointerOver">
+                                <VisualState x:Name="Normal"/>
+
+                                <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenterGrid.Background" Value="{ThemeResource TreeViewItemBackgroundPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TreeViewItemForegroundPointerOver}" />
