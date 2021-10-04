@@ -91,11 +91,13 @@ New-Item -Path "$cbsFolder" -ItemType Directory | Out-Null
 New-Item -Path "$winmdFolder" -ItemType Directory | Out-Null
 New-Item -Path "$winmdReferencesDir" -ItemType Directory | Out-Null
 
+Write-Host "Copy OS publics to $winmdReferencesDir"
 $osBuildMetadataDir = Join-Path $publicsRoot "onecoreuap\internal\buildmetadata"
 Copy-Item "$osBuildMetadataDir\*.winmd" "$winmdReferencesDir" -Force 
 
+Write-Host "Copy WebView2 winmd to $winmdReferencesDir"
 $webView2Version = Get-WebView2PackageVersion
-$webView2WinMdPath = Join-Path $packagesDir "Microsoft.Web.WebView2.$($webView2Version)\lib\Microsoft.Web.WebView2.Core.winmd"
+$webView2WinMdPath = Join-Path $packagesDir "Microsoft.Web.WebView2.$($webView2Version)\lib"
 Copy-Item "$webView2WinMdPath\*.winmd" "$winmdReferencesDir" -Force 
 
 Write-Host 
