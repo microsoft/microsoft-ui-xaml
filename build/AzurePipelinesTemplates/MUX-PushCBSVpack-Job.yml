@@ -3,8 +3,8 @@ parameters:
 
 jobs:
 - job: CreateVPack
-  # dependsOn:
-  #   - ${{ parameters.dependsOn }}
+  dependsOn:
+    - ${{ parameters.dependsOn }}
   pool:
     name: WinDevPool-S
   variables:
@@ -12,17 +12,8 @@ jobs:
     internalSDKFeedUrl: https://pkgs.dev.azure.com/microsoft/WinUI/_packaging/WinUIInternalWindowsSDK/nuget/v3/index.json
 
   steps:
-  # - task: DownloadBuildArtifacts@0 
-  #   inputs: 
-  #     artifactName: drop
-  #     downloadPath: $(System.ArtifactsDirectory)
   - task: DownloadBuildArtifacts@0 
     inputs: 
-      buildType: specific
-      buildVersionToDownload: specific
-      project: $(System.TeamProjectId)
-      pipeline: 72016
-      buildId: 39843408
       artifactName: drop
       downloadPath: $(System.ArtifactsDirectory)
 

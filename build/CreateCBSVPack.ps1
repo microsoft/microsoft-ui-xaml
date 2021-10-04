@@ -100,14 +100,6 @@ $webView2Version = Get-WebView2PackageVersion
 $webView2WinMdPath = Join-Path $packagesDir "Microsoft.Web.WebView2.$($webView2Version)\lib"
 Copy-Item "$webView2WinMdPath\*.winmd" "$winmdReferencesDir" -Force 
 
-Write-Host 
-Write-Host 
-Write-Host dir "$winmdReferencesDir"
-dir "$winmdReferencesDir"
-Write-Host 
-Write-Host 
-
-
 $buildFlavours = @("X64", "X86", "ARM", "ARM64")
 
 foreach ($flavour in $buildFlavours)
