@@ -107,9 +107,9 @@ winrt::IVector<winrt::AutomationPeer> ExpanderAutomationPeer::GetChildrenCore()
         {
             // If it is ExpanderToggleButton, we want to exclude it but add its children into the peer 
             auto expanderToggleButtonChildrenPeers = peer.GetChildrenCore();
-            for (auto peer : expanderToggleButtonChildrenPeers)
+            for (auto expanderHeaderPeer : expanderToggleButtonChildrenPeers)
             {
-                peers.Append(peer);
+                peers.Append(expanderHeaderPeer);
             }
         }
     }
