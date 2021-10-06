@@ -6,6 +6,7 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
+            <!-- Some resources need to be pointing to colors for animations to update correctly -->
             <x:Double x:Key="RadioButtonBorderThemeThickness">1</x:Double>
             <StaticResource x:Key="RadioButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="RadioButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
@@ -70,6 +71,7 @@
         </ResourceDictionary>
         
         <ResourceDictionary x:Key="HighContrast">
+            <!-- Some resources need to be pointing to colors for animations to update correctly -->
             <x:Double x:Key="RadioButtonBorderThemeThickness">1</x:Double>
             <StaticResource x:Key="RadioButtonForeground" ResourceKey="SystemColorButtonTextColorBrush" />
             <StaticResource x:Key="RadioButtonForegroundPointerOver" ResourceKey="SystemColorButtonTextColorBrush" />
@@ -134,6 +136,7 @@
         </ResourceDictionary>
         
         <ResourceDictionary x:Key="Light">
+            <!-- Some resources need to be pointing to colors for animations to update correctly -->
             <x:Double x:Key="RadioButtonBorderThemeThickness">1</x:Double>
             <StaticResource x:Key="RadioButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="RadioButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
