@@ -247,7 +247,8 @@
     <FeatureAnimatedIconEnabled>true</FeatureAnimatedIconEnabled>
     <FeatureMonochromaticOverlayPresenterEnabled>true</FeatureMonochromaticOverlayPresenterEnabled>
     <FeatureInfoBadgeEnabled>true</FeatureInfoBadgeEnabled>
-    <FeatureWebView2Enabled>true</FeatureWebView2Enabled>
+    <!-- Excluding WebView2 from CBS drop until we are able to consume WebView2 from the OS-->
+    <FeatureWebView2Enabled>false</FeatureWebView2Enabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>
