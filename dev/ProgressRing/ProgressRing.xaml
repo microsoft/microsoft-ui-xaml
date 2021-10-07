@@ -12,7 +12,7 @@
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="MinHeight" Value="16" />
         <Setter Property="MinWidth" Value="16" />
-        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="IsTabStop" Value="True" />
         <Setter Property="Width" Value="32" />
         <Setter Property="Height" Value="32" />
         <Setter Property="Maximum" Value="100" />
