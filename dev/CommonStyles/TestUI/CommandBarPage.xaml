@@ -214,6 +214,29 @@
                 <AppBarButton Icon="Save" Label="Save"/>
                 <AppBarToggleButton Icon="Add" Label="Toggle"/>
             </CommandBar>
+
+            <TextBlock Text="Stretch CommandBar"/>
+            <CommandBar HorizontalAlignment="Stretch">
+                <AppBarButton Icon="Add" Label="Add"/>
+                <AppBarButton Icon="Remove" Label="Remove"/>
+                <AppBarSeparator/>
+                <AppBarButton Icon="Save" Label="Save"/>
+                <AppBarToggleButton Icon="Add" Label="Toggle"/>
+            </CommandBar>
+
+            <TextBlock Text="Stretch CommandBar with ContentAreaGridLength override"/>
+            <Grid>
+                <Grid.Resources>
+                    <GridLength x:Key="CommandAreaGridLength">Auto</GridLength>
+                </Grid.Resources>
+                <CommandBar HorizontalAlignment="Stretch">
+                    <AppBarButton Icon="Add" Label="Add"/>
+                    <AppBarButton Icon="Remove" Label="Remove"/>
+                    <AppBarSeparator/>
+                    <AppBarButton Icon="Save" Label="Save"/>
+                    <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                </CommandBar>
+            </Grid>
         </StackPanel>
 
     </Grid>

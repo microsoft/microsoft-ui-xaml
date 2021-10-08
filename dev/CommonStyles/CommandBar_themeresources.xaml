@@ -1,4 +1,4 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:contract4Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,4)"
   xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
@@ -34,6 +34,7 @@
             <Thickness x:Key="CommandBarOverflowPresenterBorderPadding">0</Thickness>
             <Thickness x:Key="CommandBarOverflowPresenterBorderDownPadding">0</Thickness>
             <Thickness x:Key="CommandBarOverflowPresenterBorderUpPadding">0</Thickness>
+            <GridLength x:Key="CommandAreaGridLength">*</GridLength>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="CommandBarBackground" ResourceKey="SystemControlBackgroundChromeMediumBrush" />
@@ -58,6 +59,7 @@
             <Thickness x:Key="CommandBarOverflowPresenterBorderPadding">0</Thickness>
             <Thickness x:Key="CommandBarOverflowPresenterBorderDownPadding">0</Thickness>
             <Thickness x:Key="CommandBarOverflowPresenterBorderUpPadding">0</Thickness>
+            <GridLength x:Key="CommandAreaGridLength">*</GridLength>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <x:Double x:Key="CommandBarOverflowMinWidth">160</x:Double>
@@ -83,6 +85,7 @@
             <Thickness x:Key="CommandBarOverflowPresenterBorderPadding">0</Thickness>
             <Thickness x:Key="CommandBarOverflowPresenterBorderDownPadding">0</Thickness>
             <Thickness x:Key="CommandBarOverflowPresenterBorderUpPadding">0</Thickness>
+            <GridLength x:Key="CommandAreaGridLength">*</GridLength>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -832,7 +835,7 @@
                               Background="{TemplateBinding Background}"
                               XYFocusKeyboardNavigation="Enabled">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="{ThemeResource CommandAreaGridLength}" />
                                 <ColumnDefinition Width="Auto" MinWidth="{ThemeResource AppBarMoreButtonColumnMinWidth}"/>
                             </Grid.ColumnDefinitions>
                             <Grid.RenderTransform>
