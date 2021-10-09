@@ -160,30 +160,5 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(expander.ExpandCollapseState, ExpandCollapseState.Expanded);
             }
         }
-
-        [TestMethod]
-        public void AutomationPeerTest()
-        {
-            using (var setup = new TestSetupHelper("Expander Tests"))
-            {
-                Expander expander = FindElement.ByName<Expander>("ExpandedExpander");
-                expander.SetFocus();
-                Wait.ForIdle();
-
-                // Verify ExpandedExpander header content AutomationProperties.Name properties are set
-                VerifyElement.Found("This expander is expanded by default.", FindBy.Name);
-                VerifyElement.Found("This is the second line of text.", FindBy.Name);
-
-                // Verify ExpandedExpander content AutomationProperties.Name property is set
-                VerifyElement.Found("Content", FindBy.Name);
-
-                Log.Comment("Collapse using keyboard space key.");
-                KeyboardHelper.PressKey(Key.Space);
-                Verify.AreEqual(expander.ExpandCollapseState, ExpandCollapseState.Collapsed);
-
-                // Verify ExpandedExpander content AutomationProperties.Name property is not visible once collapsed
-                VerifyElement.NotFound("Content", FindBy.Name);
-            }
-        }
     }
 }
