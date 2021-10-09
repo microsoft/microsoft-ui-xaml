@@ -33,10 +33,6 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnTemplateSettingsPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
     static void OnValuePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);

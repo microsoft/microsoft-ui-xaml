@@ -44,7 +44,7 @@ void InfoBadgeProperties::EnsureProperties()
                 winrt::name_of<winrt::InfoBadge>(),
                 false /* isAttached */,
                 ValueHelper<winrt::InfoBadgeTemplateSettings>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnTemplateSettingsPropertyChanged));
+                nullptr);
     }
     if (!s_ValueProperty)
     {
@@ -71,15 +71,7 @@ void InfoBadgeProperties::OnIconSourcePropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::InfoBadge>();
-    winrt::get_self<InfoBadge>(owner)->OnPropertyChanged(args);
-}
-
-void InfoBadgeProperties::OnTemplateSettingsPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::InfoBadge>();
-    winrt::get_self<InfoBadge>(owner)->OnPropertyChanged(args);
+    winrt::get_self<InfoBadge>(owner)->OnIconSourcePropertyChanged(args);
 }
 
 void InfoBadgeProperties::OnValuePropertyChanged(
@@ -87,7 +79,7 @@ void InfoBadgeProperties::OnValuePropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::InfoBadge>();
-    winrt::get_self<InfoBadge>(owner)->OnPropertyChanged(args);
+    winrt::get_self<InfoBadge>(owner)->OnValuePropertyChanged(args);
 }
 
 void InfoBadgeProperties::IconSource(winrt::IconSource const& value)

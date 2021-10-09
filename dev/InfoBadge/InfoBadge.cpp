@@ -7,23 +7,32 @@
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
-static constexpr wstring_view c_IconPresenterName{ L"IconPresenter"sv };
-
+#pragma region Constructor
 InfoBadge::InfoBadge()
+{
+    InitializeControl();
+    AttachEventHandlers();
+}
+
+void InfoBadge::InitializeControl()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_InfoBadge);
 
     SetDefaultStyleKey(this);
 
     SetValue(s_TemplateSettingsProperty, winrt::make<::InfoBadgeTemplateSettings>());
-    SizeChanged({ this, &InfoBadge::OnSizeChanged });
 }
 
+void InfoBadge::AttachEventHandlers()
+{
+    SizeChanged({ this, &InfoBadge::OnSizeChanged });
+}
+#pragma endregion
+
+#pragma region ControlOverrides
 void InfoBadge::OnApplyTemplate()
 {
-    winrt::IControlProtected controlProtected{ *this };
-
-    OnDisplayKindPropertiesChanged();
+    GoToAppropriateDisplayKindState();
 }
 
 winrt::Size InfoBadge::MeasureOverride(winrt::Size const& availableSize)
@@ -35,71 +44,100 @@ winrt::Size InfoBadge::MeasureOverride(winrt::Size const& availableSize)
     }
     return defaultDesiredSize;
 }
+#pragma endregion 
 
-void InfoBadge::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+#pragma region OnIconSourcePropertyChanged
+void InfoBadge::OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    auto const property = args.Property();
-    winrt::Control const thisAsControl = *this;
-
-    if (property == winrt::InfoBadge::ValueProperty())
-    {
-        if (Value() < -1)
-        {
-            throw winrt::hresult_out_of_bounds(L"Value must be equal to or greater than -1");
-        }
-    }
-
-    if (property == winrt::InfoBadge::ValueProperty() ||
-             property == winrt::InfoBadge::IconSourceProperty())
-    {
-        OnDisplayKindPropertiesChanged();
-    }
+    TemplateSettings().IconElement(GetIconElementFromSource());
+    GoToAppropriateDisplayKindState();
 }
 
-void InfoBadge::OnDisplayKindPropertiesChanged()
+winrt::IconElement InfoBadge::GetIconElementFromSource()
 {
-    winrt::Control const thisAsControl = *this;
+    if (auto const iconSource = IconSource())
+    {
+        return iconSource.CreateIconElement();
+    }
+    return nullptr;
+}
+#pragma endregion 
+
+#pragma region OnValuePropertyChanged
+void InfoBadge::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    ValidateValueProperty();
+    GoToAppropriateDisplayKindState();
+}
+
+void InfoBadge::ValidateValueProperty()
+{
+    if (Value() < -1)
+    {
+        throw winrt::hresult_out_of_bounds(L"Value must be equal to or greater than -1");
+    }
+}
+#pragma endregion 
+
+#pragma region GoToAppropriateDisplayKindState
+void InfoBadge::GoToAppropriateDisplayKindState()
+{
+    GoToState(CalculateAppropriateDisplayKindState());
+}
+
+InfoBadgeDisplayKindState InfoBadge::CalculateAppropriateDisplayKindState()
+{
     if (Value() >= 0)
     {
-    winrt::VisualStateManager::GoToState(thisAsControl, L"Value", true);
+        return InfoBadgeDisplayKindState::Value;
     }
-    else if (auto const iconSource = IconSource())
+
+    return CalculateIconDisplayKindState();
+}
+
+InfoBadgeDisplayKindState InfoBadge::CalculateIconDisplayKindState()
+{
+    if (auto const iconElement = TemplateSettings().IconElement())
     {
-        TemplateSettings().IconElement(iconSource.CreateIconElement());
-        if (auto const fontIconSource = iconSource.try_as<winrt::FontIconSource>())
+        if (iconElement.try_as<winrt::FontIcon>())
         {
-            winrt::VisualStateManager::GoToState(thisAsControl, L"FontIcon", true);
+            return InfoBadgeDisplayKindState::FontIcon;
         }
         else
         {
-            winrt::VisualStateManager::GoToState(thisAsControl, L"Icon", true);
+            return InfoBadgeDisplayKindState::Icon;
         }
     }
-    else
-    {
-        winrt::VisualStateManager::GoToState(thisAsControl, L"Dot", true);
-    }
+
+    return InfoBadgeDisplayKindState::Dot;
 }
 
+void InfoBadge::GoToState(InfoBadgeDisplayKindState state)
+{
+    winrt::Control const thisAsControl = *this;
+    winrt::VisualStateManager::GoToState(thisAsControl, InfoBadgeTemplateHelpers::ToString(state), true);
+}
+#pragma endregion
 
+#pragma region OnSizeChanged
 void InfoBadge::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args)
 {
-    auto const value = [this]()
-    {
-        auto const cornerRadiusValue = ActualHeight() / 2;
-        if (SharedHelpers::IsRS5OrHigher())
-        {
-            if (ReadLocalValue(winrt::Control::CornerRadiusProperty()) == winrt::DependencyProperty::UnsetValue())
-            {
-                return winrt::CornerRadius{ cornerRadiusValue, cornerRadiusValue, cornerRadiusValue, cornerRadiusValue };
-            }
-            else
-            {
-                return CornerRadius();
-            }
-        }
-        return winrt::CornerRadius{ cornerRadiusValue, cornerRadiusValue, cornerRadiusValue, cornerRadiusValue };
-    }();
-
-    TemplateSettings().InfoBadgeCornerRadius(value);
+    TemplateSettings().InfoBadgeCornerRadius(GetFullyRoundedCornerRadiusValueIfUnset());
 }
+
+winrt::CornerRadius InfoBadge::GetFullyRoundedCornerRadiusValueIfUnset()
+{
+    if (IsCornerRadiusAvailableAndSet())
+    {
+        return CornerRadius();
+    }
+    auto const cornerRadiusValue = ActualHeight() / 2;
+    return winrt::CornerRadius{ cornerRadiusValue, cornerRadiusValue, cornerRadiusValue, cornerRadiusValue };
+}
+
+bool InfoBadge::IsCornerRadiusAvailableAndSet()
+{
+    // CornerRadius was added to Control in RS5
+    return SharedHelpers::IsRS5OrHigher() && !(ReadLocalValue(winrt::Control::CornerRadiusProperty()) == winrt::DependencyProperty::UnsetValue());
+}
+#pragma endregion

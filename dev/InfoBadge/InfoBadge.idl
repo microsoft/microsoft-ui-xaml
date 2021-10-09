@@ -16,15 +16,15 @@ unsealed runtimeclass InfoBadgeTemplateSettings : Windows.UI.Xaml.DependencyObje
 
 [MUX_PUBLIC]
 [webhosthidden]
-[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass InfoBadge : Windows.UI.Xaml.Controls.Control
 {
     InfoBadge();
 
     [MUX_DEFAULT_VALUE("-1")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Int32 Value;
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     IconSource IconSource;
 
     InfoBadgeTemplateSettings TemplateSettings{ get; };

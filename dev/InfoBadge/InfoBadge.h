@@ -10,22 +10,53 @@
 
 #include "InfoBadge.g.h"
 #include "InfoBadge.properties.h"
+#include "InfoBadgeTemplatePartHelpers.g.h"
 
 class InfoBadge :
     public ReferenceTracker<InfoBadge, winrt::implementation::InfoBadgeT>,
     public InfoBadgeProperties
 {
-
+#pragma region Constructor
 public:
     InfoBadge();
     ~InfoBadge() {}
+private:
+    void InitializeControl();
+    void AttachEventHandlers();
+#pragma endregion
 
-    // IFrameworkElement
+#pragma region ControlOverrides
+public:
     void OnApplyTemplate();
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
+#pragma endregion 
 
-    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+#pragma region OnIconSourcePropertyChanged
+public:
+    void OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 private:
-    void OnDisplayKindPropertiesChanged();
+    winrt::IconElement GetIconElementFromSource();
+#pragma endregion 
+
+#pragma region OnValuePropertyChanged
+public:
+    void OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+private:
+    void ValidateValueProperty();
+#pragma endregion
+
+#pragma region GoToAppropriateDisplayKindState
+private:
+    void GoToAppropriateDisplayKindState();
+    InfoBadgeDisplayKindState CalculateAppropriateDisplayKindState();
+    InfoBadgeDisplayKindState CalculateIconDisplayKindState();
+    void GoToState(InfoBadgeDisplayKindState state);
+#pragma endregion
+
+#pragma region OnSizeChanged
+private:
     void OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args);
+    winrt::CornerRadius GetFullyRoundedCornerRadiusValueIfUnset();
+    bool IsCornerRadiusAvailableAndSet();
+#pragma endregion
 };
