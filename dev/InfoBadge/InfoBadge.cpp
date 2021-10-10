@@ -93,24 +93,29 @@ InfoBadgeDisplayKindState InfoBadge::CalculateAppropriateDisplayKindState()
         return InfoBadgeDisplayKindState::Value;
     }
 
-    return CalculateIconDisplayKindState();
+    return CalculateIconOrDotDisplayKindState();
 }
 
-InfoBadgeDisplayKindState InfoBadge::CalculateIconDisplayKindState()
+InfoBadgeDisplayKindState InfoBadge::CalculateIconOrDotDisplayKindState()
 {
     if (auto const iconElement = TemplateSettings().IconElement())
     {
-        if (iconElement.try_as<winrt::FontIcon>())
-        {
-            return InfoBadgeDisplayKindState::FontIcon;
-        }
-        else
-        {
-            return InfoBadgeDisplayKindState::Icon;
-        }
+        return CalculateIconDisplayKindState(iconElement);
     }
 
     return InfoBadgeDisplayKindState::Dot;
+}
+
+InfoBadgeDisplayKindState InfoBadge::CalculateIconDisplayKindState(const winrt::Windows::UI::Xaml::Controls::IconElement& iconElement)
+{
+    if (iconElement.try_as<winrt::FontIcon>())
+    {
+        return InfoBadgeDisplayKindState::FontIcon;
+    }
+    else
+    {
+        return InfoBadgeDisplayKindState::Icon;
+    }
 }
 #pragma endregion
 

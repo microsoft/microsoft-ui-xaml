@@ -49,7 +49,8 @@ private:
 private:
     void GoToAppropriateDisplayKindState();
     InfoBadgeDisplayKindState CalculateAppropriateDisplayKindState();
-    InfoBadgeDisplayKindState CalculateIconDisplayKindState();
+    InfoBadgeDisplayKindState CalculateIconOrDotDisplayKindState();
+    InfoBadgeDisplayKindState CalculateIconDisplayKindState(const winrt::Windows::UI::Xaml::Controls::IconElement& iconElement);
 #pragma endregion
 
 #pragma region OnSizeChanged
