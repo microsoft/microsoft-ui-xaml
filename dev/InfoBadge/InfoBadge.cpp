@@ -82,7 +82,8 @@ void InfoBadge::ValidateValueProperty()
 #pragma region GoToAppropriateDisplayKindState
 void InfoBadge::GoToAppropriateDisplayKindState()
 {
-    GoToState(CalculateAppropriateDisplayKindState());
+    winrt::Control const thisAsControl = *this;
+    InfoBadgeTemplateHelpers::GoToState(thisAsControl, CalculateAppropriateDisplayKindState());
 }
 
 InfoBadgeDisplayKindState InfoBadge::CalculateAppropriateDisplayKindState()
@@ -110,12 +111,6 @@ InfoBadgeDisplayKindState InfoBadge::CalculateIconDisplayKindState()
     }
 
     return InfoBadgeDisplayKindState::Dot;
-}
-
-void InfoBadge::GoToState(InfoBadgeDisplayKindState state)
-{
-    winrt::Control const thisAsControl = *this;
-    winrt::VisualStateManager::GoToState(thisAsControl, InfoBadgeTemplateHelpers::ToString(state), true);
 }
 #pragma endregion
 
