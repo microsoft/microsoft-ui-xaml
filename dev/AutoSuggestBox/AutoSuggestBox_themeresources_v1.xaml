@@ -331,6 +331,8 @@
                             IsTabStop="False"
                             Grid.ColumnSpan="3"
                             Content="{TemplateBinding PlaceholderText}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             IsHitTestVisible="False" />
                         <Button x:Name="DeleteButton"
                             Grid.Row="1"
