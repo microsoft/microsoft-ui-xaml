@@ -26,7 +26,7 @@ public:
 
 #pragma region DisplayKindStates
 public:
-    static bool GoToState(winrt::Control control, InfoBadgeDisplayKindState state, bool useTransitions = true)
+    static bool GoToState(const winrt::Control& control, InfoBadgeDisplayKindState state, bool useTransitions = true)
     {
         return winrt::VisualStateManager::GoToState(control, ToString(state), useTransitions);
     }
