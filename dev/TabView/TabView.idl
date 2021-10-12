@@ -120,6 +120,10 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     event Windows.UI.Xaml.DragEventHandler TabStripDragOver;
     event Windows.UI.Xaml.DragEventHandler TabStripDrop;
 
+    // ### temporary, should go in template settings but here we are
+    Double LeftBorderWidth;
+    Double RightBorderWidth;
+
     static Windows.UI.Xaml.DependencyProperty TabWidthModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TabStripHeaderProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TabStripHeaderTemplateProperty{ get; };
@@ -139,6 +143,10 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty AllowDropTabsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SelectedIndexProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SelectedItemProperty{ get; };
+
+    //### temporary
+    static Windows.UI.Xaml.DependencyProperty LeftBorderWidthProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty RightBorderWidthProperty{ get; };
 }
 
 [MUX_PUBLIC]
@@ -178,7 +186,10 @@ unsealed runtimeclass TabViewItemTemplateSettings : Windows.UI.Xaml.DependencyOb
 
     Windows.UI.Xaml.Controls.IconElement IconElement;
 
+    Windows.UI.Xaml.Media.Geometry TabGeometry;
+
     static Windows.UI.Xaml.DependencyProperty IconElementProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty TabGeometryProperty{ get; };
 }
 
 }

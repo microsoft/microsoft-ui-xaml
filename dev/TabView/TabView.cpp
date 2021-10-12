@@ -158,6 +158,7 @@ void TabView::OnApplyTemplate()
     }
 
     UpdateListViewItemContainerTransitions();
+    UpdateBorderWidths();
 }
 
 
@@ -700,8 +701,6 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
 
 void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
 {
-
-    
     if (auto&& listView = m_listView.get())
     {
         SelectedIndex(listView.SelectedIndex());
@@ -710,7 +709,44 @@ void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, cons
 
     UpdateTabContent();
 
+    UpdateBorderWidths();
+
     m_selectionChangedEventSource(*this, args);
+}
+
+// ### change the border width
+// ### probably also call if the tab dimensions change, if ANYTHING moves...
+void TabView::UpdateBorderWidths()
+{
+    if (const auto selectedItem = SelectedItem())
+    {
+        const auto tab = ContainerFromItem(selectedItem).try_as<winrt::TabViewItem>();
+        if (tab)
+        {
+            // ### where is the item
+            const auto transform = tab.TransformToVisual(*this);
+            const auto leftPoint = transform.TransformPoint({ 0, 0 });
+            const auto rightPoint = transform.TransformPoint({ (float)tab.ActualWidth(), 0 });
+
+            WCHAR strOut[1024];
+            StringCchPrintf(strOut, ARRAYSIZE(strOut), L"Items: x: %f, width: %f\n", leftPoint.X, tab.ActualWidth());
+            OutputDebugString(strOut);
+
+            const auto leftBorderWidth = leftPoint.X - 2;
+            LeftBorderWidth(leftBorderWidth > 0 ? leftBorderWidth : 0);
+
+            const auto rightBorderWidth = (ActualWidth() - rightPoint.X) - 2;
+            RightBorderWidth(rightBorderWidth > 0 ? rightBorderWidth : 0);
+
+            StringCchPrintf(strOut, ARRAYSIZE(strOut), L"Border widths: left: %f, right: %f\n", leftBorderWidth, rightBorderWidth);
+            OutputDebugString(strOut);
+        }
+    }
+    else //### or in rearrange
+    {
+        LeftBorderWidth(0);
+        RightBorderWidth(0);
+    }
 }
 
 winrt::TabViewItem TabView::FindTabViewItemFromDragItem(const winrt::IInspectable& item)
@@ -749,6 +785,9 @@ void TabView::OnListViewDragItemsStarting(const winrt::IInspectable& sender, con
     auto tab = FindTabViewItemFromDragItem(item);
     auto myArgs = winrt::make_self<TabViewTabDragStartingEventArgs>(args, item, tab);
 
+    // ### switch modes for border
+    winrt::VisualStateManager::GoToState(*this, L"Dragging", false /*useTransitions*/);
+
     m_tabDragStartingEventSource(*this, *myArgs);
 }
 
@@ -769,6 +808,10 @@ void TabView::OnListViewDragItemsCompleted(const winrt::IInspectable& sender, co
     auto myArgs = winrt::make_self<TabViewTabDragCompletedEventArgs>(args, item, tab);
 
     m_tabDragCompletedEventSource(*this, *myArgs);
+
+    // ### switch modes for border
+    winrt::VisualStateManager::GoToState(*this, L"Normal", false /*useTransitions*/);
+    UpdateBorderWidths();
 
     // None means it's outside of the tab strip area
     if (args.DropResult() == winrt::DataPackageOperation::None)

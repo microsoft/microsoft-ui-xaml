@@ -20,6 +20,8 @@ GlobalDependencyProperty TabViewProperties::s_CanDragTabsProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_CanReorderTabsProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_CloseButtonOverlayModeProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_IsAddTabButtonVisibleProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_LeftBorderWidthProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_RightBorderWidthProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_SelectedIndexProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_SelectedItemProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_TabItemsProperty{ nullptr };
@@ -123,6 +125,28 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
+                nullptr);
+    }
+    if (!s_LeftBorderWidthProperty)
+    {
+        s_LeftBorderWidthProperty =
+            InitializeDependencyProperty(
+                L"LeftBorderWidth",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_RightBorderWidthProperty)
+    {
+        s_RightBorderWidthProperty =
+            InitializeDependencyProperty(
+                L"RightBorderWidth",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_SelectedIndexProperty)
@@ -257,6 +281,8 @@ void TabViewProperties::ClearProperties()
     s_CanReorderTabsProperty = nullptr;
     s_CloseButtonOverlayModeProperty = nullptr;
     s_IsAddTabButtonVisibleProperty = nullptr;
+    s_LeftBorderWidthProperty = nullptr;
+    s_RightBorderWidthProperty = nullptr;
     s_SelectedIndexProperty = nullptr;
     s_SelectedItemProperty = nullptr;
     s_TabItemsProperty = nullptr;
@@ -399,6 +425,32 @@ void TabViewProperties::IsAddTabButtonVisible(bool value)
 bool TabViewProperties::IsAddTabButtonVisible()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_IsAddTabButtonVisibleProperty));
+}
+
+void TabViewProperties::LeftBorderWidth(double value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TabView*>(this)->SetValue(s_LeftBorderWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
+}
+
+double TabViewProperties::LeftBorderWidth()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_LeftBorderWidthProperty));
+}
+
+void TabViewProperties::RightBorderWidth(double value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TabView*>(this)->SetValue(s_RightBorderWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
+}
+
+double TabViewProperties::RightBorderWidth()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_RightBorderWidthProperty));
 }
 
 void TabViewProperties::SelectedIndex(int value)

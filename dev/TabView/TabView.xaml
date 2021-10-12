@@ -26,6 +26,19 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup>
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Dragging">
+                                    <VisualState.Setters>
+                                        <Setter Target="LeftBorderLine.HorizontalAlignment" Value="Stretch" />
+                                        <Setter Target="LeftBorderLine.Width" Value="NaN" />
+                                        <Setter Target="RightBorderLine.Visibility" Value="Collapsed" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
                         <Grid x:Name="TabContainerGrid"
                                 Background="{TemplateBinding Background}"
                                 XYFocusKeyboardNavigation="Enabled">
@@ -37,7 +50,13 @@
                                 <ColumnDefinition Width="*" x:Name="RightContentColumn"/>
                             </Grid.ColumnDefinitions>
 
-                            <Border BorderBrush="{ThemeResource TabViewBorderBrush}" BorderThickness="1" Height="1" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Bottom"/>
+                            <Border x:Name="LeftBorderLine" BorderBrush="{ThemeResource TabViewBorderBrush}" BorderThickness="1" Height="1" Grid.Column="0" Grid.ColumnSpan="4" VerticalAlignment="Bottom"
+                                HorizontalAlignment="Left"
+                                Width="{TemplateBinding LeftBorderWidth}"/>
+
+                            <Border x:Name="RightBorderLine" BorderBrush="{ThemeResource TabViewBorderBrush}" BorderThickness="1" Height="1" Grid.Column="0" Grid.ColumnSpan="4" VerticalAlignment="Bottom"
+                                HorizontalAlignment="Right"
+                                Width="{TemplateBinding RightBorderWidth}"/>
 
                             <ContentPresenter
                                 Grid.Column="0"
@@ -641,7 +660,7 @@
                             VerticalAlignment="Bottom"
                             Margin="-4,0,0,0"
                             Visibility="Collapsed"
-                            Data="M0 4H4V0C4 2.20914 2.20914 4 0 4Z" />
+                            Data="F1 M0,4  a4,4 0 0 0 4,-4  l0,4  Z" />
 
                         <Path x:Name="RightRadiusRenderArc"
                             x:Load="False"

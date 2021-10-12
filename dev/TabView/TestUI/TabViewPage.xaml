@@ -118,6 +118,7 @@
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
@@ -214,7 +215,44 @@
 
                 </controls:TabView>
 
-                <Grid Grid.Row="1">
+                <Grid x:Name="MaterialFrame" Grid.Row="1" Padding="20" Background="#DDDDFF">
+                    <Grid.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Light">
+                                    <SolidColorBrush x:Key="TabViewItemHeaderBackgroundSelected" Color="#90FFFFFF" />
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </Grid.Resources>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <controls:TabView HorizontalAlignment="Stretch" CanDragTabs="True" CanReorderTabs="True">
+                        <controls:TabViewItem Header="Documents">
+                            <controls:TabViewItem.IconSource>
+                                <controls:FontIconSource Glyph="&#xF12B;"/>
+                            </controls:TabViewItem.IconSource>
+                        </controls:TabViewItem>
+                        <controls:TabViewItem Header="Photos">
+                            <controls:TabViewItem.IconSource>
+                                <controls:SymbolIconSource Symbol="BrowsePhotos"/>
+                            </controls:TabViewItem.IconSource>
+                        </controls:TabViewItem>
+                        <controls:TabViewItem Header="Visual Studio Projects">
+                            <controls:TabViewItem.IconSource>
+                                <controls:FontIconSource Glyph="&#xF12B;"/>
+                            </controls:TabViewItem.IconSource>
+                        </controls:TabViewItem>
+                    </controls:TabView>
+
+                    <Grid Grid.Row="1" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}" Height="50"/>
+                </Grid>
+                
+                <Grid Grid.Row="2">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="3"/>

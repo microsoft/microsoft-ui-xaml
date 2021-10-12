@@ -30,6 +30,12 @@ public:
     void IsAddTabButtonVisible(bool value);
     bool IsAddTabButtonVisible();
 
+    void LeftBorderWidth(double value);
+    double LeftBorderWidth();
+
+    void RightBorderWidth(double value);
+    double RightBorderWidth();
+
     void SelectedIndex(int value);
     int SelectedIndex();
 
@@ -70,6 +76,8 @@ public:
     static winrt::DependencyProperty CanReorderTabsProperty() { return s_CanReorderTabsProperty; }
     static winrt::DependencyProperty CloseButtonOverlayModeProperty() { return s_CloseButtonOverlayModeProperty; }
     static winrt::DependencyProperty IsAddTabButtonVisibleProperty() { return s_IsAddTabButtonVisibleProperty; }
+    static winrt::DependencyProperty LeftBorderWidthProperty() { return s_LeftBorderWidthProperty; }
+    static winrt::DependencyProperty RightBorderWidthProperty() { return s_RightBorderWidthProperty; }
     static winrt::DependencyProperty SelectedIndexProperty() { return s_SelectedIndexProperty; }
     static winrt::DependencyProperty SelectedItemProperty() { return s_SelectedItemProperty; }
     static winrt::DependencyProperty TabItemsProperty() { return s_TabItemsProperty; }
@@ -89,6 +97,8 @@ public:
     static GlobalDependencyProperty s_CanReorderTabsProperty;
     static GlobalDependencyProperty s_CloseButtonOverlayModeProperty;
     static GlobalDependencyProperty s_IsAddTabButtonVisibleProperty;
+    static GlobalDependencyProperty s_LeftBorderWidthProperty;
+    static GlobalDependencyProperty s_RightBorderWidthProperty;
     static GlobalDependencyProperty s_SelectedIndexProperty;
     static GlobalDependencyProperty s_SelectedItemProperty;
     static GlobalDependencyProperty s_TabItemsProperty;
