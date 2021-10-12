@@ -92,6 +92,27 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+                            <VisualStateGroup x:Name="DisplayKindStatesDummy">
+                                <VisualState x:Name="Dot2"/>
+                                <VisualState x:Name="Icon2">
+                                    <VisualState.Setters>
+                                        <Setter Target="IconPresenter.Visibility" Value="Visible"/>
+                                        <Setter Target="IconPresenter.Margin" Value="{ThemeResource IconInfoBadgeIconMargin}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="FontIcon2">
+                                    <VisualState.Setters>
+                                        <Setter Target="IconPresenter.Visibility" Value="Visible"/>
+                                        <Setter Target="IconPresenter.Margin" Value="{ThemeResource IconInfoBadgeFontIconMargin}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Value2">
+                                    <VisualState.Setters>
+                                        <Setter Target="ValueTextBlock.Visibility" Value="Visible"/>
+                                        <Setter Target="ValueTextBlock.Margin" Value="{ThemeResource ValueInfoBadgeTextMargin}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <TextBlock x:Name="ValueTextBlock"
                                    Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Value, Mode=OneWay}"
