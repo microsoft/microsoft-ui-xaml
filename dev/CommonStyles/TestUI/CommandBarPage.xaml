@@ -16,7 +16,7 @@
     <Page.Resources>
     </Page.Resources>
 
-    <Grid>
+    <ScrollViewer>
         <StackPanel Orientation="Vertical">
 
             <CommandBar>
@@ -222,6 +222,9 @@
                 <AppBarSeparator/>
                 <AppBarButton Icon="Save" Label="Save"/>
                 <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                <CommandBar.Content>
+                    <Button Content="I'm the header"/>
+                </CommandBar.Content>
             </CommandBar>
 
             <TextBlock Text="Stretch CommandBar with ContentAreaGridLength override"/>
@@ -235,9 +238,127 @@
                     <AppBarSeparator/>
                     <AppBarButton Icon="Save" Label="Save"/>
                     <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                    <CommandBar.Content>
+                        <Button Content="I'm the header"/>
+                    </CommandBar.Content>
+                </CommandBar>
+            </Grid>
+
+            <TextBlock Text="Stretch CommandBar with CommandBarPrimaryItemsHorizontalAlignment override"/>
+            <Grid>
+                <Grid.Resources>
+                    <HorizontalAlignment x:Key="CommandBarPrimaryItemsHorizontalAlignment">Left</HorizontalAlignment>
+                </Grid.Resources>
+                <CommandBar HorizontalAlignment="Stretch">
+                    <AppBarButton Icon="Add" Label="Add"/>
+                    <AppBarButton Icon="Remove" Label="Remove"/>
+                    <AppBarSeparator/>
+                    <AppBarButton Icon="Save" Label="Save"/>
+                    <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                    <CommandBar.Content>
+                        <Button Content="I'm the header"/>
+                    </CommandBar.Content>
+                </CommandBar>
+            </Grid>
+
+            <TextBlock Text="Stretch CommandBar with ContentAreaGridLength override and CommandBarPrimaryItemsHorizontalAlignment override"/>
+            <Grid>
+                <Grid.Resources>
+                    <GridLength x:Key="CommandAreaGridLength">Auto</GridLength>
+                    <HorizontalAlignment x:Key="CommandBarPrimaryItemsHorizontalAlignment">Left</HorizontalAlignment>
+                </Grid.Resources>
+                <CommandBar HorizontalAlignment="Stretch">
+                    <AppBarButton Icon="Add" Label="Add"/>
+                    <AppBarButton Icon="Remove" Label="Remove"/>
+                    <AppBarSeparator/>
+                    <AppBarButton Icon="Save" Label="Save"/>
+                    <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                    <CommandBar.Content>
+                        <Button Content="I'm the header"/>
+                    </CommandBar.Content>
+                </CommandBar>
+            </Grid>
+
+            <TextBlock Text="Stretch CommandBar Right Aligned Header"/>
+            <Grid>
+                <Grid.Resources>
+                    <x:Int32 x:Key="CommandBarContentControlGridColumn">2</x:Int32>
+                    <GridLength x:Key="CommandBarContentControlColumnDefinitionLength">Auto</GridLength>
+                    <GridLength x:Key="CommandBarRightAlignedContentControlColumnDefinitionLength">*</GridLength>
+                </Grid.Resources>
+                <CommandBar HorizontalAlignment="Stretch">
+                    <AppBarButton Icon="Add" Label="Add"/>
+                    <AppBarButton Icon="Remove" Label="Remove"/>
+                    <AppBarSeparator/>
+                    <AppBarButton Icon="Save" Label="Save"/>
+                    <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                    <CommandBar.Content>
+                        <Button Content="I'm the header"/>
+                    </CommandBar.Content>
+                </CommandBar>
+            </Grid>
+
+            <TextBlock Text="Stretch CommandBar with ContentAreaGridLength override and Right Aligned Header"/>
+            <Grid>
+                <Grid.Resources>
+                    <GridLength x:Key="CommandAreaGridLength">Auto</GridLength>
+                    <x:Int32 x:Key="CommandBarContentControlGridColumn">2</x:Int32>
+                    <GridLength x:Key="CommandBarContentControlColumnDefinitionLength">Auto</GridLength>
+                    <GridLength x:Key="CommandBarRightAlignedContentControlColumnDefinitionLength">*</GridLength>
+                </Grid.Resources>
+                <CommandBar HorizontalAlignment="Stretch">
+                    <AppBarButton Icon="Add" Label="Add"/>
+                    <AppBarButton Icon="Remove" Label="Remove"/>
+                    <AppBarSeparator/>
+                    <AppBarButton Icon="Save" Label="Save"/>
+                    <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                    <CommandBar.Content>
+                        <Button Content="I'm the header"/>
+                    </CommandBar.Content>
+                </CommandBar>
+            </Grid>
+
+            <TextBlock Text="Stretch CommandBar with CommandBarPrimaryItemsHorizontalAlignment override  and Right Aligned Header"/>
+            <Grid>
+                <Grid.Resources>
+                    <HorizontalAlignment x:Key="CommandBarPrimaryItemsHorizontalAlignment">Left</HorizontalAlignment>
+                    <x:Int32 x:Key="CommandBarContentControlGridColumn">2</x:Int32>
+                    <GridLength x:Key="CommandBarContentControlColumnDefinitionLength">Auto</GridLength>
+                    <GridLength x:Key="CommandBarRightAlignedContentControlColumnDefinitionLength">*</GridLength>
+                </Grid.Resources>
+                <CommandBar HorizontalAlignment="Stretch">
+                    <AppBarButton Icon="Add" Label="Add"/>
+                    <AppBarButton Icon="Remove" Label="Remove"/>
+                    <AppBarSeparator/>
+                    <AppBarButton Icon="Save" Label="Save"/>
+                    <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                    <CommandBar.Content>
+                        <Button Content="I'm the header"/>
+                    </CommandBar.Content>
+                </CommandBar>
+            </Grid>
+
+            <TextBlock Text="Stretch CommandBar with ContentAreaGridLength override and CommandBarPrimaryItemsHorizontalAlignment override and Right Aligned Header"/>
+            <Grid>
+                <Grid.Resources>
+                    <GridLength x:Key="CommandAreaGridLength">Auto</GridLength>
+                    <HorizontalAlignment x:Key="CommandBarPrimaryItemsHorizontalAlignment">Left</HorizontalAlignment>
+                    <x:Int32 x:Key="CommandBarContentControlGridColumn">2</x:Int32>
+                    <GridLength x:Key="CommandBarContentControlColumnDefinitionLength">Auto</GridLength>
+                    <GridLength x:Key="CommandBarRightAlignedContentControlColumnDefinitionLength">*</GridLength>
+                </Grid.Resources>
+                <CommandBar HorizontalAlignment="Stretch">
+                    <AppBarButton Icon="Add" Label="Add"/>
+                    <AppBarButton Icon="Remove" Label="Remove"/>
+                    <AppBarSeparator/>
+                    <AppBarButton Icon="Save" Label="Save"/>
+                    <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                    <CommandBar.Content>
+                        <Button Content="I'm the header"/>
+                    </CommandBar.Content>
                 </CommandBar>
             </Grid>
         </StackPanel>
 
-    </Grid>
+    </ScrollViewer>
 </Page>

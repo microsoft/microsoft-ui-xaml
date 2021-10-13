@@ -35,6 +35,10 @@
             <Thickness x:Key="CommandBarOverflowPresenterBorderDownPadding">0</Thickness>
             <Thickness x:Key="CommandBarOverflowPresenterBorderUpPadding">0</Thickness>
             <GridLength x:Key="CommandAreaGridLength">*</GridLength>
+            <HorizontalAlignment x:Key="CommandBarPrimaryItemsHorizontalAlignment">Right</HorizontalAlignment>
+            <x:Int32 x:Key="CommandBarContentControlGridColumn">0</x:Int32>
+            <GridLength x:Key="CommandBarContentControlColumnDefinitionLength">*</GridLength>
+            <GridLength x:Key="CommandBarRightAlignedContentControlColumnDefinitionLength">Auto</GridLength>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="CommandBarBackground" ResourceKey="SystemControlBackgroundChromeMediumBrush" />
@@ -60,6 +64,10 @@
             <Thickness x:Key="CommandBarOverflowPresenterBorderDownPadding">0</Thickness>
             <Thickness x:Key="CommandBarOverflowPresenterBorderUpPadding">0</Thickness>
             <GridLength x:Key="CommandAreaGridLength">*</GridLength>
+            <HorizontalAlignment x:Key="CommandBarPrimaryItemsHorizontalAlignment">Right</HorizontalAlignment>
+            <x:Int32 x:Key="CommandBarContentControlGridColumn">0</x:Int32>
+            <GridLength x:Key="CommandBarContentControlColumnDefinitionLength">*</GridLength>
+            <GridLength x:Key="CommandBarRightAlignedContentControlColumnDefinitionLength">Auto</GridLength>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <x:Double x:Key="CommandBarOverflowMinWidth">160</x:Double>
@@ -86,6 +94,10 @@
             <Thickness x:Key="CommandBarOverflowPresenterBorderDownPadding">0</Thickness>
             <Thickness x:Key="CommandBarOverflowPresenterBorderUpPadding">0</Thickness>
             <GridLength x:Key="CommandAreaGridLength">*</GridLength>
+            <HorizontalAlignment x:Key="CommandBarPrimaryItemsHorizontalAlignment">Right</HorizontalAlignment>
+            <x:Int32 x:Key="CommandBarContentControlGridColumn">0</x:Int32>
+            <GridLength x:Key="CommandBarContentControlColumnDefinitionLength">*</GridLength>
+            <GridLength x:Key="CommandBarRightAlignedContentControlColumnDefinitionLength">Auto</GridLength>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -817,6 +829,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentControlColumnDefinition.Width" Value="Auto" />
                                         <Setter Target="PrimaryItemsControlColumnDefinition.Width" Value="*" />
+                                        <Setter Target="RightAlignedContentControlColumnDefinition.Width" Value="Auto" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -843,8 +856,9 @@
                             </Grid.RenderTransform>
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition x:Name="ContentControlColumnDefinition" Width="*" />
+                                    <ColumnDefinition x:Name="ContentControlColumnDefinition" Width="{ThemeResource CommandBarContentControlColumnDefinitionLength}" />
                                     <ColumnDefinition x:Name="PrimaryItemsControlColumnDefinition" Width="Auto" />
+                                    <ColumnDefinition x:Name="RightAlignedContentControlColumnDefinition" Width="{ThemeResource CommandBarRightAlignedContentControlColumnDefinitionLength}" />
                                 </Grid.ColumnDefinitions>
                                 <!-- Use a ContentControl rather than a ContentPresenter so that IsEnabled can be set to false
                                      in the Minimal/HiddenClosed states to remove it from being a tab-stop candidate. -->
@@ -858,9 +872,10 @@
                                       VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                       HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                       VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                      IsTabStop="False" />
+                                      IsTabStop="False"
+                                      Grid.Column="{ThemeResource CommandBarContentControlGridColumn}"/>
                                 <ItemsControl x:Name="PrimaryItemsControl"
-                                      HorizontalAlignment="Right"
+                                      HorizontalAlignment="{ThemeResource CommandBarPrimaryItemsHorizontalAlignment}"
                                       MinHeight="{ThemeResource AppBarThemeCompactHeight}"
                                       IsTabStop="False"
                                       Grid.Column="1">
