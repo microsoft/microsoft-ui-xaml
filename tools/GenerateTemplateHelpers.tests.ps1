@@ -282,30 +282,28 @@ Describe 'OutputVisualStateGroupBlock'{
         Set-Content $localTestPath -value "Previous Content"
         OutputVisualStateGroupBlock $localTestPath 'InfoBadgeDisplayKindState' @('Dot', 'Icon', 'Value')
         Get-Content $localTestPath | Should -be @(
-            'Previous Content',
+             'Previous Content',
              '',
              '#pragma region InfoBadgeDisplayKindState', 
-             '    static bool GoToState(const winrt::Control& control, InfoBadgeDisplayKindState state, bool useTransitions = true)', 
-             '    {', 
-             '        return winrt::VisualStateManager::GoToState(control, ToString(state), useTransitions);', 
-             '    }', 
-             '', 
              '    static winrt::hstring ToString(InfoBadgeDisplayKindState state)',
              '    {',
              '        switch (state)',
              '        {',
              '        case InfoBadgeDisplayKindState::Dot:',
-             '            return c_DotInfoBadgeDisplayKindState.data();',
+             '            return L"Dot";',
              '        case InfoBadgeDisplayKindState::Icon:',
-             '            return c_IconInfoBadgeDisplayKindState.data();',
+             '            return L"Icon";',
              '        case InfoBadgeDisplayKindState::Value:',
-             '            return c_ValueInfoBadgeDisplayKindState.data();',
+             '            return L"Value";',
+             '        default:',
+             '            return L"";',
              '        }',
              '    }',
              ''
-             '    static constexpr wstring_view c_DotInfoBadgeDisplayKindState{ L"Dot"sv };',
-             '    static constexpr wstring_view c_IconInfoBadgeDisplayKindState{ L"Icon"sv };',
-             '    static constexpr wstring_view c_ValueInfoBadgeDisplayKindState{ L"Value"sv };',
+             '    static bool GoToState(const winrt::Control& control, InfoBadgeDisplayKindState state, bool useTransitions = true)', 
+             '    {', 
+             '        return winrt::VisualStateManager::GoToState(control, ToString(state), useTransitions);', 
+             '    }', 
              '#pragma endregion')
     }
 }
@@ -398,17 +396,15 @@ Describe OutputNamedTemplatePartsRegion{
              '        switch (part)',
              '        {',
              '        case InfoBadgeNamedTemplatePart::RootGrid:',
-             '            return c_RootGridName.data();',
+             '            return L"RootGrid";',
              '        case InfoBadgeNamedTemplatePart::IconPresenter:',
-             '            return c_IconPresenterName.data();',
+             '            return L"IconPresenter";',
              '        case InfoBadgeNamedTemplatePart::Test3Value:',
-             '            return c_Test3ValueName.data();',
+             '            return L"Test3Value";',
+             '        default:'
+             '            return L"";'
              '        }',
              '    }',
-             ''
-             '    static constexpr wstring_view c_RootGridName{ L"RootGrid"sv };',
-             '    static constexpr wstring_view c_IconPresenterName{ L"IconPresenter"sv };',
-             '    static constexpr wstring_view c_Test3ValueName{ L"Test3Value"sv };',
              '#pragma endregion')
     }
 }

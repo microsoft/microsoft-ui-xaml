@@ -263,11 +263,6 @@ function OutputVisualStateGroupBlock{
     }
     Add-Content -Path $OutputFile -Value ""
     Add-Content -Path $OutputFile -Value "#pragma region $VisualStateGroupEnumName"
-    Add-Content -Path $OutputFile -Value "    static bool GoToState(const winrt::Control& control, $VisualStateGroupEnumName state, bool useTransitions = true)"
-    Add-Content -Path $OutputFile -Value "    {"
-    Add-Content -Path $OutputFile -Value "        return winrt::VisualStateManager::GoToState(control, ToString(state), useTransitions);"
-    Add-Content -Path $OutputFile -Value "    }"
-    Add-Content -Path $OutputFile -Value ""
     Add-Content -Path $OutputFile -Value "    static winrt::hstring ToString($VisualStateGroupEnumName state)"
     Add-Content -Path $OutputFile -Value "    {"
     Add-Content -Path $OutputFile -Value "        switch (state)"
@@ -275,15 +270,17 @@ function OutputVisualStateGroupBlock{
     foreach($name in $EnumValueNames)
     {
         Add-Content -Path $OutputFile -Value "        case $VisualStateGroupEnumName::$($name):"
-        Add-Content -Path $OutputFile -Value "            return c_$name$VisualStateGroupEnumName.data();"
+        Add-Content -Path $OutputFile -Value "            return L`"$name`";"
     }
+    Add-Content -Path $OutputFile -Value "        default:"
+    Add-Content -Path $OutputFile -Value "            return L`"`";"
     Add-Content -Path $OutputFile -Value "        }"
     Add-Content -Path $OutputFile -Value "    }"
     Add-Content -Path $OutputFile -Value ""
-    foreach($name in $EnumValueNames)
-    {
-    Add-Content -Path $OutputFile -Value "    static constexpr wstring_view c_$name$VisualStateGroupEnumName{ L`"$name`"sv };"
-    }
+    Add-Content -Path $OutputFile -Value "    static bool GoToState(const winrt::Control& control, $VisualStateGroupEnumName state, bool useTransitions = true)"
+    Add-Content -Path $OutputFile -Value "    {"
+    Add-Content -Path $OutputFile -Value "        return winrt::VisualStateManager::GoToState(control, ToString(state), useTransitions);"
+    Add-Content -Path $OutputFile -Value "    }"
     Add-Content -Path $OutputFile -Value "#pragma endregion"
 }
 
@@ -316,15 +313,12 @@ function OutputNamedTemplatePartsRegion {
         foreach($name in $NamedTemplateParts)
         {
             Add-Content -Path $OutputFile -Value "        case $($ControlName)NamedTemplatePart::$($name):"
-            Add-Content -Path $OutputFile -Value "            return c_$($name)Name.data();"
+            Add-Content -Path $OutputFile -Value "            return L`"$name`";"
         }
+        Add-Content -Path $OutputFile -Value "        default:"
+        Add-Content -Path $OutputFile -Value "            return L`"`";"
         Add-Content -Path $OutputFile -Value "        }"
         Add-Content -Path $OutputFile -Value "    }"
-        Add-Content -Path $OutputFile -Value ""
-        foreach($name in $NamedTemplateParts)
-        {
-        Add-Content -Path $OutputFile -Value "    static constexpr wstring_view c_$($name)Name{ L`"$name`"sv };"
-        }
         Add-Content -Path $OutputFile -Value "#pragma endregion"
     }
 }
