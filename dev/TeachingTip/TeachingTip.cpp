@@ -10,6 +10,7 @@
 #include "TeachingTipClosedEventArgs.h"
 #include "TeachingTipTestHooks.h"
 #include "TeachingTipAutomationPeer.h"
+#include "TeachingTipTemplatePartHelpers.h"
 #include "../ResourceHelper/Utils.h"
 #include <enum_array.h>
 
@@ -221,11 +222,11 @@ void TeachingTip::OnContentChanged(const winrt::IInspectable& oldContent, const 
 {
     if (newContent)
     {
-        winrt::VisualStateManager::GoToState(*this, L"Content"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipContentStates::Content);
     }
     else
     {
-        winrt::VisualStateManager::GoToState(*this, L"NoContent"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipContentStates::NoContent);
     }
 }
 
@@ -324,98 +325,98 @@ bool TeachingTip::UpdateTail()
     case winrt::TeachingTipPlacementMode::Auto:
         TrySetCenterPoint(nullableTailOcclusionGrid, { width / 2, height / 2, 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"Untargeted"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipPlacementStates::Untargeted);
         break;
 
     case winrt::TeachingTipPlacementMode::Top:
         TrySetCenterPoint(nullableTailOcclusionGrid, { width / 2, height - lastRowHeight, 0.0f });
         TrySetCenterPoint(m_tailEdgeBorder.get(), { (width / 2) - firstColumnWidth, 0.0f, 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"Top"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipPlacementStates::Top);
         break;
 
     case winrt::TeachingTipPlacementMode::Bottom:
         TrySetCenterPoint(nullableTailOcclusionGrid, { width / 2, firstRowHeight, 0.0f });
         TrySetCenterPoint(m_tailEdgeBorder.get(), { (width / 2) - firstColumnWidth, 0.0f, 0.0f });
         UpdateDynamicHeroContentPlacementToBottom();
-        winrt::VisualStateManager::GoToState(*this, L"Bottom"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipPlacementStates::Bottom);
         break;
 
     case winrt::TeachingTipPlacementMode::Left:
         TrySetCenterPoint(nullableTailOcclusionGrid, { width - lastColumnWidth, (height / 2), 0.0f });
         TrySetCenterPoint(m_tailEdgeBorder.get(), { 0.0f, (height / 2) - firstRowHeight, 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"Left"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipPlacementStates::Left);
         break;
 
     case winrt::TeachingTipPlacementMode::Right:
         TrySetCenterPoint(nullableTailOcclusionGrid, { firstColumnWidth, height / 2, 0.0f });
         TrySetCenterPoint(m_tailEdgeBorder.get(), { 0.0f, (height / 2) - firstRowHeight, 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"Right"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipPlacementStates::Right);
         break;
 
     case winrt::TeachingTipPlacementMode::TopRight:
         TrySetCenterPoint(nullableTailOcclusionGrid, { firstColumnWidth + secondColumnWidth + 1, height - lastRowHeight, 0.0f });
         TrySetCenterPoint(m_tailEdgeBorder.get(), { secondColumnWidth, 0.0f, 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"TopRight"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipPlacementStates::TopRight);
         break;
 
     case winrt::TeachingTipPlacementMode::TopLeft:
         TrySetCenterPoint(nullableTailOcclusionGrid, { width - (nextToLastColumnWidth + lastColumnWidth + 1), height - lastRowHeight, 0.0f });
         TrySetCenterPoint(m_tailEdgeBorder.get(), { width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"TopLeft"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipPlacementStates::TopLeft);
         break;
 
     case winrt::TeachingTipPlacementMode::BottomRight:
         TrySetCenterPoint(nullableTailOcclusionGrid, { firstColumnWidth + secondColumnWidth + 1, firstRowHeight, 0.0f });
         TrySetCenterPoint(m_tailEdgeBorder.get(), { secondColumnWidth, 0.0f, 0.0f });
         UpdateDynamicHeroContentPlacementToBottom();
-        winrt::VisualStateManager::GoToState(*this, L"BottomRight"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipPlacementStates::BottomRight);
         break;
 
     case winrt::TeachingTipPlacementMode::BottomLeft:
         TrySetCenterPoint(nullableTailOcclusionGrid, { width - (nextToLastColumnWidth + lastColumnWidth + 1), firstRowHeight, 0.0f });
         TrySetCenterPoint(m_tailEdgeBorder.get(), { width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
         UpdateDynamicHeroContentPlacementToBottom();
-        winrt::VisualStateManager::GoToState(*this, L"BottomLeft"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipPlacementStates::BottomLeft);
         break;
 
     case winrt::TeachingTipPlacementMode::LeftTop:
         TrySetCenterPoint(nullableTailOcclusionGrid, { width - lastColumnWidth,  height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
         TrySetCenterPoint(m_tailEdgeBorder.get(), { 0.0f,  height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"LeftTop"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipPlacementStates::LeftTop);
         break;
 
     case winrt::TeachingTipPlacementMode::LeftBottom:
         TrySetCenterPoint(nullableTailOcclusionGrid, { width - lastColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
         TrySetCenterPoint(m_tailEdgeBorder.get(), { 0.0f, secondRowHeight, 0.0f });
         UpdateDynamicHeroContentPlacementToBottom();
-        winrt::VisualStateManager::GoToState(*this, L"LeftBottom"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipPlacementStates::LeftBottom);
         break;
 
     case winrt::TeachingTipPlacementMode::RightTop:
         TrySetCenterPoint(nullableTailOcclusionGrid, { firstColumnWidth, height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
         TrySetCenterPoint(m_tailEdgeBorder.get(), { 0.0f, height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"RightTop"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipPlacementStates::RightTop);
         break;
 
     case winrt::TeachingTipPlacementMode::RightBottom:
         TrySetCenterPoint(nullableTailOcclusionGrid, { firstColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
         TrySetCenterPoint(m_tailEdgeBorder.get(), { 0.0f, secondRowHeight, 0.0f });
         UpdateDynamicHeroContentPlacementToBottom();
-        winrt::VisualStateManager::GoToState(*this, L"RightBottom"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipPlacementStates::RightBottom);
         break;
 
     case winrt::TeachingTipPlacementMode::Center:
         TrySetCenterPoint(nullableTailOcclusionGrid, { width / 2, height - lastRowHeight, 0.0f });
         TrySetCenterPoint(m_tailEdgeBorder.get(), { (width / 2) - firstColumnWidth, 0.0f, 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"Center"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipPlacementStates::Center);
         break;
 
     default:
@@ -719,33 +720,33 @@ void TeachingTip::UpdateButtonsState()
     const bool isLightDismiss = IsLightDismissEnabled();
     if (actionContent && closeContent)
     {
-        winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
-        winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipButtonsStates::BothButtonsVisible);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipCloseButtonLocations::FooterCloseButton);
     }
     else if (actionContent && isLightDismiss)
     {
-        winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
-        winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipButtonsStates::ActionButtonVisible);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipCloseButtonLocations::FooterCloseButton);
     }
     else if (actionContent)
     {
-        winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
-        winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipButtonsStates::ActionButtonVisible);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipCloseButtonLocations::HeaderCloseButton);
     }
     else if (closeContent)
     {
-        winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
-        winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipButtonsStates::CloseButtonVisible);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipCloseButtonLocations::FooterCloseButton);
     }
     else if (isLightDismiss)
     {
-        winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
-        winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipButtonsStates::NoButtonsVisible);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipCloseButtonLocations::FooterCloseButton);
     }
     else
     {
-        winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
-        winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipButtonsStates::NoButtonsVisible);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipCloseButtonLocations::HeaderCloseButton);
     }
 }
 
@@ -759,7 +760,7 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToTop()
 
 void TeachingTip::UpdateDynamicHeroContentPlacementToTopImpl()
 {
-    winrt::VisualStateManager::GoToState(*this, L"HeroContentTop"sv, false);
+    TeachingTipTemplateHelpers::GoToState(*this, TeachingTipHeroContentPlacementStates::HeroContentTop);
     if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Top)
     {
         m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Top;
@@ -777,7 +778,7 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToBottom()
 
 void TeachingTip::UpdateDynamicHeroContentPlacementToBottomImpl()
 {
-    winrt::VisualStateManager::GoToState(*this, L"HeroContentBottom"sv, false);
+    TeachingTipTemplateHelpers::GoToState(*this, TeachingTipHeroContentPlacementStates::HeroContentBottom);
     if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Bottom)
     {
         m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Bottom;
@@ -959,12 +960,12 @@ void TeachingTip::OnIconSourceChanged()
     if (auto const source = IconSource())
     {
         templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
-        winrt::VisualStateManager::GoToState(*this, L"Icon"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipIconStates::Icon);
     }
     else
     {
         templateSettings->IconElement(nullptr);
-        winrt::VisualStateManager::GoToState(*this, L"NoIcon"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipIconStates::NoIcon);
     }
 }
 
@@ -980,7 +981,7 @@ void TeachingTip::OnIsLightDismissEnabledChanged()
 {
     if (IsLightDismissEnabled())
     {
-        winrt::VisualStateManager::GoToState(*this, L"LightDismiss"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipLightDismissStates::LightDismiss);
         if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
         {
             lightDismissIndicatorPopup.IsLightDismissEnabled(true);
@@ -989,7 +990,7 @@ void TeachingTip::OnIsLightDismissEnabledChanged()
     }
     else
     {
-        winrt::VisualStateManager::GoToState(*this, L"NormalDismiss"sv, false);
+        TeachingTipTemplateHelpers::GoToState(*this, TeachingTipLightDismissStates::NormalDismiss);
         if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
         {
             lightDismissIndicatorPopup.IsLightDismissEnabled(false);
