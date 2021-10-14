@@ -275,25 +275,7 @@ private:
     static constexpr wstring_view s_scaleTargetName{ L"Scale"sv };
     static constexpr wstring_view s_translationTargetName{ L"Translation"sv };
 
-    static constexpr wstring_view s_containerName{ L"Container"sv };
-    static constexpr wstring_view s_popupName{ L"Popup"sv };
-    static constexpr wstring_view s_tailOcclusionGridName{ L"TailOcclusionGrid"sv };
-    static constexpr wstring_view s_contentRootGridName{ L"ContentRootGrid"sv };
-    static constexpr wstring_view s_nonHeroContentRootGridName{ L"NonHeroContentRootGrid"sv };
-    static constexpr wstring_view s_shadowTargetName{ L"ShadowTarget"sv };
-    static constexpr wstring_view s_heroContentBorderName{ L"HeroContentBorder"sv };
-    static constexpr wstring_view s_titlesStackPanelName{ L"TitlesStackPanel"sv };
-    static constexpr wstring_view s_titleTextBoxName{ L"TitleTextBlock"sv };
-    static constexpr wstring_view s_subtitleTextBoxName{ L"SubtitleTextBlock"sv };
-    static constexpr wstring_view s_alternateCloseButtonName{ L"AlternateCloseButton"sv };
-    static constexpr wstring_view s_mainContentPresenterName{ L"MainContentPresenter"sv };
-    static constexpr wstring_view s_actionButtonName{ L"ActionButton"sv };
-    static constexpr wstring_view s_closeButtonName{ L"CloseButton"sv };
-    static constexpr wstring_view s_tailPolygonName{ L"TailPolygon"sv };
     static constexpr wstring_view s_tailEdgeBorderName{ L"TailEdgeBorder"sv };
-    static constexpr wstring_view s_topTailPolygonHighlightName{ L"TopTailPolygonHighlight"sv };
-    static constexpr wstring_view s_topHighlightLeftName{ L"TopHighlightLeft"sv };
-    static constexpr wstring_view s_topHighlightRightName{ L"TopHighlightRight"sv };
 
     static constexpr wstring_view s_accentButtonStyleName{ L"AccentButtonStyle" };
     static constexpr wstring_view s_teachingTipTopHighlightBrushName{ L"TeachingTipTopHighlightBrush" };

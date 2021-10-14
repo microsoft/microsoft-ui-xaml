@@ -86,35 +86,35 @@ void InfoBadge::GoToAppropriateDisplayKindState()
     InfoBadgeTemplateHelpers::GoToState(thisAsControl, CalculateAppropriateDisplayKindState());
 }
 
-InfoBadgeDisplayKindState InfoBadge::CalculateAppropriateDisplayKindState()
+InfoBadgeDisplayKindStates InfoBadge::CalculateAppropriateDisplayKindState()
 {
     if (Value() >= 0)
     {
-        return InfoBadgeDisplayKindState::Value;
+        return InfoBadgeDisplayKindStates::Value;
     }
 
     return CalculateIconOrDotDisplayKindState();
 }
 
-InfoBadgeDisplayKindState InfoBadge::CalculateIconOrDotDisplayKindState()
+InfoBadgeDisplayKindStates InfoBadge::CalculateIconOrDotDisplayKindState()
 {
     if (auto const iconElement = TemplateSettings().IconElement())
     {
         return CalculateIconDisplayKindState(iconElement);
     }
 
-    return InfoBadgeDisplayKindState::Dot;
+    return InfoBadgeDisplayKindStates::Dot;
 }
 
-InfoBadgeDisplayKindState InfoBadge::CalculateIconDisplayKindState(const winrt::Windows::UI::Xaml::Controls::IconElement& iconElement)
+InfoBadgeDisplayKindStates InfoBadge::CalculateIconDisplayKindState(const winrt::Windows::UI::Xaml::Controls::IconElement& iconElement)
 {
     if (iconElement.try_as<winrt::FontIcon>())
     {
-        return InfoBadgeDisplayKindState::FontIcon;
+        return InfoBadgeDisplayKindStates::FontIcon;
     }
     else
     {
-        return InfoBadgeDisplayKindState::Icon;
+        return InfoBadgeDisplayKindStates::Icon;
     }
 }
 #pragma endregion

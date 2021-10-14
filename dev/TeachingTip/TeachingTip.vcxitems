@@ -68,6 +68,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipClosedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipClosingEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipTemplatePartHelpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipTestHooks.h" />
   </ItemGroup>

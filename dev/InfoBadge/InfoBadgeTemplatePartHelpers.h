@@ -23,13 +23,13 @@ namespace InfoBadgeTemplateHelpers
 {
 
 #pragma region InfoBadgeDisplayKindStates
-    static bool GoToState(const winrt::Control& control, InfoBadgeDisplayKindStates state, bool useTransitions = true)
-    {
-        return winrt::VisualStateManager::GoToState(control, ToString(state), useTransitions);
-    }
-
     static winrt::hstring ToString(InfoBadgeDisplayKindStates state)
     {
+        static constexpr wstring_view c_DotInfoBadgeDisplayKindStates{ L"Dot"sv };
+        static constexpr wstring_view c_IconInfoBadgeDisplayKindStates{ L"Icon"sv };
+        static constexpr wstring_view c_FontIconInfoBadgeDisplayKindStates{ L"FontIcon"sv };
+        static constexpr wstring_view c_ValueInfoBadgeDisplayKindStates{ L"Value"sv };
+
         switch (state)
         {
         case InfoBadgeDisplayKindStates::Dot:
@@ -40,18 +40,24 @@ namespace InfoBadgeTemplateHelpers
             return c_FontIconInfoBadgeDisplayKindStates.data();
         case InfoBadgeDisplayKindStates::Value:
             return c_ValueInfoBadgeDisplayKindStates.data();
+        default:
+            return L"";
         }
     }
 
-    static constexpr wstring_view c_DotInfoBadgeDisplayKindStates{ L"Dot"sv };
-    static constexpr wstring_view c_IconInfoBadgeDisplayKindStates{ L"Icon"sv };
-    static constexpr wstring_view c_FontIconInfoBadgeDisplayKindStates{ L"FontIcon"sv };
-    static constexpr wstring_view c_ValueInfoBadgeDisplayKindStates{ L"Value"sv };
+    static bool GoToState(const winrt::Control& control, InfoBadgeDisplayKindStates state, bool useTransitions = true)
+    {
+        return winrt::VisualStateManager::GoToState(control, ToString(state), useTransitions);
+    }
 #pragma endregion
 
 #pragma region NamedTemplateParts
     static winrt::hstring ToString(InfoBadgeNamedTemplatePart part)
     {
+        static constexpr wstring_view c_RootGridName{ L"RootGrid"sv };
+        static constexpr wstring_view c_ValueTextBlockName{ L"ValueTextBlock"sv };
+        static constexpr wstring_view c_IconPresenterName{ L"IconPresenter"sv };
+
         switch (part)
         {
         case InfoBadgeNamedTemplatePart::RootGrid:
@@ -60,11 +66,9 @@ namespace InfoBadgeTemplateHelpers
             return c_ValueTextBlockName.data();
         case InfoBadgeNamedTemplatePart::IconPresenter:
             return c_IconPresenterName.data();
+        default:
+            return L"";
         }
     }
-
-    static constexpr wstring_view c_RootGridName{ L"RootGrid"sv };
-    static constexpr wstring_view c_ValueTextBlockName{ L"ValueTextBlock"sv };
-    static constexpr wstring_view c_IconPresenterName{ L"IconPresenter"sv };
 #pragma endregion
 };

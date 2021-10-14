@@ -51,17 +51,17 @@ void TeachingTip::OnApplyTemplate()
 
     winrt::IControlProtected controlProtected{ *this };
 
-    m_container.set(GetTemplateChildT<winrt::Border>(s_containerName, controlProtected));
+    m_container.set(GetTemplateChildT<winrt::Border>(TeachingTipTemplateHelpers::ToString(TeachingTipNamedTemplatePart::Container), controlProtected));
     m_rootElement.set(m_container.get().Child());
-    m_tailOcclusionGrid.set(GetTemplateChildT<winrt::Grid>(s_tailOcclusionGridName, controlProtected));
-    m_contentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_contentRootGridName, controlProtected));
-    m_nonHeroContentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_nonHeroContentRootGridName, controlProtected));
-    m_heroContentBorder.set(GetTemplateChildT<winrt::Border>(s_heroContentBorderName, controlProtected));
-    m_actionButton.set(GetTemplateChildT<winrt::Button>(s_actionButtonName, controlProtected));
-    m_alternateCloseButton.set(GetTemplateChildT<winrt::Button>(s_alternateCloseButtonName, controlProtected));
-    m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
+    m_tailOcclusionGrid.set(GetTemplateChildT<winrt::Grid>(TeachingTipTemplateHelpers::ToString(TeachingTipNamedTemplatePart::TailOcclusionGrid), controlProtected));
+    m_contentRootGrid.set(GetTemplateChildT<winrt::Grid>(TeachingTipTemplateHelpers::ToString(TeachingTipNamedTemplatePart::ContentRootGrid), controlProtected));
+    m_nonHeroContentRootGrid.set(GetTemplateChildT<winrt::Grid>(TeachingTipTemplateHelpers::ToString(TeachingTipNamedTemplatePart::NonHeroContentRootGrid), controlProtected));
+    m_heroContentBorder.set(GetTemplateChildT<winrt::Border>(TeachingTipTemplateHelpers::ToString(TeachingTipNamedTemplatePart::HeroContentBorder), controlProtected));
+    m_actionButton.set(GetTemplateChildT<winrt::Button>(TeachingTipTemplateHelpers::ToString(TeachingTipNamedTemplatePart::ActionButton), controlProtected));
+    m_alternateCloseButton.set(GetTemplateChildT<winrt::Button>(TeachingTipTemplateHelpers::ToString(TeachingTipNamedTemplatePart::AlternateCloseButton), controlProtected));
+    m_closeButton.set(GetTemplateChildT<winrt::Button>(TeachingTipTemplateHelpers::ToString(TeachingTipNamedTemplatePart::CloseButton), controlProtected));
     m_tailEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_tailEdgeBorderName, controlProtected));
-    m_tailPolygon.set(GetTemplateChildT<winrt::Polygon>(s_tailPolygonName, controlProtected));
+    m_tailPolygon.set(GetTemplateChildT<winrt::Polygon>(TeachingTipTemplateHelpers::ToString(TeachingTipNamedTemplatePart::TailPolygon), controlProtected));
     ToggleVisibilityForEmptyContent(c_TitleTextBlockVisibleStateName, c_TitleTextBlockCollapsedStateName, Title());
     ToggleVisibilityForEmptyContent(c_SubtitleTextBlockVisibleStateName, c_SubtitleTextBlockCollapsedStateName, Subtitle());
 
@@ -2426,7 +2426,7 @@ double TeachingTip::GetVerticalOffset()
 
 winrt::Visibility TeachingTip::GetTitleVisibility()
 {
-    if (auto&& titleTextBox = GetTemplateChildT<winrt::UIElement>(s_titleTextBoxName, *this))
+    if (auto&& titleTextBox = GetTemplateChildT<winrt::UIElement>(TeachingTipTemplateHelpers::ToString(TeachingTipNamedTemplatePart::TitleTextBlock), *this))
     {
         return titleTextBox.Visibility();
     }
@@ -2435,7 +2435,7 @@ winrt::Visibility TeachingTip::GetTitleVisibility()
 
 winrt::Visibility TeachingTip::GetSubtitleVisibility()
 {
-    if (auto&& subtitleTextBox = GetTemplateChildT<winrt::UIElement>(s_subtitleTextBoxName, *this))
+    if (auto&& subtitleTextBox = GetTemplateChildT<winrt::UIElement>(TeachingTipTemplateHelpers::ToString(TeachingTipNamedTemplatePart::SubtitleTextBlock), *this))
     {
         return subtitleTextBox.Visibility();
     }
