@@ -46,6 +46,7 @@ function New-TemporaryDirectory {
 function WriteToTempFile {
     param (
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [String[]]$template
     )
     
@@ -98,6 +99,7 @@ function ExtractName {
 function GetVisualStateNamesFromVisualStateGroup {
     param (
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [string[]]$VisualStateGroup
     )
 
@@ -130,6 +132,7 @@ function GetVisualStateNamesFromVisualStateGroup {
 function GetNamedTemplatePartsFromTemplate {
     param (
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [string[]]$template
     )
 
@@ -150,12 +153,15 @@ function GetNamedTemplatePartsFromTemplate {
     $Names = New-Object -TypeName 'System.Collections.ArrayList'
     foreach($line in $template)
     {
-        if(-Not ($line.Trim().StartsWith('<VisualState')))
+        if($line)
         {
-            $name = ExtractName $line
-            if($name)
+            if(-Not ($line.Trim().StartsWith('<VisualState')))
             {
-                $Names.Add($name) | Out-Null
+                $name = ExtractName $line
+                if($name)
+                {
+                    $Names.Add($name) | Out-Null
+                }
             }
         }
     }

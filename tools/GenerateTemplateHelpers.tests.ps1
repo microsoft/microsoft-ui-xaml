@@ -46,9 +46,15 @@ Content
 }
 
 Describe 'WriteToTempFile'{
-    It 'Should Write the provided string into a new file'{
+    It 'Should Write the provided strings into a new file'{
         $file = WriteToTempFile @('test1', 'test2', 'test3')
         Get-Content $file | Should -Be  @('test1', 'test2', 'test3')
+    }
+
+    
+    It 'Should allow empty string'{
+        $file = WriteToTempFile @('test1', '', 'test3')
+        Get-Content $file | Should -Be  @('test1', '', 'test3')
     }
 }
 
@@ -153,6 +159,33 @@ Describe 'GetVisualStateNamesFromVisualStateGroup'{
         $VisualStateGroup = @('<VisualStateGroup x:Name="DisplayKindStates">',
         '<VisualState x:Name="Dot"/>',
         '<VisualState x:Name="Icon">',
+            '<VisualState.Setters>',
+                '<Setter Target="IconPresenter.Visibility" Value="Visible"/>',
+                '<Setter Target="IconPresenter.Margin" Value="{ThemeResource IconInfoBadgeIconMargin}"/>',
+            '</VisualState.Setters>',
+        '</VisualState>',
+        '<VisualState x:Name="FontIcon">',
+            '<VisualState.Setters>',
+                '<Setter Target="IconPresenter.Visibility" Value="Visible"/>',
+                '<Setter Target="IconPresenter.Margin" Value="{ThemeResource IconInfoBadgeFontIconMargin}"/>',
+            '</VisualState.Setters>',
+        '</VisualState>',
+        '<VisualState x:Name="Value">',
+            '<VisualState.Setters>',
+                '<Setter Target="ValueTextBlock.Visibility" Value="Visible"/>',
+                '<Setter Target="ValueTextBlock.Margin" Value="{ThemeResource ValueInfoBadgeTextMargin}"/>',
+            '</VisualState.Setters>',
+        '</VisualState>',
+    '</VisualStateGroup>')
+    
+    GetVisualStateNamesFromVisualStateGroup $VisualStateGroup | Should -Be @('Dot', 'Icon', 'FontIcon', 'Value')
+    }
+
+    It 'Should allow empty strings in VisualStateGroup'{
+        $VisualStateGroup = @('<VisualStateGroup x:Name="DisplayKindStates">',
+        '<VisualState x:Name="Dot"/>',
+        '<VisualState x:Name="Icon">',
+        '',
             '<VisualState.Setters>',
                 '<Setter Target="IconPresenter.Visibility" Value="Visible"/>',
                 '<Setter Target="IconPresenter.Margin" Value="{ThemeResource IconInfoBadgeIconMargin}"/>',
@@ -282,6 +315,34 @@ describe GetNamedTemplatePartsFromTemplate{
         $template = @('<VisualStateGroup x:Name="DisplayKindStates">',
         '<VisualState x:Name="Dot"/>',
         '<VisualState x:Name="Icon">',
+            '<VisualState.Setters>',
+                '<Setter Target="IconPresenter.Visibility" x:Name="IAmASetter" Value="Visible"/>',
+                '<Setter Target="IconPresenter.Margin" Value="{ThemeResource IconInfoBadgeIconMargin}"/>',
+            '</VisualState.Setters>',
+        '</VisualState>',
+        '<VisualState x:Name="FontIcon">',
+            '<VisualState.Setters>',
+                '<Setter Target="IconPresenter.Visibility" Value="Visible"/>',
+                '<Setter Target="IconPresenter.Margin" Value="{ThemeResource IconInfoBadgeFontIconMargin}"/>',
+            '</VisualState.Setters>',
+        '</VisualState>',
+        '<VisualState x:Name="Value">',
+            '<VisualState.Setters>',
+                '<Setter Target="ValueTextBlock.Visibility" Value="Visible"/>',
+                '<Setter Target="ValueTextBlock.Margin" Value="{ThemeResource ValueInfoBadgeTextMargin}"/>',
+            '</VisualState.Setters>',
+        '</VisualState>',
+    '</VisualStateGroup>'
+    '<Grid x:Name="RootGrid"/>')
+
+    GetNamedTemplatePartsFromTemplate $template | Should -Be @('IAmASetter', 'RootGrid')
+    }
+
+    It 'Should Allow VisualStateGroups With Empty Strings'{
+        $template = @('<VisualStateGroup x:Name="DisplayKindStates">',
+        '<VisualState x:Name="Dot"/>',
+        '<VisualState x:Name="Icon">',
+        '',
             '<VisualState.Setters>',
                 '<Setter Target="IconPresenter.Visibility" x:Name="IAmASetter" Value="Visible"/>',
                 '<Setter Target="IconPresenter.Margin" Value="{ThemeResource IconInfoBadgeIconMargin}"/>',
