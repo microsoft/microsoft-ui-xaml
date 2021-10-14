@@ -21,6 +21,7 @@ enum class InfoBadgeDisplayKindStates
 
 namespace InfoBadgeTemplateHelpers
 {
+
 #pragma region InfoBadgeDisplayKindStates
     static bool GoToState(const winrt::Control& control, InfoBadgeDisplayKindStates state, bool useTransitions = true)
     {

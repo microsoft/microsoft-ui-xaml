@@ -214,16 +214,16 @@ Describe 'OutputEnumClass'{
     }
 }
 
-Describe 'OutputClassBoilerPlate'{
+Describe 'OutputNamespaceBoilerPlate'{
     It 'Should throw if output file does not exist'{
-        {OutputClassBoilerPlate 'NotAFile' 'ClassName'} | Should -throw
+        {OutputNamespaceBoilerPlate 'NotAFile' 'ClassName'} | Should -throw
     }
 
-    It 'Should output Class Boilerplate'{
+    It 'Should output Namespace Boilerplate'{
         $localTestPath = "TestDrive:\test2.txt"
         Set-Content $localTestPath -value "Previous Content"
-        OutputClassBoilerPlate $localTestPath 'ClassName'
-        Get-Content $localTestPath | Should -be @('Previous Content', '', 'class ClassName', '{', 'public:', '    // Abstract Class', '    virtual ~ClassName() = 0;')
+        OutputNamespaceBoilerPlate $localTestPath 'ClassName'
+        Get-Content $localTestPath | Should -be @('Previous Content', '', 'namespace ClassName', '{')
     }
 }
 
@@ -252,13 +252,11 @@ Describe 'OutputVisualStateGroupBlock'{
             'Previous Content',
              '',
              '#pragma region InfoBadgeDisplayKindState', 
-             'public:', 
              '    static bool GoToState(const winrt::Control& control, InfoBadgeDisplayKindState state, bool useTransitions = true)', 
              '    {', 
              '        return winrt::VisualStateManager::GoToState(control, ToString(state), useTransitions);', 
              '    }', 
              '', 
-             'private:',
              '    static winrt::hstring ToString(InfoBadgeDisplayKindState state)',
              '    {',
              '        switch (state)',
@@ -334,7 +332,6 @@ Describe OutputNamedTemplatePartsRegion{
             'Previous Content',
              '',
              '#pragma region NamedTemplateParts', 
-             'public:', 
              '    static winrt::hstring ToString(InfoBadgeNamedTemplatePart part)',
              '    {',
              '        switch (part)',
@@ -348,7 +345,6 @@ Describe OutputNamedTemplatePartsRegion{
              '        }',
              '    }',
              ''
-             'private:', 
              '    static constexpr wstring_view c_RootGridName{ L"RootGrid"sv };',
              '    static constexpr wstring_view c_IconPresenterName{ L"IconPresenter"sv };',
              '    static constexpr wstring_view c_Test3ValueName{ L"Test3Value"sv };',

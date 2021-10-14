@@ -213,28 +213,25 @@ enum class $EnumName
     Add-Content -Path $OutputFile -Value '};'
 }
 
-function OutputClassBoilerPlate {
+function OutputNamespaceBoilerPlate {
     param (
         [Parameter(Mandatory = $true)]
         [string]$OutputFile,
         [Parameter(Mandatory = $true)]
-        [string]$ClassName
+        [string]$NamespaceName
     )
     if(-Not (Test-Path $OutputFile -PathType Leaf))
     {
         throw "OutputFile does not exist"
     }
-    if(-Not ($ClassName))
+    if(-Not ($NamespaceName))
     {
-        throw "ClassName must be not null or empty"
+        throw "NamespaceName must be not null or empty"
     }
 
     Add-Content -Path $OutputFile -Value "
-class $ClassName
-{
-public:
-    // Abstract Class
-    virtual ~$ClassName() = 0;"
+namespace $NamespaceName
+{"
 }
 
 function OutputVisualStateGroupBlock{
@@ -260,13 +257,11 @@ function OutputVisualStateGroupBlock{
     }
     Add-Content -Path $OutputFile -Value ""
     Add-Content -Path $OutputFile -Value "#pragma region $VisualStateGroupEnumName"
-    Add-Content -Path $OutputFile -Value "public:"
     Add-Content -Path $OutputFile -Value "    static bool GoToState(const winrt::Control& control, $VisualStateGroupEnumName state, bool useTransitions = true)"
     Add-Content -Path $OutputFile -Value "    {"
     Add-Content -Path $OutputFile -Value "        return winrt::VisualStateManager::GoToState(control, ToString(state), useTransitions);"
     Add-Content -Path $OutputFile -Value "    }"
     Add-Content -Path $OutputFile -Value ""
-    Add-Content -Path $OutputFile -Value "private:"
     Add-Content -Path $OutputFile -Value "    static winrt::hstring ToString($VisualStateGroupEnumName state)"
     Add-Content -Path $OutputFile -Value "    {"
     Add-Content -Path $OutputFile -Value "        switch (state)"
@@ -308,7 +303,6 @@ function OutputNamedTemplatePartsRegion {
     {
         Add-Content -Path $OutputFile -Value ""
         Add-Content -Path $OutputFile -Value "#pragma region NamedTemplateParts"
-        Add-Content -Path $OutputFile -Value "public:"
         Add-Content -Path $OutputFile -Value "    static winrt::hstring ToString($($ControlName)NamedTemplatePart part)"
         Add-Content -Path $OutputFile -Value "    {"
         Add-Content -Path $OutputFile -Value "        switch (part)"
@@ -321,7 +315,6 @@ function OutputNamedTemplatePartsRegion {
         Add-Content -Path $OutputFile -Value "        }"
         Add-Content -Path $OutputFile -Value "    }"
         Add-Content -Path $OutputFile -Value ""
-        Add-Content -Path $OutputFile -Value "private:"
         foreach($name in $NamedTemplateParts)
         {
         Add-Content -Path $OutputFile -Value "    static constexpr wstring_view c_$($name)Name{ L`"$name`"sv };"
@@ -355,7 +348,7 @@ foreach($visualStateGroup in $VisualStateGroups)
     OutputEnumClass $outputFilePath "$controlName$groupName" $stateNames
 }
 
-OutputClassBoilerPlate $outputFilePath "$($controlName)TemplateHelpers"
+OutputNamespaceBoilerPlate $outputFilePath "$($controlName)TemplateHelpers"
 
 foreach($visualStateGroup in $VisualStateGroups)
 {
