@@ -405,6 +405,14 @@ Describe OutputNamedTemplatePartsRegion{
              '            return L"";'
              '        }',
              '    }',
+             ''
+             '    template<typename WinRTReturn>'
+             '    WinRTReturn GetTemplatePart(tracker_ref<WinRTReturn>& tracker, InfoBadgeNamedTemplatePart namedTemplatePart, const winrt::IControlProtected& control)'
+             '    {'
+             '        auto const part = GetTemplateChildT<WinRTReturn>(ToString(namedTemplatePart), control);'
+             '        tracker.set(part);'
+             '        return part;'
+             '    }'
              '#pragma endregion')
     }
 }

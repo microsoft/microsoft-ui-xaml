@@ -7,6 +7,7 @@
 #include "common.h"
 
 #include "TeachingTipTemplateSettings.h"
+#include "TeachingTipTemplatePartHelpers.h"
 
 #include "TeachingTip.g.h"
 #include "TeachingTip.properties.h"
@@ -20,7 +21,28 @@ public:
     TeachingTip();
 
     // IFrameworkElement
+#pragma region ApplyTemplate
+public:
     void OnApplyTemplate();
+private:
+    void RevokeAllRevokers();
+    void EstablishTemplateParts();
+#pragma region EstablishTemplateSubParts
+    void EstablishRootParts();
+    void DetachRootElementFromContainer(const winrt::Border& container);
+    void EstablishContentRootGrid();
+    void EstablishTailOcculsionGrid();
+    void EstablishHeroContentBorder();
+    void EstablishActionButton();
+    void EstablishAlternateCloseButton();
+    void EstablishCloseButton();
+    void EstablishTailEdgeBorder();
+    void EstablishTailPolygon();
+#pragma endregion
+    void SetupInitialState();
+#pragma endregion
+
+public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     // ContentControl
@@ -155,7 +177,11 @@ private:
     static std::array<winrt::TeachingTipPlacementMode, 13> GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPalcement);
     void EstablishShadows();
     void TrySetCenterPoint(const winrt::IUIElement9& element, const winrt::float3& centerPoint);
-    bool ToggleVisibilityForEmptyContent(const wstring_view visibleStateName, const wstring_view collapsedStateName, const winrt::hstring& content);
+    bool ToggleTitleVisibilityForEmptyContent();
+    bool ToggleSubtitleVisibilityForEmptyContent();
+
+    template <typename VisualStateGroupEnum>
+    bool ToggleVisibilityForEmptyContent(const VisualStateGroupEnum visibleState, const VisualStateGroupEnum collapsedState, const winrt::hstring& content);
 
     // The tail is designed as an 8x16 pixel shape, however it is actually a 10x20 shape which is partially occluded by the tip content.
     // This is done to get the border of the tip to follow the tail shape without drawing the border on the tip edge of the tail.
@@ -168,6 +194,19 @@ private:
     winrt::CornerRadius GetTeachingTipCornerRadius();
     float TopLeftCornerRadius() { return static_cast<float>(GetTeachingTipCornerRadius().TopLeft); }
     float TopRightCornerRadius() { return static_cast<float>(GetTeachingTipCornerRadius().TopRight); }
+
+
+    template<typename WinRTReturn>
+    WinRTReturn GetTemplatePart(tracker_ref<WinRTReturn>& tracker, TeachingTipNamedTemplatePart namedTemplatePart)
+    {
+        return TeachingTipTemplateHelpers::GetTemplatePart(tracker, namedTemplatePart, *this);
+    }
+
+    template<typename TeachingTipVisualStateGroup>
+    bool GoToState(TeachingTipVisualStateGroup state, bool useTransitions = true)
+    {
+        return TeachingTipTemplateHelpers::GoToState(*this, state, useTransitions = true);
+    }
 
     tracker_ref<winrt::Border> m_container{ this };
 
@@ -276,9 +315,6 @@ private:
     static constexpr wstring_view s_translationTargetName{ L"Translation"sv };
 
     static constexpr wstring_view s_tailEdgeBorderName{ L"TailEdgeBorder"sv };
-
-    static constexpr wstring_view s_accentButtonStyleName{ L"AccentButtonStyle" };
-    static constexpr wstring_view s_teachingTipTopHighlightBrushName{ L"TeachingTipTopHighlightBrush" };
 
     static constexpr winrt::float2 s_expandAnimationEasingCurveControlPoint1{ 0.1f, 0.9f };
     static constexpr winrt::float2 s_expandAnimationEasingCurveControlPoint2{ 0.2f, 1.0f };
