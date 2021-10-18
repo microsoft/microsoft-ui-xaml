@@ -22,6 +22,7 @@
                     <ComboBox x:Name="TestNameComboBox" AutomationProperties.AutomationId="TestNameComboBox" SelectionChanged="TestNameComboBox_SelectionChanged" VerticalAlignment="Center" Width="100">
                         <ComboBox.Items>
                             <!-- Please keep this list alphabetaized!-->
+                            <ComboBoxItem AutomationProperties.Name="AccessKeyTest">AccessKeyTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="AddHostObjectToScriptTest">AddHostObjectToScriptTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="BasicFlingTouchTest">BasicFlingTouchTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="BasicKeyboardTest">BasicKeyboardTest</ComboBoxItem>
@@ -43,6 +44,7 @@
                             <ComboBoxItem AutomationProperties.Name="Focus_ReverseTabTest">Focus_ReverseTabTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="GoBackAndForwardTest">GoBackAndForwardTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="HostNameToFolderMappingTest">HostNameToFolderMappingTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="KeyboardAcceleratorTest">KeyboardAcceleratorTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="MouseCaptureTest">MouseCaptureTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="MouseLeftClickTest">MouseLeftClickTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="MouseMiddleClickTest">MouseMiddleClickTest</ComboBoxItem>

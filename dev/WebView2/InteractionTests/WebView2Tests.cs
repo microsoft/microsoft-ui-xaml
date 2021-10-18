@@ -1439,7 +1439,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Ignore", "True")] // Task 31708332: WebView2 Touch Tests still failing on Helix
-        [TestProperty("Ignore", "True")]  //Task 31704068: Unreliable tests: WebView2 BasicTapTouchTest, BasicFlingTouchTest, BasicLongPressTouchTest
         [TestProperty("TestSuite", "B")]
         public void BasicTapTouchTest()
         {
@@ -1467,7 +1466,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Ignore", "True")] // Task 31708332: WebView2 Touch Tests still failing on Helix
-        [TestProperty("Ignore", "True")]  //Task 31704068: Unreliable tests: WebView2 BasicTapTouchTest, BasicFlingTouchTest, BasicLongPressTouchTest
         [TestProperty("TestSuite", "B")]
         public void BasicFlingTouchTest()
         {
@@ -2145,6 +2143,68 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 ChooseTest("UserAgentTest");
                 CompleteTestAndWaitForResult("UserAgentTest");
+            }
+        }
+        
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void KeyboardAcceleratorTest()
+        {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
+                return;
+            }
+
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("KeyboardAcceleratorTest");
+                // Type "t" in the textbox in the webview. This should NOT invoke the F5 accelerator key handler in the app.
+                SetWebViewElementFocus("w1", 1);
+                KeyboardHelper.PressKey(Key.t); 
+                CompleteTestAndWaitForResult("KeyboardAcceleratorTest");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void AccessKeyTest()
+        {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
+                return;
+            }
+
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("AccessKeyTest");
+
+                // Set focus somewhere besides the webview
+                Button x2 = new Button(FindElement.ById("TabStopButton2"));
+                x2.SetFocus();
+                Wait.ForIdle();
+
+                // Bring up access keys
+                Keyboard keyboard = Keyboard.Instance;
+                keyboard.SendText("%"); // ALT
+                Wait.ForIdle();
+
+                string keyTipText = "W";
+                var keytip = TryFindElement.ByName(keyTipText);
+                Verify.IsNotNull(keytip, "keytip");
+
+                // Invoke the AccessKey
+                keyboard.SendText(keyTipText);
+                Wait.ForIdle();
+
+                // Until bug is fixed where WebView2 loses focus when browser gets focus, do an extra tab to ensure focus is in the webview
+                KeyboardHelper.PressKey(Key.Tab); // tab to webview
+                KeyboardHelper.PressKey(Key.Tab); // tab to input button
+                KeyboardHelper.PressKey(Key.Tab); // tab to tabStopButton2
+                Verify.IsTrue(x2.HasKeyboardFocus);
+
+                CompleteTestAndWaitForResult("AccessKeyTest");
             }
         }
 
