@@ -1767,11 +1767,21 @@ namespace MUXControlsTestApp
                         {
                             var userAgent = string.Empty;
                             var core_wv2 = MyWebView2.CoreWebView2;
-                            if (core_wv2 != null)
+                            if (core_wv2 == null)
                             {
-                                var core_wv2_settings = core_wv2.Settings;
-                                userAgent = core_wv2_settings.UserAgent;
+                                logger.LogError(string.Format("Test {0}: Couldn't get CoreWebView2 object", selectedTest.ToString()));
+                                break;
                             }
+
+                            var core_wv2_settings = core_wv2.Settings;
+                            if (core_wv2_settings == null)
+                            {
+                                logger.LogError(string.Format("Test {0}: Couldn't get CoreWebView2Settings object", selectedTest.ToString()));
+                                break;
+                            }
+                            
+                            userAgent = core_wv2_settings.UserAgent;
+                            
                             // The "Edg" token identifies the Chromium Edge browser
                             // For more information, see https://docs.microsoft.com/en-us/microsoft-edge/web-platform/user-agent-guidance
                             logger.Verify(userAgent.Contains("Edg"),
