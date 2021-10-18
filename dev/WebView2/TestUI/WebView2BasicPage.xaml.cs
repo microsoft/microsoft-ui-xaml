@@ -683,9 +683,18 @@ namespace MUXControlsTestApp
                         f5Accelerator.Key = VirtualKey.F5;
                         f5Accelerator.Invoked += (sender, args) =>
                         {
-                            Status2.Text = "F5";
+                            Status2.Text += "F5";
                         };
                         MyWebView2.KeyboardAccelerators.Add(f5Accelerator);
+
+                        var rAccelerator = new KeyboardAccelerator();
+                        rAccelerator.Key = VirtualKey.R;
+                        rAccelerator.Invoked += (sender, args) =>
+                        {
+                            Status2.Text += "R";
+                        };
+                        MyWebView2.KeyboardAccelerators.Add(rAccelerator);
+
                         WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[test]]);
                     }
                     break;
@@ -1813,8 +1822,12 @@ namespace MUXControlsTestApp
 
                     case TestList.KeyboardAcceleratorTest:
                         {
-                            logger.Verify(Status2.Text != "F5",
+                            logger.Verify(!Status2.Text.Contains("F5"),
                                 string.Format("Test {0}: Typing 't' should not have invoked an F5 handler",
+                                    selectedTest.ToString()));
+
+                            logger.Verify(Status2.Text.Contains("R"),
+                                string.Format("Test {0}: Typing 'R' should have invoked an R handler",
                                     selectedTest.ToString()));
                         }
                         break;

@@ -2161,7 +2161,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ChooseTest("KeyboardAcceleratorTest");
                 // Type "t" in the textbox in the webview. This should NOT invoke the F5 accelerator key handler in the app.
                 SetWebViewElementFocus("w1", 1);
-                KeyboardHelper.PressKey(Key.t); 
+                KeyboardHelper.PressKey(Key.t);
+                KeyboardHelper.PressKey(Key.R);
                 CompleteTestAndWaitForResult("KeyboardAcceleratorTest");
             }
         }
