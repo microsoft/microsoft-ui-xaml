@@ -195,6 +195,7 @@ namespace MUXControlsTestApp
             NavigateToLocalImageTest,
             CloseThenDPIChangeTest,
             AddHostObjectToScriptTest,
+            UserAgentTest,
         };
 
         // Map of TestList entry to its webpage (index in TestPageNames[])
@@ -253,6 +254,7 @@ namespace MUXControlsTestApp
             { TestList.NavigateToLocalImageTest, 0 },
             { TestList.CloseThenDPIChangeTest, 0 },
             { TestList.AddHostObjectToScriptTest, 0 },
+            { TestList.UserAgentTest, 0 },
         };
 
         readonly string[] TestPageNames =
@@ -1758,6 +1760,32 @@ namespace MUXControlsTestApp
                                 logger.Verify(false, string.Format("Test {0}: Unexpected exception: {1}", 
                                     selectedTest.ToString(), e.ToString()));
                             }
+                        }
+                        break;
+
+                    case TestList.UserAgentTest:
+                        {
+                            var userAgent = string.Empty;
+                            var core_wv2 = MyWebView2.CoreWebView2;
+                            if (core_wv2 == null)
+                            {
+                                logger.LogError(string.Format("Test {0}: Couldn't get CoreWebView2 object", selectedTest.ToString()));
+                                break;
+                            }
+
+                            var core_wv2_settings = core_wv2.Settings;
+                            if (core_wv2_settings == null)
+                            {
+                                logger.LogError(string.Format("Test {0}: Couldn't get CoreWebView2Settings object", selectedTest.ToString()));
+                                break;
+                            }
+                            
+                            userAgent = core_wv2_settings.UserAgent;
+                            
+                            // The "Edg" token identifies the Chromium Edge browser
+                            // For more information, see https://docs.microsoft.com/en-us/microsoft-edge/web-platform/user-agent-guidance
+                            logger.Verify(userAgent.Contains("Edg"),
+                                string.Format("Test {0}: Expected a valid UserAgent, got {1}", selectedTest.ToString(), userAgent));
                         }
                         break;
 

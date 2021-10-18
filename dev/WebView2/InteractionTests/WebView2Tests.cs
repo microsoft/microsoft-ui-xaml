@@ -406,7 +406,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void BasicRenderingTest()
+        public void BasicRenderingTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -491,42 +491,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void MouseLeftClickTest()
+        public void MouseLeftClickTest()
         {
             MouseClickTestCommon(PointerButtons.Primary);
         }
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void MouseMiddleClickTest()
+        public void MouseMiddleClickTest()
         {
             MouseClickTestCommon(PointerButtons.Middle);
         }
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void MouseRightClickTest()
+        public void MouseRightClickTest()
         {
             MouseClickTestCommon(PointerButtons.Secondary);
         }
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void MouseXButton1ClickTest()
+        public void MouseXButton1ClickTest()
         {
             MouseClickTestCommon(PointerButtons.XButton1);
         }
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void MouseXButton2ClickTest()
+        public void MouseXButton2ClickTest()
         {
             MouseClickTestCommon(PointerButtons.XButton2);
         }
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void MouseWheelScrollTest()
+        public void MouseWheelScrollTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -557,7 +557,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void CursorUpdateTest()
+        public void CursorUpdateTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -593,7 +593,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void NavigationErrorTest()
+        public void NavigationErrorTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -869,7 +869,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void ExecuteScriptTest()
+        public void ExecuteScriptTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -951,7 +951,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod] 
         [TestProperty("TestSuite", "A")]
-        public static void MultipleWebviews_BasicRenderingTest()
+        public void MultipleWebviews_BasicRenderingTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -971,7 +971,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         //[TestMethod] // TODO: Investigate why LanguageTest is failing on latest WebView2 runtime
         //[TestProperty("TestSuite", "A")]
-        public static void MultipleWebviews_LanguageTest()
+        public void MultipleWebviews_LanguageTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1220,7 +1220,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void ReloadTest()
+        public void ReloadTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1237,7 +1237,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void NavigateToStringTest()
+        public void NavigateToStringTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1263,7 +1263,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // bound textbox, demonstrating binding from Source->textBlock text.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void SourceBindingTest()
+        public void SourceBindingTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1305,7 +1305,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // CanGoBack and CanGoForward properties and used in implementation of methods, tested by proxy.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void GoBackAndForwardTest()
+        public void GoBackAndForwardTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1322,7 +1322,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // [TestMethod] // TODO: Investigate why this test is not completing on 19H1
         [TestProperty("TestSuite", "B")]
-        public static void NavigationStartingTest()
+        public void NavigationStartingTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1339,7 +1339,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void ResizeTest()
+        public void ResizeTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1358,7 +1358,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Ignore", "True")] // Task 31708332: WebView2 Touch Tests still failing on Helix
         [TestProperty("Ignore", "True")]  //Task 31704068: Unreliable tests: WebView2 BasicTapTouchTest, BasicFlingTouchTest, BasicLongPressTouchTest
         [TestProperty("TestSuite", "B")]
-        public static void BasicTapTouchTest()
+        public void BasicTapTouchTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1386,7 +1386,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Ignore", "True")] // Task 31708332: WebView2 Touch Tests still failing on Helix
         [TestProperty("Ignore", "True")]  //Task 31704068: Unreliable tests: WebView2 BasicTapTouchTest, BasicFlingTouchTest, BasicLongPressTouchTest
         [TestProperty("TestSuite", "B")]
-        public static void BasicFlingTouchTest()
+        public void BasicFlingTouchTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1421,7 +1421,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         [TestProperty("Ignore", "True")] // Task 25510116: WebView2Tests.BasicStretchTouchTest is failing on Helix 
         [TestProperty("TestSuite", "B")]
-        public static void BasicStretchTouchTest()
+        public void BasicStretchTouchTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1445,7 +1445,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void BasicPanTouchTest()
+        public void BasicPanTouchTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1475,7 +1475,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         [TestProperty("Ignore", "True")] // Task 31708332: WebView2 Touch Tests still failing on Helix
         [TestProperty("Ignore", "True")]  //Task 31704068: Unreliable tests: WebView2 BasicTapTouchTest, BasicFlingTouchTest, BasicLongPressTouchTest
-        public static void BasicLongPressTouchTest()
+        public void BasicLongPressTouchTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1502,7 +1502,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void ScaledTouchTest()
+        public void ScaledTouchTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1537,7 +1537,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void MoveTest()
+        public void MoveTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1554,7 +1554,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void ReparentElementTest()
+        public void ReparentElementTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1579,7 +1579,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void SourceBeforeLoadTest()
+        public void SourceBeforeLoadTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1596,7 +1596,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void VisibilityHiddenTest()
+        public void VisibilityHiddenTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1613,7 +1613,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void VisibilityTurnedOnTest()
+        public void VisibilityTurnedOnTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1635,7 +1635,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void ParentVisibilityHiddenTest()
+        public void ParentVisibilityHiddenTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1652,7 +1652,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void ParentVisibilityTurnedOnTest()
+        public void ParentVisibilityTurnedOnTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1675,7 +1675,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         [TestProperty("Ignore", "True")] // TODO_WebView2: Enable when we can change DPI for a test
         [TestProperty("TestSuite", "C")]
-        public static void SpecificTouchTest()
+        public void SpecificTouchTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1712,7 +1712,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void QueryCoreWebView2BasicTest()
+        public void QueryCoreWebView2BasicTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1729,7 +1729,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void CoreWebView2InitializedTest()
+        public void CoreWebView2InitializedTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1746,7 +1746,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void CoreWebView2Initialized_FailedTest()
+        public void CoreWebView2Initialized_FailedTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1776,7 +1776,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         [TestProperty("Ignore", "True")] // Task 31425073: Unreliable tests: MenuBarTests.KeyboardNavigationWithArrowKeysTest and WebView2CleanedUpTest
-        public static void WebView2CleanedUpTest()
+        public void WebView2CleanedUpTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1826,7 +1826,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void WindowHiddenTest()
+        public void WindowHiddenTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1861,7 +1861,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void WindowlessPopupTest()
+        public void WindowlessPopupTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1905,7 +1905,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void PointerReleaseWithoutPressTest()
+        public void PointerReleaseWithoutPressTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1937,7 +1937,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void HostNameToFolderMappingTest()
+        public void HostNameToFolderMappingTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1969,7 +1969,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void NavigateToVideoTest()
+        public void NavigateToVideoTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1986,7 +1986,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void NavigateToLocalImageTest()
+        public void NavigateToLocalImageTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -2004,7 +2004,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         [TestProperty("Ignore", "True")] // TODO_WebView2: Enable when we can change DPI for a test
         [TestProperty("TestSuite", "C")]
-        public static void CloseThenDPIChangeTest()
+        public void CloseThenDPIChangeTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -2026,7 +2026,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         //[TestMethod] // Test fails because .NET UWP doesn't support Object -> VARIANT marshalling.
         [TestProperty("TestSuite", "C")]
         [TestProperty("Ignore", "True")] // 32510465
-        public static void AddHostObjectToScriptTest()
+        public void AddHostObjectToScriptTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -2038,6 +2038,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 ChooseTest("AddHostObjectToScriptTest");
                 CompleteTestAndWaitForWebMessageResult("AddHostObjectToScriptTest");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void UserAgentTest()
+        {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
+                return;
+            }
+
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("UserAgentTest");
+                CompleteTestAndWaitForResult("UserAgentTest");
             }
         }
 
@@ -2112,7 +2129,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void BasicCoreObjectCreationAndDestructionTest()
+        public void BasicCoreObjectCreationAndDestructionTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -2515,7 +2532,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void ConcurrentCreationRequestsTest()
+        public void ConcurrentCreationRequestsTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -2677,7 +2694,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void EdgeProcessFailedTest()
+        public void EdgeProcessFailedTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
