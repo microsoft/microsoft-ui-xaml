@@ -251,14 +251,11 @@ CommandBarFlyout::CommandBarFlyout()
                     args.Cancel(true);
 
                     commandBar->PlayCloseAnimation(
-                        [weakThis{ get_weak() }]()
+                        [this]()
                         {
-                            if (auto strongThis = weakThis.get())
-                            {
-                                strongThis->m_isClosingAfterCloseAnimation = true;
-                                strongThis->Hide();
-                                strongThis->m_isClosingAfterCloseAnimation = false;
-                            }
+                            m_isClosingAfterCloseAnimation = true;
+                            Hide();
+                            m_isClosingAfterCloseAnimation = false;
                         });
                 }
                 else
