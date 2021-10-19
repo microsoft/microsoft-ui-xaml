@@ -3,6 +3,7 @@
 
 using Common;
 using System;
+using System.Linq;
 using Windows.Foundation.Metadata;
 using Windows.System;
 using Windows.UI.Xaml;
@@ -197,6 +198,13 @@ namespace MUXControlsTestApp
                         if (clearSecondaryCommands)
                         {
                             SetClearSecondaryCommandsFlyout(commandBarFlyout);
+                        }
+
+                        var firstItem = commandBarFlyout.SecondaryCommands.FirstOrDefault();
+                        if (firstItem is AppBarButton button)
+                        {
+                            // Set focus to the first item.
+                            button.Focus(FocusState.Programmatic);
                         }
                     }
                 }
