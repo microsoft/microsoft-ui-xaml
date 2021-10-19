@@ -2146,8 +2146,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
         
-        [TestMethod]
+        //[TestMethod]
         [TestProperty("TestSuite", "C")]
+        [TestProperty("Ignore", "True")] // KeyboardHelper isn't invoking the KeyboardAccelerator, but test can still be run manually
         public void KeyboardAcceleratorTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
