@@ -992,5 +992,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(finalBoundingRectangle.Height, initialBoundingRectangle.Height);
             }
         }
+
+        [TestMethod]
+        public void VerifyIsFlyoutKeyboardAccessibleWithNoPrimaryCommands()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                return;
+            }
+
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButtonWithNoPrimaryCommands = FindElement.ByName<Button>("Show CommandBarFlyout with no primary commands");
+
+                Log.Comment("Tap on a button to show the CommandBarFlyout.");
+                InputHelper.Tap(showCommandBarFlyoutButtonWithNoPrimaryCommands);
+
+                Log.Comment("Press Down key to move focus to first secondary command: Undo.");
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+
+                Button undoButton1 = FindElement.ById<Button>("UndoButton6");
+                var undoButtonElement = AutomationElement.FocusedElement;
+                Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton1.AutomationId);
+
+                Log.Comment("Press Tab key to move focus to first primary command: Redo.");
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+
+                Button cutButton1 = FindElement.ById<Button>("RedoButton6");
+                var cutButtonElement = AutomationElement.FocusedElement;
+                Verify.AreEqual(cutButtonElement.Current.AutomationId, cutButton1.AutomationId);
+            }
     }
 }
