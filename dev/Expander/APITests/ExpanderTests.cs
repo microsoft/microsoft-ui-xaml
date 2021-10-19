@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Shapes;
 using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Controls;
+
 #if USING_TAEF
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -60,19 +61,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var toggleButtonGrid = VisualTreeHelper.GetChild(toggleButton, 0);
                 var contentPresenter = VisualTreeHelper.GetChild(toggleButtonGrid, 0);
                 var stackPanel = VisualTreeHelper.GetChild(contentPresenter, 0);
-                var textBlock1 = VisualTreeHelper.GetChild(stackPanel, 0) as TextBlock;
-                var textBlock2 = VisualTreeHelper.GetChild(stackPanel, 1) as TextBlock;
+                var textBlock1 = expander.FindVisualChildByName("This expander is expanded by default.") as TextBlock;
+                var textBlock2 = expander.FindVisualChildByName("This is the second line of text.") as TextBlock;
 
                 var border = VisualTreeHelper.GetChild(grid, 1);
                 var expanderContentBorder = VisualTreeHelper.GetChild(border, 0);
                 var expanderContentContentPresenter = VisualTreeHelper.GetChild(expanderContentBorder, 0);
-                var button = VisualTreeHelper.GetChild(expanderContentContentPresenter, 0) as Button;
+                var button = expander.FindVisualChildByName("Content") as Button;
 
                 Verify.AreEqual("ExpandedExpander", AutomationProperties.GetName(expander));
 
                 // Verify ExpandedExpander header content AutomationProperties.Name properties are set
-                Verify.AreEqual("This expander is expanded by default.", AutomationProperties.GetName(textBlock1));
-                Verify.AreEqual("This is the second line of text.", AutomationProperties.GetName(textBlock2));
+                Verify.IsNotNull(textBlock1);
+                Verify.IsNotNull(textBlock2);
 
                 // Verify ExpandedExpander content AutomationProperties.Name property is set
                 Verify.AreEqual("Content", AutomationProperties.GetName(button));
