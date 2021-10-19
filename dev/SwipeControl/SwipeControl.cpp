@@ -731,7 +731,6 @@ void SwipeControl::DetachDismissingHandlers()
 
     m_xamlRootPointerPressedEventRevoker.revoke();
     m_xamlRootKeyDownEventRevoker.revoke();
-
     m_xamlRootChangedRevoker.revoke();
 
     m_acceleratorKeyActivatedRevoker.revoke();
