@@ -40,7 +40,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                              <controls:Expander x:Name ='ExpandedExpander' AutomationProperties.Name='ExpandedExpander' IsExpanded='True' Margin='12' HorizontalAlignment='Left'>
                                 <controls:Expander.Header>
                                     <StackPanel Margin='0,14,0,16'>
-                                        <TextBlock Text='This expander is expanded by default.'  Margin='0,0,0,4' />
+                                        <TextBlock AutomationProperties.Name='test' Text='This expander is expanded by default.'  Margin='0,0,0,4' />
                                         <TextBlock Text='This is the second line of text.' />
                                     </StackPanel>
                                 </controls:Expander.Header>
@@ -71,18 +71,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual("ExpandedExpander", AutomationProperties.GetName(expander));
 
-                // Verify ExpandedExpander header content AutomationProperties.Name properties are set
-                Verify.AreEqual("This expander is expanded by default.", AutomationProperties.GetName(textBlock1));
-                Verify.AreEqual("This is the second line of text.", AutomationProperties.GetName(textBlock2));
+                // Verify ExpandedExpander header content are included in the accessibility tree
+                Verify.AreEqual(AutomationProperties.GetAccessibilityView(textBlock1), AccessibilityView.Content);
+                Verify.AreEqual(AutomationProperties.GetAccessibilityView(textBlock2), AccessibilityView.Content);
 
-                // Verify ExpandedExpander content AutomationProperties.Name property is set
-                Verify.AreEqual("Content", AutomationProperties.GetName(button));
+                // Verify ExpandedExpander content is included in the accessibility tree
+                Verify.AreEqual(AutomationProperties.GetAccessibilityView(button), AccessibilityView.Content);
 
                 expander.IsExpanded = false;
                 Content.UpdateLayout();
 
-                // Verify ExpandedExpander content AutomationProperties.Name property is not visible once collapsed
-                Verify.AreNotEqual("Content", AutomationProperties.GetName(button));
+                // Verify ExpandedExpander content is not included in the accessibility tree and not readable once collapsed
+                Verify.AreNotEqual(AutomationProperties.GetAccessibilityView(button), AccessibilityView.Raw);
             });
         }
     }
