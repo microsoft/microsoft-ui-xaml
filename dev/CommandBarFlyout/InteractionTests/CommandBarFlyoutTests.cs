@@ -1007,23 +1007,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Button showCommandBarFlyoutButtonWithNoPrimaryCommands = FindElement.ByName<Button>("Show CommandBarFlyout with no primary commands");
 
                 Log.Comment("Tap on a button to show the CommandBarFlyout.");
-                InputHelper.Tap(showCommandBarFlyoutButtonWithNoPrimaryCommands);
+                showCommandBarFlyoutButtonWithNoPrimaryCommands.InvokeAndWait();
 
-                Log.Comment("Press Down key to move focus to first secondary command: Undo.");
-                KeyboardHelper.PressKey(Key.Down);
-                Wait.ForIdle();
-
-                Button undoButton1 = FindElement.ById<Button>("UndoButton6");
+                Button undoButton6 = FindElement.ById<Button>("UndoButton6");
                 var undoButtonElement = AutomationElement.FocusedElement;
-                Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton1.AutomationId);
+                Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton6.AutomationId);
 
-                Log.Comment("Press Tab key to move focus to first primary command: Redo.");
+                Log.Comment("Press Down key to move focus to second secondary command: Redo.");
                 KeyboardHelper.PressKey(Key.Down);
                 Wait.ForIdle();
 
-                Button cutButton1 = FindElement.ById<Button>("RedoButton6");
+                Button cutButton6 = FindElement.ById<Button>("RedoButton6");
                 var cutButtonElement = AutomationElement.FocusedElement;
-                Verify.AreEqual(cutButtonElement.Current.AutomationId, cutButton1.AutomationId);
+                Verify.AreEqual(cutButtonElement.Current.AutomationId, cutButton6.AutomationId);
+
+                Log.Comment("Press Down key to move focus to third secondary command: Select All.");
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+
+                Button selectall6 = FindElement.ById<Button>("SelectAllButton6");
+                var selectallElement = AutomationElement.FocusedElement;
+                Verify.AreEqual(selectallElement.Current.AutomationId, selectall6.AutomationId);
+
+                Log.Comment("Press Down key to move focus to fourth secondary command: Favorite.");
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+
+                Button favoriteToggleButton6 = FindElement.ById<Button>("FavoriteToggleButton6");
+                var favoriteToggleElement = AutomationElement.FocusedElement;
+                Verify.AreEqual(favoriteToggleElement.Current.AutomationId, favoriteToggleButton6.AutomationId);
+
+                Log.Comment("Press Down key to make sure commands loops back focus to first secondary command: Redo.");
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+
+                Verify.AreEqual(cutButtonElement.Current.AutomationId, cutButton6.AutomationId);
             }
+        }
     }
 }

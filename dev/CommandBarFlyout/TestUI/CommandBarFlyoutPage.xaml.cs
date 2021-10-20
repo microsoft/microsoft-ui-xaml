@@ -199,13 +199,6 @@ namespace MUXControlsTestApp
                         {
                             SetClearSecondaryCommandsFlyout(commandBarFlyout);
                         }
-
-                        var firstItem = commandBarFlyout.SecondaryCommands.FirstOrDefault();
-                        if (firstItem is AppBarButton button)
-                        {
-                            // Set focus to the first item.
-                            button.Focus(FocusState.Programmatic);
-                        }
                     }
                 }
             }
