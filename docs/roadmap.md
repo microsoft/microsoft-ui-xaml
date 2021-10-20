@@ -35,7 +35,7 @@ WinUI is planned to ship roughly every 4 months, with monthly pre-release builds
  
 ## WinUI 2 Controls Library
 
-The next release of the **WinUI 2 Controls Library** will be v2.8, ETA TBD. 
+The next release of the **WinUI 2 Controls Library** will be v2.8, aiming to release in early 2022. 
 
 WinUI 2.8 will include new Xaml features and fixes for UWP apps.  You can find a list of currently planned work in the [WinUI 2.8 milestone](https://github.com/microsoft/microsoft-ui-xaml/milestone/14).
 
