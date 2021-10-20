@@ -39,6 +39,13 @@ jobs:
     # Note: This task sets the 'vpackversion' variable that is used below.
 
   - task: PublishBuildArtifacts@1
+    displayName: Publish WinUIVpack Artifact
+    inputs:
+      PathtoPublish: $(System.ArtifactsDirectory)\drop\release\WinUIVpack
+      artifactName: WinUIVpack
+    # This artifact is not consumed by anyone, but it is useful for debugging purposes.
+
+  - task: PublishBuildArtifacts@1
     displayName: Publish CBS Artifact
     inputs:
       PathtoPublish: $(System.ArtifactsDirectory)\drop\release\cbs
@@ -46,6 +53,13 @@ jobs:
     # This artifact is not consumed by anyone, but it is useful for debugging purposes.
 
   # Push the VPacks:
+  - task: PkgESVPack@12
+    displayName: 'Push VPack Microsoft.UI.Xaml'
+    inputs:
+      sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\WinUIVpack'
+      description: Microsoft.UI.Xaml
+      pushPkgName: Microsoft.UI.Xaml
+      version: $(vpackversion)
   - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_x64'
     inputs:

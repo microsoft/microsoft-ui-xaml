@@ -29,16 +29,16 @@ jobs:
         buildPlatform: 'x86'
         buildConfiguration: 'Release'
         PGOBuildMode: 'Optimize'
-      # Release_x64:
-      #   buildPlatform: 'x64'
-      #   buildConfiguration: 'Release'
-      #   PGOBuildMode: 'Optimize'
-      # Release_Arm:
-      #   buildPlatform: 'arm'
-      #   buildConfiguration: 'Release'
-      # Release_Arm64:
-      #   buildPlatform: 'arm64'
-      #   buildConfiguration: 'Release'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+        PGOBuildMode: 'Optimize'
+      Release_Arm:
+        buildPlatform: 'arm'
+        buildConfiguration: 'Release'
+      Release_Arm64:
+        buildPlatform: 'arm64'
+        buildConfiguration: 'Release'
 
   variables:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
@@ -79,9 +79,9 @@ jobs:
 #     useReleaseTag: '$(MUXFinalRelease)'
 #     prereleaseVersionTag: prerelease
 
-# - template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
-#   parameters:
-#     dependsOn: Build
+- template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
+  parameters:
+    dependsOn: Build
 
 # # Build solution that depends on nuget package
 # - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
