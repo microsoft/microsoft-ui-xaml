@@ -75,7 +75,7 @@ private:
     winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
     winrt::CoreWindow::SizeChanged_revoker m_windowSizeChangedRevoker{};
     winrt::Grid::Loaded_revoker m_tailOcclusionGridLoadedRevoker{};
-    winrt::XamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
+    XamlRootChanged_revoker m_xamlRootChangedRevoker{};
     // Hold a strong ref to the xamlRoot while we're open so that the changed revoker works.
     // This can be removed when internal bug #21302432 is fixed.
     tracker_ref<winrt::XamlRoot> m_xamlRoot{ this };
