@@ -72,6 +72,8 @@ The Windows App SDK ships experimental, preview, and stable builds (with WinUI 3
 
 ![Winui 3 roadmap](images/winui3-roadmap1021.jpg)
 
+**Note: We have deprecated Windows App SDK 1.0 Preview 1 and 2 from NuGet due to a critical bug affecting the system PATH variable. Please view these [notes](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/preview-channel#important-issue-impacting-10-preview-1-and-preview-2) for the specific issue and mitigation.**
+
 For WinUI 2, you can plan to see frequent pre-releases (see our [Releases](https://github.com/microsoft/microsoft-ui-xaml/releases) page for more info), along with two stable releases this year.
 
 ![Winui 2 roadmap](images/winui2-roadmap1021.jpg)
