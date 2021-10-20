@@ -109,7 +109,7 @@ Blank -  Not available
 | Title bar customization                                | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
 | Fluent Shadows                                         | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
 | Input validation for data fields                       | &#128311;                              | &#128311;                             | &#128311;                           | &#128994;                         |
-| Supports multiple top-level windows on the same thread | &#128311;                              | &#128311;                             | &#128994;                           | &#128994;                         |
+| Supports multiple top-level windows on the same thread | &#128311;                              | &#128311;                             | &#128311;                           | &#128994;                         |
 | Support multiple top-level windows on separate threads | &#128311;                              | &#128311;                             | &#128311;                           | &#128994;                         |
 | Drag and drop                                          | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
 | RenderTargetBitmap                                     | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
