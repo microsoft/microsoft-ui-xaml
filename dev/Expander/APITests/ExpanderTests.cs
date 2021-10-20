@@ -39,10 +39,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                              xmlns:controls='using:Microsoft.UI.Xaml.Controls'> 
                              <controls:Expander x:Name ='ExpandedExpander' AutomationProperties.Name='ExpandedExpander' IsExpanded='True' Margin='12' HorizontalAlignment='Left'>
                                 <controls:Expander.Header>
-                                    <StackPanel Margin='0,14,0,16'>
-                                        <TextBlock AutomationProperties.Name='test' Text='This expander is expanded by default.'  Margin='0,0,0,4' />
-                                        <TextBlock Text='This is the second line of text.' />
-                                    </StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width='80'/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin='0,14,0,16'>
+                                            <TextBlock AutomationProperties.Name='test' Text='This expander is expanded by default.'  Margin='0,0,0,4' />
+                                            <TextBlock Text='This is the second line of text.' />
+                                        </StackPanel>
+                                        <ToggleSwitch Grid.Column='1'/>
+                                    </Grid>
                                 </controls:Expander.Header>
                                 <Button AutomationProperties.AutomationId = 'ExpandedExpanderContent'> Content </Button>
                              </controls:Expander>
@@ -60,9 +67,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var toggleButton = VisualTreeHelper.GetChild(grid, 0);
                 var toggleButtonGrid = VisualTreeHelper.GetChild(toggleButton, 0);
                 var contentPresenter = VisualTreeHelper.GetChild(toggleButtonGrid, 0);
-                var stackPanel = VisualTreeHelper.GetChild(contentPresenter, 0);
+                var grid2 = VisualTreeHelper.GetChild(contentPresenter, 0);
+                var stackPanel = VisualTreeHelper.GetChild(grid2, 0);
                 var textBlock1 = VisualTreeHelper.GetChild(stackPanel, 0) as TextBlock;
                 var textBlock2 = VisualTreeHelper.GetChild(stackPanel, 1) as TextBlock;
+                var toggleSwitch = VisualTreeHelper.GetChild(grid2, 1) as ToggleSwitch;
 
                 var border = VisualTreeHelper.GetChild(grid, 1);
                 var expanderContentBorder = VisualTreeHelper.GetChild(border, 0);
@@ -74,6 +83,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 // Verify ExpandedExpander header content are included in the accessibility tree
                 Verify.AreEqual(AutomationProperties.GetAccessibilityView(textBlock1), AccessibilityView.Content);
                 Verify.AreEqual(AutomationProperties.GetAccessibilityView(textBlock2), AccessibilityView.Content);
+                Verify.AreEqual(AutomationProperties.GetAccessibilityView(toggleSwitch), AccessibilityView.Content);
 
                 // Verify ExpandedExpander content is included in the accessibility tree
                 Verify.AreEqual(AutomationProperties.GetAccessibilityView(button), AccessibilityView.Content);
