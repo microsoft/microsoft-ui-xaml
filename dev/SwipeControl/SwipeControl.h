@@ -171,7 +171,7 @@ private:
     // Used on platforms where we have XamlRoot.
     RoutedEventHandler_revoker m_xamlRootPointerPressedEventRevoker{};
     RoutedEventHandler_revoker m_xamlRootKeyDownEventRevoker{};
-    winrt::IXamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
+    XamlRootChanged_revoker m_xamlRootChangedRevoker{};
 
     // Used on platforms where we don't have XamlRoot.
     winrt::ICoreWindow::PointerPressed_revoker m_coreWindowPointerPressedRevoker;
