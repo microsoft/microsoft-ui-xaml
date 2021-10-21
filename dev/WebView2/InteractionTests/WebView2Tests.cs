@@ -1829,8 +1829,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 ChooseTest("CoreWebView2Initialized_FailedTest", false /* waitForLoadCompleted */);
 
-                var browserExecutableKey = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(@"Software\Policies\Microsoft\Edge\WebView2\BrowserExecutableFolder", true);
-
+                // Imitate Edge not being installed by setting a reg key to point Edge at a location where the WebView2 runtime does not exist
+                // https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.865-prerelease#createcorewebview2environmentwithoptions
+                var browserExecutableKey = GetBrowserExecutableFolderKey();
+                Log.Comment("Setting key for MuxControlsTestApp.exe");
                 browserExecutableKey.SetValue("MuxControlsTestApp.exe", "c:\\badpath");
 
                 try
@@ -1840,6 +1842,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 finally
                 {
                     browserExecutableKey.DeleteValue("MuxControlsTestApp.exe");
+                    Log.Comment("Removed key for MuxControlsTestApp.exe");
                 }
             }
         }
