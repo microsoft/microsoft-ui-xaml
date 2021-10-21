@@ -168,6 +168,7 @@
                                                         <VisualState x:Name="Disabled">
                                                             <VisualState.Setters>
                                                                 <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource AppBarButtonForegroundDisabled}"/>
+                                                                <Setter Target="RootGrid.Background" Value="{ThemeResource AppBarButtonBackgroundDisabled}"/>
                                                             </VisualState.Setters>
                                                         </VisualState>
                                                     </VisualStateGroup>
@@ -194,6 +195,12 @@
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal"/>
 
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushDisabled}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                
                                 <VisualState x:Name="FlyoutOpen">
                                     <VisualState.Setters>
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AppBarButtonBackgroundPressed}"/>

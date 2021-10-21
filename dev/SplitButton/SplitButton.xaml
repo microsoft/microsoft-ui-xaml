@@ -65,6 +65,7 @@
                                                         <VisualState x:Name="Disabled">
                                                             <VisualState.Setters>
                                                                 <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource SplitButtonForegroundDisabled}"/>
+                                                                <Setter Target="RootGrid.Background" Value="{ThemeResource SplitButtonBackgroundDisabled}"/>
                                                             </VisualState.Setters>
                                                         </VisualState>
                                                     </VisualStateGroup>
@@ -91,6 +92,12 @@
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal"/>
+
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="Border.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushDisabled}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
 
                                 <VisualState x:Name="FlyoutOpen">
                                     <VisualState.Setters>
