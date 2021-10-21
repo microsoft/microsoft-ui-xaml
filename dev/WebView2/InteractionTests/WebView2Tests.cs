@@ -65,16 +65,75 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             task.Wait(TimeSpan.FromMinutes(10));
         }
 
-        // Ensure a suitable version of Anaheim Browser is present, if not use mini_installer to install one on the beta channel.
+        // Ensure a suitable version of Anaheim Browser is present, if not use mini_installer to install the runtime.
         public static void EnsureBrowser()
         {
-            bool needsBrowserInstall = true;
+            // If a previous run of CoreWebView2Initialized_FailedTest failed to clean up the
+            // fake browser executable folder key it set, remove it here.
+            RemoveFakeBrowserExecutableFolderKey();
 
-            // 1. Get installed Anaheim Browser (or WebView2Runtime) Build version info
+            // 1. Get installed Anaheim Browser (or WebView2 Runtime) Build version info.
+            int browserBuildVersion = GetInstalledBrowserVersion();
+
+            // 2. Get WebView2Loader.dll Build version info.
+            int loaderBuildVersion = GetLoaderBuildVersion();
+
+            // 3. If a runtime isn't installed or the SDK and runtime aren't compatible, install a compatible runtime.
+            bool hasCompatibleRuntimeInstalled = GetHasCompatibleRuntimeInstalled(browserBuildVersion, loaderBuildVersion);
+
+            if (!hasCompatibleRuntimeInstalled)
+            {
+                // Print if there are any Edge processes running that might interfere with installation
+                // (specifically, MicrosoftEdge<Version> or MicrosoftEdgeUpdate).
+                foreach (var process in Process.GetProcesses())
+                {
+                    if (process.ProcessName.ToLower().ToString().Contains("edge"))
+                    {
+                        Log.Comment("Note: process '{0}' ({1}) is running", process.ProcessName, process.Id);
+                    }
+                }
+
+                // This installation can sometimes fail, so we'll try a number of times before failing out.
+                int attemptsLeft = 5;
+                bool successfullyInstalled = false;
+                while (attemptsLeft > 0)
+                {
+                    attemptsLeft--;
+                    successfullyInstalled = TryInstallingBrowser(attemptsLeft);
+                    if (successfullyInstalled) break;
+                }
+                if (attemptsLeft == 0 && !successfullyInstalled)
+                {
+                    Log.Error("WebView2Tests Init: Browser installation failed, out of retries.");
+                }
+            }
+        }
+
+        private static void RemoveFakeBrowserExecutableFolderKey()
+        {
+            var browserExecutableKey = GetBrowserExecutableFolderKey();
+            var browserExecutableFolder = browserExecutableKey.GetValue(TestApplicationInfo.MUXControlsTestApp.ProcessName);
+            if (browserExecutableFolder != null)
+            {
+                browserExecutableKey.DeleteValue(TestApplicationInfo.MUXControlsTestApp.ProcessName);
+                Log.Comment("Removed key for {0}", TestApplicationInfo.MUXControlsTestApp.ProcessName);
+            }
+        }
+
+        private static int GetInstalledBrowserVersion()
+        {
             string browserVersionString = string.Empty;
             IntPtr browserVersionPtr;
             int retval = NativeMethods.GetAvailableCoreWebView2BrowserVersionString(string.Empty, out browserVersionPtr);
-            if (retval == (int)NativeMethods.HResults.S_OK && browserVersionPtr != IntPtr.Zero)
+            if (retval != (int)NativeMethods.HResults.S_OK)
+            {
+                Log.Warning("WebView2Tests Init: Error: got hresult {0} retrieving GetAvailableCoreWebView2BrowserVersionString", retval);
+            }
+            else if (browserVersionPtr == IntPtr.Zero)
+            {
+                Log.Warning("WebView2Tests Init: GetAvailableCoreWebView2BrowserVersionString returned version of 0");
+            }
+            else
             {
                 // eg "80.0.361.48 beta", 361 is the build version
                 browserVersionString = Marshal.PtrToStringUni(browserVersionPtr);
@@ -94,8 +153,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 installedBrowser = string.Format("version {0} [build version: {1}]", browserVersionString, browserBuildVersion);
             }
             Log.Comment("WebView2Tests Init: Found Anaheim Browser/WV2Runtime: {0}", installedBrowser);
+            return browserBuildVersion;
+        }
 
-            // 2. Get WebView2Loader.dll Build version info
+        private static int GetLoaderBuildVersion()
+        {
             int loaderBuildVersion = 0;
             string loaderPath = Path.Combine(Environment.CurrentDirectory, NativeMethods.LoaderName);
 
@@ -114,53 +176,63 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 Log.Error("WebView2Tests Init: could not find loader at {0} [exception: {1}]", loaderPath, e.ToString());
             }
+            return loaderBuildVersion;
+        }
 
+        private static bool GetHasCompatibleRuntimeInstalled(int browserBuildVersion, int loaderBuildVersion)
+        {
+            bool hasCompatibleRuntime = false;
             // The full versions of browser/runtime and webview2 SDK are not directly comparable: 
             // Browser/Runtime version ex: 80.0.361.48
             // WebView2 SDK version ex: 0.8.355
             // Webview2Loader compares the build versions (361 and 355 in above example), we do so here as well
-            if (browserBuildVersion >= loaderBuildVersion
-                || (loaderBuildVersion == 721 && browserBuildVersion >= 705)   // [1/26/21]: Special case: For SDK 1.0.721-prerelease, can use browser 88.0.705.0 (last available 88 release, confirmed good by Anaheim Team)
-                || (loaderBuildVersion == 865 && browserBuildVersion >= 818)
+            if (browserBuildVersion >= loaderBuildVersion ||
+                // [1/26/21]: Special case: For SDK 1.0.721-prerelease, can use browser 88.0.705.0 (last available 88 release, confirmed good by Anaheim Team)
+                (loaderBuildVersion == 721 && browserBuildVersion >= 705)
                )
             {
                 Log.Comment("WebView2Tests Init: Installed Anaheim build will be used for testing... ");
-                needsBrowserInstall = false;
+                hasCompatibleRuntime = true;
             }
+            return hasCompatibleRuntime;
+        }
 
-            if (needsBrowserInstall)
-            {
-                Log.Comment("Downloading anaheim installer...");
+        private static bool TryInstallingBrowser(int attemptsLeft)
+        {
+            Log.Comment("Downloading anaheim installer...");
                 DownloadFile("https://go.microsoft.com/fwlink/p/?LinkId=2124703",
                     "MicrosoftEdgeWebview2Setup.exe");
-                // This installation can sometimes fail, so we'll try a number of times before failing out.
-                int attemptsLeft = 5;
-                
-                while (attemptsLeft > 0)
+            bool successfullyInstalled = false;
+            string installer = "MicrosoftEdgeWebview2Setup.exe";
+            // Note: Starting with SDK 0.9.488 / Edge version 83, evergreen WebView2 no longer targets the Stable
+            //       browser channel. Instead, it targets another set of binaries, branded Evergreen WebView2 Runtime.
+            //       (See https://docs.microsoft.com/en-us/microsoft-edge/webview2/releasenotes).
+            string installerArgs_WV2Runtime = "/silent /install";
+            Log.Comment(@"WebView2Tests Init: Installing WebView2 runtime: '{0} {1}'", installer, installerArgs_WV2Runtime);
+            ProcessStartInfo installerStartInfo = new ProcessStartInfo(installer, installerArgs_WV2Runtime);
+
+            Process installerProcess = Process.Start(installerStartInfo);
+            installerProcess.WaitForExit();
+
+            if (installerProcess.ExitCode == 0)
+            {
+                Log.Comment("WebView2Tests Init: {0} exited successfully", installer);
+                successfullyInstalled = true;
+            }
+            else
+            {
+                Log.Warning("WebView2Tests Init: {0} failed with exit code {1}! Attempts left: {2}", installer, installerProcess.ExitCode, attemptsLeft);
+                // Print information about some of the error codes we sometimes hit
+                if (installerProcess.ExitCode == 4)
                 {
-                    string installer = "MicrosoftEdgeWebview2Setup.exe";
-                    // Note: Starting with SDK 0.9.488 / Edge version 83, evergreen WebView no longer
-                    //       targets the Stable browser channel. Instead, it targets another set of binaries, 
-                    //       branded Evergreen WebView2 Runtime. (see https://docs.microsoft.com/en-us/microsoft-edge/webview2/releasenotes)
-                    string installerArgs_WV2Runtime = "/silent /install";
-                    Log.Comment(@"WebView2Tests Init: Installing WebView2 runtime: '{0} {1}'", installer, installerArgs_WV2Runtime);
-                    ProcessStartInfo installerStartInfo = new ProcessStartInfo(installer, installerArgs_WV2Runtime);
-
-                    Process installerProcess = Process.Start(installerStartInfo);
-                    installerProcess.WaitForExit();
-
-                    if (installerProcess.ExitCode == 0)
-                    {
-                        Log.Comment("WebView2Tests Init: {0} exited successfully");
-                        break;
-                    }
-                    else
-                    {
-                        Log.Error("WebView2Tests Init: {0} failed with exit code {1}! Attempts left: {2}", installer, installerProcess.ExitCode, attemptsLeft);
-                        attemptsLeft--;
-                    }
+                    Log.Comment("Exit code 4 = HIGHER_VERSION_EXISTS, Higher version already exists");
+                }
+                else if (installerProcess.ExitCode == 60)
+                {
+                    Log.Comment("Exit code 60 = SETUP_SINGLETON_ACQUISITION_FAILED, The setup process could not acquire the exclusive right to modify the installation.");
                 }
             }
+            return successfullyInstalled;
         }
 
         [TestCleanup]
@@ -1770,6 +1842,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     browserExecutableKey.DeleteValue("MuxControlsTestApp.exe");
                 }
             }
+        }
+
+        private static Microsoft.Win32.RegistryKey GetBrowserExecutableFolderKey()
+        {
+            return Microsoft.Win32.Registry.LocalMachine.CreateSubKey(@"Software\Policies\Microsoft\Edge\WebView2\BrowserExecutableFolder", true);
         }
 
         [TestMethod]
