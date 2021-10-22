@@ -59,10 +59,8 @@ void AnimatedIcon::OnApplyTemplate()
                 path.Visibility(winrt::Visibility::Collapsed);
             }
         }
-        if (auto const visual = m_animatedVisual.get())
-        {
-            winrt::ElementCompositionPreview::SetElementChildVisual(panel, visual.RootVisual());
-        }
+
+        winrt::ElementCompositionPreview::SetElementChildVisual(panel, visual);
 
         TrySetForegroundProperty();
     }
