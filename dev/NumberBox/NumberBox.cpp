@@ -276,6 +276,7 @@ void NumberBox::OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedE
     CoerceValue();
 
     UpdateSpinButtonEnabled();
+    ReevaluateForwardedUIAName();
 }
 
 void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -284,6 +285,7 @@ void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedE
     CoerceValue();
 
     UpdateSpinButtonEnabled();
+    ReevaluateForwardedUIAName();
 }
 
 void NumberBox::OnSmallChangePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -362,19 +364,25 @@ void NumberBox::OnAutomationPropertiesNamePropertyChanged(const winrt::Dependenc
 void NumberBox::ReevaluateForwardedUIAName()
 {
     if (const auto textBox = m_textBox.get())
-    {
+    {    
         const auto name = winrt::AutomationProperties::GetName(*this);
+        const auto minimum = Minimum() == -std::numeric_limits<double>::max() ?
+            winrt::hstring{} :
+            winrt::hstring{ ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMinimumValueStatus) + winrt::to_hstring(Minimum()) };
+        const auto maximum = Maximum() == std::numeric_limits<double>::max() ?
+            winrt::hstring{} :
+            winrt::hstring{ ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMaximumValueStatus) + winrt::to_hstring(Maximum()) };      
         if (!name.empty())
-        {
+        {            
             // AutomationProperties.Name is a non empty string, we will use that value.
-            winrt::AutomationProperties::SetName(textBox, name);
+            winrt::AutomationProperties::SetName(textBox, name + minimum + maximum );
         }
         else
         {
             if (const auto headerAsString = Header().try_as<winrt::IReference<winrt::hstring>>())
             {
                 // Header is a string, we can use that as our UIA name.
-                winrt::AutomationProperties::SetName(textBox, headerAsString.Value());
+                winrt::AutomationProperties::SetName(textBox, headerAsString.Value() + minimum + maximum );
             }
         }
     }
