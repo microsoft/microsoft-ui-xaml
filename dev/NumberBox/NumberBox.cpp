@@ -15,7 +15,6 @@ static constexpr wstring_view c_numberBoxHeaderName{ L"HeaderContentPresenter"sv
 static constexpr wstring_view c_numberBoxDownButtonName{ L"DownSpinButton"sv };
 static constexpr wstring_view c_numberBoxUpButtonName{ L"UpSpinButton"sv };
 static constexpr wstring_view c_numberBoxTextBoxName{ L"InputBox"sv };
-static constexpr wstring_view c_numberBoxPopupButtonName{ L"PopupButton"sv };
 static constexpr wstring_view c_numberBoxPopupName{ L"UpDownPopup"sv };
 static constexpr wstring_view c_numberBoxPopupDownButtonName{ L"PopupDownSpinButton"sv };
 static constexpr wstring_view c_numberBoxPopupUpButtonName{ L"PopupUpSpinButton"sv };
