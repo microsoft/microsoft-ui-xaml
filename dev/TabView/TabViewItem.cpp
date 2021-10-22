@@ -9,6 +9,7 @@
 #include "ResourceAccessor.h"
 #include "XamlControlsResources.h"
 #include "SharedHelpers.h"
+#include "Utils.h"
 
 static constexpr auto c_overlayCornerRadiusKey = L"OverlayCornerRadius"sv;
 
@@ -95,6 +96,17 @@ void TabViewItem::OnApplyTemplate()
         m_tabDragCompletedRevoker = tabView.TabDragCompleted(winrt::auto_revoke, { this, &TabViewItem::OnTabDragCompleted });
     }
 
+    winrt::FrameworkElement root = GetTemplateChildT<winrt::FrameworkElement>(L"LayoutRoot", controlProtected);
+    if (root)
+    {
+        winrt::VisualStateGroup commonGroup = VisualStateUtil::GetVisualStateGroup(root, L"CommonStates");
+        if (commonGroup)
+        {
+            m_commonVisualStateChangedRevoker = commonGroup.CurrentStateChanged(winrt::auto_revoke, { this, &TabViewItem::OnCommonVisualStateChanged });
+        }
+    }
+
+
     UpdateCloseButton();
     UpdateForeground();
     UpdateWidthModeVisualState();    
@@ -107,6 +119,16 @@ void TabViewItem::OnLoaded(const winrt::IInspectable& sender, const winrt::Route
         const auto internalTabView = winrt::get_self<TabView>(tabView);
         const auto index = internalTabView->IndexFromContainer(*this);
         internalTabView->SetTabSeparatorOpacity(index);
+    }
+}
+
+void TabViewItem::OnCommonVisualStateChanged(const winrt::IInspectable& sender, const winrt::VisualStateChangedEventArgs& args)
+{
+    // our base class ListViewItem manages Disabled visual state in separate group, but we placed it into common states, and need to adjust for this
+    const auto newStateName = args.NewState().Name();
+    if (!IsEnabled() && newStateName != L"SelectedDisabled" && newStateName != L"Disabled")
+    {
+        winrt::VisualStateManager::GoToState(*this, IsSelected() ? L"SelectedDisabled" : L"Disabled", false);
     }
 }
 

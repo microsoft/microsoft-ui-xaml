@@ -63,9 +63,11 @@ private:
     winrt::ButtonBase::Click_revoker m_closeButtonClickRevoker{};
     winrt::TabView::TabDragStarting_revoker m_tabDragStartingRevoker{};
     winrt::TabView::TabDragCompleted_revoker m_tabDragCompletedRevoker{};
+    winrt::VisualStateGroup::CurrentStateChanged_revoker m_commonVisualStateChangedRevoker{};
 
     void OnCloseButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
+    void OnCommonVisualStateChanged(const winrt::IInspectable& sender, const winrt::VisualStateChangedEventArgs& args);
     void OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
 

@@ -24,6 +24,7 @@
                 <CheckBox x:Name="HandleTabItemCloseRequestedCheckBox" AutomationProperties.Name="HandleTabItemCloseRequestedCheckBox" Content="Handle TabViewItem close"/>
                 <CheckBox x:Name="IsAddButtonVisibleCheckBox" AutomationProperties.Name="IsAddButtonVisibleCheckBox" Content="Add button visible" IsChecked="{x:Bind Tabs.IsAddTabButtonVisible, Mode=TwoWay}"/>
                 <CheckBox x:Name="IsDisabledTabVisibleCheckBox" AutomationProperties.Name="IsDisabledTabVisibleCheckBox" Checked="IsDisabledTabVisibleCheckBox_CheckChanged" Unchecked="IsDisabledTabVisibleCheckBox_CheckChanged" Content="Disabled tab visible" IsChecked="True"/>
+                <CheckBox x:Name="IsTabViewEnabled" AutomationProperties.Name="IsTabViewEnabledCheckBox" Content="IsEnabled on TabView" IsChecked="{x:Bind Tabs.IsEnabled, Mode=TwoWay}"/>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                     <TextBlock VerticalAlignment="Center">Tab Width:</TextBlock>
                     <ComboBox x:Name="TabWidthComboBox" AutomationProperties.Name="TabWidthComboBox" Margin="4,0,0,0" SelectedIndex="0" SelectionChanged="TabWidthComboBox_SelectionChanged">
