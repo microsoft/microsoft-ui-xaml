@@ -161,7 +161,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                VerifyUIAName("Some UIA nameMinimum0Maximum10");
+                VerifyUIAName("Some UIA name Minimum0 Maximum10");
             });
 
             void VerifyUIAName(string value)
