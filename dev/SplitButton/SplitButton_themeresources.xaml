@@ -107,7 +107,7 @@
             <StaticResource x:Key="SplitButtonBorderBrushPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushPressed" ResourceKey="SystemColorButtonTextColorBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
-            <StaticResource x:Key="SplitButtonBorderBrushDivider" ResourceKey="SystemControlForegroundTransparentBrush" />
+            <StaticResource x:Key="SplitButtonBorderBrushDivider" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushChecked" ResourceKey="SystemColorButtonTextColorBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedPointerOver" ResourceKey="SystemColorButtonTextColorBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedPressed" ResourceKey="SystemColorButtonFaceColorBrush" />
