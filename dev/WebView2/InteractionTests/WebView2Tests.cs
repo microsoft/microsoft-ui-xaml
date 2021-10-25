@@ -65,14 +65,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             task.Wait(TimeSpan.FromMinutes(10));
         }
 
-        // Ensure a suitable version of Anaheim Browser is present, if not use mini_installer to install the runtime.
+        // Ensure a suitable version of Edge browser or WebView2 runtime is present. If not, get an installer from the web and install it.
         public static void EnsureBrowser()
         {
             // If a previous run of CoreWebView2Initialized_FailedTest failed to clean up the
             // fake browser executable folder key it set, remove it here.
             RemoveFakeBrowserExecutableFolderKey();
 
-            // 1. Get installed Anaheim Browser (or WebView2 Runtime) Build version info.
+            // 1. Get installed Edge browser (or WebView2 Runtime) build version info.
             int browserBuildVersion = GetInstalledBrowserVersion();
 
             // 2. Get WebView2Loader.dll Build version info.
@@ -152,7 +152,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 browserBuildVersion = int.Parse(browserVersionString.Split('.')[2]);
                 installedBrowser = string.Format("version {0} [build version: {1}]", browserVersionString, browserBuildVersion);
             }
-            Log.Comment("WebView2Tests Init: Found Anaheim Browser/WV2Runtime: {0}", installedBrowser);
+            Log.Comment("WebView2Tests Init: Found Edge browser/WV2Runtime: {0}", installedBrowser);
             return browserBuildVersion;
         }
 
@@ -182,16 +182,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private static bool GetHasCompatibleRuntimeInstalled(int browserBuildVersion, int loaderBuildVersion)
         {
             bool hasCompatibleRuntime = false;
-            // The full versions of browser/runtime and webview2 SDK are not directly comparable: 
+            // The full versions of browser/runtime and WebView2 SDK are not directly comparable: 
             // Browser/Runtime version ex: 80.0.361.48
             // WebView2 SDK version ex: 0.8.355
             // Webview2Loader compares the build versions (361 and 355 in above example), we do so here as well
             if (browserBuildVersion >= loaderBuildVersion ||
-                // [1/26/21]: Special case: For SDK 1.0.721-prerelease, can use browser 88.0.705.0 (last available 88 release, confirmed good by Anaheim Team)
+                // [1/26/21]: Special case: For SDK 1.0.721-prerelease, can use browser 88.0.705.0
                 (loaderBuildVersion == 721 && browserBuildVersion >= 705)
                )
             {
-                Log.Comment("WebView2Tests Init: Installed Anaheim build will be used for testing... ");
+                Log.Comment("WebView2Tests Init: Installed Edge build will be used for testing... ");
                 hasCompatibleRuntime = true;
             }
             return hasCompatibleRuntime;
@@ -199,7 +199,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private static bool TryInstallingBrowser(int attemptsLeft)
         {
-            Log.Comment("Downloading anaheim installer...");
+            Log.Comment("Downloading Edge installer...");
                 DownloadFile("https://go.microsoft.com/fwlink/p/?LinkId=2124703",
                     "MicrosoftEdgeWebview2Setup.exe");
             bool successfullyInstalled = false;
@@ -683,7 +683,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // For each of the Focus_* tests: 
         // 1) We Tab/Shift+Tab/Click amongst xaml controls(x1, x2) and web controls(w1, w2). 
         // 2) After each such change:
-        //     a. Validate Anaheim focus state by hovering over UpdateAnaheimFocusTextBlock, which triggers a tooltip handler 
+        //     a. Validate Edge focus state by hovering over UpdateAnaheimFocusTextBlock, which triggers a tooltip handler 
         //        in the (Xaml) test app, which tests the color of a rectangle in the webpage that reflects the focused web control(w1, w2, or n/a).
         //     b. Validate Xaml focus using MITA API's directly. Since WebView2 doesn't have accessibility hooked up yet,
         //       the FocusAcquiredWaiter will not work correctly with it. Such validation is temporarily commented out 
@@ -2890,7 +2890,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             public const string LoaderName = "WebView2Loader.dll";
             [DllImport(LoaderName, CharSet = CharSet.Unicode)]
-            // HRESULT WINAPI GetAvailableCoreWebView2BrowserVersionString(PCWSTR browserExecutableFolder, PWSTR* versionInfo) 
             public static extern int GetAvailableCoreWebView2BrowserVersionString(string browserExecutableFolder, out IntPtr versionInfo);
 
             public enum HResults : long
