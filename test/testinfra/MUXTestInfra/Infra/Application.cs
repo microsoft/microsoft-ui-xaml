@@ -274,7 +274,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 catch (Exception ex)
                 {
                     Log.Comment("Failed to launch app. Exception: " + ex.ToString());
-                    
+
                     if (retries < MaxLaunchRetries)
                     {
                         Log.Comment("UAPApp.Launch might not have waited long enough, trying again {0}", retries);
@@ -354,7 +354,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             // 3. Use the Process obj we found when this Application object was initialized.
             // This is just a sanity check. Under normal circumstances, there should only be 
             // one app process. 
-            
+
             var appProcesses = Process.GetProcessesByName(_appProcessName).ToList();
 
             if (appWindowsProccessId != -1)
@@ -541,103 +541,102 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 #if !USING_TAEF
         private void InstallTestAppIfNeeded()
         {
-            return;
-            //string mostRecentlyBuiltAppx = string.Empty;
-            //DateTime timeMostRecentlyBuilt = DateTime.MinValue;
+            string mostRecentlyBuiltAppx = string.Empty;
+            DateTime timeMostRecentlyBuilt = DateTime.MinValue;
 
-            //var exclude = new[] { "Microsoft.NET.CoreRuntime", "Microsoft.VCLibs" };
+            var exclude = new[] { "Microsoft.NET.CoreRuntime", "Microsoft.VCLibs" };
 
-            //var files = Directory.GetFiles(_baseAppxDir, $"{_packageName}*.appx", SearchOption.AllDirectories).ToList();
-            //files.AddRange(Directory.GetFiles(_baseAppxDir, $"{_packageName}*.msix", SearchOption.AllDirectories));
+            var files = Directory.GetFiles(_baseAppxDir, $"{_packageName}*.appx", SearchOption.AllDirectories).ToList();
+            files.AddRange(Directory.GetFiles(_baseAppxDir, $"{_packageName}*.msix", SearchOption.AllDirectories));
 
-            //var filteredFiles = files.Where(f => !exclude.Any(Path.GetFileNameWithoutExtension(f).Contains));
+            var filteredFiles = files.Where(f => !exclude.Any(Path.GetFileNameWithoutExtension(f).Contains));
 
-            //if (filteredFiles.Count() == 0)
-            //{
-            //    throw new Exception(string.Format("Failed to find '*.appx' or '*.msix' in {0}'!", _baseAppxDir));
-            //}
+            if (filteredFiles.Count() == 0)
+            {
+                throw new Exception(string.Format("Failed to find '*.appx' or '*.msix' in {0}'!", _baseAppxDir));
+            }
 
-            //foreach (string file in filteredFiles)
-            //{
-            //    DateTime fileWriteTime = File.GetLastWriteTime(file);
+            foreach (string file in filteredFiles)
+            {
+                DateTime fileWriteTime = File.GetLastWriteTime(file);
 
-            //    if (fileWriteTime > timeMostRecentlyBuilt)
-            //    {
-            //        timeMostRecentlyBuilt = fileWriteTime;
-            //        mostRecentlyBuiltAppx = file;
-            //    }
-            //}
+                if (fileWriteTime > timeMostRecentlyBuilt)
+                {
+                    timeMostRecentlyBuilt = fileWriteTime;
+                    mostRecentlyBuiltAppx = file;
+                }
+            }
 
-            //PackageManager packageManager = new PackageManager();
-            //DeploymentResult result = null;
+            PackageManager packageManager = new PackageManager();
+            DeploymentResult result = null;
 
-            //var installedPackages = packageManager.FindPackagesForUser(string.Empty, _packageFamilyName);
-            //foreach (var installedPackage in installedPackages)
-            //{
-            //    Log.Comment("Test AppX package already installed. Removing existing package by name: {0}", installedPackage.Id.FullName);
+            var installedPackages = packageManager.FindPackagesForUser(string.Empty, _packageFamilyName);
+            foreach (var installedPackage in installedPackages)
+            {
+                Log.Comment("Test AppX package already installed. Removing existing package by name: {0}", installedPackage.Id.FullName);
 
-            //    AutoResetEvent removePackageCompleteEvent = new AutoResetEvent(false);
-            //    var removePackageOperation = packageManager.RemovePackageAsync(installedPackage.Id.FullName);
-            //    removePackageOperation.Completed = (operation, status) =>
-            //    {
-            //        if (status != AsyncStatus.Started)
-            //        {
-            //            result = operation.GetResults();
-            //            removePackageCompleteEvent.Set();
-            //        }
-            //    };
-            //    removePackageCompleteEvent.WaitOne();
+                AutoResetEvent removePackageCompleteEvent = new AutoResetEvent(false);
+                var removePackageOperation = packageManager.RemovePackageAsync(installedPackage.Id.FullName);
+                removePackageOperation.Completed = (operation, status) =>
+                {
+                    if (status != AsyncStatus.Started)
+                    {
+                        result = operation.GetResults();
+                        removePackageCompleteEvent.Set();
+                    }
+                };
+                removePackageCompleteEvent.WaitOne();
 
-            //    if (!string.IsNullOrEmpty(result.ErrorText))
-            //    {
-            //        Log.Error("Removal failed!");
-            //        Log.Error("Package removal ActivityId = {0}", result.ActivityId);
-            //        Log.Error("Package removal ErrorText = {0}", result.ErrorText);
-            //        Log.Error("Package removal ExtendedErrorCode = {0}", result.ExtendedErrorCode);
-            //    }
-            //    else
-            //    {
-            //        Log.Comment("Removal successful.");
-            //    }
-            //}
+                if (!string.IsNullOrEmpty(result.ErrorText))
+                {
+                    Log.Error("Removal failed!");
+                    Log.Error("Package removal ActivityId = {0}", result.ActivityId);
+                    Log.Error("Package removal ErrorText = {0}", result.ErrorText);
+                    Log.Error("Package removal ExtendedErrorCode = {0}", result.ExtendedErrorCode);
+                }
+                else
+                {
+                    Log.Comment("Removal successful.");
+                }
+            }
 
-            //Log.Comment("Installing AppX...");
+            Log.Comment("Installing AppX...");
 
-            //Log.Comment("Checking if the app's certificate is installed...");
+            Log.Comment("Checking if the app's certificate is installed...");
 
-            //// If the certificate for the app is not present, installing it requires elevation.
-            //// We'll run Add-AppDevPackage.ps1 without -Force in that circumstance so the user
-            //// can be prompted to allow elevation.  We don't want to run it without -Force all the time,
-            //// as that prompts the user to hit enter at the end of the install, which is an annoying
-            //// and unnecessary step. The parameter is the SHA-1 hash of the certificate.
+            // If the certificate for the app is not present, installing it requires elevation.
+            // We'll run Add-AppDevPackage.ps1 without -Force in that circumstance so the user
+            // can be prompted to allow elevation.  We don't want to run it without -Force all the time,
+            // as that prompts the user to hit enter at the end of the install, which is an annoying
+            // and unnecessary step. The parameter is the SHA-1 hash of the certificate.
 
-            //var certutilProcess = Process.Start(new ProcessStartInfo("certutil.exe",
-            //        string.Format("-verifystore TrustedPeople {0}", _certSerialNumber)) {
-            //    UseShellExecute = true
-            //});
-            //certutilProcess.WaitForExit();
+            var certutilProcess = Process.Start(new ProcessStartInfo("certutil.exe",
+                    string.Format("-verifystore TrustedPeople {0}", _certSerialNumber)) {
+                UseShellExecute = true
+            });
+            certutilProcess.WaitForExit();
 
-            //if(certutilProcess.ExitCode == 0)
-            //{
-            //    Log.Comment("Certificate is installed. Installing app...");
-            //}
-            //else
-            //{
-            //    Log.Comment("Certificate is not installed. Installing app and certificate...");
-            //}
+            if(certutilProcess.ExitCode == 0)
+            {
+                Log.Comment("Certificate is installed. Installing app...");
+            }
+            else
+            {
+                Log.Comment("Certificate is not installed. Installing app and certificate...");
+            }
 
-            //var powershellProcess = Process.Start(new ProcessStartInfo("powershell",
-            //        string.Format("-ExecutionPolicy Unrestricted -File {0}\\Add-AppDevPackage.ps1 {1}",
-            //            Path.GetDirectoryName(mostRecentlyBuiltAppx),
-            //            certutilProcess.ExitCode == 0 ? "-Force" : "")) {
-            //    UseShellExecute = true
-            //});
-            //powershellProcess.WaitForExit();
+            var powershellProcess = Process.Start(new ProcessStartInfo("powershell",
+                    string.Format("-ExecutionPolicy Unrestricted -File {0}\\Add-AppDevPackage.ps1 {1}",
+                        Path.GetDirectoryName(mostRecentlyBuiltAppx),
+                        certutilProcess.ExitCode == 0 ? "-Force" : "")) {
+                UseShellExecute = true
+            });
+            powershellProcess.WaitForExit();
 
-            //if (powershellProcess.ExitCode != 0)
-            //{
-            //    //throw new Exception(string.Format("Failed to install AppX for {0}!", _packageName));
-            //}
+            if (powershellProcess.ExitCode != 0)
+            {
+                throw new Exception(string.Format("Failed to install AppX for {0}!", _packageName));
+            }
         }
 #endif
 
