@@ -90,4 +90,5 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\InfoBadge\APITests\InfoBadge_APITests.projitems" Label="Shared" Condition="$(FeatureInfoBadgeEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\WebView2\TestUI\WebView2_TestUI.projitems" Label="Shared" Condition="$(FeatureWebView2Enabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ProgressRing\APITests\ProgressRing_APITests.projitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true'" />
-</Project>
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ProgressBar\APITests\ProgressBar_APITests.projitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true'" />
+</Project> 
