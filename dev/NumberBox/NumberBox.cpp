@@ -371,7 +371,8 @@ void NumberBox::ReevaluateForwardedUIAName()
             winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMinimumValueStatus) + winrt::to_hstring(Minimum()) };
         const auto maximum = Maximum() == std::numeric_limits<double>::max() ?
             winrt::hstring{} :
-            winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMaximumValueStatus) + winrt::to_hstring(Maximum()) };      
+            winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMaximumValueStatus) + winrt::to_hstring(Maximum()) };
+
         if (!name.empty())
         {
             // AutomationProperties.Name is a non empty string, we will use that value.
