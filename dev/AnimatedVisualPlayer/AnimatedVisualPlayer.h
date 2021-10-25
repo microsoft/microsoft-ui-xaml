@@ -27,6 +27,17 @@ struct AnimatedVisualPlayer:
     void SetProgress(double progress);
     void Stop();
 
+    // Destroys all composition animation that were created for this visual.
+    // It will effectively freeze the visual so that it consumes less CPU while idle.
+    void Freeze();
+
+    // Re-instantiates all composition animations to prepare animated visual
+    // before playing new animation.
+    void Unfreeze();
+
+    // Indicates if current animated visual supports freezing.
+    bool CanFreeze();
+
     // FrameworkElement overrides
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
     winrt::Size ArrangeOverride(winrt::Size const& finalSize);

@@ -934,6 +934,22 @@ void AnimatedVisualPlayer::UpdateContent()
     }
 }
 
+void AnimatedVisualPlayer::Freeze() {
+    if (auto animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>()) {
+        animatedVisual2.DestroyAnimations();
+    }
+}
+
+void AnimatedVisualPlayer::Unfreeze() {
+    if (auto animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>()) {
+        animatedVisual2.InstantiateAnimations();
+    }
+}
+
+bool AnimatedVisualPlayer::CanFreeze() {
+    return m_animatedVisual.try_as<winrt::IAnimatedVisual2>() != nullptr;
+}
+
 void AnimatedVisualPlayer::LoadFallbackContent()
 {
     MUX_ASSERT(m_isFallenBack);

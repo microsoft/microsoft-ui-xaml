@@ -13,6 +13,14 @@ interface IAnimatedVisual
 
 [MUX_PUBLIC]
 [webhosthidden]
+interface IAnimatedVisual2 requires IAnimatedVisual
+{
+    void InstantiateAnimations();
+    void DestroyAnimations();
+};
+
+[MUX_PUBLIC]
+[webhosthidden]
 interface IAnimatedVisualSource
 {
     IAnimatedVisual TryCreateAnimatedVisual(
