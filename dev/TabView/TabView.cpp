@@ -678,15 +678,10 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
                 }
 
             }
-            // Last item removed, update sizes
-            // The index of the last element is "Size() - 1", but in TabItems, it is already removed.
             if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
             {
                 m_updateTabWidthOnPointerLeave = true;
-                if (args.Index() == TabItems().Size())
-                {
-                    UpdateTabWidths(true, false);
-                }
+                UpdateTabWidths(true, false);
             }
         }
         else
