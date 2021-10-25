@@ -11,7 +11,7 @@ interface IAnimatedVisual
     Windows.Foundation.TimeSpan Duration{ get; };
 };
 
-[MUX_PUBLIC]
+[MUX_PREVIEW]
 [webhosthidden]
 interface IAnimatedVisual2 requires IAnimatedVisual
 {
