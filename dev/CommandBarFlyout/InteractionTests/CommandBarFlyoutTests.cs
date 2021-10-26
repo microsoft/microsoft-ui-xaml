@@ -1013,35 +1013,55 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var undoButtonElement = AutomationElement.FocusedElement;
                 Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton6.AutomationId);
 
-                Log.Comment("Press Down key to move focus to second secondary command: Redo.");
-                KeyboardHelper.PressKey(Key.Down);
-                Wait.ForIdle();
-
-                Button cutButton6 = FindElement.ById<Button>("RedoButton6");
-                var cutButtonElement = AutomationElement.FocusedElement;
-                Verify.AreEqual(cutButtonElement.Current.AutomationId, cutButton6.AutomationId);
-
-                Log.Comment("Press Down key to move focus to third secondary command: Select All.");
-                KeyboardHelper.PressKey(Key.Down);
-                Wait.ForIdle();
-
-                Button selectall6 = FindElement.ById<Button>("SelectAllButton6");
-                var selectallElement = AutomationElement.FocusedElement;
-                Verify.AreEqual(selectallElement.Current.AutomationId, selectall6.AutomationId);
-
-                Log.Comment("Press Down key to move focus to fourth secondary command: Favorite.");
-                KeyboardHelper.PressKey(Key.Down);
+                Log.Comment("Press Up key to make sure commands loops focus to last secondary command: Favorite.");
+                KeyboardHelper.PressKey(Key.Up);
                 Wait.ForIdle();
 
                 Button favoriteToggleButton6 = FindElement.ById<Button>("FavoriteToggleButton6");
                 var favoriteToggleElement = AutomationElement.FocusedElement;
                 Verify.AreEqual(favoriteToggleElement.Current.AutomationId, favoriteToggleButton6.AutomationId);
+            }
+        }
 
-                Log.Comment("Press Down key to make sure commands loops back focus to first secondary command: Redo.");
-                KeyboardHelper.PressKey(Key.Down);
+        [TestMethod]
+        public void VerifyAddRemovePrimaryCommands()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                return;
+            }
+
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButtonWithNoPrimaryCommands = FindElement.ByName<Button>("Show CommandBarFlyout with no primary commands");
+
+                showCommandBarFlyoutButtonWithNoPrimaryCommands.Click();
                 Wait.ForIdle();
 
-                Verify.AreEqual(cutButtonElement.Current.AutomationId, cutButton6.AutomationId);
+                Log.Comment("Verifying the first item is from Secondary Commands");
+
+                Button undoButton6 = FindElement.ById<Button>("UndoButton6");
+                var undoButtonElement = AutomationElement.FocusedElement;
+                Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton6.AutomationId);
+
+                Log.Comment("Dismissing flyout");
+                showCommandBarFlyoutButtonWithNoPrimaryCommands.Click();
+
+                Log.Comment("Add test Primary Command Button");
+                Button editCommandCount6 = FindElement.ByName<Button>("Add / Remove Primary Command");
+                
+                editCommandCount6.Click();
+
+                showCommandBarFlyoutButtonWithNoPrimaryCommands.Click();
+                Wait.ForIdle();
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+
+                Button moreButton = FindElement.ById<Button>("MoreButton");
+                var moreButtonElement = AutomationElement.FocusedElement;
+                Verify.AreEqual(moreButtonElement.Current.AutomationId, moreButton.AutomationId);
             }
         }
     }

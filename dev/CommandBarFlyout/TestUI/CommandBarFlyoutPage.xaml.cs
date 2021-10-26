@@ -297,5 +297,21 @@ namespace MUXControlsTestApp
         {
             FlowDirection = FlowDirection.LeftToRight;
         }
+
+        private void OnEditCommandCount6Click(object sender, RoutedEventArgs e)
+        {
+            var flyout6 = Flyout6 as CommandBarFlyout;
+
+            if (flyout6.PrimaryCommands.Count() == 0)
+            {
+                flyout6.PrimaryCommands.Add(new AppBarButton() {
+                    Content = new TextBlock() { Text = "Test" }
+                });
+            }
+            else
+            {
+                flyout6.PrimaryCommands.RemoveAt(0);
+            }
+        }
     }
 }
