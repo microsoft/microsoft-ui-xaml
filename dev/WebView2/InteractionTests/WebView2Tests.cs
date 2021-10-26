@@ -609,7 +609,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("MouseWheelScrollTest");
-                
+
                 var webview = FindElement.ById("MyWebView2");
                 // Mouse wheel delta amount required per initial velocity unit
                 const int mouseWheelDeltaForVelocityUnit = -4000;  // scroll downwards
@@ -749,7 +749,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         // See comment on Focus_BasicTabTest() for details on test mechanism.
-        [TestMethod] 
+        [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void Focus_ReverseTabTest()
         {
@@ -807,7 +807,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         // See comment on Focus_BasicTabTest() for details on test mechanism.
-        [TestMethod] 
+        [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void Focus_BackAndForthTabTest()
         {
@@ -956,7 +956,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod] 
+        [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void MultipleWebviews_FocusTest()
         {
@@ -1021,7 +1021,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod] 
+        [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void MultipleWebviews_BasicRenderingTest()
         {
@@ -1078,10 +1078,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 var result = new Edit(FindElement.ById("TestResult"));
                 ChooseTest("CopyPasteTest");
-                
+
                 var CopyPasteTextBox1 = new Edit(FindElement.ById("CopyPasteTextBox1"));
                 var CopyPasteTextBox2 = new Edit(FindElement.ById("CopyPasteTextBox2"));
-                
+
                 // Copy text to SimpleInputPage's text box page.
                 CopyPasteTextBox1.SetFocus();
                 DoSelectAllByKeyboard();
@@ -1742,7 +1742,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 CompleteTestAndWaitForWebMessageResult("ParentVisibilityTurnedOnTest");
             }
         }
-		
+
         [TestMethod]
         [TestProperty("Ignore", "True")] // TODO_WebView2: Enable when we can change DPI for a test
         [TestProperty("TestSuite", "C")]
@@ -1762,7 +1762,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var status2 = new Edit(FindElement.ById("Status2"));
 
                 // Click the button in the middle of the webview. It should be square 35.
-                InputHelper.MoveMouse(webview, 0 , 0);
+                InputHelper.MoveMouse(webview, 0, 0);
                 Log.Comment("Do left click...");
                 PointerInput.Press(PointerButtons.Primary);
                 PointerInput.Release(PointerButtons.Primary);
@@ -1995,21 +1995,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("PointerReleaseWithoutPressTest");
-                
+
                 var webview = FindElement.ById("MyWebView2");
                 Rectangle bounds = webview.BoundingRectangle;
-                
+
                 // First, click outside the webview. Then with the mouse button still pressed, 
                 // drag into the webview and release the mouse button. This should neither 
                 // send a message to CoreWebView2, nor should it crash the app.
-                
+
                 var point = new Point(bounds.X + bounds.Width + 20, bounds.Y + 20);
                 PointerInput.Move(point);
                 PointerInput.Press(PointerButtons.Primary);
                 point = new Point(bounds.X + bounds.Width - 20, bounds.Y + 20);
                 PointerInput.Move(point);
                 PointerInput.Release(PointerButtons.Primary);
-                
+
                 CompleteTestAndWaitForResult("PointerReleaseWithoutPressTest");
             }
         }
@@ -2134,6 +2134,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 ChooseTest("UserAgentTest");
                 CompleteTestAndWaitForResult("UserAgentTest");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void NonAsciiUriTest()
+        {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
+                return;
+            }
+
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                // Navigate to a uri with a non-ascii characters
+                ChooseTest("NonAsciiUriTest");
+                CompleteTestAndWaitForResult("NonAsciiUriTest");
+
+                // At the end of the test, we should only have gotten one NavigationStarting message.
+                // All messages would have been printed to the MessageLog, so count the NavigationStarting
+                // messages there.
+                int count = 0;
+                var logBox = new Edit(FindElement.ById("MessageLog"));
+                var messageWords = logBox.GetText().Split(' ');
+                foreach (string word in messageWords)
+                {
+                    if (word.Equals("NavigationStarting")) count++;
+                }
+
+                Verify.AreEqual(count, 1);
             }
         }
 

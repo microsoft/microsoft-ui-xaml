@@ -196,6 +196,7 @@ namespace MUXControlsTestApp
             CloseThenDPIChangeTest,
             AddHostObjectToScriptTest,
             UserAgentTest,
+            NonAsciiUriTest,
         };
 
         // Map of TestList entry to its webpage (index in TestPageNames[])
@@ -255,6 +256,7 @@ namespace MUXControlsTestApp
             { TestList.CloseThenDPIChangeTest, 0 },
             { TestList.AddHostObjectToScriptTest, 0 },
             { TestList.UserAgentTest, 0 },
+            { TestList.NonAsciiUriTest, 7 },
         };
 
         readonly string[] TestPageNames =
@@ -266,6 +268,7 @@ namespace MUXControlsTestApp
             "SimplePageWithText.html",
             "SimpleInputPage.html",
             "SimplePageWithManyButtons.html",
+            "SimplePageWithNonÅscií.html",
         };
 
         readonly WebView2Common _helpers;
@@ -660,6 +663,16 @@ namespace MUXControlsTestApp
                         WebView2Common.LoadWebPage(newWebView2, TestPageNames[TestInfoDictionary[test]]);
                     }
                     break;
+                case TestList.NonAsciiUriTest:
+                    {
+                        // Put the URI with non-ascii characters in a TextBox, so we can easily copy/paste for manual testing.
+                        var box = FindName("CopyPasteTextBox2") as TextBox;
+                        string fileLocation = WebView2Common.GetTestPageUri("SimplePageWithNonÅscií.html").ToString();
+                        string query = "?query=";
+                        box.Text = fileLocation + query;
+                        WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[test]]);
+                    }
+                    break;
                 default:
                     WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[test]]);
                     break;
@@ -692,6 +705,8 @@ namespace MUXControlsTestApp
 
         private void OnNavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
+            // Be careful if changing this message. The "NavigationStarting" string is expected
+            // to be logged exactly once per NavigationStarting event by the NonAsciiUriTest.
             AppendMessage(string.Format("[{0}]: Got NavigationStarting ({1}).", sender.Name, args.Uri));
 
             string expectedUri = "http://www.blockedbynavigationstarting.invalid/";
