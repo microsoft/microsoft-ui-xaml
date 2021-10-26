@@ -101,14 +101,14 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Margin="0,14,24,16">
-                            <TextBlock Text="This expander is expanded by default."  Margin="0,0,0,4"/>
+                            <TextBlock Text="This expander with ToggleSwitch is expanded by default."  Margin="0,0,0,4"/>
                             <TextBlock Text="This is the second line of text." Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
-                        <ToggleSwitch Grid.Column="1"/>
+                        <ToggleSwitch AutomationProperties.Name="SettingsToggleSwitch" Grid.Column="1"/>
                     </Grid>
                     
                 </controls:Expander.Header>
-                <Button AutomationProperties.AutomationId="ExpandedExpanderContent">Content</Button>
+                <Button AutomationProperties.AutomationId="ExpandedExpanderContent">ExpanderWithToggleSwitch Content</Button>
             </controls:Expander>
             
         </StackPanel>
