@@ -34,7 +34,7 @@
             <StaticResource x:Key="SplitButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushPressed" ResourceKey="ControlElevationBorderBrush" />
-            <StaticResource x:Key="SplitButtonBorderBrushDisabled" ResourceKey="ControlElevationBorderBrush" />
+            <StaticResource x:Key="SplitButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushDivider" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushChecked" ResourceKey="AccentControlElevationBorderBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedPointerOver" ResourceKey="AccentControlElevationBorderBrush" />
@@ -70,7 +70,7 @@
             <StaticResource x:Key="SplitButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushPressed" ResourceKey="ControlElevationBorderBrush" />
-            <StaticResource x:Key="SplitButtonBorderBrushDisabled" ResourceKey="ControlElevationBorderBrush" />
+            <StaticResource x:Key="SplitButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushDivider" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushChecked" ResourceKey="AccentControlElevationBorderBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedPointerOver" ResourceKey="AccentControlElevationBorderBrush" />
@@ -106,8 +106,8 @@
             <StaticResource x:Key="SplitButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushPressed" ResourceKey="SystemColorButtonTextColorBrush" />
-            <StaticResource x:Key="SplitButtonBorderBrushDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
-            <StaticResource x:Key="SplitButtonBorderBrushDivider" ResourceKey="SystemControlForegroundTransparentBrush" />
+            <StaticResource x:Key="SplitButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+            <StaticResource x:Key="SplitButtonBorderBrushDivider" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushChecked" ResourceKey="SystemColorButtonTextColorBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedPointerOver" ResourceKey="SystemColorButtonTextColorBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedPressed" ResourceKey="SystemColorButtonFaceColorBrush" />
@@ -168,6 +168,7 @@
                                                         <VisualState x:Name="Disabled">
                                                             <VisualState.Setters>
                                                                 <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource AppBarButtonForegroundDisabled}"/>
+                                                                <Setter Target="RootGrid.Background" Value="{ThemeResource AppBarButtonBackgroundDisabled}"/>
                                                             </VisualState.Setters>
                                                         </VisualState>
                                                     </VisualStateGroup>
@@ -194,6 +195,12 @@
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal"/>
 
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushDisabled}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                
                                 <VisualState x:Name="FlyoutOpen">
                                     <VisualState.Setters>
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AppBarButtonBackgroundPressed}"/>
