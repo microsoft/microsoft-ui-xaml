@@ -86,6 +86,7 @@ void TabView::OnApplyTemplate()
     {
         m_tabContainerGrid.set(containerGrid);
         m_tabStripPointerExitedRevoker = containerGrid.PointerExited(winrt::auto_revoke, { this,&TabView::OnTabStripPointerExited });
+        m_tabStripPointerEnteredRevoker = containerGrid.PointerEntered(winrt::auto_revoke, { this,&TabView::OnTabStripPointerEntered });
     }
 
     if (!SharedHelpers::Is21H1OrHigher())
@@ -355,6 +356,7 @@ void TabView::UnhookEventsAndClearFields()
     m_addButtonClickRevoker.revoke();
     m_itemsPresenterSizeChangedRevoker.revoke();
     m_tabStripPointerExitedRevoker.revoke();
+    m_tabStripPointerEnteredRevoker.revoke();
     m_scrollViewerLoadedRevoker.revoke();
     m_scrollViewerViewChangedRevoker.revoke();
     m_scrollDecreaseClickRevoker.revoke();
@@ -508,6 +510,7 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
 
 void TabView::OnTabStripPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
 {
+    m_pointerInTabstrip = true;
     if (m_updateTabWidthOnPointerLeave)
     {
         auto scopeGuard = gsl::finally([this]()
@@ -516,6 +519,11 @@ void TabView::OnTabStripPointerExited(const winrt::IInspectable& sender, const w
         });
         UpdateTabWidths();
     }
+}
+
+void TabView::OnTabStripPointerEntered(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+{
+    m_pointerInTabstrip = true;
 }
 
 void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
@@ -680,8 +688,10 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
             }
             if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
             {
-                m_updateTabWidthOnPointerLeave = true;
-                UpdateTabWidths(true, false);
+                if (!m_pointerInTabstrip)
+                {
+                    UpdateTabWidths(true, false);
+                }
             }
         }
         else
