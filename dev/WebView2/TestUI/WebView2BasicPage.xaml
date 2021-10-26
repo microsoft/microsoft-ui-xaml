@@ -71,6 +71,7 @@
                             <ComboBoxItem AutomationProperties.Name="SourceBeforeLoadTest">SourceBeforeLoadTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="SourceBindingTest">SourceBindingTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="SpecificTouchTest">SpecificTouchTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="UserAgentTest">UserAgentTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="VisibilityHiddenTest">VisibilityHiddenTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="VisibilityTurnedOnTest">VisibilityTurnedOnTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="WebMessageReceivedTest">WebMessageReceivedTest</ComboBoxItem>

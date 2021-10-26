@@ -1019,7 +1019,7 @@
                                     Foreground=#9E000000
                                     Margin=10,5,6,6
                                     Padding=0,0,0,0
-                                    RenderSize=0,0
+                                    RenderSize=250,20
                                     Visibility=Visible
                               [Windows.UI.Xaml.Controls.Button]
                                   Background=#B3FFFFFF

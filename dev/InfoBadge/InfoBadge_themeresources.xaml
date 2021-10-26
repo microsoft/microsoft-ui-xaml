@@ -40,7 +40,7 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="InfoBadgeForeground" ResourceKey="SystemControlHighlightAltChromeWhiteBrush"/>
-            <StaticResource x:Key="InfoBadgeBackground" ResourceKey="AccentFillColorDefaultBrush"/>
+            <StaticResource x:Key="InfoBadgeBackground" ResourceKey="SystemControlHighlightAccentBrush"/>
 
             <x:Double x:Key="InfoBadgeMinHeight">4</x:Double>
             <x:Double x:Key="InfoBadgeMinWidth">4</x:Double>

@@ -25,6 +25,7 @@
                                 <VisualState x:Name="Inactive">
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.Opacity" Value="0" />
+                                        <Setter Target="LottiePlayer.(AutomationProperties.AccessibilityView)" Value="Raw" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="DeterminateActive"/>
