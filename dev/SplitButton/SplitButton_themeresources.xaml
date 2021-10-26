@@ -381,7 +381,7 @@
                             VerticalContentAlignment="Stretch"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
-                            Padding="2,0,7,0"
+                            Padding="2,0,8,0"
                             IsTabStop="False"
                             AutomationProperties.AccessibilityView="Raw">
                             <Button.Content>
@@ -391,7 +391,7 @@
                                     Text="&#xE972;"
                                     VerticalAlignment="Center"
                                     Padding="2,1,2,0"
-                                    HorizontalAlignment="Left"
+                                    HorizontalAlignment="Right"
                                     IsTextScaleFactorEnabled="False"
                                     AutomationProperties.AccessibilityView="Raw"/>
                             </Button.Content>
