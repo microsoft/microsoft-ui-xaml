@@ -1012,14 +1012,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Button undoButton6 = FindElement.ById<Button>("UndoButton6");
                 var undoButtonElement = AutomationElement.FocusedElement;
                 Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton6.AutomationId);
-
-                Log.Comment("Press Up key to make sure commands loops focus to last secondary command: Favorite.");
+                
                 KeyboardHelper.PressKey(Key.Up);
                 Wait.ForIdle();
-
-                Button favoriteToggleButton6 = FindElement.ById<Button>("FavoriteToggleButton6");
-                var favoriteToggleElement = AutomationElement.FocusedElement;
-                Verify.AreEqual(favoriteToggleElement.Current.AutomationId, favoriteToggleButton6.AutomationId);
+                
+                if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
+                {
+                    // rs2 does not loop through menuflyout items, so focus stays on the first button.
+                    Log.Comment("Press Up key to make sure it does not go to hidden controls.");
+                    Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton6.AutomationId);
+                }
+                else
+                {
+                    Log.Comment("Press Up key to make sure commands loops focus to last secondary command: Favorite.");
+                    Button favoriteToggleButton6 = FindElement.ById<Button>("FavoriteToggleButton6");
+                    var favoriteToggleElement = AutomationElement.FocusedElement;
+                    Verify.AreEqual(favoriteToggleElement.Current.AutomationId, favoriteToggleButton6.AutomationId);
+                }
             }
         }
 
