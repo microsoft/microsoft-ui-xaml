@@ -21,6 +21,7 @@ TabViewItem::TabViewItem()
     SetValue(s_TabViewTemplateSettingsProperty, winrt::make<TabViewItemTemplateSettings>());
 
     Loaded({ this, &TabViewItem::OnLoaded });
+    SizeChanged({ this, &TabViewItem::OnSizeChanged });
 
     RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), { this, &TabViewItem::OnIsSelectedPropertyChanged });
     RegisterPropertyChangedCallback(winrt::Control::ForegroundProperty(), { this, &TabViewItem::OnForegroundPropertyChanged });
@@ -97,7 +98,33 @@ void TabViewItem::OnApplyTemplate()
 
     UpdateCloseButton();
     UpdateForeground();
-    UpdateWidthModeVisualState();    
+    UpdateWidthModeVisualState();
+    UpdateTabGeometry();
+}
+
+void TabViewItem::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args)
+{
+    auto const templateSettings = winrt::get_self<TabViewItemTemplateSettings>(TabViewTemplateSettings());
+
+    // replace: height - 1, width - 19, height - 13
+    auto data   = L"<Geometry xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>F1 M0,%f  a 4,4 0 0 0 4,-4  L 4,8  a 8,8 0 0 1 8,-8  l %f,0  a 8,8 0 0 1 8,8  l 0,%f  a 4,4 0 0 0 4,4 Z</Geometry>";
+    //auto data = L"<Geometry xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>F1 M0,31  a 4,4 0 0 0 4,-4  L 4,8  a 8,8 0 0 1 8,-8  l 100,0  a 8,8 0 0 1 8,8  L 0,19  a 4,4 0 0 0 4,4</Geometry>";
+
+
+    // ### do things
+    WCHAR strOut[1024];
+    StringCchPrintf(strOut, ARRAYSIZE(strOut), data, 31.0, ActualWidth() - 16.0, 19.0);
+    OutputDebugString(strOut);
+    OutputDebugString(L"\n");
+
+    const auto geometry = winrt::XamlReader::Load(strOut).try_as<winrt::Geometry>();
+
+    templateSettings->TabGeometry(geometry);
+}
+
+void TabViewItem::UpdateTabGeometry()
+{
+
 }
 
 void TabViewItem::OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)

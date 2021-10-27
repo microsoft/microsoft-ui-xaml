@@ -22,6 +22,7 @@ using Windows.Devices.PointOfService;
 using Windows.ApplicationModel.DataTransfer;
 using MUXControlsTestApp.Utilities;
 using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp
 {
@@ -57,8 +58,13 @@ namespace MUXControlsTestApp
             DataBindingTabView.TabItemsSource = itemSource;
         }
 
-        protected async override void OnNavigatedTo(Windows.UI.Xaml.Navigation.NavigationEventArgs args) 
+        protected async override void OnNavigatedTo(Windows.UI.Xaml.Navigation.NavigationEventArgs args)
         {
+
+            var testFrame = this.Frame as TestFrame;
+            testFrame.SetValue(BackdropMaterial.ApplyToRootOrPageBackgroundProperty, true);
+
+
             NotCloseableTab.Visibility = Visibility.Collapsed;
             await Task.Delay(TimeSpan.FromMilliseconds(1));
             NotCloseableTab.Visibility = Visibility.Visible;

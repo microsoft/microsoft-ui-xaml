@@ -8,9 +8,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    controls:BackdropMaterial.ApplyToRootOrPageBackground="True">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -215,7 +216,7 @@
 
                 </controls:TabView>
 
-                <Grid x:Name="MaterialFrame" Grid.Row="1" Padding="20" Background="#DDDDFF">
+                <Grid x:Name="MaterialFrame" Grid.Row="1" Padding="20">
                     <Grid.Resources>
                         <ResourceDictionary>
                             <ResourceDictionary.ThemeDictionaries>
