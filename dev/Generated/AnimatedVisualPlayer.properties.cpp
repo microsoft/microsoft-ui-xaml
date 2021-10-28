@@ -13,6 +13,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "AnimatedVisualPlayer.g.cpp"
 
+GlobalDependencyProperty AnimatedVisualPlayerProperties::s_ActiveProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_AutoPlayProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_DiagnosticsProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_DurationProperty{ nullptr };
@@ -30,6 +31,17 @@ AnimatedVisualPlayerProperties::AnimatedVisualPlayerProperties()
 
 void AnimatedVisualPlayerProperties::EnsureProperties()
 {
+    if (!s_ActiveProperty)
+    {
+        s_ActiveProperty =
+            InitializeDependencyProperty(
+                L"Active",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::AnimatedVisualPlayer>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnActivePropertyChanged));
+    }
     if (!s_AutoPlayProperty)
     {
         s_AutoPlayProperty =
@@ -133,6 +145,7 @@ void AnimatedVisualPlayerProperties::EnsureProperties()
 
 void AnimatedVisualPlayerProperties::ClearProperties()
 {
+    s_ActiveProperty = nullptr;
     s_AutoPlayProperty = nullptr;
     s_DiagnosticsProperty = nullptr;
     s_DurationProperty = nullptr;
@@ -142,6 +155,14 @@ void AnimatedVisualPlayerProperties::ClearProperties()
     s_PlaybackRateProperty = nullptr;
     s_SourceProperty = nullptr;
     s_StretchProperty = nullptr;
+}
+
+void AnimatedVisualPlayerProperties::OnActivePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::AnimatedVisualPlayer>();
+    winrt::get_self<AnimatedVisualPlayer>(owner)->OnActivePropertyChanged(args);
 }
 
 void AnimatedVisualPlayerProperties::OnAutoPlayPropertyChanged(
@@ -182,6 +203,19 @@ void AnimatedVisualPlayerProperties::OnStretchPropertyChanged(
 {
     auto owner = sender.as<winrt::AnimatedVisualPlayer>();
     winrt::get_self<AnimatedVisualPlayer>(owner)->OnStretchPropertyChanged(args);
+}
+
+void AnimatedVisualPlayerProperties::Active(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_ActiveProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool AnimatedVisualPlayerProperties::Active()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<AnimatedVisualPlayer*>(this)->GetValue(s_ActiveProperty));
 }
 
 void AnimatedVisualPlayerProperties::AutoPlay(bool value)

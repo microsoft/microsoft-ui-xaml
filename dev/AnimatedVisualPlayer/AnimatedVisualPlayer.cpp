@@ -622,6 +622,10 @@ winrt::IAsyncAction AnimatedVisualPlayer::PlayAsync(double fromProgress, double 
         co_return;
     }
 
+    if (!Active()) {
+        co_return;
+    }
+
     // Used to detect reentrance.
     const auto version = ++m_playAsyncVersion;
 
@@ -707,6 +711,10 @@ void AnimatedVisualPlayer::SetProgress(double progress)
         return;
     }
 
+    if (!Active()) {
+        co_return;
+    }
+
     auto clampedProgress = std::clamp(static_cast<float>(progress), 0.0F, 1.0F);
 
     // WARNING: Reentrance via IsPlaying DP may occur from this point down to the end of the method
@@ -752,6 +760,39 @@ void AnimatedVisualPlayer::OnAutoPlayPropertyChanged(
         const auto to = 1;
         const auto looped = true;
         auto ignore = PlayAsync(from, to, looped);
+    }
+}
+
+void AnimatedVisualPlayer::OnActivePropertyChanged(
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto newValue = unbox_value<bool>(args.NewValue());
+
+    if (newValue)
+    {
+        Pause();
+
+        // Check if current animated visual supports destroyig animations.
+        if (auto animatedVisual = m_animatedVisual.get())
+        {
+            if (auto animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>())
+            {
+                animatedVisual2.DestroyAnimations();
+            }
+        }
+    }
+    else
+    {
+        // Check if current animated visual supports destroyig animations.
+        if (auto animatedVisual = m_animatedVisual.get())
+        {
+            if (auto animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>())
+            {
+                animatedVisual2.InstantiateAnimations();
+            }
+        }
+
+        Resume();
     }
 }
 
@@ -845,7 +886,15 @@ void AnimatedVisualPlayer::UpdateContent()
     }
 
     winrt::IInspectable diagnostics{};
-    auto animatedVisual = source.TryCreateAnimatedVisual(m_rootVisual.Compositor(), diagnostics);
+    winrt::IAnimatedVisual animatedVisual;
+    if (auto source3 = source.try_as<winrt::IAnimatedVisualSource3>())
+    {
+        animatedVisual = source3.TryCreateAnimatedVisual(m_rootVisual.Compositor(), !Active(), diagnostics);
+    }
+    else
+    {
+        animatedVisual = source.TryCreateAnimatedVisual(m_rootVisual.Compositor(), diagnostics);
+    }
     m_animatedVisual.set(animatedVisual);
 
     if (!animatedVisual)
@@ -932,22 +981,11 @@ void AnimatedVisualPlayer::UpdateContent()
         // NOTE: If !IsAnimatedVisualLoaded() then this is a no-op.
         auto ignore = PlayAsync(from, to, looped);
     }
-}
 
-void AnimatedVisualPlayer::Freeze() {
-    if (auto animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>()) {
-        animatedVisual2.DestroyAnimations();
+    if (!Active())
+    {
+        Pause();
     }
-}
-
-void AnimatedVisualPlayer::Unfreeze() {
-    if (auto animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>()) {
-        animatedVisual2.InstantiateAnimations();
-    }
-}
-
-bool AnimatedVisualPlayer::CanFreeze() {
-    return m_animatedVisual.try_as<winrt::IAnimatedVisual2>() != nullptr;
 }
 
 void AnimatedVisualPlayer::LoadFallbackContent()

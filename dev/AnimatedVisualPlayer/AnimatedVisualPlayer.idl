@@ -36,6 +36,16 @@ interface IDynamicAnimatedVisualSource
     event Windows.Foundation.TypedEventHandler<IDynamicAnimatedVisualSource, Object> AnimatedVisualInvalidated;
 };
 
+[MUX_PREVIEW]
+[webhosthidden]
+interface IAnimatedVisualSource3
+{
+    IAnimatedVisual2 TryCreateAnimatedVisual(
+        Windows.UI.Composition.Compositor compositor,
+        Boolean instantiateAnimations,
+        out Object diagnostics);
+};
+
 [MUX_INTERNAL]
 [webhosthidden]
 interface ISelfPlayingAnimatedVisual
@@ -70,6 +80,9 @@ unsealed runtimeclass AnimatedVisualPlayer
     [MUX_DEFAULT_VALUE("true")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean AutoPlay;
+    [MUX_DEFAULT_VALUE("true")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean Active;
     Boolean IsAnimatedVisualLoaded{ get; };
     Boolean IsPlaying{ get; };
     [MUX_DEFAULT_VALUE("1")]
@@ -90,6 +103,7 @@ unsealed runtimeclass AnimatedVisualPlayer
 
     // Dependency properties
     static Windows.UI.Xaml.DependencyProperty AutoPlayProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ActiveProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty DiagnosticsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty DurationProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty FallbackContentProperty{ get; };
