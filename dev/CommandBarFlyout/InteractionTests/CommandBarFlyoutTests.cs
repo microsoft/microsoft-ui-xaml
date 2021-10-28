@@ -1055,7 +1055,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton6.AutomationId);
 
                 Log.Comment("Dismissing flyout");
-                showCommandBarFlyoutButtonWithNoPrimaryCommands.Click();
+                KeyboardHelper.PressKey(Key.Escape);
 
                 Log.Comment("Add test Primary Command Button");
                 Button editCommandCount6 = FindElement.ByName<Button>("Add / Remove Primary Command");
