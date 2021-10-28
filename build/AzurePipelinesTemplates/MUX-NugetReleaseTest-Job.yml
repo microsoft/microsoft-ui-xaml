@@ -24,6 +24,9 @@ parameters:
     Release_arm:
       buildPlatform: 'arm'
       buildConfiguration: 'Release'
+    Release_arm64:
+      buildPlatform: 'arm64'
+      buildConfiguration: 'Release'
 
 jobs:
 - job: ${{ parameters.buildJobName }}
@@ -55,11 +58,22 @@ jobs:
   # projects at the just-built nupkg. The MUXRelease projects use a specific nuget version so we need
   # to update nuget.config to include the drop location as well as update the version in the csproj and
   # packages.config for the projects.
-  - task: DownloadBuildArtifacts@0
-    inputs:
+  # - task: DownloadBuildArtifacts@0
+  #   inputs:
+  #     artifactName: drop
+  #     downloadPath: $(artifactDownloadPath)
+  #     itemPattern: '**\*.nupkg'
+
+  - task: DownloadBuildArtifacts@0 
+    inputs: 
       artifactName: drop
       downloadPath: $(artifactDownloadPath)
       itemPattern: '**\*.nupkg'
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: 72016
+      buildId: 40741027
 
   # Copy nupkg to localpackages and update proj file to point to it
   - powershell: |
