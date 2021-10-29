@@ -688,7 +688,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
             }
             if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
             {
-                if (!m_pointerInTabstrip)
+                if (!m_pointerInTabstrip || args.Index() == TabItems().Size())
                 {
                     UpdateTabWidths(true, false);
                 }
