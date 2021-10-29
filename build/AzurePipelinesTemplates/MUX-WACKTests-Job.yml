@@ -12,6 +12,9 @@ parameters:
     Release_Arm:
       buildPlatform: 'arm'
       buildConfiguration: 'Release'
+    Release_Arm64:
+      buildPlatform: 'arm64'
+      buildConfiguration: 'Release'
 jobs:
 - job: ${{ parameters.name }}
   dependsOn: ${{ parameters.dependsOn }}

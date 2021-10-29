@@ -24,6 +24,9 @@ parameters:
     Release_arm:
       buildPlatform: 'arm'
       buildConfiguration: 'Release'
+    Release_arm64:
+      buildPlatform: 'arm64'
+      buildConfiguration: 'Release'
 
 jobs:
 - job: ${{ parameters.buildJobName }}
