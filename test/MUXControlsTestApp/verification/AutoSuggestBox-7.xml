@@ -237,7 +237,7 @@
             Margin=1,1,1,1
             Name=PlaceholderTextContentPresenter
             Padding=10,5,6,6
-            RenderSize=398,565
+            RenderSize=394,565
             Visibility=Visible
           [Windows.UI.Xaml.Controls.ContentPresenter]
               Background=[NULL]
@@ -251,7 +251,7 @@
               Foreground=#9E000000
               Margin=10,5,6,6
               Padding=0,0,0,0
-              RenderSize=382,554
+              RenderSize=378,554
               Visibility=Visible
         [Windows.UI.Xaml.Controls.Button]
             Background=#B3FFFFFF
