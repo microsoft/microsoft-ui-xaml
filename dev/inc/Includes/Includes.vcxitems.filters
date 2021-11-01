@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="gls">
+      <UniqueIdentifier>{c82a0d53-06bc-4fe7-8b00-8967bccd6f16}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)gsl\gsl">
+      <Filter>gls</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)gsl\gsl_algorithm">
+      <Filter>gls</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)gsl\gsl_assert">
+      <Filter>gls</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)gsl\gsl_byte">
+      <Filter>gls</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)gsl\gsl_util">
+      <Filter>gls</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)gsl\multi_span">
+      <Filter>gls</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)gsl\pointers">
+      <Filter>gls</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)gsl\ReadMe.md">
+      <Filter>gls</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)gsl\span">
+      <Filter>gls</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)gsl\string_span">
+      <Filter>gls</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AutoHandle.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MUXControlsFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)XamlMetadataProvider.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)XamlMetadataProviderGenerated.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)XamlType.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)XamlMember.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BoxHelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BuildMacros.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)CastHelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)CollectionHelper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)CommandingHelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)common.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)CppWinRTHelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)CppWinRTIncludes.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)DispatcherHelper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)DoubleUtil.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)DownlevelHelper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)enum_array.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)enum_vector.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ErrorHandling.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)event.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FloatUtil.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FocusHelper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GlobalDependencyProperty.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)pch.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RegUtil.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RoutedEventHelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RuntimeClassHelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SharedHelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)targetver.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)tracker_ref.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MUXControlsFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)XamlMetadataProvider.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)XamlType.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)XamlMember.cpp" />
+  </ItemGroup>
+</Project>

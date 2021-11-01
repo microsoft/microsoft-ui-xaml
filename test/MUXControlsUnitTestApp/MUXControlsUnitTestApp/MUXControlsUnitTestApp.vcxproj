@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <PropertyGroup Label="Globals">
+    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
+    <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
+    <MinimalCoreWin>true</MinimalCoreWin>
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{8890fe32-0c97-41d5-ad51-601154f2e84f}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>MUXControlsUnitTestApp</RootNamespace>
+    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.20348.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformMinVersion>10.0.17134.0</WindowsTargetPlatformMinVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' == '16.0'">v142</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' == '15.0'">v141</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' == '14.0'">v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ItemGroup>
+    <Midl Include="..\..\..\idl\Microsoft.UI.Xaml.idl" />
+  </ItemGroup>
+  <ImportGroup Label="Shared">
+    <Import Project="..\..\..\dev\TestHooks\TestHooks.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\Common\Common.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\Common\Includes\Includes.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\CommonStyles\CommonStyles.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\RatingControl\RatingControl.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\NavigationView\NavigationView.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\ColorPicker\ColorPicker.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\Collections\Collections.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\CommandBarFlyout\CommandBarFlyout.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\Effects\Microsoft.UI.Private.Composition.Effects.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\PersonPicture\PersonPicture.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\PullToRefresh\RefreshContainer\RefreshContainer.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\PullToRefresh\RefreshVisualizer\RefreshVisualizer.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\ScrollViewerIRefreshInfoProviderAdapter.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\MenuBar\MenuBar.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\Materials\Acrylic\AcrylicBrush.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\Materials\Reveal\RevealBrush.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\Materials\Backdrop\SystemBackdropComponent.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\TreeView\TreeView.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\Telemetry\Telemetry.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\ParallaxView\ParallaxView.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\ScrollPresenter\ScrollPresenter.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\ScrollView\ScrollView.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\Lights\Lights.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\Repeater\Repeater.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\SwipeControl\SwipeControl.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\TwoPaneView\TwoPaneView.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\PullToRefresh\PTRTracing\PTRTracing.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\SplitButton\SplitButton.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\LayoutPanel\LayoutPanel.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\DropDownButton\DropDownButton.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\RadioButtons\RadioButtons.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\IconSource\IconSource.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\Interactions\ButtonInteraction\ButtonInteraction.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\Interactions\SliderInteraction\SliderInteraction.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\TeachingTip\TeachingTip.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\TabView\TabView.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\AutoSuggestBox\AutoSuggestBox.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\ComboBox\ComboBox.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\SplitView\SplitView.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\ProgressBar\ProgressBar.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\ProgressRing\ProgressRing.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\NumberBox\NumberBox.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\RadialGradientBrush\RadialGradientBrush.vcxitems" />
+    <Import Project="..\..\..\dev\Expander\Expander.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\PagerControl\PagerControl.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\InfoBar\InfoBar.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\Breadcrumb\Breadcrumb.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\PipsPager\PipsPager.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\ImageIcon\ImageIcon.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\AnimatedIcon\AnimatedIcon.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\MonochromaticOverlayPresenter\MonochromaticOverlayPresenter.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\dev\InfoBadge\InfoBadge.vcxitems" Label="Shared" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="PropertySheet.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <PreprocessorDefinitions>_CONSOLE;WIN32_LEAN_AND_MEAN;WINRT_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level4</WarningLevel>
+      <AdditionalOptions>%(AdditionalOptions) /permissive- /bigobj</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)'=='Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\dev\dll\pch.h" />
+    <ClInclude Include="..\..\..\dev\inc\common.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="PropertySheet.props" />
+    <Text Include="readme.txt">
+      <DeploymentContent>false</DeploymentContent>
+    </Text>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
+  <PropertyGroup>
+    <ProjectMergedIdl>$(IntermediateOutputPath)\Microsoft.UI.Xaml.idl</ProjectMergedIdl>
+  </PropertyGroup>
+  <!-- Merge all idl files into one -->
+  <Target Name="MergeIDLFiles" Inputs="@(Midl)" Outputs="$(ProjectMergedIdl)" BeforeTargets="CppWinRTSetMidlReferences;Midl">
+    <PropertyGroup>
+      <MidlLines>@(Midl->'#include &lt;%(FullPath)&gt;', '
+')</MidlLines>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(ProjectMergedIdl)" Lines="$(MidlLines)" WriteOnlyWhenDifferent="true" Overwrite="true" />
+    <ItemGroup>
+      <OriginalMidl Include="@(Midl)" />
+      <Midl Remove="@(OriginalMidl)" />
+      <Midl Include="$(ProjectMergedIdl)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="CreateReferenceWinmds" BeforeTargets="XamlMetadataCodeGenMUX">
+    <ItemGroup>
+      <T4ParameterValues Include="ReferenceWinmds">
+        <Value>@(_MidlReferencesDistinct)</Value>
+      </T4ParameterValues>
+    </ItemGroup>
+  </Target>
+</Project>
