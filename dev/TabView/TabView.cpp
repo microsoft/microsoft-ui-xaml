@@ -568,6 +568,8 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
 void TabView::OnScrollViewerViewChanged(winrt::IInspectable const& sender, winrt::ScrollViewerViewChangedEventArgs const& args)
 {
     UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
+
+    UpdateBorderWidths();
 }
 
 void TabView::UpdateScrollViewerDecreaseAndIncreaseButtonsViewState()
