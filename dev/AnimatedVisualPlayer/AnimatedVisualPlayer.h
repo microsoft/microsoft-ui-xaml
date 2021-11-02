@@ -129,7 +129,7 @@ private:
     winrt::float2 m_animatedVisualSize;
     winrt::Composition::Visual m_animatedVisualRoot{ nullptr };
     int m_playAsyncVersion{ 0 };
-    double m_currentPlayFromProgress{ 0 };
+    double m_lastPlayProgress{ 0 };
     // The play that will be stopped when Stop() is called.
     std::shared_ptr<AnimationPlay> m_nowPlaying{ nullptr };
     winrt::IDynamicAnimatedVisualSource::AnimatedVisualInvalidated_revoker  m_dynamicAnimatedVisualInvalidatedRevoker{};

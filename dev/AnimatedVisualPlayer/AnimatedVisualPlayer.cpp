@@ -40,6 +40,10 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
     MUX_ASSERT(m_owner);
     MUX_ASSERT(!m_controller);
 
+    // Set lastPlayProgress to fromProgress.
+    // When we call Stop (or Active(false)) root progress will be set to lastPlayProgress.
+    m_owner->m_lastPlayProgress = m_fromProgress;
+
     // If the duration is really short (< 20ms) don't bother trying to animate.
     if (m_playDuration < winrt::TimeSpan{ 20ms })
     {
@@ -117,6 +121,10 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
             // Subscribe to the batch completed event.
             m_batchCompletedToken = m_batch.Completed([this](winrt::IInspectable const&, winrt::CompositionBatchCompletedEventArgs const&)
                 {
+                    if (m_owner) {
+                        // If currentPlay completed succesfully, set lastPlayProgress to toProgress.
+                        m_owner->m_lastPlayProgress = m_toProgress;
+                    }
                     // Complete the play when the batch completes.
                     //
                     // The "this" pointer is guaranteed to be valid because:
@@ -711,8 +719,12 @@ void AnimatedVisualPlayer::SetProgress(double progress)
         return;
     }
 
-    if (!Active()) {
-        co_return;
+    // SetProgress should be no-op if Active is set to false.
+    // Except for the case when there is something playing right now,
+    // because in this case we are trying to stop the animation before
+    // calling DestroyAnimations.
+    if (!Active() && !m_nowPlaying) {
+        return;
     }
 
     auto clampedProgress = std::clamp(static_cast<float>(progress), 0.0F, 1.0F);
@@ -744,7 +756,7 @@ void AnimatedVisualPlayer::Stop()
         // Stop the animation by setting the Progress value to the fromProgress of the
         // most recent play.
         // This may cause reentrance via the IsPlaying DP.
-        SetProgress(m_currentPlayFromProgress);
+        SetProgress(m_lastPlayProgress);
     }
 }
 
@@ -768,31 +780,36 @@ void AnimatedVisualPlayer::OnActivePropertyChanged(
 {
     auto newValue = unbox_value<bool>(args.NewValue());
 
-    if (newValue)
+    if (!newValue)
     {
-        Pause();
+        // Stop root.Progress animation before destroying other animations.
+        Stop();
 
-        // Check if current animated visual supports destroyig animations.
-        if (auto animatedVisual = m_animatedVisual.get())
-        {
-            if (auto animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>())
-            {
-                animatedVisual2.DestroyAnimations();
+        // Wait for commiting previous compositor instructions before destroying animations.
+        m_rootVisual.Compositor().RequestCommitAsync().Completed(
+            [&](auto, auto) {
+                // Check if current animated visual supports destroyig animations.
+                if (const auto& animatedVisual = m_animatedVisual.get())
+                {
+                    if (const auto& animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>())
+                    {
+                        animatedVisual2.DestroyAnimations();
+                    }
+                }
             }
-        }
+        );
+        
     }
     else
     {
-        // Check if current animated visual supports destroyig animations.
-        if (auto animatedVisual = m_animatedVisual.get())
+        // Check if current animated visual supports instantiating animations.
+        if (const auto& animatedVisual = m_animatedVisual.get())
         {
-            if (auto animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>())
+            if (const auto& animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>())
             {
-                animatedVisual2.InstantiateAnimations();
+                animatedVisual2.InstantiateAnimations(m_lastPlayProgress);
             }
         }
-
-        Resume();
     }
 }
 
@@ -967,6 +984,15 @@ void AnimatedVisualPlayer::UpdateContent()
     // to have user code react to its state change.
     IsAnimatedVisualLoaded(true);
 
+    // If animation is not active AutoPlay should be set to false
+    // and if there is any AnimationPlay it should be completed.
+    if (!Active()) {
+        AutoPlay(false);
+        if (m_nowPlaying) {
+            m_nowPlaying->Complete();
+        }
+    }
+
     // Check whether playing has been started already via reentrance from a DP handler.
     if (m_nowPlaying)
     {
@@ -980,11 +1006,6 @@ void AnimatedVisualPlayer::UpdateContent()
         const auto looped = true;
         // NOTE: If !IsAnimatedVisualLoaded() then this is a no-op.
         auto ignore = PlayAsync(from, to, looped);
-    }
-
-    if (!Active())
-    {
-        Pause();
     }
 }
 
