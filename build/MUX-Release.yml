@@ -90,7 +90,7 @@ jobs:
     buildArtifactName: 'NugetPkgTestsDrop'
     runTestJobName: 'RunNugetPkgTestsInHelix'
     helixType: 'test/nuget'
-    dependsOn: CreateNugetPackage
+    dependsOn: ''
     useFrameworkPkg: false
     runTests: false
 
@@ -101,7 +101,7 @@ jobs:
     buildArtifactName: 'FrameworkPkgTestsDrop'
     runTestJobName: 'RunFrameworkPkgTestsInHelix'
     helixType: 'test/frpkg'
-    dependsOn: CreateNugetPackage
+    dependsOn: ''
     useFrameworkPkg: true
     runTests: false
 
