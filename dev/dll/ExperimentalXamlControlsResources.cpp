@@ -24,7 +24,7 @@ void ExperimentalXamlControlsResources::UpdateSource()
             const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
             const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
-            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher() && SharedHelpers::IsSelectionIndicatorModeAvailable();
+            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher();
 
             hstring packagePrefix = L"ms-appx:///" MUX_EXPERIMENTAL_NAMESPACE_STR "/Themes/";
             hstring postfix = L"themeresources.xaml";
@@ -79,7 +79,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
             const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
-            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher() && SharedHelpers::IsSelectionIndicatorModeAvailable();
+            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher();
             
             std::wstring postfix = L"generic.xaml";
             std::wstring releasePrefix = L"";

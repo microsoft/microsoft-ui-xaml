@@ -198,6 +198,7 @@
   </PropertyGroup>
   <!-- Dependencies for TitleBar -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTitleBarEnabled) == 'true'">
+  </PropertyGroup>
   <!-- Dependencies for InfoBadge -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureInfoBadgeEnabled) == 'true'">
   </PropertyGroup>

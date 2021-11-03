@@ -23,8 +23,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SampleControl", "SampleCont
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleControl", "dev\SampleControl\SampleControl.vcxitems", "{A329FB8A-3093-4050-83D3-4D9F5847F3B8}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SampleControl_APITests", "dev\SampleControl\APITests\SampleControl_APITests.shproj", "{65521A02-7166-48BE-B524-8F8F0ECC3A76}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SampleControl_TestUI", "dev\SampleControl\TestUI\SampleControl_TestUI.shproj", "{05361409-7FBB-4296-996F-2E591857D84A}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SampleControl_InteractionTests", "dev\SampleControl\InteractionTests\SampleControl_InteractionTests.shproj", "{30120040-3EB8-404D-9344-5E99E34B6090}"
@@ -78,7 +76,6 @@ Global
 		dev\ResourceHelper\ResourceHelper.vcxitems*{4647fa1b-124e-4447-af56-4016ab6faf4a}*SharedItemsImports = 4
 		dev\SampleControl\SampleControl.vcxitems*{4647fa1b-124e-4447-af56-4016ab6faf4a}*SharedItemsImports = 4
 		dev\TitleBar\TitleBar.vcxitems*{4647fa1b-124e-4447-af56-4016ab6faf4a}*SharedItemsImports = 4
-		dev\SampleControl\APITests\SampleControl_APITests.projitems*{65521a02-7166-48be-b524-8f8f0ecc3a76}*SharedItemsImports = 13
 		dev\Common\Common.vcxitems*{80ad7f51-8997-47b9-bb41-078b81cff9b0}*SharedItemsImports = 9
 		dev\SampleControl\InteractionTests\SampleControl_InteractionTests.projitems*{815c5f42-3deb-4dcb-b143-1c088fce97f9}*SharedItemsImports = 13
 		dev\TitleBar\InteractionTests\TitleBar_InteractionTests.projitems*{815c5f42-3deb-4dcb-b143-1c088fce97f9}*SharedItemsImports = 13
@@ -293,7 +290,6 @@ Global
 		{4647FA1B-124E-4447-AF56-4016AB6FAF4A} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{718B6519-D0E4-4236-AB21-517AF3B3EE27} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{A329FB8A-3093-4050-83D3-4D9F5847F3B8} = {718B6519-D0E4-4236-AB21-517AF3B3EE27}
-		{65521A02-7166-48BE-B524-8F8F0ECC3A76} = {718B6519-D0E4-4236-AB21-517AF3B3EE27}
 		{05361409-7FBB-4296-996F-2E591857D84A} = {718B6519-D0E4-4236-AB21-517AF3B3EE27}
 		{30120040-3EB8-404D-9344-5E99E34B6090} = {718B6519-D0E4-4236-AB21-517AF3B3EE27}
 		{CCA3696F-5CAC-421D-8528-4D9122B4D240} = {D3327F36-E161-4FED-A0F4-56F2B735827E}
