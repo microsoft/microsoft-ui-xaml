@@ -84,26 +84,26 @@ jobs:
 #     dependsOn: Build
 
 # Build solution that depends on nuget package
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildNugetPkgTests'
-    buildArtifactName: 'NugetPkgTestsDrop'
-    runTestJobName: 'RunNugetPkgTestsInHelix'
-    helixType: 'test/nuget'
-    dependsOn: ''
-    useFrameworkPkg: false
-    runTests: false
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     buildJobName: 'BuildNugetPkgTests'
+#     buildArtifactName: 'NugetPkgTestsDrop'
+#     runTestJobName: 'RunNugetPkgTestsInHelix'
+#     helixType: 'test/nuget'
+#     dependsOn: ''
+#     useFrameworkPkg: false
+#     runTests: false
 
-# Framework package tests
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildFrameworkPkgTests'
-    buildArtifactName: 'FrameworkPkgTestsDrop'
-    runTestJobName: 'RunFrameworkPkgTestsInHelix'
-    helixType: 'test/frpkg'
-    dependsOn: ''
-    useFrameworkPkg: true
-    runTests: false
+# # Framework package tests
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     buildJobName: 'BuildFrameworkPkgTests'
+#     buildArtifactName: 'FrameworkPkgTestsDrop'
+#     runTestJobName: 'RunFrameworkPkgTestsInHelix'
+#     helixType: 'test/frpkg'
+#     dependsOn: ''
+#     useFrameworkPkg: true
+#     runTests: false
 
 # - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
 #   parameters:
@@ -117,12 +117,12 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
   parameters:
     name: 'NugetPkgWACKTests'
-    dependsOn: BuildNugetPkgTests
+    # dependsOn: BuildNugetPkgTests
     artifactName: 'NugetPkgTestsDrop'
 
 # Framework package WACK tests
 - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
   parameters:
     name: 'FrameworkPkgWACKTests'
-    dependsOn: BuildFrameworkPkgTests
+    # dependsOn: BuildFrameworkPkgTests
     artifactName: 'FrameworkPkgTestsDrop'
