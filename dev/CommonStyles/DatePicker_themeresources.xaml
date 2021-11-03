@@ -50,35 +50,35 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="SystemControlForegroundBaseLowBrush" />
-            <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
-            <StaticResource x:Key="DatePickerHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="DatePickerHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
+            <StaticResource x:Key="DatePickerHeaderForeground" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="DatePickerHeaderForegroundDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
 
-            <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
 
-            <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-            <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-            <StaticResource x:Key="DatePickerButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
-            <StaticResource x:Key="DatePickerButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-            <StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="SystemControlHighlightAccentBrush" />
+            <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="SystemColorButtonFaceColorBrush" />
+            <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="DatePickerButtonBackgroundPressed" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="DatePickerButtonBackgroundDisabled" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="DatePickerButtonBackgroundFocused" ResourceKey="SystemColorHighlightTextColorBrush" />
 
-            <StaticResource x:Key="DatePickerButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="DatePickerButtonForegroundDefault" ResourceKey="SystemControlHighlightBaseHighBrush" />
-            <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="SystemControlHighlightBaseHighBrush" />
-            <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
-            <StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="DatePickerButtonForegroundFocused" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="DatePickerButtonForeground" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="DatePickerButtonForegroundDefault" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
+            <StaticResource x:Key="DatePickerButtonForegroundFocused" ResourceKey="SystemColorHighlightTextColorBrush" />
 
             <contract7NotPresent:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <contract7NotPresent:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />
-            <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
-            <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
-            <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="SystemControlForegroundBaseLowBrush" />
-            <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="SystemControlHighlightListAccentLowBrush" />
+            <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="SystemColorWindowColorBrush" />
+            <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="SystemColorHighlightColorBrush" />
             <Color x:Key="DatePickerFlyoutPresenterHighlightForegroundColor">Transparent</Color>
             <StaticResource x:Key="DatePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <x:Double x:Key="DatePickerSelectorThemeMinWidth">80</x:Double>
