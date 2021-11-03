@@ -36,6 +36,7 @@ namespace MUXControlsTestApp
         SwipeItem pastSender;
         UIElement animatedSwipe;
         DispatcherTimer _dt;
+
         public SwipeControlPage()
         {
             // create command, and bind it to this object before initializing the components
@@ -132,11 +133,13 @@ namespace MUXControlsTestApp
             MaterialHelperTestApi.IgnoreAreEffectsFast = true;
             MaterialHelperTestApi.SimulateDisabledByPolicy = false;
         }
+
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             // Unset all override flags to avoid impacting subsequent tests
             MaterialHelperTestApi.IgnoreAreEffectsFast = false;
             MaterialHelperTestApi.SimulateDisabledByPolicy = false;
+            SwipeTestHooks.LastInteractedWithSwipeControlChanged -= SwipeTestHooks_LastInteractedWithSwipeControlChanged;
             base.OnNavigatedFrom(e);
         }
 
@@ -247,6 +250,12 @@ namespace MUXControlsTestApp
             SpyAnimatedValues();
             SwipeTestHooks.OpenedStatusChanged += SwipeTestHooks_OpenedStatusChanged;
             SwipeTestHooks.IdleStatusChanged += SwipeTestHooks_IdleStatusChanged;
+        }
+
+        private void TestSwipeControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            SwipeTestHooks.OpenedStatusChanged -= SwipeTestHooks_OpenedStatusChanged;
+            SwipeTestHooks.IdleStatusChanged -= SwipeTestHooks_IdleStatusChanged;
         }
 
         private void SwipeTestHooks_IdleStatusChanged(SwipeControl sender, object args)

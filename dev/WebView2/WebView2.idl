@@ -1,0 +1,43 @@
+﻿midl_pragma warning( disable: 5135 ) // a type that is not marked [experimental] cannot reference a type that is marked [experimental]
+
+namespace MU_XC_NAMESPACE
+{
+
+[webhosthidden]
+[MUX_PREVIEW]
+runtimeclass CoreWebView2InitializedEventArgs
+{
+    HRESULT Exception{ get; };
+}
+
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+[MUX_PREVIEW]
+unsealed runtimeclass WebView2 : Windows.UI.Xaml.Controls.Control
+{
+    WebView2();
+    Microsoft.Web.WebView2.Core.CoreWebView2 CoreWebView2{ get; };
+    Windows.Foundation.IAsyncAction EnsureCoreWebView2Async();
+    Windows.Foundation.IAsyncOperation<String> ExecuteScriptAsync(String javascriptCode);
+    Windows.Foundation.Uri Source{ get; set; };
+    Boolean CanGoForward{ get; set; };
+    Boolean CanGoBack{ get; set; };
+    void Reload();
+    void GoForward();
+    void GoBack();
+    void NavigateToString(String htmlContent);
+    void Close();
+
+    static Windows.UI.Xaml.DependencyProperty SourceProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty CanGoForwardProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty CanGoBackProperty{ get; };
+
+    event Windows.Foundation.TypedEventHandler<WebView2, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs> NavigationCompleted;
+    event Windows.Foundation.TypedEventHandler<WebView2, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs> WebMessageReceived;
+    event Windows.Foundation.TypedEventHandler<WebView2, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs> NavigationStarting;
+    event Windows.Foundation.TypedEventHandler<WebView2, Microsoft.Web.WebView2.Core.CoreWebView2ProcessFailedEventArgs> CoreProcessFailed;
+    event Windows.Foundation.TypedEventHandler<WebView2, CoreWebView2InitializedEventArgs> CoreWebView2Initialized;
+}
+
+}

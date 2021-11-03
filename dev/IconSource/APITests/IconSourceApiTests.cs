@@ -252,17 +252,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 // the parent to work.
                 Verify.AreEqual(iconSource.Foreground, null);
                 //Verify.AreEqual(animatedIcon.Foreground, null);
+                Verify.AreEqual(iconSource.MirroredWhenRightToLeft, false);
+                Verify.AreEqual(animatedIcon.MirroredWhenRightToLeft, false);
 
                 Log.Comment("Validate the defaults match BitmapIcon.");
 
                 var icon = new AnimatedIcon();
                 Verify.AreEqual(icon.Source, iconSource.Source);
                 Verify.AreEqual(animatedIcon.Source, iconSource.Source);
+                Verify.AreEqual(icon.MirroredWhenRightToLeft, iconSource.MirroredWhenRightToLeft);
 
                 Log.Comment("Validate that you can change the properties.");
 
                 iconSource.Foreground = new SolidColorBrush(Windows.UI.Colors.Red);
                 iconSource.Source = source;
+                iconSource.MirroredWhenRightToLeft = true;
             });
             IdleSynchronizer.Wait();
 
@@ -274,6 +278,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(Windows.UI.Colors.Red, (animatedIcon.Foreground as SolidColorBrush).Color);
                 Verify.AreEqual(source, iconSource.Source);
                 Verify.AreEqual(source, animatedIcon.Source);
+                Verify.IsTrue(iconSource.MirroredWhenRightToLeft);
+                Verify.IsTrue(animatedIcon.MirroredWhenRightToLeft);
             });
         }
 

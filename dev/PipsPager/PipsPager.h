@@ -27,7 +27,7 @@ public:
 
     /* Accessibility */
     winrt::AutomationPeer OnCreateAutomationPeer();
-    void UpdateSizeOfSetForElements(const int numberOfPages);
+    void UpdateSizeOfSetForElements(const int numberOfPages, const int numberOfItems);
 
     void OnPointerEntered(const winrt::PointerRoutedEventArgs& args);
     void OnPointerExited(const winrt::PointerRoutedEventArgs& args);
@@ -107,5 +107,4 @@ private:
     int m_lastSelectedPageIndex{ -1 };
     bool m_isPointerOver{ false };
     bool m_isFocused{ false };
-    bool m_ifNextFocusElementInside{ false };
 };

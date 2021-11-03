@@ -22,7 +22,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="utils:TestFrame">
                     <Viewbox x:Name="RootViewbox" Stretch="None">
-                        <Grid x:Name="RootGrid">
+                        <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
@@ -31,8 +31,10 @@
                             </Grid.RowDefinitions>
 
                             <Border Grid.Row="0" Child="{TemplateBinding CustomElement}"/>
+                            <!-- Element to track the "correct" theme to restore after the BackdropMaterial test runs -->
+                            <Grid x:Name="BackupThemeBackground" Grid.Row="1" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Visibility="Collapsed"/>
 
-                            <Grid x:Name="TestFrameBar" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Stretch">
+                            <Grid x:Name="TestFrameBar" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Stretch" >
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition />

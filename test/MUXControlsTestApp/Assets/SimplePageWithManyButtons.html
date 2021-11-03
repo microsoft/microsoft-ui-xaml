@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Page With Many Buttons</title>
+    <script>
+        function sendTouchMessage(event)
+        {
+            var currentElement = event.target.id;
+            window.chrome.webview.postMessage("Received: " + currentElement);
+        };
+
+        function sendClickMessage(event)
+        {
+            var currentElement = event.target.id;
+            window.chrome.webview.postMessage("Received: " + currentElement);
+        };
+    </script>
+</head>
+<body>
+    <div id="section0">
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="00" style="height: 50px; width: 50px;"> 00 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="01" style="height: 50px; width: 50px;"> 01 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="02" style="height: 50px; width: 50px;"> 02 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="03" style="height: 50px; width: 50px;"> 03 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="04" style="height: 50px; width: 50px;"> 04 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="05" style="height: 50px; width: 50px;"> 05 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="06" style="height: 50px; width: 50px;"> 06 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="07" style="height: 50px; width: 50px;"> 07 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="08" style="height: 50px; width: 50px;"> 08 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="09" style="height: 50px; width: 50px;"> 09 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="0a" style="height: 50px; width: 50px;"> 0a </button>
+    </div>
+    <div id="section1">
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="10" style="height: 50px; width: 50px;"> 10 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="11" style="height: 50px; width: 50px;"> 11 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="12" style="height: 50px; width: 50px;"> 12 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="13" style="height: 50px; width: 50px;"> 13 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="14" style="height: 50px; width: 50px;"> 14 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="15" style="height: 50px; width: 50px;"> 15 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="16" style="height: 50px; width: 50px;"> 16 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="17" style="height: 50px; width: 50px;"> 17 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="18" style="height: 50px; width: 50px;"> 18 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="19" style="height: 50px; width: 50px;"> 19 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="1a" style="height: 50px; width: 50px;"> 1a </button>
+    </div>
+    <div id="section2">
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="20" style="height: 50px; width: 50px;"> 20 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="21" style="height: 50px; width: 50px;"> 21 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="22" style="height: 50px; width: 50px;"> 22 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="23" style="height: 50px; width: 50px;"> 23 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="24" style="height: 50px; width: 50px;"> 24 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="25" style="height: 50px; width: 50px;"> 25 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="26" style="height: 50px; width: 50px;"> 26 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="27" style="height: 50px; width: 50px;"> 27 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="28" style="height: 50px; width: 50px;"> 28 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="29" style="height: 50px; width: 50px;"> 29 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="2a" style="height: 50px; width: 50px;"> 2a </button>
+    </div>
+    <div id="section3">
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="30" style="height: 50px; width: 50px;"> 30 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="31" style="height: 50px; width: 50px;"> 31 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="32" style="height: 50px; width: 50px;"> 32 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="33" style="height: 50px; width: 50px;"> 33 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="34" style="height: 50px; width: 50px;"> 34 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="35" style="height: 50px; width: 50px;"> 35 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="36" style="height: 50px; width: 50px;"> 36 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="37" style="height: 50px; width: 50px;"> 37 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="38" style="height: 50px; width: 50px;"> 38 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="39" style="height: 50px; width: 50px;"> 39 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="3a" style="height: 50px; width: 50px;"> 3a </button>
+    </div>
+    <div id="section4">
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="40" style="height: 50px; width: 50px;"> 40 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="41" style="height: 50px; width: 50px;"> 41 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="42" style="height: 50px; width: 50px;"> 42 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="43" style="height: 50px; width: 50px;"> 43 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="44" style="height: 50px; width: 50px;"> 44 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="45" style="height: 50px; width: 50px;"> 45 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="46" style="height: 50px; width: 50px;"> 46 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="47" style="height: 50px; width: 50px;"> 47 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="48" style="height: 50px; width: 50px;"> 48 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="49" style="height: 50px; width: 50px;"> 49 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="4a" style="height: 50px; width: 50px;"> 4a </button>
+    </div>
+    <div id="section5">
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="50" style="height: 50px; width: 50px;"> 50 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="51" style="height: 50px; width: 50px;"> 51 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="52" style="height: 50px; width: 50px;"> 52 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="53" style="height: 50px; width: 50px;"> 53 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="54" style="height: 50px; width: 50px;"> 54 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="55" style="height: 50px; width: 50px;"> 55 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="56" style="height: 50px; width: 50px;"> 56 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="57" style="height: 50px; width: 50px;"> 57 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="58" style="height: 50px; width: 50px;"> 58 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="59" style="height: 50px; width: 50px;"> 59 </button>
+        <button ontouchstart="sendTouchMessage(event)" onclick="sendClickMessage(event)" id="5a" style="height: 50px; width: 50px;"> 5a </button>
+    </div>
+</body>
+</html>

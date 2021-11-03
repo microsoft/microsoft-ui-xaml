@@ -20,10 +20,10 @@
                     TabCloseRequested="TabViewTabCloseRequested"
                     AddTabButtonClick="AddButtonClick">
 
-                    <muxc:TabViewItem Header="Tab 0" AutomationProperties.Name="Tab 0"/>
+                    <muxc:TabViewItem Header="Tab 0" x:Name="Tab0" AutomationProperties.Name="Tab 0"/>
                     <muxc:TabViewItem Header="Tab 1" AutomationProperties.Name="Tab 1"/>
                     <muxc:TabViewItem Header="Tab 2" AutomationProperties.Name="Tab 2"/>
-                    <muxc:TabViewItem Header="Tab 3" x:Name="Tab3" AutomationProperties.Name="Tab 3"/>
+                    <muxc:TabViewItem Header="Tab 3" AutomationProperties.Name="Tab 3"/>
                     <muxc:TabViewItem Header="Tab 4" AutomationProperties.Name="Tab 4"/>
                     <muxc:TabViewItem Header="Tab 5" AutomationProperties.Name="Tab 5"/>
                 </muxc:TabView>
@@ -43,6 +43,8 @@
                 <Button AutomationProperties.Name="IncreaseScrollButton"
                         Click="IncreaseScrollButton_Click"
                         Content="Increase scroll" />
+                <Button AutomationProperties.Name="RemoveMiddleItemButton" Click="RemoveMiddleItem_Click" Content="Remove Middle item"/>
+                <Button AutomationProperties.Name="RemoveLastItemButton" Click="RemoveLastItem_Click" Content="Remove last item"/>
             </StackPanel>
         </StackPanel>
     </Grid>

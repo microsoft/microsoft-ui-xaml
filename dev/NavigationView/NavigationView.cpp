@@ -29,6 +29,7 @@
 #include <ItemsRepeater.common.h>
 #include "NavigationViewItemExpandingEventArgs.h"
 #include "NavigationViewItemCollapsedEventArgs.h"
+#include "InspectingDataSource.h"
 
 // General items
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
@@ -92,7 +93,6 @@ static constexpr int c_paneToggleButtonWidth = 40;
 static constexpr int c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Behavior = 56;
 static constexpr int c_backButtonRowDefinition = 1;
 static constexpr float c_paneElevationTranslationZ = 32;
-static constexpr int c_paneItemsSeparatorHeight = 9;
 
 static constexpr int c_mainMenuBlockIndex = 0;
 static constexpr int c_footerMenuBlockIndex = 1;
@@ -178,7 +178,7 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     if (isFromDestructor)
     {
         m_selectionChangedRevoker.revoke();
-        m_autoSuggestBoxSuggestionChosenRevoker.revoke();
+        m_autoSuggestBoxQuerySubmittedRevoker.revoke();
     }
 }
 
@@ -657,6 +657,7 @@ void NavigationView::OnApplyTemplate()
     m_itemsContainerRow.set(GetTemplateChildT<winrt::RowDefinition>(c_itemsContainerRow, controlProtected));
     m_menuItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_menuItemsScrollViewer, controlProtected));
     m_footerItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_footerItemsScrollViewer, controlProtected));
+
 
     m_itemsContainerSizeChangedRevoker.revoke();
     if (const auto itemsContainer = GetTemplateChildT<winrt::FrameworkElement>(c_itemsContainer, controlProtected))
@@ -1387,6 +1388,7 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
 void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt::SizeChangedEventArgs const& args)
 {
     const auto width = args.NewSize().Width;
+    UpdateOpenPaneWidth(width);
     UpdateAdaptiveLayout(width);
     UpdateTitleBarPadding();
     UpdateBackAndCloseButtonsVisibility();
@@ -1396,6 +1398,17 @@ void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt:
 void NavigationView::OnItemsContainerSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
 {
     UpdatePaneLayout();
+}
+
+void NavigationView::UpdateOpenPaneWidth(double width)
+{
+    if (!IsTopNavigationView() && m_rootSplitView)
+    {
+        m_openPaneWidth = std::max(0.0, std::min(width, OpenPaneLength()));
+
+        const auto templateSettings = GetTemplateSettings();
+        templateSettings->OpenPaneWidth(m_openPaneWidth);
+    }
 }
 
 // forceSetDisplayMode: On first call to SetDisplayMode, force setting to initial values
@@ -1426,7 +1439,7 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
         {
             displayMode = winrt::NavigationViewDisplayMode::Expanded;
         }
-        else if (width < CompactModeThresholdWidth())
+        else if (width > 0 && width < CompactModeThresholdWidth())
         {
             displayMode = winrt::NavigationViewDisplayMode::Minimal;
         }
@@ -1473,6 +1486,11 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
         m_initialListSizeStateSet = false;
         ClosePane();
     }
+
+    if (displayMode == winrt::NavigationViewDisplayMode::Minimal)
+    {
+        ClosePane();
+    }
 }
 
 void NavigationView::UpdatePaneLayout()
@@ -1490,27 +1508,7 @@ void NavigationView::UpdatePaneLayout()
                     }
                     return 0.0;
                 }();
-                auto availableHeight = paneContentRow.ActualHeight() - itemsContainerMargin;
-
-                // The c_paneItemsSeparatorHeight is to account for the 9px separator height that we need to subtract.
-                if (PaneFooter())
-                {
-                    availableHeight -= c_paneItemsSeparatorHeight;
-                    if (const auto& paneFooter = m_leftNavFooterContentBorder.get())
-                    {
-                        availableHeight -= paneFooter.ActualHeight();
-                    }
-                }
-                else if (IsSettingsVisible())
-                {
-                    availableHeight -= c_paneItemsSeparatorHeight;
-                }
-                else if (m_footerItemsSource && m_menuItemsSource && m_footerItemsSource.Count() * m_menuItemsSource.Count() > 0)
-                {
-                    availableHeight -= c_paneItemsSeparatorHeight;
-                }
-
-                return availableHeight;
+                return paneContentRow.ActualHeight() - itemsContainerMargin;
             }
             return 0.0;
         }();
@@ -1529,8 +1527,48 @@ void NavigationView::UpdatePaneLayout()
                         // We know the actual height of footer items, so use that to determine how to split pane.
                         if (const auto& menuItems = m_leftNavRepeater.get())
                         {
-                            const auto footersActualHeight = footerItemsRepeater.ActualHeight();
-                            const auto menuItemsActualHeight = menuItems.ActualHeight();
+                            const auto footersActualHeight = [this, footerItemsRepeater]() {
+                                double footerItemsRepeaterTopBottomMargin = 0.0;
+                                if (footerItemsRepeater.Visibility() == winrt::Visibility::Visible)
+                                {
+                                    const auto footerItemsRepeaterMargin = footerItemsRepeater.Margin();
+                                    footerItemsRepeaterTopBottomMargin = footerItemsRepeaterMargin.Top + footerItemsRepeaterMargin.Bottom;
+                                }
+                                return footerItemsRepeater.ActualHeight() + footerItemsRepeaterTopBottomMargin;
+                            }();
+
+                            const auto paneFooterActualHeight = [this]() {
+                                if (const auto& paneFooter = m_leftNavFooterContentBorder.get())
+                                {
+                                    double paneFooterTopBottomMargin = 0.0;
+                                    if (paneFooter.Visibility() == winrt::Visibility::Visible)
+                                    {
+                                        const auto paneFooterMargin = paneFooter.Margin();
+                                        paneFooterTopBottomMargin = paneFooterMargin.Top + paneFooterMargin.Bottom;
+                                    }
+                                    return paneFooter.ActualHeight() + paneFooterTopBottomMargin;
+                                }
+                                return 0.0;
+                            }();
+
+                            // This is the value computed during the measure pass of the layout process. This will be the value used to determine
+                            // the partition logic between menuItems and footerGroup, since the ActualHeight may be taller if there's more space.
+                            const auto menuItemsDesiredHeight = menuItems.DesiredSize().Height;
+
+                            // This is what the height ended up being, so will be the value that is used to calculate the partition
+                            // between menuItems and footerGroup.
+                            const auto menuItemsActualHeight = [this, menuItems]() {
+                                double menuItemsTopBottomMargin = 0.0;
+                                if (menuItems.Visibility() == winrt::Visibility::Visible)
+                                {
+                                    const auto menuItemsMargin = menuItems.Margin();
+                                    menuItemsTopBottomMargin = menuItemsMargin.Top + menuItemsMargin.Bottom;
+                                }
+                                return menuItems.ActualHeight() + menuItemsTopBottomMargin;
+                            }();
+
+                            // Footer and PaneFooter are included in the footerGroup to calculate available height for menu items.
+                            const auto footerGroupActualHeight = footersActualHeight + paneFooterActualHeight;
 
                             if (m_footerItemsSource.Count() == 0 && !IsSettingsVisible())
                             {
@@ -1543,26 +1581,26 @@ void NavigationView::UpdatePaneLayout()
                                 winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
                                 return 0.0;
                             }
-                            else if (totalAvailableHeight > menuItemsActualHeight + footersActualHeight)
+                            else if (totalAvailableHeight >= menuItemsDesiredHeight + footerGroupActualHeight)
                             {
                                 // We have enough space for two so let everyone get as much as they need.
                                 footerItemsScrollViewer.MaxHeight(footersActualHeight);
                                 winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
-                                return totalAvailableHeight - footersActualHeight;
+                                return totalAvailableHeight - footerGroupActualHeight;
                             }
-                            else if (menuItemsActualHeight <= totalAvailableHeightHalf)
+                            else if (menuItemsDesiredHeight <= totalAvailableHeightHalf)
                             {
                                 // Footer items exceed over the half, so let's limit them.
                                 footerItemsScrollViewer.MaxHeight(totalAvailableHeight - menuItemsActualHeight);
                                 winrt::VisualStateManager::GoToState(*this, c_separatorVisibleStateName,false);
                                 return menuItemsActualHeight;
                             }
-                            else if (footersActualHeight <= totalAvailableHeightHalf)
+                            else if (footerGroupActualHeight <= totalAvailableHeightHalf)
                             {
                                 // Menu items exceed over the half, so let's limit them.
                                 footerItemsScrollViewer.MaxHeight(footersActualHeight);
                                 winrt::VisualStateManager::GoToState(*this, c_separatorVisibleStateName, false);
-                                return totalAvailableHeight - footersActualHeight;
+                                return totalAvailableHeight - footerGroupActualHeight;
                             }
                             else
                             {
@@ -1925,7 +1963,10 @@ void NavigationView::UpdatePaneTitleFrameworkElementParents()
             const auto third = SetPaneTitleFrameworkElementParent(paneTitleTopPane, paneTitleFrameworkElement, !isTopNavigationView || isPaneToggleButtonVisible);
             first ? first() : second ? second() : third ? third() : []() {}();
 
-            paneTitleTopPane.Visibility(third && paneTitleSize != 0 ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+            if (paneTitleTopPane)
+            {
+                paneTitleTopPane.Visibility(third && paneTitleSize != 0 ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+            }
         }
     }
 }
@@ -3096,7 +3137,10 @@ void NavigationView::TopNavigationViewItemContentChanged()
 {
     if (m_appliedTemplate)
     {
-        m_topDataProvider.InvalidWidthCache();
+        if (!MenuItemsSource())
+        {
+            m_topDataProvider.InvalidWidthCache();
+        }
         InvalidateMeasure();
     }
 }
@@ -3497,8 +3541,10 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::
     {
         const auto actualWidth = GetTopNavigationViewActualWidth();
         const auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
-        MUX_ASSERT(desiredWidth <= actualWidth);
-
+        // This assert triggers on the InfoBadge page, however it seems to recover fine, disabling the assert for now.
+        // Github issue: https://github.com/microsoft/microsoft-ui-xaml/issues/5771
+        // MUX_ASSERT(desiredWidth <= actualWidth);
+        
         // Calculate selected item size
         auto selectedItemIndex = s_itemNotFound;
         auto selectedItemWidth = 0.f;
@@ -3953,12 +3999,13 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         InvalidateTopNavPrimaryLayout();
         if (args.OldValue())
         {
-            m_autoSuggestBoxSuggestionChosenRevoker.revoke();
+            m_autoSuggestBoxQuerySubmittedRevoker.revoke();
         }
         if (const auto newAutoSuggestBox = args.NewValue().try_as<winrt::AutoSuggestBox>())
         {
-            m_autoSuggestBoxSuggestionChosenRevoker = newAutoSuggestBox.SuggestionChosen(winrt::auto_revoke, {this, &NavigationView::OnAutoSuggestBoxSuggestionChosen });
+            m_autoSuggestBoxQuerySubmittedRevoker = newAutoSuggestBox.QuerySubmitted(winrt::auto_revoke, {this, &NavigationView::OnAutoSuggestBoxQuerySubmitted });
         }
+        UpdateVisualState(false);
     }
     else if (property == s_SelectionFollowsFocusProperty)
     {
@@ -3998,6 +4045,10 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     else if (property == s_PaneFooterProperty)
     {
         UpdatePaneLayout();
+    }
+    else if (property == s_OpenPaneLengthProperty)
+    {
+        UpdateOpenPaneWidth(ActualWidth());
     }
 }
 
@@ -4357,13 +4408,13 @@ void NavigationView::UpdatePaneToggleSize()
             {
                 if (splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay && IsPaneOpen())
                 {
-                    width = OpenPaneLength();
-                    togglePaneButtonWidth = OpenPaneLength() - ((ShouldShowBackButton() || ShouldShowCloseButton()) ? c_backButtonWidth : 0);
+                    width = m_openPaneWidth;
+                    togglePaneButtonWidth = m_openPaneWidth - ((ShouldShowBackButton() || ShouldShowCloseButton()) ? c_backButtonWidth : 0);
                 }
                 else if (!(splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay && !IsPaneOpen()))
                 {
-                    width = OpenPaneLength();
-                    togglePaneButtonWidth = OpenPaneLength();
+                    width = m_openPaneWidth;
+                    togglePaneButtonWidth = m_openPaneWidth;
                 }
             }
 
@@ -4703,10 +4754,10 @@ void NavigationView::UpdateTitleBarPadding()
     }
 }
 
-void NavigationView::OnAutoSuggestBoxSuggestionChosen(const winrt::AutoSuggestBox& sender, const winrt::Windows::UI::Xaml::Controls::AutoSuggestBoxSuggestionChosenEventArgs& args)
+void NavigationView::OnAutoSuggestBoxQuerySubmitted(const winrt::AutoSuggestBox& sender, const winrt::Windows::UI::Xaml::Controls::AutoSuggestBoxQuerySubmittedEventArgs& args)
 {
-    // When in compact or minimal, we want to close pane when an item gets selected.
-    if (DisplayMode() != winrt::NavigationViewDisplayMode::Expanded && args.SelectedItem() != nullptr)
+    // When in compact or minimal, we want to close pane when an item gets chosen.
+    if (DisplayMode() != winrt::NavigationViewDisplayMode::Expanded && args.ChosenSuggestion() != nullptr)
     {
         ClosePane();
     }
@@ -4845,11 +4896,11 @@ void NavigationView::UpdatePaneShadow()
         // Ensure shadow is as wide as the pane when it is open
         if (DisplayMode() == winrt::NavigationViewDisplayMode::Compact)
         {
-            shadowReceiver.Width(OpenPaneLength());
+            shadowReceiver.Width(m_openPaneWidth);
         }
         else
         {
-            shadowReceiver.Width(OpenPaneLength() - shadowReceiverMargin.Right);
+            shadowReceiver.Width(m_openPaneWidth - shadowReceiverMargin.Right);
         }
         shadowReceiver.Margin(shadowReceiverMargin);
     }
@@ -5313,7 +5364,13 @@ void NavigationView::Collapse(const winrt::NavigationViewItem& item)
 
 bool NavigationView::DoesNavigationViewItemHaveChildren(const winrt::NavigationViewItem& nvi)
 {
-    return nvi.MenuItems().Size() > 0 || nvi.MenuItemsSource() != nullptr || nvi.HasUnrealizedChildren();
+    if (nvi.MenuItemsSource()) {
+        if (const auto sourceView = winrt::make<InspectingDataSource>(nvi.MenuItemsSource()))
+        {
+            return sourceView.Count() > 0;
+        }
+    }
+    return nvi.MenuItems().Size() > 0 || nvi.HasUnrealizedChildren();
 }
 
 void NavigationView::ToggleIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi)

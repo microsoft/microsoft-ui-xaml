@@ -1,0 +1,68 @@
+﻿namespace MU_XC_NAMESPACE
+{
+    [MUX_PUBLIC]
+    [webhosthidden]
+    [default_interface]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    unsealed runtimeclass BackdropMaterial : Windows.UI.Xaml.DependencyObject
+    {
+        [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnApplyToRootOrPageBackgroundChanged")]
+        static Windows.UI.Xaml.DependencyProperty ApplyToRootOrPageBackgroundProperty { get; };
+        static void SetApplyToRootOrPageBackground(Windows.UI.Xaml.Controls.Control element, Boolean value);
+        static Boolean GetApplyToRootOrPageBackground(Windows.UI.Xaml.Controls.Control element);
+    }
+}
+
+namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+    [webhosthidden]
+    [default_interface]
+    [MUX_INTERNAL]
+    runtimeclass MicaController
+    {
+        MicaController();
+
+        Boolean SetTarget(Windows.UI.Xaml.Window xamlWindow);
+
+        Windows.UI.Color TintColor;
+        Single TintOpacity;
+        Single LuminosityOpacity;
+        Windows.UI.Color FallbackColor;
+    }
+
+    [MUX_INTERNAL]
+    [webhosthidden]
+    [default_interface]
+    runtimeclass BackdropMaterialState
+    {
+
+    }
+
+    [MUX_INTERNAL]
+    [webhosthidden]
+    [default_interface]
+    runtimeclass BackdropMaterialTestApi
+    {
+        static Boolean IsBackdropMaterialActive { get; };
+        static Windows.UI.Color TintColor;
+        static Single TintOpacity;
+        static Single LuminosityOpacity;
+        static Windows.UI.Color FallbackColor;
+    }
+
+    [MUX_INTERNAL]
+    [webhosthidden]
+    [uuid(397DAFE4-B6C2-5BB9-951D-F5707DE8B7BC)]
+    interface ICompositionSupportsSystemBackdrop
+    {
+        Windows.UI.Composition.CompositionBrush SystemBackdrop;
+    }
+
+    [MUX_INTERNAL]
+    [webhosthidden]
+    [uuid(0D8FB190-F122-5B8D-9FDD-543B0D8EB7F3)]
+    interface ICompositorWithBlurredWallpaperBackdropBrush
+    {
+        Windows.UI.Composition.CompositionBackdropBrush TryCreateBlurredWallpaperBackdropBrush();
+    }
+}

@@ -69,7 +69,7 @@ void ProgressRing::OnForegroundPropertyChanged(const winrt::DependencyObject&, c
 {
     if (const auto foreground = Foreground().try_as<winrt::SolidColorBrush>())
     {
-        foreground.RegisterPropertyChangedCallback(winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnForegroundColorPropertyChanged });
+        m_foregroundColorPropertyChangedRevoker = RegisterPropertyChanged(foreground, winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnForegroundColorPropertyChanged });
     }
 
     OnForegroundColorPropertyChanged(nullptr, nullptr);
@@ -103,7 +103,7 @@ void ProgressRing::OnBackgroundPropertyChanged(const winrt::DependencyObject&, c
 {
     if (const auto background = Background().try_as<winrt::SolidColorBrush>())
     {
-        background.RegisterPropertyChangedCallback(winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnBackgroundColorPropertyChanged });
+        m_backgroundColorPropertyChangedRevoker = RegisterPropertyChanged(background, winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnBackgroundColorPropertyChanged });
     }
 
     OnBackgroundColorPropertyChanged(nullptr, nullptr);
@@ -341,7 +341,8 @@ void ProgressRing::UpdateStates()
             // Swap player source to determinate.
             SetAnimatedVisualPlayerSource();
             UpdateLottieProgress();
-        }   
+        }
+        winrt::AutomationProperties::SetAccessibilityView(*this, winrt::AccessibilityView::Content);
     }
     else
     {
@@ -351,6 +352,8 @@ void ProgressRing::UpdateStates()
         {
             player.Stop();
         }
+
+        winrt::AutomationProperties::SetAccessibilityView(*this, winrt::AccessibilityView::Raw);
     }
 }
 

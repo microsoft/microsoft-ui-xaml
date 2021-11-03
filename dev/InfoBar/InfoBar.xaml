@@ -10,6 +10,8 @@
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="CloseButtonStyle" Value="{StaticResource InfoBarCloseButtonStyle}" />
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{ThemeResource InfoBarBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource InfoBarBorderThickness}" />
         <contract7Present:Setter Property="AutomationProperties.IsDialog" Value="True"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
@@ -18,8 +20,8 @@
                     <Border x:Name="ContentRoot" 
                         VerticalAlignment="Top"
                         Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
-                        BorderBrush="{ThemeResource InfoBarBorderBrush}"
-                        BorderThickness="{ThemeResource InfoBarBorderThickness}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>

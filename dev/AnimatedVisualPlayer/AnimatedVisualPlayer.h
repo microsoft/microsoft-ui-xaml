@@ -65,8 +65,10 @@ private:
         // Called to indicate that the play has been completed. Unblocks awaiters.
         void Complete();
 
+        void ResetOwner();
+
     private:
-        AnimatedVisualPlayer& m_owner;
+        AnimatedVisualPlayer* m_owner;
         const float m_fromProgress{};
         const float m_toProgress{};
         const bool m_looped{};

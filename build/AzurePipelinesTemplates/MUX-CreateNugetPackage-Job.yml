@@ -39,25 +39,6 @@ jobs:
       downloadPath: '$(Build.SourcesDirectory)\Artifacts'
 
   - template: MUX-InstallNuget-Steps.yml
-  - template: MUX-InstallWindowsSDK-Steps.yml
-
-  - ${{ if eq( parameters.signOutput, true) }}:
-    # Re-create framework packages because we made them in the build step against unsigned binaries.
-    - template: MUX-MakeFrameworkPackages-Steps.yml
-
-    # Copy the re-made framework packages into the same location in the artifact drop to be republished at the end of the job.
-    - task: CopyFiles@2
-      inputs:
-        targetFolder: '${{ parameters.nupkgdir }}'
-        sourceFolder: '$(Build.SourcesDirectory)\Artifacts\drop'
-        Contents: '**\Microsoft.UI.Xaml*.appx'
-
-    # Copy the CBS packages into the same location in the artifact drop to be republished at the end of the job.
-    - task: CopyFiles@2
-      inputs:
-        targetFolder: '${{ parameters.nupkgdir }}'
-        sourceFolder: '$(Build.SourcesDirectory)\Artifacts\drop'
-        Contents: '**\CBS*'
         
   - powershell: |
       $prereleaseTag = "${{ parameters.prereleaseVersionTag }}"

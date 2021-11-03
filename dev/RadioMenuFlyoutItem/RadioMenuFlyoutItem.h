@@ -59,6 +59,10 @@ private:
 
     void UpdateCheckedItemInGroup();
 
+    // Copies of IsChecked & GroupName to avoid using those dependency properties in the ~RadioMenuFlyoutItem() destructor which would lead to crashes.
+    bool m_isChecked{ false };
+    winrt::hstring m_groupName{ L"" };
+
     bool m_isSafeUncheck{ false };
 
     PropertyChanged_revoker m_InternalIsCheckedChangedRevoker{};

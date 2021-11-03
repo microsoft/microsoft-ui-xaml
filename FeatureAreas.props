@@ -198,6 +198,8 @@
   </PropertyGroup>
   <!-- Dependencies for TitleBar -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTitleBarEnabled) == 'true'">
+  <!-- Dependencies for InfoBadge -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureInfoBadgeEnabled) == 'true'">
   </PropertyGroup>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
@@ -252,6 +254,8 @@
     <FeatureMonochromaticOverlayPresenterEnabled>true</FeatureMonochromaticOverlayPresenterEnabled>
     <FeatureSampleControlEnabled>true</FeatureSampleControlEnabled>
     <FeatureTitleBarEnabled>true</FeatureTitleBarEnabled>
+    <FeatureInfoBadgeEnabled>true</FeatureInfoBadgeEnabled>
+    <FeatureWebView2Enabled>true</FeatureWebView2Enabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>

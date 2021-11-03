@@ -274,7 +274,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 catch (Exception ex)
                 {
                     Log.Comment("Failed to launch app. Exception: " + ex.ToString());
-                    
+
                     if (retries < MaxLaunchRetries)
                     {
                         Log.Comment("UAPApp.Launch might not have waited long enough, trying again {0}", retries);
@@ -354,7 +354,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             // 3. Use the Process obj we found when this Application object was initialized.
             // This is just a sanity check. Under normal circumstances, there should only be 
             // one app process. 
-            
+
             var appProcesses = Process.GetProcessesByName(_appProcessName).ToList();
 
             if (appWindowsProccessId != -1)

@@ -1245,8 +1245,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             RunOnUIThread.Execute(() =>
             {
-                var repeater = new ItemsRepeater()
-                {
+                var repeater = new ItemsRepeater() {
                     ItemsSource = new List<string>(), // no items 
                     Layout = new UniformGridLayout() { Orientation = Orientation.Vertical },
                 };
@@ -1257,6 +1256,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 // Ensure we do not crash and get zero size.
                 Verify.AreEqual(0, repeater.DesiredSize.Width);
                 Verify.AreEqual(0, repeater.DesiredSize.Height);
+            });
+        }
+
+        [TestMethod]
+        public void ValidateUniformGridWithItemsRelyingOnAspectRatio()
+        {
+            ItemsRepeater repeater = null;
+            ScrollViewer scroller = null;
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 6), // no items 
+                    Layout = new UniformGridLayout() {
+                        Orientation = Orientation.Vertical,
+                        MaximumRowsOrColumns = 1,
+                        MinItemWidth = 100
+                    },
+                    MaxWidth = 300,
+                    ItemTemplate = GetDataTemplate("<repeaterCommon:AspectRatioRespectingControl/>")
+                };
+
+                scroller = new ScrollViewer() {
+                    Content = repeater
+                };
+
+                Content = scroller;
+                repeater.UpdateLayout();
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Assert not implemented yet
+                Verify.IsTrue(Math.Abs(300 - repeater.DesiredSize.Width) < 1, "Repeater width should be 300");
+                Verify.IsTrue(repeater.DesiredSize.Height > 1, "Repeater should have height");
             });
         }
 
@@ -1545,7 +1581,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             return (DataTemplate)XamlReader.Load(
                        string.Format(@"<DataTemplate  
-                            xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                            xmlns:repeaterCommon='using:MUXControls.ApiTests.RepeaterTests.Common'>
                            {0}
                         </DataTemplate>", content));
         }
