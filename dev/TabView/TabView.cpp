@@ -718,6 +718,8 @@ void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, cons
 
 // ### change the border width
 // ### probably also call if the tab dimensions change, if ANYTHING moves...
+// ### call on tabview size changed
+// ### clip under the scroll viewport
 void TabView::UpdateBorderWidths()
 {
     if (const auto selectedItem = SelectedItem())

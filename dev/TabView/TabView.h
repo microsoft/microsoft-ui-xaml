@@ -123,6 +123,9 @@ public:
     void SetTabSeparatorOpacity(int index, int opacityValue);
     void SetTabSeparatorOpacity(int index);
 
+
+    void UpdateBorderWidths();
+
 private:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnScrollViewerLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -147,8 +150,6 @@ private:
 
     bool RequestCloseCurrentTab();
     bool SelectNextTab(int increment);
-
-    void UpdateBorderWidths();
 
     void UpdateSelectedItem();
     void UpdateSelectedIndex();

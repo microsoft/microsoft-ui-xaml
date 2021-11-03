@@ -120,6 +120,13 @@ void TabViewItem::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeCha
     const auto geometry = winrt::XamlReader::Load(strOut).try_as<winrt::Geometry>();
 
     templateSettings->TabGeometry(geometry);
+
+
+    if (const auto tabView = GetParentTabView())
+    {
+        const auto internalTabView = winrt::get_self<TabView>(tabView);
+        internalTabView->UpdateBorderWidths();
+    }
 }
 
 void TabViewItem::UpdateTabGeometry()
