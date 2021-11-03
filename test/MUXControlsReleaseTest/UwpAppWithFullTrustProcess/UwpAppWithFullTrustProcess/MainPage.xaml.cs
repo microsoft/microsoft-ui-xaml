@@ -26,7 +26,7 @@ namespace UwpAppWithFullTrustProcess
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
-			await FullTrustProcessLauncher.LaunchFullTrustProcessForCurrentAppAsync();
+            await FullTrustProcessLauncher.LaunchFullTrustProcessForCurrentAppAsync();
         }
     }
 }

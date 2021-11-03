@@ -74,7 +74,7 @@ jobs:
     inputs:
       PackageFilePath: '$(appxPackagesPath)\UwpAppWithFullTrustProcess_package_Test\UwpAppWithFullTrustProcess_package.msix'
   - task: CopyFiles@2
-    displayName: 'Copy results for AppThatUsesMUXIndirectly'
+    displayName: 'Copy results for UwpAppWithFullTrustProcess'
     condition: succeededOrFailed()
     inputs:
       sourceFolder: $(appxPackagesPath)\UwpAppWithFullTrustProcess_package_Test\
