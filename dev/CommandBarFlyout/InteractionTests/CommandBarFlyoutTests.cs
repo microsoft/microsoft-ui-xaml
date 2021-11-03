@@ -1068,9 +1068,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Right);
                 Wait.ForIdle();
 
+                Log.Comment("Verifying Primary Commands is present and MoreButton is actionable");
+
                 Button moreButton = FindElement.ById<Button>("MoreButton");
                 var moreButtonElement = AutomationElement.FocusedElement;
                 Verify.AreEqual(moreButtonElement.Current.AutomationId, moreButton.AutomationId);
+
+                Log.Comment("Dismissing flyout");
+                KeyboardHelper.PressKey(Key.Escape);
+
+                Log.Comment("Remove test Primary Command Button");
+                editCommandCount6.Click();
+
+                showCommandBarFlyoutButtonWithNoPrimaryCommands.Click();
+                Wait.ForIdle();
+
+                Log.Comment("Verifying the first item is from Secondary Commands");
+                Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton6.AutomationId);
             }
         }
     }
