@@ -3,7 +3,7 @@
   <Identity Name="UwpAppWithFullTrustProcess-package" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" Version="1.0.0.0" />
   <Properties>
     <DisplayName>UwpAppWithFullTrustProcess_package</DisplayName>
-    <PublisherDisplayName>kmahone</PublisherDisplayName>
+    <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   <Dependencies>
