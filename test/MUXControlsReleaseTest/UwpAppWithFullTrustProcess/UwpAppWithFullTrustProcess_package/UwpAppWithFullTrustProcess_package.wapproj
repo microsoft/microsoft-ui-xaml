@@ -47,14 +47,8 @@
     <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
     <EntryPointProjectUniqueName>..\UwpAppWithFullTrustProcess\UwpAppWithFullTrustProcess.csproj</EntryPointProjectUniqueName>
-    <!-- <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision> -->
-    <!-- <AppxBundlePlatforms>x86|x64|arm|arm64</AppxBundlePlatforms> -->
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-    <!-- <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm> -->
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
-    <!-- <GenerateTestArtifacts>True</GenerateTestArtifacts> -->
-    <!-- <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks> -->
-    <!-- <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate> -->
     <GenerateAppxPackageOnBuild>True</GenerateAppxPackageOnBuild>
     <AppxPackageName>UwpAppWithFullTrustProcess_package</AppxPackageName>
     <PackageCertificateKeyFile>..\..\..\..\build\MSTest.pfx</PackageCertificateKeyFile>
