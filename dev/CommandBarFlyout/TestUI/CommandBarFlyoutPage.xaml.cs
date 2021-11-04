@@ -22,7 +22,9 @@ namespace MUXControlsTestApp
         private CommandBarFlyout clearSecondaryCommandsFlyout;
 
         private DispatcherTimer dynamicLabelTimer = new DispatcherTimer();
+        private DispatcherTimer dynamicCommandTimer = new DispatcherTimer();
         private AppBarButton dynamicLabelSecondaryCommand;
+        private CommandBarFlyout dynamicCommandBarFlyout;
         private string originalLabelSecondaryCommand;
         private int dynamicLabelChangeCount;
 
@@ -31,6 +33,8 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
 
             dynamicLabelTimer.Tick += DynamicLabelTimer_Tick;
+
+            dynamicCommandTimer.Tick += DynamicCommandTimer_Tick;
 
             clearSecondaryCommandsTimer.Interval = new TimeSpan(0, 0, 3 /*sec*/);
             clearSecondaryCommandsTimer.Tick += ClearSecondaryCommandsTimer_Tick;
@@ -181,8 +185,9 @@ namespace MUXControlsTestApp
         {
             bool useSecondaryCommandDynamicLabel = (bool)UseSecondaryCommandDynamicLabelCheckBox.IsChecked;
             bool clearSecondaryCommands = (bool)ClearSecondaryCommandsCheckBox.IsChecked;
+            bool addPrimaryCommandDynamicllyCheckBox = (bool)AddPrimaryCommandDynamicllyCheckBox.IsChecked;
 
-            if (useSecondaryCommandDynamicLabel || clearSecondaryCommands)
+            if (useSecondaryCommandDynamicLabel || addPrimaryCommandDynamicllyCheckBox || clearSecondaryCommands)
             {
                 CommandBarFlyout commandBarFlyout = flyout as CommandBarFlyout;
 
@@ -199,6 +204,12 @@ namespace MUXControlsTestApp
                         {
                             SetClearSecondaryCommandsFlyout(commandBarFlyout);
                         }
+                    }
+
+                    if (addPrimaryCommandDynamicllyCheckBox)
+                    {
+                        dynamicCommandBarFlyout = commandBarFlyout;
+                        SetDynamicPrimaryCommand();
                     }
                 }
             }
@@ -256,6 +267,13 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void SetDynamicPrimaryCommand()
+        {
+            dynamicCommandTimer.Interval = new TimeSpan(0, 0, 0, 0, int.Parse(DynamicLabelTimerIntervalTextBox.Text) /*msec*/);
+            dynamicLabelChangeCount = int.Parse(DynamicLabelChangeCountTextBox.Text);
+            dynamicCommandTimer.Start();
+        }
+
         private void ClearSecondaryCommandsTimer_Tick(object sender, object e)
         {
             if (clearSecondaryCommandsFlyout != null)
@@ -285,6 +303,19 @@ namespace MUXControlsTestApp
                 {
                     dynamicLabelTimer.Stop();
                 }
+            }
+        }
+
+
+        private void DynamicCommandTimer_Tick(object sender, object e)
+        {
+            dynamicCommandBarFlyout.PrimaryCommands.Add(new AppBarButton() {
+                Content = new TextBlock() { Text = "Test" }
+            });
+
+            if (--dynamicLabelChangeCount == 0)
+            {
+                dynamicCommandTimer.Stop();
             }
         }
 
