@@ -43,10 +43,13 @@ winrt::hstring ResourceAccessor::GetLocalizedStringResource(const wstring_view &
     return s_resourceMap.GetValue(resourceName, s_resourceContext).ValueAsString();
 }
 
+#ifdef MUX_EXPERIMENTAL
 winrt::hstring ResourceAccessor::GetLocalizedStringResourceFromWinUI(const wstring_view& resourceName)
 {
+    // Remove hard-coded M.U.X.2.6 package name. Tracked by:
+    // #6242 ResourceAccessor::GetLocalizedStringResourceFromWinUI has hardcoded string for WinUI 2.6
     static winrt::ResourceMap s_resourceMapWinUI = []() {
-        const auto packageResourceMap = winrt::ResourceManager::Current().AllResourceMaps().Lookup(MUXCONTROLS_PACKAGE_NAME);
+        const auto packageResourceMap = winrt::ResourceManager::Current().AllResourceMaps().Lookup(L"Microsoft.UI.Xaml.2.6");
         return packageResourceMap.GetSubtree(ResourceAccessor::c_resourceLocWinUI);
     }();
 
@@ -54,6 +57,7 @@ winrt::hstring ResourceAccessor::GetLocalizedStringResourceFromWinUI(const wstri
 
     return s_resourceMapWinUI.GetValue(resourceName, s_resourceContext).ValueAsString();
 }
+#endif
 
 winrt::LoadedImageSurface ResourceAccessor::GetImageSurface(const wstring_view &assetName, winrt::Size imageSize)
 {
