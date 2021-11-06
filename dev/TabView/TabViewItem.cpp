@@ -23,6 +23,7 @@ TabViewItem::TabViewItem()
     Loaded({ this, &TabViewItem::OnLoaded });
 
     RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), { this, &TabViewItem::OnIsSelectedPropertyChanged });
+    RegisterPropertyChangedCallback(winrt::Control::ForegroundProperty(), { this, &TabViewItem::OnForegroundPropertyChanged });
 }
 
 void TabViewItem::OnApplyTemplate()
@@ -30,6 +31,8 @@ void TabViewItem::OnApplyTemplate()
     auto popupRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*this, box_value(c_overlayCornerRadiusKey)));
 
     winrt::IControlProtected controlProtected{ *this };
+
+    m_headerContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"ContentPresenter", controlProtected));
 
     auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this));
     auto internalTabView = tabView
@@ -60,6 +63,7 @@ void TabViewItem::OnApplyTemplate()
         return closeButton;
         }());
 
+    OnHeaderChanged();
     OnIconSourceChanged();
 
     if (tabView)
@@ -92,7 +96,8 @@ void TabViewItem::OnApplyTemplate()
     }
 
     UpdateCloseButton();
-    UpdateWidthModeVisualState();
+    UpdateForeground();
+    UpdateWidthModeVisualState();    
 }
 
 void TabViewItem::OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
@@ -127,6 +132,25 @@ void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sen
     UpdateWidthModeVisualState();
 
     UpdateCloseButton();
+    UpdateForeground();
+}
+
+void TabViewItem::OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+{
+    UpdateForeground();
+}
+
+void TabViewItem::UpdateForeground()
+{
+    // We only need to set the foreground state when the TabViewItem is in rest state and not selected.
+    if (!IsSelected() && !m_isPointerOver)
+    {
+        // If Foreground is set, then change icon and header foreground to match.
+        winrt::VisualStateManager::GoToState(
+            *this,
+            ReadLocalValue(winrt::Control::ForegroundProperty()) == winrt::DependencyProperty::UnsetValue() ? L"ForegroundNotSet" : L"ForegroundSet",
+            false /*useTransitions*/);
+    }
 }
 
 void TabViewItem::UpdateShadow()
@@ -156,6 +180,7 @@ void TabViewItem::OnTabDragCompleted(const winrt::IInspectable& sender, const wi
 {
     m_isDragging = false;
     UpdateShadow();
+    UpdateForeground();
 }
 
 winrt::AutomationPeer TabViewItem::OnCreateAutomationPeer()
@@ -184,7 +209,6 @@ void TabViewItem::OnTabViewWidthModeChanged(winrt::TabViewWidthMode const& mode)
     m_tabViewWidthMode = mode;
     UpdateWidthModeVisualState();
 }
-
 
 void TabViewItem::UpdateCloseButton()
 {
@@ -261,6 +285,16 @@ void TabViewItem::OnIsClosablePropertyChanged(const winrt::DependencyPropertyCha
 
 void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    OnHeaderChanged();
+}
+
+void TabViewItem::OnHeaderChanged()
+{
+    if (const auto headerContentPresenter = m_headerContentPresenter.get())
+    {
+        headerContentPresenter.Content(Header());
+    }
+
     if (m_firstTimeSettingToolTip)
     {
         m_firstTimeSettingToolTip = false;
@@ -283,13 +317,16 @@ void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChanged
         auto headerContent = Header();
         auto potentialString = headerContent.try_as<winrt::IPropertyValue>();
 
-        if (potentialString && potentialString.Type() == winrt::PropertyType::String)
+        // Only show tooltip if header is a non-empty string.
+        if (potentialString && potentialString.Type() == winrt::PropertyType::String && !potentialString.GetString().empty())
         {
             toolTip.Content(headerContent);
+            toolTip.IsEnabled(true);
         }
         else
         {
             toolTip.Content(nullptr);
+            toolTip.IsEnabled(false);
         }
     }
 }
@@ -389,6 +426,7 @@ void TabViewItem::OnPointerExited(winrt::PointerRoutedEventArgs const& args)
     m_isMiddlePointerButtonPressed = false;
 
     UpdateCloseButton();
+    UpdateForeground();
     RestoreLeftAdjacentTabSeparatorVisibility();
 }
 

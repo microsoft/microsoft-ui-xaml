@@ -12,6 +12,9 @@ parameters:
     Release_Arm:
       buildPlatform: 'arm'
       buildConfiguration: 'Release'
+    Release_Arm64:
+      buildPlatform: 'arm64'
+      buildConfiguration: 'Release'
 jobs:
 - job: ${{ parameters.name }}
   dependsOn: ${{ parameters.dependsOn }}
@@ -32,7 +35,7 @@ jobs:
     inputs: 
       artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactDownloadPath)'
-      itemPattern: '**\*.appx'
+      itemPattern: '**\*.?(appx|msix)'
 
   - task: PkgESWACKTests@12
     displayName: Run WACK tests for NugetPackageTestApp
@@ -40,7 +43,6 @@ jobs:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       PackageFilePath: '$(appxPackagesPath)\NugetPackageTestApp_Test\NugetPackageTestApp.appx'
-
   - task: CopyFiles@2
     displayName: 'Copy results for NugetPackageTestApp'
     condition: succeededOrFailed()
@@ -56,12 +58,26 @@ jobs:
     condition: succeededOrFailed()
     inputs:
       PackageFilePath: '$(appxPackagesPath)\AppThatUsesMUXIndirectly_Test\AppThatUsesMUXIndirectly.appx'
-
   - task: CopyFiles@2
     displayName: 'Copy results for AppThatUsesMUXIndirectly'
     condition: succeededOrFailed()
     inputs:
       sourceFolder: $(appxPackagesPath)\AppThatUsesMUXIndirectly_Test\
+      contents: '*.xml'
+      targetFolder: $(resultLogStagingPath)
+
+  - task: PkgESWACKTests@12
+    displayName: Run WACK tests for UwpAppWithFullTrustProcess
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    condition: succeededOrFailed()
+    inputs:
+      PackageFilePath: '$(appxPackagesPath)\UwpAppWithFullTrustProcess_package_Test\UwpAppWithFullTrustProcess_package.msix'
+  - task: CopyFiles@2
+    displayName: 'Copy results for UwpAppWithFullTrustProcess'
+    condition: succeededOrFailed()
+    inputs:
+      sourceFolder: $(appxPackagesPath)\UwpAppWithFullTrustProcess_package_Test\
       contents: '*.xml'
       targetFolder: $(resultLogStagingPath)
 

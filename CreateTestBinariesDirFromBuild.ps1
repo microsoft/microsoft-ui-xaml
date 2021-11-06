@@ -161,9 +161,10 @@ else
     {   
         $shouldBuild = $shouldBuild -Or (DoesTaefAppXNeedBuild -MuxDllFile $muxDllFile -ProjectName "MUXControlsTestApp" -Platform $Platform -Flavor $Flavor)
         $shouldBuild = $shouldBuild -Or (DoesTaefAppXNeedBuild -MuxDllFile $muxDllFile -ProjectName "IXMPTestApp" -Platform $Platform -Flavor $Flavor)
+
         if($shouldBuild)
         {
-            $buildCmd = "$PSScriptRoot\build.cmd $($Platform.ToLower()) $($Flavor.ToLower()) /target test\MUXControlsTestApp\MUXControlsTestApp_TAEF:Publish /target test\IXMPTestApp\IXMPTestApp_TAEF:Publish /target test\MUXControlsTestAppWPF\MUXControlsTestAppWPFPackage:Publish"
+            $buildCmd = "$PSScriptRoot\build.cmd $($Platform.ToLower()) $($Flavor.ToLower()) /target test\MUXControlsTestApp\MUXControlsTestApp_TAEF:Publish /target test\IXMPTestApp\IXMPTestApp_TAEF:Publish"
         }
     }
     else

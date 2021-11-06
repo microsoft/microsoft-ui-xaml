@@ -56,8 +56,8 @@ namespace MUXControlsTestApp
         }
         private void SliderDensityTest_Click(object sender, RoutedEventArgs e)
         {
-            string expectSliderPreContentMargin = "15";
-            string expectSliderPostContentMargin = "15";
+            string expectSliderPreContentMargin = "14";
+            string expectSliderPostContentMargin = "14";
             string expectSliderHorizontalHeight = "32";
             string expectSliderVerticalWidth = "32";
 

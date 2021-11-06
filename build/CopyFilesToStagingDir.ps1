@@ -39,7 +39,10 @@ PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml.Design\Microsoft.UI.Xam
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\Microsoft.UI.Xaml.FrameworkPackagePRI\Microsoft.UI.Xaml.pri $FullPublishDir\Microsoft.UI.Xaml.FrameworkPackagePRI\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\MUXControls.Test.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\MUXTestInfra.TAEF.dll $FullPublishDir\Test\
+PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\WebView2Loader.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.ReleaseTest.TAEF\MUXControls.ReleaseTest.dll $FullPublishDir\Test\
+PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.ReleaseTest.TAEF\WebView2Loader.dll $FullPublishDir\Test\
+PublishFile -IfExists $FullBuildOutput\NugetPackageTestApp\WebView2Loader.dll $FullPublishDir\Test\
 
 # pgosweep and vcruntime are required to run pgo instrumented test run. They are placed from the
 # cx test app instead of releasetest.dll since these are architecture specific and the ReleaseTest assembly is AnyCPU.

@@ -489,21 +489,58 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             // We snap to the nearest HSV value and then derive the RGB value and ellipse position from that,
             // so we're bound to run into rounding errors along the way, which is what accounts for the slightly
             // different values we get in RTL where our x-axis is flipped.
-            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrum(0.5, 0.5));
+            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrumAndWaitForColorChange(0.5, 0.5));
             VerifySelectedColorIsNear(127, 255, 252);
             VerifySelectionEllipseIsNear(127, 127);
-            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrum(0.25, 0.25));
+            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrumAndWaitForColorChange(0.25, 0.25));
             VerifySelectedColorIsNear(163, isRTL ? 63 : 255, isRTL ? 255 : 63);
             VerifySelectionEllipseIsNear(isRTL ? 194 : 63, 63);
-            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrum(0.75, 0.25));
+            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrumAndWaitForColorChange(0.75, 0.25));
             VerifySelectedColorIsNear(151, isRTL ? 255 : 63, isRTL ? 63 : 255);
             VerifySelectionEllipseIsNear(isRTL ? 66 : 191, 63);
-            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrum(0.25, 0.75));
+            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrumAndWaitForColorChange(0.25, 0.75));
             VerifySelectedColorIsNear(224, isRTL ? 191 : 255, isRTL ? 255 : 191);
             VerifySelectionEllipseIsNear(isRTL ? 194 : 63, 192);
-            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrum(0.75, 0.75));
+            setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrumAndWaitForColorChange(0.75, 0.75));
             VerifySelectedColorIsNear(220, isRTL ? 255 : 191, isRTL ? 191 : 255);
             VerifySelectionEllipseIsNear(isRTL ? 66 : 191, 192);
+        }
+
+        [TestMethod]
+        public void VerifyHsvUpdatesOnSpectrumSelection()
+        {
+            using (var setup = SetupColorPickerTest())
+            {
+                TapOnColorSpectrumAndWaitForColorChange(0.5, 0.5);
+                VerifySelectedColorIsNear(127, 255, 252);
+                VerifySelectionEllipseIsNear(127, 127);
+               
+                WriteInTextBox(ValueTextBoxAutomationId, "0");
+                VerifySelectedColorIsNear(0, 0, 0);
+
+                // Since Value is 0, the RGB value stays black and does not trigger the colorChangedEvent,
+                // so this helper function is used instead.
+                TapOnColorSpectrum(0.25, 0.25);
+                Wait.ForIdle();
+
+                VerifySelectedColorIsNear(0, 0, 0);
+
+                // Allowing +/-1 devation
+                const double errorMargin = 1;
+                
+                Verify.IsLessThanOrEqual(Math.Abs(90 - Double.Parse((new Edit(FindElement.ById(HueTextBoxAutomationId))).Value)), errorMargin);
+                Verify.IsLessThanOrEqual(Math.Abs(75 - Double.Parse((new Edit(FindElement.ById(SaturationTextBoxAutomationId))).Value)), errorMargin);
+                Verify.IsLessThanOrEqual(Math.Abs(0 - Double.Parse((new Edit(FindElement.ById(ValueTextBoxAutomationId))).Value)), errorMargin);
+
+                TapOnColorSpectrum(0.75, 0.75);
+                Wait.ForIdle();
+
+                VerifySelectedColorIsNear(0, 0, 0);
+
+                Verify.IsLessThanOrEqual(270 - Double.Parse((new Edit(FindElement.ById(HueTextBoxAutomationId))).Value), errorMargin);
+                Verify.IsLessThanOrEqual(25 - Double.Parse((new Edit(FindElement.ById(SaturationTextBoxAutomationId))).Value), errorMargin);
+                Verify.IsLessThanOrEqual(0 - Double.Parse((new Edit(FindElement.ById(ValueTextBoxAutomationId))).Value), errorMargin);
+            }
         }
 
         [TestMethod]
@@ -611,12 +648,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public void CanUseKeyboardToInteractWithSlidersLTR()
         {
             CanUseKeyboardToInteractWithSliders(isRTL: false);
+            CanUseKeyboardToInteractWithSliders(isRTL: false, shouldTryUpAndDown: true);
+        }
+
+        [TestMethod]
+        public void CanUseKeyboardToInteractWithSlidersLTRHorizontalOrientation()
+        {
+            CanUseKeyboardToInteractWithSliders(isRTL: false, shouldOrientationBeHorizontal: true);
+            CanUseKeyboardToInteractWithSliders(isRTL: false, shouldTryUpAndDown: true, shouldOrientationBeHorizontal: true);
         }
 
         [TestMethod]
         public void CanUseKeyboardToInteractSlidersRTL()
         {
             CanUseKeyboardToInteractWithSliders(isRTL: true);
+            CanUseKeyboardToInteractWithSliders(isRTL: false, shouldTryUpAndDown: true);
+        }
+
+        [TestMethod]
+        public void CanUseKeyboardToInteractWithSlidersRTLHorizontalOrientation()
+        {
+            CanUseKeyboardToInteractWithSliders(isRTL: true, shouldOrientationBeHorizontal: true);
+            CanUseKeyboardToInteractWithSliders(isRTL: true, shouldTryUpAndDown: true, shouldOrientationBeHorizontal: true);
         }
 
         [TestMethod]
@@ -764,11 +817,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        public void CanUseKeyboardToInteractWithSliders(bool isRTL)
+        public void CanUseKeyboardToInteractWithSliders(bool isRTL, bool shouldTryUpAndDown = false, bool shouldOrientationBeHorizontal = false)
         {
             using (var setup = SetupColorPickerTest(TestOptions.EnableAlpha | TestOptions.DisableColorSpectrumLoadWait))
             {
                 SetIsRTL(isRTL);
+                SetIsHorizontalOrientation(shouldOrientationBeHorizontal);
+                Key increaseKey = shouldTryUpAndDown ? Key.Up : isRTL ? Key.Left : Key.Right;
+                Key decreaseKey = shouldTryUpAndDown ? Key.Down : isRTL ? Key.Right : Key.Left;
 
                 bool colorNamesAvailable = ApiInformation.IsMethodPresent("Windows.UI.ColorHelper", "ToDisplayName");
 
@@ -784,33 +840,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 VerifyElementIsFocused(ThirdDimensionAutomationId);
 
                 Log.Comment("Keyboard to the right and left first.  We expect this to change the value by 1 each time (+/- 2.5 to the max RGB channel), but not wrap.");
-                KeyboardHelper.PressKey(isRTL ? Key.Right : Key.Left);
+                KeyboardHelper.PressKey(decreaseKey);
                 VerifyColorIsSelected(252, colorNamesAvailable ? 38 : 0, colorNamesAvailable ? 49 : 0);
                 VerifyColorNameIsSelected("Red");
-                KeyboardHelper.PressKey(isRTL ? Key.Left : Key.Right);
+                KeyboardHelper.PressKey(increaseKey);
                 VerifyColorIsSelected(255, colorNamesAvailable ? 38 : 0, colorNamesAvailable ? 49 : 0);
                 VerifyColorNameIsSelected("Red");
-                KeyboardHelper.PressKey(isRTL ? Key.Left : Key.Right);
+                KeyboardHelper.PressKey(increaseKey);
                 VerifyColorIsSelected(255, colorNamesAvailable ? 38 : 0, colorNamesAvailable ? 49 : 0);
                 VerifyColorNameIsSelected("Red");
 
                 Log.Comment("Now hold control and keyboard to the right and left again.  We expect this to jump to the next named color each time, but not wrap.");
-                KeyboardHelper.PressKey(isRTL ? Key.Right : Key.Left, ModifierKey.Control);
+                KeyboardHelper.PressKey(decreaseKey, ModifierKey.Control);
                 VerifyColorIsSelected(colorNamesAvailable ? 102 : 230, colorNamesAvailable ? 15 : 0, colorNamesAvailable ? 20 : 0);
                 VerifyColorNameIsSelected("Dark red");
-                KeyboardHelper.PressKey(isRTL ? Key.Right : Key.Left, ModifierKey.Control);
+                KeyboardHelper.PressKey(decreaseKey, ModifierKey.Control);
                 VerifyColorIsSelected(colorNamesAvailable ? 15 : 204, colorNamesAvailable ? 2 : 0, colorNamesAvailable ? 3 : 0);
                 VerifyColorNameIsSelected("Black");
-                KeyboardHelper.PressKey(isRTL ? Key.Right : Key.Left, ModifierKey.Control);
+                KeyboardHelper.PressKey(decreaseKey, ModifierKey.Control);
                 VerifyColorIsSelected(colorNamesAvailable ? 0 : 179, 0, 0);
                 VerifyColorNameIsSelected("Black");
-                KeyboardHelper.PressKey(isRTL ? Key.Left : Key.Right, ModifierKey.Control);
+                KeyboardHelper.PressKey(increaseKey, ModifierKey.Control);
                 VerifyColorIsSelected(colorNamesAvailable ? 105 : 204, colorNamesAvailable ? 16 : 0, colorNamesAvailable ? 20 : 0);
                 VerifyColorNameIsSelected("Dark red");
-                KeyboardHelper.PressKey(isRTL ? Key.Left : Key.Right, ModifierKey.Control);
+                KeyboardHelper.PressKey(increaseKey, ModifierKey.Control);
                 VerifyColorIsSelected(colorNamesAvailable ? 214 : 230, colorNamesAvailable ? 32 : 0, colorNamesAvailable ? 41 : 0);
                 VerifyColorNameIsSelected("Red");
-                KeyboardHelper.PressKey(isRTL ? Key.Left : Key.Right, ModifierKey.Control);
+                KeyboardHelper.PressKey(increaseKey, ModifierKey.Control);
                 VerifyColorIsSelected(255, colorNamesAvailable ? 38 : 0, colorNamesAvailable ? 49 : 0);
                 VerifyColorNameIsSelected("Red");
 
@@ -819,21 +875,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 VerifyElementIsFocused(AlphaSliderAutomationId);
 
                 Log.Comment("Keyboard to the right and left first.  We expect this to change the alpha by 2.5 each time, but not wrap.");
-                KeyboardHelper.PressKey(isRTL ? Key.Right : Key.Left);
+                KeyboardHelper.PressKey(decreaseKey);
                 VerifyColorIsSelected(255, colorNamesAvailable ? 38 : 0, colorNamesAvailable ? 49 : 0, 252);
-                KeyboardHelper.PressKey(isRTL ? Key.Left : Key.Right);
+                KeyboardHelper.PressKey(increaseKey);
                 VerifyColorIsSelected(255, colorNamesAvailable ? 38 : 0, colorNamesAvailable ? 49 : 0, 255);
-                KeyboardHelper.PressKey(isRTL ? Key.Left : Key.Right);
+                KeyboardHelper.PressKey(increaseKey);
                 VerifyColorIsSelected(255, colorNamesAvailable ? 38 : 0, colorNamesAvailable ? 49 : 0, 255);
 
                 Log.Comment("Now hold control and keyboard to the right and left again.  We expect this to change the alpha by 25 each time, but not wrap.  We also expect us to snap to multiples of 10 if we're between them.");
-                KeyboardHelper.PressKey(isRTL ? Key.Right : Key.Left, ModifierKey.Control);
+                KeyboardHelper.PressKey(decreaseKey, ModifierKey.Control);
                 VerifyColorIsSelected(255, colorNamesAvailable ? 38 : 0, colorNamesAvailable ? 49 : 0, 230);
-                KeyboardHelper.PressKey(isRTL ? Key.Left : Key.Right);
+                KeyboardHelper.PressKey(increaseKey);
                 VerifyColorIsSelected(255, colorNamesAvailable ? 38 : 0, colorNamesAvailable ? 49 : 0, 232);
-                KeyboardHelper.PressKey(isRTL ? Key.Right : Key.Left, ModifierKey.Control);
+                KeyboardHelper.PressKey(decreaseKey, ModifierKey.Control);
                 VerifyColorIsSelected(255, colorNamesAvailable ? 38 : 0, colorNamesAvailable ? 49 : 0, 230);
-                KeyboardHelper.PressKey(isRTL ? Key.Left : Key.Right, ModifierKey.Control);
+                KeyboardHelper.PressKey(increaseKey, ModifierKey.Control);
                 VerifyColorIsSelected(255, colorNamesAvailable ? 38 : 0, colorNamesAvailable ? 49 : 0, 255);
             }
         }
@@ -969,7 +1025,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = SetupColorPickerTest())
             {
-                TapOnColorSpectrum(0.5, 0.5);
+                TapOnColorSpectrumAndWaitForColorChange(0.5, 0.5);
                 VerifyElementIsFocused(ColorSpectrumAutomationId);
             }
         }
@@ -1244,6 +1300,87 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             LocalizationHelper.CompareStringSets(englishStrings, otherLanguageStrings);
         }
 
+        [TestMethod]
+        public void VerifyTabFocusOrder()
+        {
+            using (var setup = SetupColorPickerTest(TestOptions.EnableAlpha | TestOptions.DisableColorSpectrumLoadWait))
+            {
+                Log.Comment("Give initial keyboard focus to the color spectrum.");
+                FindElement.ById(ColorSpectrumAutomationId).SetFocus();
+                Wait.ForIdle();
+
+                Log.Comment("Give keyboard focus to the value slider using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(ThirdDimensionAutomationId);
+
+                Log.Comment("Give keyboard focus to the alpha slider using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(AlphaSliderAutomationId);
+
+                Log.Comment("Give keyboard focus to the Color Representation ComboBox using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(ColorRepresentationComboBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the red text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(RedTextBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the green text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(GreenTextBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the blue text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(BlueTextBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the alpha text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(AlphaTextBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the hex text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(HexTextBoxAutomationId);
+
+                SetIsHorizontalOrientation(true);
+
+                Log.Comment("Give initial keyboard focus to the color spectrum.");
+                FindElement.ById(ColorSpectrumAutomationId).SetFocus();
+                Wait.ForIdle();
+
+                Log.Comment("Give keyboard focus to the value slider using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(ThirdDimensionAutomationId);
+
+                Log.Comment("Give keyboard focus to the alpha slider using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(AlphaSliderAutomationId);
+
+                Log.Comment("Give keyboard focus to the hex text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(HexTextBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the Color Representation ComboBox using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(ColorRepresentationComboBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the red text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(RedTextBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the green text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(GreenTextBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the blue text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(BlueTextBoxAutomationId);
+
+                Log.Comment("Give keyboard focus to the alpha text box using tab.");
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifyElementIsFocused(AlphaTextBoxAutomationId);
+            }
+        }
+
         private void GetLocalizedText(IList<string> stringList)
         {
             ColorSpectrum colorSpectrum = new ColorSpectrum(FindElement.ById(ColorSpectrumAutomationId));
@@ -1350,6 +1487,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             double xPosition = xPercent * (colorSpectrumWidth - 1);
             double yPosition = yPercent * (colorSpectrumHeight - 1);
 
+            InputHelper.Tap(colorSpectrum, xPosition, yPosition);
+        }
+
+        private void TapOnColorSpectrumAndWaitForColorChange(double xPercent, double yPercent)
+        {
+            ColorSpectrum colorSpectrum = new ColorSpectrum(FindElement.ById(ColorSpectrumAutomationId));
+
+            int colorSpectrumWidth = colorSpectrum.BoundingRectangle.Width;
+            int colorSpectrumHeight = colorSpectrum.BoundingRectangle.Height;
+
+            double xPosition = xPercent * (colorSpectrumWidth - 1);
+            double yPosition = yPercent * (colorSpectrumHeight - 1);
+
             ColorPickerTestSetupHelper.Current.ExecuteAndWaitForColorChange(
                 () => InputHelper.Tap(colorSpectrum, xPosition, yPosition)
             );
@@ -1444,6 +1594,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 isRTLCheckBox.Toggle();
                 Wait.ForIdle();
             }
+        }
+
+        private void SetIsHorizontalOrientation(bool shouldBeHorizontal)
+        {
+            ComboBox isRTLCheckBox = new ComboBox(FindElement.ById("OrientationComboBox"));
+            isRTLCheckBox.SelectItemById(shouldBeHorizontal ? "OrientationHorizontal" : "OrientationVertical");
+            Wait.ForIdle();
         }
 
         private void SetMinSaturation(double minSaturation)

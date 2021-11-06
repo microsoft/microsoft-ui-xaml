@@ -154,5 +154,28 @@
                 Layout="{StaticResource UniformGridLayout}"
                 ItemTemplate="{StaticResource SimpleElementTemplate}"/>
         </ScrollViewer>
+
+        <ScrollViewer VerticalScrollMode="Enabled">
+            <Grid>
+                <!--  This background image demonstrates that the height of one row in the UniformGridLayout is equal to the height of the image when it is laid out across the width of the page  -->
+                <Image
+                    VerticalAlignment="Top"
+                    Opacity="0.2"
+                    Source="/Images/recipe1.png" />
+                <controls:ItemsRepeater HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                    x:Name="imageAspectRatioTestRepeater">
+                    <controls:ItemsRepeater.Layout>
+                        <controls:UniformGridLayout MaximumRowsOrColumns="4"
+                            Orientation="Horizontal"
+                            MinItemWidth="56" />
+                    </controls:ItemsRepeater.Layout>
+                    <controls:ItemsRepeater.ItemTemplate>
+                        <DataTemplate>
+                            <Image VerticalAlignment="Top" Source="/Images/recipe1.png" />
+                        </DataTemplate>
+                    </controls:ItemsRepeater.ItemTemplate>
+                </controls:ItemsRepeater>
+            </Grid>
+        </ScrollViewer>
     </StackPanel>
 </local:TestPage>

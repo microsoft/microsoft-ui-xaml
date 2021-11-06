@@ -139,7 +139,8 @@
                         </ListViewItem>
 
                         <!-- Testing the same items can be reused in both sides just fine.-->
-                        <ListViewItem AutomationProperties.Name="SwipeControl4"  x:Name="SwipeControl4" Loaded="TestSwipeControl_Loaded" Height="40" ContextFlyout="{StaticResource MyContextFlyout}" >
+                        <ListViewItem AutomationProperties.Name="SwipeControl4"  x:Name="SwipeControl4" Loaded="TestSwipeControl_Loaded" Unloaded="TestSwipeControl_Unloaded"
+                            Height="40" ContextFlyout="{StaticResource MyContextFlyout}" >
                             <muxc:SwipeControl x:Name="sc4" LeftItems="{StaticResource TwoRevealItems}" RightItems="{StaticResource TwoRevealItems}" >
                                 <TextBlock Text="Swipe Control 4" VerticalAlignment="Center"/>
                             </muxc:SwipeControl>

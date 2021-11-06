@@ -376,6 +376,7 @@
     </Style>
 
     <Style TargetType="local:TabViewItem">
+        <Setter Property="Background" Value="{ThemeResource TabViewItemHeaderBackground}" />
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="Template">
@@ -428,7 +429,9 @@
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonBackground}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonForeground}" />
                                         <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRender.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}"/>
                                         <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRender.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}"/>
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -442,7 +445,9 @@
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonForeground}" />
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
                                         <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRender.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}"/>
                                         <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRender.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -455,7 +460,9 @@
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonForeground}" />
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
                                         <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="LeftRadiusRender.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}"/>
                                         <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRender.Fill" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -617,6 +624,16 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup>
+                                <VisualState x:Name="ForegroundNotSet"/>
+                                <VisualState x:Name="ForegroundSet">
+                                    <VisualState.Setters>
+                                        <Setter Target="IconControl.Foreground" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Foreground}"/>
+                                        <Setter Target="ContentPresenter.Foreground" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Foreground}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <Path 
@@ -654,7 +671,7 @@
 
                         <Grid x:Name="TabContainer"
                             Grid.Column="1"
-                            Background="{ThemeResource TabViewItemHeaderBackground}"
+                            Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Control.IsTemplateFocusTarget="True"
@@ -678,12 +695,16 @@
                                     Foreground="{ThemeResource TabViewItemIconForeground}"
                                     HighContrastAdjustment="None" />
                             </Viewbox>
-
+                            
+                            <!-- If we template bind the ContentPresenter's Content property to the TabViewItem.Header property
+                                 we unfortunately run into the following issue if the header is [null] or empty:
+                                 The TabViewItem.Content property will be implictly bound to the Content property of the ContentPresenter.
+                                 To prevent this, we explicitly set a default empty content here and update the content in code behind. -->
                             <ContentPresenter x:Name="ContentPresenter"
                                 Grid.Column="1"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                Content="{TemplateBinding Header}"
+                                Content=""
                                 ContentTemplate="{TemplateBinding HeaderTemplate}"
                                 ContentTransitions="{TemplateBinding ContentTransitions}"
                                 FontWeight="{TemplateBinding FontWeight}"

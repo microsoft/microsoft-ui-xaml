@@ -341,7 +341,8 @@ void ProgressRing::UpdateStates()
             // Swap player source to determinate.
             SetAnimatedVisualPlayerSource();
             UpdateLottieProgress();
-        }   
+        }
+        winrt::AutomationProperties::SetAccessibilityView(*this, winrt::AccessibilityView::Content);
     }
     else
     {
@@ -351,6 +352,8 @@ void ProgressRing::UpdateStates()
         {
             player.Stop();
         }
+
+        winrt::AutomationProperties::SetAccessibilityView(*this, winrt::AccessibilityView::Raw);
     }
 }
 

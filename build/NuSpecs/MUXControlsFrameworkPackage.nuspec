@@ -13,6 +13,10 @@
     <license type="file">license.txt</license>
     <projectUrl>https://github.com/microsoft/microsoft-ui-xaml</projectUrl>
     <iconUrl>https://aka.ms/winui_icon</iconUrl>
+
+    <dependencies>
+      <dependency id="Microsoft.Web.WebView2" version="[1.0.1018-prerelease,)" />
+    </dependencies>  
   </metadata>
   <files>
     <file src="readme.txt"/>

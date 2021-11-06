@@ -50,7 +50,8 @@ public:
     winrt::hstring GetLastAnimationSegmentStart();
     winrt::hstring GetLastAnimationSegmentEnd();
 private:
-    bool ConstructAndInsertVisual();
+    winrt::Visual ConstructVisual();
+    bool InsertVisual(winrt::Visual visual);
     void TransitionAndUpdateStates(const winrt::hstring& fromState, const winrt::hstring& toState, float playbackMultiplier = 1.0f);
     void TransitionStates(const winrt::hstring& fromState, const winrt::hstring& toState, const std::function<void()>& cleanupAction, float playtbackMultiplier = 1.0f);
     void PlaySegment(float from, float to, const std::function<void()>& cleanupAction = nullptr, float playbackMultiplier = 1.0f);

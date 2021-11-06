@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Page With Text</title>
+    <style>
+
+        h1 {
+            background-color: #0080ff
+        }
+
+        h2 {
+            background-color: #00ff80
+        }
+    </style>
+    <script>// it updates the countdown timer value by 1 to 1000
+        var timer = () => {
+            var textBlock = document.getElementById("timer");
+            const countdown_limit = 1000;
+
+            for (var i = 1; i <= countdown_limit; i++)
+            {
+                textBlock.innerHTML = i;  // update the counter value
+            }
+            return parseInt(textBlock.innerHTML, 10);  //return the int value which will eventually get converted to string anyways
+        };
+
+        function navigateToInvalidPage()
+        {
+            window.location.assign('http://www.blockedbynavigationstarting.invalid');
+        }
+    </script>
+</head>
+<body>
+    <h1>Countdown timer</h1>
+    Return : <h2 id="timer">0</h2>
+    <input id="button" type="submit" name="button" class="largeButton" onclick="navigateToInvalidPage();" value="Navigate Locally" />
+</body>
+</html>
