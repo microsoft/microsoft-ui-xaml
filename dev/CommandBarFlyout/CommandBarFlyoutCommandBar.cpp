@@ -678,7 +678,7 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
             collapsedWidth = static_cast<float>(expandedWidth);
         }
 
-        flyoutTemplateSettings->WidthExpansionDelta(collapsedWidth - expandedWidth);
+        flyoutTemplateSettings->WidthExpansionDelta(0);
         flyoutTemplateSettings->WidthExpansionAnimationStartPosition(-flyoutTemplateSettings->WidthExpansionDelta() / 2.0);
         flyoutTemplateSettings->WidthExpansionAnimationEndPosition(-flyoutTemplateSettings->WidthExpansionDelta());
         flyoutTemplateSettings->ContentClipRect({ 0, 0, static_cast<float>(expandedWidth), primaryItemsRootDesiredSize.Height });
@@ -911,7 +911,7 @@ void CommandBarFlyoutCommandBar::PopulateAccessibleControls()
     {
         if (primaryCommands.Size() > 0)
         {
-             m_horizontallyAccessibleControls.Append(moreButton);
+            m_horizontallyAccessibleControls.Append(moreButton);
             m_verticallyAccessibleControls.Append(moreButton);
         }
     }

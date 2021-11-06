@@ -1033,7 +1033,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void VerifyAddRemovePrimaryCommands()
+        public void VerifyAddPrimaryCommandsDynamically()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
             {
@@ -1043,32 +1043,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             using (var setup = new CommandBarFlyoutTestSetupHelper())
             {
-                Button showCommandBarFlyoutButtonWithNoPrimaryCommands = FindElement.ByName<Button>("Show CommandBarFlyout with no primary commands");
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with no primary commands");
+                ToggleButton addPrimaryCommandDynamicallyCheckBox = FindElement.ById<ToggleButton>("AddPrimaryCommandDynamicallyCheckBox");
+                ToggleButton clearPrimaryCommandsCheckBox = FindElement.ById<ToggleButton>("ClearPrimaryCommandsCheckBox");
+                ToggleButton primaryCommandDynamicallyAddedCheckBox = FindElement.ById<ToggleButton>("PrimaryCommandDynamicallyAddedCheckBox");
+                Edit dynamicLabelTimerIntervalTextBox = new Edit(FindElement.ById("DynamicLabelTimerIntervalTextBox"));
+                Edit dynamicLabelChangeCountTextBox = new Edit(FindElement.ById("DynamicLabelChangeCountTextBox"));
 
-                showCommandBarFlyoutButtonWithNoPrimaryCommands.Click();
+                Log.Comment("Setting DynamicLabelTimerIntervalTextBox to 1s");
+                dynamicLabelTimerIntervalTextBox.SetValue("1000");
+
+                Log.Comment("Setting DynamicLabelChangeCountTextBox to 1 single change");
+                dynamicLabelChangeCountTextBox.SetValue("1");
                 Wait.ForIdle();
 
-                Log.Comment("Verifying the first item is from Secondary Commands");
+                Log.Comment("Set Flyout6 to add Primary Commands dynamically");
+                addPrimaryCommandDynamicallyCheckBox.Check();
+                Wait.ForIdle();
 
-                Button undoButton6 = FindElement.ById<Button>("UndoButton6");
-                var undoButtonElement = AutomationElement.FocusedElement;
-                Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton6.AutomationId);
+                Log.Comment("Invoke FlyoutTarget 6 to Show CommandBarFlyout with no primary commands");
+                showCommandBarFlyoutButton.Click();
 
-                Log.Comment("Dismissing flyout");
-                KeyboardHelper.PressKey(Key.Escape);
+                Log.Comment("Waiting for SecondaryCommandDynamicLabelChangedCheckBox becoming checked indicating the asynchronous Label property change occurred");
+                primaryCommandDynamicallyAddedCheckBox.GetToggledWaiter().Wait();
+                Wait.ForIdle();
 
-                Log.Comment("Add test Primary Command Button");
-                Button editCommandCount6 = FindElement.ByName<Button>("Add / Remove Primary Command");
-                
-                editCommandCount6.Click();
-
-                showCommandBarFlyoutButtonWithNoPrimaryCommands.Click();
+                KeyboardHelper.PressKey(Key.Tab);
                 Wait.ForIdle();
 
                 KeyboardHelper.PressKey(Key.Right);
                 Wait.ForIdle();
 
-                Log.Comment("Verifying Primary Commands is present and MoreButton is actionable");
+                Log.Comment("Verifying Primary Commands is added and MoreButton is actionable");
 
                 Button moreButton = FindElement.ById<Button>("MoreButton");
                 var moreButtonElement = AutomationElement.FocusedElement;
@@ -1076,15 +1082,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Dismissing flyout");
                 KeyboardHelper.PressKey(Key.Escape);
-
-                Log.Comment("Remove test Primary Command Button");
-                editCommandCount6.Click();
-
-                showCommandBarFlyoutButtonWithNoPrimaryCommands.Click();
-                Wait.ForIdle();
-
-                Log.Comment("Verifying the first item is from Secondary Commands");
-                Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton6.AutomationId);
             }
         }
     }

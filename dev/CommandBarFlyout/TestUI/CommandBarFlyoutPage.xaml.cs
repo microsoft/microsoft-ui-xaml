@@ -21,6 +21,9 @@ namespace MUXControlsTestApp
         private DispatcherTimer clearSecondaryCommandsTimer = new DispatcherTimer();
         private CommandBarFlyout clearSecondaryCommandsFlyout;
 
+        private DispatcherTimer clearPrimaryCommandsTimer = new DispatcherTimer();
+        private CommandBarFlyout clearPrimaryCommandsFlyout;
+
         private DispatcherTimer dynamicLabelTimer = new DispatcherTimer();
         private DispatcherTimer dynamicCommandTimer = new DispatcherTimer();
         private AppBarButton dynamicLabelSecondaryCommand;
@@ -38,6 +41,9 @@ namespace MUXControlsTestApp
 
             clearSecondaryCommandsTimer.Interval = new TimeSpan(0, 0, 3 /*sec*/);
             clearSecondaryCommandsTimer.Tick += ClearSecondaryCommandsTimer_Tick;
+
+            clearSecondaryCommandsTimer.Interval = new TimeSpan(0, 0, 3 /*sec*/);
+            clearPrimaryCommandsTimer.Tick += ClearPrimaryCommandsTimer_Tick;
 
             if (ApiInformation.IsTypePresent("Windows.UI.Xaml.Input.KeyboardAccelerator"))
             {
@@ -185,9 +191,10 @@ namespace MUXControlsTestApp
         {
             bool useSecondaryCommandDynamicLabel = (bool)UseSecondaryCommandDynamicLabelCheckBox.IsChecked;
             bool clearSecondaryCommands = (bool)ClearSecondaryCommandsCheckBox.IsChecked;
-            bool addPrimaryCommandDynamicllyCheckBox = (bool)AddPrimaryCommandDynamicllyCheckBox.IsChecked;
+            bool addPrimaryCommandDynamicallyCheckBox = (bool)AddPrimaryCommandDynamicallyCheckBox.IsChecked;
+            bool clearPrimaryCommands = (bool)ClearPrimaryCommandsCheckBox.IsChecked;
 
-            if (useSecondaryCommandDynamicLabel || addPrimaryCommandDynamicllyCheckBox || clearSecondaryCommands)
+            if (useSecondaryCommandDynamicLabel || addPrimaryCommandDynamicallyCheckBox || clearSecondaryCommands || clearPrimaryCommands)
             {
                 CommandBarFlyout commandBarFlyout = flyout as CommandBarFlyout;
 
@@ -206,10 +213,15 @@ namespace MUXControlsTestApp
                         }
                     }
 
-                    if (addPrimaryCommandDynamicllyCheckBox)
+                    if (addPrimaryCommandDynamicallyCheckBox)
                     {
                         dynamicCommandBarFlyout = commandBarFlyout;
                         SetDynamicPrimaryCommand();
+                    }
+
+                    if (clearPrimaryCommands && commandBarFlyout.PrimaryCommands != null && commandBarFlyout.PrimaryCommands.Count > 0)
+                    {
+                        SetClearPrimaryCommandsFlyout(commandBarFlyout);
                     }
                 }
             }
@@ -236,6 +248,20 @@ namespace MUXControlsTestApp
             {
                 clearSecondaryCommandsFlyout = commandBarFlyout;
                 clearSecondaryCommandsTimer.Start();
+            }
+        }
+
+        private void SetClearPrimaryCommandsFlyout(CommandBarFlyout commandBarFlyout)
+        {
+            if (commandBarFlyout == null)
+            {
+                clearPrimaryCommandsFlyout = null;
+                clearPrimaryCommandsTimer.Stop();
+            }
+            else
+            {
+                clearPrimaryCommandsFlyout = commandBarFlyout;
+                clearPrimaryCommandsTimer.Start();
             }
         }
 
@@ -282,6 +308,14 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void ClearPrimaryCommandsTimer_Tick(object sender, object e)
+        {
+            if (clearPrimaryCommandsFlyout != null)
+            {
+                clearPrimaryCommandsFlyout.PrimaryCommands.Clear();
+            }
+        }
+
         private void DynamicLabelTimer_Tick(object sender, object e)
         {
             if (dynamicLabelSecondaryCommand != null)
@@ -312,6 +346,8 @@ namespace MUXControlsTestApp
             dynamicCommandBarFlyout.PrimaryCommands.Add(new AppBarButton() {
                 Content = new TextBlock() { Text = "Test" }
             });
+
+            PrimaryCommandDynamicallyAddedCheckBox.IsChecked = true;
 
             if (--dynamicLabelChangeCount == 0)
             {
