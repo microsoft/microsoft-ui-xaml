@@ -189,6 +189,7 @@ private:
     void ClearNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
     void ClearAllNavigationViewItemRevokers();
     std::set<winrt::NavigationViewItem> m_itemsWithRevokerObjects{};
+    std::once_flag s_NavigationViewItemRevokersPropertySet;
 
     void InvalidateTopNavPrimaryLayout();
     // Measure functions for top navigation   
