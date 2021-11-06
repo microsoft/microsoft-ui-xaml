@@ -439,7 +439,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             StackPanel root = null;
             AppBarButton appBarButton = null;
-            ManualResetEvent appBarButtonLoadedEvent = new(false);
+            ManualResetEvent appBarButtonLoadedEvent = new ManualResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
