@@ -5,7 +5,13 @@
 #include "common.h"
 #include "ResourceAccessor.h"
 
+PCWSTR ResourceAccessor::c_resourceLocWinUI{ L"Microsoft.UI.Xaml/Resources" };
+
+#ifdef MUX_EXPERIMENTAL
+PCWSTR ResourceAccessor::c_resourceLoc{ L"Microsoft.Experimental.UI.Xaml/Resources" };
+#else
 PCWSTR ResourceAccessor::c_resourceLoc{ L"Microsoft.UI.Xaml/Resources" };
+#endif
 
 winrt::ResourceMap ResourceAccessor::GetResourceMap()
 {
@@ -36,6 +42,22 @@ winrt::hstring ResourceAccessor::GetLocalizedStringResource(const wstring_view &
 
     return s_resourceMap.GetValue(resourceName, s_resourceContext).ValueAsString();
 }
+
+#ifdef MUX_EXPERIMENTAL
+winrt::hstring ResourceAccessor::GetLocalizedStringResourceFromWinUI(const wstring_view& resourceName)
+{
+    // Remove hard-coded M.U.X.2.6 package name. Tracked by:
+    // #6242 ResourceAccessor::GetLocalizedStringResourceFromWinUI has hardcoded string for WinUI 2.6
+    static winrt::ResourceMap s_resourceMapWinUI = []() {
+        const auto packageResourceMap = winrt::ResourceManager::Current().AllResourceMaps().Lookup(L"Microsoft.UI.Xaml.2.6");
+        return packageResourceMap.GetSubtree(ResourceAccessor::c_resourceLocWinUI);
+    }();
+
+    static winrt::ResourceContext s_resourceContext = winrt::ResourceContext::GetForViewIndependentUse();
+
+    return s_resourceMapWinUI.GetValue(resourceName, s_resourceContext).ValueAsString();
+}
+#endif
 
 winrt::LoadedImageSurface ResourceAccessor::GetImageSurface(const wstring_view &assetName, winrt::Size imageSize)
 {

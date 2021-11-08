@@ -4,7 +4,7 @@ Param(
     [string]$newVersion,
 
     # this string literal is split in two to avoid this script finding it and overwriting itself.
-    [string]$currentPackageVersion = "2.1." + "190606001",
+    [string]$currentPackageVersion = "2.6." + "1",
 
     # If this switch is included, revert the change instead of making it.
     # This is useful for working locally where you don't want to commit the change.

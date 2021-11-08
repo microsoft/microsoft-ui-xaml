@@ -4,6 +4,7 @@
   <Import Project="$(MSBuildProjectDirectory)\..\..\mux.controls.props" Condition="Exists('$(MSBuildProjectDirectory)\..\..\mux.controls.props') And $(BuildingWithBuildExe) != 'true'" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\environment.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\SdkVersion.props" Condition="$(BuildingWithBuildExe) == 'true'" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\FeatureAreas.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{92081f61-98bb-4105-a90f-b6d524b4f5c9}</ProjectGuid>
     <RootNamespace>TestAppCX</RootNamespace>
@@ -127,43 +128,49 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4453;28204;4691</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions Condition="$(FeatureWebView2Enabled) == 'true'">%(PreprocessorDefinitions);WEBVIEW2_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4453;28204;4691</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions Condition="$(FeatureWebView2Enabled) == 'true'">%(PreprocessorDefinitions);WEBVIEW2_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4453;28204;4691</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions Condition="$(FeatureWebView2Enabled) == 'true'">%(PreprocessorDefinitions);WEBVIEW2_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4453;28204;4691</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions Condition="$(FeatureWebView2Enabled) == 'true'">%(PreprocessorDefinitions);WEBVIEW2_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4453;28204;4691</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions Condition="$(FeatureWebView2Enabled) == 'true'">%(PreprocessorDefinitions);WEBVIEW2_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4453;28204;4691</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions Condition="$(FeatureWebView2Enabled) == 'true'">%(PreprocessorDefinitions);WEBVIEW2_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|arm64'">
@@ -171,6 +178,7 @@
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions Condition="$(FeatureWebView2Enabled) == 'true'">%(PreprocessorDefinitions);WEBVIEW2_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">
@@ -178,6 +186,7 @@
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions Condition="$(FeatureWebView2Enabled) == 'true'">%(PreprocessorDefinitions);WEBVIEW2_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -203,6 +212,9 @@
     <ClInclude Include="TreeViewTestPage.xaml.h">
       <DependentUpon>TreeViewTestPage.xaml</DependentUpon>
     </ClInclude>
+    <ClInclude Include="WebView2TestPage.xaml.h" Condition="$(FeatureWebView2Enabled) == 'true'">
+      <DependentUpon>WebView2TestPage.xaml</DependentUpon>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -226,11 +238,15 @@
     <Page Include="TreeViewTestPage.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="WebView2TestPage.xaml" Condition="$(FeatureWebView2Enabled) == 'true'">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
+    <None Include="packages.config" />
     <None Include="TestAppCX_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
@@ -274,6 +290,9 @@
     <ClCompile Include="TreeViewTestPage.xaml.cpp">
       <DependentUpon>TreeViewTestPage.xaml</DependentUpon>
     </ClCompile>
+    <ClCompile Include="WebView2TestPage.xaml.cpp" Condition="$(FeatureWebView2Enabled) == 'true'">
+      <DependentUpon>WebView2TestPage.xaml</DependentUpon>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\dev\dll\Microsoft.UI.Xaml.vcxproj">
@@ -282,6 +301,13 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\RetargetCopyLocalFiles.targets" />
-  <ImportGroup Label="ExtensionTargets">
+  <ImportGroup Label="ExtensionTargets" Condition="$(FeatureWebView2Enabled) == 'true'">
+    <Import Project="..\..\packages\Microsoft.Web.WebView2.1.0.1018-prerelease\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1018-prerelease\build\native\Microsoft.Web.WebView2.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="$(FeatureWebView2Enabled) == 'true' And !Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1018-prerelease\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Web.WebView2.1.0.1018-prerelease\build\native\Microsoft.Web.WebView2.targets'))" />
+  </Target>
 </Project>

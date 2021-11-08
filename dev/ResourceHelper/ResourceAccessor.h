@@ -20,10 +20,16 @@ private:
     /// String containing the resource location
     /// </summary>
     static PCWSTR c_resourceLoc;
+    static PCWSTR c_resourceLocWinUI;
 
     static winrt::ResourceMap GetResourceMap();
 public:
     static winrt::hstring GetLocalizedStringResource(const wstring_view &resourceName);
+
+#ifdef MUX_EXPERIMENTAL
+    static winrt::hstring GetLocalizedStringResourceFromWinUI(const wstring_view& resourceName);
+#endif
+
     static winrt::LoadedImageSurface GetImageSurface(const wstring_view &assetName, winrt::Size imageSize);
     static winrt::IInspectable ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key);
 

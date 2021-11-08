@@ -13,6 +13,9 @@
 #include "CornerRadiusTestPage.xaml.h"
 #include "TreeViewTestPage.xaml.h"
 #include "BackdropMaterialTestPage.xaml.h"
+#ifdef WEBVIEW2_INCLUDED
+#include "WebView2TestPage.xaml.h"
+#endif
 
 using namespace TestAppCX;
 
@@ -70,3 +73,10 @@ void TestAppCX::MainPage::GoToBackdropMaterialTestPage(Platform::Object^ sender,
     app->RootFrame->Navigate(TypeName(BackdropMaterialTestPage::typeid), nullptr);
 }
 
+void TestAppCX::MainPage::GoToWebView2TestPage(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    auto app = dynamic_cast<App^>(Application::Current);
+#ifdef WEBVIEW2_INCLUDED
+    app->RootFrame->Navigate(TypeName(WebView2TestPage::typeid), nullptr);
+#endif
+}

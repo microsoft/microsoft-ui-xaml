@@ -185,6 +185,11 @@ private:
     // revokers for NavigationViewItem events and allows them to get revoked when
     // the item gets cleaned up
     GlobalDependencyProperty s_NavigationViewItemRevokersProperty{ nullptr };
+    void SetNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
+    void ClearNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
+    void ClearAllNavigationViewItemRevokers();
+    std::set<winrt::NavigationViewItem> m_itemsWithRevokerObjects{};
+    std::once_flag s_NavigationViewItemRevokersPropertySet;
 
     void InvalidateTopNavPrimaryLayout();
     // Measure functions for top navigation   
@@ -251,6 +256,7 @@ private:
     void OnItemsContainerSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& e);
     void UpdateAdaptiveLayout(double width, bool forceSetDisplayMode = false);
+    void UpdateOpenPaneWidth(double width);
     void UpdatePaneLayout();
     void SetDisplayMode(const winrt::NavigationViewDisplayMode& displayMode, bool forceSetDisplayMode = false);
    
@@ -499,5 +505,7 @@ private:
     bool m_TabKeyPrecedesFocusChange{ false };
 
     bool m_isLeftPaneTitleEmpty{ false };
+
+    double m_openPaneWidth{ 320.0 };
 };
 

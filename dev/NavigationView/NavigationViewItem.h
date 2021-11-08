@@ -31,6 +31,7 @@ public:
     // Property change callbacks
     void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnInfoBadgePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHasUnrealizedChildrenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -89,6 +90,7 @@ private:
     void UpdateIsClosedCompact();
 
     void UpdateVisualStateForIconAndContent(bool showIcon, bool showContent);
+    void UpdateVisualStateForInfoBadge();
     void UpdateVisualStateForNavigationViewPositionChange();
     void UpdateVisualStateForKeyboardFocusedState();
     void UpdateVisualStateForToolTip();
@@ -98,6 +100,7 @@ private:
 
     void UpdateVisualState(bool useTransitions);
     bool ShouldShowIcon();
+    bool ShouldShowInfoBadge();
     bool ShouldShowContent();
     bool ShouldEnableToolTip() const;
     bool IsOnLeftNav() const;

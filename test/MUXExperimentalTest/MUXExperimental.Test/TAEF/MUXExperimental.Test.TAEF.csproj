@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v2.1</TargetFrameworkVersion>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm;win-arm64</RuntimeIdentifiers>
+    <!-- The binaries we're building against are managed, so which platform's folder they come out of is immaterial.
+         For simplicity's sake, we'll always get them from the x86 folder, but the CoreClr binaries are the same everywhere. -->
+    <TaefRootDirectory>$(NuGetPackageRoot)taef.redist.wlk\10.31.180822002\build\Binaries\x86\CoreClr\</TaefRootDirectory>
+    <ProjectGuid>{14018522-0223-4334-87D2-C343074DDD48}</ProjectGuid>
+    <DefineConstants>$(DefineConstants);USING_TAEF</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
+    <Reference Include="TE.Managed">
+      <HintPath>$(TaefRootDirectory)TE.Managed.dll</HintPath>
+    </Reference>
+    <Reference Include="TE.ManagedTestMode">
+      <HintPath>$(TaefRootDirectory)TE.ManagedTestMode.dll</HintPath>
+    </Reference>
+    <Reference Include="Wex.Common.Managed">
+      <HintPath>$(TaefRootDirectory)Wex.Common.Managed.dll</HintPath>
+    </Reference>
+    <Reference Include="Wex.Logger.Interop">
+      <HintPath>$(TaefRootDirectory)Wex.Logger.Interop.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
+    <PackageReference Include="TAEF.Redist.Wlk" Version="10.31.180822002" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\testinfra\MUXTestInfra\TAEF\MUXTestInfra.TAEF.csproj" />
+  </ItemGroup>
+  <Import Project="..\MUXExperimental.Test.Shared.projitems" />
+</Project>

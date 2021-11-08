@@ -39,6 +39,7 @@
     <PackageReference Include="MSTest.TestFramework">
       <Version>2.1.2</Version>
     </PackageReference>
+	<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
   </ItemGroup>
   <ItemGroup>
     <SDKReference Include="TestPlatform.Universal, Version=$(UnitTestPlatformVersion)" />
@@ -57,6 +58,11 @@
     </PackageReference>
     <PackageReference Include="Win2D.uwp">
       <Version>1.22.0</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2">
+      <Version>1.0.1018-prerelease</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="..\MUXControlsTestApp.Shared.projitems" />

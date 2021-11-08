@@ -52,6 +52,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ChevronIcon" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DropDownButtonForegroundSecondaryPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="ChevronIcon.(local:AnimatedIcon.State)" Value="PointerOver"/>
@@ -114,7 +117,14 @@
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             AutomationProperties.AccessibilityView="Raw" />
 
-                        <local:AnimatedIcon x:Name="ChevronIcon" Grid.Column="1" Margin="8,0,0,0" AutomationProperties.AccessibilityView="Raw" local:AnimatedIcon.State="Normal" Width="12" Height="12" Foreground="{ThemeResource DropDownButtonForegroundSecondary}">
+                            <local:AnimatedIcon x:Name="ChevronIcon"
+                                Grid.Column="1"
+                                Margin="8,0,0,0"
+                                Width="12"
+                                Height="12"
+                                Foreground="{ThemeResource DropDownButtonForegroundSecondary}"
+                                AutomationProperties.AccessibilityView="Raw"
+                                local:AnimatedIcon.State="Normal">
                             <animatedvisuals:AnimatedChevronDownSmallVisualSource/>
                             <local:AnimatedIcon.FallbackIconSource>
                                 <local:FontIconSource

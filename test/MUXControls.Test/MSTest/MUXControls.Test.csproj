@@ -21,12 +21,12 @@
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\testinfra\MUXTestInfra\MSTest\MUXTestInfra.MSTest.csproj" />
+    <PackageReference Include="Microsoft.Web.WebView2">
+      <Version>1.0.1018-prerelease</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft">
-      <HintPath>..\..\..\BuildOutput\Debug\x86\Microsoft.UI.Xaml\Microsoft.winmd</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\testinfra\MUXTestInfra\MSTest\MUXTestInfra.MSTest.csproj" />
   </ItemGroup>
   <Import Project="..\MUXControls.Test.Shared.projitems" />
   <Import Project="..\MUXControls.Test.Shared.targets" />

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Input Page</title>
+    <style>
+
+        h1 {
+            background-color: #0080ff
+        }
+
+        h2 {
+            background-color: #00ff80
+        }
+        .largeButton {
+        display: block;
+        width: 100%;
+        border: none;
+        background-color: #4CAF50;
+        color: white;
+        padding: 14px 28px;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: center;
+        }
+    </style>
+    <script>
+        function sendInputMessage()
+        {
+            window.chrome.webview.postMessage("Input button clicked.");
+        };
+
+        function getFocus()
+        {
+            if (document.hasFocus())
+            {
+                var id = document.activeElement.id;
+                if (id == "textInput1")
+                {
+                    return 'w1';
+                }
+                else if (id == "enterInput")
+                {
+                    return 'b1';
+                }
+                else
+                {
+                    return 'unhandledWebviewControl';
+                }
+            }
+            else
+            {
+                return 'n/a';
+            }
+        };
+    </script>
+</head>
+<body>
+    <form>
+        TextBox: <input style="font-size:50px" type="text" id="textInput1" onblur="onGotBlur(this)" onfocus="onGotFocus(this)"><br>
+    </form>
+    <button onclick="sendInputMessage()" id="enterInput"> Input button </button>
+</body>
+</html>
