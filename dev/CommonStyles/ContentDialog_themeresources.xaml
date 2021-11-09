@@ -29,7 +29,7 @@
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="ContentDialogForeground" ResourceKey="SystemColorWindowTextColorBrush" />
             <StaticResource x:Key="ContentDialogBackground" ResourceKey="SystemColorWindowColorBrush" />
-            <StaticResource x:Key="ContentDialogSmokeFill" ResourceKey="SystemColorWindowColorBrush" />
+            <SolidColorBrush x:Key="ContentDialogSmokeFill" Color="{ThemeResource SystemColorWindowColor}" Opacity="0.8"/>
             <StaticResource x:Key="ContentDialogTopOverlay" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
             <StaticResource x:Key="ContentDialogSeparatorBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
