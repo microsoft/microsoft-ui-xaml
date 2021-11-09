@@ -1154,44 +1154,54 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Result should be "Hello 123 World" via:
                 // Write Hello Wor after navigating to textbox in webview.
                 Button x1 = new Button(FindElement.ById("TabStopButton1")); // Xaml TabStop 1
+                Log.Comment("Set focus on x1 and verify it has keyboard focus...");
                 x1.SetFocus();
                 Wait.ForIdle();
                 Verify.IsTrue(x1.HasKeyboardFocus);
+
+                Log.Comment("Tab to w1...");
                 KeyboardHelper.PressKey(Key.Tab);
                 WaitForFocus("w1");
+
+                Log.Comment("Inject 'Hello Wor'...");
                 TextInput.SendText("Hello Wor");
-                // Inject Left arrow three times.
+
+                Log.Comment("Inject left arrow three times...");
                 KeyboardHelper.PressKey(Key.Left);
                 KeyboardHelper.PressKey(Key.Left);
                 KeyboardHelper.PressKey(Key.Left);
-                // Inject "123 "
+                
+                Log.Comment("Inject '123 '...");
                 TextInput.SendText("123 ");
-                // Inject right arrow three times
+                
+                Log.Comment("Inject right arrow three times...");
                 KeyboardHelper.PressKey(Key.Right);
                 KeyboardHelper.PressKey(Key.Right);
                 KeyboardHelper.PressKey(Key.Right);
-                // Inject "ld"
+                
+                Log.Comment("Inject 'ld'...");
                 TextInput.SendText("ld");
-                // Test simultaneous keyboard inputs
+                
+                Log.Comment("Test simultaneous keyboard inputs by injecting shift+left twice...");
                 KeyboardHelper.PressKey(Key.Left, ModifierKey.Shift);
                 KeyboardHelper.PressKey(Key.Left, ModifierKey.Shift);
                 TextInput.SendText("m");
+
                 // Copy out to PasteBox1 for verification.
+                Log.Comment("Select All by keyboard...");
                 DoSelectAllByKeyboard();
+                Log.Comment("Copy selected...");
                 CopySelected();
+                Log.Comment("Move focus to CopyPasteTextBox2...");
                 CopyPasteTextBox2.SetFocus();
+                Log.Comment("Paste clipboard...");
                 PasteClipboard();
 
-                // Tab to button
-                x1.SetFocus();
-                Wait.ForIdle();
-                Verify.IsTrue(x1.HasKeyboardFocus);
-                KeyboardHelper.PressKey(Key.Tab);
-                KeyboardHelper.PressKey(Key.Tab);
-                WaitForFocus("b1");
-                // Inject "ENTER"
-                KeyboardHelper.PressKey(Key.Enter);
-                Wait.ForIdle();
+                string expectedText = "Hello 123 Worm";
+                string textResult = CopyPasteTextBox2.GetText();
+                Verify.IsTrue(textResult == expectedText,
+                              string.Format("Test {0}: Expected text {1} did not match with sampled text {2}.",
+                                            "BasicKeyboardTest", expectedText, textResult));
 
                 CompleteTestAndWaitForResult("BasicKeyboardTest");
             }

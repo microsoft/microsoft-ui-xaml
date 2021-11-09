@@ -1262,21 +1262,6 @@ namespace MUXControlsTestApp
                         }
                         break;
 
-                    case TestList.BasicKeyboardTest:
-                        {
-                            string expectedMessage = "Input button clicked.";
-                            string receivedMessage = Status2.Text;
-                            logger.Verify((expectedMessage == receivedMessage),
-                                          string.Format("Test {0}: Expected web message {1} did not match received web message {2}.",
-                                                        selectedTest.ToString(), expectedMessage, receivedMessage));
-                            string expectedText = "Hello 123 Worm";
-                            string textResult = CopyPasteTextBox2.Text;
-                            logger.Verify((textResult == expectedText),
-                                          string.Format("Test {0}: Expected text {1} did not match with sampled text {2}.",
-                                                        selectedTest.ToString(), expectedText, textResult));
-                        }
-                        break;
-
                     case TestList.MouseCaptureTest:
                         {
                             string textResult = CopyPasteTextBox2.Text;
