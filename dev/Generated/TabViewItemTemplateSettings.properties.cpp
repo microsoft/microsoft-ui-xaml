@@ -14,6 +14,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 #include "TabViewItemTemplateSettings.g.cpp"
 
 GlobalDependencyProperty TabViewItemTemplateSettingsProperties::s_IconElementProperty{ nullptr };
+GlobalDependencyProperty TabViewItemTemplateSettingsProperties::s_TabGeometryProperty{ nullptr };
 
 TabViewItemTemplateSettingsProperties::TabViewItemTemplateSettingsProperties()
 {
@@ -33,11 +34,23 @@ void TabViewItemTemplateSettingsProperties::EnsureProperties()
                 ValueHelper<winrt::IconElement>::BoxedDefaultValue(),
                 nullptr);
     }
+    if (!s_TabGeometryProperty)
+    {
+        s_TabGeometryProperty =
+            InitializeDependencyProperty(
+                L"TabGeometry",
+                winrt::name_of<winrt::Geometry>(),
+                winrt::name_of<winrt::TabViewItemTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<winrt::Geometry>::BoxedDefaultValue(),
+                nullptr);
+    }
 }
 
 void TabViewItemTemplateSettingsProperties::ClearProperties()
 {
     s_IconElementProperty = nullptr;
+    s_TabGeometryProperty = nullptr;
 }
 
 void TabViewItemTemplateSettingsProperties::IconElement(winrt::IconElement const& value)
@@ -51,4 +64,17 @@ void TabViewItemTemplateSettingsProperties::IconElement(winrt::IconElement const
 winrt::IconElement TabViewItemTemplateSettingsProperties::IconElement()
 {
     return ValueHelper<winrt::IconElement>::CastOrUnbox(static_cast<TabViewItemTemplateSettings*>(this)->GetValue(s_IconElementProperty));
+}
+
+void TabViewItemTemplateSettingsProperties::TabGeometry(winrt::Geometry const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TabViewItemTemplateSettings*>(this)->SetValue(s_TabGeometryProperty, ValueHelper<winrt::Geometry>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::Geometry TabViewItemTemplateSettingsProperties::TabGeometry()
+{
+    return ValueHelper<winrt::Geometry>::CastOrUnbox(static_cast<TabViewItemTemplateSettings*>(this)->GetValue(s_TabGeometryProperty));
 }
