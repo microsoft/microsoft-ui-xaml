@@ -29,8 +29,6 @@ TabViewItem::TabViewItem()
 
 void TabViewItem::OnApplyTemplate()
 {
-    auto popupRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*this, box_value(c_overlayCornerRadiusKey)));
-
     winrt::IControlProtected controlProtected{ *this };
 
     m_headerContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"ContentPresenter", controlProtected));
@@ -106,21 +104,28 @@ void TabViewItem::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeCha
 {
     auto const templateSettings = winrt::get_self<TabViewItemTemplateSettings>(TabViewTemplateSettings());
 
-    // replace: height - 1, width - 19, height - 13
-    auto data   = L"<Geometry xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>F1 M0,%f  a 4,4 0 0 0 4,-4  L 4,8  a 8,8 0 0 1 8,-8  l %f,0  a 8,8 0 0 1 8,8  l 0,%f  a 4,4 0 0 0 4,4 Z</Geometry>";
+    auto const height = ActualHeight();
+    auto const popupRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*this, box_value(c_overlayCornerRadiusKey)));
+    auto const leftCorner = popupRadius.TopLeft;
+    auto const rightCorner = popupRadius.TopRight;
+
+    auto data   = L"<Geometry xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>F1 M0,%f  a 4,4 0 0 0 4,-4  L 4,%f  a %f,%f 0 0 1 %f,-%f  l %f,0  a %f,%f 0 0 1 %f,%f  l 0,%f  a 4,4 0 0 0 4,4 Z</Geometry>";
+    //auto data   = L"<Geometry xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>F1 M0,%f  a 4,4 0 0 0 4,-4  L 4,8  a 8,8 0 0 1 8,-8  l %f,0  a 8,8 0 0 1 8,8  l 0,%f  a 4,4 0 0 0 4,4 Z</Geometry>";
     //auto data = L"<Geometry xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>F1 M0,31  a 4,4 0 0 0 4,-4  L 4,8  a 8,8 0 0 1 8,-8  l 100,0  a 8,8 0 0 1 8,8  L 0,19  a 4,4 0 0 0 4,4</Geometry>";
 
-
-    // ### do things
     WCHAR strOut[1024];
-    StringCchPrintf(strOut, ARRAYSIZE(strOut), data, 31.0, ActualWidth() - 16.0, 19.0);
+    StringCchPrintf(strOut, ARRAYSIZE(strOut), data,
+        height - 1,
+        leftCorner, leftCorner, leftCorner, leftCorner, leftCorner,
+        ActualWidth() - (leftCorner + rightCorner),
+        rightCorner, rightCorner, rightCorner, rightCorner,
+        height - (4 + rightCorner + 1));
     OutputDebugString(strOut);
     OutputDebugString(L"\n");
 
     const auto geometry = winrt::XamlReader::Load(strOut).try_as<winrt::Geometry>();
 
     templateSettings->TabGeometry(geometry);
-
 
     if (const auto tabView = GetParentTabView())
     {
