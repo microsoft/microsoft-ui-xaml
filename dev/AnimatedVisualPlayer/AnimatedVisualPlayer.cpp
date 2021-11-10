@@ -941,7 +941,7 @@ void AnimatedVisualPlayer::UpdateContent()
     winrt::IAnimatedVisual animatedVisual;
     if (auto source3 = source.try_as<winrt::IAnimatedVisualSource3>())
     {
-        bool instantiateAnimations = AnimationsCacheMode() == winrt::AnimationsCacheModeEnum::Always;
+        const bool instantiateAnimations = AnimationsCacheMode() == winrt::AnimationsCacheModeEnum::Always;
         animatedVisual = source3.TryCreateAnimatedVisual(m_rootVisual.Compositor(), instantiateAnimations, diagnostics);
 		m_isAnimationsCached = instantiateAnimations;
     }

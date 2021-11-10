@@ -88,14 +88,18 @@ unsealed runtimeclass AnimatedVisualPlayer
     [MUX_DEFAULT_VALUE("true")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean AutoPlay;
-    [MUX_DEFAULT_VALUE("winrt::AnimationsCacheModeEnum::Always")]
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    AnimationsCacheModeEnum AnimationsCacheMode;
     Boolean IsAnimatedVisualLoaded{ get; };
     Boolean IsPlaying{ get; };
     [MUX_DEFAULT_VALUE("1")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Double PlaybackRate;
+
+    [MUX_PUBLIC_V2]
+    {
+        [MUX_DEFAULT_VALUE("winrt::AnimationsCacheModeEnum::Always")]
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        AnimationsCacheModeEnum AnimationsCacheMode;
+    }
 
     Windows.UI.Composition.CompositionObject ProgressObject{ get; };
 
