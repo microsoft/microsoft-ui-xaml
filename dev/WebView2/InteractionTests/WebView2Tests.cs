@@ -1066,6 +1066,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         //    the Xaml app to provide an isolated 'copy from webview' test.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
+        [TestProperty("Ignore", "True")] // Task 37000273
         public void CopyPasteTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
