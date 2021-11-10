@@ -65,16 +65,75 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             task.Wait(TimeSpan.FromMinutes(10));
         }
 
-        // Ensure a suitable version of Anaheim Browser is present, if not use mini_installer to install one on the beta channel.
+        // Ensure a suitable version of Edge browser or WebView2 runtime is present. If not, get an installer from the web and install it.
         public static void EnsureBrowser()
         {
-            bool needsBrowserInstall = true;
+            // If a previous run of CoreWebView2Initialized_FailedTest failed to clean up the
+            // fake browser executable folder key it set, remove it here.
+            RemoveFakeBrowserExecutableFolderKey();
 
-            // 1. Get installed Anaheim Browser (or WebView2Runtime) Build version info
+            // 1. Get installed Edge browser (or WebView2 Runtime) build version info.
+            int browserBuildVersion = GetInstalledBrowserVersion();
+
+            // 2. Get WebView2Loader.dll Build version info.
+            int loaderBuildVersion = GetLoaderBuildVersion();
+
+            // 3. If a runtime isn't installed or the SDK and runtime aren't compatible, install a compatible runtime.
+            bool hasCompatibleRuntimeInstalled = GetHasCompatibleRuntimeInstalled(browserBuildVersion, loaderBuildVersion);
+
+            if (!hasCompatibleRuntimeInstalled)
+            {
+                // Print if there are any Edge processes running that might interfere with installation
+                // (specifically, MicrosoftEdge<Version> or MicrosoftEdgeUpdate).
+                foreach (var process in Process.GetProcesses())
+                {
+                    if (process.ProcessName.ToLower().ToString().Contains("edge"))
+                    {
+                        Log.Comment("Note: process '{0}' ({1}) is running", process.ProcessName, process.Id);
+                    }
+                }
+
+                // This installation can sometimes fail, so we'll try a number of times before failing out.
+                int attemptsLeft = 5;
+                bool successfullyInstalled = false;
+                while (attemptsLeft > 0)
+                {
+                    attemptsLeft--;
+                    successfullyInstalled = TryInstallingBrowser(attemptsLeft);
+                    if (successfullyInstalled) break;
+                }
+                if (attemptsLeft == 0 && !successfullyInstalled)
+                {
+                    Log.Error("WebView2Tests Init: Browser installation failed, out of retries.");
+                }
+            }
+        }
+
+        private static void RemoveFakeBrowserExecutableFolderKey()
+        {
+            var browserExecutableKey = GetBrowserExecutableFolderKey();
+            var browserExecutableFolder = browserExecutableKey.GetValue(TestApplicationInfo.MUXControlsTestApp.ProcessName);
+            if (browserExecutableFolder != null)
+            {
+                browserExecutableKey.DeleteValue(TestApplicationInfo.MUXControlsTestApp.ProcessName);
+                Log.Comment("Removed key for {0}", TestApplicationInfo.MUXControlsTestApp.ProcessName);
+            }
+        }
+
+        private static int GetInstalledBrowserVersion()
+        {
             string browserVersionString = string.Empty;
             IntPtr browserVersionPtr;
             int retval = NativeMethods.GetAvailableCoreWebView2BrowserVersionString(string.Empty, out browserVersionPtr);
-            if (retval == (int)NativeMethods.HResults.S_OK && browserVersionPtr != IntPtr.Zero)
+            if (retval != (int)NativeMethods.HResults.S_OK)
+            {
+                Log.Warning("WebView2Tests Init: Error: got hresult {0} retrieving GetAvailableCoreWebView2BrowserVersionString", retval);
+            }
+            else if (browserVersionPtr == IntPtr.Zero)
+            {
+                Log.Warning("WebView2Tests Init: GetAvailableCoreWebView2BrowserVersionString returned version of 0");
+            }
+            else
             {
                 // eg "80.0.361.48 beta", 361 is the build version
                 browserVersionString = Marshal.PtrToStringUni(browserVersionPtr);
@@ -93,9 +152,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 browserBuildVersion = int.Parse(browserVersionString.Split('.')[2]);
                 installedBrowser = string.Format("version {0} [build version: {1}]", browserVersionString, browserBuildVersion);
             }
-            Log.Comment("WebView2Tests Init: Found Anaheim Browser/WV2Runtime: {0}", installedBrowser);
+            Log.Comment("WebView2Tests Init: Found Edge browser/WV2Runtime: {0}", installedBrowser);
+            return browserBuildVersion;
+        }
 
-            // 2. Get WebView2Loader.dll Build version info
+        private static int GetLoaderBuildVersion()
+        {
             int loaderBuildVersion = 0;
             string loaderPath = Path.Combine(Environment.CurrentDirectory, NativeMethods.LoaderName);
 
@@ -114,53 +176,63 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 Log.Error("WebView2Tests Init: could not find loader at {0} [exception: {1}]", loaderPath, e.ToString());
             }
+            return loaderBuildVersion;
+        }
 
-            // The full versions of browser/runtime and webview2 SDK are not directly comparable: 
+        private static bool GetHasCompatibleRuntimeInstalled(int browserBuildVersion, int loaderBuildVersion)
+        {
+            bool hasCompatibleRuntime = false;
+            // The full versions of browser/runtime and WebView2 SDK are not directly comparable: 
             // Browser/Runtime version ex: 80.0.361.48
             // WebView2 SDK version ex: 0.8.355
             // Webview2Loader compares the build versions (361 and 355 in above example), we do so here as well
-            if (browserBuildVersion >= loaderBuildVersion
-                || (loaderBuildVersion == 721 && browserBuildVersion >= 705)   // [1/26/21]: Special case: For SDK 1.0.721-prerelease, can use browser 88.0.705.0 (last available 88 release, confirmed good by Anaheim Team)
-                || (loaderBuildVersion == 865 && browserBuildVersion >= 818)
+            if (browserBuildVersion >= loaderBuildVersion ||
+                // [1/26/21]: Special case: For SDK 1.0.721-prerelease, can use browser 88.0.705.0
+                (loaderBuildVersion == 721 && browserBuildVersion >= 705)
                )
             {
-                Log.Comment("WebView2Tests Init: Installed Anaheim build will be used for testing... ");
-                needsBrowserInstall = false;
+                Log.Comment("WebView2Tests Init: Installed Edge build will be used for testing... ");
+                hasCompatibleRuntime = true;
             }
+            return hasCompatibleRuntime;
+        }
 
-            if (needsBrowserInstall)
-            {
-                Log.Comment("Downloading anaheim installer...");
+        private static bool TryInstallingBrowser(int attemptsLeft)
+        {
+            Log.Comment("Downloading Edge installer...");
                 DownloadFile("https://go.microsoft.com/fwlink/p/?LinkId=2124703",
                     "MicrosoftEdgeWebview2Setup.exe");
-                // This installation can sometimes fail, so we'll try a number of times before failing out.
-                int attemptsLeft = 5;
-                
-                while (attemptsLeft > 0)
+            bool successfullyInstalled = false;
+            string installer = "MicrosoftEdgeWebview2Setup.exe";
+            // Note: Starting with SDK 0.9.488 / Edge version 83, evergreen WebView2 no longer targets the Stable
+            //       browser channel. Instead, it targets another set of binaries, branded Evergreen WebView2 Runtime.
+            //       (See https://docs.microsoft.com/en-us/microsoft-edge/webview2/releasenotes).
+            string installerArgs_WV2Runtime = "/silent /install";
+            Log.Comment(@"WebView2Tests Init: Installing WebView2 runtime: '{0} {1}'", installer, installerArgs_WV2Runtime);
+            ProcessStartInfo installerStartInfo = new ProcessStartInfo(installer, installerArgs_WV2Runtime);
+
+            Process installerProcess = Process.Start(installerStartInfo);
+            installerProcess.WaitForExit();
+
+            if (installerProcess.ExitCode == 0)
+            {
+                Log.Comment("WebView2Tests Init: {0} exited successfully", installer);
+                successfullyInstalled = true;
+            }
+            else
+            {
+                Log.Warning("WebView2Tests Init: {0} failed with exit code {1}! Attempts left: {2}", installer, installerProcess.ExitCode, attemptsLeft);
+                // Print information about some of the error codes we sometimes hit
+                if (installerProcess.ExitCode == 4)
                 {
-                    string installer = "MicrosoftEdgeWebview2Setup.exe";
-                    // Note: Starting with SDK 0.9.488 / Edge version 83, evergreen WebView no longer
-                    //       targets the Stable browser channel. Instead, it targets another set of binaries, 
-                    //       branded Evergreen WebView2 Runtime. (see https://docs.microsoft.com/en-us/microsoft-edge/webview2/releasenotes)
-                    string installerArgs_WV2Runtime = "/silent /install";
-                    Log.Comment(@"WebView2Tests Init: Installing WebView2 runtime: '{0} {1}'", installer, installerArgs_WV2Runtime);
-                    ProcessStartInfo installerStartInfo = new ProcessStartInfo(installer, installerArgs_WV2Runtime);
-
-                    Process installerProcess = Process.Start(installerStartInfo);
-                    installerProcess.WaitForExit();
-
-                    if (installerProcess.ExitCode == 0)
-                    {
-                        Log.Comment("WebView2Tests Init: {0} exited successfully");
-                        break;
-                    }
-                    else
-                    {
-                        Log.Error("WebView2Tests Init: {0} failed with exit code {1}! Attempts left: {2}", installer, installerProcess.ExitCode, attemptsLeft);
-                        attemptsLeft--;
-                    }
+                    Log.Comment("Exit code 4 = HIGHER_VERSION_EXISTS, Higher version already exists");
+                }
+                else if (installerProcess.ExitCode == 60)
+                {
+                    Log.Comment("Exit code 60 = SETUP_SINGLETON_ACQUISITION_FAILED, The setup process could not acquire the exclusive right to modify the installation.");
                 }
             }
+            return successfullyInstalled;
         }
 
         [TestCleanup]
@@ -406,7 +478,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void BasicRenderingTest()
+        public void BasicRenderingTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -491,42 +563,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void MouseLeftClickTest()
+        public void MouseLeftClickTest()
         {
             MouseClickTestCommon(PointerButtons.Primary);
         }
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void MouseMiddleClickTest()
+        public void MouseMiddleClickTest()
         {
             MouseClickTestCommon(PointerButtons.Middle);
         }
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void MouseRightClickTest()
+        public void MouseRightClickTest()
         {
             MouseClickTestCommon(PointerButtons.Secondary);
         }
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void MouseXButton1ClickTest()
+        public void MouseXButton1ClickTest()
         {
             MouseClickTestCommon(PointerButtons.XButton1);
         }
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void MouseXButton2ClickTest()
+        public void MouseXButton2ClickTest()
         {
             MouseClickTestCommon(PointerButtons.XButton2);
         }
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void MouseWheelScrollTest()
+        public void MouseWheelScrollTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -557,7 +629,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void CursorUpdateTest()
+        public void CursorUpdateTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -593,7 +665,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void NavigationErrorTest()
+        public void NavigationErrorTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -611,7 +683,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // For each of the Focus_* tests: 
         // 1) We Tab/Shift+Tab/Click amongst xaml controls(x1, x2) and web controls(w1, w2). 
         // 2) After each such change:
-        //     a. Validate Anaheim focus state by hovering over UpdateAnaheimFocusTextBlock, which triggers a tooltip handler 
+        //     a. Validate Edge focus state by hovering over UpdateAnaheimFocusTextBlock, which triggers a tooltip handler 
         //        in the (Xaml) test app, which tests the color of a rectangle in the webpage that reflects the focused web control(w1, w2, or n/a).
         //     b. Validate Xaml focus using MITA API's directly. Since WebView2 doesn't have accessibility hooked up yet,
         //       the FocusAcquiredWaiter will not work correctly with it. Such validation is temporarily commented out 
@@ -869,7 +941,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public static void ExecuteScriptTest()
+        public void ExecuteScriptTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -950,8 +1022,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod] 
-        [TestProperty("TestSuite", "A")]
-        public static void MultipleWebviews_BasicRenderingTest()
+        [TestProperty("TestSuite", "B")]
+        public void MultipleWebviews_BasicRenderingTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -970,8 +1042,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         //[TestMethod] // TODO: Investigate why LanguageTest is failing on latest WebView2 runtime
-        //[TestProperty("TestSuite", "A")]
-        public static void MultipleWebviews_LanguageTest()
+        //[TestProperty("TestSuite", "B")]
+        public void MultipleWebviews_LanguageTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -993,7 +1065,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // 3) [WebView2 text -> Xaml] Overwrite webview textbox's contents and attempt to copy this out to 
         //    the Xaml app to provide an isolated 'copy from webview' test.
         [TestMethod]
-        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestSuite", "B")]
         public void CopyPasteTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
@@ -1065,7 +1137,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestSuite", "B")]
         public void BasicKeyboardTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
@@ -1220,7 +1292,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void ReloadTest()
+        public void ReloadTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1237,7 +1309,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void NavigateToStringTest()
+        public void NavigateToStringTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1263,7 +1335,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // bound textbox, demonstrating binding from Source->textBlock text.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void SourceBindingTest()
+        public void SourceBindingTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1305,7 +1377,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // CanGoBack and CanGoForward properties and used in implementation of methods, tested by proxy.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void GoBackAndForwardTest()
+        public void GoBackAndForwardTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1322,7 +1394,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // [TestMethod] // TODO: Investigate why this test is not completing on 19H1
         [TestProperty("TestSuite", "B")]
-        public static void NavigationStartingTest()
+        public void NavigationStartingTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1339,7 +1411,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        public static void ResizeTest()
+        public void ResizeTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1358,7 +1430,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Ignore", "True")] // Task 31708332: WebView2 Touch Tests still failing on Helix
         [TestProperty("Ignore", "True")]  //Task 31704068: Unreliable tests: WebView2 BasicTapTouchTest, BasicFlingTouchTest, BasicLongPressTouchTest
         [TestProperty("TestSuite", "B")]
-        public static void BasicTapTouchTest()
+        public void BasicTapTouchTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1386,7 +1458,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Ignore", "True")] // Task 31708332: WebView2 Touch Tests still failing on Helix
         [TestProperty("Ignore", "True")]  //Task 31704068: Unreliable tests: WebView2 BasicTapTouchTest, BasicFlingTouchTest, BasicLongPressTouchTest
         [TestProperty("TestSuite", "B")]
-        public static void BasicFlingTouchTest()
+        public void BasicFlingTouchTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1421,7 +1493,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         [TestProperty("Ignore", "True")] // Task 25510116: WebView2Tests.BasicStretchTouchTest is failing on Helix 
         [TestProperty("TestSuite", "B")]
-        public static void BasicStretchTouchTest()
+        public void BasicStretchTouchTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1444,8 +1516,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "B")]
-        public static void BasicPanTouchTest()
+        [TestProperty("TestSuite", "C")]
+        public void BasicPanTouchTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1472,10 +1544,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "B")]
+        [TestProperty("TestSuite", "C")]
         [TestProperty("Ignore", "True")] // Task 31708332: WebView2 Touch Tests still failing on Helix
-        [TestProperty("Ignore", "True")]  //Task 31704068: Unreliable tests: WebView2 BasicTapTouchTest, BasicFlingTouchTest, BasicLongPressTouchTest
-        public static void BasicLongPressTouchTest()
+        public void BasicLongPressTouchTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1501,8 +1572,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "B")]
-        public static void ScaledTouchTest()
+        [TestProperty("TestSuite", "C")]
+        public void ScaledTouchTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1536,8 +1607,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "B")]
-        public static void MoveTest()
+        [TestProperty("TestSuite", "C")]
+        public void MoveTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1553,8 +1624,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "B")]
-        public static void ReparentElementTest()
+        [TestProperty("TestSuite", "C")]
+        public void ReparentElementTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1578,8 +1649,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "B")]
-        public static void SourceBeforeLoadTest()
+        [TestProperty("TestSuite", "C")]
+        public void SourceBeforeLoadTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1595,8 +1666,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "B")]
-        public static void VisibilityHiddenTest()
+        [TestProperty("TestSuite", "C")]
+        public void VisibilityHiddenTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1612,8 +1683,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "B")]
-        public static void VisibilityTurnedOnTest()
+        [TestProperty("TestSuite", "C")]
+        public void VisibilityTurnedOnTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1634,8 +1705,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "B")]
-        public static void ParentVisibilityHiddenTest()
+        [TestProperty("TestSuite", "C")]
+        public void ParentVisibilityHiddenTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1652,7 +1723,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void ParentVisibilityTurnedOnTest()
+        public void ParentVisibilityTurnedOnTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1675,7 +1746,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         [TestProperty("Ignore", "True")] // TODO_WebView2: Enable when we can change DPI for a test
         [TestProperty("TestSuite", "C")]
-        public static void SpecificTouchTest()
+        public void SpecificTouchTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1712,7 +1783,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void QueryCoreWebView2BasicTest()
+        public void QueryCoreWebView2BasicTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1729,7 +1800,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void CoreWebView2InitializedTest()
+        public void CoreWebView2InitializedTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1746,7 +1817,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        public static void CoreWebView2Initialized_FailedTest()
+        public void CoreWebView2Initialized_FailedTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1758,8 +1829,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 ChooseTest("CoreWebView2Initialized_FailedTest", false /* waitForLoadCompleted */);
 
-                var browserExecutableKey = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(@"Software\Policies\Microsoft\Edge\WebView2\BrowserExecutableFolder", true);
-
+                // Imitate Edge not being installed by setting a reg key to point Edge at a location where the WebView2 runtime does not exist
+                // https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.865-prerelease#createcorewebview2environmentwithoptions
+                var browserExecutableKey = GetBrowserExecutableFolderKey();
+                Log.Comment("Setting key for MuxControlsTestApp.exe");
                 browserExecutableKey.SetValue("MuxControlsTestApp.exe", "c:\\badpath");
 
                 try
@@ -1769,14 +1842,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 finally
                 {
                     browserExecutableKey.DeleteValue("MuxControlsTestApp.exe");
+                    Log.Comment("Removed key for MuxControlsTestApp.exe");
                 }
             }
+        }
+
+        private static Microsoft.Win32.RegistryKey GetBrowserExecutableFolderKey()
+        {
+            return Microsoft.Win32.Registry.LocalMachine.CreateSubKey(@"Software\Policies\Microsoft\Edge\WebView2\BrowserExecutableFolder", true);
         }
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         [TestProperty("Ignore", "True")] // Task 31425073: Unreliable tests: MenuBarTests.KeyboardNavigationWithArrowKeysTest and WebView2CleanedUpTest
-        public static void WebView2CleanedUpTest()
+        public void WebView2CleanedUpTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1825,8 +1904,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "C")]
-        public static void WindowHiddenTest()
+        [TestProperty("TestSuite", "D")]
+        public void WindowHiddenTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1860,8 +1939,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "C")]
-        public static void WindowlessPopupTest()
+        [TestProperty("TestSuite", "D")]
+        public void WindowlessPopupTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1904,8 +1983,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "C")]
-        public static void PointerReleaseWithoutPressTest()
+        [TestProperty("TestSuite", "D")]
+        public void PointerReleaseWithoutPressTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1936,8 +2015,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "C")]
-        public static void HostNameToFolderMappingTest()
+        [TestProperty("TestSuite", "D")]
+        public void HostNameToFolderMappingTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1968,8 +2047,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "C")]
-        public static void NavigateToVideoTest()
+        [TestProperty("TestSuite", "D")]
+        public void NavigateToVideoTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -1985,8 +2064,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "C")]
-        public static void NavigateToLocalImageTest()
+        [TestProperty("TestSuite", "D")]
+        public void NavigateToLocalImageTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -2003,8 +2082,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Ignore", "True")] // TODO_WebView2: Enable when we can change DPI for a test
-        [TestProperty("TestSuite", "C")]
-        public static void CloseThenDPIChangeTest()
+        [TestProperty("TestSuite", "D")]
+        public void CloseThenDPIChangeTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -2024,9 +2103,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         //[TestMethod] // Test fails because .NET UWP doesn't support Object -> VARIANT marshalling.
-        [TestProperty("TestSuite", "C")]
+        [TestProperty("TestSuite", "D")]
         [TestProperty("Ignore", "True")] // 32510465
-        public static void AddHostObjectToScriptTest()
+        public void AddHostObjectToScriptTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -2038,6 +2117,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 ChooseTest("AddHostObjectToScriptTest");
                 CompleteTestAndWaitForWebMessageResult("AddHostObjectToScriptTest");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void UserAgentTest()
+        {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
+                return;
+            }
+
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("UserAgentTest");
+                CompleteTestAndWaitForResult("UserAgentTest");
             }
         }
 
@@ -2111,8 +2207,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "C")]
-        public static void BasicCoreObjectCreationAndDestructionTest()
+        [TestProperty("TestSuite", "D")]
+        public void BasicCoreObjectCreationAndDestructionTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -2514,8 +2610,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
 
         [TestMethod]
-        [TestProperty("TestSuite", "C")]
-        public static void ConcurrentCreationRequestsTest()
+        [TestProperty("TestSuite", "D")]
+        public void ConcurrentCreationRequestsTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -2676,8 +2772,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "C")]
-        public static void EdgeProcessFailedTest()
+        [TestProperty("TestSuite", "D")]
+        public void EdgeProcessFailedTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -2794,7 +2890,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             public const string LoaderName = "WebView2Loader.dll";
             [DllImport(LoaderName, CharSet = CharSet.Unicode)]
-            // HRESULT WINAPI GetAvailableCoreWebView2BrowserVersionString(PCWSTR browserExecutableFolder, PWSTR* versionInfo) 
             public static extern int GetAvailableCoreWebView2BrowserVersionString(string browserExecutableFolder, out IntPtr versionInfo);
 
             public enum HResults : long

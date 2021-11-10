@@ -22,7 +22,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\CornerRadiusToThicknessConverter.properties.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)AutoHandle.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ColorConversion.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)LifetimeHandler.h" />

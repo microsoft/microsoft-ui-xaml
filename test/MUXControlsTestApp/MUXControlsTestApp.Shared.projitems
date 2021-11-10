@@ -139,12 +139,13 @@
       <IncludeInWindowsAppx>true</IncludeInWindowsAppx>
     </Page>
   </ItemDefinitionGroup>
-  <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
+  <ItemGroup>
     <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\dev\dll\Microsoft.UI.Xaml.vcxproj">
       <Project>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</Project>
       <Name>Microsoft.UI.Xaml</Name>
     </ProjectReference>
   </ItemGroup>
+  
   <ItemGroup>
     <Content Include="$(MSBuildThisFileDirectory)Assets\ladybug.wmv" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\libre-camera-panorama.svg" />

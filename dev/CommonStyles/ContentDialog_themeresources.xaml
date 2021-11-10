@@ -29,7 +29,7 @@
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="ContentDialogForeground" ResourceKey="SystemColorWindowTextColorBrush" />
             <StaticResource x:Key="ContentDialogBackground" ResourceKey="SystemColorWindowColorBrush" />
-            <StaticResource x:Key="ContentDialogSmokeFill" ResourceKey="SystemColorWindowColorBrush" />
+            <SolidColorBrush x:Key="ContentDialogSmokeFill" Color="{ThemeResource SystemColorWindowColor}" Opacity="0.8"/>
             <StaticResource x:Key="ContentDialogTopOverlay" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
             <StaticResource x:Key="ContentDialogSeparatorBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
@@ -77,6 +77,10 @@
         <Setter Property="PrimaryButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
         <Setter Property="SecondaryButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
         <Setter Property="CloseButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
+        <Setter Property="MinWidth" Value="{ThemeResource ContentDialogMinWidth}" />
+        <Setter Property="MaxWidth" Value="{ThemeResource ContentDialogMaxWidth}" />
+        <Setter Property="MinHeight" Value="{ThemeResource ContentDialogMinHeight}" />
+        <Setter Property="MaxHeight" Value="{ThemeResource ContentDialogMaxHeight}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -242,10 +246,10 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 contract7Present:BackgroundSizing="InnerBorderEdge"
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                MinWidth="{ThemeResource ContentDialogMinWidth}"
-                                MaxWidth="{ThemeResource ContentDialogMaxWidth}"
-                                MinHeight="{ThemeResource ContentDialogMinHeight}"
-                                MaxHeight="{ThemeResource ContentDialogMaxHeight}"
+                                MinWidth="{TemplateBinding MinWidth}"
+                                MaxWidth="{TemplateBinding MaxWidth}"
+                                MinHeight="{TemplateBinding MinHeight}"
+                                MaxHeight="{TemplateBinding MaxHeight}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 RenderTransformOrigin="0.5,0.5">
