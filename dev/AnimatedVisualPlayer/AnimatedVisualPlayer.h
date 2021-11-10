@@ -83,6 +83,8 @@ private:
 
     void OnAutoPlayPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
+    void OnAnimationsCacheModePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
+
     void OnFallbackContentPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
     void OnPlaybackRatePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
@@ -103,6 +105,9 @@ private:
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnHiding();
     void OnUnhiding();
+
+    void InstantiateAnimations();
+    void DestroyAnimations();
 
     //
     // Initialized by the constructor.
@@ -127,7 +132,7 @@ private:
     winrt::float2 m_animatedVisualSize;
     winrt::Composition::Visual m_animatedVisualRoot{ nullptr };
     int m_playAsyncVersion{ 0 };
-    double m_currentPlayFromProgress{ 0 };
+    double m_lastPlayProgress{ 0 };
     // The play that will be stopped when Stop() is called.
     std::shared_ptr<AnimationPlay> m_nowPlaying{ nullptr };
     winrt::IDynamicAnimatedVisualSource::AnimatedVisualInvalidated_revoker  m_dynamicAnimatedVisualInvalidatedRevoker{};
@@ -141,4 +146,6 @@ private:
     // This is used to differentiate the first Loaded event (when the element has never been
     // unloaded) from later Loaded events.
     bool m_isUnloaded{ false };
+
+    bool m_isAnimationsCached{ false };
 };

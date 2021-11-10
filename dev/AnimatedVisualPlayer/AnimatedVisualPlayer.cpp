@@ -40,6 +40,10 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
     MUX_ASSERT(m_owner);
     MUX_ASSERT(!m_controller);
 
+    // Set lastPlayProgress to fromProgress.
+    // When we call Stop() root progress will be set to lastPlayProgress.
+    m_owner->m_lastPlayProgress = m_fromProgress;
+
     // If the duration is really short (< 20ms) don't bother trying to animate.
     if (m_playDuration < winrt::TimeSpan{ 20ms })
     {
@@ -117,6 +121,18 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
             // Subscribe to the batch completed event.
             m_batchCompletedToken = m_batch.Completed([this](winrt::IInspectable const&, winrt::CompositionBatchCompletedEventArgs const&)
                 {
+                    if (m_owner) 
+                    {
+                        // If currentPlay completed succesfully, set lastPlayProgress to toProgress.
+                        m_owner->m_lastPlayProgress = m_toProgress;
+                        
+                        // If cache mode is set to None - destroy animations immediately after player stops.
+                        if (m_owner->AnimationsCacheMode() == winrt::AnimationsCacheModeEnum::None) 
+                        {
+                            m_owner->DestroyAnimations();
+                        }
+                    }
+
                     // Complete the play when the batch completes.
                     //
                     // The "this" pointer is guaranteed to be valid because:
@@ -622,12 +638,20 @@ winrt::IAsyncAction AnimatedVisualPlayer::PlayAsync(double fromProgress, double 
         co_return;
     }
 
+    // Make sure that animations are instantiated.
+    InstantiateAnimations();
+
     // Used to detect reentrance.
     const auto version = ++m_playAsyncVersion;
 
-    // Cause any other plays to return. 
+    // Complete m_nowPlaying if it is still running.
+    // Identical to Stop() call but without destroying the animations.
     // WARNING - this call may cause reentrance via the IsPlaying DP.
-    Stop();
+    if (m_nowPlaying)
+    {
+        m_progressPropertySet.InsertScalar(L"Progress", static_cast<float>(m_lastPlayProgress));
+        m_nowPlaying->Complete();
+    }
 
     if (version != m_playAsyncVersion)
     {
@@ -707,6 +731,9 @@ void AnimatedVisualPlayer::SetProgress(double progress)
         return;
     }
 
+    // Make sure that animations are instantiated.
+    InstantiateAnimations();
+
     auto clampedProgress = std::clamp(static_cast<float>(progress), 0.0F, 1.0F);
 
     // WARNING: Reentrance via IsPlaying DP may occur from this point down to the end of the method
@@ -714,6 +741,7 @@ void AnimatedVisualPlayer::SetProgress(double progress)
 
     // Setting the Progress value will stop the current play.
     m_progressPropertySet.InsertScalar(L"Progress", static_cast<float>(clampedProgress));
+    m_lastPlayProgress = progress;
 
     // Ensure the current PlayAsync task is completed.
     // Note that this explicit call is necessary, even though InsertScalar
@@ -724,6 +752,11 @@ void AnimatedVisualPlayer::SetProgress(double progress)
     if (m_nowPlaying)
     {
         m_nowPlaying->Complete();
+    }
+
+    // If cache mode is set to None - destroy annimations immediately.
+    if (AnimationsCacheMode() == winrt::AnimationsCacheModeEnum::None) {
+        DestroyAnimations();
     }
 }
 
@@ -736,7 +769,7 @@ void AnimatedVisualPlayer::Stop()
         // Stop the animation by setting the Progress value to the fromProgress of the
         // most recent play.
         // This may cause reentrance via the IsPlaying DP.
-        SetProgress(m_currentPlayFromProgress);
+        SetProgress(m_lastPlayProgress);
     }
 }
 
@@ -753,6 +786,66 @@ void AnimatedVisualPlayer::OnAutoPlayPropertyChanged(
         const auto looped = true;
         auto ignore = PlayAsync(from, to, looped);
     }
+}
+
+void AnimatedVisualPlayer::OnAnimationsCacheModePropertyChanged(
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto cacheMode = unbox_value<winrt::AnimationsCacheModeEnum>(args.NewValue());
+
+    if (m_nowPlaying)
+    {
+        // If there is something in play right now we should not instantiate/destroy animations.
+        return;
+    }
+
+    if (cacheMode == winrt::AnimationsCacheModeEnum::None)
+    {
+        DestroyAnimations();
+    }
+    else if (cacheMode == winrt::AnimationsCacheModeEnum::Always)
+    {
+        InstantiateAnimations();
+    }
+}
+
+void AnimatedVisualPlayer::InstantiateAnimations() {
+    if (m_isAnimationsCached) 
+    {
+        return;
+    }
+
+    // Check if current animated visual supports instantiating animations and create them.
+    if (const auto& animatedVisual = m_animatedVisual.get())
+    {
+        if (const auto& animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>())
+        {
+            animatedVisual2.InstantiateAnimations(m_lastPlayProgress);
+            m_isAnimationsCached = true;
+        }
+    }
+}
+
+void AnimatedVisualPlayer::DestroyAnimations() {
+    if (!m_isAnimationsCached)
+    {
+        return;
+    }
+
+    // Call RequestCommit to make sure that previous compositor calls complete before destroying animations.
+    m_rootVisual.Compositor().RequestCommitAsync().Completed(
+        [&](auto, auto) {
+            // Check if current animated visual supports destroyig animations.
+            if (const auto& animatedVisual = m_animatedVisual.get())
+            {
+                if (const auto& animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>())
+                {
+                    animatedVisual2.DestroyAnimations();
+                    m_isAnimationsCached = false;
+                }
+            }
+        }
+    );
 }
 
 void AnimatedVisualPlayer::OnFallbackContentPropertyChanged(
@@ -845,7 +938,18 @@ void AnimatedVisualPlayer::UpdateContent()
     }
 
     winrt::IInspectable diagnostics{};
-    auto animatedVisual = source.TryCreateAnimatedVisual(m_rootVisual.Compositor(), diagnostics);
+    winrt::IAnimatedVisual animatedVisual;
+    if (auto source3 = source.try_as<winrt::IAnimatedVisualSource3>())
+    {
+        bool instantiateAnimations = AnimationsCacheMode() == winrt::AnimationsCacheModeEnum::Always;
+        animatedVisual = source3.TryCreateAnimatedVisual(m_rootVisual.Compositor(), instantiateAnimations, diagnostics);
+		m_isAnimationsCached = instantiateAnimations;
+    }
+    else
+    {
+        animatedVisual = source.TryCreateAnimatedVisual(m_rootVisual.Compositor(), diagnostics);
+		m_isAnimationsCached = true;
+    }
     m_animatedVisual.set(animatedVisual);
 
     if (!animatedVisual)

@@ -13,6 +13,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "AnimatedVisualPlayer.g.cpp"
 
+GlobalDependencyProperty AnimatedVisualPlayerProperties::s_AnimationsCacheModeProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_AutoPlayProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_DiagnosticsProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_DurationProperty{ nullptr };
@@ -30,6 +31,17 @@ AnimatedVisualPlayerProperties::AnimatedVisualPlayerProperties()
 
 void AnimatedVisualPlayerProperties::EnsureProperties()
 {
+    if (!s_AnimationsCacheModeProperty)
+    {
+        s_AnimationsCacheModeProperty =
+            InitializeDependencyProperty(
+                L"AnimationsCacheMode",
+                winrt::name_of<winrt::AnimationsCacheModeEnum>(),
+                winrt::name_of<winrt::AnimatedVisualPlayer>(),
+                false /* isAttached */,
+                ValueHelper<winrt::AnimationsCacheModeEnum>::BoxValueIfNecessary(winrt::AnimationsCacheModeEnum::Always),
+                winrt::PropertyChangedCallback(&OnAnimationsCacheModePropertyChanged));
+    }
     if (!s_AutoPlayProperty)
     {
         s_AutoPlayProperty =
@@ -133,6 +145,7 @@ void AnimatedVisualPlayerProperties::EnsureProperties()
 
 void AnimatedVisualPlayerProperties::ClearProperties()
 {
+    s_AnimationsCacheModeProperty = nullptr;
     s_AutoPlayProperty = nullptr;
     s_DiagnosticsProperty = nullptr;
     s_DurationProperty = nullptr;
@@ -142,6 +155,14 @@ void AnimatedVisualPlayerProperties::ClearProperties()
     s_PlaybackRateProperty = nullptr;
     s_SourceProperty = nullptr;
     s_StretchProperty = nullptr;
+}
+
+void AnimatedVisualPlayerProperties::OnAnimationsCacheModePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::AnimatedVisualPlayer>();
+    winrt::get_self<AnimatedVisualPlayer>(owner)->OnAnimationsCacheModePropertyChanged(args);
 }
 
 void AnimatedVisualPlayerProperties::OnAutoPlayPropertyChanged(
@@ -182,6 +203,19 @@ void AnimatedVisualPlayerProperties::OnStretchPropertyChanged(
 {
     auto owner = sender.as<winrt::AnimatedVisualPlayer>();
     winrt::get_self<AnimatedVisualPlayer>(owner)->OnStretchPropertyChanged(args);
+}
+
+void AnimatedVisualPlayerProperties::AnimationsCacheMode(winrt::AnimationsCacheModeEnum const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_AnimationsCacheModeProperty, ValueHelper<winrt::AnimationsCacheModeEnum>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::AnimationsCacheModeEnum AnimatedVisualPlayerProperties::AnimationsCacheMode()
+{
+    return ValueHelper<winrt::AnimationsCacheModeEnum>::CastOrUnbox(static_cast<AnimatedVisualPlayer*>(this)->GetValue(s_AnimationsCacheModeProperty));
 }
 
 void AnimatedVisualPlayerProperties::AutoPlay(bool value)
