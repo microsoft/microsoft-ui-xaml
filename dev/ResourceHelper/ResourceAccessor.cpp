@@ -46,11 +46,22 @@ winrt::hstring ResourceAccessor::GetLocalizedStringResource(const wstring_view &
 #ifdef MUX_EXPERIMENTAL
 winrt::hstring ResourceAccessor::GetLocalizedStringResourceFromWinUI(const wstring_view& resourceName)
 {
-    // Remove hard-coded M.U.X.2.6 package name. Tracked by:
-    // #6242 ResourceAccessor::GetLocalizedStringResourceFromWinUI has hardcoded string for WinUI 2.6
     static winrt::ResourceMap s_resourceMapWinUI = []() {
-        const auto packageResourceMap = winrt::ResourceManager::Current().AllResourceMaps().Lookup(L"Microsoft.UI.Xaml.2.6");
-        return packageResourceMap.GetSubtree(ResourceAccessor::c_resourceLocWinUI);
+
+        constexpr wchar_t c_winUIPackageNamePrefix[] = L"Microsoft.UI.Xaml.";
+        constexpr size_t c_winUIPackageNamePrefixLength = ARRAYSIZE(c_winUIPackageNamePrefix) - 1;
+
+        for (auto resourceMapKvp : winrt::ResourceManager::Current().AllResourceMaps())
+        {
+            auto resourceMapName = resourceMapKvp.Key();
+            if (std::wstring_view(resourceMapName.c_str(), c_winUIPackageNamePrefixLength) == std::wstring_view(c_winUIPackageNamePrefix))
+            {
+                return resourceMapKvp.Value().GetSubtree(ResourceAccessor::c_resourceLocWinUI);
+            }
+        }
+
+        // If we don't find a matching framework package, use the app's resources:
+        return winrt::ResourceManager::Current().MainResourceMap().GetSubtree(ResourceAccessor::c_resourceLocWinUI);
     }();
 
     static winrt::ResourceContext s_resourceContext = winrt::ResourceContext::GetForViewIndependentUse();

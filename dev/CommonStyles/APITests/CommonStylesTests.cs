@@ -449,7 +449,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                             <StackPanel.Resources>
                                 <Visibility x:Key='AppBarButtonHasFlyoutChevronVisibility'>Collapsed</Visibility>
                                 <x:String x:Key='AppBarButtonFlyoutGlyph'>&#xE972;</x:String>
-                                <x:Double x:Key='AppBarButtonFlyoutFontSize'>12</x:Double>
+                                <x:Double x:Key='AppBarButtonSubItemChevronFontSize'>12</x:Double>
                                 <SolidColorBrush x:Key='AppBarButtonSubItemChevronForeground' Color='Red' />
                             </StackPanel.Resources>
                             <AppBarButton x:Name='TestAppBarButton'/>
@@ -470,7 +470,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual((Visibility)root.Resources["AppBarButtonHasFlyoutChevronVisibility"], subItemChevron.Visibility);
                 Verify.AreEqual((string)root.Resources["AppBarButtonFlyoutGlyph"], subItemChevron.Glyph);
-                Verify.AreEqual((double)root.Resources["AppBarButtonFlyoutFontSize"], subItemChevron.FontSize);
+                Verify.AreEqual((double)root.Resources["AppBarButtonSubItemChevronFontSize"], subItemChevron.FontSize);
                 Verify.AreEqual(((SolidColorBrush)root.Resources["AppBarButtonSubItemChevronForeground"]).Color, ((SolidColorBrush)subItemChevron.Foreground).Color);
             });
         }

@@ -142,7 +142,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 VerifySelectedFocusedIndex(2, true);
 
                 // Move focus to the first RadioButtons control by pressing TAB again
-                KeyboardHelper.PressKey(Key.Tab);
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
 
                 // Verify that the second radio button is still selected and now has focus
                 VerifySelectedFocusedIndex(1, false);
