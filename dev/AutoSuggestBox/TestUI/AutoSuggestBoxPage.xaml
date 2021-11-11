@@ -28,6 +28,12 @@
         </AutoSuggestBox>
 
         <AutoSuggestBox Header="AutoSuggestBox with suggestions" QuerySubmitted="AutoSuggestBox_QuerySubmitted" />
+        <StackPanel x:Name="stackPanelSearch"
+                Margin="5"
+                Orientation="Horizontal">
+            <AutoSuggestBox Height="33" MinWidth="230"
+                PlaceholderText="Search Stuff" QueryIcon="Find" />
+        </StackPanel>
     </StackPanel>
 
 </local:TestPage>

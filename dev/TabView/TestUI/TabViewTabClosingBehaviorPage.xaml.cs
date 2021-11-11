@@ -50,7 +50,7 @@ namespace MUXControlsTestApp
             Tabs.TabItems.Remove(e.Tab);
 
             TabViewWidth.Text = Tabs.ActualWidth.ToString();
-            TabViewHeaderWidth.Text = Tab3.Width.ToString();
+            TabViewHeaderWidth.Text = Tab0.Width.ToString();
 
             var scrollButtonStateValue = "";
 
@@ -63,13 +63,21 @@ namespace MUXControlsTestApp
             ScrollButtonStatus.Text = scrollButtonStateValue;
         }
 
+        public void GetFirstItemWidthButton_Click(object sender, RoutedEventArgs e)
+        {
+            // This is the smallest width that fits our content without any scrolling.
+            TabViewWidth.Text = Tabs.ActualWidth.ToString();
+
+            // Header width
+            TabViewHeaderWidth.Text = Tab0.Width.ToString();
+        }
         public void GetActualWidthsButton_Click(object sender, RoutedEventArgs e)
         {
             // This is the smallest width that fits our content without any scrolling.
             TabViewWidth.Text = Tabs.ActualWidth.ToString();
 
             // Header width
-            TabViewHeaderWidth.Text = Tab3.Width.ToString();
+            TabViewHeaderWidth.Text = Tab0.Width.ToString();
         }
 
         public void IncreaseScrollButton_Click(object sender, RoutedEventArgs e)
@@ -78,5 +86,14 @@ namespace MUXControlsTestApp
             sv.ChangeView(10000, null, null, disableAnimation: true);
         }
 
+        private void RemoveMiddleItem_Click(object sender, RoutedEventArgs e)
+        {
+            Tabs.TabItems.RemoveAt(1);
+        }
+
+        private void RemoveLastItem_Click(object sender, RoutedEventArgs e)
+        {
+            Tabs.TabItems.RemoveAt(Tabs.TabItems.Count - 1);
+        }
     }
 }

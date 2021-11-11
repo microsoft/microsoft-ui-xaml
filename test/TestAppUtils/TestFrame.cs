@@ -16,6 +16,13 @@ namespace MUXControlsTestApp
 {
     public sealed class TestFrame : Frame
     {
+        public UIElement CustomElement
+        {
+            get { return (UIElement)GetValue(CustomElementProperty); }
+            set { SetValue(CustomElementProperty, value); }
+        }
+
+        public static DependencyProperty CustomElementProperty = DependencyProperty.Register("CustomElement", typeof(UIElement), typeof(TestFrame), null);
 
         private Viewbox _rootViewbox = null;
         private Grid _rootGrid = null;
@@ -32,6 +39,9 @@ namespace MUXControlsTestApp
 
         public TestFrame(Type mainPageType)
         {
+            // This value is cached, so reset it when the app launches
+            Windows.ApplicationModel.Core.CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = false;
+
             _mainPageType = mainPageType;
             this.DefaultStyleKey = typeof(TestFrame);
 

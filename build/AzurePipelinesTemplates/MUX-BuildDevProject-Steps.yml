@@ -10,6 +10,29 @@ steps:
       buildOutputDir: $(buildOutputDir)
       publishDir: $(publishDir)
 
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: 'NuGet restore MUXExperimental.sln'
+    inputs:
+      restoreSolution: MUXExperimental.sln
+      feedsToUse: config
+      nugetConfigPath: nuget.config
+
+  - task: VSBuild@1
+    displayName: 'Build solution MUXExperimental.sln'
+    inputs:
+      solution: MUXExperimental.sln
+      vsVersion: 16.0
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
+      msbuildArgs: '/restore /p:UseInsiderSDK=$(UseInsiderSDK) /p:AppxPackageDir="$(appxPackageDir)" /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false /binaryLogger:$(Build.SourcesDirectory)/MUXExperimental.sln.$(buildPlatform).$(buildConfiguration).binlog /p:MUXVersionBuild=$(builddate_yymm) /p:MUXVersionRevision=$(builddate_dd)$(buildrevision) /p:VCToolsInstallDir="$(VCToolsInstallDir)\" /p:PGOBuildMode=$(PGOBuildMode)'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish MUXExperimental.sln binlog'
+    condition: succeededOrFailed()
+    inputs:
+      PathtoPublish: $(Build.SourcesDirectory)/MUXExperimental.sln.$(buildPlatform).$(buildConfiguration).binlog
+      artifactName: drop
+
   - ${{ if eq( parameters.signOutput, true) }}:
     - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
       displayName: 'CodeSign'
@@ -20,6 +43,8 @@ steps:
         Pattern: |
           **/Microsoft.UI.Xaml.dll
           **/Microsoft.UI.Xaml.winmd
+          **/Microsoft.Experimental.UI.Xaml.dll
+          **/Microsoft.Experimental.UI.Xaml.winmd
         UseMinimatch: true
         signConfigType: inlineSignParams
         inlineOperation: | 
@@ -45,8 +70,9 @@ steps:
                 "ToolVersion" : "1.0"
             }
           ]
-    - task: PublishSymbols@2 # We only publish symbols to microsoftpublicsymbols for signed builds.
-      displayName: 'Publish symbols'
+    # We only publish symbols to microsoftpublicsymbols for signed builds.
+    - task: PublishSymbols@2  # Publish symbols to public Microsoft Symbol Server
+      displayName: 'Publish symbols (public)'
       inputs:
         SearchPattern: $(buildOutputDir)/$(buildConfiguration)/$(buildPlatform)/**/*.pdb
         SymbolServerType: 'TeamServices'
@@ -54,7 +80,13 @@ steps:
         LIB: $(Build.SourcesDirectory)
         ArtifactServices_Symbol_AccountName: microsoftpublicsymbols
         ArtifactServices_Symbol_PAT: $(WinUILab-Pipeline-PAT)
+    - task: PublishSymbols@2 # Publish symbols to internal symweb
+      displayName: 'Publish symbols (internal)'
+      inputs:
+        SearchPattern: $(buildOutputDir)/$(buildConfiguration)/$(buildPlatform)/**/*.pdb
+        SymbolServerType: 'TeamServices'
 
   - template: MUX-MakeFrameworkPackages-Steps.yml
     parameters:
       buildOutputDir: $(buildOutputDir)
+      signOutput: ${{parameters.signOutput}}

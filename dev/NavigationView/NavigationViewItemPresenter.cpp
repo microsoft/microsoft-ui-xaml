@@ -140,7 +140,7 @@ void NavigationViewItemPresenter::UpdateCompactPaneLength(double compactPaneLeng
         const auto gridLength = compactPaneLength;
 
         templateSettings->IconWidth(gridLength);
-        templateSettings->SmallerIconWidth(gridLength - 8);
+        templateSettings->SmallerIconWidth(std::max(0.0, gridLength - 8));
     }
 }
 

@@ -49,13 +49,23 @@
 #include <winrt\Windows.UI.Xaml.Media.Animation.h>
 #include <winrt\Windows.UI.Xaml.Media.Imaging.h>
 #include <winrt\Windows.UI.Xaml.Shapes.h>
+
+#if __has_include("winrt\Microsoft.UI.Private.Controls.h")
 #include <winrt\Microsoft.UI.Private.Controls.h>
+#endif
+
 #if __has_include("winrt\Microsoft.UI.Private.Media.h")
 #include <winrt\Microsoft.UI.Private.Media.h>
 #endif
 
+#if __has_include("winrt\Microsoft.UI.Xaml.Controls.h")
 #include <winrt\Microsoft.UI.Xaml.Controls.h>
+#endif
+
+#if __has_include("winrt\Microsoft.UI.Xaml.XamlTypeInfo.h")
 #include <winrt\Microsoft.UI.Xaml.XamlTypeInfo.h>
+#endif
+
 #if __has_include("winrt\Microsoft.UI.Xaml.Controls.Primitives.h")
 #include <winrt\Microsoft.UI.Xaml.Controls.Primitives.h>
 #endif
@@ -74,6 +84,32 @@
 
 #if __has_include("winrt\Microsoft.UI.Private.Composition.Effects.h")
 #include <winrt\Microsoft.UI.Private.Composition.Effects.h>
+#endif
+
+
+
+#if __has_include("winrt\Microsoft.Experimental.UI.Xaml.Controls.h")
+#include <winrt\Microsoft.Experimental.UI.Xaml.Controls.h>
+#endif
+
+#if __has_include("winrt\Microsoft.Experimental.UI.Xaml.XamlTypeInfo.h")
+#include <winrt\Microsoft.Experimental.UI.Xaml.XamlTypeInfo.h>
+#endif
+
+#if __has_include("winrt\Microsoft.Experimental.UI.Xaml.Controls.Primitives.h")
+#include <winrt\Microsoft.Experimental.UI.Xaml.Controls.Primitives.h>
+#endif
+
+#if __has_include("winrt\Microsoft.Experimental.UI.Xaml.Controls.AnimatedVisuals.h")
+#include <winrt\Microsoft.Experimental.UI.Xaml.Controls.AnimatedVisuals.h>
+#endif
+
+#if __has_include("winrt\Microsoft.Experimental.UI.Xaml.Media.h")
+#include <winrt\Microsoft.Experimental.UI.Xaml.Media.h>
+#endif
+
+#if __has_include("winrt\Microsoft.Experimental.UI.Xaml.Automation.Peers.h")
+#include <winrt\Microsoft.Experimental.UI.Xaml.Automation.Peers.h>
 #endif
 
 namespace winrt
@@ -122,6 +158,7 @@ namespace winrt
     using namespace ::winrt::Windows::UI::Xaml::Media::Imaging;
     using namespace ::winrt::Windows::UI::Xaml::Shapes;
     using namespace ::winrt::Windows::System::Profile;
+    namespace Microsoft::UI::Xaml::XamlTypeInfo {}
     using namespace ::winrt::Microsoft::UI::Xaml::XamlTypeInfo;
     namespace Microsoft::UI::Private::Controls {}
     using namespace ::winrt::Microsoft::UI::Private::Controls;
@@ -138,16 +175,39 @@ namespace winrt
     namespace Microsoft::UI::Xaml::Automation::Peers {}
     using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers;
 
+
+    namespace Microsoft::Experimental::UI::Xaml::XamlTypeInfo {}
+    using namespace ::winrt::Microsoft::Experimental::UI::Xaml::XamlTypeInfo;
+    namespace Microsoft::Experimental::UI::Xaml::Controls {}
+    using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls;
+    namespace Microsoft::Experimental::UI::Xaml::Controls::Primitives {}
+    using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls::Primitives;
+    namespace Microsoft::Experimental::UI::Xaml::Controls::AnimatedVisuals {}
+    using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls::AnimatedVisuals;
+    namespace Microsoft::Experimental::UI::Xaml::Media {}
+    using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Media;
+    namespace Microsoft::Experimental::UI::Xaml::Automation::Peers {}
+    using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Automation::Peers;
+
     // using namespace will affect headers included later as well, so crack these namespaces now for convenience
     // but in order to avoid "namespace not defined" errors we have to define the namespaces here too.
     namespace Microsoft::UI::Private::Controls::implementation {}
     namespace Microsoft::UI::Private::Media::implementation {}
+
     namespace Microsoft::UI::Xaml::Controls::implementation {}
     namespace Microsoft::UI::Xaml::XamlTypeInfo::implementation {}
     namespace Microsoft::UI::Xaml::Controls::Primitives::implementation {}
     namespace Microsoft::UI::Xaml::Media::implementation {}
     namespace Microsoft::UI::Xaml::Automation::Peers::implementation {}
     namespace Microsoft::UI::Xaml::Controls::AnimatedVisuals::implementation {}
+
+    namespace Microsoft::Experimental::UI::Xaml::Controls::implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::Controls::Primitives::implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::Controls::AnimatedVisuals::implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::Media::implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::Automation::Peers::implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::XamlTypeInfo::implementation {} 
+
     namespace implementation
     {
         using namespace ::winrt::Microsoft::UI::Private::Controls::implementation;
@@ -159,6 +219,12 @@ namespace winrt
         using namespace ::winrt::Microsoft::UI::Xaml::Media::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers::implementation;
 
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls::implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls::Primitives::implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls::AnimatedVisuals::implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Media::implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Automation::Peers::implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::XamlTypeInfo::implementation;
     }
 
     namespace Microsoft::UI::Private::Controls::factory_implementation {}
@@ -169,6 +235,14 @@ namespace winrt
     namespace Microsoft::UI::Xaml::Controls::AnimatedVisuals::factory_implementation {}
     namespace Microsoft::UI::Xaml::Media::factory_implementation {}
     namespace Microsoft::UI::Xaml::Automation::Peers::factory_implementation {}
+
+    namespace Microsoft::Experimental::UI::Xaml::Controls::factory_implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::XamlTypeInfo::factory_implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::Controls::Primitives::factory_implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::Controls::AnimatedVisuals::factory_implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::Media::factory_implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::Automation::Peers::factory_implementation {}
+
     namespace factory_implementation
     {
         using namespace ::winrt::Microsoft::UI::Private::Controls::factory_implementation;
@@ -179,6 +253,13 @@ namespace winrt
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Media::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers::factory_implementation;
+
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls::factory_implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::XamlTypeInfo::factory_implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls::Primitives::factory_implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls::AnimatedVisuals::factory_implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Media::factory_implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Automation::Peers::factory_implementation;
     }
 
 #ifdef EFFECTS_INCLUDED

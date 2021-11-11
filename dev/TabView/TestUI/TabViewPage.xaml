@@ -152,15 +152,15 @@
 
                         <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
                             <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
-                            <StackPanel Orientation="Horizontal">
+                            <StackPanel>
                                 <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton"
-                                        Margin="8" Click="TabViewSizingPageButton_Click"
+                                        Margin="4" Click="TabViewSizingPageButton_Click"
                                         FontSize="20">TabView Sizing Page</Button>
                                 <Button x:Name="TabViewTabClosingBehaviorButton" AutomationProperties.Name="TabViewTabClosingBehaviorButton"
-                                        Margin="8" Click="TabViewTabClosingBehaviorButton_Click"
+                                        Margin="4" Click="TabViewTabClosingBehaviorButton_Click"
                                         FontSize="20">TabView Tab Closing behavior Page</Button>
                                 <Button x:Name="TabViewTabItemsSourcePageButton" AutomationProperties.Name="TabViewTabItemsSourcePageButton"
-                                        Margin="8" Click="TabViewTabItemsSourcePageButton_Click"
+                                        Margin="4" Click="TabViewTabItemsSourcePageButton_Click"
                                         FontSize="20">TabView TabItemsSource Page</Button>
                             </StackPanel>
                         </StackPanel>
@@ -172,14 +172,14 @@
                         </controls:TabViewItem.IconSource>
 
                         <StackPanel Padding="16">
-                            <TextBlock>Shop text</TextBlock>
+                            <TextBlock Text="Shop text"/>
                             <Button Content="SecondTabButton" AutomationProperties.Name="SecondTabButton"/>
                         </StackPanel>
                     </controls:TabViewItem>
 
                     <controls:TabViewItem x:Name="LongHeaderTab" AutomationProperties.Name="LongHeaderTab" Header="Long Header No Icon">
                         <StackPanel Padding="16">
-                            <TextBlock >Emoji text</TextBlock>
+                            <TextBlock Text="Emoji text"/>
                             <Button Content="Button 3"/>
                         </StackPanel>
                     </controls:TabViewItem>
@@ -190,7 +190,7 @@
                         </controls:TabViewItem.IconSource>
 
                         <StackPanel>
-                            <TextBlock Padding="16">This tab can't be closed.</TextBlock>
+                            <TextBlock Padding="16" Text="This tab can't be closed."/>
                         </StackPanel>
                     </controls:TabViewItem>
 
@@ -200,7 +200,7 @@
                         </controls:TabViewItem.IconSource>
 
                         <StackPanel>
-                            <TextBlock Padding="16">This tab can't be selected.</TextBlock>
+                            <TextBlock Padding="16" Text="This tab can't be selected."/>
                         </StackPanel>
                     </controls:TabViewItem>
 
@@ -209,7 +209,7 @@
                             <controls:SymbolIconSource Symbol="Contact"/>
                         </controls:TabViewItem.IconSource>
 
-                        <TextBlock x:Name="LastTabContent" AutomationProperties.Name="LastTabContent" Padding="16">Contact text</TextBlock>
+                        <TextBlock x:Name="LastTabContent" AutomationProperties.Name="LastTabContent" Padding="16" Text="Contact text"/>
                     </controls:TabViewItem>
 
                 </controls:TabView>
@@ -260,7 +260,7 @@
                                     <controls:SymbolIconSource Symbol="Placeholder"/>
                                 </controls:TabViewItem.IconSource>
 
-                                <TextBlock Padding="16">Content</TextBlock>
+                                <TextBlock Padding="16" Text="Content"/>
                             </controls:TabViewItem>
 
                         </controls:TabView.TabItems>

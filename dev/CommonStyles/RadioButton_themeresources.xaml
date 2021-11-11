@@ -6,6 +6,7 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
+            <!-- Some resources need to be pointing to colors for animations to update correctly -->
             <x:Double x:Key="RadioButtonBorderThemeThickness">1</x:Double>
             <StaticResource x:Key="RadioButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="RadioButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
@@ -28,6 +29,7 @@
             <StaticResource x:Key="RadioButtonOuterEllipseFillPointerOver" ResourceKey="ControlAltFillColorTertiaryBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseFillPressed" ResourceKey="ControlAltFillColorQuarternaryBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseFillDisabled" ResourceKey="ControlAltFillColorDisabledBrush" />
+            
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedStroke" ResourceKey="AccentFillColorDefaultBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePressed" ResourceKey="AccentFillColorTertiaryBrush" />
@@ -36,6 +38,7 @@
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPressed" ResourceKey="AccentFillColorTertiaryBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillDisabled" ResourceKey="AccentFillColorDisabled" />
+            
             <StaticResource x:Key="RadioButtonCheckGlyphFill" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="RadioButtonCheckGlyphFillPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="RadioButtonCheckGlyphFillPressed" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
@@ -66,12 +69,14 @@
             <SolidColorBrush x:Key="RadioButtonPressedForegroundThemeBrush" Color="#FF000000" />
             <SolidColorBrush x:Key="RadioButtonContentPointerOverForegroundThemeBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
         </ResourceDictionary>
+        
         <ResourceDictionary x:Key="HighContrast">
+            <!-- Some resources need to be pointing to colors for animations to update correctly -->
             <x:Double x:Key="RadioButtonBorderThemeThickness">1</x:Double>
-            <StaticResource x:Key="RadioButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="RadioButtonForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="RadioButtonForegroundPressed" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="RadioButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="RadioButtonForeground" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="RadioButtonForegroundPointerOver" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="RadioButtonForegroundPressed" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="RadioButtonForegroundDisabled" ResourceKey="SystemColorGrayTextColorBrush" />           
             <StaticResource x:Key="RadioButtonBackground" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="RadioButtonBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="RadioButtonBackgroundPressed" ResourceKey="SystemControlTransparentBrush" />
@@ -81,34 +86,38 @@
             <StaticResource x:Key="RadioButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="RadioButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
 
-            <StaticResource x:Key="RadioButtonOuterEllipseStroke" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <StaticResource x:Key="RadioButtonOuterEllipseStrokePointerOver" ResourceKey="SystemColorHighlightColorBrush" />
-            <StaticResource x:Key="RadioButtonOuterEllipseStrokePressed" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseStroke" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseStrokePointerOver" ResourceKey="SystemColorHighlightColor" />
+            <StaticResource x:Key="RadioButtonOuterEllipseStrokePressed" ResourceKey="SystemColorHighlightTextColor" />
             <StaticResource x:Key="RadioButtonOuterEllipseStrokeDisabled" ResourceKey="SystemColorGrayTextColor" />
             <StaticResource x:Key="RadioButtonOuterEllipseFill" ResourceKey="SystemColorButtonFaceColorBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseFillPointerOver" ResourceKey="SystemColorHighlightTextColorBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseFillPressed" ResourceKey="SystemColorHighlightTextColorBrush" />
-            <StaticResource x:Key="RadioButtonOuterEllipseFillDisabled" ResourceKey="SystemColorButtonFaceColorBrush" />
-            <StaticResource x:Key="RadioButtonOuterEllipseCheckedStroke" ResourceKey="SystemControlHighlightAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseFillDisabled" ResourceKey="SystemColorWindowColorBrush" />
+
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedStroke" ResourceKey="SystemColorHighlightColorBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePointerOver" ResourceKey="SystemColorButtonTextColorBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePressed" ResourceKey="SystemColorButtonFaceColorBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokeDisabled" ResourceKey="SystemColorGrayTextColor" />
-            <StaticResource x:Key="RadioButtonOuterEllipseCheckedFill" ResourceKey="SystemControlHighlightAltTransparentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedFill" ResourceKey="SystemColorHighlightTextColorBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPointerOver" ResourceKey="SystemColorButtonFaceColorBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPressed" ResourceKey="SystemColorButtonFaceColorBrush" />
-            <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillDisabled" ResourceKey="SystemColorButtonFaceColorBrush" />
-            <StaticResource x:Key="RadioButtonCheckGlyphFill" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
-            <StaticResource x:Key="RadioButtonCheckGlyphFillPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="RadioButtonCheckGlyphFillPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <StaticResource x:Key="RadioButtonCheckGlyphFillDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillDisabled" ResourceKey="SystemColorWindowColorBrush" />
+
+            <StaticResource x:Key="RadioButtonCheckGlyphFill" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="RadioButtonCheckGlyphFillPointerOver" ResourceKey="SystemColorButtonTextColor" />
+            <StaticResource x:Key="RadioButtonCheckGlyphFillPressed" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="RadioButtonCheckGlyphFillDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
             <StaticResource x:Key="RadioButtonCheckGlyphStroke" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="RadioButtonCheckGlyphStrokePointerOver" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="RadioButtonCheckGlyphStrokePressed" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="RadioButtonCheckGlyphStrokeDisabled" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="RadioButtonCheckGlyphStrokeDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
             <StaticResource x:Key="RadioButtonCheckGlyphStrokeChecked" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="RadioButtonCheckGlyphStrokeCheckedPointerOver" ResourceKey="SystemColorButtonTextColorBrush" />
-            <StaticResource x:Key="RadioButtonCheckGlyphStrokeCheckedPressed" ResourceKey="SystemColorButtonTextColorBrush" />
-            <StaticResource x:Key="RadioButtonCheckGlyphStrokeCheckedDisabled" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="RadioButtonCheckGlyphStrokeCheckedPressed" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="RadioButtonCheckGlyphStrokeCheckedDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
+
+            <!-- Legacy Brushes -->
             <SolidColorBrush x:Key="RadioButtonBackgroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="RadioButtonBorderThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="RadioButtonContentDisabledForegroundThemeBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
@@ -125,7 +134,9 @@
             <SolidColorBrush x:Key="RadioButtonPressedBorderThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="RadioButtonPressedForegroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
         </ResourceDictionary>
+        
         <ResourceDictionary x:Key="Light">
+            <!-- Some resources need to be pointing to colors for animations to update correctly -->
             <x:Double x:Key="RadioButtonBorderThemeThickness">1</x:Double>
             <StaticResource x:Key="RadioButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="RadioButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
@@ -148,6 +159,7 @@
             <StaticResource x:Key="RadioButtonOuterEllipseFillPointerOver" ResourceKey="ControlAltFillColorTertiaryBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseFillPressed" ResourceKey="ControlAltFillColorQuarternaryBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseFillDisabled" ResourceKey="ControlAltFillColorDisabledBrush" />
+            
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedStroke" ResourceKey="AccentFillColorDefaultBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePressed" ResourceKey="AccentFillColorTertiaryBrush" />
@@ -156,6 +168,7 @@
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPressed" ResourceKey="AccentFillColorTertiaryBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillDisabled" ResourceKey="AccentFillColorDisabled" />
+            
             <StaticResource x:Key="RadioButtonCheckGlyphFill" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="RadioButtonCheckGlyphFillPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="RadioButtonCheckGlyphFillPressed" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
@@ -168,6 +181,7 @@
             <StaticResource x:Key="RadioButtonCheckGlyphStrokeCheckedPointerOver" ResourceKey="AccentControlElevationBorderBrush" />
             <StaticResource x:Key="RadioButtonCheckGlyphStrokeCheckedPressed" ResourceKey="AccentControlElevationBorderBrush" />
             <StaticResource x:Key="RadioButtonCheckGlyphStrokeCheckedDisabled" ResourceKey="ControlElevationBorderBrush" />
+            
             <!-- Legacy Brushes -->
             <SolidColorBrush x:Key="RadioButtonBackgroundThemeBrush" Color="#CCFFFFFF" />
             <SolidColorBrush x:Key="RadioButtonBorderThemeBrush" Color="#45000000" />
@@ -190,6 +204,8 @@
     <x:Double x:Key="RadioButtonCheckGlyphSize">12</x:Double>
     <x:Double x:Key="RadioButtonCheckGlyphPointerOverSize">14</x:Double>
     <x:Double x:Key="RadioButtonCheckGlyphPressedOverSize">10</x:Double>
+
+    <Style TargetType="RadioButton" BasedOn="{StaticResource DefaultRadioButtonStyle}" />
 
     <Style x:Key="DefaultRadioButtonStyle" TargetType="RadioButton">
         <Setter Property="Background" Value="{ThemeResource RadioButtonBackground}" />
@@ -371,6 +387,9 @@
                                         <ObjectAnimationUsingKeyFrames  Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Stroke">
                                             <DiscreteObjectKeyFrame  KeyTime="0" Value="{ThemeResource RadioButtonCheckGlyphStrokeChecked}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PressedCheckGlyph" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource RadioButtonCheckGlyphFillPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Unchecked" />
@@ -399,7 +418,5 @@
             </Setter.Value>
         </Setter>
     </Style>
-
-    <Style TargetType="RadioButton" BasedOn="{StaticResource DefaultRadioButtonStyle}" />
 
 </ResourceDictionary>

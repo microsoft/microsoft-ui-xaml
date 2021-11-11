@@ -1,4 +1,31 @@
-﻿namespace MU_XCP_NAMESPACE
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+[MUX_INTERNAL]
+[webhosthidden]
+[uuid(1870b836-df2f-5fc6-a5f2-748ed6ce7321)]
+interface IPopup4
+{
+    Windows.UI.Xaml.FrameworkElement PlacementTarget;
+    Microsoft.UI.Xaml.Controls.Primitives.PopupPlacementMode DesiredPlacement;
+    Microsoft.UI.Xaml.Controls.Primitives.PopupPlacementMode ActualPlacement{ get; };
+
+    event Windows.Foundation.EventHandler<Object> ActualPlacementChanged;
+};
+
+[MUX_INTERNAL]
+[webhosthidden]
+[uuid(98ffd442-a3f5-534c-906d-88b72a78126b)]
+interface IAutomationPropertiesStatics9
+{
+    Windows.UI.Xaml.DependencyProperty ControlTypeProperty{ get; };
+    Windows.UI.Xaml.Automation.Peers.AutomationControlType GetControlType(Windows.UI.Xaml.UIElement element);
+    void SetControlType(Windows.UI.Xaml.UIElement element, Windows.UI.Xaml.Automation.Peers.AutomationControlType value);
+};
+
+}
+
+namespace MU_XCP_NAMESPACE
 {
 
 [MUX_PUBLIC]
@@ -57,28 +84,6 @@ enum PopupPlacementMode
     LeftEdgeAlignedBottom,
     RightEdgeAlignedTop,
     RightEdgeAlignedBottom,
-};
-
-[MUX_INTERNAL]
-[webhosthidden]
-[uuid(1870b836-df2f-5fc6-a5f2-748ed6ce7321)]
-interface IPopup4
-{
-    Windows.UI.Xaml.FrameworkElement PlacementTarget;
-    Microsoft.UI.Xaml.Controls.Primitives.PopupPlacementMode DesiredPlacement;
-    Microsoft.UI.Xaml.Controls.Primitives.PopupPlacementMode ActualPlacement{ get; };
-
-    event Windows.Foundation.EventHandler<Object> ActualPlacementChanged;
-};
-
-[MUX_INTERNAL]
-[webhosthidden]
-[uuid(98ffd442-a3f5-534c-906d-88b72a78126b)]
-interface IAutomationPropertiesStatics9
-{
-    Windows.UI.Xaml.DependencyProperty ControlTypeProperty{ get; };
-    Windows.UI.Xaml.Automation.Peers.AutomationControlType GetControlType(Windows.UI.Xaml.UIElement element);
-    void SetControlType(Windows.UI.Xaml.UIElement element, Windows.UI.Xaml.Automation.Peers.AutomationControlType value);
 };
 
 [MUX_PUBLIC]
