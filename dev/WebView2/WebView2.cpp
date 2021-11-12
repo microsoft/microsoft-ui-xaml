@@ -398,7 +398,7 @@ void WebView2::ResetPointerHelper(const winrt::PointerRoutedEventArgs& args)
 
     if (m_isPointerOver)
     {
-        m_isPointerOver = true;
+        m_isPointerOver = false;
         winrt::CoreWindow::GetForCurrentThread().PointerCursor(m_oldCursor);
         m_oldCursor = nullptr;
     }
