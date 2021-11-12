@@ -55,15 +55,14 @@ namespace SystemBackdropComponentInternal
 
         m_capabilities = winrt::Windows::UI::Composition::CompositionCapabilities::GetForCurrentView();
         m_capabilitiesEventRevoker = { m_capabilities, m_capabilities.Changed(
-            [weakThis = get_weak(), weakCapabilities = winrt::make_weak(m_capabilities), dispatcherQueue = m_dispatcherQueue](auto&&, auto&&)
+            [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue](auto&&, auto&&)
             {
-                dispatcherQueue.TryEnqueue([weakCapabilities, weakThis]()
+                dispatcherQueue.TryEnqueue([weakThis]()
                     {
                         auto strongThis= weakThis.get();
-                        auto capabilities = weakCapabilities.get();
-                        if (strongThis && capabilities)
+                        if (strongThis)
                         {
-                            if (capabilities.AreEffectsFast())
+                            if (strongThis->m_capabilities.AreEffectsFast())
                             {
                                 strongThis->m_policy->SetIncompatibleGraphicsDevice(false);
                             }
@@ -79,15 +78,14 @@ namespace SystemBackdropComponentInternal
 
         m_uiSettings = winrt::Windows::UI::ViewManagement::UISettings();
         m_uiSettingsEventRevoker = m_uiSettings.AdvancedEffectsEnabledChanged(winrt::auto_revoke,
-            [weakThis = get_weak(), weakUiSettings = winrt::make_weak(m_uiSettings), dispatcherQueue = m_dispatcherQueue](auto&&, auto&&)
+            [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue](auto&&, auto&&)
             {
-                dispatcherQueue.TryEnqueue([weakUiSettings, weakThis]()
+                dispatcherQueue.TryEnqueue([weakThis]()
                     {
-                        auto uiSettings = weakUiSettings.get();
                         auto strongThis = weakThis.get();
-                        if (strongThis && uiSettings)
+                        if (strongThis)
                         {
-                            if (uiSettings.AdvancedEffectsEnabled())
+                            if (strongThis->m_uiSettings.AdvancedEffectsEnabled())
                             {
                                 strongThis->m_policy->SetTransparencyDisabled(false);
                             }
