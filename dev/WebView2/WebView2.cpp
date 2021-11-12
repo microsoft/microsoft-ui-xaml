@@ -430,7 +430,7 @@ void WebView2::ResetPointerHelper(const winrt::PointerRoutedEventArgs& args)
 
 bool WebView2::ShouldNavigate(const winrt::Uri& uri)
 {
-    return uri != nullptr && uri.ToString() != m_stopNavigateOnUriChanged;
+    return uri != nullptr && uri.RawUri() != m_stopNavigateOnUriChanged;
 }
 
 winrt::IAsyncAction WebView2::OnSourceChanged(winrt::Uri providedUri)
