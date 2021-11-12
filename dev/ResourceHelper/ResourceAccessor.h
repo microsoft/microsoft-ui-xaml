@@ -205,4 +205,7 @@ public:
 #define SR_CommandBarFlyoutAppBarButtonLocalizedControlType L"CommandBarFlyoutAppBarButtonLocalizedControlType"
 #define SR_CommandBarFlyoutAppBarToggleButtonLocalizedControlType L"CommandBarFlyoutAppBarToggleButtonLocalizedControlType"
 
+#define SR_WarningSuitableWebView2NotFound L"WarningSuitableWebView2NotFound"
+#define SR_DownloadWebView2Runtime L"DownloadWebView2Runtime"
+
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"

@@ -821,13 +821,10 @@ HWND WebView2::EnsureTemporaryHostHwnd()
 void WebView2::CreateMissingAnaheimWarning()
 {
     auto warning = winrt::TextBlock();
-    warning.Text(L"A suitable version of Microsoft Edge WebView2 Runtime was not detected. ");
+    warning.Text(ResourceAccessor::GetLocalizedStringResource(SR_WarningSuitableWebView2NotFound));
     warning.Inlines().Append(winrt::LineBreak());
-    auto moreText = winrt::Run();
-    moreText.Text(L"Please install from: ");
-    warning.Inlines().Append(moreText);
     auto linkText = winrt::Run();
-    linkText.Text(L"Download WebView2 Runtime");
+    linkText.Text(ResourceAccessor::GetLocalizedStringResource(SR_DownloadWebView2Runtime));
     auto hyperlink = winrt::Hyperlink();
     hyperlink.Inlines().Append(linkText);
     auto url = winrt::Uri(L"https://aka.ms/winui3/webview2download/");
