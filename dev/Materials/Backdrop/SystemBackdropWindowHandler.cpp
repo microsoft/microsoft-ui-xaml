@@ -31,65 +31,70 @@ namespace SystemBackdropComponentInternal
 
         m_policy = std::make_unique<SystemBackdropPolicyStateMachine>(SystemBackdropPolicyState::Active);
 
-        m_powerManagerEventRevoker = winrt::Windows::System::Power::PowerManager::EnergySaverStatusChanged(winrt::auto_revoke, [&](auto&&, auto&&)
+        m_powerManagerEventRevoker = winrt::Windows::System::Power::PowerManager::EnergySaverStatusChanged(winrt::auto_revoke,
+            [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue](auto&&, auto&&)
             {
-                m_dispatcherQueue.TryEnqueue([&]()
+                dispatcherQueue.TryEnqueue([weakThis]()
                     {
-                        if (winrt::Windows::System::Power::PowerManager::EnergySaverStatus() == winrt::Windows::System::Power::EnergySaverStatus::On)
+                        auto strongThis = weakThis.get();
+                        if (strongThis)
                         {
-                            m_policy->SetPowerSavingMode(true);
-                        }
-                        else
-                        {
-                            m_policy->SetPowerSavingMode(false);
-                        }
+                            if (winrt::Windows::System::Power::PowerManager::EnergySaverStatus() == winrt::Windows::System::Power::EnergySaverStatus::On)
+                            {
+                                strongThis->m_policy->SetPowerSavingMode(true);
+                            }
+                            else
+                            {
+                                strongThis->m_policy->SetPowerSavingMode(false);
+                            }
 
-                        ActivateOrDeactivateController();
+                            strongThis->ActivateOrDeactivateController();
+                        }
                     });
             });
 
         m_capabilities = winrt::Windows::UI::Composition::CompositionCapabilities::GetForCurrentView();
-        m_capabilitiesEventRevoker = { m_capabilities, m_capabilities.Changed([&](auto&&, auto&&)
+        m_capabilitiesEventRevoker = { m_capabilities, m_capabilities.Changed(
+            [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue](auto&&, auto&&)
             {
-                auto capabilitiesWeakRef = winrt::make_weak(m_capabilities);
-
-                m_dispatcherQueue.TryEnqueue([capabilitiesWeakRef, this]()
+                dispatcherQueue.TryEnqueue([weakThis]()
                     {
-                        if (auto capabilities = capabilitiesWeakRef.get())
+                        auto strongThis= weakThis.get();
+                        if (strongThis)
                         {
-                            if (capabilities.AreEffectsFast())
+                            if (strongThis->m_capabilities.AreEffectsFast())
                             {
-                                m_policy->SetIncompatibleGraphicsDevice(false);
+                                strongThis->m_policy->SetIncompatibleGraphicsDevice(false);
                             }
                             else
                             {
-                                m_policy->SetIncompatibleGraphicsDevice(true);
+                                strongThis->m_policy->SetIncompatibleGraphicsDevice(true);
                             }
 
-                            ActivateOrDeactivateController();
+                            strongThis->ActivateOrDeactivateController();
                         }
                     });
             }) };
 
         m_uiSettings = winrt::Windows::UI::ViewManagement::UISettings();
-        m_uiSettingsEventRevoker = m_uiSettings.AdvancedEffectsEnabledChanged(winrt::auto_revoke, [&](auto&&, auto&&)
+        m_uiSettingsEventRevoker = m_uiSettings.AdvancedEffectsEnabledChanged(winrt::auto_revoke,
+            [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue](auto&&, auto&&)
             {
-                auto uiSettingsWeakRef = winrt::make_weak(m_uiSettings);
-
-                m_dispatcherQueue.TryEnqueue([uiSettingsWeakRef, this]()
+                dispatcherQueue.TryEnqueue([weakThis]()
                     {
-                        if (auto uiSettings = uiSettingsWeakRef.get())
+                        auto strongThis = weakThis.get();
+                        if (strongThis)
                         {
-                            if (uiSettings.AdvancedEffectsEnabled())
+                            if (strongThis->m_uiSettings.AdvancedEffectsEnabled())
                             {
-                                m_policy->SetTransparencyDisabled(false);
+                                strongThis->m_policy->SetTransparencyDisabled(false);
                             }
                             else
                             {
-                                m_policy->SetTransparencyDisabled(true);
+                                strongThis->m_policy->SetTransparencyDisabled(true);
                             }
 
-                            ActivateOrDeactivateController();
+                            strongThis->ActivateOrDeactivateController();
                         }
                     });
             });
