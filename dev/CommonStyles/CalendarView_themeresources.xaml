@@ -6,13 +6,13 @@
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="CalendarViewFocusBorderBrush" ResourceKey="AccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="CalendarViewSelectedHoverBorderBrush" ResourceKey="AccentAAFillColorSecondaryBrush" />
+            <StaticResource x:Key="CalendarViewFocusBorderBrush" ResourceKey="AccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="CalendarViewSelectedHoverBorderBrush" ResourceKey="AccentFillColorSecondaryBrush" />
             <StaticResource x:Key="CalendarViewSelectedPressedBorderBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
-            <StaticResource x:Key="CalendarViewSelectedBorderBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="CalendarViewSelectedBorderBrush" ResourceKey="AccentFillColorDefaultBrush" />
             <StaticResource x:Key="CalendarViewHoverBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="CalendarViewPressedBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
-            <StaticResource x:Key="CalendarViewTodayForeground" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
+            <StaticResource x:Key="CalendarViewTodayForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="CalendarViewBlackoutForeground" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="CalendarViewSelectedForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="CalendarViewPressedForeground" ResourceKey="TextFillColorPrimaryBrush" />
@@ -63,12 +63,12 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="CalendarViewFocusBorderBrush" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="CalendarViewSelectedHoverBorderBrush" ResourceKey="AccentAAFillColorSecondaryBrush" />
+            <StaticResource x:Key="CalendarViewSelectedHoverBorderBrush" ResourceKey="AccentFillColorSecondaryBrush" />
             <StaticResource x:Key="CalendarViewSelectedPressedBorderBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
-            <StaticResource x:Key="CalendarViewSelectedBorderBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="CalendarViewSelectedBorderBrush" ResourceKey="AccentFillColorDefaultBrush" />
             <StaticResource x:Key="CalendarViewHoverBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="CalendarViewPressedBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
-            <StaticResource x:Key="CalendarViewTodayForeground" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
+            <StaticResource x:Key="CalendarViewTodayForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="CalendarViewBlackoutForeground" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="CalendarViewSelectedForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="CalendarViewPressedForeground" ResourceKey="TextFillColorPrimaryBrush" />
@@ -91,6 +91,9 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
+
+    <x:Double x:Key="CalendarViewNavigationButtonScalePressed">0.875</x:Double>
+    
     <Style TargetType="CalendarViewDayItem">
         <Setter Property="MinWidth" Value="40" />
         <Setter Property="MinHeight" Value="40" />
@@ -106,6 +109,8 @@
     </Style>
 
     <Style TargetType="CalendarView" BasedOn="{StaticResource CalendarViewRevealStyle}" />
+
+    <Style x:Key="DefaultCalendarViewStyle" TargetType="CalendarView" BasedOn="{StaticResource CalendarViewRevealStyle}" />
 
     <Style x:Key="CalendarViewRevealStyle" TargetType="CalendarView">
         <Setter Property="FocusBorderBrush" Value="{ThemeResource CalendarViewFocusBorderBrush}" />
@@ -160,38 +165,61 @@
                                 <Setter Property="FontSize" Value="20" />
                                 <Setter Property="Background" Value="{ThemeResource CalendarViewNavigationButtonBackground}" />
                                 <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
+                                <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+                                <Setter Property="FocusVisualMargin" Value="2,2,2,0"/>
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
-                                            <ContentPresenter
-                                                x:Name="Text"
+                                            <Border
+                                                x:Name="RootBorder"
                                                 Background="{TemplateBinding Background}"
                                                 contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
                                                 BorderBrush="{ThemeResource CalendarViewNavigationButtonBorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                                Content="{TemplateBinding Content}"
-                                                Margin="{TemplateBinding Padding}"
-                                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                AutomationProperties.AccessibilityView="Raw">
+                                                Padding="{TemplateBinding Padding}"
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                                contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}">
                                                 <VisualStateManager.VisualStateGroups>
                                                     <VisualStateGroup x:Name="CommonStates">
                                                         <VisualState x:Name="Normal" />
                                                         <VisualState x:Name="PointerOver">
                                                             <VisualState.Setters>
-                                                                <Setter Target="Text.BorderBrush" Value="{ThemeResource CalendarViewNavigationButtonBorderBrushPointerOver}" />
-                                                                <Setter Target="Text.Foreground" Value="{ThemeResource CalendarViewNavigationButtonForegroundPointerOver}" />
+                                                                <Setter Target="RootBorder.BorderBrush" Value="{ThemeResource CalendarViewNavigationButtonBorderBrushPointerOver}" />
+                                                                <Setter Target="Content.Foreground" Value="{ThemeResource CalendarViewNavigationButtonForegroundPointerOver}" />
                                                             </VisualState.Setters>
                                                         </VisualState>
                                                         <VisualState x:Name="Pressed">
                                                             <VisualState.Setters>
-                                                                <Setter Target="Text.Foreground" Value="{ThemeResource CalendarViewNavigationButtonForegroundPressed}" />
+                                                                <Setter Target="Content.Foreground" Value="{ThemeResource CalendarViewNavigationButtonForegroundPressed}" />
                                                             </VisualState.Setters>
+                                                            <Storyboard RepeatBehavior="Forever">
+                                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX">
+                                                                    <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource CalendarViewNavigationButtonScalePressed}"/>
+                                                                    <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource CalendarViewNavigationButtonScalePressed}"/>
+                                                                </DoubleAnimationUsingKeyFrames>
+                                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY">
+                                                                    <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource CalendarViewNavigationButtonScalePressed}"/>
+                                                                    <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource CalendarViewNavigationButtonScalePressed}"/>
+                                                                </DoubleAnimationUsingKeyFrames>
+                                                            </Storyboard>
                                                         </VisualState>
                                                         <VisualState x:Name="Disabled" />
                                                     </VisualStateGroup>
                                                 </VisualStateManager.VisualStateGroups>
-                                            </ContentPresenter>
+                                                <TextBlock
+                                                    x:Name="Content"
+                                                    FontSize="{TemplateBinding FontSize}"
+                                                    FontFamily="{TemplateBinding FontFamily}"
+                                                    Text="{TemplateBinding Content}"
+                                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                    RenderTransformOrigin="0.5, 0.5">
+                                                    <TextBlock.RenderTransform>
+                                                        <ScaleTransform x:Name="ScaleTransform" ScaleY="1" ScaleX="1" />
+                                                    </TextBlock.RenderTransform>
+                                                </TextBlock>
+                                            </Border>
                                         </ControlTemplate>
                                     </Setter.Value>
                                 </Setter>

@@ -142,7 +142,7 @@
                         </ListBox>
                     </Grid>
                     <Grid Grid.Row="5" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
-                        <TextBlock VerticalAlignment="Center">N/A</TextBlock>
+                        <TextBlock VerticalAlignment="Center" Text="N/A"/>
                     </Grid>
 
                     <TextBlock Grid.Row="6" Text="ComboBox" Style="{StaticResource SideHeader}"/>
@@ -238,7 +238,7 @@
                         </CommandBar>
                     </Grid>
                     <Grid Grid.Row="11" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
-                        <TextBlock>N/A</TextBlock>
+                        <TextBlock Text="N/A"/>
                     </Grid>
 
                     <TextBlock Grid.Row="12" Text="Flyout" Style="{StaticResource SideHeader}"/>
@@ -422,7 +422,7 @@
                         <ToggleSwitch/>
                     </Grid>
                     <Grid Grid.Row="20" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
-                        <TextBlock>N/A</TextBlock>
+                        <TextBlock Text="N/A"/>
                     </Grid>
 
                     <TextBlock Grid.Row="21" Text="Slider" Style="{StaticResource SideHeader}"/>
@@ -500,7 +500,7 @@
                         </AppBar>
                     </Grid>
                     <Grid Grid.Row="25" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
-                        <TextBlock>N/A</TextBlock>
+                        <TextBlock Text="N/A"/>
                     </Grid>
 
                     <TextBlock Grid.Row="26" Text="MenuBar" Style="{StaticResource SideHeader}"/>
@@ -572,7 +572,7 @@
                         <TextBlock Text="Hello World"/>
                     </Grid>
                     <Grid Grid.Row="32" Style="{StaticResource RightColumn}">
-                        <TextBlock>N/A</TextBlock>
+                        <TextBlock Text="N/A"/>
                     </Grid>
 
                     <TextBlock Grid.Row="33" Text="RichTextBlock" Style="{StaticResource SideHeader}"/>
@@ -584,7 +584,7 @@
                         </RichTextBlock>
                     </Grid>
                     <Grid Grid.Row="33" Style="{StaticResource RightColumn}">
-                        <TextBlock>N/A</TextBlock>
+                        <TextBlock Text="N/A"/>
                     </Grid>
 
                     <TextBlock Grid.Row="34" Text="CheckBox" Style="{StaticResource SideHeader}"/>
@@ -675,7 +675,7 @@
                         </StackPanel>
                     </Grid>
                     <Grid Grid.Row="40" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
-                        <TextBlock>N/A</TextBlock>
+                        <TextBlock Text="N/A"/>
                     </Grid>
 
                     <TextBlock Grid.Row="41" Text="ToggleButton" Style="{StaticResource SideHeader}"/>
@@ -700,7 +700,7 @@
                             <controls:ToggleSplitButton.Flyout>
                                 <Flyout>
                                     <Flyout.Content>
-                                        <TextBlock>Hello World</TextBlock>
+                                        <TextBlock Text="Hello World"/>
                                     </Flyout.Content>
                                 </Flyout>
                             </controls:ToggleSplitButton.Flyout>
@@ -711,7 +711,7 @@
                             <controls:ToggleSplitButton.Flyout>
                                 <Flyout>
                                     <Flyout.Content>
-                                        <TextBlock>Hello World</TextBlock>
+                                        <TextBlock Text="Hello World"/>
                                     </Flyout.Content>
                                 </Flyout>
                             </controls:ToggleSplitButton.Flyout>
@@ -735,7 +735,7 @@
                         <HyperlinkButton Content="Hello World"/>
                     </Grid>
                     <Grid Grid.Row="44" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
-                        <TextBlock>N/A</TextBlock>
+                        <TextBlock Text="N/A"/>
                     </Grid>
 
                     <TextBlock Grid.Row="45" Text="DropDownButton" Style="{StaticResource SideHeader}"/>
@@ -748,7 +748,7 @@
                             <controls:DropDownButton.Flyout>
                                 <Flyout>
                                     <Flyout.Content>
-                                        <TextBlock>Hello World</TextBlock>
+                                        <TextBlock Text="Hello World"/>
                                     </Flyout.Content>
                                 </Flyout>
                             </controls:DropDownButton.Flyout>
@@ -759,7 +759,7 @@
                             <controls:DropDownButton.Flyout>
                                 <Flyout>
                                     <Flyout.Content>
-                                        <TextBlock>Hello World</TextBlock>
+                                        <TextBlock Text="Hello World"/>
                                     </Flyout.Content>
                                 </Flyout>
                             </controls:DropDownButton.Flyout>
@@ -775,7 +775,7 @@
                             <controls:SplitButton.Flyout>
                                 <Flyout>
                                     <Flyout.Content>
-                                        <TextBlock>Hello World</TextBlock>
+                                        <TextBlock Text="Hello World"/>
                                     </Flyout.Content>
                                 </Flyout>
                             </controls:SplitButton.Flyout>
@@ -786,7 +786,7 @@
                             <controls:SplitButton.Flyout>
                                 <Flyout>
                                     <Flyout.Content>
-                                        <TextBlock>Hello World</TextBlock>
+                                        <TextBlock Text="Hello World"/>
                                     </Flyout.Content>
                                 </Flyout>
                             </controls:SplitButton.Flyout>

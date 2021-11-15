@@ -4,8 +4,18 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-    <StackPanel>
-        <InkToolbar TargetInkCanvas="{x:Bind inkCanvas}"/>
-        <InkCanvas x:Name="inkCanvas" Height="400"/>
-    </StackPanel>
+    <Grid>
+        <StackPanel>
+            <InkToolbar x:Name="InkToolbar" TargetInkCanvas="{x:Bind inkCanvas}">
+                <InkToolbarBallpointPenButton x:Name="InkToolbarBallpointPenButton" AutomationProperties.Name="InkToolbarBallpointPenButton"/>
+            </InkToolbar>
+            <InkCanvas x:Name="inkCanvas" Height="400"/>
+        </StackPanel>
+        <StackPanel>
+            <InkToolbar x:Name="VerticalInkToolbar"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Right"
+                        Orientation="Vertical"/>
+        </StackPanel>
+    </Grid>
 </Page>

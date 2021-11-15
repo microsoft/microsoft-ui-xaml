@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\FeatureAreas.props" />
+  <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props')" />
+  <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props')" />
+  <Import Project="..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.props" Condition="Exists('..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.props')" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\mux.controls.props" Condition="Exists('$(MSBuildProjectDirectory)\..\..\mux.controls.props')" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\environment.props" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\ProjectConfigurations.props" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\version.props" />
+  <PropertyGroup>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>true</AppContainerApplication>
+    <ApplicationType>Windows Store</ApplicationType>
+    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)'==''">$(MuxSdkVersion)</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformMinVersion>10.0.15063.0</WindowsTargetPlatformMinVersion>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+    <!-- Use 64-bit compilers because 32-bit compilers run out of heap space -->
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+    <ScriptPath>..\..\tools\</ScriptPath>
+    <ForceMuiRes>true</ForceMuiRes>
+    <Use64BitLinker>true</Use64BitLinker>
+    <!-- XBF is no longer embedded to improve F5 times but we need it embedded for the Nuget package PRI file, turn it on for release builds -->
+    <DisableEmbeddedXbf Condition="'$(Configuration)'=='Release'">false</DisableEmbeddedXbf>
+    <AppxBundlePlatforms>x86|x64|arm|arm64</AppxBundlePlatforms>
+    <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
+    <CppWinRTAddXamlMetaDataProviderIdl>false</CppWinRTAddXamlMetaDataProviderIdl>
+    <!-- In release builds our "experimental" features are under feature velocity as AlwaysDisabled. C++/WinRT assumes that
+         AlwaysDisabled features should be excluded by default, but we need them included for our component implementation.
+         Use -ignore_velocity to have the feature attributes be ignored by the tool.
+         -->
+    <CppWinRTParameters>-ignore_velocity</CppWinRTParameters>
+    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <CppWinRTHeapEnforcement>true</CppWinRTHeapEnforcement>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Page>
+      <Version>Undefined</Version>
+      <Type>Undefined</Type>
+      <Priority>Undefined</Priority>
+      <IsPublic>true</IsPublic>
+      <IncludeInWindowsAppx>true</IncludeInWindowsAppx>
+      <!-- Valid value: Version1, Version2 and Any, default is Any -->
+      <ControlsResourcesVersion>Any</ControlsResourcesVersion>
+      <RequireInsiderSDK>false</RequireInsiderSDK>
+    </Page>
+    <PRIResource>
+      <IsPreviewResource>False</IsPreviewResource>
+    </PRIResource>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <MergeXamlConfig Include="Version2VisualPages">
+      <FilterAttribute>ControlsResourcesVersion2</FilterAttribute>
+      <Postfix />
+    </MergeXamlConfig>
+    <MergeXamlConfig Include="Version1VisualPages">
+      <FilterAttribute>ControlsResourcesVersion1</FilterAttribute>
+      <Postfix>_v1</Postfix>
+    </MergeXamlConfig>
+  </ItemGroup>
+</Project>

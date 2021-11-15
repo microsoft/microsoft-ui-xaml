@@ -41,6 +41,7 @@ private:
 
     NavigationViewItemHelper<NavigationViewItemPresenter> m_helper{ this };
     tracker_ref<winrt::Grid> m_contentGrid{ this };
+    tracker_ref<winrt::ContentPresenter> m_infoBadgePresenter{ this };
     tracker_ref<winrt::Grid> m_expandCollapseChevron{ this };
 
     winrt::event_token m_expandCollapseChevronTappedToken{};

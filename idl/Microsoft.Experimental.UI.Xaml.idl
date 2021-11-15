@@ -1,0 +1,43 @@
+﻿#include "DPCodeGenAttributes.idl"
+
+#define MEU_XC_NAMESPACE Microsoft.Experimental.UI.Xaml.Controls
+#define MEU_XCP_NAMESPACE Microsoft.Experimental.UI.Xaml.Controls.Primitives
+#define MEU_XM_NAMESPACE Microsoft.Experimental.UI.Xaml.Media
+#define MEU_XAP_NAMESPACE Microsoft.Experimental.UI.Xaml.Automation.Peers
+#define MEU_X_XTI_NAMESPACE Microsoft.Experimental.UI.Xaml.XamlTypeInfo
+
+
+namespace Microsoft.Experimental.UI.Xaml
+{
+    [contractversion(2)]
+    apicontract ExperimentalXamlContract
+    {
+    }
+}
+
+#define MUX_EXPERIMENTAL contract(Microsoft.Experimental.UI.Xaml.ExperimentalXamlContract, 1)
+
+namespace MEU_X_XTI_NAMESPACE
+{
+    [MUX_EXPERIMENTAL]
+    [webhosthidden]
+    [default_interface]
+    [Microsoft.UI.Xaml.CustomAttributes.MUXHasCustomActivationFactory]
+    runtimeclass XamlControlsXamlMetaDataProvider : [default] Windows.UI.Xaml.Markup.IXamlMetadataProvider
+    {
+        XamlControlsXamlMetaDataProvider();
+
+        static void Initialize();
+    }
+}
+
+namespace MEU_XC_NAMESPACE
+{
+    [MUX_EXPERIMENTAL]
+    [webhosthidden]
+    [default_interface]
+    runtimeclass ExperimentalXamlControlsResources : Windows.UI.Xaml.ResourceDictionary
+    {
+        ExperimentalXamlControlsResources();
+    }
+}

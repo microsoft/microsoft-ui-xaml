@@ -327,11 +327,17 @@ void ColorSpectrum::SetColor()
 void ColorSpectrum::RaiseColorChanged()
 {
     const winrt::Color newColor = Color();
-
-    if (m_oldColor.A != newColor.A ||
+    const auto colorChanged =
+        m_oldColor.A != newColor.A ||
         m_oldColor.R != newColor.R ||
         m_oldColor.G != newColor.G ||
-        m_oldColor.B != newColor.B)
+        m_oldColor.B != newColor.B;
+    const auto areBothColorsBlack =
+        (m_oldColor.R == newColor.R && newColor.R == 0) ||
+        (m_oldColor.G == newColor.G && newColor.G == 0) ||
+        (m_oldColor.B == newColor.B && newColor.B == 0);
+
+    if (colorChanged || areBothColorsBlack)
     {
         auto colorChangedEventArgs = winrt::make_self<ColorChangedEventArgs>();
 
@@ -714,7 +720,7 @@ void ColorSpectrum::UpdateEllipse()
         // we inverted the direction of that axis in order to put more hue on the outside of the ring,
         // so we need to do similarly here when positioning the ellipse.
         if (m_componentsFromLastBitmapCreation == winrt::ColorSpectrumComponents::HueSaturation ||
-            m_componentsFromLastBitmapCreation == winrt::ColorSpectrumComponents::ValueHue)
+            m_componentsFromLastBitmapCreation == winrt::ColorSpectrumComponents::SaturationHue)
         {
             sThetaValue = 360 - sThetaValue;
             sRValue = -sRValue - 1;

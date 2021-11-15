@@ -19,24 +19,24 @@
             <StaticResource x:Key="SliderContainerBackgroundPointerOver" ResourceKey="ControlFillColorTransparent" />
             <StaticResource x:Key="SliderContainerBackgroundPressed" ResourceKey="ControlFillColorTransparent" />
             <StaticResource x:Key="SliderContainerBackgroundDisabled" ResourceKey="ControlFillColorTransparent" />
-            <StaticResource x:Key="SliderThumbBackground" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="AccentAAFillColorTertiaryBrush" />
-            <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="SliderThumbBackground" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+            <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="AccentFillColorDisabledBrush" />
             <StaticResource x:Key="SliderThumbBorderBrush" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="SliderOuterThumbBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderTrackFill" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderTrackFillPointerOver" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderTrackFillPressed" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderTrackFillDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
-            <StaticResource x:Key="SliderTrackValueFill" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderTrackValueFillPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="SliderTrackValueFillPressed" ResourceKey="AccentAAFillColorTertiaryBrush" />
-            <StaticResource x:Key="SliderTrackValueFillDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="SliderTrackFill" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="SliderTrackFillPointerOver" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="SliderTrackFillPressed" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="SliderTrackFillDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
+            <StaticResource x:Key="SliderTrackValueFill" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="SliderTrackValueFillPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="SliderTrackValueFillPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+            <StaticResource x:Key="SliderTrackValueFillDisabled" ResourceKey="AccentFillColorDisabledBrush" />
             <StaticResource x:Key="SliderHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="SliderHeaderForegroundDisabled" ResourceKey="TextFillColorDisabled" />
-            <StaticResource x:Key="SliderTickBarFill" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderTickBarFillDisabled" ResourceKey="ControlAAFillColorDisabled" />
+            <StaticResource x:Key="SliderTickBarFill" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="SliderTickBarFillDisabled" ResourceKey="ControlStrongFillColorDisabled" />
             <StaticResource x:Key="SliderInlineTickBarFill" ResourceKey="ControlFillColorInputActiveBrush" />
 
             <!-- Legacy Brushes -->
@@ -128,24 +128,24 @@
             <StaticResource x:Key="SliderContainerBackgroundPointerOver" ResourceKey="ControlFillColorTransparent"/>
             <StaticResource x:Key="SliderContainerBackgroundPressed" ResourceKey="ControlFillColorTransparent"/>
             <StaticResource x:Key="SliderContainerBackgroundDisabled" ResourceKey="ControlFillColorTransparent"/>
-            <StaticResource x:Key="SliderThumbBackground" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush"/>
-            <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="AccentAAFillColorTertiaryBrush"/>
-            <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="AccentAAFillColorDisabledBrush"/>
+            <StaticResource x:Key="SliderThumbBackground" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="AccentFillColorSecondaryBrush"/>
+            <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="AccentFillColorTertiaryBrush"/>
+            <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="AccentFillColorDisabledBrush"/>
             <StaticResource x:Key="SliderThumbBorderBrush" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="SliderOuterThumbBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderTrackFill" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderTrackFillPointerOver" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderTrackFillPressed" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderTrackFillDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
-            <StaticResource x:Key="SliderTrackValueFill" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderTrackValueFillPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="SliderTrackValueFillPressed" ResourceKey="AccentAAFillColorTertiaryBrush" />
-            <StaticResource x:Key="SliderTrackValueFillDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="SliderTrackFill" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="SliderTrackFillPointerOver" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="SliderTrackFillPressed" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="SliderTrackFillDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
+            <StaticResource x:Key="SliderTrackValueFill" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="SliderTrackValueFillPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="SliderTrackValueFillPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+            <StaticResource x:Key="SliderTrackValueFillDisabled" ResourceKey="AccentFillColorDisabledBrush" />
             <StaticResource x:Key="SliderHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="SliderHeaderForegroundDisabled" ResourceKey="TextFillColorDisabled" />
-            <StaticResource x:Key="SliderTickBarFill" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderTickBarFillDisabled" ResourceKey="ControlAAFillColorDisabled" />
+            <StaticResource x:Key="SliderTickBarFill" ResourceKey="ControlStrongFillColorDefaultBrush" />
+            <StaticResource x:Key="SliderTickBarFillDisabled" ResourceKey="ControlStrongFillColorDisabled" />
             <StaticResource x:Key="SliderInlineTickBarFill" ResourceKey="ControlFillColorInputActiveBrush" />
 
             <!-- Legacy Brushes -->
@@ -177,15 +177,15 @@
     <Thickness x:Key="SliderTopHeaderMargin">0,0,0,4</Thickness>
     <CornerRadius x:Key="SliderTrackCornerRadius">2</CornerRadius>
     <CornerRadius x:Key="SliderThumbCornerRadius">10</CornerRadius>
-    <x:Double x:Key="SliderPreContentMargin">15</x:Double>
-    <x:Double x:Key="SliderPostContentMargin">15</x:Double>
+    <x:Double x:Key="SliderPreContentMargin">14</x:Double>
+    <x:Double x:Key="SliderPostContentMargin">14</x:Double>
     <x:Double x:Key="SliderInnerThumbHeight">12</x:Double>
     <x:Double x:Key="SliderHorizontalHeight">32</x:Double>
     <x:Double x:Key="SliderVerticalWidth">32</x:Double>   
-    <x:Double x:Key="SliderHorizontalThumbWidth">20</x:Double>
-    <x:Double x:Key="SliderHorizontalThumbHeight">20</x:Double>
-    <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
-    <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
+    <x:Double x:Key="SliderHorizontalThumbWidth">18</x:Double>
+    <x:Double x:Key="SliderHorizontalThumbHeight">18</x:Double>
+    <x:Double x:Key="SliderVerticalThumbWidth">18</x:Double>
+    <x:Double x:Key="SliderVerticalThumbHeight">18</x:Double>
     <x:Double x:Key="SliderInnerThumbWidth">12</x:Double>
     <x:Double x:Key="SliderInnerThumbHeight">12</x:Double>
 
@@ -215,7 +215,7 @@
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Thumb">
                                             <Border
-                                                Margin="-1"
+                                                Margin="-2"
                                                 Background="{ThemeResource SliderOuterThumbBackground}"
                                                 BorderBrush="{ThemeResource SliderThumbBorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
@@ -400,7 +400,7 @@
                                 <VisualState x:Name="FocusDisengaged" />
                                 <VisualState x:Name="FocusEngagedHorizontal">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SliderContainer" Storyboard.TargetProperty="(Control.IsTemplateFocusTarget)">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="FocusBorder" Storyboard.TargetProperty="(Control.IsTemplateFocusTarget)">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="False" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="(Control.IsTemplateFocusTarget)">
@@ -410,7 +410,7 @@
                                 </VisualState>
                                 <VisualState x:Name="FocusEngagedVertical">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SliderContainer" Storyboard.TargetProperty="(Control.IsTemplateFocusTarget)">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="FocusBorder" Storyboard.TargetProperty="(Control.IsTemplateFocusTarget)">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="False" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="(Control.IsTemplateFocusTarget)">
@@ -436,10 +436,13 @@
                             TextWrapping="Wrap"
                             Visibility="Collapsed"
                             x:DeferLoadStrategy="Lazy"/>
+
+                        <!-- This border exists only to draw the correct focus rect with rounded corners when element is focused.-->
+                        <Border x:Name="FocusBorder" Grid.Row="1" CornerRadius="{ThemeResource ControlCornerRadius}" Control.IsTemplateFocusTarget="True" />
+
                         <Grid x:Name="SliderContainer"
                             Grid.Row="1"
-                            Background="{ThemeResource SliderContainerBackground}"
-                            Control.IsTemplateFocusTarget="True">
+                            Background="{ThemeResource SliderContainerBackground}">
                             <Grid x:Name="HorizontalTemplate" MinHeight="{ThemeResource SliderHorizontalHeight}">
 
                                 <Grid.ColumnDefinitions>
@@ -494,6 +497,7 @@
                                     DataContext="{TemplateBinding Value}"
                                     Height="{ThemeResource SliderHorizontalThumbHeight}"
                                     Width="{ThemeResource SliderHorizontalThumbWidth}"
+                                    contract7Present:CornerRadius="{StaticResource ControlCornerRadius}"
                                     Grid.Row="0"
                                     Grid.RowSpan="3"
                                     Grid.Column="1"
@@ -557,6 +561,7 @@
                                     DataContext="{TemplateBinding Value}"
                                     Width="{ThemeResource SliderVerticalThumbWidth}"
                                     Height="{ThemeResource SliderVerticalThumbHeight}"
+                                    contract7Present:CornerRadius="{StaticResource ControlCornerRadius}"
                                     Grid.Row="1"
                                     Grid.Column="0"
                                     Grid.ColumnSpan="3"

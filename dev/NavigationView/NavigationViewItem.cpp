@@ -97,15 +97,13 @@ void NavigationViewItem::OnApplyTemplate()
 
     if (auto splitView = GetSplitView())
     {
-        m_splitViewIsPaneOpenChangedRevoker = RegisterPropertyChanged(splitView,
-            winrt::SplitView::IsPaneOpenProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
-        m_splitViewDisplayModeChangedRevoker = RegisterPropertyChanged(splitView,
-            winrt::SplitView::DisplayModeProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
-        m_splitViewCompactPaneLengthChangedRevoker = RegisterPropertyChanged(splitView,
-            winrt::SplitView::CompactPaneLengthProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
-
-        UpdateCompactPaneLength();
-        UpdateIsClosedCompact();
+        PrepNavigationViewItem(splitView);
+    }
+    else
+    {
+        // If the NVI is not prepared in an ItemPresenter, it will not have reference to SplitView. So check OnLoaded
+        // if it the reference has been manually set in NavigationViewItemBase::OnLoaded(). 
+        Loaded({ this, &NavigationViewItem::OnLoaded });
     }
 
     // Retrieve reference to NavigationView
@@ -140,6 +138,14 @@ void NavigationViewItem::OnApplyTemplate()
 
     auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
     NavigationView::CreateAndAttachHeaderAnimation(visual);
+}
+
+void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+{
+    if (auto splitView = GetSplitView())
+    {
+        PrepNavigationViewItem(splitView);
+    }
 }
 
 void NavigationViewItem::UpdateRepeaterItemsSource()
@@ -224,7 +230,11 @@ void NavigationViewItem::UpdateNavigationViewItemToolTip()
     {
         if (ShouldEnableToolTip())
         {
-            winrt::ToolTipService::SetToolTip(*this, m_suggestedToolTipContent.get());
+            // Don't SetToolTip with the same parameter because it close/re-open the ToolTip
+            if (toolTipContent != m_suggestedToolTipContent.get())
+            {
+                winrt::ToolTipService::SetToolTip(*this, m_suggestedToolTipContent.get());
+            }
         }
         else
         {
@@ -280,6 +290,11 @@ void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyCh
     UpdateVisualStateNoTransition();
 }
 
+void NavigationViewItem::OnInfoBadgePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateVisualStateForInfoBadge();
+}
+
 void NavigationViewItem::OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateRepeaterItemsSource();
@@ -310,6 +325,15 @@ void NavigationViewItem::UpdateVisualStateForIconAndContent(bool showIcon, bool 
     if (auto const presenter = m_navigationViewItemPresenter.get())
     {
         auto stateName = showIcon ? (showContent ? L"IconOnLeft" : L"IconOnly") : L"ContentOnly";
+        winrt::VisualStateManager::GoToState(presenter, stateName, false /*useTransitions*/);
+    }
+}
+
+void NavigationViewItem::UpdateVisualStateForInfoBadge()
+{
+    if (auto const presenter = m_navigationViewItemPresenter.get())
+    {
+        auto stateName = ShouldShowInfoBadge() ? L"InfoBadgeVisible" : L"InfoBadgeCollapsed";
         winrt::VisualStateManager::GoToState(presenter, stateName, false /*useTransitions*/);
     }
 }
@@ -493,6 +517,8 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
 
     UpdateVisualStateForIconAndContent(shouldShowIcon, shouldShowContent);
 
+    UpdateVisualStateForInfoBadge();
+
     // visual state for focus state. top navigation use it to provide different visual for selected and selected+focused
     UpdateVisualStateForKeyboardFocusedState();
 
@@ -606,6 +632,11 @@ bool NavigationViewItem::HasChildren()
 bool NavigationViewItem::ShouldShowIcon()
 {
     return static_cast<bool>(Icon());
+}
+
+bool NavigationViewItem::ShouldShowInfoBadge()
+{
+    return static_cast<bool>(InfoBadge());
 }
 
 bool NavigationViewItem::ShouldEnableToolTip() const
@@ -1079,4 +1110,17 @@ void NavigationViewItem::UnhookEventsAndClearFields()
     m_toolTip.set(nullptr);
     m_repeater.set(nullptr);
     m_flyoutContentGrid.set(nullptr);
+}
+
+void NavigationViewItem::PrepNavigationViewItem(const winrt::SplitView& splitView)
+{
+    m_splitViewIsPaneOpenChangedRevoker = RegisterPropertyChanged(splitView,
+        winrt::SplitView::IsPaneOpenProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
+    m_splitViewDisplayModeChangedRevoker = RegisterPropertyChanged(splitView,
+        winrt::SplitView::DisplayModeProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
+    m_splitViewCompactPaneLengthChangedRevoker = RegisterPropertyChanged(splitView,
+        winrt::SplitView::CompactPaneLengthProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
+
+    UpdateCompactPaneLength();
+    UpdateIsClosedCompact();
 }

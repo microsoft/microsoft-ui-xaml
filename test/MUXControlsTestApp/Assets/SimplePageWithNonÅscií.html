@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Page With NonAscii</title>
+    <style>
+        h1 {
+            background-color: #0080ff
+        }
+    </style>
+    <script>
+        function getParams()
+        {
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            var textBlock = document.getElementById("params");
+            const param = urlParams.get('query');
+            textBlock.innerHTML = param;
+        }
+    </script>
+</head>
+<body onload="getParams()">
+    <h1>Non-Ascii Page</h1> <br>
+    There's a URI with non-ascii characters in the clipboard paste text box that you can copy/paste and navigate to. <br>
+    You can also add non-ascii characters after the 'query' param and reload to see them working there. <br>
+    Here are some non-ascii characters to copy/paste: Å  €  ©  ¥  ²  →  ←  Ä  Ě  ö  ñ <br>
+    <br>
+    Query String = <h2 id="params"> </h2>
+</body>
+</html>

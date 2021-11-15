@@ -19,7 +19,7 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <x:Double x:Key="RadioButtonsColumnSpacing">7</x:Double>
-    <x:Double x:Key="RadioButtonsRowSpacing">3</x:Double>
+    <x:Double x:Key="RadioButtonsRowSpacing">8</x:Double>
 
-    <Thickness x:Key="RadioButtonsTopHeaderMargin">0,0,0,4</Thickness>
+    <Thickness x:Key="RadioButtonsTopHeaderMargin">0,0,0,8</Thickness>
 </ResourceDictionary>

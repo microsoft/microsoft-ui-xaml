@@ -257,8 +257,6 @@ void BreadcrumbBar::OnElementPreparedEvent(const winrt::ItemsRepeater&, const wi
                         // Any other element just resets the visual properties
                         itemImpl->ResetVisualProperties();
                     }
-
-                    winrt::AutomationProperties::SetName(item, s_breadcrumbItemAutomationName + winrt::to_hstring(itemIndex));
                 }
             }
         }
@@ -280,7 +278,6 @@ void BreadcrumbBar::OnElementIndexChangedEvent(const winrt::ItemsRepeater& sende
         }
 
         FocusElementAt(newIndex);
-        winrt::AutomationProperties::SetName(args.Element(), s_breadcrumbItemAutomationName + winrt::to_hstring(newIndex));
     }
 }
 
@@ -290,8 +287,6 @@ void BreadcrumbBar::OnElementClearingEvent(const winrt::ItemsRepeater&, const wi
     {
         const auto& itemImpl = winrt::get_self<BreadcrumbBarItem>(item);
         itemImpl->ResetVisualProperties();
-
-        winrt::AutomationProperties::SetName(item, winrt::hstring());
     }
 }
 
@@ -347,11 +342,20 @@ void BreadcrumbBar::ReIndexVisibleElementsForAccessibility() const
     if (auto const& itemsRepeater = m_itemsRepeater.get())
     {
         const uint32_t visibleItemsCount{ m_itemsRepeaterLayout->GetVisibleItemsCount() };
+        const auto isEllipsisRendered = m_itemsRepeaterLayout->EllipsisIsRendered();
         uint32_t firstItemToIndex{ 1 };
 
-        if (m_itemsRepeaterLayout->EllipsisIsRendered())
+        if (isEllipsisRendered)
         {
             firstItemToIndex = m_itemsRepeaterLayout->FirstRenderedItemIndexAfterEllipsis();
+        }
+
+        // In order to make the ellipsis inaccessible to accessbility tools when it's hidden,
+        // we set the accessibilityView to raw and restore it to content when it becomes visible.
+        if (const auto ellipsisItem = m_ellipsisBreadcrumbBarItem.get())
+        {
+            const auto accessibilityView = isEllipsisRendered ? winrt::AccessibilityView::Content : winrt::AccessibilityView::Raw;
+            ellipsisItem.SetValue(winrt::AutomationProperties::AccessibilityViewProperty(), box_value(accessibilityView));
         }
 
         const auto& itemsSourceView = itemsRepeater.ItemsSourceView();

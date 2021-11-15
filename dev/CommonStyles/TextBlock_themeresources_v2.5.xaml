@@ -6,20 +6,18 @@
     <x:Double x:Key="TitleLargeTextBlockFontSize">40</x:Double>
     <x:Double x:Key="DisplayTextBlockFontSize">68</x:Double>
 
-    <Style x:Key="BodyStrongTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyTextBlockStyle}">
+    <Style x:Key="BodyStrongTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
         <Setter Property="FontSize" Value="{StaticResource BodyStrongTextBlockFontSize}" />
-        <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="OpticalMarginAlignment" Value="None" />
     </Style>
 
     <Style x:Key="TitleLargeTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
         <Setter Property="FontSize" Value="{StaticResource TitleLargeTextBlockFontSize}" />
-        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="OpticalMarginAlignment" Value="TrimSideBearings" />
     </Style>
 
     <Style x:Key="DisplayTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
         <Setter Property="FontSize" Value="{StaticResource DisplayTextBlockFontSize}" />
-        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="OpticalMarginAlignment" Value="TrimSideBearings" />
     </Style>
 </ResourceDictionary>
 

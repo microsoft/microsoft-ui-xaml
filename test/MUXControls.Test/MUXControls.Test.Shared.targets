@@ -17,6 +17,7 @@
   <Import Project="..\..\dev\TreeView\InteractionTests\TreeView_InteractionTests.projitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true'" />
   <Import Project="..\..\dev\NavigationView\NavigationView_InteractionTests\NavigationView_InteractionTests.projitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true'" />
   <Import Project="..\..\dev\Materials\Acrylic\InteractionTests\AcrylicBrush_InteractionTests.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
+  <Import Project="..\..\dev\Materials\Backdrop\InteractionTests\BackdropMaterial_InteractionTests.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
   <Import Project="..\..\dev\Materials\Reveal\InteractionTests\Reveal_InteractionTests\Reveal_InteractionTests.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
   <Import Project="..\..\dev\SwipeControl\SwipeControl_InteractionTests\SwipeControl_InteractionTests.projitems" Label="Shared" Condition="$(FeatureSwipeControlEnabled) == 'true'" />
   <Import Project="..\..\dev\PullToRefresh\RefreshContainer\InteractionTests\RefreshContainer_InteractionTests.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
@@ -39,7 +40,12 @@
   <Import Project="..\..\dev\NumberBox\InteractionTests\NumberBox_InteractionTests.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
   <Import Project="..\..\dev\RadialGradientBrush\InteractionTests\RadialGradientBrush_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true'" />
   <Import Project="..\..\dev\InfoBar\InteractionTests\InfoBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true'" />
+  <Import Project="..\..\dev\Expander\InteractionTests\Expander_InteractionTests.projitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true'" />
   <Import Project="..\..\dev\PagerControl\InteractionTests\PagerControl_InteractionTests.projitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true'" />
+  <Import Project="..\..\dev\PipsPager\InteractionTests\PipsPager_InteractionTests.projitems" Label="Shared" Condition="$(FeaturePipsPagerEnabled) == 'true'" />
+  <Import Project="..\..\dev\ImageIcon\InteractionTests\ImageIcon_InteractionTests.projitems" Label="Shared" Condition="$(FeatureImageIconEnabled) == 'true'" />
   <Import Project="..\..\dev\PipsPager\InteractionTests\PipsPager_InteractionTests.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
   <Import Project="..\..\dev\Breadcrumb\InteractionTests\Breadcrumb_InteractionTests.projitems" Label="Shared" Condition="$(FeatureBreadcrumbEnabled) == 'true'" />
+  <Import Project="..\..\dev\InfoBadge\InteractionTests\InfoBadge_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInfoBadgeEnabled) == 'true'" />
+  <Import Project="..\..\dev\WebView2\InteractionTests\WebView2_InteractionTests.projitems" Label="Shared" Condition="$(FeatureWebView2Enabled) == 'true'" />
 </Project>

@@ -88,12 +88,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Click primary button to execute command");
                 ClickPrimaryButton(splitButton);
                 Verify.AreEqual("1", executeCountTextBlock.DocumentText);
-                
+
+                Log.Comment("Click primary button with SPACE key to execute command");
+                ClickPrimaryButtonWithKey(splitButton, "SPACE");
+                Verify.AreEqual("2", executeCountTextBlock.DocumentText);
+
+                Log.Comment("Click primary button with ENTER key to execute command");
+                ClickPrimaryButtonWithKey(splitButton, "ENTER");
+                Verify.AreEqual("3", executeCountTextBlock.DocumentText);
+
                 Log.Comment("Verify that setting CanExecute to false disables the primary button");
                 canExecuteCheckBox.Uncheck();
                 Wait.ForIdle();
                 ClickPrimaryButton(splitButton);
-                Verify.AreEqual("1", executeCountTextBlock.DocumentText);
+                Verify.AreEqual("3", executeCountTextBlock.DocumentText);
             }
         }
 
@@ -267,6 +275,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             Log.Comment("Click primary button area");
             splitButton.Click(PointerButtons.Primary, 5, splitButton.BoundingRectangle.Height / 2);
+            Wait.ForIdle();
+        }
+
+        public void ClickPrimaryButtonWithKey(SplitButton splitButton, string key)
+        {
+            Log.Comment("Click primary button area with %s key", key);
+            splitButton.SendKeys("{" + key + "}");
             Wait.ForIdle();
         }
 

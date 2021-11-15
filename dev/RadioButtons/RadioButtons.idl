@@ -38,3 +38,15 @@ unsealed runtimeclass RadioButtons : Windows.UI.Xaml.Controls.Control
 }
 
 }
+
+namespace MU_XAP_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass RadioButtonsAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    RadioButtonsAutomationPeer(MU_XC_NAMESPACE.RadioButtons owner);
+}
+
+}

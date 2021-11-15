@@ -461,6 +461,16 @@ namespace MUXControlsTestApp
             TVItem.IsEnabled = false;
         }
 
+        private void FlowDirectionCheckbox_Checked(object sender, RoutedEventArgs e)
+        {
+            this.FlowDirection = FlowDirection.LeftToRight;
+        }
+
+        private void FlowDirectionCheckbox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            this.FlowDirection = FlowDirection.RightToLeft;
+        }
+
         private void IsTitleBarAutoPaddingEnabledCheckbox_Checked(object sender, RoutedEventArgs e)
         {
             NavView.IsTitleBarAutoPaddingEnabled = true;

@@ -130,11 +130,21 @@ void SplitButton::UpdateVisualStates(bool useTransitions)
     // change visual state
     auto primaryButton = m_primaryButton.get();
     auto secondaryButton = m_secondaryButton.get();
-    if (primaryButton && secondaryButton)
+    if (!IsEnabled()) {
+        winrt::VisualStateManager::GoToState(*this, L"Disabled", useTransitions);
+    }
+    else if (primaryButton && secondaryButton)
     {
         if (m_isFlyoutOpen)
         {
-            winrt::VisualStateManager::GoToState(*this, L"FlyoutOpen", useTransitions);
+            if (InternalIsChecked())
+            {
+                winrt::VisualStateManager::GoToState(*this, L"CheckedFlyoutOpen", useTransitions);
+            }
+            else
+            {
+                winrt::VisualStateManager::GoToState(*this, L"FlyoutOpen", useTransitions);
+            }
         }
         // SplitButton and ToggleSplitButton share a template -- this section is driving the checked states for ToggleSplitButton.
         else if (InternalIsChecked())
@@ -232,6 +242,19 @@ void SplitButton::CloseFlyout()
     }
 }
 
+void SplitButton::ExecuteCommand()
+{
+    if (const auto& command = Command())
+    {
+        const auto& commandParameter = CommandParameter();
+
+        if (command.CanExecute(commandParameter))
+        {
+            command.Execute(commandParameter);
+        }
+    }
+}
+
 void SplitButton::OnFlyoutOpened(const winrt::IInspectable& sender, const winrt::IInspectable& args)
 {
     m_isFlyoutOpen = true;
@@ -306,6 +329,7 @@ void SplitButton::OnSplitButtonKeyUp(const winrt::IInspectable& sender, const wi
         if (IsEnabled())
         {
             OnClickPrimary(nullptr, nullptr);
+            ExecuteCommand();
             args.Handled(true);
         }
     }

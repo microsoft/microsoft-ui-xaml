@@ -298,9 +298,6 @@ void BreadcrumbBarItem::UpdateFlyoutIndex(const winrt::UIElement& element, const
                 ellipsisDropDownItemImpl->SetIndex(itemCount - index);
             }
 
-            hstring name = s_ellipsisItemAutomationName + winrt::to_hstring(index + 1);
-            winrt::AutomationProperties::SetName(element, name);
-
             element.SetValue(winrt::AutomationProperties::PositionInSetProperty(), box_value(index + 1));
             element.SetValue(winrt::AutomationProperties::SizeOfSetProperty(), box_value(itemCount));
         }

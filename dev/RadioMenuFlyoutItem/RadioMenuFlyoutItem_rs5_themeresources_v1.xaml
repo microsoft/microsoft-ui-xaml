@@ -146,7 +146,7 @@
                             <TextBlock x:Name="TextBlock"
                                 Grid.Column="1"
                                 Text="{TemplateBinding Text}"
-                                TextTrimming="Clip"
+                                TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}"
                                 Foreground="{TemplateBinding Foreground}"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />

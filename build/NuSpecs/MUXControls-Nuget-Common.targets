@@ -24,7 +24,7 @@
   <ItemGroup>
     <XamlWinmd Include="$(MSBuildThisFileDirectory)..\lib\uap10.0\Microsoft.UI.Xaml.winmd">
       <SkipHarvestingWinmdRegistration Condition="'$(MicrosoftUIXamlAppxVersion)' != ''">true</SkipHarvestingWinmdRegistration>
-      <TargetPath>$(WinMetadataDir)\Microsoft.UI.Xaml.winmd</TargetPath>
+      <TargetPath>Microsoft.UI.Xaml.winmd</TargetPath>
       <OutputGroup>CustomOutputGroupForPackaging</OutputGroup>
       <ProjectName>$(ProjectName)</ProjectName>
       <Implementation Condition="'$(MicrosoftUIXamlAppxVersion)' == ''">Microsoft.UI.Xaml.dll</Implementation>
@@ -33,6 +33,7 @@
   <PropertyGroup>
     <XamlWinmdName>Microsoft.UI.Xaml.winmd</XamlWinmdName>
     <XamlCompactXbfName>Microsoft.UI.Xaml\DensityStyles\Compact.xbf</XamlCompactXbfName>
+    <WebView2UseWinRT Condition="'$(WebView2UseWinRT)' ==''">true</WebView2UseWinRT>
   </PropertyGroup>
   <Target Name="_FixWinmdCopyLocal" AfterTargets="ResolveNuGetPackageAssets">
     <ItemGroup>
@@ -53,11 +54,27 @@
       <PackagingOutputs Include="@(XamlWinmd)" />
     </ItemGroup>
   </Target>
+  <Target Name="_RemoveXamlWinmdFromWinMetadataFolder" AfterTargets="BuildNativePackage" BeforeTargets="_AddXamlWinmdToPackageLayoutRoot">
+    <ItemGroup>
+      <XamlWinmdAppxPackagePayload Include="@(AppxPackagePayload)" Condition="'%(AppxPackagePayload.TargetPath)' == '$(WinMetadataDir)\$(XamlWinmdName)'" />
+      <XamlWinmdAppxUploadPackagePayload Include="@(AppxUploadPackagePayload)" Condition="'%(AppxUploadPackagePayload.TargetPath)' == '$(WinMetadataDir)\$(XamlWinmdName)'" />
+    </ItemGroup>
+    <ItemGroup Condition="'@(XamlWinmdAppxPackagePayload)' != ''">
+      <AppxPackagePayload Remove="@(XamlWinmdAppxPackagePayload)" />
+    </ItemGroup>
+    <ItemGroup Condition="'@(XamlWinmdAppxUploadPackagePayload)' != ''">
+      <AppxUploadPackagePayload Remove="@(XamlWinmdAppxUploadPackagePayload)" />
+    </ItemGroup>
+  </Target>
   <Target Name="_AddXamlWinmdToPackageLayoutRoot" AfterTargets="BuildNativePackage">
     <ItemGroup>
       <AppxPackagePayload Include="@(XamlWinmd)">
         <TargetPath>Microsoft.UI.Xaml.winmd</TargetPath>
       </AppxPackagePayload>
+      <AppxUploadPackagePayload Include="@(XamlWinmd)">
+        <TargetPath>Microsoft.UI.Xaml.winmd</TargetPath>
+      </AppxUploadPackagePayload>
     </ItemGroup>
+    <Copy SourceFiles="@(XamlWinmd)" DestinationFiles="@(XamlWinmd -> '$(OutDir)\%(Filename)%(Extension)')" />
   </Target>
 </Project>

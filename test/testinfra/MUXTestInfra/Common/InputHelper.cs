@@ -358,13 +358,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                 Wait.ForIdle();
             }
         }
-        
-        public static void DragToTarget(UIObject obj, UIObject obj2)
+
+        public static void DragToTarget(UIObject obj, UIObject obj2, int xOffset = 0, int yOffset = 0)
         {
             Point startPoint = obj.GetClickablePoint();
             Log.Comment("Start Point X:{0} Y:{1}", startPoint.X, startPoint.Y);
 
             Point end = obj2.GetClickablePoint();
+            end.X += xOffset;
+            end.Y += yOffset;
             Log.Comment("End Point X:{0} Y:{1}", end.X, end.Y);
 
             uint dragDuration = 2000;

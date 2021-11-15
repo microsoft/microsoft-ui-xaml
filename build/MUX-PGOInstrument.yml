@@ -7,8 +7,9 @@ variables:
 
 jobs:
 - job: Build
-  pool:
-    vmImage: 'windows-2019'
+  pool: 
+    name: WinDevPool-L
+    demands: ImageOverride -equals WinDevVS16-9
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
@@ -65,11 +66,11 @@ jobs:
       Release_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Release'
-        openHelixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
+        closedHelixTargetQueues: 'windows.10.amd64.client19h1.xaml'
       Release_x64:
         buildPlatform: 'x64'
         buildConfiguration: 'Release'
-        openHelixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
+        closedHelixTargetQueues: 'windows.10.amd64.client19h1.xaml'
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:

@@ -168,6 +168,7 @@ private:
     void UpdateVisualStateForOverflowButton();
     void UpdateLeftNavigationOnlyVisualState(bool useTransitions);
     void UpdatePaneShadow();
+    void UpdatePaneOverlayGroup();
     void UpdateNavigationViewItemsFactory();
     void SyncItemTemplates();
     bool IsRootGridOfFlyout(const winrt::DependencyObject& element);
@@ -184,6 +185,11 @@ private:
     // revokers for NavigationViewItem events and allows them to get revoked when
     // the item gets cleaned up
     GlobalDependencyProperty s_NavigationViewItemRevokersProperty{ nullptr };
+    void SetNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
+    void ClearNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
+    void ClearAllNavigationViewItemRevokers();
+    std::set<winrt::NavigationViewItem> m_itemsWithRevokerObjects{};
+    std::once_flag s_NavigationViewItemRevokersPropertySet;
 
     void InvalidateTopNavPrimaryLayout();
     // Measure functions for top navigation   
@@ -250,6 +256,7 @@ private:
     void OnItemsContainerSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& e);
     void UpdateAdaptiveLayout(double width, bool forceSetDisplayMode = false);
+    void UpdateOpenPaneWidth(double width);
     void UpdatePaneLayout();
     void SetDisplayMode(const winrt::NavigationViewDisplayMode& displayMode, bool forceSetDisplayMode = false);
    
@@ -275,7 +282,7 @@ private:
     void OnTitleBarIsVisibleChanged(const winrt::CoreApplicationViewTitleBar& sender, const winrt::IInspectable& args);
     void UpdateTitleBarPadding();
 
-    void OnAutoSuggestBoxSuggestionChosen(const winrt::AutoSuggestBox& sender, const winrt::Windows::UI::Xaml::Controls::AutoSuggestBoxSuggestionChosenEventArgs& args);
+    void OnAutoSuggestBoxQuerySubmitted(const winrt::AutoSuggestBox& sender, const winrt::Windows::UI::Xaml::Controls::AutoSuggestBoxQuerySubmittedEventArgs& args);
 
     void RaiseDisplayModeChanged(const winrt::NavigationViewDisplayMode& displayMode);
     void AnimateSelectionChanged(const winrt::IInspectable& currentItem);
@@ -347,7 +354,6 @@ private:
     tracker_ref<winrt::ColumnDefinition> m_paneToggleButtonIconGridColumn{ this };
     tracker_ref<winrt::FrameworkElement> m_paneTitleHolderFrameworkElement{ this };
     tracker_ref<winrt::FrameworkElement> m_paneTitleFrameworkElement{ this };
-    tracker_ref<winrt::FrameworkElement> m_visualItemsSeparator{ this };
     tracker_ref<winrt::Button> m_paneSearchButton{ this };
     tracker_ref<winrt::Button> m_backButton{ this };
     tracker_ref<winrt::Button> m_closeButton{ this };
@@ -360,8 +366,6 @@ private:
     tracker_ref<winrt::Grid> m_topNavGrid{ this };
     tracker_ref<winrt::Border> m_topNavContentOverlayAreaGrid{ this };
     tracker_ref<winrt::Grid> m_shadowCaster{ this };
-    tracker_ref<winrt::Storyboard> m_shadowCasterEaseInStoryboard{ this };
-    tracker_ref<winrt::Storyboard> m_shadowCasterSmallPaneEaseInStoryboard{ this };
     tracker_ref<winrt::Storyboard> m_shadowCasterEaseOutStoryboard{ this };
 
     // Indicator animations
@@ -392,6 +396,7 @@ private:
     tracker_ref<winrt::ColumnDefinition> m_paneHeaderCloseButtonColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_paneHeaderToggleButtonColumn{ this };
     tracker_ref<winrt::RowDefinition> m_paneHeaderContentBorderRow{ this };
+    tracker_ref<winrt::FrameworkElement> m_itemsContainer{ this };
 
     tracker_ref<winrt::NavigationViewItem> m_lastItemExpandedIntoFlyout{ this };
 
@@ -412,7 +417,7 @@ private:
     winrt::UIElement::AccessKeyInvoked_revoker m_accessKeyInvokedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_paneTitleHolderFrameworkElementSizeChangedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_itemsContainerSizeChangedRevoker{};
-    winrt::AutoSuggestBox::SuggestionChosen_revoker m_autoSuggestBoxSuggestionChosenRevoker{};
+    winrt::AutoSuggestBox::QuerySubmitted_revoker m_autoSuggestBoxQuerySubmittedRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_leftNavItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_leftNavItemsRepeaterElementClearingRevoker{};
@@ -498,5 +503,9 @@ private:
     bool m_OrientationChangedPendingAnimation{ false };
 
     bool m_TabKeyPrecedesFocusChange{ false };
+
+    bool m_isLeftPaneTitleEmpty{ false };
+
+    double m_openPaneWidth{ 320.0 };
 };
 

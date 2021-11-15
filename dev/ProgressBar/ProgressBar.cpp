@@ -68,11 +68,13 @@ void ProgressBar::OnIsIndeterminatePropertyChanged(const winrt::DependencyProper
 
 void ProgressBar::OnShowPausedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    SetProgressBarIndicatorWidth();
     UpdateStates();
 }
 
 void ProgressBar::OnShowErrorPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    SetProgressBarIndicatorWidth();
     UpdateStates();
 }
 
@@ -148,7 +150,15 @@ void ProgressBar::SetProgressBarIndicatorWidth()
 
                 if (auto&& indeterminateProgressBarIndicator2 = m_indeterminateProgressBarIndicator2.get())
                 {
-                    indeterminateProgressBarIndicator2.Width(progressBarWidth * 0.6); // 60% of ProgressBar Width
+                    if (ShowPaused() || ShowError()) // If IndeterminatePaused or IndeterminateError
+                    {
+                        indeterminateProgressBarIndicator2.Width(progressBarWidth); // 100% of ProgressBar Width
+                    }
+                    else
+                    {
+                        indeterminateProgressBarIndicator2.Width(progressBarWidth * 0.6); // 60% of ProgressBar Width
+                    }
+                    
                 }
             }
             else if (std::abs(maximum - minimum) > DBL_EPSILON)
@@ -194,7 +204,7 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
     templateSettings->Container2AnimationStartPosition(indeterminateProgressBarIndicatorWidth2 * -1.5); // Position at -150%
     templateSettings->Container2AnimationEndPosition(indeterminateProgressBarIndicatorWidth2 * 1.66); // Position at 166%
 
-    templateSettings->ContainerAnimationMidPosition(width * 0.2);
+    templateSettings->ContainerAnimationMidPosition(0);
 
     const auto rectangle = [width, height, padding = Padding()]()
     {

@@ -29,6 +29,10 @@ class RadioButtons :
 
 public:
     RadioButtons();
+
+    // IUIElement
+    virtual winrt::AutomationPeer OnCreateAutomationPeer();
+
     // IFrameworkElement
     void OnApplyTemplate();
 

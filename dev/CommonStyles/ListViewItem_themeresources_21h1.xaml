@@ -33,13 +33,13 @@
             <StaticResource x:Key="ListViewItemFocusVisualSecondaryBrush" ResourceKey="FocusStrokeColorInnerBrush" />
             <StaticResource x:Key="ListViewItemFocusBorderBrush" ResourceKey="FocusStrokeColorOuterBrush" />
             <StaticResource x:Key="ListViewItemFocusSecondaryBorderBrush" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="ListViewItemCheckBrush" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemCheckBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="ListViewItemCheckBoxBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemDragBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="ListViewItemDragForeground" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
-            <StaticResource x:Key="ListViewItemPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
-            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBorder" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />   
-            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBackground" ResourceKey="AccentAAFillColorDefaultBrush" />        
+            <StaticResource x:Key="ListViewItemDragForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemPlaceholderBackground" ResourceKey="ControlStrongFillColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBorder" ResourceKey="TextOnAccentFillColorPrimaryBrush" />   
+            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBackground" ResourceKey="AccentFillColorDefaultBrush" />        
             <x:Boolean x:Key="ListViewItemSelectionCheckMarkVisualEnabled">True</x:Boolean>
             <ListViewItemPresenterCheckMode x:Key="ListViewItemCheckMode">Inline</ListViewItemPresenterCheckMode>
             
@@ -62,24 +62,24 @@
             <CornerRadius x:Key="ListViewItemCornerRadius">4</CornerRadius>
             <CornerRadius x:Key="ListViewItemCheckBoxCornerRadius">3</CornerRadius>
             <CornerRadius x:Key="ListViewItemSelectionIndicatorCornerRadius">1.5</CornerRadius>
-            <StaticResource x:Key="ListViewItemCheckPressedBrush" ResourceKey="TextOnAccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemCheckDisabledBrush" ResourceKey="TextOnAccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemCheckPressedBrush" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemCheckDisabledBrush" ResourceKey="TextOnAccentFillColorDisabledBrush" />
             <StaticResource x:Key="ListViewItemCheckBoxPointerOverBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemCheckBoxPressedBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemCheckBoxDisabledBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxSelectedBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxSelectedPointerOverBrush" ResourceKey="AccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxSelectedPressedBrush" ResourceKey="AccentAAFillColorTertiaryBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxSelectedDisabledBrush" ResourceKey="AccentAAFillColorDisabledBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxBorderBrush" ResourceKey="ControlAAStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxPointerOverBorderBrush" ResourceKey="ControlAAStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxPressedBorderBrush" ResourceKey="ControlAAStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxDisabledBorderBrush" ResourceKey="ControlAAStrokeColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxSelectedBrush" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxSelectedPointerOverBrush" ResourceKey="AccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxSelectedPressedBrush" ResourceKey="AccentFillColorTertiaryBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxSelectedDisabledBrush" ResourceKey="AccentFillColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxBorderBrush" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxPointerOverBorderBrush" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxPressedBorderBrush" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxDisabledBorderBrush" ResourceKey="ControlStrongStrokeColorDisabledBrush" />
             <StaticResource x:Key="ListViewItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemSelectionIndicatorBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ListViewItemSelectionIndicatorPointerOverBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ListViewItemSelectionIndicatorPressedBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ListViewItemSelectionIndicatorDisabledBrush" ResourceKey="AccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemSelectionIndicatorBrush" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="ListViewItemSelectionIndicatorPointerOverBrush" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="ListViewItemSelectionIndicatorPressedBrush" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="ListViewItemSelectionIndicatorDisabledBrush" ResourceKey="AccentFillColorDisabledBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <x:Boolean x:Key='ListViewItemSelectionIndicatorVisualEnabled'>True</x:Boolean>
@@ -189,13 +189,13 @@
             <StaticResource x:Key="ListViewItemFocusVisualSecondaryBrush" ResourceKey="FocusStrokeColorInnerBrush" />
             <StaticResource x:Key="ListViewItemFocusBorderBrush" ResourceKey="FocusStrokeColorOuterBrush" />
             <StaticResource x:Key="ListViewItemFocusSecondaryBorderBrush" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="ListViewItemCheckBrush" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemCheckBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="ListViewItemCheckBoxBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemDragBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="ListViewItemDragForeground" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
-            <StaticResource x:Key="ListViewItemPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
-            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBorder" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" /> 
-            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBackground" ResourceKey="AccentAAFillColorDefaultBrush" />  
+            <StaticResource x:Key="ListViewItemDragForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemPlaceholderBackground" ResourceKey="ControlStrongFillColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBorder" ResourceKey="TextOnAccentFillColorPrimaryBrush" /> 
+            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBackground" ResourceKey="AccentFillColorDefaultBrush" />  
             <x:Boolean x:Key="ListViewItemSelectionCheckMarkVisualEnabled">True</x:Boolean>
             <ListViewItemPresenterCheckMode x:Key="ListViewItemCheckMode">Inline</ListViewItemPresenterCheckMode>
             <SolidColorBrush x:Key="ListViewItemCheckHintThemeBrush" Color="#FF4617B4" />
@@ -217,24 +217,24 @@
             <CornerRadius x:Key="ListViewItemCornerRadius">4</CornerRadius>
             <CornerRadius x:Key="ListViewItemCheckBoxCornerRadius">3</CornerRadius>
             <CornerRadius x:Key="ListViewItemSelectionIndicatorCornerRadius">1.5</CornerRadius>
-            <StaticResource x:Key="ListViewItemCheckPressedBrush" ResourceKey="TextOnAccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemCheckDisabledBrush" ResourceKey="TextOnAccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemCheckPressedBrush" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemCheckDisabledBrush" ResourceKey="TextOnAccentFillColorDisabledBrush" />
             <StaticResource x:Key="ListViewItemCheckBoxPointerOverBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemCheckBoxPressedBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemCheckBoxDisabledBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxSelectedBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxSelectedPointerOverBrush" ResourceKey="AccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxSelectedPressedBrush" ResourceKey="AccentAAFillColorTertiaryBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxSelectedDisabledBrush" ResourceKey="AccentAAFillColorDisabledBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxBorderBrush" ResourceKey="ControlAAStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxPointerOverBorderBrush" ResourceKey="ControlAAStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxPressedBorderBrush" ResourceKey="ControlAAStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxDisabledBorderBrush" ResourceKey="ControlAAStrokeColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxSelectedBrush" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxSelectedPointerOverBrush" ResourceKey="AccentFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxSelectedPressedBrush" ResourceKey="AccentFillColorTertiaryBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxSelectedDisabledBrush" ResourceKey="AccentFillColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxBorderBrush" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxPointerOverBorderBrush" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxPressedBorderBrush" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxDisabledBorderBrush" ResourceKey="ControlStrongStrokeColorDisabledBrush" />
             <StaticResource x:Key="ListViewItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemSelectionIndicatorBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ListViewItemSelectionIndicatorPointerOverBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ListViewItemSelectionIndicatorPressedBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="ListViewItemSelectionIndicatorDisabledBrush" ResourceKey="AccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemSelectionIndicatorBrush" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="ListViewItemSelectionIndicatorPointerOverBrush" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="ListViewItemSelectionIndicatorPressedBrush" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="ListViewItemSelectionIndicatorDisabledBrush" ResourceKey="AccentFillColorDisabledBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 

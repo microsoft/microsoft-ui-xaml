@@ -23,6 +23,10 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Collections.ObjectModel;
+using Microsoft.Windows.Apps.Test.Automation.Text;
+using System.Drawing;
+using Windows.UI.Xaml.Controls.Primitives;
+using System.Runtime.InteropServices;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -119,7 +123,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 UIObject breadcrumb = RetrieveBreadcrumbControl();
                 var breadcrumbItems = breadcrumb.Children;
 
-                Verify.AreEqual(2, breadcrumbItems.Count, "The breadcrumb should contain 2 items: 1 item and an ellipsis");
+                Verify.AreEqual(1, breadcrumbItems.Count, "The breadcrumb should contain 1 item.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        public void CheckCurrentItemDoesNotRaiseInvokeEvent()
+        {
+            // This is a sanity test that verifies that the BreadcrumbBar control exists and the basic setup for a test is correct
+            using (var setup = new TestSetupHelper("BreadcrumbBar Tests"))
+            {
+                UIObject breadcrumb = RetrieveBreadcrumbControl();
+                var breadcrumbItems = breadcrumb.Children;
+
+                Verify.AreEqual(1, breadcrumbItems.Count, "The breadcrumb should contain 1 item.");
+
+                var currentItem = breadcrumbItems[0];
+
+                var currentBreadcrumbBarItem = ConvertTo<BreadcrumbBarItem>(currentItem);
+                Verify.IsNotNull(currentBreadcrumbBarItem, "UIElement should be a BreadcrumbBarItem");
+
+                currentBreadcrumbBarItem.Click();
+
+                VerifyLastClickedItemIs("");
+                Verify.AreEqual("Root", GetCurrentItemText(currentBreadcrumbBarItem));
             }
         }
 
@@ -129,14 +157,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             // In this test we add the nodes 'Node A', 'Node A_2', 'Node A_2_3', once the nodes have been added
             // we click on each item verify that the BreadcrumbBar contained the specified nodes. At the end, only the
-            // ellipsis item and the 'Root' item should exist
+            // ellipsis item and the 'Root' item should exist however ellipsis item is hidden from the UIA tree.
             using (var setup = new TestSetupHelper("BreadcrumbBar Tests"))
             {
                 var breadcrumb = SetUpTest();
                 
-                VerifyBreadcrumbBarItemsContain(breadcrumb.Children, new string[] { "Root", "Node A", "Node A_2", "Node A_2_3", "Node A_2_3_1" });
+                VerifyBreadcrumbBarItemsContain(breadcrumb.Children, new string[] { "Root", "Node A", "Node A_2", "Node A_2_3", "Node A_2_3_1" }, true);
                 
-                Verify.AreEqual(2, breadcrumb.Children.Count, "The breadcrumb should contain 2 items: the root and an ellipsis");
+                Verify.AreEqual(1, breadcrumb.Children.Count, "The breadcrumb should contain 1 item");
             }
         }
 
@@ -146,19 +174,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             // In this test we add the breadcrumb Items 'Node A', 'Node A_2', 'Node A_2_3' & 'Node A_2_3_1'
             // Once those items have been added, we click on the 'Node A_2' item and verify that only the
-            // ellipsis item, 'Root', 'Node A' and 'Node A_2' exist on the breadcrumb
+            // ellipsis item, 'Root', 'Node A' and 'Node A_2' exist on the breadcrumb however ellipsis item is hidden from the UIA tree.
             using (var setup = new TestSetupHelper("BreadcrumbBar Tests"))
             {
                 var breadcrumb = SetUpTest();
 
                 // Click on the Node A_2 BreadcrumbBarItem
-                var NodeA_2BreadcrumbBarItem = breadcrumb.Children[3];
+                var NodeA_2BreadcrumbBarItem = breadcrumb.Children[2];
                 NodeA_2BreadcrumbBarItem.Click();
 
                 VerifyLastClickedItemIndexIs(2);
                 VerifyLastClickedItemIs("Node A_2");
 
-                Verify.AreEqual(4, breadcrumb.Children.Count, "The breadcrumb should contain 4 items: 3 items and an ellipsis");
+                Verify.AreEqual(3, breadcrumb.Children.Count, "The breadcrumb should contain 3 items");
 
                 VerifyBreadcrumbBarItemsContain(breadcrumb.Children, new string[] { "Root", "Node A", "Node A_2" });
             }
@@ -178,13 +206,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Click on the Ellipsis BreadcrumbBarItem
                 InvokeEllipsisItem(breadcrumb);
 
-                VerifyDropDownItemContainsText("EllipsisItem1", "Node A_2");
-                VerifyDropDownItemContainsText("EllipsisItem2", "Node A");
-                VerifyDropDownItemContainsText("EllipsisItem3", "Root");
+                VerifyDropDownItemContainsText("Node A_2");
+                VerifyDropDownItemContainsText("Node A");
+                VerifyDropDownItemContainsText("Root");
 
                 Log.Comment("Verify only 3 ellipsis items exist");
                 var ellipsisItem4 = FindElement.ByName("EllipsisItem4");
                 Verify.IsNull(ellipsisItem4, "EllipsisItem4 was found");
+
+                Verify.AreEqual(6, breadcrumb.Children.Count, "The breadcrumb should contain 6 items: 5 items and ellipsis");
             }
         }
 
@@ -201,7 +231,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Click on the Ellipsis BreadcrumbBarItem
                 InvokeEllipsisItem(breadcrumb);
 
-                var ellipsisItemNodeA = VerifyDropDownItemContainsText("EllipsisItem2", "Node A");
+                var ellipsisItemNodeA = GetDropDownItemByName("Node A");
                 ellipsisItemNodeA.Invoke();
                 Thread.Sleep(500);
 
@@ -223,35 +253,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetFocusToFirstBreadcrumbBarItem(breadcrumb, false);
 
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Node A' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[1].HasKeyboardFocus, "'Node A' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.IsTrue(breadcrumbItems[3].HasKeyboardFocus, "'Node A_2' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Node A_2' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[3].HasKeyboardFocus, "'Node A_2_3' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.IsTrue(breadcrumbItems[5].HasKeyboardFocus, "'Node A_2_3_1' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3_1' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.IsTrue(breadcrumbItems[5].HasKeyboardFocus, "'Node A_2_3_1' BreadcrumbBarItem should keep the focus");
+                Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3_1' BreadcrumbBarItem should keep the focus");
 
                 KeyboardHelper.PressKey(Key.Left);
-                Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[3].HasKeyboardFocus, "'Node A_2_3' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Left);
-                Verify.IsTrue(breadcrumbItems[3].HasKeyboardFocus, "'Node A_2' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Node A_2' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Left);
-                Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Node A' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[1].HasKeyboardFocus, "'Node A' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Left);
-                Verify.IsTrue(breadcrumbItems[1].HasKeyboardFocus, "'Root' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[0].HasKeyboardFocus, "'Root' BreadcrumbBarItem should have focus");
 
                 // Bug to solve here
                 KeyboardHelper.PressKey(Key.Left);
-                Verify.IsTrue(breadcrumbItems[1].HasKeyboardFocus, "'Root' BreadcrumbBarItem should keep the focus");
+                Verify.IsTrue(breadcrumbItems[0].HasKeyboardFocus, "'Root' BreadcrumbBarItem should keep the focus");
             }
         }
 
@@ -269,35 +299,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetFocusToFirstBreadcrumbBarItem(breadcrumb, false, true);
 
                 KeyboardHelper.PressKey(Key.Left);
-                Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Node A' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[1].HasKeyboardFocus, "'Node A' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Left);
-                Verify.IsTrue(breadcrumbItems[3].HasKeyboardFocus, "'Node A_2' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Node A_2' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Left);
-                Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[3].HasKeyboardFocus, "'Node A_2_3' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Left);
-                Verify.IsTrue(breadcrumbItems[5].HasKeyboardFocus, "'Node A_2_3_1' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3_1' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Left);
-                Verify.IsTrue(breadcrumbItems[5].HasKeyboardFocus, "'Node A_2_3_1' BreadcrumbBarItem should keep the focus");
+                Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3_1' BreadcrumbBarItem should keep the focus");
 
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[3].HasKeyboardFocus, "'Node A_2_3' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.IsTrue(breadcrumbItems[3].HasKeyboardFocus, "'Node A_2' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Node A_2' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Node A' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[1].HasKeyboardFocus, "'Node A' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.IsTrue(breadcrumbItems[1].HasKeyboardFocus, "'Root' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[0].HasKeyboardFocus, "'Root' BreadcrumbBarItem should have focus");
 
                 // Bug to solve here
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.IsTrue(breadcrumbItems[1].HasKeyboardFocus, "'Root' BreadcrumbBarItem should keep the focus");
+                Verify.IsTrue(breadcrumbItems[0].HasKeyboardFocus, "'Root' BreadcrumbBarItem should keep the focus");
             }
         }
 
@@ -373,28 +403,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // Here we should verify that the first element in the flyout has focus and we can move up/down
 
-                var dropDownItem = GetDropDownItemByName("EllipsisItem1");
-                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem1 BreadcrumbBarItem should have focus");
+                var dropDownItem = GetDropDownItemByName("Node A_2");
+                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "'Node A_2' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Down);
 
-                dropDownItem = GetDropDownItemByName("EllipsisItem2");
-                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem2 BreadcrumbBarItem should have focus");
+                dropDownItem = GetDropDownItemByName("Node A");
+                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "'Node A' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Down);
 
-                dropDownItem = GetDropDownItemByName("EllipsisItem3");
-                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem3 BreadcrumbBarItem should have focus");
+                dropDownItem = GetDropDownItemByName("Root");
+                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "'Root' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Up);
 
-                dropDownItem = GetDropDownItemByName("EllipsisItem2");
-                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem2 BreadcrumbBarItem should have focus");
+                dropDownItem = GetDropDownItemByName("Node A");
+                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "'Node A' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Up);
 
-                dropDownItem = GetDropDownItemByName("EllipsisItem1");
-                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem1 BreadcrumbBarItem should have focus");
+                dropDownItem = GetDropDownItemByName("Node A_2");
+                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "'Node A_2' BreadcrumbBarItem should have focus");
             }
         }
 
@@ -412,10 +442,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetFocusToFirstBreadcrumbBarItem(breadcrumb, false);
 
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Node A' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[1].HasKeyboardFocus, "'Node A' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.IsTrue(breadcrumbItems[3].HasKeyboardFocus, "'Node A_2' BreadcrumbBarItem should have focus");
+                Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Node A_2' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Enter);
                 
@@ -425,7 +455,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Possible bug to solve here
                 // Verify.IsTrue(breadcrumbItems[3].HasKeyboardFocus, "'Node A_2' BreadcrumbBarItem should keep focus");
 
-                Verify.AreEqual(4, breadcrumb.Children.Count, "The breadcrumb should contain 4 items: 3 items and an ellipsis");
+                Verify.AreEqual(3, breadcrumb.Children.Count, "The breadcrumb should contain 3 items.");
 
                 VerifyBreadcrumbBarItemsContain(breadcrumb.Children, new string[] { "Root", "Node A", "Node A_2" });
             }
@@ -448,13 +478,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Thread.Sleep(1000);
 
                 // Here we should verify that the first element in the flyout has focus and we can move up/down
-                var dropDownItem = GetDropDownItemByName("EllipsisItem1");
-                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem1 BreadcrumbBarItem should have focus");
+                // The flyout items should contain: "Node A_2", "Node A" and "Root"
+                var dropDownItem = GetDropDownItemByName("Node A_2");
+                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "'Node A_2' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Down);
 
-                dropDownItem = GetDropDownItemByName("EllipsisItem2");
-                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem2 BreadcrumbBarItem should have focus");
+                dropDownItem = GetDropDownItemByName("Node A");
+                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "'Node A' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Enter);
 
@@ -464,7 +495,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Possible bug to solve here
                 // Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Node A_2' BreadcrumbBarItem should keep focus");
 
-                Verify.AreEqual(3, breadcrumb.Children.Count, "The breadcrumb should contain 3 items: 2 items and an ellipsis");
+                Verify.AreEqual(2, breadcrumb.Children.Count, "The breadcrumb should contain 2 items.");
 
                 VerifyBreadcrumbBarItemsContain(breadcrumb.Children, new string[] { "Root", "Node A" });
             }
@@ -484,13 +515,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 InvokeEllipsisItem(breadcrumb);
 
-                var ellipsisItemNodeA = VerifyDropDownItemContainsText("EllipsisItem2", "Root");
+                var ellipsisItemNodeA = VerifyDropDownItemContainsText("Root");
                 ellipsisItemNodeA.Invoke();
                 Thread.Sleep(500);
 
                 for (int i = 0; i < 5; ++i)
                 {
-                    breadcrumb.Children[1].Click();
+                    breadcrumb.Children[0].Click();
 
                     VerifyLastClickedItemIndexIs(0);
                     VerifyLastClickedItemIs("Root");
@@ -511,7 +542,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 InvokeEllipsisItem(breadcrumb);
 
-                var ellipsisItemNodeA_2_3 = VerifyDropDownItemContainsText("EllipsisItem1", "Node A_2_3");
+                var ellipsisItemNodeA_2_3 = GetDropDownItemByName("Node A_2_3");
                 ellipsisItemNodeA_2_3.Invoke();
                 Thread.Sleep(500);
 
@@ -525,7 +556,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             ClickOnElements(new string[] { "Node A", "Node A_2", "Node A_2_3", "Node A_2_3_1" });
 
             var breadcrumbItems = breadcrumb.Children;
-            Verify.AreEqual(6, breadcrumbItems.Count, "The breadcrumb should contain 6 items: 5 items and an ellipsis");
+            Verify.AreEqual(5, breadcrumbItems.Count, "The breadcrumb should contain 5 items");
 
             return breadcrumb;
         }
@@ -536,6 +567,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             UIObject slider = RetrieveWidthSlider();
             slider.Click(PointerButtons.Primary, (slider.BoundingRectangle.Width / 3) - 10, slider.BoundingRectangle.Height / 2);
+
+            Verify.AreEqual(6, breadcrumb.Children.Count, "The breadcrumb should contain 6 items: 5 items and ellipsis");
 
             return breadcrumb;
         }
@@ -555,8 +588,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             UIObject anchor = RetrieveRTLCheckBox();
             FocusHelper.SetFocus(anchor);
 
-            // For RS2 we need two Tab if the ellipsis is onscreen and 3 if it's not
-            KeyboardHelper.PressKey(Key.Tab);
+            // For RS2 we need only one Tab key stroke if the ellipsis is onscreen and 2 if it's not
             KeyboardHelper.PressKey(Key.Tab);
 
             if (!isEllipsisVisible)
@@ -585,8 +617,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             UIObject anchor = RetrieveRTLCheckBox();
             FocusHelper.SetFocus(anchor);
 
-            // For RS2 we need two Tab if the ellipsis is onscreen and 3 if it's not
-            KeyboardHelper.PressKey(Key.Tab);
+            // For RS3 we need only one Tab key stroke
             KeyboardHelper.PressKey(Key.Tab);
 
             if (!isEllipsisVisible)
@@ -650,7 +681,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             UIObject anchor = RetrieveRTLCheckBox();
             FocusHelper.SetFocus(anchor);
 
-            int indexToFocus = isEllipsisVisible ? 0 : 1;
+            int indexToFocus = 0;
 
             // The RS3 and RS2 behaviours seem a little odd on how many tabs need to be pressed 
             bool gotFocus = TryGetFocusForRs2(breadcrumb, indexToFocus, isEllipsisVisible);
@@ -725,21 +756,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return rtlCheckbox;
         }
 
-        private void VerifyBreadcrumbBarItemsContain(UICollection<UIObject> breadcrumbItems, string[] expectedItemValues)
+        private void VerifyBreadcrumbBarItemsContain(UICollection<UIObject> breadcrumbItems, string[] expectedItemValues, bool firstItemIsCurrentItem = false, bool isEllipsisVisible = false)
         {
             // WARNING: this method clicks on each breadcrumb so once the verification has finished, 
             // only the ellipsis item and 'Root' should exist
 
             // As recycled breadcrumbs are not deleted, then we compare that the breadcrumb count is always bigger 
             // than the expected values count
-            Verify.IsTrue(breadcrumbItems.Count > expectedItemValues.Length, 
+            var ellipsisPresentCount = isEllipsisVisible ? 1 : 0;
+
+            Verify.IsTrue(breadcrumbItems.Count - ellipsisPresentCount >= expectedItemValues.Length, 
                 "The expected values count should at least be one less than the BreadcrumbBarItems count");
 
+            bool mustVerifyItemAsLastItem = firstItemIsCurrentItem;
+
             // To verify the existence of the expected nodes we click on each of them and verify agains the strings
-            // in LastClickedItemIndex and LastClickedItem textboxes. 
+            // in LastClickedItemIndex and LastClickedItem textboxes.
             for (int i = expectedItemValues.Length - 1; i >= 0; --i)
             {
-                var currentItem = breadcrumbItems[i + 1];
+                var currentItem = breadcrumbItems[i + ellipsisPresentCount];
                 Verify.IsNotNull(currentItem, "Current BreadcrumbBarItem should not be null");
 
                 var currentBreadcrumbBarItem = ConvertTo<BreadcrumbBarItem>(currentItem);
@@ -747,16 +782,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 currentBreadcrumbBarItem.Click();
 
-                VerifyLastClickedItemIndexIs(i);
-                VerifyLastClickedItemIs(expectedItemValues[i]);
+                if (mustVerifyItemAsLastItem)
+                {
+                    Verify.AreEqual(expectedItemValues[i], GetCurrentItemText(currentBreadcrumbBarItem));
+                    mustVerifyItemAsLastItem = false;
+                }
+                else
+                {
+                    VerifyLastClickedItemIndexIs(i);
+                    VerifyLastClickedItemIs(expectedItemValues[i]);
+                }
             }
         }
 
-        private Button VerifyDropDownItemContainsText(string dropDownItemName, string expectedText)
+        private Button VerifyDropDownItemContainsText(string expectedText)
         {
             Log.Comment("Retrieve the ellipsis item: " + expectedText);
-            var dropDownItem = GetDropDownItemByName(dropDownItemName);
 
+            var dropDownItem = GetDropDownItemByName(expectedText);
             VerifyDropDownItemContainsText(dropDownItem, expectedText);
 
             return dropDownItem;
@@ -764,9 +807,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private Button GetDropDownItemByName(string dropDownItemName)
         {
-            var dropDownItem = FindElement.ByName<Button>(dropDownItemName);
-            Verify.IsNotNull(dropDownItem, dropDownItemName + " not found");
-            return dropDownItem;
+            var ellipsisFlyout = FindElement.ByName("EllipsisFlyout");
+            
+            foreach (var child in ellipsisFlyout.Children)
+            {
+                if (child.Name == dropDownItemName)
+                {
+                    return ConvertTo<Button>(child);
+                }
+            }
+
+            Verify.Fail(dropDownItemName + " not found");
+            return null;
         }
 
         private void VerifyDropDownItemContainsText(Button dropDownItem, string expectedEllipsisItemText)
@@ -802,6 +854,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             var lastItemTextBlock = FindElement.ByName<TextBlock>("LastClickedItemIndex");
             return Int32.Parse(lastItemTextBlock.DocumentText);
+        }
+
+        private string GetCurrentItemText(BreadcrumbBarItem currentItem)
+        {
+            return currentItem.Children[0].GetText();
         }
     }
 }

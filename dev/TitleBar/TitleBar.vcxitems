@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{B122B4A6-BA38-4738-984B-3DAB2177D5E2}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);TITLEBAR_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)TitleBar.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TitleBarTemplateSettings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TitleBarAutomationPeer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\GeneratedExperimental\TitleBar.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\GeneratedExperimental\TitleBarTemplateSettings.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TitleBar.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TitleBarTemplateSettings.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TitleBarAutomationPeer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)TitleBar.xaml">
+      <ControlsResourcesVersion>Any</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TitleBar_themeresources.xaml">
+      <ControlsResourcesVersion>Any</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)TitleBar.idl" />
+  </ItemGroup>
+</Project>

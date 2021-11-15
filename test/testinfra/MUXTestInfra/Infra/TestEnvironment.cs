@@ -40,6 +40,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         public string TestAppName { get; private set; }
         public string TestAppMainWindowTitle { get; private set; }
         public bool IsUwpApp { get; private set; }
+        public bool IsPackaged { get; private set; }
 
         // Properties to set if InstallFromDirectory = false
         public string TestAppPackageName { get; private set; }
@@ -47,6 +48,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         public string InstallerName { get; private set; }
         public string CertSerialNumber { get; private set; }
         public string BaseAppxDir { get; private set; }
+        public string UnpackagedExePath { get; private set; }
+
+        public TestApplicationInfo(string testAppName, string testAppMainWindowTitle, string unpackagedExePath)
+            : this(testAppPackageName: string.Empty, testAppName: string.Empty, testAppPackageFamilyName: string.Empty, testAppMainWindowTitle, processName: string.Empty, installerName: string.Empty, isUwpApp: false, certSerialNumber: string.Empty, baseAppxDir: string.Empty, isPackaged: false, unpackagedExePath)
+        {
+        }
 
         // Properties to set if InstallFromDirectory = true
         public string TestAppProjectName { get; private set; }
@@ -64,7 +71,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         public TestApplicationInfo(string testAppPackageName, string testAppName, string testAppPackageFamilyName, string certSerialNumber, string baseAppxDir)
             : this(testAppPackageName, testAppName, testAppPackageFamilyName, testAppPackageName, testAppPackageName, testAppPackageName, certSerialNumber, baseAppxDir)
         {
-
         }
 
         public TestApplicationInfo(string testAppPackageName, string testAppName, string testAppPackageFamilyName, string testAppMainWindowTitle, string processName, string installerName, string certSerialNumber, string baseAppxDir)
@@ -72,7 +78,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
         }
 
+
         public TestApplicationInfo(string testAppPackageName, string testAppName, string testAppPackageFamilyName, string testAppMainWindowTitle, string processName, string installerName, bool isUwpApp, string certSerialNumber, string baseAppxDir)
+            : this(testAppPackageName, testAppName, testAppPackageFamilyName, testAppMainWindowTitle, processName, installerName, isUwpApp, certSerialNumber, baseAppxDir, isPackaged: true, unpackagedExePath: string.Empty)
+        {
+        }
+
+        public TestApplicationInfo(string testAppPackageName, string testAppName, string testAppPackageFamilyName, string testAppMainWindowTitle, string processName, string installerName, bool isUwpApp, string certSerialNumber, string baseAppxDir, bool isPackaged, string unpackagedExePath)
         {
             this.InstallFromDirectory = false;
             this.TestAppPackageName = testAppPackageName;
@@ -87,6 +99,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             this.CertSerialNumber = certSerialNumber;
             this.BaseAppxDir = baseAppxDir;
+
+            this.IsPackaged = isPackaged;
+            this.UnpackagedExePath = unpackagedExePath;
         }
 
         private const string MUXCertSerialNumber = "fd1d6927f4521242f00b20c9df66ea4f97175ee2";
@@ -143,19 +158,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
         }
 
-        public static TestApplicationInfo MUXControlsTestAppWPFPackage
-        {
-            get
-            {
-                return new TestApplicationInfo("MUXControlsTestAppWPFPackage", "MUXControlsTestAppWPFPackage_8wekyb3d8bbwe!App", "MUXControlsTestAppWPFPackage_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
-            }
-        }
-
         public static TestApplicationInfo NugetPackageTestAppCX
         {
             get
             {
                 return new TestApplicationInfo("NugetPackageTestAppCX", "NugetPackageTestAppCX_8wekyb3d8bbwe!App", "NugetPackageTestAppCX_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+            }
+        }
+
+        public static TestApplicationInfo XamlIslandsTestApp
+        {
+            get
+            {
+                return new TestApplicationInfo("WpfApp", "WpfApp_8wekyb3d8bbwe!App", "WpfApp_8wekyb3d8bbwe", "WpfApp", "WpfApp.exe", "WpfApp", isUwpApp: false, MUXCertSerialNumber, MUXBaseAppxDir);
+            }
+        }
+
+        public static TestApplicationInfo XamlIslandsTestAppUnpackaged
+        {
+            get
+            {
+                return new TestApplicationInfo("WpfApp_8wekyb3d8bbwe", "WpfApp", @"WpfApp\WpfApp.exe");
+            }
+        }
+
+        public static TestApplicationInfo MUXExperimentalTestApp
+        {
+            get
+            {
+                return new TestApplicationInfo("MUXExperimentalTestApp", "MUXExperimentalTestApp_8wekyb3d8bbwe!App", "MUXExperimentalTestApp_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
             }
         }
     }
@@ -271,7 +302,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     info.ProcessName,
                     info.InstallerName,
                     info.CertSerialNumber,
-                    info.BaseAppxDir);
+                    info.BaseAppxDir,
+                    info.IsUwpApp,
+                    info.UnpackagedExePath,
+                    info.IsPackaged);
             }
         }
 

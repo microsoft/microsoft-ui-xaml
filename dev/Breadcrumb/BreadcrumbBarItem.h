@@ -160,6 +160,5 @@ private:
 
     // Automation Names
     static constexpr std::wstring_view s_ellipsisFlyoutAutomationName{ L"EllipsisFlyout"sv };
-    static constexpr std::wstring_view s_ellipsisItemAutomationName{ L"EllipsisItem"sv };
     static constexpr std::wstring_view s_ellipsisItemsRepeaterAutomationName{ L"EllipsisItemsRepeater"sv };
 };

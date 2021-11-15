@@ -20,7 +20,7 @@
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-        <Grid>
+        <Grid x:Name="InfoBarParent">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -64,7 +64,16 @@
                         <ComboBoxItem Content="None" />
                         <ComboBoxItem Content="Button" />
                         <ComboBoxItem Content="Hyperlink" />
+                        <ComboBoxItem Content="RightAlignedButton" />
+                        <ComboBoxItem Content="RightAlignedHyperlink" />
                     </ComboBox>
+
+                    <Button x:Name="CollpaseActionButtonAsynchronouslyButton" Content="Collapse ActionButton async" Click="CollapseActionButtonAsynchronouslyClick"/>
+                    <Button x:Name="DisableActionButtonAsynchronouslyButton" Content="Disable ActionButton async" Click="DisableActionButtonAsynchronouslyClick"/>
+                    <Button x:Name="ResetActionButtonAsynchronouslyButton" Content="Reset ActionButton async" Click="ResetActionButtonAsynchronouslyClick"/>
+
+                    <Button x:Name="AddInfoBarButton" Content="Add InfoBar" Click="AddInfoBarClick" IsEnabled="False"/>
+                    <Button x:Name="RemoveInfoBarAsynchronouslyButton" Content="Remove InfoBar async" Click="RemoveInfoBarAsynchronouslyClick"/>
 
                     <Button Content="Set Foreground" Click="SetForegroundClick"/>
                 </StackPanel>
@@ -83,6 +92,8 @@
                     <CheckBox x:Name="CustomBackgroundCheckBox" AutomationProperties.Name="CustomBackgroundCheckBox" Content="Custom Background Color" Checked="CustomBackgroundChanged" Unchecked="CustomBackgroundChanged"/>
                     
                     <CheckBox x:Name="CloseButtonStyleCheckBox" AutomationProperties.Name="CloseButtonStyleCheckBox" Content="Custom Close Button Style" Checked="CloseStyleChanged" Unchecked="CloseStyleChanged"/>
+
+                    <CheckBox x:Name="RemoveActionButtonOnInvokeCheckBox" AutomationProperties.Name="RemoveActionButtonOnInvokeCheckBox" Content="Remove ActionButton on invoke"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">

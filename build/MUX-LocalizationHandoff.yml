@@ -1,29 +1,50 @@
 variables:
 - group: WinUITeamKeyVault-Secrets
 
+
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: LocalizationHandoff
   pool:
-    name: Package ES Standard Build
+    vmImage: 'windows-2019'
+  variables:
+    resourceStagingDirectory: '$(Build.ArtifactStagingDirectory)\LocStaging'
+    resourceOutputDirectory: '$(Build.ArtifactStagingDirectory)\LocOutput'
 
   steps:
-  - task: PkgESSetupBuild@10
-    displayName: 'XESSetupBuild'
-    inputs:
-      productName: dep.controls
-      branchVersion: true
-      nugetVer: true
-      useDfs: false
+  - powershell: |
+      & "$env:Build_SourcesDirectory\build\Localization\PrepLocFilesForUpload.ps1" `
+        -DestinationFilePath '${{ variables.resourceStagingDirectory }}'
+    displayName: 'PrepLocFilesForUpload.ps1'
 
-  - template: AzurePipelinesTemplates\MUX-PopulateBuildDateAndRevision-Steps.yml
-
-  - task: CmdLine@1
-    displayName: 'Run Loc Workflow'
+  - task: TouchdownBuildTask@1
+    displayName: 'Call Touchdown Build Service'
     inputs:
-      filename: '$(Build.SourcesDirectory)\tools\VSTSRunLocWorkflow.cmd'
-    env:
-      MAPPED_LOC_KEY: $(WinUILab-TouchdownLoc-Key)
+      environment: 'PRODEXT'
+      teamId: '104'
+      authType: 'OAuth'
+      authId: 'e8416663-8a55-4cb6-9bba-12038b37a6ed'
+      authKey: $(WinUILab-TouchdownLoc-Key)
+      relativePathRoot: ${{ variables.resourceStagingDirectory }}
+      resourceFilePath: '**/Resources.resw'
+      outputDirectoryRoot: ${{ variables.resourceOutputDirectory }}
+      appendRelativeDir: true
+      cultureMappingType: 'None'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifacts - Localized Resources'
+    condition: always()
+    inputs:
+      PathtoPublish: ${{ variables.resourceOutputDirectory }}
+      artifactName: 'LocalizationDrop'
+      parallel: true
+      parallelCount: 8
+
+  # Copy back files returned from localization service and notify if there are changes that need to be commited
+  - powershell: |
+      & "$env:Build_SourcesDirectory\build\Localization\CopyBackLocalizedFiles.ps1" `
+        -LocalizedFilesLocation '${{ variables.resourceOutputDirectory }}'
+    displayName: 'CopyBackLocalizedFiles.ps1'
 
   - powershell: |
       $changes = & git ls-files -m

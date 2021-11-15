@@ -15,5 +15,6 @@ public:
     using BitmapIconSourceProperties::EnsureProperties;
     using BitmapIconSourceProperties::ClearProperties;
 
+    winrt::DependencyProperty GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty);
     winrt::IconElement CreateIconElementCore();
 };

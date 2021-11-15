@@ -16,6 +16,13 @@ namespace MUXControlsTestApp
 {
     public sealed class TestFrame : Frame
     {
+        public UIElement CustomElement
+        {
+            get { return (UIElement)GetValue(CustomElementProperty); }
+            set { SetValue(CustomElementProperty, value); }
+        }
+
+        public static DependencyProperty CustomElementProperty = DependencyProperty.Register("CustomElement", typeof(UIElement), typeof(TestFrame), null);
 
         private Viewbox _rootViewbox = null;
         private Grid _rootGrid = null;
@@ -28,9 +35,13 @@ namespace MUXControlsTestApp
         private Type _mainPageType = null;
         private ContentPresenter _pagePresenter = null;
         private CheckBox _keyInputReceived = null;
+        public Grid BackupThemeBackground { get; private set; }
 
         public TestFrame(Type mainPageType)
         {
+            // This value is cached, so reset it when the app launches
+            Windows.ApplicationModel.Core.CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = false;
+
             _mainPageType = mainPageType;
             this.DefaultStyleKey = typeof(TestFrame);
 
@@ -80,6 +91,7 @@ namespace MUXControlsTestApp
 
             _rootViewbox = (Viewbox)GetTemplateChild("RootViewbox");
             _rootGrid = (Grid)GetTemplateChild("RootGrid");
+            BackupThemeBackground = (Grid)GetTemplateChild("BackupThemeBackground");
 
             // The root grid is in a Viewbox, which lays out its child with infinite
             // available size, so set the grid's dimensions to match the window's.

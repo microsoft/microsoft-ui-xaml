@@ -19,6 +19,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\SwipeItem.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\SwipeItems.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SwipeControl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SwipeControlInteractionTrackerOwner.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SwipeItems.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SwipeItem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SwipeItemInvokedEventArgs.cpp" />
@@ -28,6 +29,7 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeControlTrace.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeControl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SwipeControlInteractionTrackerOwner.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeItems.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeItem.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeItemInvokedEventArgs.h" />

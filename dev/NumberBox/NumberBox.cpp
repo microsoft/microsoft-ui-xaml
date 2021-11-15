@@ -15,7 +15,6 @@ static constexpr wstring_view c_numberBoxHeaderName{ L"HeaderContentPresenter"sv
 static constexpr wstring_view c_numberBoxDownButtonName{ L"DownSpinButton"sv };
 static constexpr wstring_view c_numberBoxUpButtonName{ L"UpSpinButton"sv };
 static constexpr wstring_view c_numberBoxTextBoxName{ L"InputBox"sv };
-static constexpr wstring_view c_numberBoxPopupButtonName{ L"PopupButton"sv };
 static constexpr wstring_view c_numberBoxPopupName{ L"UpDownPopup"sv };
 static constexpr wstring_view c_numberBoxPopupDownButtonName{ L"PopupDownSpinButton"sv };
 static constexpr wstring_view c_numberBoxPopupUpButtonName{ L"PopupUpSpinButton"sv };
@@ -36,6 +35,8 @@ std::wstring trim(const std::wstring& s)
 NumberBox::NumberBox()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NumberBox);
+
+    Loaded({ this, &NumberBox::OnLoaded });
 
     NumberFormatter(GetRegionalSettingsAwareDecimalFormatter());
 
@@ -172,18 +173,6 @@ void NumberBox::OnApplyTemplate()
             }
 
             m_textBoxKeyUpRevoker = textBox.KeyUp(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyUp });
-
-            // Listen to NumberBox::CornerRadius changes so that we can enfore the T-rule for the textbox in SpinButtonPlacementMode::Inline.
-            // We need to explicitly go to the corresponding visual state each time the NumberBox' CornerRadius is changed in order for the new
-            // corner radius values to be filtered correctly.
-            // If we only go to the SpinButtonsVisible visual state whenever the SpinButtonPlacementMode is changed to Inline, all subsequent
-            // corner radius changes would apply to all four textbox corners (this can be easily seen in the CornerRadius test page of the MUXControlsTestApp).
-            // This will break the T-rule in the Inline SpinButtonPlacementMode.
-            if (SharedHelpers::IsControlCornerRadiusAvailable())
-            {
-                m_cornerRadiusChangedRevoker = RegisterPropertyChanged(*this,
-                    winrt::Control::CornerRadiusProperty(), { this, &NumberBox::OnCornerRadiusPropertyChanged });
-            }  
         }
         return textBox;
     }());
@@ -226,6 +215,8 @@ void NumberBox::OnApplyTemplate()
 
     UpdateVisualStateForIsEnabledChange();
 
+    ReevaluateForwardedUIAName();
+
     if (ReadLocalValue(s_ValueProperty) == winrt::DependencyProperty::UnsetValue()
         && ReadLocalValue(s_TextProperty) != winrt::DependencyProperty::UnsetValue())
     {
@@ -238,13 +229,10 @@ void NumberBox::OnApplyTemplate()
     }
 }
 
-void NumberBox::OnCornerRadiusPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+void NumberBox::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
-    if (this->SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline)
-    {
-        // Enforce T-rule for the textbox in Inline SpinButtonPlacementMode.
-        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsVisible", false);
-    }
+    // This is done OnLoaded so TextBox VisualStates can be updated properly.
+    UpdateSpinButtonPlacement();
 }
 
 void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -287,6 +275,7 @@ void NumberBox::OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedE
     CoerceValue();
 
     UpdateSpinButtonEnabled();
+    ReevaluateForwardedUIAName();
 }
 
 void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -295,6 +284,7 @@ void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedE
     CoerceValue();
 
     UpdateSpinButtonEnabled();
+    ReevaluateForwardedUIAName();
 }
 
 void NumberBox::OnSmallChangePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -375,17 +365,24 @@ void NumberBox::ReevaluateForwardedUIAName()
     if (const auto textBox = m_textBox.get())
     {
         const auto name = winrt::AutomationProperties::GetName(*this);
+        const auto minimum = Minimum() == -std::numeric_limits<double>::max() ?
+            winrt::hstring{} :
+            winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMinimumValueStatus) + winrt::to_hstring(Minimum()) };
+        const auto maximum = Maximum() == std::numeric_limits<double>::max() ?
+            winrt::hstring{} :
+            winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMaximumValueStatus) + winrt::to_hstring(Maximum()) };
+
         if (!name.empty())
         {
             // AutomationProperties.Name is a non empty string, we will use that value.
-            winrt::AutomationProperties::SetName(textBox, name);
+            winrt::AutomationProperties::SetName(textBox, name + minimum + maximum );
         }
         else
         {
             if (const auto headerAsString = Header().try_as<winrt::IReference<winrt::hstring>>())
             {
                 // Header is a string, we can use that as our UIA name.
-                winrt::AutomationProperties::SetName(textBox, headerAsString.Value());
+                winrt::AutomationProperties::SetName(textBox, headerAsString.Value() + minimum + maximum );
             }
         }
     }
@@ -643,18 +640,21 @@ void NumberBox::UpdateTextToValue()
 void NumberBox::UpdateSpinButtonPlacement()
 {
     const auto spinButtonMode = SpinButtonPlacementMode();
+    auto state = L"SpinButtonsCollapsed";
 
     if (spinButtonMode == winrt::NumberBoxSpinButtonPlacementMode::Inline)
     {
-        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsVisible", false);
+        state = L"SpinButtonsVisible";
     }
     else if (spinButtonMode == winrt::NumberBoxSpinButtonPlacementMode::Compact)
     {
-        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsPopup", false);
+        state = L"SpinButtonsPopup";
     }
-    else
+
+    winrt::VisualStateManager::GoToState(*this, state, false);
+    if (const auto textbox = m_textBox.get())
     {
-        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsCollapsed", false);
+        winrt::VisualStateManager::GoToState(textbox, state, false);
     }
 }
 

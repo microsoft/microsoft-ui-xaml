@@ -79,6 +79,11 @@ namespace CustomTasks
 
                 foreach (var type in types)
                 {
+                    if (!type.IsClass)
+                    {
+                        continue;
+                    }
+                    
                     var typeDefinition = new TypeDefinition();
                     typeDefinition.Type = type;
 

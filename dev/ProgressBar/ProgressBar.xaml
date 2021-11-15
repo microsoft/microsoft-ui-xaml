@@ -6,6 +6,8 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
 
+    <!-- MUXC.ProgressBar -->
+    <!-- Note that we cannot name this with the key DefaultProgressBarStyle since that is already used for WUXC.ProgressBar-->
     <Style TargetType="local:ProgressBar">
         <Setter Property="Foreground" Value="{ThemeResource ProgressBarForeground}" />
         <Setter Property="Background" Value="{ThemeResource ProgressBarBackground}" />
@@ -103,8 +105,7 @@
                                 <VisualState x:Name="Updating" />
                                 <VisualState x:Name="UpdatingError">
                                     <VisualState.Setters>
-                                        <Setter Target="DeterminateProgressBarIndicator.Fill" Value="{ThemeResource ProgressBarErrorForegroundColor}" />
-                                        <Setter Target="ProgressBarTrack.Fill" Value="{TemplateBinding Background}" />
+                                        <Setter Target="DeterminateProgressBarIndicator.(Shape.Fill).(SolidColorBrush.Color)" Value="{ThemeResource ProgressBarErrorForegroundColor}" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -157,7 +158,7 @@
                                         <Setter Target="IndeterminateProgressBarIndicator.Opacity" Value="0" />
                                         <Setter Target="DeterminateProgressBarIndicator.Opacity" Value="0" />
                                         <Setter Target="IndeterminateProgressBarIndicator2.Opacity" Value="1" />
-                                        <Setter Target="ProgressBarTrack.Opacity" Value="1" />
+                                        <Setter Target="ProgressBarTrack.Opacity" Value="0" />
                                     </VisualState.Setters>
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames
@@ -165,7 +166,7 @@
                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)">
                                             <SplineDoubleKeyFrame KeyTime="0:0:0.167" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Container2AnimationEndPosition}" KeySpline="1.0, 1.0, 0.0, 1.0" />
                                             <SplineDoubleKeyFrame KeyTime="0:0:0.167" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Container2AnimationStartPosition}" KeySpline="1.0, 1.0, 0.0, 1.0" />
-                                            <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationMidPosition}" KeySpline="0.0, 0.0, 0.0, 1.0" />
+                                            <SplineDoubleKeyFrame KeyTime="0:0:0.75" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationMidPosition}" KeySpline="0.0, 0.0, 0.0, 1.0" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <ColorAnimation
                                             Storyboard.TargetName="IndeterminateProgressBarIndicator2"
@@ -187,7 +188,7 @@
                                         <Setter Target="IndeterminateProgressBarIndicator.Opacity" Value="0" />
                                         <Setter Target="DeterminateProgressBarIndicator.Opacity" Value="0" />
                                         <Setter Target="IndeterminateProgressBarIndicator2.Opacity" Value="1" />
-                                        <Setter Target="ProgressBarTrack.Opacity" Value="1" />
+                                        <Setter Target="ProgressBarTrack.Opacity" Value="0" />
                                     </VisualState.Setters>
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames
@@ -195,7 +196,7 @@
                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)">
                                             <SplineDoubleKeyFrame KeyTime="0:0:0.167" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Container2AnimationEndPosition}" KeySpline="1.0, 1.0, 0.0, 1.0" />
                                             <SplineDoubleKeyFrame KeyTime="0:0:0.167" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Container2AnimationStartPosition}" KeySpline="1.0, 1.0, 0.0, 1.0" />
-                                            <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationMidPosition}" KeySpline="0.0, 0.0, 0.0, 1.0" />
+                                            <SplineDoubleKeyFrame KeyTime="0:0:0.75" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationMidPosition}" KeySpline="0.0, 0.0, 0.0, 1.0" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <ColorAnimation
                                             Storyboard.TargetName="IndeterminateProgressBarIndicator2"
@@ -221,14 +222,14 @@
                             Padding="{TemplateBinding Padding}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             contract7NotPresent:CornerRadius="{StaticResource ProgressBarCornerRadius}">
-                            
+
                             <Border Clip="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ClipRect}">
                                 <Grid Height="{TemplateBinding MinHeight}">
-                                    
+
                                     <Rectangle
                                         x:Name="ProgressBarTrack"
                                         Fill="{TemplateBinding Background}"
-                                        Height="{StaticResource ProgressBarTrackHeight}"
+                                        Height="{ThemeResource ProgressBarTrackHeight}"
                                         Width="{TemplateBinding Width}"
                                         VerticalAlignment="Center"
                                         RadiusX="{Binding Source={StaticResource ProgressBarTrackCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
@@ -237,10 +238,10 @@
                                             <CompositeTransform/>
                                         </Rectangle.RenderTransform>
                                     </Rectangle>
-                                    
+
                                     <Rectangle
                                         x:Name="DeterminateProgressBarIndicator"
-                                        Fill="{TemplateBinding Foreground}"         
+                                        Fill="{TemplateBinding Foreground}"
                                         HorizontalAlignment="Left"
                                         contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                         contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
@@ -250,7 +251,7 @@
 
                                     <Rectangle
                                         x:Name="IndeterminateProgressBarIndicator"
-                                        Fill="{TemplateBinding Foreground}"         
+                                        Fill="{TemplateBinding Foreground}"
                                         HorizontalAlignment="Left"
                                         Opacity="0"
                                         contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
@@ -264,7 +265,7 @@
 
                                     <Rectangle
                                         x:Name="IndeterminateProgressBarIndicator2"
-                                        Fill="{TemplateBinding Foreground}"         
+                                        Fill="{TemplateBinding Foreground}"
                                         HorizontalAlignment="Left"
                                         Opacity="0"
                                         contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"

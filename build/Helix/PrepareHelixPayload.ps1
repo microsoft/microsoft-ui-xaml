@@ -1,11 +1,16 @@
 [CmdLetBinding()]
 Param(
-    [string]$Platform,
-    [string]$Configuration,
+    [ValidateSet("x86", "x64")]
+    [string]$Platform = "x86",
+
+    [ValidateSet("Debug", "Release")]
+    [string]$Configuration= "Debug",
+
     [string]$ArtifactName='drop'
 )
 
 $payloadDir = "HelixPayload\$Configuration\$Platform"
+
 
 $repoDirectory = Join-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path) "..\..\"
 $nugetPackagesDir = Join-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path) "packages"
@@ -17,14 +22,29 @@ If(test-path $payloadDir)
 }
 New-Item -ItemType Directory -Force -Path $payloadDir
 
+
+[xml]$pkgVerData = (Get-Content "$PSScriptRoot\packages.config")
+$winuiHelixVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"Microsoft.Internal.WinUI.Helix`"]").version
+$mitaVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"microsoft.windows.apps.test`"]").version
+$taefVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"Microsoft.Taef`"]").version
+$muxcustomBuildTasksVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"MUXCustomBuildTasks`"]").version
+$netCoreAppVer = $pkgVerData.SelectSingleNode("//packages/package[@id=`"runtime.win-$Platform.microsoft.netcore.app`"]").version
+
+Write-Host "winuiHelixVer = $winuiHelixVer"
+Write-Host "mitaVer = $mitaVer"
+Write-Host "taefVer = $taefVer"
+Write-Host "muxcustomBuildTasksVer = $muxcustomBuildTasksVer"
+Write-Host "netCoreAppVer = $netCoreAppVer"
+
 # Copy files from nuget packages
-Copy-Item "$nugetPackagesDir\microsoft.windows.apps.test.1.0.181203002\lib\netcoreapp2.1\*.dll" $payloadDir
-Copy-Item "$nugetPackagesDir\microsoft.taef.10.58.210305002\build\Binaries\$Platform\*" $payloadDir
-Copy-Item "$nugetPackagesDir\microsoft.taef.10.58.210305002\build\Binaries\$Platform\CoreClr\*" $payloadDir
+Copy-Item "$nugetPackagesDir\Microsoft.Internal.WinUI.Helix.$winuiHelixVer\scripts\test\*" $payloadDir
+Copy-Item "$nugetPackagesDir\microsoft.windows.apps.test.$mitaVer\lib\netcoreapp2.1\*.dll" $payloadDir
+Copy-Item "$nugetPackagesDir\Microsoft.Taef.$taefVer\build\Binaries\$Platform\*" $payloadDir
+Copy-Item "$nugetPackagesDir\Microsoft.Taef.$taefVer\build\Binaries\$Platform\CoreClr\*" $payloadDir
 New-Item -ItemType Directory -Force -Path "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$nugetPackagesDir\runtime.win-$Platform.microsoft.netcore.app.2.1.0\runtimes\win-$Platform\lib\netcoreapp2.1\*" "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$nugetPackagesDir\runtime.win-$Platform.microsoft.netcore.app.2.1.0\runtimes\win-$Platform\native\*" "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$nugetPackagesDir\MUXCustomBuildTasks.1.0.71\tools\$platform\WttLog.dll" $payloadDir
+Copy-Item "$nugetPackagesDir\runtime.win-$Platform.microsoft.netcore.app.$netCoreAppVer\runtimes\win-$Platform\lib\netcoreapp2.1\*" "$payloadDir\.NETCoreApp2.1\"
+Copy-Item "$nugetPackagesDir\runtime.win-$Platform.microsoft.netcore.app.$netCoreAppVer\runtimes\win-$Platform\native\*" "$payloadDir\.NETCoreApp2.1\"
+Copy-Item "$nugetPackagesDir\MUXCustomBuildTasks.$muxcustomBuildTasksVer\tools\$platform\WttLog.dll" $payloadDir
 
 function Copy-If-Exists
 {
@@ -41,11 +61,34 @@ function Copy-If-Exists
     }
 }
 
+function Copy-Recursively-If-Exists
+{
+    Param($source, $destinationDir)
+
+    if (Test-Path $source)
+    {
+        Write-Host "Copy from '$source' to '$destinationDir'"
+        if (-not (Test-Path $destinationDir))
+        {
+            $ignore = New-Item -ItemType Directory $destinationDir
+        }
+        Copy-Item -Recurse -Force $source $destinationDir
+    }
+    else
+    {
+        Write-Host "'$source' does not exist."
+    }
+}
+
 # Copy files from the 'drop' artifact dir
 Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXControls.Test.dll" $payloadDir
 Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXTestInfra.TAEF.dll" $payloadDir
+Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXExperimental.Test.dll" $payloadDir
+Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\WebView2Loader.dll" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\*" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\Dependencies\$Platform\*" $payloadDir
+Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\MUXExperimentalTestApp_Test\*" $payloadDir
+Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\MUXExperimentalTestApp_Test\Dependencies\$Platform\*" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\AppThatUsesMUXIndirectly_Test\*" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\AppThatUsesMUXIndirectly_Test\Dependencies\$Platform\*" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\*" $payloadDir
@@ -59,15 +102,11 @@ Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\NugetPackageTestApp_Test\Dependencies\$Platform\*" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\*" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\Dependencies\$Platform\*" $payloadDir
+Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\WpfApp_Test\*" $payloadDir
+Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\WpfApp_Test\Dependencies\$Platform\*" $payloadDir
+Copy-Recursively-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\UnpackagedApps\WpfApp\" $payloadDir
 
 # Copy files from the repo
 New-Item -ItemType Directory -Force -Path "$payloadDir"
-Copy-Item "build\helix\ConvertWttLogToXUnit.ps1" "$payloadDir"
-Copy-Item "build\helix\OutputFailedTestQuery.ps1" "$payloadDir"
-Copy-Item "build\helix\OutputSubResultsJsonFiles.ps1" "$payloadDir"
-Copy-Item "build\helix\HelixTestHelpers.cs" "$payloadDir"
-Copy-Item "build\helix\runtests.cmd" $payloadDir
-Copy-Item "build\helix\InstallTestAppDependencies.ps1" "$payloadDir"
-Copy-Item "build\Helix\EnsureMachineState.ps1" "$payloadDir"
+Copy-Item "build\helix\scripts\*" "$payloadDir"
 Copy-Item "version.props" "$payloadDir"
-Copy-Item "build\Helix\CopyVisualTreeVerificationFiles.ps1" "$payloadDir"

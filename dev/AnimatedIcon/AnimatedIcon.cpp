@@ -8,6 +8,7 @@
 #include "ResourceAccessor.h"
 #include <AnimatedIconTestHooks.h>
 #include "Utils.h"
+#include <mutex>
 
 static constexpr wstring_view s_progressPropertyName{ L"Progress"sv };
 static constexpr wstring_view s_foregroundPropertyName{ L"Foreground"sv };
@@ -22,12 +23,24 @@ AnimatedIcon::AnimatedIcon()
     Loaded({ this, &AnimatedIcon::OnLoaded });
 
     RegisterPropertyChangedCallback(winrt::IconElement::ForegroundProperty(), { this, &AnimatedIcon::OnForegroundPropertyChanged});
+    RegisterPropertyChangedCallback(winrt::FrameworkElement::FlowDirectionProperty(), { this, &AnimatedIcon::OnFlowDirectionPropertyChanged });
 }
 
 void AnimatedIcon::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
-    OnSourcePropertyChanged(nullptr);
+    // Construct the visual from the Source property in on apply template so that it participates
+    // in the initial measure for the object.
+    auto const visual = [animatedVisual = m_animatedVisual.get(), this]()
+    {
+        if (animatedVisual)
+        {
+            return animatedVisual.RootVisual();
+        }
+        return ConstructVisual();
+    }();
+    InsertVisual(visual);
+
     auto const panel = winrt::VisualTreeHelper::GetChild(*this, 0).as<winrt::Panel>();
     m_rootPanel.set(panel);
     m_currentState = GetState(*this);
@@ -46,33 +59,52 @@ void AnimatedIcon::OnApplyTemplate()
                 path.Visibility(winrt::Visibility::Collapsed);
             }
         }
-        OnFallbackIconSourcePropertyChanged(nullptr);
-        if (auto const visual = m_animatedVisual.get())
-        {
-            winrt::ElementCompositionPreview::SetElementChildVisual(panel, visual.RootVisual());
-        }
-        if (auto const source = Source())
-        {
-            TrySetForegroundProperty(source);
-        }
+
+        winrt::ElementCompositionPreview::SetElementChildVisual(panel, visual);
+
+        TrySetForegroundProperty();
     }
 }
 
 void AnimatedIcon::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
-    // AnimatedIcon might get added to a UI which has already set the State property on the parent.
+    // AnimatedIcon might get added to a UI which has already set the State property on an ancestor.
     // If this is the case and the animated icon being added doesn't have its own state property
-    // We copy the parent value when we load.
+    // We copy the ancestor value when we load. Additionally we attach to our ancestor's property
+    // changed event for AnimatedIcon.State to copy the value to AnimatedIcon.
     auto const property = winrt::AnimatedIcon::StateProperty();
-    auto const stateValue = GetValue(property);
-    if (unbox_value<winrt::hstring>(stateValue).empty())
+
+    auto const [ancestorWithState, stateValue] = [this, property]()
     {
-        if (auto const parent = winrt::VisualTreeHelper::GetParent(*this))
+        auto parent = winrt::VisualTreeHelper::GetParent(*this);
+        while (parent)
         {
-            SetValue(property, parent.GetValue(property));
+            auto const stateValue = parent.GetValue(property);
+            if (!unbox_value<winrt::hstring>(stateValue).empty())
+            {
+                return std::make_tuple(parent, stateValue);
+            }
+            parent = winrt::VisualTreeHelper::GetParent(parent);
         }
+        return std::make_tuple(static_cast<winrt::DependencyObject>(nullptr), winrt::box_value(winrt::hstring{}));
+    }();
+
+    if (unbox_value<winrt::hstring>(GetValue(property)).empty())
+    {
+        SetValue(property, stateValue);
     }
+
+    if (ancestorWithState)
+    {
+        m_ancestorStatePropertyChangedRevoker = RegisterPropertyChanged(ancestorWithState, property, { this, &AnimatedIcon::OnAncestorAnimatedIconStatePropertyChanged });
+    }
+
+    // Wait until loaded to apply the fallback icon source property because we need the icon source
+    // properties to be set before we create the icon element from it.  If those poperties are bound in,
+    // they will not have been set during OnApplyTemplate.
+    OnFallbackIconSourcePropertyChanged(nullptr);
 }
+
 
 winrt::Size AnimatedIcon::MeasureOverride(winrt::Size const& availableSize)
 {
@@ -141,11 +173,10 @@ winrt::Size AnimatedIcon::ArrangeOverride(winrt::Size const& finalSize)
             std::min(finalSize.Height / scale.y, visualSize.y)
         };
         const auto offset = (finalSize - (visualSize * scale)) / 2;
-        const auto z = 0.0F;
         const auto rootVisual = visual.RootVisual();
-        rootVisual.Offset({ offset, z });
+        rootVisual.Offset({ offset, 0.0f });
         rootVisual.Size(arrangedSize);
-        rootVisual.Scale({ scale, z });
+        rootVisual.Scale({ scale, 1.0f });
         return finalSize;
     }
     else
@@ -162,13 +193,13 @@ void AnimatedIcon::OnAnimatedIconStatePropertyChanged(
     {
         senderAsAnimatedIcon->OnStatePropertyChanged();
     }
-    else if (winrt::VisualTreeHelper::GetChildrenCount(sender) > 0)
-    {
-        if (auto const childAsAnimatedIcon = winrt::VisualTreeHelper::GetChild(sender, 0).try_as<winrt::AnimatedIcon>())
-        {
-            childAsAnimatedIcon.SetValue(AnimatedIconProperties::s_StateProperty, args.NewValue());
-        }
-    }
+}
+
+void AnimatedIcon::OnAncestorAnimatedIconStatePropertyChanged(
+    const winrt::DependencyObject& sender,
+    const winrt::DependencyProperty& args)
+{
+    SetValue(AnimatedIconProperties::s_StateProperty, sender.GetValue(args));
 }
 
 // When we receive a state change it might be erroneous. This is because these state changes often come from Animated Icon's parent control's
@@ -200,13 +231,13 @@ void AnimatedIcon::OnLayoutUpdatedAfterStateChanged(winrt::IInspectable const& s
     case winrt::AnimatedIconAnimationQueueBehavior::QueueOne:
         if (m_isPlaying)
         {
-            // If we already have a queued state, cancel the current animation with the previously queued transition
+            // If we already have too many queued states, cancel the current animation with the previously queued transition
             // then Queue this new transition.
-            if (!m_queuedState.empty())
+            if (m_queuedStates.size() >= m_queueLength)
             {
-                TransitionAndUpdateStates(m_currentState, m_queuedState);
+                TransitionAndUpdateStates(m_currentState, m_queuedStates.front());
             }
-            m_queuedState = m_pendingState;
+            m_queuedStates.push(m_pendingState);
         }
         else
         {
@@ -216,29 +247,38 @@ void AnimatedIcon::OnLayoutUpdatedAfterStateChanged(winrt::IInspectable const& s
     case winrt::AnimatedIconAnimationQueueBehavior::SpeedUpQueueOne:
         if (m_isPlaying)
         {
-            // Cancel the previous animation completed handler, before we cancel that animation by starting a new one.
-            if (m_batch)
-            {
-                m_batchCompletedRevoker.revoke();
-            }
-
-            // If we already have a queued state, cancel the current animation with the previously queued transition
+            // If we already have too many queued states, cancel the current animation with the previously queued transition
             //  played speed up then Queue this new transition.
-            if (!m_queuedState.empty())
+            if (m_queuedStates.size() >= m_queueLength)
             {
-                TransitionAndUpdateStates(m_currentState, m_queuedState, m_speedUpMultiplier);
-                m_queuedState = m_pendingState;
+                // Cancel the previous animation completed handler, before we cancel that animation by starting a new one.
+                if (m_batch)
+                {
+                    m_batchCompletedRevoker.revoke();
+                }
+                TransitionAndUpdateStates(m_currentState, m_queuedStates.front(), m_speedUpMultiplier);
+                m_queuedStates.push(m_pendingState);
             }
             else
             {
-                m_queuedState = m_pendingState;
-
-                auto const markers = Source().Markers();
-                winrt::hstring transitionEndName = StringUtil::FormatString(L"%1!s!%2!s!%3!s!%4!s!", m_previousState.c_str(), s_transitionInfix.data(), m_currentState.c_str(), s_transitionEndSuffix.data());
-                auto const hasEndMarker = markers.HasKey(transitionEndName);
-                if (hasEndMarker)
+                m_queuedStates.push(m_pendingState);
+                if (!m_isSpeedUp)
                 {
-                    PlaySegment(NAN, static_cast<float>(markers.Lookup(transitionEndName)), m_speedUpMultiplier);
+                    // Cancel the previous animation completed handler, before we cancel that animation by starting a new one.
+                    if (m_batch)
+                    {
+                        m_batchCompletedRevoker.revoke();
+                    }
+
+                    m_isSpeedUp = true;
+
+                    auto const markers = Source().Markers();
+                    winrt::hstring transitionEndName = StringUtil::FormatString(L"%1!s!%2!s!%3!s!%4!s!", m_previousState.c_str(), s_transitionInfix.data(), m_currentState.c_str(), s_transitionEndSuffix.data());
+                    auto const hasEndMarker = markers.HasKey(transitionEndName);
+                    if (hasEndMarker)
+                    {
+                        PlaySegment(NAN, static_cast<float>(markers.Lookup(transitionEndName)), nullptr, m_speedUpMultiplier);
+                    }
                 }
             }
         }
@@ -253,13 +293,23 @@ void AnimatedIcon::OnLayoutUpdatedAfterStateChanged(winrt::IInspectable const& s
 
 void AnimatedIcon::TransitionAndUpdateStates(const winrt::hstring& fromState, const winrt::hstring& toState, float playbackMultiplier)
 {
-    TransitionStates(fromState, toState, playbackMultiplier);
-    m_previousState = fromState;
-    m_currentState = toState;
-    m_queuedState = L"";
+    std::once_flag cleanedUpFlag;
+    std::function<void()> cleanupAction = [this, fromState, toState, &cleanedUpFlag]()
+    {
+        std::call_once(cleanedUpFlag, [this, fromState, toState]() {
+                m_previousState = fromState;
+                m_currentState = toState;
+                if (!m_queuedStates.empty())
+                {
+                    m_queuedStates.pop();
+                }
+            });
+    };
+    TransitionStates(fromState, toState, cleanupAction, playbackMultiplier);
+    cleanupAction();
 }
 
-void AnimatedIcon::TransitionStates(const winrt::hstring& fromState, const winrt::hstring& toState, float playbackMultiplier)
+void AnimatedIcon::TransitionStates(const winrt::hstring& fromState, const winrt::hstring& toState, const std::function<void()>& cleanupAction, float playbackMultiplier)
 {
     if (auto const source = Source())
     {
@@ -275,7 +325,7 @@ void AnimatedIcon::TransitionStates(const winrt::hstring& fromState, const winrt
             {
                 auto const fromProgress = static_cast<float>(markers.Lookup(transitionStartName));
                 auto const toProgress = static_cast<float>(markers.Lookup(transitionEndName));
-                PlaySegment(fromProgress, toProgress, playbackMultiplier);
+                PlaySegment(fromProgress, toProgress, cleanupAction, playbackMultiplier);
                 m_lastAnimationSegmentStart = transitionStartName;
                 m_lastAnimationSegmentEnd = transitionEndName;
             }
@@ -342,7 +392,7 @@ void AnimatedIcon::TransitionStates(const winrt::hstring& fromState, const winrt
 
                     if(strEnd == toState.c_str() + toState.size())
                     {
-                        PlaySegment(NAN, parsedFloat, playbackMultiplier);
+                        PlaySegment(NAN, parsedFloat, cleanupAction, playbackMultiplier);
                         m_lastAnimationSegmentStart = L"";
                         m_lastAnimationSegmentEnd = toState;
                     }
@@ -362,7 +412,7 @@ void AnimatedIcon::TransitionStates(const winrt::hstring& fromState, const winrt
     }
 }
 
-void AnimatedIcon::PlaySegment(float from, float to, float playbackMultiplier)
+void AnimatedIcon::PlaySegment(float from, float to, const std::function<void()>& cleanupAction, float playbackMultiplier)
 {
     auto const segmentLength = [from, to, previousSegmentLength = m_previousSegmentLength]()
     {
@@ -381,6 +431,10 @@ void AnimatedIcon::PlaySegment(float from, float to, float playbackMultiplier)
     if (duration < winrt::TimeSpan{ 20ms } || !SharedHelpers::IsAnimationsEnabled())
     {
         m_progressPropertySet.InsertScalar(s_progressPropertyName, to);
+        if (cleanupAction)
+        {
+            cleanupAction();
+        }
         OnAnimationCompleted(nullptr, nullptr);
     }
     else
@@ -417,28 +471,66 @@ void AnimatedIcon::PlaySegment(float from, float to, float playbackMultiplier)
 
 void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
 {
-    auto const visual = [this]()
+    auto const visual = ConstructVisual();
+    if(!InsertVisual(visual))
     {
-        if (auto const source = Source())
-        {
-            TrySetForegroundProperty(source);
+        SetRootPanelChildToFallbackIcon();
+    }
+}
 
-            winrt::IInspectable diagnostics{};
-            auto const visual = source.TryCreateAnimatedVisual(winrt::Window::Current().Compositor(), diagnostics);
-            m_animatedVisual.set(visual);
-            return visual ? visual.RootVisual() : nullptr;
-        }
-        else
+void AnimatedIcon::UpdateMirrorTransform()
+{
+    auto const scaleTransform = [this]()
+    {
+        if (!m_scaleTransform)
         {
-            m_animatedVisual.set(nullptr);
-            return static_cast<winrt::Visual>(nullptr);
+            // Initialize the scale transform that will be used for mirroring and the
+            // render transform origin as center in order to have the icon mirrored in place.
+            winrt::Windows::UI::Xaml::Media::ScaleTransform scaleTransform;
+
+            RenderTransform(scaleTransform);
+            RenderTransformOrigin({ 0.5, 0.5 });
+            m_scaleTransform.set(scaleTransform);
+            return scaleTransform;
         }
+        return m_scaleTransform.get();
     }();
 
+
+    scaleTransform.ScaleX(FlowDirection() == winrt::FlowDirection::RightToLeft && !MirroredWhenRightToLeft() && m_canDisplayPrimaryContent ? -1.0f : 1.0f);
+}
+
+void AnimatedIcon::OnMirroredWhenRightToLeftPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
+{
+    UpdateMirrorTransform();
+}
+
+winrt::Visual AnimatedIcon::ConstructVisual()
+{
+    if (auto const source = Source())
+    {
+        TrySetForegroundProperty(source);
+
+        winrt::IInspectable diagnostics{};
+        auto const visual = source.TryCreateAnimatedVisual(winrt::Window::Current().Compositor(), diagnostics);
+        m_animatedVisual.set(visual);
+        return visual ? visual.RootVisual() : nullptr;
+    }
+    else
+    {
+        m_animatedVisual.set(nullptr);
+        return static_cast<winrt::Visual>(nullptr);
+    }
+}
+
+bool AnimatedIcon::InsertVisual(winrt::Visual visual)
+{
     if (auto const rootPanel = m_rootPanel.get())
     {
         winrt::ElementCompositionPreview::SetElementChildVisual(rootPanel, visual);
     }
+
+    UpdateMirrorTransform();
 
     if (visual)
     {
@@ -460,11 +552,13 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
         auto const progressAnimation = compositor.CreateExpressionAnimation(expression);
         progressAnimation.SetReferenceParameter(L"_", m_progressPropertySet);
         visual.Properties().StartAnimation(s_progressPropertyName, progressAnimation);
+
+        return true;
     }
     else
     {
         m_canDisplayPrimaryContent = false;
-        SetRootPanelChildToFallbackIcon();
+        return false;
     }
 }
 
@@ -496,17 +590,38 @@ void AnimatedIcon::SetRootPanelChildToFallbackIcon()
 
 void AnimatedIcon::OnForegroundPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
-    TrySetForegroundProperty(Source());
+    m_foregroundColorPropertyChangedRevoker.revoke();
+    if (auto const foregroundSolidColorBrush = Foreground().try_as<winrt::SolidColorBrush>())
+    {
+        m_foregroundColorPropertyChangedRevoker = RegisterPropertyChanged(foregroundSolidColorBrush, winrt::SolidColorBrush::ColorProperty(), { this, &AnimatedIcon::OnForegroundBrushColorPropertyChanged });
+        TrySetForegroundProperty(foregroundSolidColorBrush.Color());
+    }
+}
+
+void AnimatedIcon::OnFlowDirectionPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+    UpdateMirrorTransform();
+}
+
+void AnimatedIcon::OnForegroundBrushColorPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+    TrySetForegroundProperty(sender.GetValue(args).as<winrt::Color>());
 }
 
 void AnimatedIcon::TrySetForegroundProperty(winrt::IAnimatedVisualSource2 const& source)
 {
-    if (source)
+    if (auto const foregroundSolidColorBrush = Foreground().try_as<winrt::SolidColorBrush>())
     {
-        if (auto const ForegroundSolidColorBrush = Foreground().try_as<winrt::SolidColorBrush>())
-        {
-            source.SetColorProperty(s_foregroundPropertyName, ForegroundSolidColorBrush.Color());
-        }
+        TrySetForegroundProperty(foregroundSolidColorBrush.Color(), source);
+    }
+}
+
+void AnimatedIcon::TrySetForegroundProperty(winrt::Color color, winrt::IAnimatedVisualSource2 const& source)
+{
+    auto const localSource = source ? source : Source();
+    if (localSource)
+    {
+        localSource.SetColorProperty(s_foregroundPropertyName, color);
     }
 }
 
@@ -523,10 +638,22 @@ void AnimatedIcon::OnAnimationCompleted(winrt::IInspectable const&, winrt::Compo
     case winrt::AnimatedIconAnimationQueueBehavior::Cut:
         break;
     case winrt::AnimatedIconAnimationQueueBehavior::QueueOne:
-    case winrt::AnimatedIconAnimationQueueBehavior::SpeedUpQueueOne:
-        if (!m_queuedState.empty())
+        if (!m_queuedStates.empty())
         {
-            TransitionAndUpdateStates(m_currentState, m_queuedState);
+            TransitionAndUpdateStates(m_currentState, m_queuedStates.front());
+        }
+        break;
+    case winrt::AnimatedIconAnimationQueueBehavior::SpeedUpQueueOne:
+        if (!m_queuedStates.empty())
+        {
+            if (m_queuedStates.size() == 1)
+            {
+                TransitionAndUpdateStates(m_currentState, m_queuedStates.front());
+            }
+            else
+            {
+                TransitionAndUpdateStates(m_currentState, m_queuedStates.front(), m_isSpeedUp ? m_speedUpMultiplier : 1.0f);
+            }
         }
         break;
     }
@@ -547,6 +674,11 @@ void AnimatedIcon::SetDurationMultiplier(float multiplier)
 void AnimatedIcon::SetSpeedUpMultiplier(float multiplier)
 {
     m_speedUpMultiplier = multiplier;
+}
+
+void AnimatedIcon::SetQueueLength(unsigned int length)
+{
+    m_queueLength = length;
 }
 
 winrt::hstring AnimatedIcon::GetLastAnimationSegment()
