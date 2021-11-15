@@ -178,10 +178,17 @@ unsealed runtimeclass TabViewItemTemplateSettings : Windows.UI.Xaml.DependencyOb
 
     Windows.UI.Xaml.Controls.IconElement IconElement;
 
-    Windows.UI.Xaml.Media.Geometry TabGeometry;
+    [MUX_PUBLIC_V2]
+    {
+        Windows.UI.Xaml.Media.Geometry TabGeometry;
+    }
 
     static Windows.UI.Xaml.DependencyProperty IconElementProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty TabGeometryProperty{ get; };
+
+    [MUX_PUBLIC_V2]
+    {
+        static Windows.UI.Xaml.DependencyProperty TabGeometryProperty{ get; };
+    }
 }
 
 }
