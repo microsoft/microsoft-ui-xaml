@@ -17,6 +17,21 @@ TabViewListView::TabViewListView()
     SetDefaultStyleKey(this);
 
     ContainerContentChanging({ this, &TabViewListView::OnContainerContentChanging });
+
+    RegisterPropertyChangedCallback(winrt::Selector::SelectedIndexProperty(), { this, &TabViewListView::OnSelectedIndexPropertyChanged });
+}
+
+void TabViewListView::OnSelectedIndexPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+    winrt::VisualStateManager::GoToState(
+        *this,
+        (SelectedIndex() == 0) ? L"LeftBorderShort" : L"LeftBorderNormal",
+        false /*useTransitions*/);
+
+    winrt::VisualStateManager::GoToState(
+        *this,
+        (SelectedIndex() == (int)(Items().Size() - 1)) ? L"RightBorderShort" : L"RightBorderNormal",
+        false /*useTransitions*/);
 }
 
 // IItemsControlOverrides
