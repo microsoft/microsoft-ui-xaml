@@ -14,7 +14,6 @@ using System.Security.Cryptography.X509Certificates;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Automation.Provider;
 using System.Linq;
-using System.Collections.ObjectModel;
 
 #if USING_TAEF
 using WEX.TestExecution;
