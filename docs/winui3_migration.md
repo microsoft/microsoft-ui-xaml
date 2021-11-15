@@ -18,4 +18,4 @@ This porting assistance is provided in the form of Roslyn Analyzers and Code Fix
 - A Code Analyzer provides on the fly code inspections for C# and creates diagnostics. 
 - A Code Fix consumes the diagnostics created by the Code Analyzer and modifies the C# file in-line. 
 
-See the [try-convert documentation](https://github.com/dotnet/try-convert/blob/feature/winui) for more information on these code analyzers and how to automoate the process with [try-convert](https://github.com/dotnet/try-convert/blob/feature/winui/WinUIConvert.md).
+See the [try-convert documentation](https://github.com/dotnet/try-convert/blob/feature/winui/WinUIConvert.md) for more information on these code analyzers and how to automoate the process with try-convert.
