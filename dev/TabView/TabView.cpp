@@ -270,6 +270,36 @@ void TabView::OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChan
     SetTabSeparatorOpacity(winrt::unbox_value<int>(args.OldValue()) - 1);
     SetTabSeparatorOpacity(SelectedIndex() - 1);
     SetTabSeparatorOpacity(SelectedIndex());
+
+    UpdateTabBorderVisualStates();
+}
+
+void TabView::UpdateTabBorderVisualStates()
+{
+    const int numItems = static_cast<int>(TabItems().Size());
+    const int selectedIndex = SelectedIndex();
+
+    for (int i = 0; i < numItems; i++)
+    {
+        auto state = L"NormalBorder";
+        if (!m_isDragging && selectedIndex != -1)
+        {
+            if (i == selectedIndex - 1)
+            {
+                state = L"LeftOfSelectedTab";
+            }
+            else if (i == selectedIndex + 1)
+            {
+                state = L"RightOfSelectedTab";
+            }
+        }
+
+        if (const auto tvi = ContainerFromIndex(i).try_as<winrt::Control>())
+        {
+            winrt::VisualStateManager::GoToState(tvi, state, false /*useTransitions*/);
+        }
+    }
+
 }
 
 void TabView::OnSelectedItemPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -506,6 +536,8 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
             }
         }
     }
+
+    UpdateTabBorderVisualStates();
 }
 
 void TabView::OnTabStripPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
@@ -701,6 +733,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
         }
     }
 
+    UpdateTabBorderVisualStates();
 }
 
 void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
@@ -750,11 +783,15 @@ winrt::TabViewItem TabView::FindTabViewItemFromDragItem(const winrt::IInspectabl
 
 void TabView::OnListViewDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args)
 {
+    m_isDragging = true;
+
     auto item = args.Items().GetAt(0);
     auto tab = FindTabViewItemFromDragItem(item);
     auto myArgs = winrt::make_self<TabViewTabDragStartingEventArgs>(args, item, tab);
 
     m_tabDragStartingEventSource(*this, *myArgs);
+
+    UpdateTabBorderVisualStates();
 }
 
 void TabView::OnListViewDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
@@ -769,6 +806,8 @@ void TabView::OnListViewDrop(const winrt::IInspectable& sender, const winrt::Dra
 
 void TabView::OnListViewDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args)
 {
+    m_isDragging = false;
+
     auto item = args.Items().GetAt(0);
     auto tab = FindTabViewItemFromDragItem(item);
     auto myArgs = winrt::make_self<TabViewTabDragCompletedEventArgs>(args, item, tab);
@@ -781,6 +820,8 @@ void TabView::OnListViewDragItemsCompleted(const winrt::IInspectable& sender, co
         auto tabDroppedArgs = winrt::make_self<TabViewTabDroppedOutsideEventArgs>(item, tab);
         m_tabDroppedOutsideEventSource(*this, *tabDroppedArgs);
     }
+
+    UpdateTabBorderVisualStates();
 }
 
 void TabView::UpdateTabContent()
