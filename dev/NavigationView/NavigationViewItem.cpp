@@ -359,8 +359,8 @@ void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
     case NavigationViewRepeaterPosition::LeftFooter:
         if (SharedHelpers::IsRS4OrHigher() && winrt::Application::Current().FocusVisualKind() == winrt::FocusVisualKind::Reveal)
         {
-            // OnLeftNavigationReveal is introduced in RS6. 
-            // Will fallback to stateName for the customer who re-template rs5 NavigationViewItem
+            // OnLeftNavigationReveal is introduced in RS6 and only in the V1 style.
+            // Fallback to OnLeftNavigation for other styles.
             if (winrt::VisualStateManager::GoToState(*this, c_OnLeftNavigationReveal, false /*useTransitions*/))
             {
                 handled = true;
@@ -369,13 +369,15 @@ void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
         break;
     case NavigationViewRepeaterPosition::TopPrimary:
     case NavigationViewRepeaterPosition::TopFooter:
+        stateName = c_OnTopNavigationPrimary;
         if (SharedHelpers::IsRS4OrHigher() && winrt::Application::Current().FocusVisualKind() == winrt::FocusVisualKind::Reveal)
         {
-            stateName = c_OnTopNavigationPrimaryReveal;
-        }
-        else
-        {
-            stateName = c_OnTopNavigationPrimary;
+            // OnTopNavigationPrimaryReveal is introduced in RS6 and only in the V1 style.
+            // Fallback to c_OnTopNavigationPrimary for other styles.
+            if (winrt::VisualStateManager::GoToState(*this, c_OnTopNavigationPrimaryReveal, false /*useTransitions*/))
+            {
+                handled = true;
+            }
         }
         break;
     case NavigationViewRepeaterPosition::TopOverflow:
