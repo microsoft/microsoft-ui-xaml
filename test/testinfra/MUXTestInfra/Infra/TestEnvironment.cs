@@ -50,13 +50,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         public string BaseAppxDir { get; private set; }
         public string UnpackagedExePath { get; private set; }
 
+        // Properties to set if InstallFromDirectory = true
+        public string TestAppProjectName { get; private set; }
+
         public TestApplicationInfo(string testAppName, string testAppMainWindowTitle, string unpackagedExePath)
             : this(testAppPackageName: string.Empty, testAppName: string.Empty, testAppPackageFamilyName: string.Empty, testAppMainWindowTitle, processName: string.Empty, installerName: string.Empty, isUwpApp: false, certSerialNumber: string.Empty, baseAppxDir: string.Empty, isPackaged: false, unpackagedExePath)
         {
         }
-
-        // Properties to set if InstallFromDirectory = true
-        public string TestAppProjectName { get; private set; }
 
         public TestApplicationInfo(string testAppPackageFamilyName, string testAppName, string testAppMainWindowTitle, bool isUwpApp, string testAppProjectName)
         {
