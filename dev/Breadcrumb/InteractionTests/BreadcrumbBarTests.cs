@@ -25,7 +25,6 @@ using System.Threading;
 using System.Collections.ObjectModel;
 using Microsoft.Windows.Apps.Test.Automation.Text;
 using System.Drawing;
-using Windows.UI.Xaml.Controls.Primitives;
 using System.Runtime.InteropServices;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests

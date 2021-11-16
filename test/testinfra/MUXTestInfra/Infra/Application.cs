@@ -59,18 +59,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         private readonly UICondition _appFrameWindowCondition = null;
 
         public Application(string packageFamilyName, string appName, string testAppMainWindowTitle, bool isUWPApp, string testAppProjectName)
-            : this(packageName: string.Empty, packageFamilyName, appName, testAppMainWindowTitle, testAppProcessName: string.Empty, testAppInstallerName: string.Empty, certSerialNumber: string.Empty, baseAppxDir: string.Empty, isUWPApp, testAppProjectName)
+            : this(packageName: string.Empty, packageFamilyName, appName, testAppMainWindowTitle, testAppProcessName: string.Empty, testAppInstallerName: string.Empty, certSerialNumber: string.Empty, baseAppxDir: string.Empty, isUWPApp, unpackagedExePath: string.Empty, isPackaged: true, testAppProjectName)
         {
             _installFromDirectory = true;
         }
 
         public Application(string packageName, string packageFamilyName, string appName, string testAppMainWindowTitle, string testAppProcessName, string testAppInstallerName, string certSerialNumber, string baseAppxDir, bool isUWPApp, string unpackagedExePath, bool isPackaged)
-            : this(packageName, packageFamilyName, appName, testAppMainWindowTitle, testAppProcessName, testAppInstallerName, certSerialNumber, baseAppxDir, isUWPApp, testAppProjectName: string.Empty)
+            : this(packageName, packageFamilyName, appName, testAppMainWindowTitle, testAppProcessName, testAppInstallerName, certSerialNumber, baseAppxDir, isUWPApp, unpackagedExePath, isPackaged, testAppProjectName: string.Empty)
         {
             _installFromDirectory = false;
         }
 
-        private Application(string packageName, string packageFamilyName, string appName, string testAppMainWindowTitle, string testAppProcessName, string testAppInstallerName, string certSerialNumber, string baseAppxDir, bool isUWPApp, string testAppProjectName)
+        private Application(string packageName, string packageFamilyName, string appName, string testAppMainWindowTitle, string testAppProcessName, string testAppInstallerName, string certSerialNumber, string baseAppxDir, bool isUWPApp, string unpackagedExePath, bool isPackaged, string testAppProjectName)
         {
             _packageName = packageName;
             _packageFamilyName = packageFamilyName;
