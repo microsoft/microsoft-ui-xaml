@@ -1,7 +1,7 @@
 # Migrating a UWP App To WinUI3
 
-**It is recommended to use the  [try-convert](https://github.com/dotnet/try-convert/blob/feature/winui) tool for the full conversion process.**
-**[try-convert](https://github.com/dotnet/try-convert/blob/feature/winui) will automate most of the conversion steps.**
+**It is recommended to use the [try-convert](https://github.com/dotnet/try-convert) tool for the full conversion process.**
+**try-convert will automate most of the conversion steps.**
 
 ## Background
 
