@@ -119,6 +119,11 @@ void TitleBar::OnCustomContentPropertyChanged(const winrt::DependencyPropertyCha
     UpdateHeight();
 }
 
+void TitleBar::OnTitlePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateTitle(args.NewValue().as<winrt::hstring>());
+}
+
 void TitleBar::OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
 {
     const auto titleTextBlock = m_titleTextBlock.get();
@@ -264,3 +269,16 @@ void TitleBar::UpdateTheme()
         }
     }
 }
+
+void TitleBar::UpdateTitle(const winrt::hstring& title)
+{
+    if (title.empty())
+    {
+        winrt::VisualStateManager::GoToState(*this, L"TitleTextCollapsed", false);
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, L"TitleTextVisible", false);
+    }
+}
+
