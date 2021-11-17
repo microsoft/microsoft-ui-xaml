@@ -36,7 +36,7 @@ private:
     void UpdateBackButton();
     void UpdateHeight();
     void UpdateTheme();
-    void UpdateTitle(const winrt::hstring& newValue);
+    void UpdateTitle();
 
     void OnWindowActivated(const winrt::IInspectable& sender, const winrt::WindowActivatedEventArgs& args);
     void OnTitleBarMetricsChanged(const winrt::IInspectable& sender, const winrt::IInspectable& args);

@@ -97,6 +97,7 @@ void TitleBar::OnApplyTemplate()
     UpdateIcon();
     UpdateBackButton();
     UpdateTheme();
+    UpdateTitle();
 }
 
 void TitleBar::OnBackButtonClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -121,7 +122,7 @@ void TitleBar::OnCustomContentPropertyChanged(const winrt::DependencyPropertyCha
 
 void TitleBar::OnTitlePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    UpdateTitle(args.NewValue().as<winrt::hstring>());
+    UpdateTitle();
 }
 
 void TitleBar::OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
@@ -270,9 +271,10 @@ void TitleBar::UpdateTheme()
     }
 }
 
-void TitleBar::UpdateTitle(const winrt::hstring& title)
+void TitleBar::UpdateTitle()
 {
-    if (title.empty())
+    const winrt::hstring titleText = Title();
+    if (titleText.empty())
     {
         winrt::VisualStateManager::GoToState(*this, L"TitleTextCollapsed", false);
     }
