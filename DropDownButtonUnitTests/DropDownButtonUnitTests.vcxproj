@@ -1,15 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
-    <RootNamespace>Microsoft.UI.Xaml</RootNamespace>
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
     <MinimalCoreWin>true</MinimalCoreWin>
-    <ProjectGuid>{c32152cc-0d23-44b6-bb3f-670f5e768617}</ProjectGuid>
-    <ProjectName>DropDownButtonUnitTestsApp</ProjectName>
-    <RootNamespace>DropDownButtonUnitTestsApp</RootNamespace>
+    <ProjectGuid>{c34a925e-6576-4e2c-b549-d86692197789}</ProjectGuid>
+    <ProjectName>DropDownButtonUnitTests</ProjectName>
+    <RootNamespace>DropDownButtonUnitTests</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <AppContainerApplication>true</AppContainerApplication>
@@ -17,15 +16,6 @@
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.20348.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.17134.0</WindowsTargetPlatformMinVersion>
-    <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
-    <CppWinRTAddXamlMetaDataProviderIdl>false</CppWinRTAddXamlMetaDataProviderIdl>
-    <!-- In release builds our "experimental" features are under feature velocity as AlwaysDisabled. C++/WinRT assumes that
-         AlwaysDisabled features should be excluded by default, but we need them included for our component implementation.
-         Use -ignore_velocity to have the feature attributes be ignored by the tool.
-         -->
-    <CppWinRTParameters>-ignore_velocity</CppWinRTParameters>
-    <CppWinRTOptimized>true</CppWinRTOptimized>
-    <CppWinRTHeapEnforcement>true</CppWinRTHeapEnforcement>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ItemGroup Label="ProjectConfigurations">
@@ -82,15 +72,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
-  <ItemGroup>
-    <Midl Include="..\..\..\..\idl\Microsoft.UI.Xaml.idl" />
-  </ItemGroup>
   <ImportGroup Label="Shared">
-    <Import Project="..\..\..\inc\Includes\Includes.vcxitems" Label="Shared" />
-    <Import Project="..\..\..\Telemetry\Telemetry.vcxitems" Label="Shared" />
-    <Import Project="..\..\..\Common\Common.vcxitems" Label="Shared" />
-    <Import Project="..\..\..\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" />
-    <Import Project="..\..\DropDownButton.vcxitems" Label="Shared" />
+    <Import Project="..\dev\inc\Includes\Includes.vcxitems" Label="Shared" />
+    <!-- <Import Project="..\..\DropDownButton.vcxitems" Label="Shared" /> -->
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -102,30 +86,13 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>
-        %(AdditionalIncludeDirectories);
-        $(MSBuildProjectDirectory)\..\inc;
-        $(MSBuildProjectDirectory)\..\Generated;
-        $(OutDir);
-        C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um;
-        C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared;
-        C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\winrt;
-      </AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>
-        $(MSBuildProjectDirectory);
-        $(MSBuildProjectDirectory)\..\dev\WebView2;
-        $(GeneratedFilesDir);
-        $(GeneratedFilesDir)\Automation\Peers;
-        $(GeneratedFilesDir)\Controls;
-        $(GeneratedFilesDir)\Controls\Primitives;
-        $(GeneratedFilesDir)\Media;
-        $(GeneratedFilesDir)\XamlTypeInfo;
-        $(GeneratedFilesDir)\Microsoft\UI\Composition\Effects;
-        $(GeneratedFilesDir)\Microsoft\UI\Private\Composition\Effects;
-        $(GeneratedFilesDir)\Microsoft\UI\Private\Controls;
-        $(GeneratedFilesDir)\Microsoft\UI\Private\Media;
-        %(AdditionalIncludeDirectories);
-      </AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level4</WarningLevel>
+      <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
+      <!--Temporarily disable cppwinrt heap enforcement to work around xaml compiler generated std::shared_ptr use -->
+      <AdditionalOptions Condition="'$(CppWinRTHeapEnforcement)'==''">/DWINRT_NO_MAKE_DETECTION %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;WINRT_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
@@ -146,6 +113,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="pch.h" />
     <ClInclude Include="App.h">
       <DependentUpon>App.xaml</DependentUpon>
     </ClInclude>
@@ -204,36 +172,13 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.targets'))" />
-  </Target>
-  <PropertyGroup>
-    <ProjectMergedIdl>$(IntermediateOutputPath)\Microsoft.UI.Xaml.idl</ProjectMergedIdl>
-  </PropertyGroup>
-  <!-- Merge all idl files into one -->
-  <Target Name="MergeIDLFiles" Inputs="@(Midl)" Outputs="$(ProjectMergedIdl)" BeforeTargets="CppWinRTSetMidlReferences;Midl">
-    <PropertyGroup>
-      <MidlLines>@(Midl->'#include &lt;%(FullPath)&gt;', '
-')</MidlLines>
-    </PropertyGroup>
-    <WriteLinesToFile File="$(ProjectMergedIdl)" Lines="$(MidlLines)" WriteOnlyWhenDifferent="true" Overwrite="true" />
-    <ItemGroup>
-      <OriginalMidl Include="@(Midl)" />
-      <Midl Remove="@(OriginalMidl)" />
-      <Midl Include="$(ProjectMergedIdl)" />
-    </ItemGroup>
-  </Target>
-  <Target Name="CreateReferenceWinmds" BeforeTargets="XamlMetadataCodeGenMUX">
-    <ItemGroup>
-      <T4ParameterValues Include="ReferenceWinmds">
-        <Value>@(_MidlReferencesDistinct)</Value>
-      </T4ParameterValues>
-    </ItemGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
 </Project>

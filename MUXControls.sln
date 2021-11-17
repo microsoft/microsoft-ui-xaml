@@ -683,6 +683,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Includes", "dev\inc\Include
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DropDownButtonUnitTestsApp", "dev\DropDownButton\DropDownButtonUnitTestsApp\DropDownButtonUnitTestsApp\DropDownButtonUnitTestsApp.vcxproj", "{C32152CC-0D23-44B6-BB3F-670F5E768617}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DropDownButtonUnitTests", "DropDownButtonUnitTests\DropDownButtonUnitTests.vcxproj", "{C34A925E-6576-4E2C-B549-D86692197789}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
@@ -883,9 +885,13 @@ Global
 		dev\ScrollView\InteractionTests\ScrollView_InteractionTests.projitems*{bfaad015-232d-5d2b-b28f-5ef717d3e648}*SharedItemsImports = 13
 		dev\PullToRefresh\RefreshVisualizer\APITests\RefreshVisualizer_APITests.projitems*{c0d77e37-d2d0-4e37-b6a1-8e6eae28945d}*SharedItemsImports = 13
 		dev\Breadcrumb\InteractionTests\Breadcrumb_InteractionTests.projitems*{c1477378-4a7a-43e5-8499-98a23544cc8a}*SharedItemsImports = 13
+		dev\Common\Common.vcxitems*{c32152cc-0d23-44b6-bb3f-670f5e768617}*SharedItemsImports = 4
 		dev\DropDownButton\DropDownButton.vcxitems*{c32152cc-0d23-44b6-bb3f-670f5e768617}*SharedItemsImports = 4
 		dev\inc\Includes\Includes.vcxitems*{c32152cc-0d23-44b6-bb3f-670f5e768617}*SharedItemsImports = 4
+		dev\ResourceHelper\ResourceHelper.vcxitems*{c32152cc-0d23-44b6-bb3f-670f5e768617}*SharedItemsImports = 4
+		dev\Telemetry\Telemetry.vcxitems*{c32152cc-0d23-44b6-bb3f-670f5e768617}*SharedItemsImports = 4
 		dev\Interactions\ButtonInteraction\InteractionTests\ButtonInteraction_InteractionTests.projitems*{c332ceaf-68b6-4980-b6f3-b15e350cdce0}*SharedItemsImports = 13
+		dev\inc\Includes\Includes.vcxitems*{c34a925e-6576-4e2c-b549-d86692197789}*SharedItemsImports = 4
 		dev\TeachingTip\InteractionTests\TeachingTip_InteractionTests.projitems*{c4421632-51bc-469d-bc49-f1cbd9269d49}*SharedItemsImports = 13
 		dev\ComboBox\APITests\ComboBox_APITests.projitems*{ca704a8c-2624-4630-89a0-d86cb1ee409a}*SharedItemsImports = 13
 		dev\PagerControl\APITests\PagerControl_APITests.projitems*{cb2352e2-d633-41a3-8cdc-b28731a4c490}*SharedItemsImports = 13
@@ -1477,6 +1483,42 @@ Global
 		{C32152CC-0D23-44B6-BB3F-670F5E768617}.Release|x86.ActiveCfg = Release|Win32
 		{C32152CC-0D23-44B6-BB3F-670F5E768617}.Release|x86.Build.0 = Release|Win32
 		{C32152CC-0D23-44B6-BB3F-670F5E768617}.Release|x86.Deploy.0 = Release|Win32
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug_test|ARM.ActiveCfg = Debug|ARM
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug_test|ARM.Build.0 = Debug|ARM
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug_test|ARM.Deploy.0 = Debug|ARM
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug_test|arm64.ActiveCfg = Debug|ARM64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug_test|arm64.Build.0 = Debug|ARM64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug_test|arm64.Deploy.0 = Debug|ARM64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug_test|x64.ActiveCfg = Debug|x64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug_test|x64.Build.0 = Debug|x64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug_test|x64.Deploy.0 = Debug|x64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug_test|x86.ActiveCfg = Debug|Win32
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug_test|x86.Build.0 = Debug|Win32
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug_test|x86.Deploy.0 = Debug|Win32
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug|ARM.ActiveCfg = Debug|ARM
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug|ARM.Build.0 = Debug|ARM
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug|ARM.Deploy.0 = Debug|ARM
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug|arm64.ActiveCfg = Debug|ARM64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug|arm64.Build.0 = Debug|ARM64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug|arm64.Deploy.0 = Debug|ARM64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug|x64.ActiveCfg = Debug|x64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug|x64.Build.0 = Debug|x64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug|x64.Deploy.0 = Debug|x64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug|x86.ActiveCfg = Debug|Win32
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug|x86.Build.0 = Debug|Win32
+		{C34A925E-6576-4E2C-B549-D86692197789}.Debug|x86.Deploy.0 = Debug|Win32
+		{C34A925E-6576-4E2C-B549-D86692197789}.Release|ARM.ActiveCfg = Release|ARM
+		{C34A925E-6576-4E2C-B549-D86692197789}.Release|ARM.Build.0 = Release|ARM
+		{C34A925E-6576-4E2C-B549-D86692197789}.Release|ARM.Deploy.0 = Release|ARM
+		{C34A925E-6576-4E2C-B549-D86692197789}.Release|arm64.ActiveCfg = Release|ARM64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Release|arm64.Build.0 = Release|ARM64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Release|arm64.Deploy.0 = Release|ARM64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Release|x64.ActiveCfg = Release|x64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Release|x64.Build.0 = Release|x64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Release|x64.Deploy.0 = Release|x64
+		{C34A925E-6576-4E2C-B549-D86692197789}.Release|x86.ActiveCfg = Release|Win32
+		{C34A925E-6576-4E2C-B549-D86692197789}.Release|x86.Build.0 = Release|Win32
+		{C34A925E-6576-4E2C-B549-D86692197789}.Release|x86.Deploy.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1756,6 +1798,7 @@ Global
 		{625AC827-5226-4429-9D52-85C0752CFCBD} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{E0A9A6FB-C4D7-4E8F-A19E-9CB3A1E75AC0} = {625AC827-5226-4429-9D52-85C0752CFCBD}
 		{C32152CC-0D23-44B6-BB3F-670F5E768617} = {784CE86A-DF28-46A5-8D4F-FBBFC363FE8F}
+		{C34A925E-6576-4E2C-B549-D86692197789} = {784CE86A-DF28-46A5-8D4F-FBBFC363FE8F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}

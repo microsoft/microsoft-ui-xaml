@@ -3,9 +3,9 @@
 #include "MainPage.g.cpp"
 
 using namespace winrt;
-//using namespace Windows::UI::Xaml;
+using namespace Windows::UI::Xaml;
 
-namespace winrt::DropDownButtonUnitTestsApp::implementation
+namespace winrt::DropDownButtonUnitTests::implementation
 {
     MainPage::MainPage()
     {
