@@ -1,3 +1,8 @@
-namespace DropDownButtonUnitTestsApp
+﻿namespace DropDownButtonUnitTestsApp
 {
+    [default_interface]
+    runtimeclass XamlMetaDataProvider : Windows.UI.Xaml.Markup.IXamlMetadataProvider
+    {
+        XamlMetaDataProvider();
+    };
 }

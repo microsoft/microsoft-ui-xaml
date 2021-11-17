@@ -88,7 +88,7 @@
   <ImportGroup Label="Shared">
     <Import Project="..\..\..\inc\Includes\Includes.vcxitems" Label="Shared" />
     <Import Project="..\..\..\Telemetry\Telemetry.vcxitems" Label="Shared" />
-    <Import Project="..\..\..\Common\Common.vcxitems" Label="Shared" />
+    <!-- <Import Project="..\..\..\Common\Common.vcxitems" Label="Shared" /> -->
     <Import Project="..\..\..\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" />
     <Import Project="..\..\DropDownButton.vcxitems" Label="Shared" />
   </ImportGroup>
@@ -124,6 +124,9 @@
         $(GeneratedFilesDir)\Microsoft\UI\Private\Composition\Effects;
         $(GeneratedFilesDir)\Microsoft\UI\Private\Controls;
         $(GeneratedFilesDir)\Microsoft\UI\Private\Media;
+        D:\microsoft-ui-xaml\BuildOutput\Intermediates\Win32\DropDownButtonUnitTestsApp\obj\Generated Files\Microsoft\UI\Xaml\XamlTypeInfo;
+        D:\microsoft-ui-xaml\BuildOutput\Intermediates\Win32\DropDownButtonUnitTestsApp\obj\Generated Files\Microsoft\UI\Xaml\Controls;
+        D:\microsoft-ui-xaml\BuildOutput\Intermediates\Win32\DropDownButtonUnitTestsApp\obj\Generated Files\Microsoft\UI\Xaml\Automation\Peers;
         %(AdditionalIncludeDirectories);
       </AdditionalIncludeDirectories>
     </ClCompile>
@@ -185,7 +188,7 @@
     <ClCompile Include="MainPage.cpp">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </ClCompile>
-    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="..\..\..\..\BuildOutput\Intermediates\Win32\DropDownButtonUnitTestsApp\obj\Generated Files\module.g.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl">

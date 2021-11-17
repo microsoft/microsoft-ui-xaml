@@ -69,11 +69,15 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)SharedHelpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)targetver.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)tracker_ref.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)WinEventLogLevels.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)version.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)MUXControlsFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)XamlMetadataProvider.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)XamlType.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)XamlMember.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SharedHelpers.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)dllmain.cpp" />
   </ItemGroup>
 </Project>
