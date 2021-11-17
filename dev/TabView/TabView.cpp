@@ -282,7 +282,11 @@ void TabView::UpdateTabBorderVisualStates()
     for (int i = 0; i < numItems; i++)
     {
         auto state = L"NormalBorder";
-        if (!m_isDragging && selectedIndex != -1)
+        if (m_isDragging)
+        {
+            state = L"NoBorder";
+        }
+        else if (selectedIndex != -1)
         {
             if (i == selectedIndex - 1)
             {
@@ -299,7 +303,27 @@ void TabView::UpdateTabBorderVisualStates()
             winrt::VisualStateManager::GoToState(tvi, state, false /*useTransitions*/);
         }
     }
+}
 
+void TabView::UpdateBorderVisualStates()
+{
+    // Update border line on all tabs
+    UpdateTabBorderVisualStates();
+
+    // Update border lines on the TabView
+    winrt::VisualStateManager::GoToState(*this, m_isDragging ? L"SingleBorder" : L"NormalBorder", false /*useTransitions*/);
+
+    // Update border lines in the inner TabViewListView
+    if (const auto lv = m_listView.get())
+    {
+        winrt::VisualStateManager::GoToState(lv, m_isDragging ? L"NoBorder" : L"NormalBorder", false /*useTransitions*/);
+    }
+
+    // Update border lines in the ScrollViewer
+    if (const auto scroller = m_scrollViewer.get())
+    {
+        winrt::VisualStateManager::GoToState(scroller, m_isDragging ? L"NoBorder" : L"NormalBorder", false /*useTransitions*/);
+    }
 }
 
 void TabView::OnSelectedItemPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -791,7 +815,7 @@ void TabView::OnListViewDragItemsStarting(const winrt::IInspectable& sender, con
 
     m_tabDragStartingEventSource(*this, *myArgs);
 
-    UpdateTabBorderVisualStates();
+    UpdateBorderVisualStates();
 }
 
 void TabView::OnListViewDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
@@ -821,7 +845,7 @@ void TabView::OnListViewDragItemsCompleted(const winrt::IInspectable& sender, co
         m_tabDroppedOutsideEventSource(*this, *tabDroppedArgs);
     }
 
-    UpdateTabBorderVisualStates();
+    UpdateBorderVisualStates();
 }
 
 void TabView::UpdateTabContent()
