@@ -678,7 +678,7 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
             collapsedWidth = static_cast<float>(expandedWidth);
         }
 
-        flyoutTemplateSettings->WidthExpansionDelta(0);
+        flyoutTemplateSettings->WidthExpansionDelta(collapsedWidth - expandedWidth);
         flyoutTemplateSettings->WidthExpansionAnimationStartPosition(-flyoutTemplateSettings->WidthExpansionDelta() / 2.0);
         flyoutTemplateSettings->WidthExpansionAnimationEndPosition(-flyoutTemplateSettings->WidthExpansionDelta());
         flyoutTemplateSettings->ContentClipRect({ 0, 0, static_cast<float>(expandedWidth), primaryItemsRootDesiredSize.Height });
