@@ -164,8 +164,8 @@ private:
 
     int GetItemCount();
 
-    void UpdateBorderVisualStates();
-    void UpdateTabBorderVisualStates();
+    void UpdateBottomBorderLineVisualStates();
+    void UpdateTabBottomBorderLineVisualStates();
 
     winrt::TabViewItem FindTabViewItemFromDragItem(const winrt::IInspectable& item);
 

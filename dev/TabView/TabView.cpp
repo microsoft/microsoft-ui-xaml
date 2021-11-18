@@ -271,20 +271,20 @@ void TabView::OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChan
     SetTabSeparatorOpacity(SelectedIndex() - 1);
     SetTabSeparatorOpacity(SelectedIndex());
 
-    UpdateTabBorderVisualStates();
+    UpdateTabBottomBorderLineVisualStates();
 }
 
-void TabView::UpdateTabBorderVisualStates()
+void TabView::UpdateTabBottomBorderLineVisualStates()
 {
     const int numItems = static_cast<int>(TabItems().Size());
     const int selectedIndex = SelectedIndex();
 
     for (int i = 0; i < numItems; i++)
     {
-        auto state = L"NormalBorder";
+        auto state = L"NormalBottomBorderLine";
         if (m_isDragging)
         {
-            state = L"NoBorder";
+            state = L"NoBottomBorderLine";
         }
         else if (selectedIndex != -1)
         {
@@ -305,24 +305,24 @@ void TabView::UpdateTabBorderVisualStates()
     }
 }
 
-void TabView::UpdateBorderVisualStates()
+void TabView::UpdateBottomBorderLineVisualStates()
 {
     // Update border line on all tabs
-    UpdateTabBorderVisualStates();
+    UpdateTabBottomBorderLineVisualStates();
 
     // Update border lines on the TabView
-    winrt::VisualStateManager::GoToState(*this, m_isDragging ? L"SingleBorder" : L"NormalBorder", false /*useTransitions*/);
+    winrt::VisualStateManager::GoToState(*this, m_isDragging ? L"SingleBottomBorderLine" : L"NormalBottomBorderLine", false /*useTransitions*/);
 
     // Update border lines in the inner TabViewListView
     if (const auto lv = m_listView.get())
     {
-        winrt::VisualStateManager::GoToState(lv, m_isDragging ? L"NoBorder" : L"NormalBorder", false /*useTransitions*/);
+        winrt::VisualStateManager::GoToState(lv, m_isDragging ? L"NoBottomBorderLine" : L"NormalBottomBorderLine", false /*useTransitions*/);
     }
 
     // Update border lines in the ScrollViewer
     if (const auto scroller = m_scrollViewer.get())
     {
-        winrt::VisualStateManager::GoToState(scroller, m_isDragging ? L"NoBorder" : L"NormalBorder", false /*useTransitions*/);
+        winrt::VisualStateManager::GoToState(scroller, m_isDragging ? L"NoBottomBorderLine" : L"NormalBottomBorderLine", false /*useTransitions*/);
     }
 }
 
@@ -561,7 +561,7 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
         }
     }
 
-    UpdateTabBorderVisualStates();
+    UpdateTabBottomBorderLineVisualStates();
 }
 
 void TabView::OnTabStripPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
@@ -757,7 +757,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
         }
     }
 
-    UpdateTabBorderVisualStates();
+    UpdateTabBottomBorderLineVisualStates();
 }
 
 void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
@@ -815,7 +815,7 @@ void TabView::OnListViewDragItemsStarting(const winrt::IInspectable& sender, con
 
     m_tabDragStartingEventSource(*this, *myArgs);
 
-    UpdateBorderVisualStates();
+    UpdateBottomBorderLineVisualStates();
 }
 
 void TabView::OnListViewDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
@@ -845,7 +845,7 @@ void TabView::OnListViewDragItemsCompleted(const winrt::IInspectable& sender, co
         m_tabDroppedOutsideEventSource(*this, *tabDroppedArgs);
     }
 
-    UpdateBorderVisualStates();
+    UpdateBottomBorderLineVisualStates();
 }
 
 void TabView::UpdateTabContent()
