@@ -91,7 +91,7 @@ namespace Microsoft.UI.Xaml.Controls
       // Existing ...
 
     //Sets the caching behavior of the AnimatedVisualPlayer
-    Microsoft.UI.Xaml.UIElement.CacheMode AnimationsCacheMode CacheMode;
+    AnimationsCacheMode CacheMode;
   }
 }
 ```
