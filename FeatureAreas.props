@@ -21,6 +21,8 @@
     <FeatureMaterialsEnabled>productOnly</FeatureMaterialsEnabled>
     <FeatureResourceHelperEnabled>productOnly</FeatureResourceHelperEnabled>
     <FeatureSplitButtonEnabled>productOnly</FeatureSplitButtonEnabled>
+    <FeatureImageIconEnabled>productOnly</FeatureImageIconEnabled>
+    <FeatureMonochromaticOverlayPresenterEnabled>productOnly</FeatureMonochromaticOverlayPresenterEnabled>
   </PropertyGroup>
   <!-- Import this after inner loop features are declared so that it overrides those properties -->
   <Import Project="InnerLoopAreas.props" Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop'" />

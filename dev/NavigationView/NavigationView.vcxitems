@@ -73,6 +73,8 @@
     <Midl Include="$(MSBuildThisFileDirectory)NavigationViewItemAutomationPeer.idl" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Deprecated_themeresources.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)Deprecated_themeresources_any.xaml" />
     <Page Include="$(MSBuildThisFileDirectory)NavigationView.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>

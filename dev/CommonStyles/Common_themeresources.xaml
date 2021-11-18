@@ -55,9 +55,4 @@
     <Thickness x:Key="DateTimeFlyoutBorderPadding">0</Thickness>
 
     <x:Boolean x:Key="ThemeShadowIsUsingDropShadows">True</x:Boolean>
-
-    
-    <controls:TextCommandBarFlyout x:Key="TextControlCommandBarContextFlyout" Placement="BottomEdgeAlignedLeft" />
-    <controls:TextCommandBarFlyout x:Key="TextControlCommandBarSelectionFlyout" Placement="TopEdgeAlignedLeft" />
-    
 </ResourceDictionary>
