@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
@@ -22,6 +23,8 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Common;
+using Windows.System.Threading;
+using MUXControlsTestApp.Utilities;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -119,6 +122,105 @@ namespace MUXControlsTestApp
         } = new List<Tuple<ApplicationHighContrastAdjustment, string>> {
             new Tuple<ApplicationHighContrastAdjustment, string>(ApplicationHighContrastAdjustment.None, "None (high-contrast aware)"),
             new Tuple<ApplicationHighContrastAdjustment, string>(ApplicationHighContrastAdjustment.Auto, "Auto (unaware)") };
+
+        public class ApiTestCase
+        {
+            public string DisplayName { get; set; }
+
+            private readonly object testClassInstance;
+
+            private readonly MethodInfo testInitializeMethod;
+            private readonly MethodInfo testCaseMethod;
+            private readonly MethodInfo testCleanupMethod;
+
+            public ApiTestCase(string displayName, object testClassInstance, MethodInfo testInitializeMethod, MethodInfo testCaseMethod, MethodInfo testCleanupMethod)
+            {
+                DisplayName = displayName;
+                this.testClassInstance = testClassInstance;
+                this.testInitializeMethod = testInitializeMethod;
+                this.testCaseMethod = testCaseMethod;
+                this.testCleanupMethod = testCleanupMethod;
+            }
+
+            public async void RunTestCase()
+            {
+                await ThreadPool.RunAsync(new WorkItemHandler(action =>
+                {
+                    if (testInitializeMethod != null)
+                    {
+                        RunAndCatchExceptions(() => testInitializeMethod.Invoke(testClassInstance, new object[0]));
+                    }
+
+                    RunAndCatchExceptions(() => testCaseMethod.Invoke(testClassInstance, new object[0]));
+
+                    if (testCleanupMethod != null)
+                    {
+                        RunAndCatchExceptions(() => testCleanupMethod.Invoke(testClassInstance, new object[0]));
+                    }
+                }));
+            }
+
+            public void RunAndCatchExceptions(Action a)
+            {
+                try
+                {
+                    a.Invoke();
+                }
+                catch (TargetInvocationException e)
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        ((TestFrame)Window.Current.Content).RaiseUnhandledException(e.InnerException.Message);
+                    });
+                }
+                catch (Exception e)
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        ((TestFrame)Window.Current.Content).RaiseUnhandledException(e.Message);
+                    });
+                }
+            }
+
+            public override string ToString()
+            {
+                return DisplayName;
+            }
+        }
+
+        public static List<ApiTestCase> apiTestCases;
+
+        public List<ApiTestCase> ApiTestCases
+        {
+            get
+            {
+                if (apiTestCases == null)
+                {
+                    apiTestCases = new List<ApiTestCase>();
+
+                    foreach (Type type in Assembly.Load(new AssemblyName("MUXControlsTestApp")).GetTypes().Where(t => t.GetTypeInfo().GetCustomAttributes<TestClassAttribute>().Count() > 0 && t.GetConstructor(new Type[0]) != null))
+                    {
+                        MethodInfo[] publicInstanceMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
+                        MethodInfo testInitializeMethod = publicInstanceMethods.Where(m => m.GetCustomAttributes<TestInitializeAttribute>().Count() > 0).SingleOrDefault();
+                        MethodInfo testCleanupMethod = publicInstanceMethods.Where(m => m.GetCustomAttributes<TestCleanupAttribute>().Count() > 0).SingleOrDefault();
+
+                        foreach (MethodInfo testCaseMethod in publicInstanceMethods.Where(m => m.GetCustomAttributes<TestMethodAttribute>().Count() > 0))
+                        {
+                            apiTestCases.Add(new ApiTestCase(
+                                $"{type.Name}_{testCaseMethod.Name}",
+                                type.GetConstructor(new Type[0]).Invoke(new object[0]),
+                                testInitializeMethod,
+                                testCaseMethod,
+                                testCleanupMethod));
+                        }
+                    }
+
+                    apiTestCases.Sort(new Comparison<ApiTestCase>((testCase1, testCase2) => testCase1.DisplayName.CompareTo(testCase2.DisplayName)));
+                }
+
+                return apiTestCases;
+            }
+        }
 
         public MainPage()
         {
@@ -254,6 +356,14 @@ namespace MUXControlsTestApp
         private FlowDirection GetRootFlowDirection()
         {
             return (Window.Current.Content as FrameworkElement)?.FlowDirection ?? FlowDirection.LeftToRight;
+        }
+
+        private void RunApiTestCaseButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ApiTestCaseChooser.SelectedItem is ApiTestCase selectedTestCase)
+            {
+                selectedTestCase.RunTestCase();
+            }
         }
     }
 }

@@ -276,14 +276,20 @@ namespace MUXControlsTestApp
             // Ensure the current window is active
             Window.Current.Activate();
 
+            // By default Verify throws exception on errors and exceptions cause TAEF API tests to fail in non-graceful ways
+            // (we get the test failure and then TE keeps trying to talk to the crashing process so we get "TE session timed out" errors too).
+            // Just disable exceptions.
+            Verify.DisableVerifyFailureExceptions = true;
+
             // If there are multiple arguments we assume we're being launched as a TAEF AppX test, so start up the TAEF dispatcher.
             if (e.Arguments.Length > 0)
             {
-                // By default Verify throws exception on errors and exceptions cause TAEF AppX tests to fail in non-graceful ways
-                // (we get the test failure and then TE keeps trying to talk to the crashing process so we get "TE session timed out" errors too).
-                // Just disable exceptions in this scenario.
-                Verify.DisableVerifyFailureExceptions = true;
                 Microsoft.VisualStudio.TestPlatform.TestExecutor.UnitTestClient.Run(e.Arguments);
+            }
+            else
+            {
+
+                LogController.InitializeLogging();
             }
         }
 
