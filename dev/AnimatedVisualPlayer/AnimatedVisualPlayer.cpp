@@ -638,8 +638,8 @@ winrt::IAsyncAction AnimatedVisualPlayer::PlayAsync(double fromProgress, double 
         co_return;
     }
 
-    // Make sure that animations are instantiated.
-    InstantiateAnimations();
+    // Make sure that animations are created.
+    CreateAnimations();
 
     // Used to detect reentrance.
     const auto version = ++m_playAsyncVersion;
@@ -731,8 +731,8 @@ void AnimatedVisualPlayer::SetProgress(double progress)
         return;
     }
 
-    // Make sure that animations are instantiated.
-    InstantiateAnimations();
+    // Make sure that animations are created.
+    CreateAnimations();
 
     auto clampedProgress = std::clamp(static_cast<float>(progress), 0.0F, 1.0F);
 
@@ -795,7 +795,7 @@ void AnimatedVisualPlayer::OnAnimationsCacheModePropertyChanged(
 
     if (m_nowPlaying)
     {
-        // If there is something in play right now we should not instantiate/destroy animations.
+        // If there is something in play right now we should not create/destroy animations.
         return;
     }
 
@@ -805,22 +805,22 @@ void AnimatedVisualPlayer::OnAnimationsCacheModePropertyChanged(
     }
     else if (cacheMode == winrt::AnimationsCacheModeEnum::Always)
     {
-        InstantiateAnimations();
+        CreateAnimations();
     }
 }
 
-void AnimatedVisualPlayer::InstantiateAnimations() {
+void AnimatedVisualPlayer::CreateAnimations() {
     if (m_isAnimationsCached) 
     {
         return;
     }
 
-    // Check if current animated visual supports instantiating animations and create them.
+    // Check if current animated visual supports creating animations and create them.
     if (const auto& animatedVisual = m_animatedVisual.get())
     {
         if (const auto& animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>())
         {
-            animatedVisual2.InstantiateAnimations(m_lastPlayProgress);
+            animatedVisual2.CreateAnimations(m_lastPlayProgress);
             m_isAnimationsCached = true;
         }
     }
@@ -939,16 +939,24 @@ void AnimatedVisualPlayer::UpdateContent()
 
     winrt::IInspectable diagnostics{};
     winrt::IAnimatedVisual animatedVisual;
+
+    const bool createAnimations = AnimationsCacheMode() == winrt::AnimationsCacheModeEnum::Always;
+
     if (auto source3 = source.try_as<winrt::IAnimatedVisualSource3>())
     {
-        const bool instantiateAnimations = AnimationsCacheMode() == winrt::AnimationsCacheModeEnum::Always;
-        animatedVisual = source3.TryCreateAnimatedVisual(m_rootVisual.Compositor(), instantiateAnimations, diagnostics);
-		m_isAnimationsCached = instantiateAnimations;
+        animatedVisual = source3.TryCreateAnimatedVisual(m_rootVisual.Compositor(), diagnostics, createAnimations);
+		m_isAnimationsCached = createAnimations;
     }
     else
     {
         animatedVisual = source.TryCreateAnimatedVisual(m_rootVisual.Compositor(), diagnostics);
 		m_isAnimationsCached = true;
+
+        // Destroy animations if we don't need them.
+        // Old IAnimatedVisualSource interface always creates them.
+        if (!createAnimations) {
+            DestroyAnimations();
+        }
     }
     m_animatedVisual.set(animatedVisual);
 

@@ -15,7 +15,7 @@ interface IAnimatedVisual
 [webhosthidden]
 interface IAnimatedVisual2 requires IAnimatedVisual
 {
-    void InstantiateAnimations(Double progressHint);
+    void CreateAnimations(Double progressHint);
     void DestroyAnimations();
 };
 
@@ -42,8 +42,8 @@ interface IAnimatedVisualSource3
 {
     IAnimatedVisual2 TryCreateAnimatedVisual(
         Windows.UI.Composition.Compositor compositor,
-        Boolean instantiateAnimations,
-        out Object diagnostics);
+        out Object diagnostics,
+        Boolean createAnimations);
 };
 
 [MUX_INTERNAL]

@@ -106,7 +106,7 @@ private:
     void OnHiding();
     void OnUnhiding();
 
-    void InstantiateAnimations();
+    void CreateAnimations();
     void DestroyAnimations();
 
     //
