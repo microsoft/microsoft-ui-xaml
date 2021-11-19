@@ -125,17 +125,14 @@ namespace MUXControlsTestApp
 
         public class ApiTestCase
         {
-            public string DisplayName { get; set; }
-
             private readonly object testClassInstance;
 
             private readonly MethodInfo testInitializeMethod;
             private readonly MethodInfo testCaseMethod;
             private readonly MethodInfo testCleanupMethod;
 
-            public ApiTestCase(string displayName, object testClassInstance, MethodInfo testInitializeMethod, MethodInfo testCaseMethod, MethodInfo testCleanupMethod)
+            public ApiTestCase(object testClassInstance, MethodInfo testInitializeMethod, MethodInfo testCaseMethod, MethodInfo testCleanupMethod)
             {
-                DisplayName = displayName;
                 this.testClassInstance = testClassInstance;
                 this.testInitializeMethod = testInitializeMethod;
                 this.testCaseMethod = testCaseMethod;
@@ -148,43 +145,21 @@ namespace MUXControlsTestApp
                 {
                     if (testInitializeMethod != null)
                     {
-                        RunAndCatchExceptions(() => testInitializeMethod.Invoke(testClassInstance, new object[0]));
+                        testInitializeMethod.Invoke(testClassInstance, new object[0]);
                     }
 
-                    RunAndCatchExceptions(() => testCaseMethod.Invoke(testClassInstance, new object[0]));
+                    testCaseMethod.Invoke(testClassInstance, new object[0]);
 
                     if (testCleanupMethod != null)
                     {
-                        RunAndCatchExceptions(() => testCleanupMethod.Invoke(testClassInstance, new object[0]));
+                        testCleanupMethod.Invoke(testClassInstance, new object[0]);
                     }
                 }));
             }
 
-            public void RunAndCatchExceptions(Action a)
-            {
-                try
-                {
-                    a.Invoke();
-                }
-                catch (TargetInvocationException e)
-                {
-                    RunOnUIThread.Execute(() =>
-                    {
-                        ((TestFrame)Window.Current.Content).RaiseUnhandledException(e.InnerException.Message);
-                    });
-                }
-                catch (Exception e)
-                {
-                    RunOnUIThread.Execute(() =>
-                    {
-                        ((TestFrame)Window.Current.Content).RaiseUnhandledException(e.Message);
-                    });
-                }
-            }
-
             public override string ToString()
             {
-                return DisplayName;
+                return $"{testClassInstance.GetType().Name}_{testCaseMethod.Name}";
             }
         }
 
@@ -207,7 +182,6 @@ namespace MUXControlsTestApp
                         foreach (MethodInfo testCaseMethod in publicInstanceMethods.Where(m => m.GetCustomAttributes<TestMethodAttribute>().Count() > 0))
                         {
                             apiTestCases.Add(new ApiTestCase(
-                                $"{type.Name}_{testCaseMethod.Name}",
                                 type.GetConstructor(new Type[0]).Invoke(new object[0]),
                                 testInitializeMethod,
                                 testCaseMethod,

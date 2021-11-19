@@ -462,9 +462,7 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MUXControlsTestApp.Shared",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MUXControls.Test.TAEF", "test\MUXControls.Test\TAEF\MUXControls.Test.TAEF.csproj", "{4D8C5D1B-F982-44A1-B744-DD0E51651BF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IXMPTestApp", "test\IXMPTestApp\MSTest\IXMPTestApp.csproj", "{FCC396F5-26DD-4CA3-981E-C7BC9FEA4546}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IXMPTestApp.TAEF", "test\IXMPTestApp\TAEF\IXMPTestApp.TAEF.csproj", "{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IXMPTestApp.TAEF", "test\IXMPTestApp\TAEF\IXMPTestApp.TAEF.csproj", "{FCC396F5-26DD-4CA3-981E-C7BC9FEA4546}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TeachingTip", "TeachingTip", "{4873DE1A-27B5-47ED-9EDC-69727FD2095C}"
 EndProject
@@ -754,7 +752,6 @@ Global
 		dev\Breadcrumb\TestUI\Breadcrumb_TestUI.projitems*{657121b7-3e4f-4c76-abe2-0221a7997929}*SharedItemsImports = 13
 		test\MUXControlsTestApp\MUXControlsTestApp.Shared.projitems*{6aa772a6-cbf7-4ff3-8864-bc9366015dc2}*SharedItemsImports = 13
 		dev\RadialGradientBrush\InteractionTests\RadialGradientBrush_InteractionTests.projitems*{74d18b1b-5f6b-4534-945b-131e8e3206fb}*SharedItemsImports = 13
-		dev\CommonManaged\CommonManaged.projitems*{74f24bc4-794d-4cb2-8420-80ff7fdacfe9}*SharedItemsImports = 4
 		dev\ScrollView\ScrollView.vcxitems*{755f5da9-087c-55a0-98d2-b884881c3ed0}*SharedItemsImports = 9
 		dev\NumberBox\InteractionTests\NumberBox_InteractionTests.projitems*{773f7592-e7b3-42fc-a14a-e815afd6a0cb}*SharedItemsImports = 13
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\InteractionTests\ScrollViewerAdapter_InteractionTests.projitems*{79863454-1dbf-45bb-b3d3-420b8f5e8705}*SharedItemsImports = 13
@@ -1165,30 +1162,6 @@ Global
 		{FCC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Release|x86.ActiveCfg = Release|x86
 		{FCC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Release|x86.Build.0 = Release|x86
 		{FCC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Release|x86.Deploy.0 = Release|x86
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug_test|ARM.ActiveCfg = Debug_test|ARM
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug_test|arm64.ActiveCfg = Debug_test|arm64
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug_test|x64.ActiveCfg = Debug_test|x64
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug_test|x64.Build.0 = Debug_test|x64
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug_test|x64.Deploy.0 = Debug_test|x64
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug_test|x86.ActiveCfg = Debug_test|x86
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug_test|x86.Build.0 = Debug_test|x86
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug_test|x86.Deploy.0 = Debug_test|x86
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug|ARM.ActiveCfg = Debug|ARM
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug|arm64.ActiveCfg = Debug|arm64
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug|x64.ActiveCfg = Debug|x64
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug|x64.Build.0 = Debug|x64
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug|x64.Deploy.0 = Debug|x64
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug|x86.ActiveCfg = Debug|x86
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug|x86.Build.0 = Debug|x86
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug|x86.Deploy.0 = Debug|x86
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Release|ARM.ActiveCfg = Release|ARM
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Release|arm64.ActiveCfg = Release|arm64
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Release|x64.ActiveCfg = Release|x64
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Release|x64.Build.0 = Release|x64
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Release|x64.Deploy.0 = Release|x64
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Release|x86.ActiveCfg = Release|x86
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Release|x86.Build.0 = Release|x86
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Release|x86.Deploy.0 = Release|x86
 		{9638BF0D-2AA8-4642-A9F1-790BF7FBECF2}.Debug_test|ARM.ActiveCfg = Debug_test|Any CPU
 		{9638BF0D-2AA8-4642-A9F1-790BF7FBECF2}.Debug_test|ARM.Build.0 = Debug_test|Any CPU
 		{9638BF0D-2AA8-4642-A9F1-790BF7FBECF2}.Debug_test|arm64.ActiveCfg = Debug_test|Any CPU
@@ -1434,7 +1407,6 @@ Global
 		{6AA772A6-CBF7-4FF3-8864-BC9366015DC2} = {666B53C4-A747-4538-AA51-8FF9DEE1BF60}
 		{4D8C5D1B-F982-44A1-B744-DD0E51651BF2} = {85F9040A-109D-42FF-9BE3-4CF4181DDEF1}
 		{FCC396F5-26DD-4CA3-981E-C7BC9FEA4546} = {C9B1268D-8639-424F-8AEC-EF4EC5459184}
-		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9} = {C9B1268D-8639-424F-8AEC-EF4EC5459184}
 		{4873DE1A-27B5-47ED-9EDC-69727FD2095C} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{499B8BF7-BCA1-4C23-BAA7-59E2C551BE4B} = {4873DE1A-27B5-47ED-9EDC-69727FD2095C}
 		{18F1DB69-7457-461C-9D19-7F42BFFC0803} = {4873DE1A-27B5-47ED-9EDC-69727FD2095C}

@@ -26,7 +26,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1018-prerelease" />
     <PackageReference Include="MUXCustomBuildTasks" Version="1.0.71" />
-    <PackageReference Include="Microsoft.Taef" Version="10.58.210305002" />
+    <PackageReference Include="Microsoft.Taef" Version="10.65.211117001" />
     <PackageReference Include="Win2D.uwp" Version="1.22.0" />
   </ItemGroup>
   <Import Project="..\MUXControlsTestApp.Shared.projitems" />
