@@ -926,6 +926,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var increaseScrollButton = FindElement.ByName<Button>("IncreaseScrollButton");
                 increaseScrollButton.Click();
                 Wait.ForIdle();
+                increaseScrollButton.Click();
+                Wait.ForIdle();
                 var readTabViewWidthButton = new Button(FindElement.ByName("GetActualWidthButton"));
                 readTabViewWidthButton.Click();
                 Wait.ForIdle();

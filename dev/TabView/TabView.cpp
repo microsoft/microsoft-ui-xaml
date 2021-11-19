@@ -990,15 +990,30 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths, bool fillAllAvailableSpac
 
                     // If we should fill all of the available space, use scrollviewer dimensions
                     auto const padding = Padding();
+
+                    double headerWidth = 0.0;
+                    double footerWidth = 0.0;
+                    if (auto&& itemsPresenter = m_itemsPresenter.get())
+                    {
+                        if (auto const header = itemsPresenter.Header().try_as<winrt::FrameworkElement>())
+                        {
+                            headerWidth = header.ActualWidth();
+                        }
+                        if (auto const footer = itemsPresenter.Footer().try_as<winrt::FrameworkElement>())
+                        {
+                            footerWidth = footer.ActualWidth();
+                        }
+                    }
+
                     if (fillAllAvailableSpace)
                     {
                         // Calculate the proportional width of each tab given the width of the ScrollViewer.
-                        auto const tabWidthForScroller = (availableWidth - (padding.Left + padding.Right)) / (double)(TabItems().Size());
+                        auto const tabWidthForScroller = (availableWidth - (padding.Left + padding.Right + headerWidth + footerWidth)) / (double)(TabItems().Size());
                         tabWidth = std::clamp(tabWidthForScroller, minTabWidth, maxTabWidth);
                     }
                     else
                     {
-                        double availableTabViewSpace = (tabColumn.ActualWidth() - (padding.Left + padding.Right));
+                        double availableTabViewSpace = (tabColumn.ActualWidth() - (padding.Left + padding.Right + headerWidth + footerWidth));
                         if (const auto increaseButton = m_scrollIncreaseButton.get())
                         {
                             if (increaseButton.Visibility() == winrt::Visibility::Visible)
@@ -1022,8 +1037,8 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths, bool fillAllAvailableSpac
 
 
                     // Size tab column to needed size
-                    tabColumn.MaxWidth(availableWidth);
-                    auto requiredWidth = tabWidth * TabItems().Size();
+                    tabColumn.MaxWidth(availableWidth + headerWidth + footerWidth);
+                    auto requiredWidth = tabWidth * TabItems().Size() + headerWidth + footerWidth;
                     if (requiredWidth > availableWidth - (padding.Left + padding.Right))
                     {
                         tabColumn.Width(winrt::GridLengthHelper::FromPixels(availableWidth));
