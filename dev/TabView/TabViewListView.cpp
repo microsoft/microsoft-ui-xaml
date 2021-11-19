@@ -25,12 +25,12 @@ void TabViewListView::OnSelectedIndexPropertyChanged(const winrt::DependencyObje
 {
     winrt::VisualStateManager::GoToState(
         *this,
-        (SelectedIndex() == 0) ? L"LeftBorderShort" : L"LeftBorderNormal",
+        (SelectedIndex() == 0) ? L"LeftBottomBorderLineShort" : L"LeftBottomBorderLineNormal",
         false /*useTransitions*/);
 
     winrt::VisualStateManager::GoToState(
         *this,
-        (SelectedIndex() == (int)(Items().Size() - 1)) ? L"RightBorderShort" : L"RightBorderNormal",
+        (SelectedIndex() == (int)(Items().Size() - 1)) ? L"RightBottomBorderLineShort" : L"RightBottomBorderLineNormal",
         false /*useTransitions*/);
 }
 
