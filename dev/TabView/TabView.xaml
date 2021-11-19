@@ -26,6 +26,18 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup>
+                                <VisualState x:Name="NormalBottomBorderLine"/>
+                                <VisualState x:Name="SingleBottomBorderLine">
+                                    <VisualState.Setters>
+                                        <Setter Target="LeftBottomBorderLine.(Grid.ColumnSpan)" Value="4"/>
+                                        <Setter Target="RightBottomBorderLine.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
                         <Grid x:Name="TabContainerGrid"
                                 Background="{TemplateBinding Background}"
                                 XYFocusKeyboardNavigation="Enabled">
@@ -37,7 +49,9 @@
                                 <ColumnDefinition Width="*" x:Name="RightContentColumn"/>
                             </Grid.ColumnDefinitions>
 
-                            <Border BorderBrush="{ThemeResource TabViewBorderBrush}" BorderThickness="1" Height="1" Grid.ColumnSpan="4" VerticalAlignment="Bottom"/>
+                            <Border x:Name="LeftBottomBorderLine" BorderBrush="{ThemeResource TabViewBorderBrush}" BorderThickness="1" Height="1" VerticalAlignment="Bottom"/>
+
+                            <Border x:Name="RightBottomBorderLine" BorderBrush="{ThemeResource TabViewBorderBrush}" BorderThickness="1" Height="1" Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Bottom"/>
 
                             <ContentPresenter
                                 Grid.Column="0"
@@ -135,6 +149,37 @@
                         BorderThickness="{TemplateBinding BorderThickness}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                         contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup>
+                                <VisualState x:Name="LeftBottomBorderLineNormal" />
+                                <VisualState x:Name="LeftBottomBorderLineShort">
+                                    <VisualState.Setters>
+                                        <Setter Target="LeftBottomBorderLine.Width" Value="2" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup>
+                                <VisualState x:Name="RightBottomBorderLineNormal" />
+                                <VisualState x:Name="RightBottomBorderLineShort">
+                                    <VisualState.Setters>
+                                        <Setter Target="RightBottomBorderLine.Width" Value="2" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup>
+                                <VisualState x:Name="NormalBottomBorderLine"/>
+                                <VisualState x:Name="NoBottomBorderLine">
+                                    <VisualState.Setters>
+                                        <Setter Target="LeftBottomBorderLine.Visibility" Value="Collapsed"/>
+                                        <Setter Target="RightBottomBorderLine.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
                         <ScrollViewer x:Name="ScrollViewer"
                             Grid.Column="1"
                             AutomationProperties.AccessibilityView="Raw"
@@ -153,7 +198,18 @@
                             Style="{StaticResource TabScrollViewerStyle}">
 
                             <ItemsPresenter x:Name="TabsItemsPresenter"
-                                Padding="{TemplateBinding Padding}" />
+                                Padding="{TemplateBinding Padding}">
+                                <ItemsPresenter.Header>
+                                    <Grid Width="4">
+                                        <Border x:Name="LeftBottomBorderLine" BorderBrush="{ThemeResource TabViewBorderBrush}" BorderThickness="1" Width="4" Height="1" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
+                                    </Grid>
+                                </ItemsPresenter.Header>
+                                <ItemsPresenter.Footer>
+                                    <Grid Width="4">
+                                        <Border x:Name="RightBottomBorderLine" BorderBrush="{ThemeResource TabViewBorderBrush}" BorderThickness="1" Width="4" Height="1" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+                                    </Grid>
+                                </ItemsPresenter.Footer>
+                            </ItemsPresenter>
 
                         </ScrollViewer>
                     </Border>
@@ -171,12 +227,28 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}">
 
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup>
+                                <VisualState x:Name="NormalBottomBorderLine"/>
+                                <VisualState x:Name="NoBottomBorderLine">
+                                    <VisualState.Setters>
+                                        <Setter Target="LeftBottomBorderLine.Visibility" Value="Collapsed"/>
+                                        <Setter Target="RightBottomBorderLine.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
+
+                            <Border x:Name="LeftBottomBorderLine" BorderBrush="{ThemeResource TabViewBorderBrush}" BorderThickness="1" Height="1" VerticalAlignment="Bottom"/>
+
+                            <Border x:Name="RightBottomBorderLine" BorderBrush="{ThemeResource TabViewBorderBrush}" BorderThickness="1" Height="1" Grid.Column="2" VerticalAlignment="Bottom"/>
 
                             <Border x:Name="ScrollDecreaseButtonContainer"
                                 Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
@@ -190,6 +262,7 @@
                                     Content="&#xEDD9;"
                                     Style="{ThemeResource TabViewScrollButtonStyle}"/>
                             </Border>
+                            
                             <ScrollContentPresenter x:Name="ScrollContentPresenter"
                                 Grid.Column="1"
                                 Padding="1,0,0,0"
@@ -390,6 +463,7 @@
 
                                 <VisualState x:Name="Selected">
                                     <VisualState.Setters>
+                                        <Setter Target="BottomBorderLine.Visibility" Value="Collapsed"/>
                                         <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="SelectedBackgroundPath.Visibility" Value="Visible"/>
@@ -409,6 +483,7 @@
 
                                 <VisualState x:Name="PointerOverSelected">
                                     <VisualState.Setters>
+                                        <Setter Target="BottomBorderLine.Visibility" Value="Collapsed"/>
                                         <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="SelectedBackgroundPath.Visibility" Value="Visible"/>
@@ -428,6 +503,7 @@
 
                                 <VisualState x:Name="PressedSelected">
                                     <VisualState.Setters>
+                                        <Setter Target="BottomBorderLine.Visibility" Value="Collapsed"/>
                                         <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="SelectedBackgroundPath.Visibility" Value="Visible"/>
@@ -544,14 +620,6 @@
                                                  Storyboard.TargetProperty="Opacity"
                                                  To="{ThemeResource ListViewItemReorderTargetThemeOpacity}"
                                                  Duration="0:0:0.240" />
-                                        <DoubleAnimation Storyboard.TargetName="LayoutRootScale"
-                                                 Storyboard.TargetProperty="ScaleX"
-                                                 To="{ThemeResource ListViewItemReorderTargetThemeScale}"
-                                                 Duration="0:0:0.240" />
-                                        <DoubleAnimation Storyboard.TargetName="LayoutRootScale"
-                                                 Storyboard.TargetProperty="ScaleY"
-                                                 To="{ThemeResource ListViewItemReorderTargetThemeScale}"
-                                                 Duration="0:0:0.240" />
                                     </Storyboard>
                                 </VisualState>
 
@@ -613,9 +681,29 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup>
+                                <VisualState x:Name="NormalBottomBorderLine"/>
+                                <VisualState x:Name="LeftOfSelectedTab">
+                                    <VisualState.Setters>
+                                        <Setter Target="BottomBorderLine.Margin" Value="0,0,2,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="RightOfSelectedTab">
+                                    <VisualState.Setters>
+                                        <Setter Target="BottomBorderLine.Margin" Value="2,0,0,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="NoBottomBorderLine">
+                                    <VisualState.Setters>
+                                        <Setter Target="BottomBorderLine.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-
+                        <Border x:Name="BottomBorderLine" BorderBrush="{ThemeResource TabViewBorderBrush}" BorderThickness="1" Height="1" Grid.ColumnSpan="3" VerticalAlignment="Bottom"/>
+                        
                         <Path x:Name="LeftRadiusRenderArc"
                             x:Load="False"
                             Fill="{ThemeResource CardStrokeColorDefault}"
