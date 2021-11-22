@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "InfoBadge.h"
+#include "InfoBadgeImpl\InfoBadgeImpl.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
@@ -37,12 +38,7 @@ void InfoBadge::OnApplyTemplate()
 
 winrt::Size InfoBadge::MeasureOverride(winrt::Size const& availableSize)
 {
-    auto const defaultDesiredSize = __super::MeasureOverride(availableSize);
-    if (defaultDesiredSize.Width < defaultDesiredSize.Height)
-    {
-        return { defaultDesiredSize.Height, defaultDesiredSize.Height };
-    }
-    return defaultDesiredSize;
+    return InfoBadgeImpl::MeasureOverrideImpl(__super::MeasureOverride(availableSize));
 }
 #pragma endregion 
 
@@ -83,7 +79,7 @@ void InfoBadge::ValidateValueProperty()
 void InfoBadge::GoToAppropriateDisplayKindState()
 {
     winrt::Control const thisAsControl = *this;
-    InfoBadgeTemplateHelpers::GoToState(thisAsControl, CalculateAppropriateDisplayKindState());
+    GoToState(CalculateAppropriateDisplayKindState());
 }
 
 InfoBadgeDisplayKindStates InfoBadge::CalculateAppropriateDisplayKindState()

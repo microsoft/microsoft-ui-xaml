@@ -10,7 +10,7 @@
 
 #include "InfoBadge.g.h"
 #include "InfoBadge.properties.h"
-#include "InfoBadgeTemplatePartHelpers.h"
+#include "InfoBadgeImpl\InfoBadgeTemplatePartHelpers.h"
 
 class InfoBadge :
     public ReferenceTracker<InfoBadge, winrt::implementation::InfoBadgeT>,
@@ -51,6 +51,11 @@ private:
     InfoBadgeDisplayKindStates CalculateAppropriateDisplayKindState();
     InfoBadgeDisplayKindStates CalculateIconOrDotDisplayKindState();
     InfoBadgeDisplayKindStates CalculateIconDisplayKindState(const winrt::Windows::UI::Xaml::Controls::IconElement& iconElement);
+    template<typename InfoBadgeVisualStateGroup>
+    bool GoToState(InfoBadgeVisualStateGroup state, bool useTransitions = true)
+    {
+        return InfoBadgeTemplateHelpers::GoToState(*this, state, useTransitions = true);
+    }
 #pragma endregion
 
 #pragma region OnSizeChanged

@@ -675,6 +675,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WebView2_InteractionTests",
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ProgressRing_APITests", "dev\ProgressRing\APITests\ProgressRing_APITests.shproj", "{222EF6F6-0845-49E7-81F2-9686CEF85C67}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InfoBadgeImpl", "dev\InfoBadge\InfoBadgeImpl\InfoBadgeImpl.vcxitems", "{5C8D03C0-4667-419C-B2FF-620C8D76D67D}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
@@ -749,6 +751,7 @@ Global
 		dev\Breadcrumb\Breadcrumb.vcxitems*{563fe343-c6b0-447b-831a-b0ce3aa7a688}*SharedItemsImports = 9
 		dev\Materials\Acrylic\APITests\AcrylicBrush_ApiTests.projitems*{593e15d8-f6f9-4aba-ba65-c6927c178dbd}*SharedItemsImports = 13
 		dev\Materials\Reveal\TestUI\Reveal_TestUI.projitems*{5bf80ae9-29df-4be9-858a-f095c8073473}*SharedItemsImports = 13
+		dev\InfoBadge\InfoBadgeImpl\InfoBadgeImpl.vcxitems*{5c8d03c0-4667-419c-b2ff-620c8d76d67d}*SharedItemsImports = 9
 		dev\PersonPicture\PersonPicture.vcxitems*{5fdf2501-aa3d-4082-ad45-d1f2a94c1213}*SharedItemsImports = 9
 		dev\ProgressRing\ProgressRing.vcxitems*{64447efa-19b4-4bf2-9d63-618635c483ec}*SharedItemsImports = 9
 		dev\RatingControl\RatingControl.vcxitems*{655f5da8-f87b-45af-88d1-a884881c3edf}*SharedItemsImports = 9
@@ -1683,6 +1686,7 @@ Global
 		{3E535832-73B4-45B2-B550-34CB14B2C262} = {1E54C076-7240-463A-A1B1-404187ABCDEB}
 		{2B05A80E-7C01-449C-8345-7D3B3B2143E5} = {1E54C076-7240-463A-A1B1-404187ABCDEB}
 		{222EF6F6-0845-49E7-81F2-9686CEF85C67} = {4194505E-4848-4FC4-97D1-0BABF32A11C4}
+		{5C8D03C0-4667-419C-B2FF-620C8D76D67D} = {C67BD98D-1228-4154-8EDA-2F8255BBA941}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}
