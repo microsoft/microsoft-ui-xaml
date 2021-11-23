@@ -17,9 +17,12 @@ namespace InfoBadgeImpl
 #pragma endregion 
 
 #pragma region GoToAppropriateDisplayKindState
-    InfoBadgeDisplayKindStates CalculateIconDisplayKindState(bool iconIsFontIcon);
-    InfoBadgeDisplayKindStates CalculateIconOrDotDisplayKindState(bool iconExists, bool iconIsFontIcon);
     InfoBadgeDisplayKindStates CalculateAppropriateDisplayKindStateImpl(int value, bool iconExists, bool iconIsFontIcon);
+    namespace
+    {
+        InfoBadgeDisplayKindStates CalculateIconOrDotDisplayKindState(bool iconExists, bool iconIsFontIcon);
+        InfoBadgeDisplayKindStates CalculateIconDisplayKindState(bool iconIsFontIcon);
+    }
 #pragma endregion
 
 #pragma region OnSizeChanged

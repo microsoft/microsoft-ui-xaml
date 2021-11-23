@@ -20,7 +20,6 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBadge.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBadgeTemplateSettings.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)InfoBadgeTemplatePartHelpers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InfoBadge.properties.cpp" />

@@ -37,24 +37,27 @@ namespace InfoBadgeImpl
         return CalculateIconOrDotDisplayKindState(iconExists, iconIsFontIcon);
     }
 
-    InfoBadgeDisplayKindStates InfoBadgeImpl::CalculateIconOrDotDisplayKindState(bool iconExists, bool iconIsFontIcon)
+    namespace
     {
-        if (!iconExists)
+        InfoBadgeDisplayKindStates CalculateIconOrDotDisplayKindState(bool iconExists, bool iconIsFontIcon)
         {
-            return InfoBadgeDisplayKindStates::Dot;
+            if (!iconExists)
+            {
+                return InfoBadgeDisplayKindStates::Dot;
+            }
+
+            return CalculateIconDisplayKindState(iconIsFontIcon);
         }
 
-        return CalculateIconDisplayKindState(iconIsFontIcon);
-    }
-
-    InfoBadgeDisplayKindStates InfoBadgeImpl::CalculateIconDisplayKindState(bool iconIsFontIcon)
-    {
-        if (iconIsFontIcon)
+        InfoBadgeDisplayKindStates CalculateIconDisplayKindState(bool iconIsFontIcon)
         {
-            return InfoBadgeDisplayKindStates::FontIcon;
-        }
+            if (iconIsFontIcon)
+            {
+                return InfoBadgeDisplayKindStates::FontIcon;
+            }
 
-        return InfoBadgeDisplayKindStates::Icon;
+            return InfoBadgeDisplayKindStates::Icon;
+        }
     }
 #pragma endregion
 
