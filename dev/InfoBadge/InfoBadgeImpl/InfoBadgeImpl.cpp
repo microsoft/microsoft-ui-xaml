@@ -6,14 +6,14 @@
 namespace InfoBadgeImpl
 {
 #pragma region ControlOverrides
-    //winrt::Size InfoBadgeImpl::MeasureOverrideImpl(Size const& defaultDesiredSize)
-    //{
-    //    if (defaultDesiredSize.Width < defaultDesiredSize.Height)
-    //    {
-    //        return { defaultDesiredSize.Height, defaultDesiredSize.Height };
-    //    }
-    //    return defaultDesiredSize;
-    //}
+    winrt::Size InfoBadgeImpl::MeasureOverrideImpl(Size const& defaultDesiredSize)
+    {
+        if (defaultDesiredSize.Width < defaultDesiredSize.Height)
+        {
+            return { defaultDesiredSize.Height, defaultDesiredSize.Height };
+        }
+        return defaultDesiredSize;
+    }
 #pragma endregion 
 
 #pragma region OnValuePropertyChanged
@@ -27,27 +27,6 @@ namespace InfoBadgeImpl
 #pragma endregion 
 
 #pragma region GoToAppropriateDisplayKindState
-
-    extern InfoBadgeDisplayKindStates InfoBadgeImpl::CalculateIconDisplayKindState(bool iconIsFontIcon)
-    {
-        if (iconIsFontIcon)
-        {
-            return InfoBadgeDisplayKindStates::FontIcon;
-        }
-
-        return InfoBadgeDisplayKindStates::Icon;
-    }
-
-    extern InfoBadgeDisplayKindStates InfoBadgeImpl::CalculateIconOrDotDisplayKindState(bool iconExists, bool iconIsFontIcon)
-    {
-        if (!iconExists)
-        {
-            return InfoBadgeDisplayKindStates::Dot;
-        }
-
-        return CalculateIconDisplayKindState(iconIsFontIcon);
-    }
-
     InfoBadgeDisplayKindStates InfoBadgeImpl::CalculateAppropriateDisplayKindStateImpl(int value, bool iconExists, bool iconIsFontIcon)
     {
         if (value >= 0)
@@ -57,13 +36,33 @@ namespace InfoBadgeImpl
 
         return CalculateIconOrDotDisplayKindState(iconExists, iconIsFontIcon);
     }
+
+    InfoBadgeDisplayKindStates InfoBadgeImpl::CalculateIconOrDotDisplayKindState(bool iconExists, bool iconIsFontIcon)
+    {
+        if (!iconExists)
+        {
+            return InfoBadgeDisplayKindStates::Dot;
+        }
+
+        return CalculateIconDisplayKindState(iconIsFontIcon);
+    }
+
+    InfoBadgeDisplayKindStates InfoBadgeImpl::CalculateIconDisplayKindState(bool iconIsFontIcon)
+    {
+        if (iconIsFontIcon)
+        {
+            return InfoBadgeDisplayKindStates::FontIcon;
+        }
+
+        return InfoBadgeDisplayKindStates::Icon;
+    }
 #pragma endregion
 
 #pragma region OnSizeChanged
-    //static extern std::tuple<double, double, double, double> InfoBadgeImpl::GetFullyRoundedCornerRadiusValueImpl(double height)
-    //{
-    //    auto const cornerRadiusValue = height / 2;
-    //    return std::make_tuple(cornerRadiusValue, cornerRadiusValue, cornerRadiusValue, cornerRadiusValue);
-    //}
+    std::tuple<double, double, double, double> InfoBadgeImpl::GetFullyRoundedCornerRadiusValueImpl(double height)
+    {
+        auto const cornerRadiusValue = height / 2;
+        return std::make_tuple(cornerRadiusValue, cornerRadiusValue, cornerRadiusValue, cornerRadiusValue);
+    }
 #pragma endregion
 };

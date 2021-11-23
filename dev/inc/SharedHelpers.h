@@ -316,6 +316,16 @@ public:
 
     static winrt::float4 RgbaColor(winrt::Color const& color);
 
+    static winrt::CornerRadius CornerRadiusFromTuple(std::tuple<double, double, double, double> values)
+    {
+        return winrt::CornerRadius{
+            std::get<0>(values),
+            std::get<1>(values),
+            std::get<2>(values),
+            std::get<3>(values)
+        };
+    }
+
 private:
     SharedHelpers() = default;
 

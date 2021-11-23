@@ -11,6 +11,9 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions);INFOBADGE_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
+  <ImportGroup Label="Shared">
+    <Import Project="InfoBadgeImpl\InfoBadgeImpl.vcxitems" Label="Shared" />
+  </ImportGroup>
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>

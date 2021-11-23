@@ -9,31 +9,20 @@ using namespace ::winrt::Windows::Foundation;
 namespace InfoBadgeImpl
 {
 #pragma region ControlOverrides
-    static winrt::Size MeasureOverrideImpl(Size const& defaultDesiredSize)
-    {
-        if (defaultDesiredSize.Width < defaultDesiredSize.Height)
-        {
-            return { defaultDesiredSize.Height, defaultDesiredSize.Height };
-        }
-        return defaultDesiredSize;
-    }
+    winrt::Size MeasureOverrideImpl(Size const& defaultDesiredSize);
 #pragma endregion 
 
 #pragma region OnValuePropertyChanged
-    static void ValidateValuePropertyImpl(int value);
+    void ValidateValuePropertyImpl(int value);
 #pragma endregion 
 
 #pragma region GoToAppropriateDisplayKindState
-    static InfoBadgeDisplayKindStates CalculateIconDisplayKindState(bool iconIsFontIcon);
-    static InfoBadgeDisplayKindStates CalculateIconOrDotDisplayKindState(bool iconExists, bool iconIsFontIcon);
-    static InfoBadgeDisplayKindStates CalculateAppropriateDisplayKindStateImpl(int value, bool iconExists, bool iconIsFontIcon);
+    InfoBadgeDisplayKindStates CalculateIconDisplayKindState(bool iconIsFontIcon);
+    InfoBadgeDisplayKindStates CalculateIconOrDotDisplayKindState(bool iconExists, bool iconIsFontIcon);
+    InfoBadgeDisplayKindStates CalculateAppropriateDisplayKindStateImpl(int value, bool iconExists, bool iconIsFontIcon);
 #pragma endregion
 
 #pragma region OnSizeChanged
-    static std::tuple<double, double, double, double> GetFullyRoundedCornerRadiusValueImpl(double height)
-    {
-        auto const cornerRadiusValue = height / 2;
-        return std::make_tuple(cornerRadiusValue, cornerRadiusValue, cornerRadiusValue, cornerRadiusValue);
-    }
+    std::tuple<double, double, double, double> GetFullyRoundedCornerRadiusValueImpl(double height);
 #pragma endregion
 };

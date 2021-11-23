@@ -41,16 +41,12 @@ private:
 #pragma region OnValuePropertyChanged
 public:
     void OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-private:
-    void ValidateValueProperty();
 #pragma endregion
 
 #pragma region GoToAppropriateDisplayKindState
 private:
     void GoToAppropriateDisplayKindState();
-    InfoBadgeDisplayKindStates CalculateAppropriateDisplayKindState();
-    InfoBadgeDisplayKindStates CalculateIconOrDotDisplayKindState();
-    InfoBadgeDisplayKindStates CalculateIconDisplayKindState(const winrt::Windows::UI::Xaml::Controls::IconElement& iconElement);
+    std::tuple<bool, bool> HasIconThenHasFontIcon();
 
     template<typename InfoBadgeVisualStateGroup>
     bool GoToState(InfoBadgeVisualStateGroup state, bool useTransitions = true)

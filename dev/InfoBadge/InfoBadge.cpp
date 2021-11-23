@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "InfoBadge.h"
-#include "InfoBadgeImpl\InfoBadgeImpl.h"
+#include "InfoBadgeImpl.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
@@ -64,56 +64,24 @@ winrt::IconElement InfoBadge::GetIconElementFromSource()
 #pragma region OnValuePropertyChanged
 void InfoBadge::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    ValidateValueProperty();
+    ValidateValuePropertyImpl(Value());
     GoToAppropriateDisplayKindState();
-}
-
-void InfoBadge::ValidateValueProperty()
-{
-    if (Value() < -1)
-    {
-        throw winrt::hresult_out_of_bounds(L"Value must be equal to or greater than -1");
-    }
 }
 #pragma endregion 
 
 #pragma region GoToAppropriateDisplayKindState
 void InfoBadge::GoToAppropriateDisplayKindState()
 {
-    winrt::Control const thisAsControl = *this;
-    GoToState(CalculateAppropriateDisplayKindState());
+    auto const [hasIcon, hasFontIcon] = HasIconThenHasFontIcon();
+    GoToState(CalculateAppropriateDisplayKindStateImpl(Value(), hasIcon, hasFontIcon));
 }
 
-InfoBadgeDisplayKindStates InfoBadge::CalculateAppropriateDisplayKindState()
+std::tuple<bool, bool> InfoBadge::HasIconThenHasFontIcon()
 {
-    if (Value() >= 0)
-    {
-        return InfoBadgeDisplayKindStates::Value;
-    }
-
-    return CalculateIconOrDotDisplayKindState();
-}
-
-InfoBadgeDisplayKindStates InfoBadge::CalculateIconOrDotDisplayKindState()
-{
-    if (auto const iconElement = TemplateSettings().IconElement())
-    {
-        return CalculateIconDisplayKindState(iconElement);
-    }
-
-    return InfoBadgeDisplayKindStates::Dot;
-}
-
-InfoBadgeDisplayKindStates InfoBadge::CalculateIconDisplayKindState(const winrt::Windows::UI::Xaml::Controls::IconElement& iconElement)
-{
-    if (iconElement.try_as<winrt::FontIcon>())
-    {
-        return InfoBadgeDisplayKindStates::FontIcon;
-    }
-    else
-    {
-        return InfoBadgeDisplayKindStates::Icon;
-    }
+    auto const IconElement = TemplateSettings().IconElement();
+    auto const hasIcon = IconElement != nullptr;
+    auto const hasFontIcon = hasIcon ? IconElement.try_as<winrt::FontIcon>() != nullptr : false;
+    return std::make_tuple(hasIcon, hasFontIcon);
 }
 #pragma endregion
 
@@ -129,8 +97,7 @@ winrt::CornerRadius InfoBadge::GetFullyRoundedCornerRadiusValueIfUnset()
     {
         return CornerRadius();
     }
-    auto const cornerRadiusValue = ActualHeight() / 2;
-    return winrt::CornerRadius{ cornerRadiusValue, cornerRadiusValue, cornerRadiusValue, cornerRadiusValue };
+    return SharedHelpers::CornerRadiusFromTuple(GetFullyRoundedCornerRadiusValueImpl(ActualHeight()));
 }
 
 bool InfoBadge::IsCornerRadiusAvailableAndSet()
