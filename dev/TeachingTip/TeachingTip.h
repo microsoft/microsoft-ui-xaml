@@ -62,6 +62,7 @@ private:
     PropertyChanged_revoker m_automationNameChangedRevoker{};
     PropertyChanged_revoker m_automationIdChangedRevoker{};
     winrt::CoreDispatcher::AcceleratorKeyActivated_revoker m_acceleratorKeyActivatedRevoker{};
+    winrt::UIElement::PreviewKeyDown_revoker m_previewKeyDownForF6Revoker{};
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
     winrt::Button::Click_revoker m_alternateCloseButtonClickedRevoker{};
     winrt::Button::Click_revoker m_actionButtonClickedRevoker{};
@@ -115,6 +116,8 @@ private:
 
     void OnContentSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args);
     void OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const winrt::AcceleratorKeyEventArgs& args);
+    void OnF6PreviewKeyDownClicked(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args);
+    bool HandleF6Clicked();
     void OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnPopupOpened(const winrt::IInspectable&, const winrt::IInspectable&);

@@ -72,19 +72,23 @@
             <muxc:MenuBar x:Name="EmptyMenuBar"></muxc:MenuBar>
         </StackPanel>
         <TextBlock Grid.Row="1" Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
-        <StackPanel Margin="0,20,0,20" VerticalAlignment="Top"  Grid.Row="2" Orientation="Horizontal">
+        <StackPanel Margin="0,20,0,20" VerticalAlignment="Top"  Grid.Row="2">
             <StackPanel.Resources>
                 <Style TargetType="Button">
                     <Setter Property="Margin" Value="4"/>
                 </Style>
             </StackPanel.Resources>
-            <CheckBox x:Name="TestFrameCheckbox" AutomationProperties.Name="TestFrameCheckbox" Content="Show Test Frame" Checked="TestFrameCheckbox_Checked" Unchecked="TestFrameCheckbox_Unchecked" IsChecked="True"  Margin="5"/>
-            <Button x:Name="AddMenuBarItemButton" AutomationProperties.Name="AddMenuBarItemButton" Click="AddMenuBarItem_Click" Content="Add Menu Bar Item"/>
-            <Button x:Name="RemoveMenuBarItemButton" AutomationProperties.Name="RemoveMenuBarItemButton" Click="RemoveMenuBarItem_Click" Content="Remove Menu Bar Item"/>
-            <Button x:Name="AddFlyoutItemButton" AutomationProperties.Name="AddFlyoutItemButton" Click="AddFlyoutItem_Click" Content="Add Flyout Item"/>
-            <Button x:Name="RemoveFlyoutItemButton" AutomationProperties.Name="RemoveFlyoutItemButton" Click="RemoveFlyoutItem_Click" Content="Remove Flyout Item"/>
-            <Button x:Name="AddItemsToEmptyMenuBar" AutomationProperties.Name="AddItemsToEmptyMenuBar" Click="AddMenuBarToEmptyMenuBarItem_Click" Content="Add a menu item to the empty menu bar"/>
-            <Button x:Name="RemoveItemsFromOneChildrenItem" AutomationProperties.Name="RemoveItemsFromOneChildrenItem" Click="RemoveItemsFromOneChildrenItem_Click" Content="Remove items from One Children item"/>
+            <StackPanel Orientation="Horizontal">
+                <CheckBox x:Name="TestFrameCheckbox" AutomationProperties.Name="TestFrameCheckbox" Content="Show Test Frame" Checked="TestFrameCheckbox_Checked" Unchecked="TestFrameCheckbox_Unchecked" IsChecked="True"  Margin="5"/>
+                <Button x:Name="AddMenuBarItemButton" AutomationProperties.Name="AddMenuBarItemButton" Click="AddMenuBarItem_Click" Content="Add Menu Bar Item"/>
+                <Button x:Name="RemoveMenuBarItemButton" AutomationProperties.Name="RemoveMenuBarItemButton" Click="RemoveMenuBarItem_Click" Content="Remove Menu Bar Item"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="AddFlyoutItemButton" AutomationProperties.Name="AddFlyoutItemButton" Click="AddFlyoutItem_Click" Content="Add Flyout Item"/>
+                <Button x:Name="RemoveFlyoutItemButton" AutomationProperties.Name="RemoveFlyoutItemButton" Click="RemoveFlyoutItem_Click" Content="Remove Flyout Item"/>
+                <Button x:Name="AddItemsToEmptyMenuBar" AutomationProperties.Name="AddItemsToEmptyMenuBar" Click="AddMenuBarToEmptyMenuBarItem_Click" Content="Add a menu item to the empty menu bar"/>
+                <Button x:Name="RemoveItemsFromOneChildrenItem" AutomationProperties.Name="RemoveItemsFromOneChildrenItem" Click="RemoveItemsFromOneChildrenItem_Click" Content="Remove items from One Children item"/>
+            </StackPanel>
         </StackPanel>
         <StackPanel Grid.Row="3">
             <TextBlock Text="Test output" Style="{ThemeResource StandardGroupHeader}"/>

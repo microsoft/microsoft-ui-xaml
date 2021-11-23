@@ -35,7 +35,7 @@
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
             <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
-            <x:Double x:Key="AppBarButtonFlyoutFontSize">8</x:Double>
+            <x:Double x:Key="AppBarButtonSubItemChevronFontSize">8</x:Double>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SystemControlTransparentBrush" />
@@ -65,7 +65,7 @@
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
             <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
-            <x:Double x:Key="AppBarButtonFlyoutFontSize">8</x:Double>
+            <x:Double x:Key="AppBarButtonSubItemChevronFontSize">8</x:Double>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
@@ -95,7 +95,7 @@
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
             <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
-            <x:Double x:Key="AppBarButtonFlyoutFontSize">8</x:Double>
+            <x:Double x:Key="AppBarButtonSubItemChevronFontSize">8</x:Double>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -424,7 +424,7 @@
                                 Grid.Column="2"
                                 Glyph="{ThemeResource AppBarButtonFlyoutGlyph}"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="{ThemeResource AppBarButtonFlyoutFontSize}"
+                                FontSize="{ThemeResource AppBarButtonSubItemChevronFontSize}"
                                 AutomationProperties.AccessibilityView="Raw"
                                 Foreground="{ThemeResource AppBarButtonSubItemChevronForeground}"
                                 VerticalAlignment="Top"

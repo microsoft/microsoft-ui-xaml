@@ -705,7 +705,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 CloseTabAndVerifyWidth("Tab 3", 500, "False;False;");
 
-                CloseTabAndVerifyWidth("Tab 5", 420, "False;False;");
+                CloseTabAndVerifyWidth("Tab 5", 430, "False;False;");
 
                 CloseTabAndVerifyWidth("Tab 4", 450, "False;False;");
 
@@ -726,7 +726,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Closing tab:" + tabName);
                 FindCloseButton(FindElement.ByName(tabName)).Click();
                 Wait.ForIdle();
-                Log.Comment("Verifying TabView width");
+                Log.Comment("Verifying TabView width -- expected " + expectedValue + ", actual " + GetActualTabViewWidth());
                 Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - expectedValue) < pixelTolerance);
                 Verify.AreEqual(expectedScrollbuttonStates, FindElement.ByName("ScrollButtonStatus").GetText());
 
@@ -924,6 +924,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTabClosingBehaviorButton" }))
             {
                 var increaseScrollButton = FindElement.ByName<Button>("IncreaseScrollButton");
+                increaseScrollButton.Click();
+                Wait.ForIdle();
                 increaseScrollButton.Click();
                 Wait.ForIdle();
                 var readTabViewWidthButton = new Button(FindElement.ByName("GetActualWidthButton"));

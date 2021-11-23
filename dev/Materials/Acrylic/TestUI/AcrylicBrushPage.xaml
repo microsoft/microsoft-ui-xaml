@@ -84,22 +84,22 @@
                     <ToggleButton x:Name="AnimateBackgroundButton" Content="Animate Background" Checked="AnimateBackgroundButton_Checked" Unchecked="AnimateBackgroundButton_Unchecked"/>
 
                 <StackPanel Orientation="Vertical">
-                    <TextBlock VerticalAlignment="Top" FontSize="12">TintOpacity:</TextBlock>
+                    <TextBlock VerticalAlignment="Top" FontSize="12" Text="TintOpacity:"/>
                     <Slider x:Name="TintOpacity" Width="200" Minimum="0.0" Maximum="1.0" StepFrequency="0.05" Value="0.6" HorizontalAlignment="Left" ToolTipService.ToolTip="Adjust Tint Opacity" ValueChanged="TintOpacity_ValueChanged" />
                 </StackPanel>
                 <StackPanel Orientation="Vertical">
-                    <TextBlock VerticalAlignment="Top" FontSize="12">TintLuminosityOpacity:</TextBlock>
+                    <TextBlock VerticalAlignment="Top" FontSize="12" Text="TintLuminosityOpacity:"/>
                     <StackPanel Orientation="Horizontal">
                         <Slider x:Name="TintLuminosityOpacity" Width="200" Minimum="0.0" Maximum="2.0" StepFrequency="0.01" Value="0.9" HorizontalAlignment="Left" ToolTipService.ToolTip="Adjust Luminosity Blend Opacity" ValueChanged="TintLuminosityOpacity_ValueChanged" />
                         <CheckBox x:Name="AutoTintLuminosityOpacity" Content="Auto" Margin="10,0,0,0" Checked="AutoTintLuminosityOpacity_IsCheckedChanged" Unchecked="AutoTintLuminosityOpacity_IsCheckedChanged" />
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Orientation="Vertical">
-                    <TextBlock VerticalAlignment="Top" FontSize="12">Rectangle Size:</TextBlock>
+                    <TextBlock VerticalAlignment="Top" FontSize="12" Text="Rectangle Size:"/>
                     <Slider x:Name="SizeSlider" Width="200" Minimum="1" Maximum="800" StepFrequency="10" Value="300" HorizontalAlignment="Left" ToolTipService.ToolTip="Adjust Rectangle Size"/>
                 </StackPanel>
                 <StackPanel Orientation="Vertical">
-                    <TextBlock VerticalAlignment="Top" FontSize="12">ScaleTransform:</TextBlock>
+                    <TextBlock VerticalAlignment="Top" FontSize="12" Text="ScaleTransform:"/>
                     <Slider x:Name="ScaleTransformSlider" Width="200" Minimum="0.1" Maximum="3" StepFrequency="0.1" Value="1" HorizontalAlignment="Left" ToolTipService.ToolTip="Adjust Rectangle ScaleTransform"/>
                 </StackPanel>
                 <Viewbox x:Name="Viewbox"/>

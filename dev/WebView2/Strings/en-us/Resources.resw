@@ -117,20 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="NumberBoxDownSpinButtonName" xml:space="preserve">
-    <value>Bawasan</value>
-    <comment>Automation name for the down button</comment>
+  <data name="WarningSuitableWebView2NotFound" xml:space="preserve">
+    <value>A suitable version of Microsoft Edge WebView2 Runtime was not detected. </value>
+    <comment>Represents warning when suitable WebView2 is not found.</comment>
   </data>
-  <data name="NumberBoxUpSpinButtonName" xml:space="preserve">
-    <value>Dagdagan</value>
-    <comment>Automation name for the up button</comment>
-  </data>
-  <data name="NumberBoxMaximumValueStatus" xml:space="preserve">
-    <value>Maximum</value>
-    <comment>Maximum value declaration</comment>
-  </data>
-  <data name="NumberBoxMinimumValueStatus" xml:space="preserve">
-    <value>Minimum</value>
-    <comment>Minimum value declaration</comment>
+  <data name="DownloadWebView2Runtime" xml:space="preserve">
+    <value>Download and install WebView2 Runtime</value>
+    <comment>Part 2 of warning suitable WebView2 not found.</comment>
   </data>
 </root>

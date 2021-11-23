@@ -77,6 +77,10 @@
         <Setter Property="PrimaryButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
         <Setter Property="SecondaryButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
         <Setter Property="CloseButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
+        <Setter Property="MinWidth" Value="{ThemeResource ContentDialogMinWidth}" />
+        <Setter Property="MaxWidth" Value="{ThemeResource ContentDialogMaxWidth}" />
+        <Setter Property="MinHeight" Value="{ThemeResource ContentDialogMinHeight}" />
+        <Setter Property="MaxHeight" Value="{ThemeResource ContentDialogMaxHeight}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -232,7 +236,8 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Grid x:Name="LayoutRoot">
+                        <Grid x:Name="LayoutRoot"
+                            contract5Present:Visibility="Collapsed">
                             <Rectangle x:Name="SmokeLayerBackground" Fill="{ThemeResource ContentDialogSmokeFill}" />
                             <Border
                                 x:Name="BackgroundElement"
@@ -242,10 +247,10 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 contract7Present:BackgroundSizing="InnerBorderEdge"
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                MinWidth="{ThemeResource ContentDialogMinWidth}"
-                                MaxWidth="{ThemeResource ContentDialogMaxWidth}"
-                                MinHeight="{ThemeResource ContentDialogMinHeight}"
-                                MaxHeight="{ThemeResource ContentDialogMaxHeight}"
+                                MinWidth="{TemplateBinding MinWidth}"
+                                MaxWidth="{TemplateBinding MaxWidth}"
+                                MinHeight="{TemplateBinding MinHeight}"
+                                MaxHeight="{TemplateBinding MaxHeight}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 RenderTransformOrigin="0.5,0.5">

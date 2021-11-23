@@ -338,7 +338,7 @@ namespace MUXControlsTestApp
         public void SetTabViewWidth_Click(object sender, RoutedEventArgs e)
         {
             // This is the smallest width that fits our content without any scrolling.
-            Tabs.Width = 744;
+            Tabs.Width = 752;
         }
 
         public void GetScrollButtonsVisible_Click(object sender, RoutedEventArgs e)
