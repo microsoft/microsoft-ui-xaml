@@ -4,8 +4,8 @@ Capturing and providing binlog files can help with debugging build and packaging
 Generally, it is encouraged to collect binlog files through the CLI of MSBuild as they tend to be easier to diagnose, but both methods of creating binlog files are fine.
 
 ## Collecting binlogs through Visual Studio
-1. Download the **[VS Project System Tools extension](https://marketplace.visualstudio.com/items?itemName=VisualStudioProductTeam.ProjectSystemTools)**
-2. Set the **Build Log File** verbosity to `Diagnostics`: `Tools->Options->Projects and Solutions->MSBuild project build log file verbosity`:<br/>
+1. Download the VS Project System Tools extension: [For VS 2019](https://marketplace.visualstudio.com/items?itemName=VisualStudioProductTeam.ProjectSystemTools) | [For VS 2022](https://marketplace.visualstudio.com/items?itemName=VisualStudioProductTeam.ProjectSystemTools2022)
+3. Set the **Build Log File** verbosity to `Diagnostics`: `Tools->Options->Projects and Solutions->MSBuild project build log file verbosity`:<br/>
 ![Screenshot of Build and run options](./images/binlog-images/buildandrunoptions.png)
 
 3. Go to View->Other Windows->Build Logging:<br/>
