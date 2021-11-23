@@ -312,14 +312,6 @@ function OutputNamedTemplatePartsRegion {
         Add-Content -Path $OutputFile -Value "            return L`"`";"
         Add-Content -Path $OutputFile -Value "        }"
         Add-Content -Path $OutputFile -Value "    }"
-        Add-Content -Path $OutputFile -Value ""
-        Add-Content -Path $OutputFile -Value "    template<typename WinRTReturn>"
-        Add-Content -Path $OutputFile -Value "    WinRTReturn GetTemplatePart(tracker_ref<WinRTReturn>& tracker, $($ControlName)NamedTemplatePart namedTemplatePart, const winrt::IControlProtected& control)"
-        Add-Content -Path $OutputFile -Value "    {"
-        Add-Content -Path $OutputFile -Value "        auto const part = GetTemplateChildT<WinRTReturn>(ToString(namedTemplatePart), control);"
-        Add-Content -Path $OutputFile -Value "        tracker.set(part);"
-        Add-Content -Path $OutputFile -Value "        return part;"
-        Add-Content -Path $OutputFile -Value "    }"
         Add-Content -Path $OutputFile -Value "#pragma endregion"
     }
 }
