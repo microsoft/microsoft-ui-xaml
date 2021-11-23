@@ -8,6 +8,8 @@
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
+using namespace InfoBadgeImpl;
+
 #pragma region Constructor
 InfoBadge::InfoBadge()
 {
@@ -38,7 +40,7 @@ void InfoBadge::OnApplyTemplate()
 
 winrt::Size InfoBadge::MeasureOverride(winrt::Size const& availableSize)
 {
-    return InfoBadgeImpl::MeasureOverrideImpl(__super::MeasureOverride(availableSize));
+    return MeasureOverrideImpl(__super::MeasureOverride(availableSize));
 }
 #pragma endregion 
 

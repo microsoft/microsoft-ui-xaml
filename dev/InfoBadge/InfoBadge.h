@@ -51,10 +51,11 @@ private:
     InfoBadgeDisplayKindStates CalculateAppropriateDisplayKindState();
     InfoBadgeDisplayKindStates CalculateIconOrDotDisplayKindState();
     InfoBadgeDisplayKindStates CalculateIconDisplayKindState(const winrt::Windows::UI::Xaml::Controls::IconElement& iconElement);
+
     template<typename InfoBadgeVisualStateGroup>
     bool GoToState(InfoBadgeVisualStateGroup state, bool useTransitions = true)
     {
-        return InfoBadgeTemplateHelpers::GoToState(*this, state, useTransitions = true);
+        return winrt::VisualStateManager::GoToState(*this, InfoBadgeTemplateHelpers::ToString(state), useTransitions = true);
     }
 #pragma endregion
 

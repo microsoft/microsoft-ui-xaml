@@ -17,4 +17,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBadgeImpl.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBadgeTemplatePartHelpers.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)InfoBadgeImpl.cpp" />
+  </ItemGroup>
 </Project>
