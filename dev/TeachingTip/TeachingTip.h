@@ -199,13 +199,15 @@ private:
     template<typename WinRTReturn>
     WinRTReturn GetTemplatePart(tracker_ref<WinRTReturn>& tracker, TeachingTipNamedTemplatePart namedTemplatePart)
     {
-        return TeachingTipTemplateHelpers::GetTemplatePart(tracker, namedTemplatePart, *this);
+        auto const part = GetTemplateChildT<WinRTReturn>(TeachingTipTemplateHelpers::ToString(namedTemplatePart), *this);
+        tracker.set(part);
+        return part;
     }
 
     template<typename TeachingTipVisualStateGroup>
     bool GoToState(TeachingTipVisualStateGroup state, bool useTransitions = true)
     {
-        return TeachingTipTemplateHelpers::GoToState(*this, state, useTransitions = true);
+        return winrt::VisualStateManager::GoToState(*this, TeachingTipTemplateHelpers::ToString(state), useTransitions);
     }
 
     tracker_ref<winrt::Border> m_container{ this };
