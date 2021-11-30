@@ -72,6 +72,8 @@ body:
       multiple: true
       options:
         - "Insider Build (xxxxx)"
+        - "Windows 11 (22000)"
+        - "November 2021 Update (19044)
         - "May 2021 Update (19043)"
         - "October 2020 Update (19042)"
         - "May 2020 Update (19041)"
