@@ -82,6 +82,7 @@ function Copy-Recursively-If-Exists
 
 # Copy files from the 'drop' artifact dir
 Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXControls.Test.dll" $payloadDir
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Microsoft.Win32.Registry.dll" "$payloadDir\.NETCoreApp2.1\"
 Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXTestInfra.TAEF.dll" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXExperimental.Test.dll" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\WebView2Loader.dll" $payloadDir
