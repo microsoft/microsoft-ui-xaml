@@ -1,6 +1,10 @@
 ﻿# Determine if the current PR payload requires a build.
 # We skip the build if the only files changed are .md files.
 
+param (
+    [string]$ClangFormatFailed = $false,
+)
+
 function AllChangedFilesAreSkippable
 {
     Param($files)
@@ -34,7 +38,12 @@ function AllChangedFilesAreSkippable
 
 $shouldSkipBuild = $false
 
-if($env:BUILD_REASON -eq "PullRequest")
+if ($ClangFormatFailed)
+{
+    $shouldSkipBuild = $true
+    Write-Host "Clang-format task failed and should skip build"
+}
+elseif($env:BUILD_REASON -eq "PullRequest")
 {
     # Azure DevOps sets this variable with refs/heads/ at the beginning.
     # This trims it so the $gitCommandLine is formatted properly

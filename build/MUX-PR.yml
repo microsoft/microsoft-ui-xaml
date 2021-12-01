@@ -19,13 +19,16 @@ jobs:
       inputs:
         targetType: 'filePath'
         filePath: tools\FormatSource.ps1
-        arguments: '-ModifiedOnly $false -Verify $True -Path dev'
+        arguments: '-ModifiedOnly $False -Verify $True -Path dev'
       displayName: 'Clang-format check'
       # condition: failed() # this job is disabled
 
-    - powershell: |
-        Write-Host "##vso[task.setvariable variable=shouldSkipPRBuild;isOutput=true]$True"        
-      displayName: 'Skip other pipelines if clang-format failed'
+    - task: PowerShell@2
+      name: checkPayload
+      displayName: 'Skip the build if clang-format failed'
+      inputs:
+        targetType: filePath
+        filePath: build\ShouldSkipPRBuild.ps1 -ClangFormatFailed $True
       condition: failed()
 
 - job: Build
