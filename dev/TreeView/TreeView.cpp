@@ -95,6 +95,7 @@ winrt::TreeViewNode TreeView::SelectedNode()
     return nodes.Size() > 0 ? nodes.GetAt(0) : nullptr;
 }
 
+
 winrt::IVector<winrt::TreeViewNode> TreeView::SelectedNodes()
 {
     if (auto const listControl = ListControl())
@@ -104,7 +105,7 @@ winrt::IVector<winrt::TreeViewNode> TreeView::SelectedNodes()
             return vm->GetSelectedNodes();
         }
     }
-
+    
     // we'll treat the pending selected nodes as SelectedNodes value if we don't have a list control or a view model
     return m_pendingSelectedNodes.get();
 }
@@ -154,6 +155,7 @@ void TreeView::SelectAll()
     vm->SelectAll();
 }
 
+
 void TreeView::OnItemClick(const winrt::IInspectable& /*sender*/, const winrt::Windows::UI::Xaml::Controls::ItemClickEventArgs& args)
 {
     const auto itemInvokedArgs = winrt::make_self<TreeViewItemInvokedEventArgs>();
@@ -175,12 +177,12 @@ void TreeView::OnNodeExpanding(const winrt::TreeViewNode& sender, const winrt::I
     {
         if (const auto expandingTVI = ContainerFromNode(sender).try_as<winrt::TreeViewItem>())
         {
-            // Update TVI properties
+            //Update TVI properties
             if (!expandingTVI.IsExpanded())
             {
                 expandingTVI.IsExpanded(true);
             }
-            // Update TemplateSettings properties
+            //Update TemplateSettings properties
             const auto templateSettings = winrt::get_self<TreeViewItemTemplateSettings>(expandingTVI.TreeViewItemTemplateSettings());
             templateSettings->ExpandedGlyphVisibility(winrt::Visibility::Visible);
             templateSettings->CollapsedGlyphVisibility(winrt::Visibility::Collapsed);
@@ -198,13 +200,13 @@ void TreeView::OnNodeCollapsed(const winrt::TreeViewNode& sender, const winrt::I
     {
         if (const auto collapsedTVI = ContainerFromNode(sender).try_as<winrt::TreeViewItem>())
         {
-            // Update TVI properties
+            //Update TVI properties
             if (collapsedTVI.IsExpanded())
             {
                 collapsedTVI.IsExpanded(false);
             }
 
-            // Update TemplateSettings properties
+            //Update TemplateSettings properties
             const auto templateSettings = winrt::get_self<TreeViewItemTemplateSettings>(collapsedTVI.TreeViewItemTemplateSettings());
             templateSettings->ExpandedGlyphVisibility(winrt::Visibility::Collapsed);
             templateSettings->CollapsedGlyphVisibility(winrt::Visibility::Visible);
@@ -222,26 +224,27 @@ void TreeView::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs
         const winrt::TreeViewSelectionMode value = SelectionMode();
         switch (value)
         {
-        case winrt::TreeViewSelectionMode::None:
-        {
-            m_listControl.get().SelectionMode(winrt::ListViewSelectionMode::None);
-            UpdateItemsSelectionMode(false);
-        }
-        break;
+            case winrt::TreeViewSelectionMode::None:
+            {
+                m_listControl.get().SelectionMode(winrt::ListViewSelectionMode::None);
+                UpdateItemsSelectionMode(false);
+            }
+            break;
 
-        case winrt::TreeViewSelectionMode::Single:
-        {
-            m_listControl.get().SelectionMode(winrt::ListViewSelectionMode::Single);
-            UpdateItemsSelectionMode(false);
-        }
-        break;
+            case winrt::TreeViewSelectionMode::Single:
+            {
+                m_listControl.get().SelectionMode(winrt::ListViewSelectionMode::Single);
+                UpdateItemsSelectionMode(false);
+            }
+            break;
 
-        case winrt::TreeViewSelectionMode::Multiple:
-        {
-            m_listControl.get().SelectionMode(winrt::ListViewSelectionMode::None);
-            UpdateItemsSelectionMode(true);
-        }
-        break;
+            case winrt::TreeViewSelectionMode::Multiple:
+            {
+                m_listControl.get().SelectionMode(winrt::ListViewSelectionMode::None);
+                UpdateItemsSelectionMode(true);
+            }
+            break;
+
         }
     }
     else if (property == s_ItemsSourceProperty)
@@ -283,7 +286,8 @@ void TreeView::OnListControlDragItemsStarting(const winrt::IInspectable& sender,
 
 void TreeView::OnListControlDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args)
 {
-    const auto newParent = [items = args.Items(), listControl = ListControl(), rootNode = m_rootNode.get()]() {
+    const auto newParent = [items = args.Items(), listControl = ListControl(), rootNode = m_rootNode.get()]()
+    {
         if (listControl && items && items.Size() > 0)
         {
             if (const auto draggedNode = listControl->NodeFromItem(items.GetAt(0)))
@@ -309,7 +313,7 @@ void TreeView::OnListControlSelectionChanged(const winrt::IInspectable& sender, 
         RaiseSelectionChanged(args.AddedItems(), args.RemovedItems());
 
         const auto newSelectedItem = [args]() {
-            if (const auto& newItems = args.AddedItems())
+            if(const auto& newItems = args.AddedItems())
             {
                 if (newItems.Size() > 0)
                 {
@@ -317,12 +321,12 @@ void TreeView::OnListControlSelectionChanged(const winrt::IInspectable& sender, 
                 }
                 else
                 {
-                    return (winrt::IInspectable) nullptr;
+                    return (winrt::IInspectable)nullptr;
                 }
             }
             else
             {
-                return (winrt::IInspectable) nullptr;
+                return (winrt::IInspectable)nullptr;
             }
         }();
 
@@ -397,8 +401,8 @@ void TreeView::OnApplyTemplate()
         }
         viewModel->PrepareView(m_rootNode.get());
         viewModel->SetOwners(listControl, *this);
-        viewModel->NodeExpanding({this, &TreeView::OnNodeExpanding});
-        viewModel->NodeCollapsed({this, &TreeView::OnNodeCollapsed});
+        viewModel->NodeExpanding({ this, &TreeView::OnNodeExpanding });
+        viewModel->NodeCollapsed({ this, &TreeView::OnNodeCollapsed });
 
         const auto selectionMode = SelectionMode();
         if (selectionMode == winrt::TreeViewSelectionMode::Single)
@@ -414,13 +418,11 @@ void TreeView::OnApplyTemplate()
             }
         }
 
-        m_itemClickRevoker = listControl.ItemClick(winrt::auto_revoke, {this, &TreeView::OnItemClick});
-        m_containerContentChangingRevoker =
-            listControl.ContainerContentChanging(winrt::auto_revoke, {this, &TreeView::OnContainerContentChanging});
-        m_dragItemsStartingRevoker = listControl.DragItemsStarting(winrt::auto_revoke, {this, &TreeView::OnListControlDragItemsStarting});
-        m_dragItemsCompletedRevoker =
-            listControl.DragItemsCompleted(winrt::auto_revoke, {this, &TreeView::OnListControlDragItemsCompleted});
-        m_selectionChangedRevoker = listControl.SelectionChanged(winrt::auto_revoke, {this, &TreeView::OnListControlSelectionChanged});
+        m_itemClickRevoker = listControl.ItemClick(winrt::auto_revoke, { this, &TreeView::OnItemClick });
+        m_containerContentChangingRevoker = listControl.ContainerContentChanging(winrt::auto_revoke, { this, &TreeView::OnContainerContentChanging });
+        m_dragItemsStartingRevoker = listControl.DragItemsStarting(winrt::auto_revoke, { this, &TreeView::OnListControlDragItemsStarting });
+        m_dragItemsCompletedRevoker = listControl.DragItemsCompleted(winrt::auto_revoke, { this, &TreeView::OnListControlDragItemsCompleted });
+        m_selectionChangedRevoker = listControl.SelectionChanged(winrt::auto_revoke, { this, &TreeView::OnListControlSelectionChanged });
 
         if (m_pendingSelectedNodes && m_pendingSelectedNodes.get().Size() > 0)
         {

@@ -8,20 +8,19 @@
 #include "ZoomFactorChangeWithAdditionalVelocity.h"
 
 ZoomFactorChangeWithAdditionalVelocity::ZoomFactorChangeWithAdditionalVelocity(
-    float zoomFactorVelocity, float anticipatedZoomFactorChange, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate) :
-    m_zoomFactorVelocity(zoomFactorVelocity),
-    m_anticipatedZoomFactorChange(anticipatedZoomFactorChange),
-    m_centerPoint(centerPoint),
-    m_inertiaDecayRate(inertiaDecayRate)
+    float zoomFactorVelocity,
+    float anticipatedZoomFactorChange,
+    winrt::IReference<winrt::float2> centerPoint,
+    winrt::IReference<float> inertiaDecayRate) :
+        m_zoomFactorVelocity(zoomFactorVelocity),
+        m_anticipatedZoomFactorChange(anticipatedZoomFactorChange),
+        m_centerPoint(centerPoint),
+        m_inertiaDecayRate(inertiaDecayRate)
 {
-    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, zoomFactorVelocity, anticipatedZoomFactorChange);
-    SCROLLPRESENTER_TRACE_VERBOSE(
-        nullptr,
-        TRACE_MSG_METH_STR_STR,
-        METH_NAME,
-        this,
-        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
-        TypeLogging::NullableFloatToString(inertiaDecayRate).c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_FLT_FLT, METH_NAME, this,
+        zoomFactorVelocity, anticipatedZoomFactorChange);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(), TypeLogging::NullableFloatToString(inertiaDecayRate).c_str());
 }
 
 ZoomFactorChangeWithAdditionalVelocity::~ZoomFactorChangeWithAdditionalVelocity()

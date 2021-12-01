@@ -6,7 +6,8 @@
 #include "Layout.g.h"
 #include "NonVirtualizingLayout.g.h"
 
-class Layout : public winrt::implementation::LayoutT<Layout, winrt::composable>
+class Layout :
+    public winrt::implementation::LayoutT<Layout, winrt::composable>
 {
 public:
 #pragma region ILayout
@@ -16,7 +17,7 @@ public:
 
     void InitializeForContext(winrt::LayoutContext const& context);
     void UninitializeForContext(winrt::LayoutContext const& context);
-
+    
     winrt::Size Measure(winrt::LayoutContext const& context, winrt::Size const& availableSize);
     winrt::Size Arrange(winrt::LayoutContext const& context, winrt::Size const& finalSize);
 
@@ -28,15 +29,16 @@ public:
 #pragma endregion
 
 #pragma region ILayoutProtected
-    void InvalidateMeasure();
-    void InvalidateArrange();
+     void InvalidateMeasure();
+     void InvalidateArrange();
 #pragma endregion
 
-private:
-    event<winrt::TypedEventHandler<winrt::Layout, winrt::IInspectable>> m_measureInvalidatedEventSource{};
-    event<winrt::TypedEventHandler<winrt::Layout, winrt::IInspectable>> m_arrangeInvalidatedEventSource{};
 
-    // TODO: This is for debugging purposes only. It should be removed when
-    // the Layout.LayoutId API is removed.
-    winrt::hstring m_layoutId;
+private:
+     event<winrt::TypedEventHandler<winrt::Layout, winrt::IInspectable>> m_measureInvalidatedEventSource{ };
+     event<winrt::TypedEventHandler<winrt::Layout, winrt::IInspectable>> m_arrangeInvalidatedEventSource { };
+
+     // TODO: This is for debugging purposes only. It should be removed when 
+     // the Layout.LayoutId API is removed.
+     winrt::hstring m_layoutId;
 };

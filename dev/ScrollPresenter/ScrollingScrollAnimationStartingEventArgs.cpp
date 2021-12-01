@@ -52,10 +52,12 @@ void ScrollingScrollAnimationStartingEventArgs::SetAnimation(const winrt::Compos
     m_animation = animation;
 }
 
+
 void ScrollingScrollAnimationStartingEventArgs::SetStartPosition(const winrt::float2& startPosition)
 {
     m_startPosition = startPosition;
 }
+
 
 void ScrollingScrollAnimationStartingEventArgs::SetEndPosition(const winrt::float2& endPosition)
 {

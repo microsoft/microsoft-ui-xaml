@@ -6,12 +6,13 @@
 #include "DropDownButton.h"
 #include "DropDownButtonAutomationPeer.g.h"
 
-class DropDownButtonAutomationPeer : public ReferenceTracker<DropDownButtonAutomationPeer, winrt::implementation::DropDownButtonAutomationPeerT>
+class DropDownButtonAutomationPeer :
+    public ReferenceTracker<DropDownButtonAutomationPeer, winrt::implementation::DropDownButtonAutomationPeerT>
 {
 
 public:
     DropDownButtonAutomationPeer(winrt::DropDownButton const& owner);
-
+    
     // IAutomationPeerOverrides
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     hstring GetClassNameCore();

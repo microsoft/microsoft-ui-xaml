@@ -43,7 +43,9 @@ void RecyclingElementFactory::Templates(winrt::IMap<winrt::hstring, winrt::DataT
 
 #pragma region IRecyclingElementFactoryOverrides
 
-winrt::hstring RecyclingElementFactory::OnSelectTemplateKeyCore(winrt::IInspectable const& dataContext, winrt::UIElement const& owner)
+winrt::hstring RecyclingElementFactory::OnSelectTemplateKeyCore(
+    winrt::IInspectable const& dataContext, 
+    winrt::UIElement const& owner)
 {
     if (!m_args)
     {
@@ -54,14 +56,13 @@ winrt::hstring RecyclingElementFactory::OnSelectTemplateKeyCore(winrt::IInspecta
     args->TemplateKey({});
     args->DataContext(dataContext);
     args->Owner(owner);
-
+    
     m_selectTemplateKeyEventSource(*this, *args);
 
     auto templateKey = args->TemplateKey();
     if (templateKey.empty())
     {
-        throw winrt::hresult_error(
-            E_FAIL, L"Please provide a valid template identifier in the handler for the SelectTemplateKey event.");
+        throw winrt::hresult_error(E_FAIL, L"Please provide a valid template identifier in the handler for the SelectTemplateKey event.");
     }
 
     return templateKey;
@@ -79,8 +80,10 @@ winrt::UIElement RecyclingElementFactory::GetElementCore(winrt::ElementFactoryGe
     }
 
     const auto winrtOwner = args.Parent();
-    const auto templateKey = m_templates.get().Size() == 1 ? m_templates.get().First().Current().Key()
-                                                           : OnSelectTemplateKeyCore(args.Data(), winrtOwner);
+    const auto templateKey =
+        m_templates.get().Size() == 1 ?
+        m_templates.get().First().Current().Key() :
+        OnSelectTemplateKeyCore(args.Data(), winrtOwner);
 
     if (templateKey.empty())
     {
@@ -98,8 +101,7 @@ winrt::UIElement RecyclingElementFactory::GetElementCore(winrt::ElementFactoryGe
         // No need to call HasKey if there is only one template.
         if (m_templates.get().Size() > 1 && !m_templates.get().HasKey(templateKey))
         {
-            std::wstring message =
-                L"No templates of key " + std::wstring(templateKey.data()) + L" were found in the templates collection.";
+            std::wstring message = L"No templates of key " + std::wstring(templateKey.data()) + L" were found in the templates collection.";
             throw winrt::hresult_error(E_FAIL, message.c_str());
         }
 

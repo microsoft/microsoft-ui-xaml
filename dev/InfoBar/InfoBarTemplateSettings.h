@@ -6,7 +6,9 @@
 #include "InfoBarTemplateSettings.g.h"
 #include "InfoBarTemplateSettings.properties.h"
 
-class InfoBarTemplateSettings : public winrt::implementation::InfoBarTemplateSettingsT<InfoBarTemplateSettings>, public InfoBarTemplateSettingsProperties
+class InfoBarTemplateSettings :
+    public winrt::implementation::InfoBarTemplateSettingsT<InfoBarTemplateSettings>,
+    public InfoBarTemplateSettingsProperties
 {
 public:
     InfoBarTemplateSettings();

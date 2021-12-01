@@ -6,8 +6,8 @@
 #include "BreadcrumbBarItem.h"
 #include "BreadcrumbBarItemAutomationPeer.g.h"
 
-class BreadcrumbBarItemAutomationPeer
-    : public ReferenceTracker<BreadcrumbBarItemAutomationPeer, winrt::implementation::BreadcrumbBarItemAutomationPeerT>
+class BreadcrumbBarItemAutomationPeer :
+    public ReferenceTracker<BreadcrumbBarItemAutomationPeer, winrt::implementation::BreadcrumbBarItemAutomationPeerT>
 {
 
 public:

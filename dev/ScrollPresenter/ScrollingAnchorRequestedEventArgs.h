@@ -5,8 +5,8 @@
 
 #include "ScrollingAnchorRequestedEventArgs.g.h"
 
-class ScrollingAnchorRequestedEventArgs
-    : public ReferenceTracker<ScrollingAnchorRequestedEventArgs, winrt::implementation::ScrollingAnchorRequestedEventArgsT, winrt::composable, winrt::composing>
+class ScrollingAnchorRequestedEventArgs :
+    public ReferenceTracker<ScrollingAnchorRequestedEventArgs, winrt::implementation::ScrollingAnchorRequestedEventArgsT, winrt::composable, winrt::composing>
 {
 public:
     ~ScrollingAnchorRequestedEventArgs()
@@ -29,7 +29,7 @@ public:
     void SetAnchorElement(const winrt::UIElement& anchorElement);
 
 private:
-    tracker_ref<winrt::IVector<winrt::UIElement>> m_anchorCandidates{this};
-    tracker_ref<winrt::UIElement> m_anchorElement{this};
-    tracker_ref<winrt::ScrollPresenter> m_scrollPresenter{this};
+    tracker_ref<winrt::IVector<winrt::UIElement>> m_anchorCandidates{ this };
+    tracker_ref<winrt::UIElement> m_anchorElement{ this };
+    tracker_ref<winrt::ScrollPresenter> m_scrollPresenter{ this };
 };

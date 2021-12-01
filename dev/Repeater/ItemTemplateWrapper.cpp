@@ -51,8 +51,8 @@ winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs co
         }
         catch (winrt::hresult_error e)
         {
-            // The default implementation of SelectTemplate(IInspectable item, ILayout container) throws invalid arg for null
-            // container To not force everbody to provide an implementation of that, catch that here
+            // The default implementation of SelectTemplate(IInspectable item, ILayout container) throws invalid arg for null container
+            // To not force everbody to provide an implementation of that, catch that here
             if (e.code().value != E_INVALIDARG)
             {
                 throw e;
@@ -62,8 +62,7 @@ winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs co
         if (selectedTemplate == nullptr)
         {
             // Still nullptr, fail with a reasonable message now.
-            throw winrt::hresult_invalid_argument(
-                L"Null encountered as data template. That is not a valid value for a data template, and can not be used.");
+            throw winrt::hresult_invalid_argument(L"Null encountered as data template. That is not a valid value for a data template, and can not be used.");
         }
     }
     auto recyclePool = RecyclePool::GetPoolInstance(selectedTemplate);
@@ -81,8 +80,7 @@ winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs co
         element = selectedTemplate.LoadContent().as<winrt::FrameworkElement>();
 
         // Template returned null, so insert empty element to render nothing
-        if (!element)
-        {
+        if (!element) {
             auto rectangle = winrt::Rectangle();
             rectangle.Width(0);
             rectangle.Height(0);
@@ -99,8 +97,9 @@ winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs co
 void ItemTemplateWrapper::RecycleElement(winrt::ElementFactoryRecycleArgs const& args)
 {
     auto element = args.Element();
-    winrt::DataTemplate selectedTemplate =
-        m_dataTemplate ? m_dataTemplate : element.GetValue(RecyclePool::GetOriginTemplateProperty()).as<winrt::DataTemplate>();
+    winrt::DataTemplate selectedTemplate = m_dataTemplate? 
+        m_dataTemplate:
+        element.GetValue(RecyclePool::GetOriginTemplateProperty()).as<winrt::DataTemplate>();
     auto recyclePool = RecyclePool::GetPoolInstance(selectedTemplate);
     if (!recyclePool)
     {

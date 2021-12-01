@@ -10,14 +10,16 @@
 
 #include "ToggleSplitButtonAutomationPeer.properties.cpp"
 
-ToggleSplitButtonAutomationPeer::ToggleSplitButtonAutomationPeer(winrt::ToggleSplitButton const& owner) : ReferenceTracker(owner)
+ToggleSplitButtonAutomationPeer::ToggleSplitButtonAutomationPeer(winrt::ToggleSplitButton const& owner)
+    : ReferenceTracker(owner)
 {
 }
 
 // IAutomationPeerOverrides
 winrt::IInspectable ToggleSplitButtonAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
-    if (patternInterface == winrt::PatternInterface::ExpandCollapse || patternInterface == winrt::PatternInterface::Toggle)
+    if (patternInterface == winrt::PatternInterface::ExpandCollapse ||
+        patternInterface == winrt::PatternInterface::Toggle)
     {
         return *this;
     }
@@ -47,7 +49,7 @@ com_ptr<ToggleSplitButton> ToggleSplitButtonAutomationPeer::GetImpl()
     return impl;
 }
 
-// IExpandCollapseProvider
+// IExpandCollapseProvider 
 winrt::ExpandCollapseState ToggleSplitButtonAutomationPeer::ExpandCollapseState()
 {
     winrt::ExpandCollapseState currentState = winrt::ExpandCollapseState::Collapsed;

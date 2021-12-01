@@ -7,7 +7,9 @@
 #include "PersonPicture.properties.h"
 #include "DispatcherHelper.h"
 
-class PersonPicture : public ReferenceTracker<PersonPicture, winrt::implementation::PersonPictureT>, public PersonPictureProperties
+class PersonPicture :
+    public ReferenceTracker<PersonPicture, winrt::implementation::PersonPictureT>,
+    public PersonPictureProperties
 {
 public:
     PersonPicture();
@@ -16,7 +18,7 @@ public:
     winrt::AutomationPeer OnCreateAutomationPeer();
 
     // Property changed handler.
-    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs &args);
 
 private:
     /// <summary>
@@ -47,7 +49,7 @@ private:
     /// <summary>
     /// Helper function to contain the calls to load and display a user's profile picture.
     /// </summary>
-    /// <param name="isNewContact">
+    /// <param name="isNewContact"> 
     /// Specifies if the target contact is to be handled as newContact.
     /// </param>
     void UpdateControlForContact(bool isNewContact);
@@ -68,67 +70,69 @@ private:
     winrt::ImageSource GetImageSource();
 
     // DependencyProperty changed event handlers
-    void OnDisplayNameChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnDisplayNameChanged(const winrt::DependencyPropertyChangedEventArgs &args);
     void OnContactChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     // Event handlers
-    void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& e);
-    void OnUnloaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& e);
+    void OnSizeChanged(const winrt::IInspectable &sender, const winrt::SizeChangedEventArgs &e);
+    void OnUnloaded(const winrt::IInspectable &sender, const winrt::RoutedEventArgs &e);
 
     // Helper functions
-    void LoadImageAsync(std::shared_ptr<winrt::IRandomAccessStreamReference> thumbStreamReference, std::function<void(winrt::BitmapImage)> completedFunction);
+    void LoadImageAsync(
+        std::shared_ptr<winrt::IRandomAccessStreamReference> thumbStreamReference,
+        std::function<void(winrt::BitmapImage)> completedFunction);
 
     winrt::hstring PersonPicture::GetLocalizedPluralBadgeItemStringResource(unsigned int numericValue);
 
     /// <summary>
     /// XAML Element for the first TextBlock matching x:Name of InitialsTextBlock.
     /// </summary>
-    tracker_ref<winrt::TextBlock> m_initialsTextBlock{this};
+    tracker_ref<winrt::TextBlock> m_initialsTextBlock{ this };
 
     /// <summary>
     /// XAML Element for the first TextBlock matching x:Name of BadgeNumberTextBlock.
     /// </summary>
-    tracker_ref<winrt::TextBlock> m_badgeNumberTextBlock{this};
+    tracker_ref<winrt::TextBlock> m_badgeNumberTextBlock{ this };
 
     /// <summary>
     /// XAML Element for the first TextBlock matching x:Name of BadgeGlyphIcon.
     /// </summary>
-    tracker_ref<winrt::FontIcon> m_badgeGlyphIcon{this};
+    tracker_ref<winrt::FontIcon> m_badgeGlyphIcon{ this };
 
     /// <summary>
     /// XAML Element for the first ImageBrush matching x:Name of BadgeImageBrush.
     /// </summary>
-    tracker_ref<winrt::ImageBrush> m_badgeImageBrush{this};
+    tracker_ref<winrt::ImageBrush> m_badgeImageBrush{ this };
 
     /// <summary>
     /// XAML Element for the first Ellipse matching x:Name of BadgingBackgroundEllipse.
     /// </summary>
-    tracker_ref<winrt::Ellipse> m_badgingEllipse{this};
-
+    tracker_ref<winrt::Ellipse> m_badgingEllipse{ this };
+    
     /// <summary>
     /// XAML Element for the first Ellipse matching x:Name of BadgingEllipse.
     /// </summary>
-    tracker_ref<winrt::Ellipse> m_badgingBackgroundEllipse{this};
+    tracker_ref<winrt::Ellipse> m_badgingBackgroundEllipse{ this };
 
     /// <summary>
     /// The async operation object representing the loading and assignment of the Thumbnail.
     /// </summary>
-    tracker_ref<winrt::IAsyncOperation<winrt::IRandomAccessStreamWithContentType>> m_profilePictureReadAsync{this};
+    tracker_ref<winrt::IAsyncOperation<winrt::IRandomAccessStreamWithContentType>> m_profilePictureReadAsync{ this };
 
     /// <summary>
     /// The initials from the DisplayName property.
     /// </summary>
-    tracker_ref<winrt::hstring> m_displayNameInitials{this};
+    tracker_ref<winrt::hstring> m_displayNameInitials{ this };
 
     /// <summary>
     /// The initials from the Contact property.
     /// </summary>
-    tracker_ref<winrt::hstring> m_contactDisplayNameInitials{this};
+    tracker_ref<winrt::hstring> m_contactDisplayNameInitials{ this };
 
     /// <summary>
     /// The ImageSource from the Contact property.
     /// </summary>
-    tracker_ref<winrt::ImageSource> m_contactImageSource{this};
+    tracker_ref<winrt::ImageSource> m_contactImageSource{ this };
 
-    DispatcherHelper m_dispatcherHelper{*this};
+    DispatcherHelper m_dispatcherHelper{ *this };
 };

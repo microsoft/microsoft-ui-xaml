@@ -24,10 +24,7 @@ winrt::IObservableVector<winrt::GradientStop> RadialGradientBrush::GradientStops
 void RadialGradientBrush::OnConnected()
 {
     // XCBB will use fallback rendering in design v1 mode, so do not create a CompositionBrush.
-    if (SharedHelpers::IsInDesignMode())
-    {
-        return;
-    }
+    if (SharedHelpers::IsInDesignMode()) { return; }
 
     m_isConnected = true;
 
@@ -36,14 +33,12 @@ void RadialGradientBrush::OnConnected()
     if (SharedHelpers::IsCompositionRadialGradientBrushAvailable())
     {
         // If CompositionRadialGradientBrush will be used then listen for changes to gradient stops so the CompositionRadialGradientBrush can be updated.
-        m_gradientStopsVectorChangedRevoker =
-            m_gradientStops.VectorChanged(winrt::auto_revoke, {this, &RadialGradientBrush::OnGradientStopsVectorChanged});
+        m_gradientStopsVectorChangedRevoker = m_gradientStops.VectorChanged(winrt::auto_revoke, { this, &RadialGradientBrush::OnGradientStopsVectorChanged });
     }
     else
     {
         // If CompositionRadialGradientBrush won't be used then listen for changes to the fallback color so the fallback brush can be updated.
-        m_fallbackColorChangedRevoker = RegisterPropertyChanged(
-            *this, winrt::XamlCompositionBrushBase::FallbackColorProperty(), {this, &RadialGradientBrush::OnFallbackColorChanged});
+        m_fallbackColorChangedRevoker = RegisterPropertyChanged(*this, winrt::XamlCompositionBrushBase::FallbackColorProperty(), { this, &RadialGradientBrush::OnFallbackColorChanged });
     }
 }
 
@@ -130,8 +125,7 @@ void RadialGradientBrush::OnFallbackColorChanged(const winrt::DependencyObject& 
     UpdateFallbackBrush();
 }
 
-void RadialGradientBrush::OnGradientStopsVectorChanged(
-    winrt::Collections::IObservableVector<winrt::GradientStop> const& sender, winrt::Collections::IVectorChangedEventArgs const& e)
+void RadialGradientBrush::OnGradientStopsVectorChanged(winrt::Collections::IObservableVector<winrt::GradientStop> const& sender, winrt::Collections::IVectorChangedEventArgs const& e)
 {
     if (SharedHelpers::IsCompositionRadialGradientBrushAvailable())
     {

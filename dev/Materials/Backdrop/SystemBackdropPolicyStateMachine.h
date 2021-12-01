@@ -2,21 +2,22 @@
 
 #include "SystemBackdropPolicyState.h"
 
-namespace SystemBackdropComponentInternal {
-class SystemBackdropPolicyStateMachine final
+namespace SystemBackdropComponentInternal
 {
-public:
-    SystemBackdropPolicyStateMachine(SystemBackdropPolicyState intialState);
+    class SystemBackdropPolicyStateMachine final
+    {
+    public:
+        SystemBackdropPolicyStateMachine(SystemBackdropPolicyState intialState);
 
-    void SetWindowNotInFocus(bool isNotInFocus);
-    void SetPowerSavingMode(bool isEnabled);
-    void SetHighContrastMode(bool isEnabled);
-    void SetIncompatibleGraphicsDevice(bool isIncompatibleGraphicsDevice);
-    void SetTransparencyDisabled(bool isDisabled);
+        void SetWindowNotInFocus(bool isNotInFocus);
+        void SetPowerSavingMode(bool isEnabled);
+        void SetHighContrastMode(bool isEnabled);
+        void SetIncompatibleGraphicsDevice(bool isIncompatibleGraphicsDevice);
+        void SetTransparencyDisabled(bool isDisabled);
 
-    bool IsActive() const;
+        bool IsActive() const;
 
-private:
-    SystemBackdropPolicyState m_state;
-};
-} // namespace SystemBackdropComponentInternal
+    private:
+        SystemBackdropPolicyState m_state;
+    };
+}

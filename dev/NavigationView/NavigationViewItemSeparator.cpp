@@ -20,10 +20,11 @@ void NavigationViewItemSeparator::UpdateVisualState(bool useTransitions)
     if (m_appliedTemplate)
     {
         static auto groupName = L"NavigationSeparatorLineStates"sv;
-        const auto stateName =
-            (Position() != NavigationViewRepeaterPosition::TopPrimary && Position() != NavigationViewRepeaterPosition::TopFooter)
-                ? m_isClosedCompact ? L"HorizontalLineCompact"sv : L"HorizontalLine"sv
-                : L"VerticalLine"sv;
+        const auto stateName = (Position() != NavigationViewRepeaterPosition::TopPrimary && Position() != NavigationViewRepeaterPosition::TopFooter)
+            ? m_isClosedCompact
+                ? L"HorizontalLineCompact"sv
+                : L"HorizontalLine"sv
+            : L"VerticalLine"sv;
 
         VisualStateUtil::GoToStateIfGroupExists(*this, groupName, stateName, false /*useTransitions*/);
     }
@@ -42,10 +43,10 @@ void NavigationViewItemSeparator::OnApplyTemplate()
 
     if (auto splitView = GetSplitView())
     {
-        m_splitViewIsPaneOpenChangedRevoker = RegisterPropertyChanged(
-            splitView, winrt::SplitView::IsPaneOpenProperty(), {this, &NavigationViewItemSeparator::OnSplitViewPropertyChanged});
-        m_splitViewDisplayModeChangedRevoker = RegisterPropertyChanged(
-            splitView, winrt::SplitView::DisplayModeProperty(), {this, &NavigationViewItemSeparator::OnSplitViewPropertyChanged});
+        m_splitViewIsPaneOpenChangedRevoker = RegisterPropertyChanged(splitView,
+            winrt::SplitView::IsPaneOpenProperty(), { this, &NavigationViewItemSeparator::OnSplitViewPropertyChanged });
+        m_splitViewDisplayModeChangedRevoker = RegisterPropertyChanged(splitView,
+            winrt::SplitView::DisplayModeProperty(), { this, &NavigationViewItemSeparator::OnSplitViewPropertyChanged });
 
         UpdateIsClosedCompact(false);
     }
@@ -77,7 +78,7 @@ void NavigationViewItemSeparator::UpdateItemIndentation()
     {
         auto const oldMargin = rootGrid.Margin();
         const auto newLeftMargin = Depth() * c_itemIndentation;
-        rootGrid.Margin({static_cast<double>(newLeftMargin), oldMargin.Top, oldMargin.Right, oldMargin.Bottom});
+        rootGrid.Margin({ static_cast<double>(newLeftMargin), oldMargin.Top, oldMargin.Right, oldMargin.Bottom });
     }
 }
 
@@ -86,8 +87,8 @@ void NavigationViewItemSeparator::UpdateIsClosedCompact(bool updateVisualState)
     if (auto splitView = GetSplitView())
     {
         // Check if the pane is closed and if the splitview is in either compact mode
-        m_isClosedCompact = !splitView.IsPaneOpen() && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay ||
-                                                        splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline);
+        m_isClosedCompact = !splitView.IsPaneOpen()
+            && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline);
 
         if (updateVisualState)
         {

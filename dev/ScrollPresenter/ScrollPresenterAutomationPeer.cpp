@@ -10,13 +10,14 @@
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreApi.h>
 
-double ScrollPresenterAutomationPeer::s_minimumPercent{0.0};
-double ScrollPresenterAutomationPeer::s_maximumPercent{100.0};
-double ScrollPresenterAutomationPeer::s_noScroll{-1.0};
+double ScrollPresenterAutomationPeer::s_minimumPercent{ 0.0 };
+double ScrollPresenterAutomationPeer::s_maximumPercent{ 100.0 };
+double ScrollPresenterAutomationPeer::s_noScroll{ -1.0 };
 
 #include "ScrollPresenterAutomationPeer.properties.cpp"
 
-ScrollPresenterAutomationPeer::ScrollPresenterAutomationPeer(winrt::ScrollPresenter const& owner) : ReferenceTracker(owner)
+ScrollPresenterAutomationPeer::ScrollPresenterAutomationPeer(winrt::ScrollPresenter const& owner)
+    : ReferenceTracker(owner)
 {
     SCROLLPRESENTER_TRACE_VERBOSE(owner, TRACE_MSG_METH_PTR, METH_NAME, this, owner);
 }
@@ -40,13 +41,8 @@ winrt::IInspectable ScrollPresenterAutomationPeer::GetPatternCore(winrt::Pattern
 // and vertically provides simple panning support.
 void ScrollPresenterAutomationPeer::Scroll(winrt::ScrollAmount const& horizontalAmount, winrt::ScrollAmount const& verticalAmount)
 {
-    SCROLLPRESENTER_TRACE_VERBOSE(
-        Owner(),
-        TRACE_MSG_METH_STR_STR,
-        METH_NAME,
-        this,
-        TypeLogging::ScrollAmountToString(horizontalAmount).c_str(),
-        TypeLogging::ScrollAmountToString(verticalAmount).c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(Owner(), TRACE_MSG_METH_STR_STR, METH_NAME, this,
+        TypeLogging::ScrollAmountToString(horizontalAmount).c_str(), TypeLogging::ScrollAmountToString(verticalAmount).c_str());
 
     if (!IsEnabled())
     {
@@ -202,7 +198,7 @@ double ScrollPresenterAutomationPeer::VerticalViewSize()
 bool ScrollPresenterAutomationPeer::HorizontallyScrollable()
 {
     MUX_ASSERT(m_horizontallyScrollable == get_HorizontallyScrollableImpl());
-
+    
     return m_horizontallyScrollable;
 }
 
@@ -290,14 +286,20 @@ double ScrollPresenterAutomationPeer::get_HorizontalScrollPercentImpl()
 {
     com_ptr<ScrollPresenter> scrollPresenter = winrt::get_self<ScrollPresenter>(GetScrollPresenter())->get_strong();
 
-    return GetScrollPercent(scrollPresenter->GetZoomedExtentWidth(), scrollPresenter->ViewportWidth(), GetScrollPresenter().HorizontalOffset());
+    return GetScrollPercent(
+        scrollPresenter->GetZoomedExtentWidth(),
+        scrollPresenter->ViewportWidth(),
+        GetScrollPresenter().HorizontalOffset());
 }
 
 double ScrollPresenterAutomationPeer::get_VerticalScrollPercentImpl()
 {
     com_ptr<ScrollPresenter> scrollPresenter = winrt::get_self<ScrollPresenter>(GetScrollPresenter())->get_strong();
 
-    return GetScrollPercent(scrollPresenter->GetZoomedExtentHeight(), scrollPresenter->ViewportHeight(), GetScrollPresenter().VerticalOffset());
+    return GetScrollPercent(
+        scrollPresenter->GetZoomedExtentHeight(),
+        scrollPresenter->ViewportHeight(),
+        GetScrollPresenter().VerticalOffset());
 }
 
 // Returns the horizontal percentage of the entire extent that is currently viewed.
@@ -305,7 +307,9 @@ double ScrollPresenterAutomationPeer::get_HorizontalViewSizeImpl()
 {
     com_ptr<ScrollPresenter> scrollPresenter = winrt::get_self<ScrollPresenter>(GetScrollPresenter())->get_strong();
 
-    return GetViewPercent(scrollPresenter->GetZoomedExtentWidth(), scrollPresenter->ViewportWidth());
+    return GetViewPercent(
+        scrollPresenter->GetZoomedExtentWidth(),
+        scrollPresenter->ViewportWidth());
 }
 
 // Returns the vertical percentage of the entire extent that is currently viewed.
@@ -313,7 +317,9 @@ double ScrollPresenterAutomationPeer::get_VerticalViewSizeImpl()
 {
     com_ptr<ScrollPresenter> scrollPresenter = winrt::get_self<ScrollPresenter>(GetScrollPresenter())->get_strong();
 
-    return GetViewPercent(scrollPresenter->GetZoomedExtentHeight(), scrollPresenter->ViewportHeight());
+    return GetViewPercent(
+        scrollPresenter->GetZoomedExtentHeight(),
+        scrollPresenter->ViewportHeight());
 }
 
 bool ScrollPresenterAutomationPeer::get_HorizontallyScrollableImpl()

@@ -10,53 +10,56 @@
 
 inline bool IsScrollViewTracingEnabled()
 {
-    return g_IsLoggingProviderEnabled && g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
-           (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLVIEW || g_LoggingProviderMatchAnyKeyword == 0);
+    return g_IsLoggingProviderEnabled &&
+        g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
+        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLVIEW || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsScrollViewVerboseTracingEnabled()
 {
-    return g_IsLoggingProviderEnabled && g_LoggingProviderLevel >= WINEVENT_LEVEL_VERBOSE &&
-           (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLVIEW || g_LoggingProviderMatchAnyKeyword == 0);
+    return g_IsLoggingProviderEnabled &&
+        g_LoggingProviderLevel >= WINEVENT_LEVEL_VERBOSE &&
+        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLVIEW || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsScrollViewPerfTracingEnabled()
 {
-    return g_IsPerfProviderEnabled && g_PerfProviderLevel >= WINEVENT_LEVEL_INFO &&
-           (g_PerfProviderMatchAnyKeyword & KEYWORD_SCROLLVIEW || g_PerfProviderMatchAnyKeyword == 0);
+    return g_IsPerfProviderEnabled &&
+        g_PerfProviderLevel >= WINEVENT_LEVEL_INFO &&
+        (g_PerfProviderMatchAnyKeyword & KEYWORD_SCROLLVIEW || g_PerfProviderMatchAnyKeyword == 0);
 }
 
 #define SCROLLVIEW_TRACE_INFO_ENABLED(includeTraceLogging, sender, message, ...) \
-    ScrollViewTrace::TraceInfo(includeTraceLogging, sender, message, __VA_ARGS__);
+ScrollViewTrace::TraceInfo(includeTraceLogging, sender, message, __VA_ARGS__); \
 
 #define SCROLLVIEW_TRACE_INFO(sender, message, ...) \
-    if (IsScrollViewTracingEnabled()) \
-    { \
-        SCROLLVIEW_TRACE_INFO_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-    } \
-    else if (ScrollViewTrace::s_IsDebugOutputEnabled || ScrollViewTrace::s_IsVerboseDebugOutputEnabled) \
-    { \
-        SCROLLVIEW_TRACE_INFO_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-    }
+if (IsScrollViewTracingEnabled()) \
+{ \
+    SCROLLVIEW_TRACE_INFO_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+} \
+else if (ScrollViewTrace::s_IsDebugOutputEnabled || ScrollViewTrace::s_IsVerboseDebugOutputEnabled) \
+{ \
+    SCROLLVIEW_TRACE_INFO_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+} \
 
 #define SCROLLVIEW_TRACE_VERBOSE_ENABLED(includeTraceLogging, sender, message, ...) \
-    ScrollViewTrace::TraceVerbose(includeTraceLogging, sender, message, __VA_ARGS__);
+ScrollViewTrace::TraceVerbose(includeTraceLogging, sender, message, __VA_ARGS__); \
 
 #define SCROLLVIEW_TRACE_VERBOSE(sender, message, ...) \
-    if (IsScrollViewVerboseTracingEnabled()) \
-    { \
-        SCROLLVIEW_TRACE_VERBOSE_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-    } \
-    else if (ScrollViewTrace::s_IsVerboseDebugOutputEnabled) \
-    { \
-        SCROLLVIEW_TRACE_VERBOSE_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-    }
+if (IsScrollViewVerboseTracingEnabled()) \
+{ \
+    SCROLLVIEW_TRACE_VERBOSE_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+} \
+else if (ScrollViewTrace::s_IsVerboseDebugOutputEnabled) \
+{ \
+    SCROLLVIEW_TRACE_VERBOSE_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+} \
 
 #define SCROLLVIEW_TRACE_PERF(info) \
-    if (IsScrollViewPerfTracingEnabled()) \
-    { \
-        ScrollViewTrace::TracePerfInfo(info); \
-    }
+if (IsScrollViewPerfTracingEnabled()) \
+{ \
+    ScrollViewTrace::TracePerfInfo(info); \
+} \
 
 class ScrollViewTrace
 {
@@ -74,7 +77,7 @@ public:
             if (includeTraceLogging)
             {
                 // TraceViewers
-                // http://toolbox/pef
+                // http://toolbox/pef 
                 // http://fastetw/index.aspx
                 TraceLoggingWrite(
                     g_hLoggingProvider,
@@ -91,8 +94,8 @@ public:
 
             com_ptr<MUXControlsTestHooks> globalTestHooks = MUXControlsTestHooks::GetGlobalTestHooks();
 
-            if (globalTestHooks && (globalTestHooks->GetLoggingLevelForType(L"ScrollView") >= WINEVENT_LEVEL_INFO ||
-                                    globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_INFO))
+            if (globalTestHooks &&
+                (globalTestHooks->GetLoggingLevelForType(L"ScrollView") >= WINEVENT_LEVEL_INFO || globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_INFO))
             {
                 globalTestHooks->LogMessage(sender, buffer, false /*isVerboseLevel*/);
             }
@@ -110,7 +113,7 @@ public:
             if (includeTraceLogging)
             {
                 // TraceViewers
-                // http://toolbox/pef
+                // http://toolbox/pef 
                 // http://fastetw/index.aspx
                 TraceLoggingWrite(
                     g_hLoggingProvider,
@@ -127,8 +130,8 @@ public:
 
             com_ptr<MUXControlsTestHooks> globalTestHooks = MUXControlsTestHooks::GetGlobalTestHooks();
 
-            if (globalTestHooks && (globalTestHooks->GetLoggingLevelForType(L"ScrollView") >= WINEVENT_LEVEL_VERBOSE ||
-                                    globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_VERBOSE))
+            if (globalTestHooks &&
+                (globalTestHooks->GetLoggingLevelForType(L"ScrollView") >= WINEVENT_LEVEL_VERBOSE || globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_VERBOSE))
             {
                 globalTestHooks->LogMessage(sender, buffer, true /*isVerboseLevel*/);
             }
@@ -139,7 +142,7 @@ public:
     static void TracePerfInfo(PCWSTR info) noexcept
     {
         // TraceViewers
-        // http://toolbox/pef
+        // http://toolbox/pef 
         // http://fastetw/index.aspx
         TraceLoggingWrite(
             g_hPerfProvider,

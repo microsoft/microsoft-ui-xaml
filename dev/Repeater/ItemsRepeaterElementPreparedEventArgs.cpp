@@ -6,7 +6,9 @@
 #include "ItemsRepeater.common.h"
 #include "ItemsRepeaterElementPreparedEventArgs.h"
 
-ItemsRepeaterElementPreparedEventArgs::ItemsRepeaterElementPreparedEventArgs(const winrt::UIElement& element, int index)
+ItemsRepeaterElementPreparedEventArgs::ItemsRepeaterElementPreparedEventArgs(
+    const winrt::UIElement& element,
+    int index)
 {
     Update(element, index);
 }

@@ -12,7 +12,8 @@ ChildrenInTabFocusOrderIterable::ChildrenInTabFocusOrderIterable(const winrt::It
     m_repeater.set(repeater);
 }
 
-winrt::IIterator<winrt::DependencyObject> ChildrenInTabFocusOrderIterable::First()
+winrt::IIterator<winrt::DependencyObject>
+ChildrenInTabFocusOrderIterable::First()
 {
     return winrt::make<ChildrenInTabFocusOrderIterable::ChildrenInTabFocusOrderIterator>(m_repeater.get());
 }
@@ -34,12 +35,11 @@ ChildrenInTabFocusOrderIterable::ChildrenInTabFocusOrderIterator::ChildrenInTabF
     }
 
     // Sort children by index.
-    std::sort(m_realizedChildren.begin(), m_realizedChildren.end(), [](const auto& lhs, const auto& rhs) {
-        return lhs.first < rhs.first;
-    });
+    std::sort(m_realizedChildren.begin(), m_realizedChildren.end(), [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
 }
 
-winrt::DependencyObject ChildrenInTabFocusOrderIterable::ChildrenInTabFocusOrderIterator::Current()
+winrt::DependencyObject
+ChildrenInTabFocusOrderIterable::ChildrenInTabFocusOrderIterator::Current()
 {
     if (m_index < static_cast<int>(m_realizedChildren.size()))
     {

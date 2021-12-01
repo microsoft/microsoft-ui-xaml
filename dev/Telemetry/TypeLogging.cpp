@@ -5,39 +5,29 @@
 #include "TypeLogging.h"
 #include "Utils.h"
 
-namespace TypeLogging {
+namespace TypeLogging
+{
 #pragma region Common section
 
 winrt::hstring PointerPointToString(const winrt::PointerPoint& pointerPoint, bool verbose)
 {
     if (verbose)
     {
-        return StringUtil::FormatString(
-            L"PointerPoint: PointerId: %1!u!, Position: (%2!u!, %3!u!), IsInContact: %4!u!, PointerDevice: %5!u!",
-            pointerPoint.PointerId(),
-            static_cast<uint32_t>(pointerPoint.Position().X),
-            static_cast<uint32_t>(pointerPoint.Position().Y),
-            pointerPoint.IsInContact(),
-            pointerPoint.PointerDevice());
+        return StringUtil::FormatString(L"PointerPoint: PointerId: %1!u!, Position: (%2!u!, %3!u!), IsInContact: %4!u!, PointerDevice: %5!u!",
+            pointerPoint.PointerId(), static_cast<uint32_t>(pointerPoint.Position().X), static_cast<uint32_t>(pointerPoint.Position().Y), 
+            pointerPoint.IsInContact(), pointerPoint.PointerDevice());
     }
     else
     {
-        return StringUtil::FormatString(
-            L"PointerPoint: PointerId: %1!u!, Position: (%2!u!, %3!u!)",
-            pointerPoint.PointerId(),
-            static_cast<uint32_t>(pointerPoint.Position().X),
-            static_cast<uint32_t>(pointerPoint.Position().Y));
+        return StringUtil::FormatString(L"PointerPoint: PointerId: %1!u!, Position: (%2!u!, %3!u!)",
+            pointerPoint.PointerId(), static_cast<uint32_t>(pointerPoint.Position().X), static_cast<uint32_t>(pointerPoint.Position().Y));
     }
 }
 
 winrt::hstring RectToString(const winrt::Rect& rect)
 {
-    return StringUtil::FormatString(
-        L"Rect: X: %1!i!, Y: %2!i!, W: %3!u!, H: %4!u!",
-        static_cast<int32_t>(rect.X),
-        static_cast<int32_t>(rect.Y),
-        static_cast<uint32_t>(rect.Width),
-        static_cast<uint32_t>(rect.Height));
+    return StringUtil::FormatString(L"Rect: X: %1!i!, Y: %2!i!, W: %3!u!, H: %4!u!",
+        static_cast<int32_t>(rect.X), static_cast<int32_t>(rect.Y), static_cast<uint32_t>(rect.Width), static_cast<uint32_t>(rect.Height));
 }
 
 winrt::hstring Float2ToString(const winrt::float2& v2)
@@ -120,13 +110,10 @@ winrt::hstring ScrollingIndicatorModeToString(const winrt::ScrollingIndicatorMod
 
 winrt::hstring KeyRoutedEventArgsToString(const winrt::KeyRoutedEventArgs& eventArgs)
 {
-    return StringUtil::FormatString(
-        L"KeyRoutedEventArgs: Handled: %1!u!, Key: %2!u!, OriginalKey: %3!u!",
-        static_cast<uint32_t>(eventArgs.Handled()),
-        static_cast<uint32_t>(eventArgs.Key()),
-        static_cast<uint32_t>(eventArgs.OriginalKey()));
+    return StringUtil::FormatString(L"KeyRoutedEventArgs: Handled: %1!u!, Key: %2!u!, OriginalKey: %3!u!",
+        static_cast<uint32_t>(eventArgs.Handled()), static_cast<uint32_t>(eventArgs.Key()), static_cast<uint32_t>(eventArgs.OriginalKey()));
 }
 
 #pragma endregion
 
-} // namespace TypeLogging
+}

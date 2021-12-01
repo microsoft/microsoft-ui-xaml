@@ -17,7 +17,9 @@ struct XamlCompBrush : winrt::Windows::UI::Xaml::Media::XamlCompositionBrushBase
 
 MonochromaticOverlayPresenter::MonochromaticOverlayPresenter()
 {
-    SizeChanged([this](auto&&...) { InvalidateBrush(); });
+    SizeChanged([this](auto&&...) {
+        InvalidateBrush();
+        });
 }
 
 void MonochromaticOverlayPresenter::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -61,7 +63,7 @@ void MonochromaticOverlayPresenter::UpdateBrush()
             // Build an effect that takes the source image and uses the alpha channel and replaces all other channels with
             // the ReplacementColor's RGB.
             auto colorMatrixEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::ColorMatrixEffect>();
-            colorMatrixEffect->Source(winrt::CompositionEffectSourceParameter{L"source"});
+            colorMatrixEffect->Source(winrt::CompositionEffectSourceParameter{ L"source" });
             winrt::Microsoft::UI::Private::Composition::Effects::Matrix5x4 colorMatrix = {};
 
             // If the ReplacementColor is not transparent then use the RGB values as the new color. Otherwise
@@ -82,9 +84,9 @@ void MonochromaticOverlayPresenter::UpdateBrush()
             _effectFactory = compositor.CreateEffectFactory(*colorMatrixEffect);
         }
 
-        auto const actualSize = winrt::float2{(float)ActualWidth(), (float)ActualHeight()};
+        auto const actualSize = winrt::float2{ (float)ActualWidth(), (float)ActualHeight() };
         auto transform = TransformToVisual(targetElement);
-        auto const offset = transform.TransformPoint(winrt::Point{0, 0});
+        auto const offset = transform.TransformPoint(winrt::Point{ 0, 0 });
 
         // Create a VisualSurface positioned at the same location as this control and feed that
         // through the color effect.
@@ -94,7 +96,7 @@ void MonochromaticOverlayPresenter::UpdateBrush()
 
         // Select the source visual and the offset/size of this control in that element's space.
         surface.SourceVisual(winrt::ElementCompositionPreview::GetElementVisual(targetElement));
-        surface.SourceOffset({offset.X, offset.Y});
+        surface.SourceOffset({ offset.X, offset.Y });
         surface.SourceSize(actualSize);
         surfaceBrush.Surface(surface);
         surfaceBrush.Stretch(winrt::CompositionStretch::None);
@@ -107,4 +109,5 @@ void MonochromaticOverlayPresenter::UpdateBrush()
 
         winrt::ElementCompositionPreview::SetElementChildVisual(*this, visual);
     }
+
 }

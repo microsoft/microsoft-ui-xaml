@@ -10,7 +10,8 @@
 #undef max
 
 // We cache these factories for perf reasons
-class CachedVisualTreeHelpers : public winrt::implements<CachedVisualTreeHelpers, winrt::IInspectable>
+class CachedVisualTreeHelpers : 
+    public winrt::implements<CachedVisualTreeHelpers, winrt::IInspectable>
 {
 public:
     static winrt::Rect GetLayoutSlot(winrt::FrameworkElement const& element);

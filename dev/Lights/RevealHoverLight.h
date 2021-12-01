@@ -11,12 +11,12 @@
 class PointerHoverElementHelper;
 class SoftLightSwitch;
 
-class RevealHoverLight : public ReferenceTracker<RevealHoverLight, winrt::implementation::RevealHoverLightT>
+class RevealHoverLight :
+    public ReferenceTracker<RevealHoverLight, winrt::implementation::RevealHoverLightT>
 {
     friend RevealTestApi;
     friend MaterialHelperBase;
     friend MaterialHelper;
-
 public:
     static winrt::hstring& GetLightIdStatic();
 
@@ -33,18 +33,9 @@ public:
 
     void GoToState(_In_ winrt::RevealBrushState newState);
 
-    void SetIsPressLight(bool isPressLight)
-    {
-        m_isPressLight = isPressLight;
-    }
-    bool GetIsPressLight()
-    {
-        return m_isPressLight;
-    }
-    winrt::SpotLight GetLight()
-    {
-        return m_compositionSpotLight;
-    } // For test APIs
+    void SetIsPressLight(bool isPressLight) { m_isPressLight = isPressLight; }
+    bool GetIsPressLight() { return m_isPressLight; }
+    winrt::SpotLight GetLight() { return m_compositionSpotLight; } // For test APIs
 
 public:
     // These can be adjusted for tweaking/development on DBG builds
@@ -72,24 +63,9 @@ protected:
     void InitializeImpl(_In_opt_ IInspectable* outer);
 
 private:
-    enum class LightStates
-    {
-        Off,
-        AnimToHover,
-        AnimToOff,
-        Hover,
-        Pressing,
-        FastRelease,
-        SlowRelease
-    };
-    enum class LightEvents
-    {
-        GotoNormal,
-        GotoPointerOver,
-        GotoPressed,
-        AnimationComplete
-    };
-    LightStates m_currentLightState{LightStates::Off};
+    enum class LightStates { Off, AnimToHover, AnimToOff, Hover, Pressing, FastRelease, SlowRelease };
+    enum class LightEvents { GotoNormal, GotoPointerOver, GotoPressed, AnimationComplete };
+    LightStates m_currentLightState{ LightStates::Off };
 
     void GotoLightState(LightEvents e);
     void GotoLightStateHelper(LightStates target, bool skipAnimation = false);
@@ -106,19 +82,19 @@ private:
     void EnsureCompositionResources();
     void ReleaseCompositionResources();
 
-    winrt::weak_ref<winrt::UIElement> m_targetElement{nullptr};
-    winrt::ExpressionAnimation m_offsetAnimation{nullptr};
-    winrt::ExpressionAnimation m_outerAngleAnimation{nullptr};
-    bool m_isHoverAnimationActive{false};
-    winrt::CompositionPropertySet m_pointer{nullptr};
-    winrt::CompositionPropertySet m_offsetProps{nullptr};
-    winrt::SpotLight m_compositionSpotLight{nullptr};
-    winrt::CompositionPropertySet m_colorsProxy{nullptr};
+    winrt::weak_ref<winrt::UIElement> m_targetElement{ nullptr };
+    winrt::ExpressionAnimation m_offsetAnimation{ nullptr };
+    winrt::ExpressionAnimation m_outerAngleAnimation{ nullptr };
+    bool m_isHoverAnimationActive{ false };
+    winrt::CompositionPropertySet m_pointer{ nullptr };
+    winrt::CompositionPropertySet m_offsetProps{ nullptr };
+    winrt::SpotLight m_compositionSpotLight{ nullptr };
+    winrt::CompositionPropertySet m_colorsProxy{ nullptr };
     bool m_isDisabledByMaterialPolicy{};
 
 #if BUILD_WINDOWS
-    winrt::DispatcherQueue m_dispatcherQueue{nullptr};
-    winrt::MaterialProperties m_materialProperties{nullptr};
+    winrt::DispatcherQueue m_dispatcherQueue{ nullptr };
+    winrt::MaterialProperties m_materialProperties{ nullptr };
     winrt::MaterialProperties::TransparencyPolicyChanged_revoker m_transparencyPolicyChangedRevoker{};
     winrt::event_token m_additionalMaterialPolicyChangedToken{};
 #else
@@ -134,7 +110,7 @@ private:
 
     // We need to be able to center the hover light when a reveal enabled object is programmatically invoked.
     // For mouse and touch we will set this to false and have our light follow the pointer position.
-    bool m_centerLight{true};
+    bool m_centerLight{ true };
 
     const RevealHoverSpotlightStateDesc* m_spotLightStates{};
     winrt::IInspectable m_elementPointerPressedEventHandler{};

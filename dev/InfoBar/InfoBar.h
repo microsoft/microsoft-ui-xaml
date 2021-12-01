@@ -9,14 +9,14 @@
 #include "InfoBar.g.h"
 #include "InfoBar.properties.h"
 
-class InfoBar : public ReferenceTracker<InfoBar, winrt::implementation::InfoBarT>, public InfoBarProperties
+class InfoBar :
+    public ReferenceTracker<InfoBar, winrt::implementation::InfoBarT>,
+    public InfoBarProperties
 {
 
 public:
     InfoBar();
-    ~InfoBar()
-    {
-    }
+    ~InfoBar() {}
 
     // IFrameworkElement
     void OnApplyTemplate();
@@ -50,12 +50,12 @@ private:
 
     void OnForegroundChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
-    winrt::InfoBarCloseReason m_lastCloseReason{winrt::InfoBarCloseReason::Programmatic};
+    winrt::InfoBarCloseReason m_lastCloseReason{ winrt::InfoBarCloseReason::Programmatic };
 
     winrt::Button::Click_revoker m_closeButtonClickRevoker{};
-    tracker_ref<winrt::FrameworkElement> m_standardIconTextBlock{this};
+    tracker_ref<winrt::FrameworkElement> m_standardIconTextBlock{ this };
 
-    bool m_applyTemplateCalled{false};
-    bool m_notifyOpen{false};
-    bool m_isVisible{false};
+    bool m_applyTemplateCalled{ false };
+    bool m_notifyOpen{ false };
+    bool m_isVisible{ false };
 };

@@ -164,6 +164,7 @@ void TeachingTipTestHooks::IdleStatusChanged(winrt::event_token const& token)
     hooks->m_idleStatusChangedEventSource.remove(token);
 }
 
+
 bool TeachingTipTestHooks::GetIsIdle(const winrt::TeachingTip& teachingTip)
 {
     if (teachingTip)

@@ -5,7 +5,6 @@
 
 #include "NavigationViewBackRequestedEventArgs.g.h"
 
-class NavigationViewBackRequestedEventArgs
-    : public winrt::implementation::NavigationViewBackRequestedEventArgsT<NavigationViewBackRequestedEventArgs>
-{
-};
+class NavigationViewBackRequestedEventArgs :
+    public winrt::implementation::NavigationViewBackRequestedEventArgsT<NavigationViewBackRequestedEventArgs>
+{};

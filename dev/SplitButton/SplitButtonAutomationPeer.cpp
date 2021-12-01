@@ -10,14 +10,16 @@
 
 #include "SplitButtonAutomationPeer.properties.cpp"
 
-SplitButtonAutomationPeer::SplitButtonAutomationPeer(winrt::SplitButton const& owner) : ReferenceTracker(owner)
+SplitButtonAutomationPeer::SplitButtonAutomationPeer(winrt::SplitButton const& owner)
+    : ReferenceTracker(owner)
 {
 }
 
 // IAutomationPeerOverrides
 winrt::IInspectable SplitButtonAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
-    if (patternInterface == winrt::PatternInterface::ExpandCollapse || patternInterface == winrt::PatternInterface::Invoke)
+    if (patternInterface == winrt::PatternInterface::ExpandCollapse ||
+        patternInterface == winrt::PatternInterface::Invoke)
     {
         return *this;
     }
@@ -47,7 +49,7 @@ com_ptr<SplitButton> SplitButtonAutomationPeer::GetImpl()
     return impl;
 }
 
-// IExpandCollapseProvider
+// IExpandCollapseProvider 
 winrt::ExpandCollapseState SplitButtonAutomationPeer::ExpandCollapseState()
 {
     winrt::ExpandCollapseState currentState = winrt::ExpandCollapseState::Collapsed;

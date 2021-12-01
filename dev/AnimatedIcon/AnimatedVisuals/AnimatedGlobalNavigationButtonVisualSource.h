@@ -5,13 +5,13 @@
 //
 //       LottieGen version:
 //           7.1.0+ge1fa92580f
-//
+//       
 //       Command:
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedGlobalNavigationButtonVisualSource.json
-//
+//       
 //       Input file:
 //           AnimatedGlobalNavigationButtonVisualSource.json (37639 bytes created 23:37-07:00 Oct 5 2021)
-//
+//       
 //       LottieGen source:
 //           http://aka.ms/Lottie
 //
@@ -50,62 +50,64 @@
 class AnimatedGlobalNavigationButtonVisualSource
     : public winrt::implementation::AnimatedGlobalNavigationButtonVisualSourceT<AnimatedGlobalNavigationButtonVisualSource>
 {
-    winrt::Windows::UI::Composition::CompositionPropertySet _themeProperties{nullptr};
-    winrt::Windows::UI::Color _themeForeground{0xFF, 0x00, 0x00, 0x00};
+    winrt::Windows::UI::Composition::CompositionPropertySet _themeProperties{ nullptr };
+    winrt::Windows::UI::Color _themeForeground{ 0xFF, 0x00, 0x00, 0x00 };
     winrt::Windows::UI::Composition::CompositionPropertySet EnsureThemeProperties(winrt::Windows::UI::Composition::Compositor compositor);
 
     static winrt::Windows::Foundation::Numerics::float4 ColorAsVector4(winrt::Windows::UI::Color color);
-
 public:
     // Animation duration: 1.333 seconds.
-    static constexpr int64_t c_durationTicks{13333333L};
+    static constexpr int64_t c_durationTicks{ 13333333L };
 
     // Marker: NormalToPointerOver_Start.
-    static constexpr float M_NormalToPointerOver_Start{0.0F};
+    static constexpr float M_NormalToPointerOver_Start{ 0.0F };
 
     // Marker: NormalToPointerOver_End.
-    static constexpr float M_NormalToPointerOver_End{0.113124996F};
+    static constexpr float M_NormalToPointerOver_End{ 0.113124996F };
 
     // Marker: NormalToPressed_Start.
-    static constexpr float M_NormalToPressed_Start{0.125624999F};
+    static constexpr float M_NormalToPressed_Start{ 0.125624999F };
 
     // Marker: NormalToPressed_End.
-    static constexpr float M_NormalToPressed_End{0.238124996F};
+    static constexpr float M_NormalToPressed_End{ 0.238124996F };
 
     // Marker: PointerOverToNormal_Start.
-    static constexpr float M_PointerOverToNormal_Start{0.250625014F};
+    static constexpr float M_PointerOverToNormal_Start{ 0.250625014F };
 
     // Marker: PointerOverToNormal_End.
-    static constexpr float M_PointerOverToNormal_End{0.363124996F};
+    static constexpr float M_PointerOverToNormal_End{ 0.363124996F };
 
     // Marker: PointerOverToPressed_Start.
-    static constexpr float M_PointerOverToPressed_Start{0.375625014F};
+    static constexpr float M_PointerOverToPressed_Start{ 0.375625014F };
 
     // Marker: PointerOverToPressed_End.
-    static constexpr float M_PointerOverToPressed_End{0.488124996F};
+    static constexpr float M_PointerOverToPressed_End{ 0.488124996F };
 
     // Marker: PressedToNormal_Start.
-    static constexpr float M_PressedToNormal_Start{0.500625014F};
+    static constexpr float M_PressedToNormal_Start{ 0.500625014F };
 
     // Marker: PressedToNormal_End.
-    static constexpr float M_PressedToNormal_End{0.738125026F};
+    static constexpr float M_PressedToNormal_End{ 0.738125026F };
 
     // Marker: PressedToPointerOver_Start.
-    static constexpr float M_PressedToPointerOver_Start{0.750625014F};
+    static constexpr float M_PressedToPointerOver_Start{ 0.750625014F };
 
     // Marker: PressedToPointerOver_End.
-    static constexpr float M_PressedToPointerOver_End{0.988125026F};
+    static constexpr float M_PressedToPointerOver_End{ 0.988125026F };
 
     // Theme property: Foreground.
-    static inline const winrt::Windows::UI::Color c_themeForeground{0xFF, 0x00, 0x00, 0x00};
+    static inline const winrt::Windows::UI::Color c_themeForeground{ 0xFF, 0x00, 0x00, 0x00 };
+
 
     winrt::Windows::UI::Color Foreground();
     void Foreground(winrt::Windows::UI::Color value);
 
-    winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(winrt::Windows::UI::Composition::Compositor const& compositor);
+    winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(
+        winrt::Windows::UI::Composition::Compositor const& compositor);
 
     winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(
-        winrt::Windows::UI::Composition::Compositor const& compositor, winrt::Windows::Foundation::IInspectable& diagnostics);
+        winrt::Windows::UI::Composition::Compositor const& compositor,
+        winrt::Windows::Foundation::IInspectable& diagnostics);
 
     // Gets the number of frames in the animation.
     double FrameCount();

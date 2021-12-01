@@ -5,10 +5,11 @@
 
 #include "ElementFactoryRecycleArgs.g.h"
 
-class ElementFactoryRecycleArgs
-    : public ReferenceTracker<ElementFactoryRecycleArgs, winrt::implementation::ElementFactoryRecycleArgsT, winrt::composable, winrt::composing>
+class ElementFactoryRecycleArgs : 
+    public ReferenceTracker<ElementFactoryRecycleArgs, winrt::implementation::ElementFactoryRecycleArgsT, winrt::composable, winrt::composing>
 {
 public:
+
 #pragma region IElementFactoryRecycleArgs
     winrt::UIElement Element();
     void Element(winrt::UIElement const& value);
@@ -18,6 +19,6 @@ public:
 #pragma endregion
 
 private:
-    tracker_ref<winrt::UIElement> m_element{this};
-    tracker_ref<winrt::UIElement> m_parent{this};
+    tracker_ref<winrt::UIElement> m_element{ this };
+    tracker_ref<winrt::UIElement> m_parent{ this };
 };

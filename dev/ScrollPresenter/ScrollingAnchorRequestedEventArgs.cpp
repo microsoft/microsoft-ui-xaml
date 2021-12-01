@@ -31,7 +31,7 @@ void ScrollingAnchorRequestedEventArgs::AnchorElement(winrt::UIElement const& va
 {
     SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, value);
 
-    const winrt::UIElement& anchorElement{value};
+    const winrt::UIElement& anchorElement{ value };
     com_ptr<ScrollPresenter> scrollPresenter = winrt::get_self<ScrollPresenter>(m_scrollPresenter.get())->get_strong();
 
     if (!anchorElement || scrollPresenter->IsElementValidAnchor(anchorElement))
@@ -53,9 +53,8 @@ winrt::IVector<winrt::UIElement> ScrollingAnchorRequestedEventArgs::GetAnchorCan
 
 void ScrollingAnchorRequestedEventArgs::SetAnchorCandidates(const std::vector<tracker_ref<winrt::UIElement>>& anchorCandidates)
 {
-    winrt::IVector<winrt::UIElement> anchorCandidatesTmp =
-        winrt::make<Vector<winrt::UIElement, MakeVectorParam<VectorFlag::DependencyObjectBase>()>>();
-
+    winrt::IVector<winrt::UIElement> anchorCandidatesTmp = winrt::make<Vector<winrt::UIElement, MakeVectorParam<VectorFlag::DependencyObjectBase>()>>();
+        
     for (tracker_ref<winrt::UIElement> anchorCandidate : anchorCandidates)
     {
         anchorCandidatesTmp.Append(anchorCandidate.get());

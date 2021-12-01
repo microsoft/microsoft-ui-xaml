@@ -5,8 +5,10 @@
 
 #include "TreeViewItemAutomationPeer.g.h"
 
-class TreeViewItemAutomationPeer
-    : public ReferenceTracker<TreeViewItemAutomationPeer, winrt::implementation::TreeViewItemAutomationPeerT, winrt::ISelectionItemProvider>
+class TreeViewItemAutomationPeer :
+    public ReferenceTracker<TreeViewItemAutomationPeer,
+        winrt::implementation::TreeViewItemAutomationPeerT,
+        winrt::ISelectionItemProvider>
 {
 public:
     TreeViewItemAutomationPeer(winrt::TreeViewItem const& owner);
@@ -42,3 +44,4 @@ private:
     winrt::TreeViewNode GetTreeViewNode();
     void UpdateSelection(bool select);
 };
+

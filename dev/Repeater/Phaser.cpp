@@ -10,12 +10,15 @@
 #include "ItemsRepeater.h"
 #include "Phaser.h"
 
-Phaser::Phaser(ItemsRepeater* owner) : m_owner(owner)
+Phaser::Phaser(ItemsRepeater* owner) :
+    m_owner(owner)
 {
     // ItemsRepeater is not fully constructed yet. Don't interact with it.
 }
 
-void Phaser::PhaseElement(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo)
+void Phaser::PhaseElement(
+    const winrt::UIElement& element,
+    const winrt::com_ptr<VirtualizationInfo>& virtInfo)
 {
     auto dataTemplateComponent = virtInfo->DataTemplateComponent();
     auto nextPhase = virtInfo->Phase();
@@ -33,7 +36,7 @@ void Phaser::PhaseElement(const winrt::UIElement& element, const winrt::com_ptr<
             throw winrt::hresult_error(E_FAIL, L"Phase was set on virtualization info, but dataTemplateComponent was not.");
         }
     }
-    else if (nextPhase == VirtualizationInfo::PhaseNotSpecified)
+    else if(nextPhase == VirtualizationInfo::PhaseNotSpecified)
     {
         // If virtInfo->Phase is not specified, virtInfo->DataTemplateComponent cannot be valid.
         MUX_ASSERT(!dataTemplateComponent);
@@ -42,7 +45,7 @@ void Phaser::PhaseElement(const winrt::UIElement& element, const winrt::com_ptr<
         dataTemplateComponent = winrt::XamlBindingHelper::GetDataTemplateComponent(element);
         if (dataTemplateComponent)
         {
-            // Clear out old data.
+            // Clear out old data. 
             dataTemplateComponent.Recycle();
 
             nextPhase = VirtualizationInfo::PhaseReachedEnd;
@@ -72,9 +75,7 @@ void Phaser::StopPhasing(const winrt::UIElement& element, const winrt::com_ptr<V
     // since it will get updated when the element gets recycled.
     if (virtInfo->DataTemplateComponent())
     {
-        auto it = std::find_if(m_pendingElements.begin(), m_pendingElements.end(), [&element](const ElementInfo& info) {
-            return info.Element() == element;
-        });
+        auto it = std::find_if(m_pendingElements.begin(), m_pendingElements.end(), [&element](const ElementInfo& info) { return info.Element() == element; });
 
         if (it != m_pendingElements.end())
         {
@@ -115,9 +116,10 @@ void Phaser::DoPhasedWorkCallback()
                 if (nextPhase > 0)
                 {
                     virtInfo->Phase(nextPhase);
-                    // If we are the first item or
+                    // If we are the first item or 
                     // If the current items phase is higher than the next items phase, then move to the next item.
-                    if (currentIndex == 0 || virtInfo->Phase() > m_pendingElements[currentIndex - 1].VirtInfo()->Phase())
+                    if (currentIndex == 0 ||
+                        virtInfo->Phase() > m_pendingElements[currentIndex - 1].VirtInfo()->Phase())
                     {
                         currentIndex--;
                     }
@@ -143,12 +145,10 @@ void Phaser::DoPhasedWorkCallback()
             {
                 // If the next element is oustide the visible window and there are elements in the visible window
                 // go back to the visible window.
-                bool nextItemIsVisible =
-                    SharedHelpers::DoRectsIntersect(visibleWindow, m_pendingElements[currentIndex].VirtInfo()->ArrangeBounds());
+                bool nextItemIsVisible = SharedHelpers::DoRectsIntersect(visibleWindow, m_pendingElements[currentIndex].VirtInfo()->ArrangeBounds());
                 if (!nextItemIsVisible)
                 {
-                    bool haveVisibleItems =
-                        SharedHelpers::DoRectsIntersect(visibleWindow, m_pendingElements[pendingCount - 1].VirtInfo()->ArrangeBounds());
+                    bool haveVisibleItems = SharedHelpers::DoRectsIntersect(visibleWindow, m_pendingElements[pendingCount - 1].VirtInfo()->ArrangeBounds());
                     if (haveVisibleItems)
                     {
                         currentIndex = pendingCount - 1;
@@ -172,7 +172,10 @@ void Phaser::RegisterForCallback()
         m_registeredForCallback = true;
         BuildTreeScheduler::RegisterWork(
             m_pendingElements[m_pendingElements.size() - 1].VirtInfo()->Phase(), // Use the phase of the last one in the sorted list
-            [this]() { DoPhasedWorkCallback(); });
+            [this]()
+        {
+            DoPhasedWorkCallback();
+        });
     }
 }
 
@@ -194,13 +197,18 @@ void Phaser::ValidatePhaseOrdering(int currentPhase, int nextPhase)
 void Phaser::SortElements(const winrt::Rect& visibleWindow)
 {
     // Sort in descending order (inVisibleWindow, phase)
-    std::sort(m_pendingElements.begin(), m_pendingElements.end(), [visibleWindow](const auto& lhs, const auto& rhs) {
+    std::sort(
+        m_pendingElements.begin(),
+        m_pendingElements.end(),
+        [visibleWindow](const auto& lhs, const auto& rhs)
+    {
         const auto lhsBounds = lhs.VirtInfo()->ArrangeBounds();
         const auto lhsIntersects = SharedHelpers::DoRectsIntersect(lhsBounds, visibleWindow);
         const auto rhsBounds = rhs.VirtInfo()->ArrangeBounds();
         const auto rhsIntersects = SharedHelpers::DoRectsIntersect(rhsBounds, visibleWindow);
 
-        if ((lhsIntersects && rhsIntersects) || (!lhsIntersects && !rhsIntersects))
+        if ((lhsIntersects && rhsIntersects) ||
+            (!lhsIntersects && !rhsIntersects))
         {
             // Both are in the visible window or both are not
             return lhs.VirtInfo()->Phase() < rhs.VirtInfo()->Phase();
@@ -214,5 +222,6 @@ void Phaser::SortElements(const winrt::Rect& visibleWindow)
         {
             return true;
         }
-    });
+    }
+    );
 }

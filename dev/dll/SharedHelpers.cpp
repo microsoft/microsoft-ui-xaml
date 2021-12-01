@@ -7,10 +7,10 @@
 #include "SharedHelpers.h"
 #include <roapi.h>
 
-bool SharedHelpers::s_isOnXboxInitialized{false};
-bool SharedHelpers::s_isOnXbox{false};
-bool SharedHelpers::s_isMouseModeEnabledInitialized{false};
-bool SharedHelpers::s_isMouseModeEnabled{false};
+bool SharedHelpers::s_isOnXboxInitialized{ false };
+bool SharedHelpers::s_isOnXbox{ false };
+bool SharedHelpers::s_isMouseModeEnabledInitialized{ false };
+bool SharedHelpers::s_isMouseModeEnabled{ false };
 
 bool SharedHelpers::IsAnimationsEnabled()
 {
@@ -96,8 +96,7 @@ bool SharedHelpers::IsTH2OrLower()
 bool SharedHelpers::IsXamlCompositionBrushBaseAvailable()
 {
     // On RS3 we know XamlCompositionBrushBase was always present, so short circuit the check there.
-    static bool s_isAvailable =
-        IsRS3OrHigher() || winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Media.XamlCompositionBrushBase");
+    static bool s_isAvailable = IsRS3OrHigher() || winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Media.XamlCompositionBrushBase");
     return s_isAvailable;
 }
 
@@ -128,15 +127,16 @@ bool SharedHelpers::IsCoreWindowActivationModeAvailable()
 bool SharedHelpers::IsFlyoutShowOptionsAvailable()
 {
     static bool s_isFlyoutShowOptionsAvailable =
-        Is19H1OrHigher() || winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Primitives.FlyoutShowOptions");
+        Is19H1OrHigher() ||
+        winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Primitives.FlyoutShowOptions");
     return s_isFlyoutShowOptionsAvailable;
 }
 
 bool SharedHelpers::IsScrollContentPresenterSizesContentToTemplatedParentAvailable()
 {
     static bool s_isScrollContentPresenterSizesContentToTemplatedParentAvailable =
-        Is19H1OrHigher() || winrt::ApiInformation::IsPropertyPresent(
-                                L"Windows.UI.Xaml.Controls.ScrollContentPresenter", L"SizesContentToTemplatedParent");
+        Is19H1OrHigher() ||
+        winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.ScrollContentPresenter", L"SizesContentToTemplatedParent");
     return s_isScrollContentPresenterSizesContentToTemplatedParentAvailable;
 }
 
@@ -171,47 +171,53 @@ bool SharedHelpers::IsTranslationFacadeAvailable(const winrt::UIElement& element
 bool SharedHelpers::IsIconSourceElementAvailable()
 {
     static bool s_isAvailable =
-        Is19H1OrHigher() || winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Controls.IconSourceElement");
+        Is19H1OrHigher() ||
+        winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Controls.IconSourceElement");
     return s_isAvailable;
 }
 
 bool SharedHelpers::IsStandardUICommandAvailable()
 {
     static bool s_isAvailable =
-        Is19H1OrHigher() || (winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Input.XamlUICommand") &&
-                             winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Input.StandardUICommand"));
+        Is19H1OrHigher() ||
+        (winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Input.XamlUICommand") &&
+            winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Input.StandardUICommand"));
     return s_isAvailable;
 }
 
 bool SharedHelpers::IsDispatcherQueueAvailable()
 {
-    static bool s_isAvailable = IsRS4OrHigher() || winrt::ApiInformation::IsTypePresent(L"Windows.System.DispatcherQueue");
+    static bool s_isAvailable =
+        IsRS4OrHigher() ||
+        winrt::ApiInformation::IsTypePresent(L"Windows.System.DispatcherQueue");
     return s_isAvailable;
 }
 
 bool SharedHelpers::IsThemeShadowAvailable()
 {
     static bool s_isThemeShadowAvailable =
-        IsVanadiumOrHigher() || winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Media.ThemeShadow");
+        IsVanadiumOrHigher() ||
+        winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Media.ThemeShadow");
     return s_isThemeShadowAvailable;
 }
 
 bool SharedHelpers::IsIsLoadedAvailable()
 {
     static bool s_isAvailable =
-        IsRS5OrHigher() || winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.FrameworkElement", L"IsLoaded");
+        IsRS5OrHigher() ||
+        winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.FrameworkElement", L"IsLoaded");
     return s_isAvailable;
 }
 
 bool SharedHelpers::IsCompositionRadialGradientBrushAvailable()
 {
     static bool s_isAvailable =
-        Is21H1OrHigher() || winrt::ApiInformation::IsTypePresent(L"Windows.UI.Composition.CompositionRadialGradientBrush");
+        Is21H1OrHigher() ||
+        winrt::ApiInformation::IsTypePresent(L"Windows.UI.Composition.CompositionRadialGradientBrush");
     return s_isAvailable;
 }
 
-template <uint16_t APIVersion>
-bool SharedHelpers::IsAPIContractVxAvailable()
+template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
 {
     static bool isAPIContractVxAvailableInitialized = false;
     static bool isAPIContractVxAvailable = false;
@@ -221,8 +227,7 @@ bool SharedHelpers::IsAPIContractVxAvailable()
         // The CBS package is only ever used as a part of the Windows build. Therefore, we can assume that
         // all API contracts are present since we can never be running these binaries on a windows build
         // that does not match the windows sdk these binaries were compiled against.
-        isAPIContractVxAvailable =
-            IsInCBSPackage() ? true : winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
+        isAPIContractVxAvailable = IsInCBSPackage() ? true : winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
     }
 
     return isAPIContractVxAvailable;
@@ -264,6 +269,7 @@ bool SharedHelpers::IsAPIContractV5Available()
     return IsAPIContractVxAvailable<5>();
 }
 
+
 bool SharedHelpers::IsAPIContractV4Available()
 {
     return IsAPIContractVxAvailable<4>();
@@ -278,18 +284,17 @@ void* __stdcall winrt_get_activation_factory(std::wstring_view const& name);
 
 bool IsInPackage(std::wstring_view detectorName)
 {
-    // Special type that we manually list here which is not part of the Nuget dll distribution package.
+    // Special type that we manually list here which is not part of the Nuget dll distribution package. 
     // This is our breadcrumb that we leave to be able to detect at runtime that we're using the framework package.
     // It's listed only in the Framework packages' AppxManifest.xml as an activatable type but only so
     // that RoGetActivationFactory will change behavior and call our DllGetActivationFactory. It doesn't
     // matter what comes back for the activationfactory. If it succeeds it means we're running against
     // the framework package.
 
-    winrt::hstring typeName{detectorName};
+    winrt::hstring typeName{ detectorName };
     winrt::IActivationFactory activationFactory;
 
-    if (SUCCEEDED(RoGetActivationFactory(
-            static_cast<HSTRING>(winrt::get_abi(typeName)), winrt::guid_of<IActivationFactory>(), winrt::put_abi(activationFactory))))
+    if (SUCCEEDED(RoGetActivationFactory(static_cast<HSTRING>(winrt::get_abi(typeName)), winrt::guid_of<IActivationFactory>(), winrt::put_abi(activationFactory))))
     {
         return true;
     }
@@ -314,10 +319,16 @@ winrt::Rect SharedHelpers::ConvertDipsToPhysical(winrt::UIElement const& xamlRoo
 {
     try
     {
-        const auto scaleFactor = Is19H1OrHigher()
-                                     ? static_cast<float>(xamlRootReference.XamlRoot().RasterizationScale())
-                                     : static_cast<float>(winrt::DisplayInformation::GetForCurrentView().RawPixelsPerViewPixel());
-        return winrt::Rect{dipsRect.X * scaleFactor, dipsRect.Y * scaleFactor, dipsRect.Width * scaleFactor, dipsRect.Height * scaleFactor};
+        const auto scaleFactor = Is19H1OrHigher()?
+                                    static_cast<float>(xamlRootReference.XamlRoot().RasterizationScale()):
+                                    static_cast<float>(winrt::DisplayInformation::GetForCurrentView().RawPixelsPerViewPixel());
+        return winrt::Rect
+        {
+            dipsRect.X * scaleFactor,
+            dipsRect.Y * scaleFactor,
+            dipsRect.Width * scaleFactor,
+            dipsRect.Height * scaleFactor
+        };
     }
     catch (winrt::hresult_error)
     {
@@ -333,15 +344,20 @@ winrt::Rect SharedHelpers::ConvertPhysicalToDips(winrt::UIElement const& xamlRoo
     try
     {
         const auto scaleFactor = static_cast<float>(winrt::DisplayInformation::GetForCurrentView().RawPixelsPerViewPixel());
-        return winrt::Rect{
-            physicalRect.X / scaleFactor, physicalRect.Y / scaleFactor, physicalRect.Width / scaleFactor, physicalRect.Height / scaleFactor};
+        return winrt::Rect
+        {
+            physicalRect.X / scaleFactor,
+            physicalRect.Y / scaleFactor,
+            physicalRect.Width / scaleFactor,
+            physicalRect.Height / scaleFactor
+        };
     }
     catch (winrt::hresult_error)
     {
         // Calling GetForCurrentView on threads without a CoreWindow throws an error. This comes up in places like LogonUI.
         // In this circumstance, we'll just always expand down, since we can't get bounds information.
     }
-
+    
     return physicalRect;
 }
 
@@ -350,8 +366,9 @@ bool SharedHelpers::IsOnXbox()
     if (!s_isOnXboxInitialized)
     {
         auto deviceFamily = winrt::AnalyticsInfo::VersionInfo().DeviceFamily();
-        s_isOnXbox =
-            (deviceFamily == L"Windows.Xbox") || (deviceFamily == L"Windows.XBoxSRA") || (deviceFamily == L"Windows.XBoxERA");
+        s_isOnXbox = (deviceFamily == L"Windows.Xbox")
+            || (deviceFamily == L"Windows.XBoxSRA")
+            || (deviceFamily == L"Windows.XBoxERA");
         s_isOnXboxInitialized = true;
     }
     return s_isOnXbox;
@@ -366,7 +383,8 @@ bool SharedHelpers::IsMouseModeEnabled()
         if (IsRS1OrHigher())
         {
             // RequiresPointerMode is in Windows.Foundation.UniversalApiContract (introduced v3)
-            s_isMouseModeEnabled = winrt::Application::Current().RequiresPointerMode() == winrt::ApplicationRequiresPointerMode::Auto;
+            s_isMouseModeEnabled = winrt::Application::Current().RequiresPointerMode()
+                == winrt::ApplicationRequiresPointerMode::Auto;
         }
         else
         {
@@ -377,18 +395,24 @@ bool SharedHelpers::IsMouseModeEnabled()
     return s_isMouseModeEnabled;
 }
 
-void SharedHelpers::ScheduleActionAfterWait(std::function<void()> const& action, unsigned int millisecondWait)
+void SharedHelpers::ScheduleActionAfterWait(
+    std::function<void()> const& action,
+    unsigned int millisecondWait)
 {
-
+    
     DispatcherHelper dispatcherHelper;
 
     // The callback that is given to CreateTimer is called off of the UI thread.
     // In order to make this useful by making it so we can interact with XAML objects,
     // we'll use the dispatcher to first post our work to the UI thread before executing it.
-    auto timer = winrt::ThreadPoolTimer::CreateTimer(
-        winrt::TimerElapsedHandler([action, dispatcherHelper](auto const&) { dispatcherHelper.RunAsync(action); }),
-        std::chrono::milliseconds{millisecondWait});
+    auto timer = winrt::ThreadPoolTimer::CreateTimer(winrt::TimerElapsedHandler(
+        [action, dispatcherHelper](auto const&)
+        {
+            dispatcherHelper.RunAsync(action);
+        }),
+        std::chrono::milliseconds{ millisecondWait });
 }
+
 
 // Stream helpers
 winrt::InMemoryRandomAccessStream SharedHelpers::CreateStreamFromBytes(const winrt::array_view<const byte>& bytes)
@@ -413,21 +437,19 @@ void SharedHelpers::QueueCallbackForCompositionRendering(std::function<void()> c
     {
         auto renderingEventToken = std::make_shared<winrt::event_token>();
         *renderingEventToken = winrt::Xaml::Media::CompositionTarget::Rendering([renderingEventToken, callback](auto&, auto&) {
+
             // Detach event or Rendering will keep calling us back.
             winrt::Xaml::Media::CompositionTarget::Rendering(*renderingEventToken);
 
             callback();
         });
     }
-    catch (const winrt::hresult_error& e)
+    catch (const winrt::hresult_error &e)
     {
         // DirectUI::CompositionTarget::add_Rendering can fail with RPC_E_WRONG_THREAD if called while the Xaml Core is being shutdown,
         // and there is evidence from Watson that such calls are made in real apps (see Bug 13554197).
         // Since the core is being shutdown, we no longer care about whatever work we wanted to defer to CT.Rendering, so ignore this error.
-        if (e.to_abi() != RPC_E_WRONG_THREAD)
-        {
-            throw;
-        }
+        if (e.to_abi() != RPC_E_WRONG_THREAD) { throw; }
     }
 }
 
@@ -435,11 +457,16 @@ void SharedHelpers::QueueCallbackForCompositionRendering(std::function<void()> c
 
 // Returns TRUE if either rect is empty or the rects
 // have an empty intersection.
-bool SharedHelpers::DoRectsIntersect(const winrt::Rect& rect1, const winrt::Rect& rect2)
+bool SharedHelpers::DoRectsIntersect(
+    const winrt::Rect& rect1,
+    const winrt::Rect& rect2)
 {
-    const bool doIntersect = (rect1.Width > 0 && rect1.Height > 0 && rect2.Width > 0 && rect2.Height > 0) &&
-                             (rect2.X <= rect1.X + rect1.Width) && (rect2.X + rect2.Width >= rect1.X) &&
-                             (rect2.Y <= rect1.Y + rect1.Height) && (rect2.Y + rect2.Height >= rect1.Y);
+    const bool doIntersect =
+        (rect1.Width > 0 && rect1.Height > 0 && rect2.Width > 0 && rect2.Height > 0) &&
+        (rect2.X <= rect1.X + rect1.Width) &&
+        (rect2.X + rect2.Width >= rect1.X) &&
+        (rect2.Y <= rect1.Y + rect1.Height) &&
+        (rect2.Y + rect2.Height >= rect1.Y);
     return doIntersect;
 }
 
@@ -456,7 +483,10 @@ winrt::IInspectable SharedHelpers::FindInApplicationResources(const std::wstring
 
 // When checkVisibility is True, IsAncestor additionally checks if any UIElement from the 'child'
 // to the 'parent' chain is Collapsed. It returns False when that is the case.
-bool SharedHelpers::IsAncestor(const winrt::DependencyObject& child, const winrt::DependencyObject& parent, bool checkVisibility)
+bool SharedHelpers::IsAncestor(
+    const winrt::DependencyObject& child,
+    const winrt::DependencyObject& parent,
+    bool checkVisibility)
 {
     if (!child || !parent || child == parent)
     {
@@ -614,7 +644,10 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
 
 #endif
 
-void SharedHelpers::SetBinding(std::wstring_view const& pathString, winrt::DependencyObject const& target, winrt::DependencyProperty const& targetProperty)
+void SharedHelpers::SetBinding(
+    std::wstring_view const& pathString,
+    winrt::DependencyObject const& target,
+    winrt::DependencyProperty const& targetProperty)
 {
     winrt::Binding binding;
     winrt::RelativeSource relativeSource;
@@ -754,23 +787,23 @@ winrt::hstring SharedHelpers::TryGetStringRepresentationFromObject(winrt::IInspe
 {
     winrt::hstring returnHString;
 
-    if (obj)
+    if(obj)
     {
         if (auto stringable = obj.try_as<winrt::IStringable>())
         {
             returnHString = stringable.ToString();
         }
-        if (returnHString.empty())
+        if(returnHString.empty())
         {
             returnHString = winrt::unbox_value_or<winrt::hstring>(obj, returnHString);
         }
     }
-
+    
     return returnHString;
 }
 
 /* static */
 winrt::float4 SharedHelpers::RgbaColor(const winrt::Color& color)
 {
-    return {static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A)};
+    return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
 }

@@ -7,11 +7,11 @@
 
 #include <uiautomationclient.h>
 
-#pragma warning(disable : 26496 26462 26461 6387 28196)
+#pragma warning( disable : 26496 26462 26461 6387 28196)
 
-WebView2AutomationPeer::WebView2AutomationPeer(winrt::WebView2 const& owner) : ReferenceTracker(owner)
-{
-}
+WebView2AutomationPeer::WebView2AutomationPeer(winrt::WebView2 const& owner)
+    : ReferenceTracker(owner)
+{}
 
 com_ptr<WebView2> WebView2AutomationPeer::GetImpl()
 {
@@ -61,48 +61,50 @@ HRESULT WebView2AutomationPeer::IsCorrectPeerForHwnd(HWND hwnd, _Out_ bool* valu
 }
 #endif
 
-struct ProviderWrapper
-    : winrt::implements<ProviderWrapper, winrt::IInspectable, ::IRawElementProviderSimple, ::IRawElementProviderSimple2, ::IRawElementProviderFragment, ::IRawElementProviderFragmentRoot>
+struct ProviderWrapper : winrt::implements<ProviderWrapper, winrt::IInspectable, ::IRawElementProviderSimple, ::IRawElementProviderSimple2, ::IRawElementProviderFragment, ::IRawElementProviderFragmentRoot>
 {
 public:
-    ProviderWrapper(winrt::com_ptr<IRawElementProviderSimple> const& child, winrt::FrameworkElementAutomationPeer parent) :
-        m_child(child), m_parent(parent)
+    ProviderWrapper(winrt::com_ptr<IRawElementProviderSimple> const& child, winrt::FrameworkElementAutomationPeer parent) : m_child(child), m_parent(parent)
     {
     }
 
-    HRESULT STDMETHODCALLTYPE get_ProviderOptions(__RPC__out enum ProviderOptions* pRetVal) noexcept override
+    HRESULT STDMETHODCALLTYPE get_ProviderOptions(
+        __RPC__out enum ProviderOptions* pRetVal) noexcept override
     {
-        *pRetVal = ProviderOptions_ServerSideProvider | ProviderOptions_UseComThreading | ProviderOptions_OverrideProvider;
+        *pRetVal = ProviderOptions_ServerSideProvider | ProviderOptions_UseComThreading
+            | ProviderOptions_OverrideProvider;
 
         return S_OK;
     }
 
-    HRESULT STDMETHODCALLTYPE GetPatternProvider(PATTERNID patternId, __RPC__deref_out_opt IUnknown** pRetVal) noexcept override
+    HRESULT STDMETHODCALLTYPE GetPatternProvider(
+        PATTERNID patternId,
+        __RPC__deref_out_opt IUnknown** pRetVal) noexcept override
     {
         *pRetVal = nullptr;
         return S_OK;
     }
 
-    HRESULT STDMETHODCALLTYPE GetPropertyValue(PROPERTYID propertyId, __RPC__out VARIANT* pRetVal) noexcept override
+    HRESULT STDMETHODCALLTYPE GetPropertyValue(
+        PROPERTYID propertyId,
+        __RPC__out VARIANT* pRetVal) noexcept override
     {
-        if (propertyId == UIA_IsControlElementPropertyId)
-        {
+        if (propertyId == UIA_IsControlElementPropertyId) {
             pRetVal->vt = VT_BOOL;
             pRetVal->boolVal = VARIANT_TRUE;
         }
-        else if (propertyId == UIA_IsContentElementPropertyId)
-        {
+        else if (propertyId == UIA_IsContentElementPropertyId) {
             pRetVal->vt = VT_BOOL;
             pRetVal->boolVal = VARIANT_TRUE;
         }
-        else
-        {
+        else {
             return E_NOTIMPL;
         }
         return S_OK;
     }
 
-    HRESULT STDMETHODCALLTYPE get_HostRawElementProvider(__RPC__deref_out_opt IRawElementProviderSimple** pRetVal) noexcept override
+    HRESULT STDMETHODCALLTYPE get_HostRawElementProvider(
+        __RPC__deref_out_opt IRawElementProviderSimple** pRetVal) noexcept override
     {
         return m_child->get_HostRawElementProvider(pRetVal);
     }
@@ -165,7 +167,7 @@ public:
         auto windowBounds = winrt::Window::Current().Bounds();
         pRetVal->left += windowBounds.X * scale;
         pRetVal->top += windowBounds.Y * scale;
-
+        
         return S_OK;
     }
 
@@ -178,7 +180,7 @@ public:
 
     HRESULT STDMETHODCALLTYPE SetFocus(void) override
     {
-        return S_OK;
+        return S_OK; 
     }
 
     /* [propget] */ HRESULT STDMETHODCALLTYPE get_FragmentRoot(
@@ -246,7 +248,7 @@ bool WebView2AutomationPeer::InitProvider()
             com_ptr<IRawElementProviderSimple> spHost;
             m_provider->get_HostRawElementProvider(spHost.put());
 
-            auto spFragRoot = spHost.try_as<IRawElementProviderFragmentRoot>();
+            auto spFragRoot = spHost.try_as< IRawElementProviderFragmentRoot>();
 
             m_providerWrapper = *winrt::make_self<ProviderWrapper>(m_provider, *this);
         }

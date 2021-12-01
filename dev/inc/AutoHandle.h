@@ -4,7 +4,8 @@
 #pragma once
 
 // Macros to make it easier to declare / instantiate instances of the template class for specific handle data type
-#define DECLARE_AUTOHANDLE_CLASS(className, handlePolicy) typedef MUXControls::Common::AutoHandle<handlePolicy> className;
+#define DECLARE_AUTOHANDLE_CLASS(className, handlePolicy) \
+    typedef MUXControls::Common::AutoHandle<handlePolicy> className; \
 
 namespace MUXControls { namespace Common {
 
@@ -46,24 +47,27 @@ namespace MUXControls { namespace Common {
         bool IsValid() const;
 
     private:
-        AutoHandle(const AutoHandle&);            // not implemented
+        AutoHandle(const AutoHandle&); // not implemented
         AutoHandle& operator=(const AutoHandle&); // not implemented
 
         THandleType m_handle;
     };
 
     template <typename THandlePolicy>
-    AutoHandle<THandlePolicy>::AutoHandle() : m_handle(THandlePolicy::Invalidate(m_handle))
+    AutoHandle<THandlePolicy>::AutoHandle()
+        : m_handle(THandlePolicy::Invalidate(m_handle))
     {
     }
 
     template <typename THandlePolicy>
-    AutoHandle<THandlePolicy>::AutoHandle(THandleType handle) : m_handle(handle)
+    AutoHandle<THandlePolicy>::AutoHandle(THandleType handle)
+        : m_handle(handle)
     {
     }
 
     template <typename THandlePolicy>
-    AutoHandle<THandlePolicy>::AutoHandle(AutoHandle&& other) : m_handle(other.Detach())
+    AutoHandle<THandlePolicy>::AutoHandle(AutoHandle&& other)
+        : m_handle(other.Detach())
     {
     }
 
@@ -158,4 +162,4 @@ namespace MUXControls { namespace Common {
     // Declare most used AutoHandles
     DECLARE_AUTOHANDLE_CLASS(Handle, HandlePolicy);
 
-}} // namespace MUXControls::Common
+} } // namespace MUXControls::Common

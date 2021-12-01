@@ -6,11 +6,13 @@
 #include "RevealListViewItemPresenter.h"
 #include "RevealBrush.h"
 
-bool RevealListViewItemPresenter::GoToElementStateCore(winrt::hstring const& state, bool useTransitions)
+bool RevealListViewItemPresenter::GoToElementStateCore(winrt::hstring const& state, bool useTransitions) 
 {
     RevealBrush::EnsureProperties();
 
-    const auto goToState = [this](winrt::RevealBrushState state) { SetValue(RevealBrush::s_StateProperty, box_value(state)); };
+    const auto goToState = [this](winrt::RevealBrushState state) {
+        SetValue(RevealBrush::s_StateProperty, box_value(state));
+    };
 
     // Handle all of the states in the ListViewItemPresenter "Common" state group.
     if (state == L"Normal" || state == L"Selected" || state == L"Disabled")

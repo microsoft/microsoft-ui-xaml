@@ -17,12 +17,12 @@
 #define DEFAULT_PULL_DIMENSION_SIZE 100
 
 // Change to 'true' to turn on debugging outputs in Output window
-bool PTRTrace::s_IsDebugOutputEnabled{false};
-bool PTRTrace::s_IsVerboseDebugOutputEnabled{false};
+bool PTRTrace::s_IsDebugOutputEnabled{ false };
+bool PTRTrace::s_IsVerboseDebugOutputEnabled{ false };
 
-// RefreshContainer is the top level visual in a PTR experience. responsible for displaying its content property along with a
-// RefreshVisualizer, in the specified location. It also adapts a member of its contents tree to an IRefreshInfoProvider and
-// attaches it to the RefreshVisualizer.
+// RefreshContainer is the top level visual in a PTR experience. responsible for displaying its content property along with a RefreshVisualizer,
+// in the specified location. It also adapts a member of its contents tree to an IRefreshInfoProvider and attaches it to the
+// RefreshVisualizer.
 //
 // Here is the object map of the PTR experience:
 //
@@ -63,7 +63,7 @@ RefreshContainer::RefreshContainer()
 
     m_refreshInfoProviderAdapter.set(winrt::make<ScrollViewerIRefreshInfoProviderAdapter>(PullDirection(), nullptr));
     m_hasDefaultRefreshInfoProviderAdapter = true;
-    OnRefreshInfoProviderAdapterChanged();
+    OnRefreshInfoProviderAdapterChanged();        
 }
 
 void RefreshContainer::OnApplyTemplate()
@@ -97,7 +97,7 @@ void RefreshContainer::OnApplyTemplate()
     OnPullDirectionChangedImpl();
 }
 
-void RefreshContainer::RequestRefresh()
+void RefreshContainer::RequestRefresh() 
 {
     PTR_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
     if (m_refreshVisualizer)
@@ -106,7 +106,7 @@ void RefreshContainer::RequestRefresh()
     }
 }
 
-// Privates
+//Privates
 void RefreshContainer::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
@@ -146,8 +146,8 @@ void RefreshContainer::OnRefreshVisualizerChangedImpl()
 
     if (m_refreshVisualizer)
     {
-        m_refreshVisualizer.get().SizeChanged({this, &RefreshContainer::OnVisualizerSizeChanged});
-        m_refreshVisualizer.get().RefreshRequested({this, &RefreshContainer::OnVisualizerRefreshRequested});
+        m_refreshVisualizer.get().SizeChanged({ this, &RefreshContainer::OnVisualizerSizeChanged });
+        m_refreshVisualizer.get().RefreshRequested({ this, &RefreshContainer::OnVisualizerRefreshRequested });
     }
 }
 
@@ -206,16 +206,18 @@ void RefreshContainer::OnPullDirectionChangedImpl()
             break;
         default:
             MUX_ASSERT(false);
-        }
-
-        // If we have changed the PullDirection but the Adapter wont be updated by the size changed handler.
-        if (m_hasDefaultRefreshInfoProviderAdapter && m_hasDefaultRefreshVisualizer &&
+        }    
+        
+        //If we have changed the PullDirection but the Adapter wont be updated by the size changed handler.
+        if (m_hasDefaultRefreshInfoProviderAdapter &&
+            m_hasDefaultRefreshVisualizer &&
             m_refreshVisualizer.get().ActualHeight() == DEFAULT_PULL_DIMENSION_SIZE &&
             m_refreshVisualizer.get().ActualWidth() == DEFAULT_PULL_DIMENSION_SIZE)
         {
             m_refreshInfoProviderAdapter.set(winrt::make<ScrollViewerIRefreshInfoProviderAdapter>(PullDirection(), nullptr));
             OnRefreshInfoProviderAdapterChanged();
         }
+
     }
 }
 
@@ -233,8 +235,7 @@ void RefreshContainer::OnRefreshInfoProviderAdapterChanged()
             winrt::IRefreshInfoProvider adaptFromTreeResult = nullptr;
             if (m_refreshInfoProviderAdapter)
             {
-                adaptFromTreeResult =
-                    m_refreshInfoProviderAdapter.get().AdaptFromTree(m_root.get(), m_refreshVisualizer.get().RenderSize());
+                adaptFromTreeResult = m_refreshInfoProviderAdapter.get().AdaptFromTree(m_root.get(), m_refreshVisualizer.get().RenderSize());
                 if (adaptFromTreeResult)
                 {
                     m_refreshVisualizer.get().as<winrt::IRefreshVisualizerPrivate>().InfoProvider(adaptFromTreeResult);
@@ -312,15 +313,7 @@ winrt::IRefreshInfoProvider RefreshContainer::SearchTreeForIRefreshInfoProviderR
 
 void RefreshContainer::OnVisualizerSizeChanged(const winrt::IInspectable& /*sender*/, const winrt::SizeChangedEventArgs& args)
 {
-    PTR_TRACE_INFO(
-        *this,
-        TRACE_MSG_METH_FLT_FLT_FLT_FLT,
-        METH_NAME,
-        this,
-        args.PreviousSize().Width,
-        args.PreviousSize().Height,
-        args.NewSize().Width,
-        args.NewSize().Height);
+    PTR_TRACE_INFO(*this, TRACE_MSG_METH_FLT_FLT_FLT_FLT, METH_NAME, this, args.PreviousSize().Width, args.PreviousSize().Height, args.NewSize().Width, args.NewSize().Height);
     if (m_hasDefaultRefreshInfoProviderAdapter)
     {
         m_refreshInfoProviderAdapter.set(winrt::make<ScrollViewerIRefreshInfoProviderAdapter>(PullDirection(), nullptr));
@@ -340,15 +333,17 @@ void RefreshContainer::RaiseRefreshRequested()
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     com_ptr<RefreshContainer> strongThis = get_strong();
 
-    winrt::Deferral instance{[strongThis]() {
-        strongThis->CheckThread();
-        strongThis->RefreshCompleted();
-    }};
+    winrt::Deferral instance{ [strongThis]()
+        {
+            strongThis->CheckThread();
+            strongThis->RefreshCompleted();
+        }
+    };
 
     auto args = winrt::make_self<RefreshRequestedEventArgs>(instance);
 
-    // This makes sure that everyone registered for this event can get access to the deferral
-    // Otherwise someone could complete the deferral before someone else has had a chance to grab it
+    //This makes sure that everyone registered for this event can get access to the deferral
+    //Otherwise someone could complete the deferral before someone else has had a chance to grab it
     args->IncrementDeferralCount();
     m_refreshRequestedEventSource(*this, *args);
     args->DecrementDeferralCount();
@@ -363,7 +358,7 @@ void RefreshContainer::RefreshCompleted()
     }
 }
 
-// Private interface implementations
+//Private interface implementations
 winrt::IRefreshInfoProviderAdapter RefreshContainer::RefreshInfoProviderAdapter()
 {
     PTR_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);

@@ -10,10 +10,11 @@
 #include "OrientationBasedMeasures.h"
 #include "UniformGridLayoutState.h"
 
-class UniformGridLayout : public ReferenceTracker<UniformGridLayout, winrt::implementation::UniformGridLayoutT, VirtualizingLayout>,
-                          public IFlowLayoutAlgorithmDelegates,
-                          public OrientationBasedMeasures,
-                          public UniformGridLayoutProperties
+class UniformGridLayout :
+    public ReferenceTracker<UniformGridLayout, winrt::implementation::UniformGridLayoutT, VirtualizingLayout>,
+    public IFlowLayoutAlgorithmDelegates,
+    public OrientationBasedMeasures,
+    public UniformGridLayoutProperties
 {
 public:
     UniformGridLayout();
@@ -21,22 +22,31 @@ public:
 #pragma region IVirtualizingLayoutOverrides
     void InitializeForContextCore(winrt::VirtualizingLayoutContext const& context);
     void UninitializeForContextCore(winrt::VirtualizingLayoutContext const& context);
-    winrt::Size MeasureOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& availableSize);
-    winrt::Size ArrangeOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& finalSize);
+    winrt::Size MeasureOverride(
+        winrt::VirtualizingLayoutContext const& context,
+        winrt::Size const& availableSize);
+    winrt::Size ArrangeOverride(
+        winrt::VirtualizingLayoutContext const& context,
+        winrt::Size const& finalSize);
 
-    void OnItemsChangedCore(winrt::VirtualizingLayoutContext const& context, winrt::IInspectable const& source, winrt::NotifyCollectionChangedEventArgs const& args);
+    void OnItemsChangedCore(
+        winrt::VirtualizingLayoutContext const& context,
+        winrt::IInspectable const& source,
+        winrt::NotifyCollectionChangedEventArgs const& args);
 #pragma endregion
 
 #pragma region IFlowLayoutAlgorithmDelegates
     winrt::Size Algorithm_GetMeasureSize(int index, const winrt::Size& availableSize, const winrt::VirtualizingLayoutContext& context) override;
-    winrt::Size Algorithm_GetProvisionalArrangeSize(
-        int index, const winrt::Size& measureSize, winrt::Size const& desiredSize, const winrt::VirtualizingLayoutContext& context) override;
+    winrt::Size Algorithm_GetProvisionalArrangeSize(int index, const winrt::Size& measureSize, winrt::Size const& desiredSize, const winrt::VirtualizingLayoutContext& context) override;
     bool Algorithm_ShouldBreakLine(int index, double remainingSpace) override;
-    winrt::FlowLayoutAnchorInfo Algorithm_GetAnchorForRealizationRect(const winrt::Size& availableSize, const winrt::VirtualizingLayoutContext& context) override;
-    winrt::FlowLayoutAnchorInfo Algorithm_GetAnchorForTargetElement(
-        int targetIndex, const winrt::Size& availableSize, const winrt::VirtualizingLayoutContext& context) override;
-    winrt::Rect Algorithm_GetExtent(
+    winrt::FlowLayoutAnchorInfo Algorithm_GetAnchorForRealizationRect(
         const winrt::Size& availableSize,
+        const winrt::VirtualizingLayoutContext& context) override;
+    winrt::FlowLayoutAnchorInfo Algorithm_GetAnchorForTargetElement(
+        int targetIndex,
+        const winrt::Size& availableSize,
+        const winrt::VirtualizingLayoutContext& context) override;
+    winrt::Rect Algorithm_GetExtent(const winrt::Size& availableSize,
         const winrt::VirtualizingLayoutContext& context,
         const winrt::UIElement& firstRealized,
         int firstRealizedItemIndex,
@@ -51,12 +61,12 @@ public:
         const winrt::Size& /*measureSize*/,
         const winrt::Size& /*desiredSize*/,
         const winrt::Size& /*provisionalArrangeSize*/,
-        const winrt::VirtualizingLayoutContext& /*context*/) override
-    {
-    }
-    void Algorithm_OnLineArranged(int /*startIndex*/, int /*countInLine*/, double /*lineSize*/, const winrt::VirtualizingLayoutContext& /*context*/) override
-    {
-    }
+        const winrt::VirtualizingLayoutContext& /*context*/) override {}
+    void Algorithm_OnLineArranged(
+        int /*startIndex*/,
+        int /*countInLine*/,
+        double /*lineSize*/,
+        const winrt::VirtualizingLayoutContext& /*context*/) override {}
 #pragma endregion
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -67,8 +77,7 @@ private:
     float GetMinorSizeWithSpacing(winrt::VirtualizingLayoutContext const& context);
     float GetMajorSizeWithSpacing(winrt::VirtualizingLayoutContext const& context);
 
-    winrt::Rect GetLayoutRectForDataIndex(
-        const winrt::Size& availableSize, int index, const winrt::Rect& lastExtent, const winrt::VirtualizingLayoutContext& context);
+    winrt::Rect GetLayoutRectForDataIndex(const winrt::Size& availableSize, int index, const winrt::Rect& lastExtent, const winrt::VirtualizingLayoutContext& context);
 
     winrt::com_ptr<UniformGridLayoutState> GetAsGridState(const winrt::IInspectable& state)
     {
@@ -87,12 +96,12 @@ private:
 
     double LineSpacing()
     {
-        return Orientation() == winrt::Orientation::Horizontal ? m_minRowSpacing : m_minColumnSpacing;
+        return Orientation() == winrt::Orientation::Horizontal ? m_minRowSpacing: m_minColumnSpacing;
     }
 
     double MinItemSpacing()
     {
-        return Orientation() == winrt::Orientation::Horizontal ? m_minColumnSpacing : m_minRowSpacing;
+        return Orientation() == winrt::Orientation::Horizontal ? m_minColumnSpacing: m_minRowSpacing;
     }
 
     // Fields
@@ -100,10 +109,10 @@ private:
     double m_minItemHeight{NAN};
     double m_minRowSpacing{};
     double m_minColumnSpacing{};
-    winrt::UniformGridLayoutItemsJustification m_itemsJustification{winrt::UniformGridLayoutItemsJustification::Start};
-    winrt::UniformGridLayoutItemsStretch m_itemsStretch{winrt::UniformGridLayoutItemsStretch::None};
+    winrt::UniformGridLayoutItemsJustification m_itemsJustification{ winrt::UniformGridLayoutItemsJustification::Start };
+    winrt::UniformGridLayoutItemsStretch m_itemsStretch{ winrt::UniformGridLayoutItemsStretch::None };
     unsigned int m_maximumRowsOrColumns{MAXUINT};
     // !!! WARNING !!!
     // Any storage here needs to be related to layout configuration.
     // layout specific state needs to be stored in UniformGridLayoutState.
-};
+ };

@@ -6,7 +6,10 @@
 #include "ItemsRepeater.common.h"
 #include "ItemsRepeaterElementIndexChangedEventArgs.h"
 
-ItemsRepeaterElementIndexChangedEventArgs::ItemsRepeaterElementIndexChangedEventArgs(const winrt::UIElement& element, int oldIndex, int newIndex)
+ItemsRepeaterElementIndexChangedEventArgs::ItemsRepeaterElementIndexChangedEventArgs(
+    const winrt::UIElement& element,
+    int oldIndex,
+    int newIndex)
 {
     Update(element, oldIndex, newIndex);
 }

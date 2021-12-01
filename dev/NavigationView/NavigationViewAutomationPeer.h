@@ -6,13 +6,16 @@
 #include "NavigationView.h"
 #include "NavigationViewAutomationPeer.g.h"
 
-class NavigationViewAutomationPeer
-    : public ReferenceTracker<NavigationViewAutomationPeer, winrt::implementation::NavigationViewAutomationPeerT, winrt::ISelectionProvider>
+class NavigationViewAutomationPeer :
+    public ReferenceTracker<
+        NavigationViewAutomationPeer,
+        winrt::implementation::NavigationViewAutomationPeerT,
+        winrt::ISelectionProvider>
 {
 public:
     NavigationViewAutomationPeer(winrt::NavigationView const& owner);
 
-    // IAutomationPeerOverrides
+    // IAutomationPeerOverrides 
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
 
     // ISelectionProvider

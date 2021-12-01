@@ -9,18 +9,19 @@
 
 #include "TreeViewListAutomationPeer.properties.cpp"
 
-TreeViewListAutomationPeer::TreeViewListAutomationPeer(winrt::TreeViewList const& owner) : ReferenceTracker(owner)
+TreeViewListAutomationPeer::TreeViewListAutomationPeer(winrt::TreeViewList const& owner)
+    : ReferenceTracker(owner)
 {
 }
 
-// IItemsControlAutomationPeerOverrides2
+//IItemsControlAutomationPeerOverrides2
 winrt::ItemAutomationPeer TreeViewListAutomationPeer::OnCreateItemAutomationPeer(winrt::IInspectable const& item)
 {
-    winrt::TreeViewItemDataAutomationPeer itemPeer{item, *this};
+    winrt::TreeViewItemDataAutomationPeer itemPeer{ item, *this };
     return itemPeer;
 }
 
-// DropTargetProvider
+//DropTargetProvider
 winrt::hstring TreeViewListAutomationPeer::DropEffect()
 {
     return winrt::get_self<TreeViewList>(Owner().as<winrt::TreeViewList>())->GetDropTargetDropEffect();
@@ -33,7 +34,8 @@ winrt::com_array<winrt::hstring> TreeViewListAutomationPeer::DropEffects()
 
 winrt::IInspectable TreeViewListAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
-    if (patternInterface == winrt::PatternInterface::DropTarget || (patternInterface == winrt::PatternInterface::Selection && IsMultiselect()))
+    if (patternInterface == winrt::PatternInterface::DropTarget ||
+       (patternInterface == winrt::PatternInterface::Selection && IsMultiselect()))
     {
         return *this;
     }
@@ -49,7 +51,7 @@ winrt::AutomationControlType TreeViewListAutomationPeer::GetAutomationControlTyp
 // ISelectionProvider
 bool TreeViewListAutomationPeer::CanSelectMultiple()
 {
-    return IsMultiselect() ? true : __super::CanSelectMultiple();
+    return IsMultiselect()? true: __super::CanSelectMultiple();
 }
 
 bool TreeViewListAutomationPeer::IsSelectionRequired()

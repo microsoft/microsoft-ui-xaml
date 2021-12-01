@@ -6,7 +6,9 @@
 #include "IconSource.g.h"
 #include "IconSource.properties.h"
 
-class IconSource : public winrt::implementation::IconSourceT<IconSource, winrt::composable>, public IconSourceProperties
+class IconSource : 
+    public winrt::implementation::IconSourceT<IconSource, winrt::composable>,
+    public IconSourceProperties
 {
 public:
     winrt::IconElement CreateIconElement();
@@ -14,7 +16,6 @@ public:
     virtual winrt::DependencyProperty GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-
 protected:
     std::vector<winrt::weak_ref<winrt::IconElement>> m_createdIconElements{};
 };

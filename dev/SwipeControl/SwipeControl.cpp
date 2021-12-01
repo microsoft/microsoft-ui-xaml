@@ -12,8 +12,8 @@
 #include "SwipeTestHooks.h"
 
 // Change to 'true' to turn on debugging outputs in Output window
-bool SwipeControlTrace::s_IsDebugOutputEnabled{false};
-bool SwipeControlTrace::s_IsVerboseDebugOutputEnabled{false};
+bool SwipeControlTrace::s_IsDebugOutputEnabled{ false };
+bool SwipeControlTrace::s_IsVerboseDebugOutputEnabled{ false };
 
 static const double c_epsilon = 0.0001;
 static const float c_ThresholdValue = 100.0;
@@ -55,7 +55,7 @@ void SwipeControl::Close()
         m_lastActionWasClosing = true;
         if (!m_isIdle)
         {
-            winrt::float3 initialPosition{0.0f};
+            winrt::float3 initialPosition{ 0.0f };
             switch (m_createdContent)
             {
             case CreatedContent::Left:
@@ -78,7 +78,7 @@ void SwipeControl::Close()
             m_interactionTracker.get().TryUpdatePosition(initialPosition);
         }
 
-        winrt::float3 addedVelocity{0.0f};
+        winrt::float3 addedVelocity{ 0.0f };
         switch (m_createdContent)
         {
         case CreatedContent::Left:
@@ -135,13 +135,13 @@ void SwipeControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
     }
 }
 
-// Swipe control is usually placed in a list view item. When this is the case the swipe item needs to be the same size as the list view item.
-// This is to ensure that swiping from anywhere on the list view item causes pointer pressed events in the SwipeControl.  Without this measure
-// override it is usually not the case that swipe control will fill the available space.  This is because list view item is a content control
-// and those by convension only provide it's children space for at most their desired size. However list view item itself will take up a different
-// ammount of space. In the past we solved this issue by requiring the list view item to have the HorizontalContentAlignment and VerticalContentAlignment
-// set to stretch. This property changes the measure cycle to give as much space as possible to the list view items children. Instead we can
-// just do this ourselves in this measure override and prevent the confusing need for properties set on the parent of swipe control to use it at all.
+//Swipe control is usually placed in a list view item. When this is the case the swipe item needs to be the same size as the list view item.
+//This is to ensure that swiping from anywhere on the list view item causes pointer pressed events in the SwipeControl.  Without this measure
+//override it is usually not the case that swipe control will fill the available space.  This is because list view item is a content control
+//and those by convension only provide it's children space for at most their desired size. However list view item itself will take up a different
+//ammount of space. In the past we solved this issue by requiring the list view item to have the HorizontalContentAlignment and VerticalContentAlignment
+//set to stretch. This property changes the measure cycle to give as much space as possible to the list view items children.  Instead we can 
+//just do this ourselves in this measure override and prevent the confusing need for properties set on the parent of swipe control to use it at all.
 winrt::Size SwipeControl::MeasureOverride(winrt::Size const& availableSize)
 {
     m_rootGrid.get().Measure(availableSize);
@@ -158,7 +158,8 @@ winrt::Size SwipeControl::MeasureOverride(winrt::Size const& availableSize)
 }
 #pragma endregion
 
-void SwipeControl::CustomAnimationStateEntered(winrt::InteractionTrackerCustomAnimationStateEnteredArgs const& /*args*/)
+void SwipeControl::CustomAnimationStateEntered(
+    winrt::InteractionTrackerCustomAnimationStateEnteredArgs const& /*args*/)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
@@ -174,12 +175,14 @@ void SwipeControl::CustomAnimationStateEntered(winrt::InteractionTrackerCustomAn
     }
 }
 
-void SwipeControl::RequestIgnored(winrt::InteractionTrackerRequestIgnoredArgs const& /*args*/)
+void SwipeControl::RequestIgnored(
+    winrt::InteractionTrackerRequestIgnoredArgs const& /*args*/)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 }
 
-void SwipeControl::IdleStateEntered(winrt::InteractionTrackerIdleStateEnteredArgs const& /*args*/)
+void SwipeControl::IdleStateEntered(
+    winrt::InteractionTrackerIdleStateEnteredArgs const& /*args*/)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
@@ -223,7 +226,8 @@ void SwipeControl::IdleStateEntered(winrt::InteractionTrackerIdleStateEnteredArg
     }
 }
 
-void SwipeControl::InteractingStateEntered(winrt::InteractionTrackerInteractingStateEnteredArgs const& /*args*/)
+void SwipeControl::InteractingStateEntered(
+    winrt::InteractionTrackerInteractingStateEnteredArgs const& /*args*/)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
@@ -240,8 +244,8 @@ void SwipeControl::InteractingStateEntered(winrt::InteractionTrackerInteractingS
     m_lastActionWasOpening = false;
     m_isInteracting = true;
 
-    // Once the user has started interacting with a SwipeControl in the closed state we are free to unblock contents.
-    // Contents of items opposite the currently opened ones will not be created.
+    //Once the user has started interacting with a SwipeControl in the closed state we are free to unblock contents.
+    //Contents of items opposite the currently opened ones will not be created.
     if (!m_isOpen)
     {
         m_blockNearContent = false;
@@ -251,7 +255,8 @@ void SwipeControl::InteractingStateEntered(winrt::InteractionTrackerInteractingS
     }
 }
 
-void SwipeControl::InertiaStateEntered(winrt::InteractionTrackerInertiaStateEnteredArgs const& args)
+void SwipeControl::InertiaStateEntered(
+    winrt::InteractionTrackerInertiaStateEnteredArgs const& args)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
@@ -266,11 +271,11 @@ void SwipeControl::InertiaStateEntered(winrt::InteractionTrackerInertiaStateEnte
         }
     }
 
-    // It is possible that the user has flicked from a negative position to a position that would result in the interaction
-    // tracker coming to rest at the positive open position (or vise versa). The != zero check does not account for this.
-    // Instead we check to ensure that the current position and the ModifiedRestingPosition have the same sign (multiply to a
-    // positive number) If they do not then we are in this situation and want the end result of the interaction to be the closed
-    // state, so close without any animation and return to prevent further processing of this inertia state.
+    //It is possible that the user has flicked from a negative position to a position that would result in the interaction
+    //tracker coming to rest at the positive open position (or vise versa). The != zero check does not account for this.
+    //Instead we check to ensure that the current position and the ModifiedRestingPosition have the same sign (multiply to a positive number)
+    //If they do not then we are in this situation and want the end result of the interaction to be the closed state, so close without any animation and return
+    //to prevent further processing of this inertia state.
     const auto flickToOppositeSideCheck = m_interactionTracker.get().Position() * args.ModifiedRestingPosition().Value();
     if (m_isHorizontal ? flickToOppositeSideCheck.x < 0 : flickToOppositeSideCheck.y < 0)
     {
@@ -312,7 +317,8 @@ void SwipeControl::InertiaStateEntered(winrt::InteractionTrackerInertiaStateEnte
     }
 }
 
-void SwipeControl::ValuesChanged(winrt::InteractionTrackerValuesChangedArgs const& args)
+void SwipeControl::ValuesChanged(
+    winrt::InteractionTrackerValuesChangedArgs const& args)
 {
     SWIPECONTROL_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
@@ -396,13 +402,12 @@ void SwipeControl::OnLeftItemsCollectionChanged(const winrt::DependencyPropertyC
     {
         ThrowIfHasVerticalAndHorizontalContent();
         auto observableVector = args.NewValue().try_as<winrt::IObservableVector<winrt::SwipeItem>>();
-        m_leftItemsChangedToken = observableVector.VectorChanged({this, &SwipeControl::OnLeftItemsChanged});
+        m_leftItemsChangedToken = observableVector.VectorChanged({ this, &SwipeControl::OnLeftItemsChanged });
     }
 
     if (m_interactionTracker)
     {
-        m_interactionTracker.get().Properties().InsertBoolean(
-            s_hasLeftContentPropertyName, args.NewValue() && args.NewValue().try_as<winrt::IVector<winrt::SwipeItem>>().Size() > 0);
+        m_interactionTracker.get().Properties().InsertBoolean(s_hasLeftContentPropertyName, args.NewValue() && args.NewValue().try_as<winrt::IVector<winrt::SwipeItem>>().Size() > 0);
     }
 
     if (m_createdContent == CreatedContent::Left)
@@ -426,13 +431,12 @@ void SwipeControl::OnRightItemsCollectionChanged(const winrt::DependencyProperty
     {
         ThrowIfHasVerticalAndHorizontalContent();
         auto observableVector = args.NewValue().try_as<winrt::IObservableVector<winrt::SwipeItem>>();
-        m_rightItemsChangedToken = observableVector.VectorChanged({this, &SwipeControl::OnRightItemsChanged});
+        m_rightItemsChangedToken = observableVector.VectorChanged({ this, &SwipeControl::OnRightItemsChanged });
     }
 
     if (m_interactionTracker)
     {
-        m_interactionTracker.get().Properties().InsertBoolean(
-            s_hasRightContentPropertyName, args.NewValue() && args.NewValue().try_as<winrt::IVector<winrt::SwipeItem>>().Size() > 0);
+        m_interactionTracker.get().Properties().InsertBoolean(s_hasRightContentPropertyName, args.NewValue() && args.NewValue().try_as<winrt::IVector<winrt::SwipeItem>>().Size() > 0);
     }
 
     if (m_createdContent == CreatedContent::Right)
@@ -456,13 +460,12 @@ void SwipeControl::OnTopItemsCollectionChanged(const winrt::DependencyPropertyCh
     {
         ThrowIfHasVerticalAndHorizontalContent();
         auto observableVector = args.NewValue().try_as<winrt::IObservableVector<winrt::SwipeItem>>();
-        m_topItemsChangedToken = observableVector.VectorChanged({this, &SwipeControl::OnTopItemsChanged});
+        m_topItemsChangedToken = observableVector.VectorChanged({ this, &SwipeControl::OnTopItemsChanged });
     }
 
     if (m_interactionTracker)
     {
-        m_interactionTracker.get().Properties().InsertBoolean(
-            s_hasTopContentPropertyName, args.NewValue() && args.NewValue().try_as<winrt::IVector<winrt::SwipeItem>>().Size() > 0);
+        m_interactionTracker.get().Properties().InsertBoolean(s_hasTopContentPropertyName, args.NewValue() && args.NewValue().try_as<winrt::IVector<winrt::SwipeItem>>().Size() > 0);
     }
 
     if (m_createdContent == CreatedContent::Top)
@@ -486,13 +489,12 @@ void SwipeControl::OnBottomItemsCollectionChanged(const winrt::DependencyPropert
     {
         ThrowIfHasVerticalAndHorizontalContent();
         auto observableVector = args.NewValue().try_as<winrt::IObservableVector<winrt::SwipeItem>>();
-        m_bottomItemsChangedToken = observableVector.VectorChanged({this, &SwipeControl::OnBottomItemsChanged});
+        m_bottomItemsChangedToken = observableVector.VectorChanged({ this, &SwipeControl::OnBottomItemsChanged });
     }
 
     if (m_interactionTracker)
     {
-        m_interactionTracker.get().Properties().InsertBoolean(
-            s_hasBottomContentPropertyName, args.NewValue() && args.NewValue().try_as<winrt::IVector<winrt::SwipeItem>>().Size() > 0);
+        m_interactionTracker.get().Properties().InsertBoolean(s_hasBottomContentPropertyName, args.NewValue() && args.NewValue().try_as<winrt::IVector<winrt::SwipeItem>>().Size() > 0);
     }
 
     if (m_createdContent == CreatedContent::Bottom)
@@ -511,8 +513,8 @@ void SwipeControl::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::
         InitializeInteractionTracker();
         TryGetSwipeVisuals();
     }
-    // If the swipe control has been added to the tree for a subsequent time, for instance when a list view item has been
-    // recycled, Ensure that we are in the closed interaction tracker state.
+    //If the swipe control has been added to the tree for a subsequent time, for instance when a list view item has been recycled,
+    //Ensure that we are in the closed interaction tracker state.
     CloseWithoutAnimation();
 }
 
@@ -521,25 +523,24 @@ void SwipeControl::AttachEventHandlers()
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     MUX_ASSERT(m_loadedToken.value == 0);
-    m_loadedToken = Loaded({this, &SwipeControl::OnLoaded});
+    m_loadedToken = Loaded({ this, &SwipeControl::OnLoaded });
     m_hasInitialLoadedEventFired = false;
 
     MUX_ASSERT(m_onSizeChangedToken.value == 0);
-    m_onSizeChangedToken = SizeChanged({this, &SwipeControl::OnSizeChanged});
+    m_onSizeChangedToken = SizeChanged({ this, &SwipeControl::OnSizeChanged });
 
     MUX_ASSERT(m_onSwipeContentStackPanelSizeChangedToken.value == 0);
-    m_onSwipeContentStackPanelSizeChangedToken =
-        m_swipeContentStackPanel.get().SizeChanged({this, &SwipeControl::OnSwipeContentStackPanelSizeChanged});
+    m_onSwipeContentStackPanelSizeChangedToken = m_swipeContentStackPanel.get().SizeChanged({ this, &SwipeControl::OnSwipeContentStackPanelSizeChanged });
 
     // also get any action from any inside button, or a clickable/tappable control
     if (!m_onPointerPressedEventHandler)
     {
-        m_onPointerPressedEventHandler.set(winrt::box_value<winrt::PointerEventHandler>({this, &SwipeControl::OnPointerPressedEvent}));
+        m_onPointerPressedEventHandler.set(winrt::box_value<winrt::PointerEventHandler>({ this, &SwipeControl::OnPointerPressedEvent }));
         AddHandler(winrt::UIElement::PointerPressedEvent(), m_onPointerPressedEventHandler.get(), true);
     }
 
     MUX_ASSERT(m_inputEaterTappedToken.value == 0);
-    m_inputEaterTappedToken = m_inputEater.get().Tapped({this, &SwipeControl::InputEaterGridTapped});
+    m_inputEaterTappedToken = m_inputEater.get().Tapped({ this, &SwipeControl::InputEaterGridTapped });
 }
 
 void SwipeControl::DetachEventHandlers(bool useSafeGet)
@@ -617,24 +618,29 @@ void SwipeControl::OnSwipeContentStackPanelSizeChanged(const winrt::IInspectable
 {
     if (m_interactionTracker)
     {
-        m_interactionTracker.get().MinPosition({-args.NewSize().Width, -args.NewSize().Height, 0.0f});
-        m_interactionTracker.get().MaxPosition({args.NewSize().Width, args.NewSize().Height, 0.0f});
+        m_interactionTracker.get().MinPosition({ -args.NewSize().Width, -args.NewSize().Height, 0.0f });
+        m_interactionTracker.get().MaxPosition({ args.NewSize().Width, args.NewSize().Height, 0.0f });
         ConfigurePositionInertiaRestingValues();
     }
 }
 
-void SwipeControl::OnPointerPressedEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+void SwipeControl::OnPointerPressedEvent(
+    const winrt::IInspectable& sender,
+    const winrt::PointerRoutedEventArgs& args)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     if (args.Pointer().PointerDeviceType() == winrt::Devices::Input::PointerDeviceType::Touch && m_visualInteractionSource)
     {
-        if (m_currentItems && m_currentItems.get().Mode() == winrt::SwipeMode::Execute && m_currentItems.get().Size() > 0 &&
-            m_currentItems.get().GetAt(0).BehaviorOnInvoked() == winrt::SwipeBehaviorOnInvoked::RemainOpen && m_isOpen)
+        if (m_currentItems &&
+            m_currentItems.get().Mode() == winrt::SwipeMode::Execute &&
+            m_currentItems.get().Size() > 0 &&
+            m_currentItems.get().GetAt(0).BehaviorOnInvoked() == winrt::SwipeBehaviorOnInvoked::RemainOpen &&
+            m_isOpen)
         {
-            // If the swipe control is currently open on an Execute item's who's behaviorOnInvoked property is set to RemainOpen
-            // we don't want to allow the user interaction to effect the swipe control anymore, so don't redirect the manipulation
-            // to the interaction tracker.
+            //If the swipe control is currently open on an Execute item's who's behaviorOnInvoked property is set to RemainOpen
+            //we don't want to allow the user interaction to effect the swipe control anymore, so don't redirect the manipulation
+            //to the interaction tracker.
             return;
         }
         try
@@ -678,16 +684,22 @@ void SwipeControl::AttachDismissingHandlers()
             {
                 m_xamlRootPointerPressedEventRevoker = AddRoutedEventHandler<RoutedEventType::PointerPressed>(
                     xamlRootContent,
-                    [this](auto const&, auto const& args) {
+                    [this](auto const&, auto const& args)
+                    {
                         DismissSwipeOnAnExternalTap(args.GetCurrentPoint(nullptr).Position());
                     },
                     true /*handledEventsToo*/);
 
                 m_xamlRootKeyDownEventRevoker = AddRoutedEventHandler<RoutedEventType::KeyDown>(
-                    xamlRootContent, [this](auto const&, auto const& args) { CloseIfNotRemainOpenExecuteItem(); }, true /*handledEventsToo*/);
+                    xamlRootContent,
+                    [this](auto const&, auto const& args)
+                    {
+                        CloseIfNotRemainOpenExecuteItem();
+                    },
+                    true /*handledEventsToo*/);
             }
 
-            m_xamlRootChangedRevoker = RegisterXamlRootChanged(xamlRoot, {this, &SwipeControl::CurrentXamlRootChanged});
+            m_xamlRootChangedRevoker = RegisterXamlRootChanged(xamlRoot, { this, &SwipeControl::CurrentXamlRootChanged });
         }
     }
     else
@@ -696,12 +708,10 @@ void SwipeControl::AttachDismissingHandlers()
         {
             if (auto coreWindow = currentWindow.CoreWindow())
             {
-                m_coreWindowPointerPressedRevoker =
-                    coreWindow.PointerPressed(winrt::auto_revoke, {this, &SwipeControl::DismissSwipeOnAnExternalCoreWindowTap});
-                m_coreWindowKeyDownRevoker = coreWindow.KeyDown(winrt::auto_revoke, {this, &SwipeControl::DismissSwipeOnCoreWindowKeyDown});
-                m_windowMinimizeRevoker =
-                    coreWindow.VisibilityChanged(winrt::auto_revoke, {this, &SwipeControl::CurrentWindowVisibilityChanged});
-                m_windowSizeChangedRevoker = currentWindow.SizeChanged(winrt::auto_revoke, {this, &SwipeControl::CurrentWindowSizeChanged});
+                m_coreWindowPointerPressedRevoker = coreWindow.PointerPressed(winrt::auto_revoke, { this, &SwipeControl::DismissSwipeOnAnExternalCoreWindowTap });
+                m_coreWindowKeyDownRevoker = coreWindow.KeyDown(winrt::auto_revoke, { this, &SwipeControl::DismissSwipeOnCoreWindowKeyDown });
+                m_windowMinimizeRevoker = coreWindow.VisibilityChanged(winrt::auto_revoke, { this, &SwipeControl::CurrentWindowVisibilityChanged });
+                m_windowSizeChangedRevoker = currentWindow.SizeChanged(winrt::auto_revoke, { this, &SwipeControl::CurrentWindowSizeChanged });
             }
         }
     }
@@ -710,8 +720,7 @@ void SwipeControl::AttachDismissingHandlers()
     {
         if (auto dispatcher = coreWindow.Dispatcher())
         {
-            m_acceleratorKeyActivatedRevoker =
-                dispatcher.AcceleratorKeyActivated(winrt::auto_revoke, {this, &SwipeControl::DismissSwipeOnAcceleratorKeyActivator});
+            m_acceleratorKeyActivatedRevoker = dispatcher.AcceleratorKeyActivated(winrt::auto_revoke, { this, &SwipeControl::DismissSwipeOnAcceleratorKeyActivator });
         }
     }
 }
@@ -736,7 +745,7 @@ void SwipeControl::DismissSwipeOnAcceleratorKeyActivator(const winrt::Windows::U
     CloseIfNotRemainOpenExecuteItem();
 }
 
-void SwipeControl::CurrentXamlRootChanged(const winrt::XamlRoot& /*sender*/, const winrt::XamlRootChangedEventArgs& /*args*/)
+void SwipeControl::CurrentXamlRootChanged(const winrt::XamlRoot & /*sender*/, const winrt::XamlRootChangedEventArgs &/*args*/)
 {
     CloseIfNotRemainOpenExecuteItem();
 }
@@ -746,12 +755,12 @@ void SwipeControl::DismissSwipeOnCoreWindowKeyDown(const winrt::CoreWindow& send
     CloseIfNotRemainOpenExecuteItem();
 }
 
-void SwipeControl::CurrentWindowSizeChanged(const winrt::IInspectable& /*sender*/, const winrt::WindowSizeChangedEventArgs& /*args*/)
+void SwipeControl::CurrentWindowSizeChanged(const winrt::IInspectable & /*sender*/, const winrt::WindowSizeChangedEventArgs &/*args*/)
 {
     CloseIfNotRemainOpenExecuteItem();
 }
 
-void SwipeControl::CurrentWindowVisibilityChanged(const winrt::CoreWindow& /*sender*/, const winrt::VisibilityChangedEventArgs /*args*/)
+void SwipeControl::CurrentWindowVisibilityChanged(const winrt::CoreWindow & /*sender*/, const winrt::VisibilityChangedEventArgs /*args*/)
 {
     CloseIfNotRemainOpenExecuteItem();
 }
@@ -773,7 +782,8 @@ void SwipeControl::DismissSwipeOnAnExternalTap(winrt::Point const& tapPoint)
 
     // If point is not within the item's bounds, close it.
     if (*this && tapPoint.X < transformedElementOrigin.X || tapPoint.Y < transformedElementOrigin.Y ||
-        (tapPoint.X - transformedElementOrigin.X) > ActualWidth() || (tapPoint.Y - transformedElementOrigin.Y) > ActualHeight())
+        (tapPoint.X - transformedElementOrigin.X) > ActualWidth() ||
+        (tapPoint.Y - transformedElementOrigin.Y) > ActualHeight())
     {
         CloseIfNotRemainOpenExecuteItem();
     }
@@ -788,8 +798,8 @@ void SwipeControl::GetTemplateParts()
     m_swipeContentRoot.set(GetTemplateChildT<winrt::Grid>(s_swipeContentRootName, thisAsControlProtected));
     m_swipeContentStackPanel.set(GetTemplateChildT<winrt::StackPanel>(s_swipeContentStackPanelName, thisAsControlProtected));
 
-    // Before RS5 these elements were not in the template but were instead created in code behind when the swipe content was
-    // created. Post RS5 the code behind expects these elements to always be in the tree.
+    //Before RS5 these elements were not in the template but were instead created in code behind when the swipe content was created.
+    //Post RS5 the code behind expects these elements to always be in the tree.
     if (!m_swipeContentRoot)
     {
         winrt::Grid swipeContentRoot;
@@ -830,10 +840,8 @@ void SwipeControl::InitializeInteractionTracker()
     m_visualInteractionSource.get().IsPositionXRailsEnabled(m_isHorizontal);
     m_visualInteractionSource.get().IsPositionYRailsEnabled(!m_isHorizontal);
     m_visualInteractionSource.get().ManipulationRedirectionMode(winrt::VisualInteractionSourceRedirectionMode::CapableTouchpadOnly);
-    m_visualInteractionSource.get().PositionXSourceMode(
-        m_isHorizontal ? winrt::InteractionSourceMode::EnabledWithInertia : winrt::InteractionSourceMode::Disabled);
-    m_visualInteractionSource.get().PositionYSourceMode(
-        !m_isHorizontal ? winrt::InteractionSourceMode::EnabledWithInertia : winrt::InteractionSourceMode::Disabled);
+    m_visualInteractionSource.get().PositionXSourceMode(m_isHorizontal ? winrt::InteractionSourceMode::EnabledWithInertia : winrt::InteractionSourceMode::Disabled);
+    m_visualInteractionSource.get().PositionYSourceMode(!m_isHorizontal ? winrt::InteractionSourceMode::EnabledWithInertia : winrt::InteractionSourceMode::Disabled);
     if (m_isHorizontal)
     {
         m_visualInteractionSource.get().PositionXChainingMode(winrt::InteractionChainingMode::Never);
@@ -853,16 +861,15 @@ void SwipeControl::InitializeInteractionTracker()
     m_interactionTracker.get().Properties().InsertBoolean(s_hasRightContentPropertyName, RightItems() && RightItems().Size() > 0);
     m_interactionTracker.get().Properties().InsertBoolean(s_hasTopContentPropertyName, TopItems() && TopItems().Size() > 0);
     m_interactionTracker.get().Properties().InsertBoolean(s_hasBottomContentPropertyName, BottomItems() && BottomItems().Size() > 0);
-    m_interactionTracker.get().MaxPosition({std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), 0.0f});
-    m_interactionTracker.get().MinPosition(
-        {-1.0f * std::numeric_limits<float>::infinity(), -1.0f * std::numeric_limits<float>::infinity(), 0.0f});
+    m_interactionTracker.get().MaxPosition({ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), 0.0f });
+    m_interactionTracker.get().MinPosition({ -1.0f * std::numeric_limits<float>::infinity(), -1.0f * std::numeric_limits<float>::infinity(), 0.0f });
 
     // Create and initialize the Swipe animations:
-    // If the swipe control is already opened it should not be possible to open the opposite side's items, without first closing
-    // the swipe control. This prevents the user from flicking the swipe control closed and accidently opening the other due to
-    // inertia. To acheive this we insert the isFarOpen and isNearOpen boolean properties on the interaction tracker and alter the
-    // expression output based on these. The opened state is maintained in the interaction trackers IdleStateEntered handler, this
-    // means we need to ensure this state is entered each time the swipe control is opened or closed.
+    // If the swipe control is already opened it should not be possible to open the opposite side's items, without first closing the swipe control.
+    // This prevents the user from flicking the swipe control closed and accidently opening the other due to inertia.
+    // To acheive this we insert the isFarOpen and isNearOpen boolean properties on the interaction tracker and alter the expression output based on these.
+    // The opened state is maintained in the interaction trackers IdleStateEntered handler, this means we need to ensure this state is entered each time the swipe control
+    // is opened or closed.
 
     // A more readable version of the expression:
 
@@ -874,28 +881,13 @@ void SwipeControl::InitializeInteractionTracker()
                    "tracker.isNearOpen || tracker.blockFarContent ? Clamp(-tracker.Position.Y, 0,  this.Target.Size.Y) :"
                    "Clamp(-tracker.Position.Y, (tracker.hasBottomContent ? -10000 : 0), (tracker.hasTopContent ? 10000 : 0)), 0)"));*/
 
-    m_swipeAnimation.set(m_compositor.get().CreateExpressionAnimation(
-        isHorizontalPropertyName() +
-        L" ?"
-        "Vector3(" +
-        trackerPropertyName() + L"." + isFarOpenPropertyName() + L" || " + trackerPropertyName() + L"." +
-        blockNearContentPropertyName() + L" ? Clamp(-" + trackerPropertyName() + L".Position.X, -this.Target.Size.X, 0) :" +
-        trackerPropertyName() + L"." + isNearOpenPropertyName() + L" || " + trackerPropertyName() + L"." +
-        blockFarContentPropertyName() + L" ? Clamp(-" + trackerPropertyName() +
-        L".Position.X,  0, this.Target.Size.X) :"
-        "Clamp(-" +
-        trackerPropertyName() + L".Position.X, (" + trackerPropertyName() + L"." + hasRightContentPropertyName() +
-        L" ? -10000 : 0), (" + trackerPropertyName() + L"." + hasLeftContentPropertyName() +
-        L" ? 10000 : 0)), 0, 0) :"
-        "Vector3(0, " +
-        trackerPropertyName() + L"." + isFarOpenPropertyName() + L" || " + trackerPropertyName() + L"." +
-        blockNearContentPropertyName() + L"  ? Clamp(-" + trackerPropertyName() + L".Position.Y, -this.Target.Size.Y, 0) :" +
-        trackerPropertyName() + L"." + isNearOpenPropertyName() + L" || " + trackerPropertyName() + L"." +
-        blockFarContentPropertyName() + L" ? Clamp(-" + trackerPropertyName() +
-        L".Position.Y, 0,  this.Target.Size.Y) :"
-        "Clamp(-" +
-        trackerPropertyName() + L".Position.Y, (" + trackerPropertyName() + L"." + hasBottomContentPropertyName() +
-        L" ? -10000 : 0), (" + trackerPropertyName() + L"." + hasTopContentPropertyName() + L" ? 10000 : 0)), 0)"));
+    m_swipeAnimation.set(m_compositor.get().CreateExpressionAnimation(isHorizontalPropertyName() + L" ?"
+        "Vector3(" + trackerPropertyName() + L"." + isFarOpenPropertyName() + L" || " + trackerPropertyName() + L"." + blockNearContentPropertyName() + L" ? Clamp(-" + trackerPropertyName() + L".Position.X, -this.Target.Size.X, 0) :"
+        + trackerPropertyName() + L"." + isNearOpenPropertyName() + L" || " + trackerPropertyName() + L"." + blockFarContentPropertyName() + L" ? Clamp(-" + trackerPropertyName() + L".Position.X,  0, this.Target.Size.X) :"
+        "Clamp(-" + trackerPropertyName() + L".Position.X, (" + trackerPropertyName() + L"." + hasRightContentPropertyName() + L" ? -10000 : 0), (" + trackerPropertyName() + L"." + hasLeftContentPropertyName() + L" ? 10000 : 0)), 0, 0) :"
+        "Vector3(0, " + trackerPropertyName() + L"." + isFarOpenPropertyName() + L" || " + trackerPropertyName() + L"." + blockNearContentPropertyName() + L"  ? Clamp(-" + trackerPropertyName() + L".Position.Y, -this.Target.Size.Y, 0) :"
+        + trackerPropertyName() + L"." + isNearOpenPropertyName() + L" || " + trackerPropertyName() + L"." + blockFarContentPropertyName() + L" ? Clamp(-" + trackerPropertyName() + L".Position.Y, 0,  this.Target.Size.Y) :"
+        "Clamp(-" + trackerPropertyName() + L".Position.Y, (" + trackerPropertyName() + L"." + hasBottomContentPropertyName() + L" ? -10000 : 0), (" + trackerPropertyName() + L"." + hasTopContentPropertyName() + L" ? 10000 : 0)), 0)"));
 
     m_swipeAnimation.get().SetReferenceParameter(s_trackerPropertyName, m_interactionTracker.get());
     m_swipeAnimation.get().SetBooleanParameter(s_isHorizontalPropertyName, m_isHorizontal);
@@ -904,21 +896,15 @@ void SwipeControl::InitializeInteractionTracker()
         m_swipeAnimation.get().Target(s_translationPropertyName);
     }
 
-    // A more readable version of the expression:
+    //A more readable version of the expression:
 
     /*m_executeExpressionAnimation.set(m_compositor.get().CreateExpressionAnimation(L"(foregroundVisual." + GetAnimationTarget() + L" * 0.5) + (isHorizontal ?"
         "Vector3((isNearContent ? -0.5, 0.5) * this.Target.Size.X, 0, 0) : "
         "Vector3(0, (isNearContent ? -0.5, 0.5) * this.Target.Size.Y, 0))"));*/
 
-    m_executeExpressionAnimation.set(m_compositor.get().CreateExpressionAnimation(
-        L"(" + foregroundVisualPropertyName() + L"." + GetAnimationTarget(m_swipeContentStackPanel.get()) + L" * 0.5) + (" +
-        isHorizontalPropertyName() +
-        L" ? "
-        "Vector3((" +
-        isNearContentPropertyName() +
-        L" ? -0.5 : 0.5) * this.Target.Size.X, 0, 0) : "
-        "Vector3(0, (" +
-        isNearContentPropertyName() + L" ? -0.5 : 0.5) * this.Target.Size.Y, 0))"));
+    m_executeExpressionAnimation.set(m_compositor.get().CreateExpressionAnimation(L"(" + foregroundVisualPropertyName() + L"." + GetAnimationTarget(m_swipeContentStackPanel.get()) + L" * 0.5) + (" + isHorizontalPropertyName() + L" ? "
+        "Vector3((" + isNearContentPropertyName() + L" ? -0.5 : 0.5) * this.Target.Size.X, 0, 0) : "
+        "Vector3(0, (" + isNearContentPropertyName() + L" ? -0.5 : 0.5) * this.Target.Size.Y, 0))"));
 
     m_executeExpressionAnimation.get().SetBooleanParameter(s_isHorizontalPropertyName, m_isHorizontal);
     if (IsTranslationFacadeAvailableForSwipeControl(m_swipeContentStackPanel.get()))
@@ -926,22 +912,15 @@ void SwipeControl::InitializeInteractionTracker()
         m_executeExpressionAnimation.get().Target(s_translationPropertyName);
     }
 
-    // A more readable version of the expression:
+    //A more readable version of the expression:
 
     /*m_clipExpressionAnimation.set(m_compositor.get().CreateExpressionAnimation(L"isHorizontal ?
         Max(swipeRootVisual.Size.X + (isNearContent ? tracker.Position.X : -tracker.Position.X) , 0) :
         Max(swipeRootVisual.Size.Y + (isNearContent ? tracker.Position.Y : -tracker.Position.Y) , 0)"));*/
 
-    m_clipExpressionAnimation.set(m_compositor.get().CreateExpressionAnimation(
-        isHorizontalPropertyName() +
-        L" ? "
-        "Max(" +
-        swipeRootVisualPropertyName() + L".Size.X + (" + isNearContentPropertyName() + L" ? " + trackerPropertyName() +
-        L".Position.X : -" + trackerPropertyName() +
-        L".Position.X) , 0) : "
-        "Max(" +
-        swipeRootVisualPropertyName() + L".Size.Y + (" + isNearContentPropertyName() + L" ? " + trackerPropertyName() +
-        L".Position.Y : -" + trackerPropertyName() + L".Position.Y) , 0)"));
+    m_clipExpressionAnimation.set(m_compositor.get().CreateExpressionAnimation(isHorizontalPropertyName() + L" ? "
+        "Max(" + swipeRootVisualPropertyName() + L".Size.X + (" + isNearContentPropertyName() + L" ? " + trackerPropertyName() + L".Position.X : -" + trackerPropertyName() + L".Position.X) , 0) : "
+        "Max(" + swipeRootVisualPropertyName() + L".Size.Y + (" + isNearContentPropertyName() + L" ? " + trackerPropertyName() + L".Position.Y : -" + trackerPropertyName() + L".Position.Y) , 0)"));
 
     m_clipExpressionAnimation.get().SetReferenceParameter(s_trackerPropertyName, m_interactionTracker.get());
     m_clipExpressionAnimation.get().SetBooleanParameter(s_isHorizontalPropertyName, m_isHorizontal);
@@ -953,14 +932,9 @@ void SwipeControl::ConfigurePositionInertiaRestingValues()
 
     if (m_isHorizontal)
     {
-        winrt::IVector<winrt::InteractionTrackerInertiaModifier> xModifiers =
-            winrt::make<Vector<winrt::InteractionTrackerInertiaModifier>>();
+        winrt::IVector<winrt::InteractionTrackerInertiaModifier> xModifiers = winrt::make<Vector<winrt::InteractionTrackerInertiaModifier>>();
 
-        winrt::ExpressionAnimation leftCondition = m_compositor.get().CreateExpressionAnimation(
-            L"this.Target." + hasLeftContentPropertyName() + L" && !this.Target." + isFarOpenPropertyName() +
-            L" && this.Target.NaturalRestingPosition.x <= -1 * (this.Target." + isNearOpenPropertyName() + L" ? " +
-            swipeContentSizeParameterName() + L" : min(" + swipeContentSizeParameterName() + L", " + maxThresholdPropertyName() +
-            L"))");
+        winrt::ExpressionAnimation leftCondition = m_compositor.get().CreateExpressionAnimation(L"this.Target." + hasLeftContentPropertyName() + L" && !this.Target." + isFarOpenPropertyName() + L" && this.Target.NaturalRestingPosition.x <= -1 * (this.Target." + isNearOpenPropertyName() + L" ? " + swipeContentSizeParameterName() + L" : min(" + swipeContentSizeParameterName() + L", " + maxThresholdPropertyName() + L"))");
         leftCondition.SetScalarParameter(s_swipeContentSizeParameterName, static_cast<float>(m_swipeContentStackPanel.get().ActualWidth()));
         leftCondition.SetScalarParameter(s_maxThresholdPropertyName, c_ThresholdValue);
         winrt::ExpressionAnimation leftRestingPoint = m_compositor.get().CreateExpressionAnimation(L"-" + swipeContentSizeParameterName());
@@ -970,10 +944,7 @@ void SwipeControl::ConfigurePositionInertiaRestingValues()
         leftOpen.RestingValue(leftRestingPoint);
         xModifiers.Append(leftOpen);
 
-        winrt::ExpressionAnimation rightCondition = m_compositor.get().CreateExpressionAnimation(
-            L"this.Target." + hasRightContentPropertyName() + L" && !this.Target." + isNearOpenPropertyName() +
-            L" && this.Target.NaturalRestingPosition.x >= (this.Target." + isFarOpenPropertyName() + L" ? " + swipeContentSizeParameterName() +
-            L" : min(" + swipeContentSizeParameterName() + L", " + maxThresholdPropertyName() + L"))");
+        winrt::ExpressionAnimation rightCondition = m_compositor.get().CreateExpressionAnimation(L"this.Target." + hasRightContentPropertyName() + L" && !this.Target." + isNearOpenPropertyName() + L" && this.Target.NaturalRestingPosition.x >= (this.Target." + isFarOpenPropertyName() + L" ? " + swipeContentSizeParameterName() + L" : min(" + swipeContentSizeParameterName() + L", " + maxThresholdPropertyName() + L"))");
         rightCondition.SetScalarParameter(s_swipeContentSizeParameterName, static_cast<float>(m_swipeContentStackPanel.get().ActualWidth()));
         rightCondition.SetScalarParameter(s_maxThresholdPropertyName, c_ThresholdValue);
         winrt::ExpressionAnimation rightRestingValue = m_compositor.get().CreateExpressionAnimation(s_swipeContentSizeParameterName);
@@ -994,14 +965,9 @@ void SwipeControl::ConfigurePositionInertiaRestingValues()
     }
     else
     {
-        winrt::IVector<winrt::InteractionTrackerInertiaModifier> yModifiers =
-            winrt::make<Vector<winrt::InteractionTrackerInertiaModifier>>();
+        winrt::IVector<winrt::InteractionTrackerInertiaModifier> yModifiers = winrt::make<Vector<winrt::InteractionTrackerInertiaModifier>>();
 
-        winrt::ExpressionAnimation topCondition = m_compositor.get().CreateExpressionAnimation(
-            L"this.Target." + hasTopContentPropertyName() + L" && !this.Target." + isFarOpenPropertyName() +
-            L" && this.Target.NaturalRestingPosition.y <= -1 * (this.Target." + isNearOpenPropertyName() + L" ? " +
-            swipeContentSizeParameterName() + L" : min(" + swipeContentSizeParameterName() + L", " + maxThresholdPropertyName() +
-            L"))");
+        winrt::ExpressionAnimation topCondition = m_compositor.get().CreateExpressionAnimation(L"this.Target." + hasTopContentPropertyName() + L" && !this.Target." + isFarOpenPropertyName() + L" && this.Target.NaturalRestingPosition.y <= -1 * (this.Target." + isNearOpenPropertyName() + L" ? " + swipeContentSizeParameterName() + L" : min(" + swipeContentSizeParameterName() + L", " + maxThresholdPropertyName() + L"))");
         topCondition.SetScalarParameter(s_swipeContentSizeParameterName, static_cast<float>(m_swipeContentStackPanel.get().ActualHeight()));
         topCondition.SetScalarParameter(s_maxThresholdPropertyName, c_ThresholdValue);
         winrt::ExpressionAnimation topRestingValue = m_compositor.get().CreateExpressionAnimation(L"-" + swipeContentSizeParameterName());
@@ -1011,17 +977,12 @@ void SwipeControl::ConfigurePositionInertiaRestingValues()
         topOpen.RestingValue(topRestingValue);
         yModifiers.Append(topOpen);
 
-        winrt::ExpressionAnimation bottomCondition = m_compositor.get().CreateExpressionAnimation(
-            L"this.Target." + hasBottomContentPropertyName() + L" && !this.Target." + isNearOpenPropertyName() +
-            L" && this.Target.NaturalRestingPosition.y >= (this.Target." + isFarOpenPropertyName() + L" ? " + swipeContentSizeParameterName() +
-            L" : min(" + swipeContentSizeParameterName() + L", " + maxThresholdPropertyName() + L"))");
+        winrt::ExpressionAnimation bottomCondition = m_compositor.get().CreateExpressionAnimation(L"this.Target." + hasBottomContentPropertyName() + L" && !this.Target." + isNearOpenPropertyName() + L" && this.Target.NaturalRestingPosition.y >= (this.Target." + isFarOpenPropertyName() + L" ? " + swipeContentSizeParameterName() + L" : min(" + swipeContentSizeParameterName() + L", " + maxThresholdPropertyName() + L"))");
         bottomCondition.SetScalarParameter(s_swipeContentSizeParameterName, static_cast<float>(m_swipeContentStackPanel.get().ActualHeight()));
         bottomCondition.SetScalarParameter(s_maxThresholdPropertyName, c_ThresholdValue);
         winrt::ExpressionAnimation bottomRestingValue = m_compositor.get().CreateExpressionAnimation(s_swipeContentSizeParameterName);
-        bottomRestingValue.SetScalarParameter(
-            s_swipeContentSizeParameterName, static_cast<float>(m_swipeContentStackPanel.get().ActualHeight()));
-        winrt::InteractionTrackerInertiaRestingValue bottomOpen =
-            winrt::InteractionTrackerInertiaRestingValue::Create(m_compositor.get());
+        bottomRestingValue.SetScalarParameter(s_swipeContentSizeParameterName, static_cast<float>(m_swipeContentStackPanel.get().ActualHeight()));
+        winrt::InteractionTrackerInertiaRestingValue bottomOpen = winrt::InteractionTrackerInertiaRestingValue::Create(m_compositor.get());
         bottomOpen.Condition(bottomCondition);
         bottomOpen.RestingValue(bottomRestingValue);
         yModifiers.Append(bottomOpen);
@@ -1073,7 +1034,7 @@ void SwipeControl::EnsureClip()
 {
     const float width = static_cast<float>(ActualWidth());
     const float height = static_cast<float>(ActualHeight());
-    const winrt::Rect rect = {0.0f, 0.0f, width, height};
+    const winrt::Rect rect = { 0.0f, 0.0f, width, height };
     winrt::Windows::UI::Xaml::Media::RectangleGeometry rectangleGeometry;
     rectangleGeometry.Rect(rect);
     Clip(rectangleGeometry);
@@ -1084,7 +1045,7 @@ void SwipeControl::CloseWithoutAnimation()
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     const bool wasIdle = m_isIdle;
-    m_interactionTracker.get().TryUpdatePosition({0.0f, 0.0f, 0.0f});
+    m_interactionTracker.get().TryUpdatePosition({ 0.0f, 0.0f, 0.0f });
     if (wasIdle)
     {
         IdleStateEntered(nullptr);
@@ -1095,10 +1056,13 @@ void SwipeControl::CloseIfNotRemainOpenExecuteItem()
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    if (m_currentItems && m_currentItems.get().Mode() == winrt::SwipeMode::Execute && m_currentItems.get().Size() > 0 &&
-        m_currentItems.get().GetAt(0).BehaviorOnInvoked() == winrt::SwipeBehaviorOnInvoked::RemainOpen && m_isOpen)
+    if (m_currentItems &&
+        m_currentItems.get().Mode() == winrt::SwipeMode::Execute &&
+        m_currentItems.get().Size() > 0 &&
+        m_currentItems.get().GetAt(0).BehaviorOnInvoked() == winrt::SwipeBehaviorOnInvoked::RemainOpen &&
+        m_isOpen)
     {
-        // If we have a Mode set to Execute, and an item with BehaviorOnInvoked set to RemainOpen, we do not want to close, so no-op
+        //If we have a Mode set to Execute, and an item with BehaviorOnInvoked set to RemainOpen, we do not want to close, so no-op
         return;
     }
     Close();
@@ -1184,20 +1148,18 @@ void SwipeControl::AlignStackPanel()
         {
             if (m_isHorizontal)
             {
-                const auto swipeContentStackPanelHorizontalAlignment =
-                    m_createdContent == CreatedContent::Left    ? winrt::HorizontalAlignment::Left
-                    : m_createdContent == CreatedContent::Right ? winrt::HorizontalAlignment::Right
-                                                                : winrt::HorizontalAlignment::Stretch;
+                const auto swipeContentStackPanelHorizontalAlignment = m_createdContent == CreatedContent::Left ? winrt::HorizontalAlignment::Left :
+                    m_createdContent == CreatedContent::Right ? winrt::HorizontalAlignment::Right :
+                    winrt::HorizontalAlignment::Stretch;
 
                 m_swipeContentStackPanel.get().HorizontalAlignment(swipeContentStackPanelHorizontalAlignment);
                 m_swipeContentStackPanel.get().VerticalAlignment(winrt::VerticalAlignment::Center);
             }
             else
             {
-                const auto swipeContentStackPanelVerticalAlignment =
-                    m_createdContent == CreatedContent::Top      ? winrt::VerticalAlignment::Top
-                    : m_createdContent == CreatedContent::Bottom ? winrt::VerticalAlignment::Bottom
-                                                                 : winrt::VerticalAlignment::Stretch;
+                const auto swipeContentStackPanelVerticalAlignment = m_createdContent == CreatedContent::Top ? winrt::VerticalAlignment::Top :
+                    m_createdContent == CreatedContent::Bottom ? winrt::VerticalAlignment::Bottom :
+                    winrt::VerticalAlignment::Stretch;
 
                 m_swipeContentStackPanel.get().HorizontalAlignment(winrt::HorizontalAlignment::Center);
                 m_swipeContentStackPanel.get().VerticalAlignment(swipeContentStackPanelVerticalAlignment);
@@ -1230,27 +1192,25 @@ void SwipeControl::SetupExecuteExpressionAnimation()
     if (IsTranslationFacadeAvailableForSwipeControl(m_swipeContentStackPanel.get()))
     {
         m_swipeContentStackPanel.get().StopAnimation(m_executeExpressionAnimation.get());
-        m_swipeContentStackPanel.get().Translation({0.0f, 0.0f, 0.0f});
+        m_swipeContentStackPanel.get().Translation({ 0.0f, 0.0f, 0.0f });
     }
     else if (m_swipeContentVisual)
     {
         m_swipeContentVisual.get().StopAnimation(GetAnimationTarget(m_swipeContentStackPanel.get()));
-        m_swipeContentVisual.get().Properties().InsertVector3(GetAnimationTarget(m_swipeContentStackPanel.get()), {0.0f, 0.0f, 0.0f});
+        m_swipeContentVisual.get().Properties().InsertVector3(GetAnimationTarget(m_swipeContentStackPanel.get()), { 0.0f, 0.0f, 0.0f });
     }
 
     if (m_currentItems.get().Mode() == winrt::SwipeMode::Execute)
     {
         assert(m_createdContent != CreatedContent::None);
-        m_executeExpressionAnimation.get().SetBooleanParameter(
-            s_isNearContentPropertyName, m_createdContent == CreatedContent::Left || m_createdContent == CreatedContent::Top);
+        m_executeExpressionAnimation.get().SetBooleanParameter(s_isNearContentPropertyName, m_createdContent == CreatedContent::Left || m_createdContent == CreatedContent::Top);
         if (IsTranslationFacadeAvailableForSwipeControl(m_swipeContentStackPanel.get()))
         {
             m_swipeContentStackPanel.get().StartAnimation(m_executeExpressionAnimation.get());
         }
         if (m_swipeContentVisual)
         {
-            m_swipeContentVisual.get().StartAnimation(
-                GetAnimationTarget(m_swipeContentStackPanel.get()), m_executeExpressionAnimation.get());
+            m_swipeContentVisual.get().StartAnimation(GetAnimationTarget(m_swipeContentStackPanel.get()), m_executeExpressionAnimation.get());
         }
     }
 }
@@ -1276,12 +1236,11 @@ void SwipeControl::SetupClipAnimation()
         m_insetClip.get().BottomInset(0.0f);
     }
 
-    m_clipExpressionAnimation.get().SetBooleanParameter(
-        s_isNearContentPropertyName, m_createdContent == CreatedContent::Left || m_createdContent == CreatedContent::Top);
+    m_clipExpressionAnimation.get().SetBooleanParameter(s_isNearContentPropertyName, m_createdContent == CreatedContent::Left || m_createdContent == CreatedContent::Top);
 
     if (m_createdContent == CreatedContent::None)
     {
-        // If we have no created content then we don't need to start the clip animation yet.
+        //If we have no created content then we don't need to start the clip animation yet.
         return;
     }
 
@@ -1309,10 +1268,7 @@ winrt::AppBarButton SwipeControl::GetSwipeItemButton(const winrt::SwipeItem& swi
 
     if (!swipeItem.Background())
     {
-        if (auto lookedUpBrush = SharedHelpers::FindInApplicationResources(
-                m_currentItems.get().Mode() == winrt::SwipeMode::Reveal ? s_swipeItemBackgroundResourceName
-                : m_thresholdReached                                    ? s_executeSwipeItemPostThresholdBackgroundResourceName
-                                                                        : s_executeSwipeItemPreThresholdBackgroundResourceName))
+        if (auto lookedUpBrush = SharedHelpers::FindInApplicationResources(m_currentItems.get().Mode() == winrt::SwipeMode::Reveal ? s_swipeItemBackgroundResourceName : m_thresholdReached ? s_executeSwipeItemPostThresholdBackgroundResourceName : s_executeSwipeItemPreThresholdBackgroundResourceName))
         {
             itemAsButton.Background(lookedUpBrush.try_as<winrt::Brush>());
         }
@@ -1320,10 +1276,7 @@ winrt::AppBarButton SwipeControl::GetSwipeItemButton(const winrt::SwipeItem& swi
 
     if (!swipeItem.Foreground())
     {
-        if (auto lookedUpBrush = SharedHelpers::FindInApplicationResources(
-                m_currentItems.get().Mode() == winrt::SwipeMode::Reveal ? s_swipeItemForegroundResourceName
-                : m_thresholdReached                                    ? s_executeSwipeItemPostThresholdForegroundResourceName
-                                                                        : s_executeSwipeItemPreThresholdForegroundResourceName))
+        if (auto lookedUpBrush = SharedHelpers::FindInApplicationResources(m_currentItems.get().Mode() == winrt::SwipeMode::Reveal ? s_swipeItemForegroundResourceName : m_thresholdReached ? s_executeSwipeItemPostThresholdForegroundResourceName : s_executeSwipeItemPreThresholdForegroundResourceName))
         {
             itemAsButton.Foreground(lookedUpBrush.try_as<winrt::Brush>());
         }
@@ -1569,7 +1522,7 @@ void SwipeControl::TryGetSwipeVisuals()
             if (DownlevelHelper::SetIsTranslationEnabledExists())
             {
                 winrt::ElementCompositionPreview::SetIsTranslationEnabled(m_content.get(), true);
-                mainContentVisual.Properties().InsertVector3(s_translationPropertyName, {0.0f, 0.0f, 0.0f});
+                mainContentVisual.Properties().InsertVector3(s_translationPropertyName, { 0.0f, 0.0f, 0.0f });
             }
             mainContentVisual.StartAnimation(GetAnimationTarget(m_content.get()), m_swipeAnimation.get());
 
@@ -1591,7 +1544,7 @@ void SwipeControl::TryGetSwipeVisuals()
             if (DownlevelHelper::SetIsTranslationEnabledExists())
             {
                 winrt::ElementCompositionPreview::SetIsTranslationEnabled(m_swipeContentStackPanel.get(), true);
-                swipeContentVisual.Properties().InsertVector3(s_translationPropertyName, {0.0f, 0.0f, 0.0f});
+                swipeContentVisual.Properties().InsertVector3(s_translationPropertyName, { 0.0f, 0.0f, 0.0f });
             }
 
             ConfigurePositionInertiaRestingValues();
@@ -1674,16 +1627,15 @@ void SwipeControl::UpdateThresholdReached(float value)
     SWIPECONTROL_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
     const bool oldValue = m_thresholdReached;
-    const float effectiveStackPanelSize = static_cast<float>(
-        (m_isHorizontal ? m_swipeContentStackPanel.get().ActualWidth() : m_swipeContentStackPanel.get().ActualHeight()) - 1);
+    const float effectiveStackPanelSize = static_cast<float>((m_isHorizontal ? m_swipeContentStackPanel.get().ActualWidth() : m_swipeContentStackPanel.get().ActualHeight()) - 1);
     if (!m_isOpen || m_lastActionWasOpening)
     {
-        // If we are opening new swipe items then we need to scroll open c_ThresholdValue
+        //If we are opening new swipe items then we need to scroll open c_ThresholdValue
         m_thresholdReached = abs(value) > std::min(effectiveStackPanelSize, c_ThresholdValue);
     }
     else
     {
-        // If we already have an open swipe item then swiping it closed by any amount will close it.
+        //If we already have an open swipe item then swiping it closed by any amount will close it.
         m_thresholdReached = abs(value) < effectiveStackPanelSize;
     }
     if (m_thresholdReached != oldValue)
@@ -1718,8 +1670,7 @@ void SwipeControl::ThrowIfHasVerticalAndHorizontalContent(bool setIsHorizontal)
     {
         if ((hasLeftContent || hasRightContent) && (hasTopContent || hasBottomContent))
         {
-            throw winrt::hresult_invalid_argument(
-                L"SwipeControl can't have both horizontal items and vertical items set at the same time.");
+            throw winrt::hresult_invalid_argument(L"SwipeControl can't have both horizontal items and vertical items set at the same time.");
         }
     }
 }
@@ -1743,14 +1694,14 @@ winrt::SwipeControl SwipeControl::GetThis()
 
 bool SwipeControl::IsTranslationFacadeAvailableForSwipeControl(const winrt::UIElement& element)
 {
-    // For now Facade's are causing more issues than they are worth for swipe control. Revist this
-    // when we have a little more time.
+    //For now Facade's are causing more issues than they are worth for swipe control. Revist this
+    //when we have a little more time.
 
-    // There are concerns about swipe consumers having taken a dependency on the ElementCompositionPreview
-    // Api's that this is exclusive with and also the target property of the swipe expression animations
-    // is not resolving with the use of Facade's
+    //There are concerns about swipe consumers having taken a dependency on the ElementCompositionPreview
+    //Api's that this is exclusive with and also the target property of the swipe expression animations
+    //is not resolving with the use of Facade's
     return false;
-    // return SharedHelpers::IsTranslationFacadeAvailable(element);
+    //return SharedHelpers::IsTranslationFacadeAvailable(element);
 }
 
 wstring_view SwipeControl::DirectionToInset(const CreatedContent& createdContent)

@@ -5,7 +5,8 @@
 
 #include "DisplayRegionHelperTestApi.g.h"
 
-class DisplayRegionHelperTestApi : public winrt::implementation::DisplayRegionHelperTestApiT<DisplayRegionHelperTestApi>
+class DisplayRegionHelperTestApi :
+    public winrt::implementation::DisplayRegionHelperTestApiT<DisplayRegionHelperTestApi>
 {
 public:
     static bool SimulateDisplayRegions();

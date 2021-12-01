@@ -5,14 +5,14 @@
 #include "TeachingTip.h"
 #include "TeachingTipAutomationPeer.g.h"
 
-class TeachingTipAutomationPeer
-    : public ReferenceTracker<TeachingTipAutomationPeer, winrt::implementation::TeachingTipAutomationPeerT, winrt::IWindowProvider>
+class TeachingTipAutomationPeer :
+    public ReferenceTracker<TeachingTipAutomationPeer, winrt::implementation::TeachingTipAutomationPeerT, winrt::IWindowProvider>
 {
 
 public:
     TeachingTipAutomationPeer(winrt::TeachingTip const& owner);
 
-    // IAutomationPeerOverrides
+    // IAutomationPeerOverrides 
     winrt::AutomationControlType GetAutomationControlTypeCore();
     winrt::hstring GetClassNameCore();
 

@@ -12,14 +12,8 @@ enum class ScrollOrientation
 class OrientationBasedMeasures
 {
 public:
-    ScrollOrientation GetScrollOrientation() const
-    {
-        return m_orientation;
-    }
-    void SetScrollOrientation(ScrollOrientation value)
-    {
-        m_orientation = value;
-    }
+    ScrollOrientation GetScrollOrientation() const { return m_orientation; }
+    void SetScrollOrientation(ScrollOrientation value) { m_orientation = value; }
 
     // Major - Scrolling/virtualizing direction
     // Minor - Opposite direction
@@ -38,5 +32,6 @@ public:
     winrt::Size MinorMajorSize(float minor, float major);
 
 private:
-    ScrollOrientation m_orientation{ScrollOrientation::Vertical};
+    ScrollOrientation m_orientation { ScrollOrientation::Vertical };
 };
+

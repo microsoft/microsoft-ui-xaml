@@ -7,8 +7,7 @@
 #include "SelectionNode.h"
 #include "SelectionModelChildrenRequestedEventArgs.h"
 
-SelectionModelChildrenRequestedEventArgs::SelectionModelChildrenRequestedEventArgs(
-    const winrt::IInspectable& source, const winrt::IndexPath& sourceIndexPath, bool throwOnAccess)
+SelectionModelChildrenRequestedEventArgs::SelectionModelChildrenRequestedEventArgs(const winrt::IInspectable& source, const winrt::IndexPath& sourceIndexPath, bool throwOnAccess)
 {
     Initialize(source, sourceIndexPath, throwOnAccess);
 }

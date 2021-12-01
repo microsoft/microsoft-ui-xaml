@@ -9,3 +9,4 @@ public:
     // Represents a value that is not a number (NaN).
     static const double NaN;
 };
+

@@ -13,10 +13,10 @@ public:
     IndexPath(const winrt::IVector<int>& indices);
     IndexPath(const std::vector<int>& indices);
 
-    template <typename... Args>
-    static winrt::IndexPath CreateFrom(Args&&... args)
+    template <typename ... Args>
+    static winrt::IndexPath CreateFrom(Args&& ... args)
     {
-        return winrt::make<IndexPath>(std::forward<Args>(args)...);
+        return winrt::make<IndexPath>(std::forward<Args>(args) ...);
     }
 
     template <typename T>

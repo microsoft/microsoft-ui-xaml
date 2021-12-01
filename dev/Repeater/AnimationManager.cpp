@@ -7,7 +7,9 @@
 #include "AnimationManager.h"
 #include "ItemsRepeater.h"
 
-AnimationManager::AnimationManager(ItemsRepeater* owner) : m_owner(owner), m_animator(owner)
+AnimationManager::AnimationManager(ItemsRepeater* owner) :
+    m_owner(owner),
+    m_animator(owner)
 {
     // ItemsRepeater is not fully constructed yet. Don't interact with it.
 }
@@ -27,7 +29,7 @@ void AnimationManager::OnAnimatorChanged(const winrt::ElementAnimator& newAnimat
 
     if (newAnimator)
     {
-        m_hideAnimationCompleted = newAnimator.HideAnimationCompleted({this, &AnimationManager::OnHideAnimationCompleted});
+        m_hideAnimationCompleted = newAnimator.HideAnimationCompleted({ this, &AnimationManager::OnHideAnimationCompleted });
     }
 }
 
@@ -61,12 +63,9 @@ void AnimationManager::OnElementPrepared(const winrt::UIElement& element)
     if (m_animator)
     {
         auto context = winrt::AnimationContext::None;
-        if (m_hasRecordedAdds)
-            context |= winrt::AnimationContext::CollectionChangeAdd;
-        if (m_hasRecordedResets)
-            context |= winrt::AnimationContext::CollectionChangeReset;
-        if (m_hasRecordedLayoutTransitions)
-            context |= winrt::AnimationContext::LayoutTransition;
+        if (m_hasRecordedAdds) context |= winrt::AnimationContext::CollectionChangeAdd;
+        if (m_hasRecordedResets) context |= winrt::AnimationContext::CollectionChangeReset;
+        if (m_hasRecordedLayoutTransitions) context |= winrt::AnimationContext::LayoutTransition;
 
         if (context != winrt::AnimationContext::None)
         {
@@ -78,16 +77,16 @@ void AnimationManager::OnElementPrepared(const winrt::UIElement& element)
 bool AnimationManager::ClearElement(const winrt::UIElement& element)
 {
     bool canClear = false;
-
+    
     if (m_animator)
     {
         auto context = winrt::AnimationContext::None;
-        if (m_hasRecordedRemoves)
-            context |= winrt::AnimationContext::CollectionChangeRemove;
-        if (m_hasRecordedResets)
-            context |= winrt::AnimationContext::CollectionChangeReset;
+        if (m_hasRecordedRemoves) context |= winrt::AnimationContext::CollectionChangeRemove;
+        if (m_hasRecordedResets) context |= winrt::AnimationContext::CollectionChangeReset;
 
-        canClear = context != winrt::AnimationContext::None && m_animator.get().HasHideAnimation(element, context);
+        canClear =
+            context != winrt::AnimationContext::None &&
+            m_animator.get().HasHideAnimation(element, context);
 
         if (canClear)
         {
@@ -103,14 +102,10 @@ void AnimationManager::OnElementBoundsChanged(const winrt::UIElement& element, w
     if (m_animator)
     {
         auto context = winrt::AnimationContext::None;
-        if (m_hasRecordedAdds)
-            context |= winrt::AnimationContext::CollectionChangeAdd;
-        if (m_hasRecordedRemoves)
-            context |= winrt::AnimationContext::CollectionChangeRemove;
-        if (m_hasRecordedResets)
-            context |= winrt::AnimationContext::CollectionChangeReset;
-        if (m_hasRecordedLayoutTransitions)
-            context |= winrt::AnimationContext::LayoutTransition;
+        if (m_hasRecordedAdds) context |= winrt::AnimationContext::CollectionChangeAdd;
+        if (m_hasRecordedRemoves) context |= winrt::AnimationContext::CollectionChangeRemove;
+        if (m_hasRecordedResets) context |= winrt::AnimationContext::CollectionChangeReset;
+        if (m_hasRecordedLayoutTransitions) context |= winrt::AnimationContext::LayoutTransition;
 
         m_animator.get().OnElementBoundsChanged(element, context, oldBounds, newBounds);
     }

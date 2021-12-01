@@ -6,8 +6,8 @@
 #include "PagerControl.h"
 #include "PagerControlAutomationPeer.g.h"
 
-class PagerControlAutomationPeer
-    : public ReferenceTracker<PagerControlAutomationPeer, winrt::implementation::PagerControlAutomationPeerT, winrt::ISelectionProvider>
+class PagerControlAutomationPeer :
+    public ReferenceTracker<PagerControlAutomationPeer, winrt::implementation::PagerControlAutomationPeerT, winrt::ISelectionProvider>
 {
 
 public:
@@ -20,14 +20,8 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore();
 
     // ISelectionProvider
-    bool CanSelectMultiple()
-    {
-        return false;
-    };
-    bool IsSelectionRequired()
-    {
-        return true;
-    };
+    bool CanSelectMultiple() { return false; };
+    bool IsSelectionRequired() { return true; };
     winrt::com_array<winrt::IInspectable> GetSelection();
 
     void RaiseSelectionChanged(double oldIndex, double newIndex);
@@ -35,3 +29,4 @@ public:
 private:
     com_ptr<PagerControl> GetImpl();
 };
+

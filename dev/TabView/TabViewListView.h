@@ -4,7 +4,8 @@
 #pragma once
 #include "TabViewListView.g.h"
 
-class TabViewListView : public ReferenceTracker<TabViewListView, winrt::implementation::TabViewListViewT>
+class TabViewListView :
+    public ReferenceTracker<TabViewListView, winrt::implementation::TabViewListViewT>
 {
 public:
     TabViewListView();
@@ -19,3 +20,4 @@ private:
     void OnContainerContentChanging(const winrt::IInspectable& sender, const winrt::ContainerContentChangingEventArgs& args);
     void OnSelectedIndexPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 };
+

@@ -6,7 +6,8 @@
 
 #include "TreeViewList.g.h"
 
-class TreeViewList : public ReferenceTracker<TreeViewList, winrt::implementation::TreeViewListT>
+class TreeViewList :
+    public ReferenceTracker<TreeViewList, winrt::implementation::TreeViewListT>
 {
 public:
     TreeViewList();
@@ -33,7 +34,7 @@ public:
 
     winrt::hstring GetDropTargetDropEffect();
     void SetDraggedOverItem(winrt::TreeViewItem newDraggedOverItem);
-    void UpdateDropTargetDropEffect(bool forceUpdate, bool isLeaving, winrt::TreeViewItem keyboardReorderedContainer);
+    void UpdateDropTargetDropEffect(bool forceUpdate, bool isLeaving, winrt::TreeViewItem keyboardReorderedContainer);    
     void EnableMultiselect(bool isEnabled);
     bool IsMultiselect() const;
 
@@ -62,11 +63,12 @@ private:
     winrt::TreeViewNode GetRootOfSelection(const winrt::TreeViewNode& node) const;
     void MoveNodeInto(winrt::TreeViewNode const& node, winrt::TreeViewNode const& insertAtNode) const;
 
-    tracker_ref<winrt::TreeViewItem> m_draggedOverItem{this};
+    tracker_ref<winrt::TreeViewItem> m_draggedOverItem{ this };
     winrt::hstring m_dropTargetDropEffectString;
-    int m_emptySlotIndex{0};
-    bool m_itemsSourceAttached{false};
-    bool m_isMultiselectEnabled{false};
-    tracker_com_ref<ViewModel> m_viewModel{this};
-    tracker_ref<winrt::TreeViewNode> m_draggedTreeViewNode{this};
+    int m_emptySlotIndex{ 0 };
+    bool m_itemsSourceAttached{ false };
+    bool m_isMultiselectEnabled{ false };
+    tracker_com_ref<ViewModel> m_viewModel{ this };
+    tracker_ref<winrt::TreeViewNode> m_draggedTreeViewNode{ this };
 };
+

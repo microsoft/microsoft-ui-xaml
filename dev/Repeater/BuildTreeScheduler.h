@@ -5,18 +5,13 @@
 
 struct WorkInfo
 {
-    WorkInfo(int priority, const std::function<void()>& workFunc) : m_priority(priority), m_workFunc(workFunc)
-    {
-    }
+    WorkInfo(int priority, const std::function<void()>& workFunc) :
+        m_priority(priority),
+        m_workFunc(workFunc)
+    {}
 
-    int Priority() const
-    {
-        return m_priority;
-    }
-    void InvokeWorkFunc() const
-    {
-        m_workFunc();
-    }
+    int Priority() const { return m_priority; }
+    void InvokeWorkFunc() const { m_workFunc(); }
 
 private:
     int m_priority;

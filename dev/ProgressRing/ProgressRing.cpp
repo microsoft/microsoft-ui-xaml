@@ -9,15 +9,15 @@
 #include "ResourceAccessor.h"
 #include "math.h"
 
-static constexpr wstring_view s_LayoutRootName{L"LayoutRoot"sv};
-static constexpr wstring_view s_LottiePlayerName{L"LottiePlayer"sv};
-static constexpr wstring_view s_DefaultForegroundThemeResourceName{L"SystemControlHighlightAccentBrush"sv};
-static constexpr wstring_view s_DefaultBackgroundThemeResourceName{L"SystemControlBackgroundBaseLowBrush"sv};
-static constexpr wstring_view s_ForegroundName{L"Foreground"sv};
-static constexpr wstring_view s_BackgroundName{L"Background"sv};
-static constexpr wstring_view s_ActiveStateName{L"Active"sv};
-static constexpr wstring_view s_DeterminateActiveStateName{L"DeterminateActive"sv};
-static constexpr wstring_view s_InactiveStateName{L"Inactive"sv};
+static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot"sv };
+static constexpr wstring_view s_LottiePlayerName{ L"LottiePlayer"sv };
+static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemControlHighlightAccentBrush"sv };
+static constexpr wstring_view s_DefaultBackgroundThemeResourceName{ L"SystemControlBackgroundBaseLowBrush"sv };
+static constexpr wstring_view s_ForegroundName{ L"Foreground"sv };
+static constexpr wstring_view s_BackgroundName{ L"Background"sv };
+static constexpr wstring_view s_ActiveStateName{ L"Active"sv };
+static constexpr wstring_view s_DeterminateActiveStateName{ L"DeterminateActive"sv };
+static constexpr wstring_view s_InactiveStateName{ L"Inactive"sv };
 
 ProgressRing::ProgressRing()
 {
@@ -25,12 +25,12 @@ ProgressRing::ProgressRing()
 
     SetDefaultStyleKey(this);
 
-    RegisterPropertyChangedCallback(winrt::Control::ForegroundProperty(), {this, &ProgressRing::OnForegroundPropertyChanged});
-    RegisterPropertyChangedCallback(winrt::Control::BackgroundProperty(), {this, &ProgressRing::OnBackgroundPropertyChanged});
-
+    RegisterPropertyChangedCallback(winrt::Control::ForegroundProperty(), { this, &ProgressRing::OnForegroundPropertyChanged });
+    RegisterPropertyChangedCallback(winrt::Control::BackgroundProperty(), { this, &ProgressRing::OnBackgroundPropertyChanged });
+    
     SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressRingTemplateSettings>());
 
-    SizeChanged({this, &ProgressRing::OnSizeChanged});
+    SizeChanged({ this, &ProgressRing::OnSizeChanged });
 }
 
 winrt::AutomationPeer ProgressRing::OnCreateAutomationPeer()
@@ -40,7 +40,7 @@ winrt::AutomationPeer ProgressRing::OnCreateAutomationPeer()
 
 void ProgressRing::OnApplyTemplate()
 {
-    winrt::IControlProtected controlProtected{*this};
+    winrt::IControlProtected controlProtected{ *this };
 
     m_layoutRoot.set(GetTemplateChildT<winrt::Grid>(s_LayoutRootName, controlProtected));
     m_player.set(GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected));
@@ -69,8 +69,7 @@ void ProgressRing::OnForegroundPropertyChanged(const winrt::DependencyObject&, c
 {
     if (const auto foreground = Foreground().try_as<winrt::SolidColorBrush>())
     {
-        m_foregroundColorPropertyChangedRevoker = RegisterPropertyChanged(
-            foreground, winrt::SolidColorBrush::ColorProperty(), {this, &ProgressRing::OnForegroundColorPropertyChanged});
+        m_foregroundColorPropertyChangedRevoker = RegisterPropertyChanged(foreground, winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnForegroundColorPropertyChanged });
     }
 
     OnForegroundColorPropertyChanged(nullptr, nullptr);
@@ -104,8 +103,7 @@ void ProgressRing::OnBackgroundPropertyChanged(const winrt::DependencyObject&, c
 {
     if (const auto background = Background().try_as<winrt::SolidColorBrush>())
     {
-        m_backgroundColorPropertyChangedRevoker = RegisterPropertyChanged(
-            background, winrt::SolidColorBrush::ColorProperty(), {this, &ProgressRing::OnBackgroundColorPropertyChanged});
+        m_backgroundColorPropertyChangedRevoker = RegisterPropertyChanged(background, winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnBackgroundColorPropertyChanged });
     }
 
     OnBackgroundColorPropertyChanged(nullptr, nullptr);
@@ -145,11 +143,15 @@ void ProgressRing::OnIsIndeterminatePropertyChanged(const winrt::DependencyPrope
     UpdateStates();
 }
 
+
 void ProgressRing::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (!m_rangeBasePropertyUpdating)
     {
-        auto scopeGuard = gsl::finally([this]() { m_rangeBasePropertyUpdating = false; });
+        auto scopeGuard = gsl::finally([this]()
+            {
+                m_rangeBasePropertyUpdating = false;
+            });
         m_rangeBasePropertyUpdating = true;
 
         CoerceValue();
@@ -165,7 +167,10 @@ void ProgressRing::OnMaximumPropertyChanged(const winrt::DependencyPropertyChang
 {
     if (!m_rangeBasePropertyUpdating)
     {
-        auto scopeGuard = gsl::finally([this]() { m_rangeBasePropertyUpdating = false; });
+        auto scopeGuard = gsl::finally([this]()
+            {
+                m_rangeBasePropertyUpdating = false;
+            });
         m_rangeBasePropertyUpdating = true;
 
         CoerceMinimum();
@@ -182,7 +187,10 @@ void ProgressRing::OnMinimumPropertyChanged(const winrt::DependencyPropertyChang
 {
     if (!m_rangeBasePropertyUpdating)
     {
-        auto scopeGuard = gsl::finally([this]() { m_rangeBasePropertyUpdating = false; });
+        auto scopeGuard = gsl::finally([this]()
+            {
+                m_rangeBasePropertyUpdating = false;
+            });
         m_rangeBasePropertyUpdating = true;
 
         CoerceMaximum();
@@ -238,7 +246,7 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
                 // Set custom determinate animation source.
                 player.Source(DeterminateSource());
             }
-        }
+        }      
     }
 }
 
@@ -246,7 +254,8 @@ void ProgressRing::SetLottieForegroundColor(const winrt::IAnimatedVisualSource a
 {
     const auto compositor = winrt::Window::Current().Compositor();
 
-    const auto foregroundColor = [foreground = Foreground().try_as<winrt::SolidColorBrush>()]() {
+    const auto foregroundColor = [foreground = Foreground().try_as<winrt::SolidColorBrush>()]()
+    {
         if (foreground)
         {
             return foreground.Color();
@@ -268,14 +277,15 @@ void ProgressRing::SetLottieBackgroundColor(const winrt::IAnimatedVisualSource a
 {
     const auto compositor = winrt::Window::Current().Compositor();
 
-    const auto backgroundColor = [background = Background().try_as<winrt::SolidColorBrush>()]() {
+    const auto backgroundColor = [background = Background().try_as<winrt::SolidColorBrush>()]()
+    {
         if (background)
         {
             return background.Color();
         }
         else
         {
-            // Default color fallback if Background() Brush does not contain SolidColorBrush with Color property.
+             //Default color fallback if Background() Brush does not contain SolidColorBrush with Color property.
             return SharedHelpers::FindInApplicationResources(s_DefaultBackgroundThemeResourceName).as<winrt::SolidColorBrush>().Color();
         }
     }();
@@ -352,12 +362,14 @@ void ProgressRing::ApplyTemplateSettings()
     // TemplateSetting properties from WUXC for backwards compatibility.
     const auto templateSettings = winrt::get_self<::ProgressRingTemplateSettings>(TemplateSettings());
 
-    const auto [width, diameterValue, anchorPoint] = [this]() {
+    const auto [width, diameterValue, anchorPoint] = [this]()
+    {
         if (this->ActualWidth())
         {
             const float width = static_cast<float>(this->ActualWidth());
 
-            const auto diameterAdditive = [width]() {
+            const auto diameterAdditive = [width]()
+            {
                 if (width <= 40.0f)
                 {
                     return 1.0f;
@@ -372,10 +384,10 @@ void ProgressRing::ApplyTemplateSettings()
 
         return std::make_tuple(0.0f, 0.0f, 0.0f);
     }();
-
+  
     templateSettings->EllipseDiameter(diameterValue);
 
-    const winrt::Thickness thicknessEllipseOffset = {0, anchorPoint, 0, 0};
+    const winrt::Thickness thicknessEllipseOffset = { 0, anchorPoint, 0, 0 };
 
     templateSettings->EllipseOffset(thicknessEllipseOffset);
     templateSettings->MaxSideLength(width);

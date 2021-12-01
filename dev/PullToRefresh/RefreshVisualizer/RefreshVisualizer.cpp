@@ -9,13 +9,14 @@
 #include "RuntimeProfiler.h"
 #include "PTRTracing.h"
 
-// The Opacity of the progress indicator in the non-pending non-executing states
+
+//The Opacity of the progress indicator in the non-pending non-executing states
 #define MINIMUM_INDICATOR_OPACITY 0.4f
 
-// The size of the default progress indicator
+//The size of the default progress indicator
 #define DEFAULT_INDICATOR_SIZE 30
 
-// The position the progress indicator parallax animation places the indicator during manipulation
+//The position the progress indicator parallax animation places the indicator during manipulation
 #define PARALLAX_POSITION_RATIO 0.5f
 
 //////////////////////////////////////////////////////////
@@ -83,7 +84,7 @@ void RefreshVisualizer::RequestRefresh()
     RaiseRefreshRequested();
 }
 
-// Private Interface methods
+//Private Interface methods
 winrt::IRefreshInfoProvider RefreshVisualizer::InfoProvider()
 {
     winrt::IInspectable valueAsII = GetValue(s_InfoProviderProperty);
@@ -104,7 +105,7 @@ void RefreshVisualizer::SetInternalPullDirection(winrt::RefreshPullDirection con
     UpdateContent();
 }
 
-// Privates
+//Privates
 void RefreshVisualizer::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
@@ -139,10 +140,8 @@ void RefreshVisualizer::OnRefreshInfoProviderChanged(const winrt::DependencyProp
 
     if (m_refreshInfoProvider)
     {
-        m_RefreshInfoProvider_InteractingForRefreshChangedToken = m_refreshInfoProvider.get().IsInteractingForRefreshChanged(
-            {this, &RefreshVisualizer::RefreshInfoProvider_InteractingForRefreshChanged});
-        m_RefreshInfoProvider_InteractionRatioChangedToken =
-            m_refreshInfoProvider.get().InteractionRatioChanged({this, &RefreshVisualizer::RefreshInfoProvider_InteractionRatioChanged});
+        m_RefreshInfoProvider_InteractingForRefreshChangedToken = m_refreshInfoProvider.get().IsInteractingForRefreshChanged({ this, &RefreshVisualizer::RefreshInfoProvider_InteractingForRefreshChanged });
+        m_RefreshInfoProvider_InteractionRatioChangedToken = m_refreshInfoProvider.get().InteractionRatioChanged({ this, &RefreshVisualizer::RefreshInfoProvider_InteractionRatioChanged });
 
         m_executionRatio = m_refreshInfoProvider.get().ExecutionRatio();
     }
@@ -205,6 +204,7 @@ void RefreshVisualizer::OnStateChanged(const winrt::DependencyPropertyChangedEve
     RaiseRefreshStateChanged(oldstate, m_state);
 }
 
+
 void RefreshVisualizer::OnContentChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_PTR_PTR, METH_NAME, this, args.OldValue(), args.NewValue());
@@ -218,7 +218,7 @@ void RefreshVisualizer::OnContentChangedImpl()
     if (m_root)
     {
         // There is a slight parallax animation of the progress indicator as the IRefreshInfoProvider updates
-        // the interaction ratio. Unfortunately, this composition animation would be clobbered by setting the alignment
+        // the interaction ratio. Unfortunately, this composition animation would be clobbered by setting the alignment 
         // properties of the visual's Xaml object. To get around this we wrap the indicator in a container and set the
         // container's alignment properties instead. On RS2+ we can instead animate the Translation XAML property, if
         // the progress Indicator is a Framework Element and has the Vertical/Horizontal Alignment properties.
@@ -262,21 +262,21 @@ void RefreshVisualizer::UpdateContent()
         const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(m_content.get());
 
         const winrt::Size contentSize = m_content.get().RenderSize();
-        contentVisual.CenterPoint({(float)(contentSize.Height / 2), (float)(contentSize.Width / 2), 0.0f});
+        contentVisual.CenterPoint({ (float)(contentSize.Height / 2), (float)(contentSize.Width / 2), 0.0f });
 
         switch (m_state)
         {
         case winrt::RefreshVisualizerState::Idle:
             contentVisual.Opacity(MINIMUM_INDICATOR_OPACITY);
             contentVisual.RotationAngle(m_startingRotationAngle);
-            // On RS2 and above we achieve the parallax animation using the Translation property, so we set the appropriate field here.
+            //On RS2 and above we achieve the parallax animation using the Translation property, so we set the appropriate field here.
             if (SharedHelpers::IsRS2OrHigher())
             {
-                contentVisual.Properties().InsertVector3(L"Translation", {0.0f, 0.0f, 0.0f});
+                contentVisual.Properties().InsertVector3(L"Translation", { 0.0f, 0.0f, 0.0f });
             }
             else
             {
-                contentVisual.Offset({0.0f, 0.0f, 0.0f});
+                contentVisual.Offset({ 0.0f, 0.0f, 0.0f });
             }
 
             break;
@@ -306,29 +306,27 @@ void RefreshVisualizer::UpdateContent()
                     return 1.0f;
                 }();
                 translationRatio = IsPullDirectionFar() ? -1.0f * translationRatio : translationRatio;
-                // On RS2 and above we achieve the parallax animation using the Translation property, so we set the appropriate field here.
+                //On RS2 and above we achieve the parallax animation using the Translation property, so we set the appropriate field here.
                 if (SharedHelpers::IsRS2OrHigher())
                 {
                     if (IsPullDirectionVertical())
                     {
-                        contentVisual.Properties().InsertVector3(
-                            L"Translation", {0.0f, translationRatio * (float)m_root.get().ActualHeight(), 0.0f});
+                        contentVisual.Properties().InsertVector3(L"Translation", { 0.0f, translationRatio * (float)m_root.get().ActualHeight(), 0.0f });
                     }
                     else
                     {
-                        contentVisual.Properties().InsertVector3(
-                            L"Translation", {translationRatio * (float)m_root.get().ActualWidth(), 0.0f, 0.0f});
+                        contentVisual.Properties().InsertVector3(L"Translation", { translationRatio * (float)m_root.get().ActualWidth(), 0.0f, 0.0f });
                     }
                 }
                 else
                 {
                     if (IsPullDirectionVertical())
                     {
-                        contentVisual.Offset({0.0f, translationRatio * (float)m_root.get().ActualHeight(), 0.0f});
+                        contentVisual.Offset({ 0.0f, translationRatio * (float)m_root.get().ActualHeight(), 0.0f });
                     }
                     else
                     {
-                        contentVisual.Offset({translationRatio * (float)m_root.get().ActualHeight(), 0.0f, 0.0f});
+                        contentVisual.Offset({ translationRatio * (float)m_root.get().ActualHeight(), 0.0f, 0.0f });
                     }
                 }
             }
@@ -351,19 +349,19 @@ void RefreshVisualizer::ExecuteInteractingAnimations()
             m_compositor.set(contentVisual.Compositor());
         }
 
-        // Set up the InteractionRatioRotationAnimation
+        //Set up the InteractionRatioRotationAnimation
         const winrt::Size contentSize = m_content.get().RenderSize();
-        contentVisual.CenterPoint({(float)(contentSize.Height / 2), (float)(contentSize.Width / 2), 0.0f});
+        contentVisual.CenterPoint({ (float)(contentSize.Height / 2), (float)(contentSize.Width / 2), 0.0f });
 
         const winrt::hstring interactionRatioPropertyName = m_refreshInfoProvider.get().InteractionRatioCompositionProperty();
         const winrt::CompositionPropertySet interactionRatioPropertySet = m_refreshInfoProvider.get().CompositionProperties();
 
         const winrt::ExpressionAnimation contentInteractionRatioRotationAnimation = m_compositor.get().CreateExpressionAnimation(
-            L"startingRotationAngle + (Pi * (Clamp(RefreshInteractionRatioPropertySet." + static_cast<std::wstring>(interactionRatioPropertyName) +
-            L", 0.0f, contentVisual.DEFAULT_REFRESHINDICATOR_THRESHOLD_RATIO) / "
-            L"contentVisual.DEFAULT_REFRESHINDICATOR_THRESHOLD_RATIO) * 2)");
+            L"startingRotationAngle + (Pi * (Clamp(RefreshInteractionRatioPropertySet." +
+            static_cast<std::wstring>(interactionRatioPropertyName) +
+            L", 0.0f, contentVisual.DEFAULT_REFRESHINDICATOR_THRESHOLD_RATIO) / contentVisual.DEFAULT_REFRESHINDICATOR_THRESHOLD_RATIO) * 2)");
 
-        const auto thresholdRatioName{L"DEFAULT_REFRESHINDICATOR_THRESHOLD_RATIO"sv};
+        const auto thresholdRatioName{ L"DEFAULT_REFRESHINDICATOR_THRESHOLD_RATIO"sv };
         contentVisual.Properties().InsertScalar(thresholdRatioName, static_cast<float>(m_executionRatio));
         contentInteractionRatioRotationAnimation.SetReferenceParameter(L"contentVisual", contentVisual);
         contentInteractionRatioRotationAnimation.SetReferenceParameter(L"RefreshInteractionRatioPropertySet", interactionRatioPropertySet);
@@ -371,39 +369,37 @@ void RefreshVisualizer::ExecuteInteractingAnimations()
 
         contentVisual.StartAnimation(L"RotationAngle", contentInteractionRatioRotationAnimation);
 
-        // Set up the InteractionRatioOpacityAnimation
+        //Set up the InteractionRatioOpacityAnimation
         const winrt::ExpressionAnimation contentInteractionRatioOpacityAnimation = m_compositor.get().CreateExpressionAnimation(
-            L"((1.0f - contentVisual.MINIMUM_INDICATOR_OPACITY) * RefreshInteractionRatioPropertySet." +
-            static_cast<std::wstring>(interactionRatioPropertyName) + L") + contentVisual.MINIMUM_INDICATOR_OPACITY");
-        const auto minOpacityName{L"MINIMUM_INDICATOR_OPACITY"sv};
+            L"((1.0f - contentVisual.MINIMUM_INDICATOR_OPACITY) * RefreshInteractionRatioPropertySet."
+            + static_cast<std::wstring>(interactionRatioPropertyName) +
+            L") + contentVisual.MINIMUM_INDICATOR_OPACITY");
+        const auto minOpacityName{ L"MINIMUM_INDICATOR_OPACITY"sv };
         contentVisual.Properties().InsertScalar(minOpacityName, MINIMUM_INDICATOR_OPACITY);
         contentInteractionRatioOpacityAnimation.SetReferenceParameter(L"contentVisual", contentVisual);
         contentInteractionRatioOpacityAnimation.SetReferenceParameter(L"RefreshInteractionRatioPropertySet", interactionRatioPropertySet);
 
-        // contentVisual.StartAnimation(L"Opacity", contentInteractionRatioOpacityAnimation);
+        //contentVisual.StartAnimation(L"Opacity", contentInteractionRatioOpacityAnimation);
 
-        // Set up the InteractionRatioParallaxAnimation
-        winrt::ExpressionAnimation contentInteractionRatioParallaxAnimation{nullptr};
+        //Set up the InteractionRatioParallaxAnimation
+        winrt::ExpressionAnimation contentInteractionRatioParallaxAnimation{ nullptr };
         if (IsPullDirectionFar())
         {
             contentInteractionRatioParallaxAnimation = m_compositor.get().CreateExpressionAnimation(
-                L"((1.0f - contentVisual.DEFAULT_REFRESHINDICATOR_THRESHOLD_RATIO) * rootSize * 0.5f * -1.0f) * "
-                L"min((RefreshInteractionRatioPropertySet." +
-                static_cast<std::wstring>(interactionRatioPropertyName) +
+                L"((1.0f - contentVisual.DEFAULT_REFRESHINDICATOR_THRESHOLD_RATIO) * rootSize * 0.5f * -1.0f) * min((RefreshInteractionRatioPropertySet."
+                + static_cast<std::wstring>(interactionRatioPropertyName) +
                 L" / contentVisual.DEFAULT_REFRESHINDICATOR_THRESHOLD_RATIO), 1.0f)");
         }
         else
         {
             contentInteractionRatioParallaxAnimation = m_compositor.get().CreateExpressionAnimation(
-                L"((1.0f - contentVisual.DEFAULT_REFRESHINDICATOR_THRESHOLD_RATIO) * rootSize * 0.5f) * "
-                L"min((RefreshInteractionRatioPropertySet." +
-                static_cast<std::wstring>(interactionRatioPropertyName) +
+                L"((1.0f - contentVisual.DEFAULT_REFRESHINDICATOR_THRESHOLD_RATIO) * rootSize * 0.5f) * min((RefreshInteractionRatioPropertySet."
+                + static_cast<std::wstring>(interactionRatioPropertyName) +
                 L" / contentVisual.DEFAULT_REFRESHINDICATOR_THRESHOLD_RATIO), 1.0f)");
         }
         if (m_root)
         {
-            contentInteractionRatioParallaxAnimation.SetScalarParameter(
-                L"rootSize", (float)(IsPullDirectionVertical() ? m_root.get().ActualHeight() : m_root.get().ActualWidth()));
+            contentInteractionRatioParallaxAnimation.SetScalarParameter(L"rootSize", (float)(IsPullDirectionVertical() ? m_root.get().ActualHeight() : m_root.get().ActualWidth()));
         }
         else
         {
@@ -413,7 +409,7 @@ void RefreshVisualizer::ExecuteInteractingAnimations()
         contentInteractionRatioParallaxAnimation.SetReferenceParameter(L"contentVisual", contentVisual);
         contentInteractionRatioParallaxAnimation.SetReferenceParameter(L"RefreshInteractionRatioPropertySet", interactionRatioPropertySet);
 
-        // On RS2 and above we achieve the parallax animation using the Translation property, so we animate the appropriate field here.
+        //On RS2 and above we achieve the parallax animation using the Translation property, so we animate the appropriate field here.
         if (!SharedHelpers::IsRS2OrHigher())
         {
             if (IsPullDirectionVertical())
@@ -456,7 +452,7 @@ void RefreshVisualizer::ExecuteScaleUpAnimation()
         contentScaleAnimation.Duration(300ms);
 
         const winrt::Size contentSize = m_content.get().RenderSize();
-        contentVisual.CenterPoint({(float)(contentSize.Height / 2), (float)(contentSize.Width / 2), 0.0f});
+        contentVisual.CenterPoint({ (float)(contentSize.Height / 2), (float)(contentSize.Width / 2), 0.0f });
 
         contentVisual.StartAnimation(L"Scale.XY", contentScaleAnimation);
     }
@@ -475,13 +471,12 @@ void RefreshVisualizer::ExecuteExecutingRotationAnimation()
 
         const winrt::ScalarKeyFrameAnimation contentExecutionRotationAnimation = m_compositor.get().CreateScalarKeyFrameAnimation();
         contentExecutionRotationAnimation.InsertKeyFrame(0.0f, m_startingRotationAngle, m_compositor.get().CreateLinearEasingFunction());
-        contentExecutionRotationAnimation.InsertKeyFrame(
-            1.0f, m_startingRotationAngle + (float)(2.0f * M_PI), m_compositor.get().CreateLinearEasingFunction());
+        contentExecutionRotationAnimation.InsertKeyFrame(1.0f, m_startingRotationAngle + (float)(2.0f * M_PI), m_compositor.get().CreateLinearEasingFunction());
         contentExecutionRotationAnimation.Duration(500ms);
         contentExecutionRotationAnimation.IterationBehavior(winrt::AnimationIterationBehavior::Forever);
 
         const winrt::Size contentSize = m_content.get().RenderSize();
-        contentVisual.CenterPoint({(float)(contentSize.Height / 2), (float)(contentSize.Width / 2), 0.0f});
+        contentVisual.CenterPoint({ (float)(contentSize.Height / 2), (float)(contentSize.Width / 2), 0.0f });
 
         contentVisual.StartAnimation(L"RotationAngle", contentExecutionRotationAnimation);
     }
@@ -508,15 +503,17 @@ void RefreshVisualizer::RaiseRefreshRequested()
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     com_ptr<RefreshVisualizer> strongThis = get_strong();
 
-    const winrt::Deferral instance{[strongThis]() {
-        strongThis->CheckThread();
-        strongThis->RefreshCompleted();
-    }};
+    const winrt::Deferral instance{ [strongThis]()
+        {
+            strongThis->CheckThread();
+            strongThis->RefreshCompleted();
+        } 
+    };
 
     const auto args = winrt::make_self<RefreshRequestedEventArgs>(instance);
 
-    // This makes sure that everyone registered for this event can get access to the deferral
-    // Otherwise someone could complete the deferral before someone else has had a chance to grab it
+    //This makes sure that everyone registered for this event can get access to the deferral
+    //Otherwise someone could complete the deferral before someone else has had a chance to grab it
     args->IncrementDeferralCount();
     m_refreshRequestedEventSource(*this, *args);
     args->DecrementDeferralCount();
@@ -532,7 +529,7 @@ void RefreshVisualizer::RefreshCompleted()
     }
 }
 
-void RefreshVisualizer::RefreshInfoProvider_InteractingForRefreshChanged(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*e*/)
+void RefreshVisualizer::RefreshInfoProvider_InteractingForRefreshChanged(const  winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*e*/)
 {
     if (m_refreshInfoProvider)
     {
@@ -550,7 +547,7 @@ void RefreshVisualizer::RefreshInfoProvider_InteractingForRefreshChanged(const w
                 // We don't want to interrupt a currently executing refresh.
                 break;
             default:
-                // Peeking, interacting, or idle results in idle.
+                //Peeking, interacting, or idle results in idle.
                 UpdateRefreshState(winrt::RefreshVisualizerState::Idle);
                 break;
             }
@@ -558,8 +555,7 @@ void RefreshVisualizer::RefreshInfoProvider_InteractingForRefreshChanged(const w
     }
 }
 
-void RefreshVisualizer::RefreshInfoProvider_InteractionRatioChanged(
-    const winrt::IRefreshInfoProvider& /*sender*/, const winrt::RefreshInteractionRatioChangedEventArgs& e)
+void RefreshVisualizer::RefreshInfoProvider_InteractionRatioChanged(const winrt::IRefreshInfoProvider& /*sender*/, const winrt::RefreshInteractionRatioChangedEventArgs& e)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, e.InteractionRatio());
     const bool wasAtZero = m_interactionRatio == 0.0f;
@@ -572,7 +568,7 @@ void RefreshVisualizer::RefreshInfoProvider_InteractionRatioChanged(
             {
                 if (m_interactionRatio > m_executionRatio)
                 {
-                    // Sometimes due to missed frames in the interplay of comp and xaml the interaction tracker will 'jump' passed the executionRatio on the first Value changed.
+                    //Sometimes due to missed frames in the interplay of comp and xaml the interaction tracker will 'jump' passed the executionRatio on the first Value changed.
                     UpdateRefreshState(winrt::RefreshVisualizerState::Pending);
                 }
                 else if (m_interactionRatio > 0.0f)
@@ -582,8 +578,8 @@ void RefreshVisualizer::RefreshInfoProvider_InteractionRatioChanged(
             }
             else if (m_interactionRatio > 0.0f)
             {
-                // TODO: IRefreshInfoProvider does not raise InteractionRatioChanged yet when DManip is overpanning. Thus we do
-                // not yet enter the Peeking state when DManip overpans in inertia.
+                // TODO: IRefreshInfoProvider does not raise InteractionRatioChanged yet when DManip is overpanning. Thus we do not yet 
+                // enter the Peeking state when DManip overpans in inertia.
                 UpdateRefreshState(winrt::RefreshVisualizerState::Peeking);
             }
         }
@@ -609,18 +605,18 @@ void RefreshVisualizer::RefreshInfoProvider_InteractionRatioChanged(
                 UpdateRefreshState(winrt::RefreshVisualizerState::Idle);
             }
         }
-        // If we are in Refreshing or Peeking we want to stay in those states.
+        //If we are in Refreshing or Peeking we want to stay in those states.
     }
     else
     {
-        // If we are not refreshing or interacting for refresh then the only valid states are Peeking and Idle
+        //If we are not refreshing or interacting for refresh then the only valid states are Peeking and Idle
         if (m_state != winrt::RefreshVisualizerState::Refreshing)
         {
             if (m_interactionRatio > 0.0f)
             {
                 UpdateRefreshState(winrt::RefreshVisualizerState::Peeking);
             }
-            else
+            else 
             {
                 UpdateRefreshState(winrt::RefreshVisualizerState::Idle);
             }

@@ -9,7 +9,8 @@ com_ptr<ScrollViewTestHooks> ScrollViewTestHooks::s_testHooks{};
 
 com_ptr<ScrollViewTestHooks> ScrollViewTestHooks::EnsureGlobalTestHooks()
 {
-    static bool s_initialized = []() {
+    static bool s_initialized = []()
+    {
         s_testHooks = winrt::make_self<ScrollViewTestHooks>();
         return true;
     }();

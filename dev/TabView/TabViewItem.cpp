@@ -20,21 +20,23 @@ TabViewItem::TabViewItem()
 
     SetValue(s_TabViewTemplateSettingsProperty, winrt::make<TabViewItemTemplateSettings>());
 
-    Loaded({this, &TabViewItem::OnLoaded});
-    SizeChanged({this, &TabViewItem::OnSizeChanged});
+    Loaded({ this, &TabViewItem::OnLoaded });
+    SizeChanged({ this, &TabViewItem::OnSizeChanged });
 
-    RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), {this, &TabViewItem::OnIsSelectedPropertyChanged});
-    RegisterPropertyChangedCallback(winrt::Control::ForegroundProperty(), {this, &TabViewItem::OnForegroundPropertyChanged});
+    RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), { this, &TabViewItem::OnIsSelectedPropertyChanged });
+    RegisterPropertyChangedCallback(winrt::Control::ForegroundProperty(), { this, &TabViewItem::OnForegroundPropertyChanged });
 }
 
 void TabViewItem::OnApplyTemplate()
 {
-    winrt::IControlProtected controlProtected{*this};
+    winrt::IControlProtected controlProtected{ *this };
 
     m_headerContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"ContentPresenter", controlProtected));
 
     auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this));
-    auto internalTabView = tabView ? winrt::get_self<TabView>(tabView) : nullptr;
+    auto internalTabView = tabView
+        ? winrt::get_self<TabView>(tabView)
+        : nullptr;
 
     m_closeButton.set([this, controlProtected, internalTabView]() {
         auto closeButton = GetTemplateChildT<winrt::Button>(L"CloseButton", controlProtected);
@@ -55,10 +57,10 @@ void TabViewItem::OnApplyTemplate()
                 winrt::ToolTipService::SetToolTip(closeButton, tooltip);
             }
 
-            m_closeButtonClickRevoker = closeButton.Click(winrt::auto_revoke, {this, &TabViewItem::OnCloseButtonClick});
+            m_closeButtonClickRevoker = closeButton.Click(winrt::auto_revoke, { this, &TabViewItem::OnCloseButtonClick });
         }
         return closeButton;
-    }());
+        }());
 
     OnHeaderChanged();
     OnIconSourceChanged();
@@ -79,18 +81,17 @@ void TabViewItem::OnApplyTemplate()
                 }
                 m_shadow = shadow;
 
-                double shadowDepth =
-                    unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
+                double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
 
                 const auto currentTranslation = Translation();
-                const auto translation = winrt::float3{currentTranslation.x, currentTranslation.y, (float)shadowDepth};
+                const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
                 Translation(translation);
 
                 UpdateShadow();
             }
         }
-        m_tabDragStartingRevoker = tabView.TabDragStarting(winrt::auto_revoke, {this, &TabViewItem::OnTabDragStarting});
-        m_tabDragCompletedRevoker = tabView.TabDragCompleted(winrt::auto_revoke, {this, &TabViewItem::OnTabDragCompleted});
+        m_tabDragStartingRevoker = tabView.TabDragStarting(winrt::auto_revoke, { this, &TabViewItem::OnTabDragStarting });
+        m_tabDragCompletedRevoker = tabView.TabDragCompleted(winrt::auto_revoke, { this, &TabViewItem::OnTabDragCompleted });
     }
 
     UpdateCloseButton();
@@ -104,32 +105,19 @@ void TabViewItem::UpdateTabGeometry()
     auto const templateSettings = winrt::get_self<TabViewItemTemplateSettings>(TabViewTemplateSettings());
 
     auto const height = ActualHeight();
-    auto const popupRadius =
-        unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*this, box_value(c_overlayCornerRadiusKey)));
+    auto const popupRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*this, box_value(c_overlayCornerRadiusKey)));
     auto const leftCorner = popupRadius.TopLeft;
     auto const rightCorner = popupRadius.TopRight;
 
     // Assumes 4px curving-out corners, which are hardcoded in the markup
-    auto data =
-        L"<Geometry xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>F1 M0,%f  a 4,4 0 0 0 4,-4  L 4,%f  a "
-        L"%f,%f 0 0 1 %f,-%f  l %f,0  a %f,%f 0 0 1 %f,%f  l 0,%f  a 4,4 0 0 0 4,4 Z</Geometry>";
-
+    auto data = L"<Geometry xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>F1 M0,%f  a 4,4 0 0 0 4,-4  L 4,%f  a %f,%f 0 0 1 %f,-%f  l %f,0  a %f,%f 0 0 1 %f,%f  l 0,%f  a 4,4 0 0 0 4,4 Z</Geometry>";
+    
     WCHAR strOut[1024];
-    StringCchPrintf(
-        strOut,
-        ARRAYSIZE(strOut),
-        data,
+    StringCchPrintf(strOut, ARRAYSIZE(strOut), data,
         height - 1,
-        leftCorner,
-        leftCorner,
-        leftCorner,
-        leftCorner,
-        leftCorner,
+        leftCorner, leftCorner, leftCorner, leftCorner, leftCorner,
         ActualWidth() - (leftCorner + rightCorner),
-        rightCorner,
-        rightCorner,
-        rightCorner,
-        rightCorner,
+        rightCorner, rightCorner, rightCorner, rightCorner,
         height - (4 + rightCorner + 1));
 
     const auto geometry = winrt::XamlReader::Load(strOut).try_as<winrt::Geometry>();
@@ -154,7 +142,7 @@ void TabViewItem::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeCha
 
 void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
-
+    
     if (const auto peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(*this))
     {
         peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
@@ -197,10 +185,10 @@ void TabViewItem::UpdateForeground()
 
 void TabViewItem::UpdateShadow()
 {
-
+    
     if (SharedHelpers::IsThemeShadowAvailable() && !XamlControlsResources::IsUsingControlsResourcesVersion2())
     {
-        if (IsSelected() && !m_isDragging)
+        if (IsSelected() && !m_isDragging )
         {
             Shadow(m_shadow.as<winrt::ThemeShadow>());
         }
@@ -210,6 +198,7 @@ void TabViewItem::UpdateShadow()
         }
     }
 }
+
 
 void TabViewItem::OnTabDragStarting(const winrt::IInspectable& sender, const winrt::TabViewTabDragStartingEventArgs& args)
 {
@@ -348,7 +337,7 @@ void TabViewItem::OnHeaderChanged()
                 toolTip.Placement(winrt::Controls::Primitives::PlacementMode::Mouse);
                 winrt::ToolTipService::SetToolTip(*this, toolTip);
                 return toolTip;
-            }());
+                }());
         }
     }
 
@@ -379,8 +368,7 @@ void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
         auto pointerPoint = args.GetCurrentPoint(*this);
         if (pointerPoint.Properties().IsLeftButtonPressed())
         {
-            auto isCtrlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
-                               winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+            auto isCtrlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
             if (isCtrlDown)
             {
                 // Return here so the base class will not pick it up, but let it remain unhandled so someone else could handle it.
@@ -432,6 +420,7 @@ void TabViewItem::HideLeftAdjacentTabSeparator()
         const auto index = internalTabView->IndexFromContainer(*this);
         internalTabView->SetTabSeparatorOpacity(index - 1, 0);
     }
+
 }
 
 void TabViewItem::RestoreLeftAdjacentTabSeparatorVisibility()
@@ -481,6 +470,7 @@ void TabViewItem::OnPointerCanceled(winrt::PointerRoutedEventArgs const& args)
         m_isMiddlePointerButtonPressed = false;
     }
     RestoreLeftAdjacentTabSeparatorVisibility();
+
 }
 
 void TabViewItem::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args)

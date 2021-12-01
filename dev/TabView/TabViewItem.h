@@ -12,7 +12,9 @@
 #include "TabViewItemAutomationPeer.h"
 #include "TabViewItemTemplateSettings.h"
 
-class TabViewItem : public ReferenceTracker<TabViewItem, winrt::implementation::TabViewItemT>, public TabViewItemProperties
+class TabViewItem :
+    public ReferenceTracker<TabViewItem, winrt::implementation::TabViewItemT>,
+    public TabViewItemProperties
 {
 
 public:
@@ -43,11 +45,11 @@ public:
     void SetParentTabView(winrt::TabView const& tabView);
 
 private:
-    tracker_ref<winrt::Button> m_closeButton{this};
-    tracker_ref<winrt::ToolTip> m_toolTip{this};
-    tracker_ref<winrt::ContentPresenter> m_headerContentPresenter{this};
-    winrt::TabViewWidthMode m_tabViewWidthMode{winrt::TabViewWidthMode::Equal};
-    winrt::TabViewCloseButtonOverlayMode m_closeButtonOverlayMode{winrt::TabViewCloseButtonOverlayMode::Auto};
+    tracker_ref<winrt::Button> m_closeButton{ this };
+    tracker_ref<winrt::ToolTip> m_toolTip{ this };
+    tracker_ref<winrt::ContentPresenter> m_headerContentPresenter{ this };
+    winrt::TabViewWidthMode m_tabViewWidthMode{ winrt::TabViewWidthMode::Equal };
+    winrt::TabViewCloseButtonOverlayMode m_closeButtonOverlayMode{ winrt::TabViewCloseButtonOverlayMode::Auto };
 
     void UpdateCloseButton();
     void UpdateForeground();
@@ -59,7 +61,7 @@ private:
     void OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args);
     void UpdateTabGeometry();
 
-    bool m_firstTimeSettingToolTip{true};
+    bool m_firstTimeSettingToolTip{ true };
 
     winrt::ButtonBase::Click_revoker m_closeButtonClickRevoker{};
     winrt::TabView::TabDragStarting_revoker m_tabDragStartingRevoker{};
@@ -82,7 +84,7 @@ private:
     bool m_isPointerOver = false;
 
     void UpdateShadow();
-    winrt::IInspectable m_shadow{nullptr};
+    winrt::IInspectable m_shadow{ nullptr };
 
-    winrt::weak_ref<winrt::TabView> m_parentTabView{nullptr};
+    winrt::weak_ref<winrt::TabView> m_parentTabView{ nullptr };
 };

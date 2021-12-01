@@ -6,7 +6,8 @@
 #include "common.h"
 #include "ElementFactory.h"
 
-class NavigationViewItemsFactory : public winrt::implements<NavigationViewItemsFactory, ElementFactory>
+class NavigationViewItemsFactory :
+    public winrt::implements<NavigationViewItemsFactory, ElementFactory>
 {
 public:
     void UserElementFactory(winrt::IInspectable const& newValue);
@@ -18,8 +19,8 @@ public:
 #pragma endregion
 
 private:
-    winrt::IElementFactoryShim m_itemTemplateWrapper{nullptr};
-    winrt::NavigationViewItemBase m_settingsItem{nullptr};
+    winrt::IElementFactoryShim m_itemTemplateWrapper{ nullptr };
+    winrt::NavigationViewItemBase m_settingsItem{ nullptr };
     std::vector<winrt::NavigationViewItem> navigationViewItemPool;
 
     void UnlinkElementFromParent(winrt::ElementFactoryRecycleArgs const& args);

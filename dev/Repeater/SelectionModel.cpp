@@ -66,7 +66,7 @@ void SelectionModel::SingleSelect(bool value)
         // - more than one item was selected at the time of the switch
         if (value && selectedIndices && selectedIndices.Size() > 1)
         {
-            // We want to be single select, so make sure there is only
+            // We want to be single select, so make sure there is only 
             // one selected item.
             auto firstSelectionIndexPath = selectedIndices.GetAt(0);
             ClearSelection(true /* resetAnchor */, false /*raiseSelectionChanged */);
@@ -104,9 +104,11 @@ void SelectionModel::AnchorIndex(winrt::IndexPath const& value)
             m_rootNode,
             value,
             true, /* realizeChildren */
-            [](std::shared_ptr<SelectionNode> currentNode, const winrt::IndexPath& path, int depth, int childIndex) {
-                currentNode->AnchorIndex(path.GetAt(depth));
-            });
+            [](std::shared_ptr<SelectionNode> currentNode, const winrt::IndexPath& path, int depth, int childIndex)
+        {
+            currentNode->AnchorIndex(path.GetAt(depth));
+        }
+        );
     }
     else
     {
@@ -161,47 +163,48 @@ winrt::IVectorView<winrt::IInspectable> SelectionModel::SelectedItems()
             SelectionTreeHelper::Traverse(
                 m_rootNode,
                 false, /* realizeChildren */
-                [&selectedInfos](const SelectionTreeHelper::TreeWalkNodeInfo& currentInfo) {
-                    if (currentInfo.Node->SelectedCount() > 0)
-                    {
-                        selectedInfos.emplace_back(SelectedItemInfo{currentInfo.Node, currentInfo.Path});
-                    }
-                });
+                [&selectedInfos](const SelectionTreeHelper::TreeWalkNodeInfo& currentInfo)
+            {
+                if (currentInfo.Node->SelectedCount() > 0)
+                {
+                    selectedInfos.emplace_back(SelectedItemInfo{ currentInfo.Node, currentInfo.Path });
+                }
+            });
         }
 
         // Instead of creating a dumb vector that takes up the space for all the selected items,
-        // we create a custom VectorView implimentation that calls back using a delegate to find
+        // we create a custom VectorView implimentation that calls back using a delegate to find 
         // the selected item at a particular index. This avoid having to create the storage and copying
-        // needed in a dumb vector. This also allows us to expose a tree of selected nodes into an
+        // needed in a dumb vector. This also allows us to expose a tree of selected nodes into an 
         // easier to consume flat vector view of objects.
         auto selectedItems = winrt::make<::SelectedItems<winrt::IInspectable>>(
             selectedInfos,
             [](const std::vector<SelectedItemInfo>& infos, unsigned int index) // callback for GetAt(index)
+        {
+            unsigned int currentIndex = 0;
+            winrt::IInspectable item{ nullptr };
+            for (const auto& info : infos)
             {
-                unsigned int currentIndex = 0;
-                winrt::IInspectable item{nullptr};
-                for (const auto& info : infos)
+                if (const auto node = info.Node.lock())
                 {
-                    if (const auto node = info.Node.lock())
+                    const unsigned int currentCount = node->SelectedCount();
+                    if (index >= currentIndex && index < currentIndex + currentCount)
                     {
-                        const unsigned int currentCount = node->SelectedCount();
-                        if (index >= currentIndex && index < currentIndex + currentCount)
-                        {
-                            int targetIndex = node->SelectedIndices().at(index - currentIndex);
-                            item = node->ItemsSourceView().GetAt(targetIndex);
-                            break;
-                        }
+                        int targetIndex = node->SelectedIndices().at(index - currentIndex);
+                        item = node->ItemsSourceView().GetAt(targetIndex);
+                        break;
+                    }
 
-                        currentIndex += currentCount;
-                    }
-                    else
-                    {
-                        throw winrt::hresult_error(E_FAIL, L"selection has changed since SelectedItems property was read.");
-                    }
+                    currentIndex += currentCount;
                 }
+                else
+                {
+                    throw winrt::hresult_error(E_FAIL, L"selection has changed since SelectedItems property was read.");
+                }
+            }
 
-                return item;
-            });
+            return item;
+        });
         m_selectedItemsCached = selectedItems;
     }
 
@@ -216,46 +219,47 @@ winrt::IVectorView<winrt::IndexPath> SelectionModel::SelectedIndices()
         SelectionTreeHelper::Traverse(
             m_rootNode,
             false, /* realizeChildren */
-            [&selectedInfos](const SelectionTreeHelper::TreeWalkNodeInfo& currentInfo) {
-                if (currentInfo.Node->SelectedCount() > 0)
-                {
-                    selectedInfos.emplace_back(SelectedItemInfo{currentInfo.Node, currentInfo.Path});
-                }
-            });
+            [&selectedInfos](const SelectionTreeHelper::TreeWalkNodeInfo& currentInfo)
+        {
+            if (currentInfo.Node->SelectedCount() > 0)
+            {
+                selectedInfos.emplace_back(SelectedItemInfo{ currentInfo.Node, currentInfo.Path });
+            }
+        });
 
         // Instead of creating a dumb vector that takes up the space for all the selected indices,
-        // we create a custom VectorView implimentation that calls back using a delegate to find
+        // we create a custom VectorView implimentation that calls back using a delegate to find 
         // the IndexPath at a particular index. This avoid having to create the storage and copying
-        // needed in a dumb vector. This also allows us to expose a tree of selected nodes into an
+        // needed in a dumb vector. This also allows us to expose a tree of selected nodes into an 
         // easier to consume flat vector view of IndexPaths.
         auto indices = winrt::make<::SelectedItems<winrt::IndexPath>>(
             selectedInfos,
             [](const std::vector<SelectedItemInfo>& infos, unsigned int index) // callback for GetAt(index)
+        {
+            unsigned int currentIndex = 0;
+            winrt::IndexPath path{ nullptr };
+            for (const auto info : infos)
             {
-                unsigned int currentIndex = 0;
-                winrt::IndexPath path{nullptr};
-                for (const auto info : infos)
+                if (const auto node = info.Node.lock())
                 {
-                    if (const auto node = info.Node.lock())
+                    const unsigned int currentCount = node->SelectedCount();
+                    if (index >= currentIndex && index < currentIndex + currentCount)
                     {
-                        const unsigned int currentCount = node->SelectedCount();
-                        if (index >= currentIndex && index < currentIndex + currentCount)
-                        {
-                            int targetIndex = node->SelectedIndices().at(index - currentIndex);
-                            path = winrt::get_self<IndexPath>(info.Path)->CloneWithChildIndex(targetIndex);
-                            break;
-                        }
+                        int targetIndex = node->SelectedIndices().at(index - currentIndex);
+                        path = winrt::get_self<IndexPath>(info.Path)->CloneWithChildIndex(targetIndex);
+                        break;
+                    }
 
-                        currentIndex += currentCount;
-                    }
-                    else
-                    {
-                        throw winrt::hresult_error(E_FAIL, L"selection has changed since SelectedIndices property was read.");
-                    }
+                    currentIndex += currentCount;
                 }
+                else
+                {
+                    throw winrt::hresult_error(E_FAIL, L"selection has changed since SelectedIndices property was read.");
+                }
+            }
 
-                return path;
-            });
+            return path;
+        });
         m_selectedIndicesCached = indices;
     }
 
@@ -358,7 +362,7 @@ winrt::IReference<bool> SelectionModel::IsSelectedAt(winrt::IndexPath const& ind
 
 void SelectionModel::SelectRangeFromAnchor(int32_t index)
 {
-    SelectRangeFromAnchorImpl(index, true /* select */);
+    SelectRangeFromAnchorImpl(index, true /* select */ );
 }
 
 void SelectionModel::SelectRangeFromAnchor(int endGroupIndex, int endItemIndex)
@@ -386,6 +390,7 @@ void SelectionModel::DeselectRangeFromAnchorTo(winrt::IndexPath const& index)
     SelectRangeImpl(AnchorIndex(), index, false /* select */);
 }
 
+
 void SelectionModel::SelectRange(winrt::IndexPath const& start, winrt::IndexPath const& end)
 {
     SelectRangeImpl(start, end, true /* select */);
@@ -401,12 +406,13 @@ void SelectionModel::SelectAll()
     SelectionTreeHelper::Traverse(
         m_rootNode,
         true, /* realizeChildren */
-        [](const SelectionTreeHelper::TreeWalkNodeInfo& info) {
-            if (info.Node->DataCount() > 0)
-            {
-                info.Node->SelectAll();
-            }
-        });
+        [](const SelectionTreeHelper::TreeWalkNodeInfo& info)
+    {
+        if (info.Node->DataCount() > 0)
+        {
+            info.Node->SelectAll();
+        }
+    });
 
     OnSelectionChanged();
 }
@@ -431,7 +437,7 @@ winrt::TypeName SelectionModel::Type()
 
 winrt::ICustomProperty SelectionModel::GetCustomProperty(hstring const& name)
 {
-    // Exposing SelectedItem through ICustomPropertyProvider so that Binding can work
+    // Exposing SelectedItem through ICustomPropertyProvider so that Binding can work 
     // for SelectedItem. This is requried since SelectedItem is not a dependency proeprty and
     // is evaluated when requested.
     if (name == L"SelectedItem")
@@ -501,8 +507,7 @@ winrt::IInspectable SelectionModel::ResolvePath(const winrt::IInspectable& data,
     {
         if (!m_childrenRequestedEventArgs)
         {
-            m_childrenRequestedEventArgs = tracker_ref<winrt::SelectionModelChildrenRequestedEventArgs>(
-                this, winrt::make<SelectionModelChildrenRequestedEventArgs>(data, dataIndexPath, false /*throwOnAccess*/));
+            m_childrenRequestedEventArgs = tracker_ref<winrt::SelectionModelChildrenRequestedEventArgs>(this, winrt::make<SelectionModelChildrenRequestedEventArgs>(data, dataIndexPath, false /*throwOnAccess*/));
         }
         else
         {
@@ -519,11 +524,13 @@ winrt::IInspectable SelectionModel::ResolvePath(const winrt::IInspectable& data,
     {
         // No handlers for ChildrenRequested event. If data is of type ItemsSourceView
         // or a type that can be used to create a ItemsSourceView using ItemsSourceView::CreateFrom, then we can
-        // auto-resolve that as the child. If not, then we consider the value as a leaf. This is to
+        // auto-resolve that as the child. If not, then we consider the value as a leaf. This is to 
         // avoid having to provide the event handler for the most common scenarios. If the app dev does
         // not want this default behavior, they can provide the handler to override.
-        if (data.try_as<winrt::ItemsSourceView>() || data.try_as<winrt::IBindableVector>() ||
-            data.try_as<winrt::IIterable<winrt::IInspectable>>() || data.try_as<winrt::IBindableIterable>())
+        if (data.try_as<winrt::ItemsSourceView>() || 
+            data.try_as<winrt::IBindableVector>() ||
+            data.try_as<winrt::IIterable<winrt::IInspectable>>() ||
+            data.try_as<winrt::IBindableIterable>())
         {
             resolved = data;
         }
@@ -537,7 +544,10 @@ void SelectionModel::ClearSelection(bool resetAnchor, bool raiseSelectionChanged
     SelectionTreeHelper::Traverse(
         m_rootNode,
         false, /* realizeChildren */
-        [](const SelectionTreeHelper::TreeWalkNodeInfo& info) { info.Node->Clear(); });
+        [](const SelectionTreeHelper::TreeWalkNodeInfo& info)
+    {
+        info.Node->Clear();
+    });
 
     if (resetAnchor)
     {
@@ -560,8 +570,7 @@ void SelectionModel::OnSelectionChanged()
     {
         if (!m_selectionChangedEventArgs)
         {
-            m_selectionChangedEventArgs =
-                tracker_ref<winrt::SelectionModelSelectionChangedEventArgs>(this, winrt::make<SelectionModelSelectionChangedEventArgs>());
+            m_selectionChangedEventArgs = tracker_ref<winrt::SelectionModelSelectionChangedEventArgs>(this, winrt::make<SelectionModelSelectionChangedEventArgs>());
         }
 
         m_selectionChangedEventSource(*this, m_selectionChangedEventArgs.get());
@@ -641,11 +650,11 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
         bool changedSelection = false;
 
         // We only need to clear selection by walking the data structure from the beginning when:
-        // - we are in single selection mode and
+        // - we are in single selection mode and 
         // - want to select something.
-        //
-        // If we want to unselect something we unselect it directly in TraverseIndexPath below and raise the SelectionChanged
-        // event if required.
+        // 
+        // If we want to unselect something we unselect it directly in TraverseIndexPath below and raise the SelectionChanged event
+        // if required.
         if (m_singleSelect && select)
         {
             ClearSelection(true /*resetAnchor*/, false /* raiseSelectionChanged */);
@@ -655,7 +664,8 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
             m_rootNode,
             index,
             true, /* realizeChildren */
-            [&selected, &select, &changedSelection](std::shared_ptr<SelectionNode> currentNode, const winrt::IndexPath& path, int depth, int childIndex) {
+            [&selected, &select, &changedSelection](std::shared_ptr<SelectionNode> currentNode, const winrt::IndexPath& path, int depth, int childIndex)
+            {
                 if (depth == path.GetSize() - 1)
                 {
                     if (currentNode->IsSelected(childIndex) != select)
@@ -665,7 +675,8 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
                     }
                     selected = currentNode->Select(childIndex, select);
                 }
-            });
+            }
+        );
 
         if (selected)
         {
@@ -714,7 +725,8 @@ void SelectionModel::SelectRangeFromAnchorWithGroupImpl(int endGroupIndex, int e
     }
 
     // Make sure start > end
-    if (startGroupIndex > endGroupIndex || (startGroupIndex == endGroupIndex && startItemIndex > endItemIndex))
+    if (startGroupIndex > endGroupIndex ||
+        (startGroupIndex == endGroupIndex && startItemIndex > endItemIndex))
     {
         int temp = startGroupIndex;
         startGroupIndex = endGroupIndex;
@@ -744,7 +756,7 @@ void SelectionModel::SelectRangeImpl(const winrt::IndexPath& start, const winrt:
     auto winrtStart = start;
     auto winrtEnd = end;
 
-    // Make sure start <= end
+    // Make sure start <= end 
     if (winrtEnd.CompareTo(winrtStart) == -1)
     {
         auto temp = winrtStart;
@@ -753,7 +765,12 @@ void SelectionModel::SelectRangeImpl(const winrt::IndexPath& start, const winrt:
     }
 
     // Note: Since we do not know the depth of the tree, we have to walk to each leaf
-    SelectionTreeHelper::TraverseRangeRealizeChildren(m_rootNode, winrtStart, winrtEnd, [select](const SelectionTreeHelper::TreeWalkNodeInfo& info) {
+    SelectionTreeHelper::TraverseRangeRealizeChildren(
+        m_rootNode,
+        winrtStart,
+        winrtEnd,
+        [select](const SelectionTreeHelper::TreeWalkNodeInfo& info)
+    {
         if (info.Node->DataCount() == 0)
         {
             // Select only leaf nodes

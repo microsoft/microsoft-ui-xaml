@@ -13,9 +13,8 @@
 
 const float c_horizontalScaleAnimationCenterPoint = 0.5f;
 const float c_verticalScaleAnimationCenterPoint = 0.8f;
-const winrt::Thickness c_focusVisualMargin = {-8, -7, -8, 0};
-const int c_defaultRatingFontSizeForRendering =
-    32; // (32 = 2 * [default fontsize] -- because of double size rendering), remove when MSFT #10030063 is done
+const winrt::Thickness c_focusVisualMargin = { -8, -7, -8, 0 };
+const int c_defaultRatingFontSizeForRendering = 32; // (32 = 2 * [default fontsize] -- because of double size rendering), remove when MSFT #10030063 is done
 const int c_defaultItemSpacing = 8;
 
 const float c_mouseOverScale = 0.8f;
@@ -43,7 +42,7 @@ RatingControl::~RatingControl()
 float RatingControl::RenderingRatingFontSize()
 {
     // MSFT #10030063 Replacing with Rating size DPs
-    return (float)(c_defaultRatingFontSizeForRendering * GetUISettings().TextScaleFactor());
+    return (float) (c_defaultRatingFontSizeForRendering * GetUISettings().TextScaleFactor());
 }
 
 float RatingControl::ActualRatingFontSize()
@@ -83,27 +82,26 @@ void RatingControl::OnApplyTemplate()
 {
     RecycleEvents();
 
-    // Retrieve pointers to stable controls
+    // Retrieve pointers to stable controls 
     winrt::IControlProtected thisAsControlProtected = *this;
 
     if (auto captionTextBlock = GetTemplateChildT<winrt::TextBlock>(L"Caption", thisAsControlProtected))
     {
         m_captionTextBlock.set(captionTextBlock);
-        m_captionSizeChangedToken = captionTextBlock.SizeChanged({this, &RatingControl::OnCaptionSizeChanged});
+        m_captionSizeChangedToken = captionTextBlock.SizeChanged({ this, &RatingControl::OnCaptionSizeChanged });
         UpdateCaptionMargins();
     }
 
     if (auto backgroundStackPanel = GetTemplateChildT<winrt::StackPanel>(L"RatingBackgroundStackPanel", thisAsControlProtected))
     {
         m_backgroundStackPanel.set(backgroundStackPanel);
-        m_pointerCancelledToken = backgroundStackPanel.PointerCanceled({this, &RatingControl::OnPointerCancelledBackgroundStackPanel});
-        m_pointerCaptureLostToken =
-            backgroundStackPanel.PointerCaptureLost({this, &RatingControl::OnPointerCaptureLostBackgroundStackPanel});
-        m_pointerMovedToken = backgroundStackPanel.PointerMoved({this, &RatingControl::OnPointerMovedOverBackgroundStackPanel});
-        m_pointerEnteredToken = backgroundStackPanel.PointerEntered({this, &RatingControl::OnPointerEnteredBackgroundStackPanel});
-        m_pointerExitedToken = backgroundStackPanel.PointerExited({this, &RatingControl::OnPointerExitedBackgroundStackPanel});
-        m_pointerPressedToken = backgroundStackPanel.PointerPressed({this, &RatingControl::OnPointerPressedBackgroundStackPanel});
-        m_pointerReleasedToken = backgroundStackPanel.PointerReleased({this, &RatingControl::OnPointerReleasedBackgroundStackPanel});
+        m_pointerCancelledToken = backgroundStackPanel.PointerCanceled({ this, &RatingControl::OnPointerCancelledBackgroundStackPanel });
+        m_pointerCaptureLostToken = backgroundStackPanel.PointerCaptureLost({ this, &RatingControl::OnPointerCaptureLostBackgroundStackPanel });
+        m_pointerMovedToken = backgroundStackPanel.PointerMoved({ this, &RatingControl::OnPointerMovedOverBackgroundStackPanel });
+        m_pointerEnteredToken = backgroundStackPanel.PointerEntered({ this, &RatingControl::OnPointerEnteredBackgroundStackPanel });
+        m_pointerExitedToken = backgroundStackPanel.PointerExited({ this, &RatingControl::OnPointerExitedBackgroundStackPanel });
+        m_pointerPressedToken = backgroundStackPanel.PointerPressed({ this, &RatingControl::OnPointerPressedBackgroundStackPanel });
+        m_pointerReleasedToken = backgroundStackPanel.PointerReleased({ this, &RatingControl::OnPointerReleasedBackgroundStackPanel });
     }
 
     m_foregroundStackPanel.set(GetTemplateChildT<winrt::StackPanel>(L"RatingForegroundStackPanel", thisAsControlProtected));
@@ -112,10 +110,10 @@ void RatingControl::OnApplyTemplate()
     {
         // FUTURE: Ideally these would be in template overrides:
 
-        // IsFocusEngagementEnabled means the control has to be "engaged" with
+        // IsFocusEngagementEnabled means the control has to be "engaged" with 
         // using the A button before it actually receives key input from gamepad.
-        FocusEngaged({this, &RatingControl::OnFocusEngaged});
-        FocusDisengaged({this, &RatingControl::OnFocusDisengaged});
+        FocusEngaged({ this, &RatingControl::OnFocusEngaged });
+        FocusDisengaged({ this, &RatingControl::OnFocusDisengaged });
         IsFocusEngagementEnabled(true);
 
         // I've picked values so that these LOOK like the redlines, but these
@@ -126,9 +124,9 @@ void RatingControl::OnApplyTemplate()
         FocusVisualMargin(c_focusVisualMargin);
     }
 
-    IsEnabledChanged({this, &RatingControl::OnIsEnabledChanged});
-    m_fontFamilyChangedToken.value =
-        RegisterPropertyChangedCallback(winrt::Control::FontFamilyProperty(), {this, &RatingControl::OnFontFamilyChanged});
+    IsEnabledChanged({ this, &RatingControl::OnIsEnabledChanged });
+    m_fontFamilyChangedToken.value = RegisterPropertyChangedCallback(
+        winrt::Control::FontFamilyProperty(), { this, &RatingControl::OnFontFamilyChanged });
 
     winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
     winrt::Compositor comp = visual.Compositor();
@@ -137,11 +135,11 @@ void RatingControl::OnApplyTemplate()
 
     m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", c_noPointerOverMagicNumber);
     m_sharedPointerPropertySet.InsertScalar(L"pointerScalar", c_mouseOverScale);
-
+ 
     StampOutRatingItems();
-    m_textScaleChangedRevoker =
-        GetUISettings().TextScaleFactorChanged(winrt::auto_revoke, {this, &RatingControl::OnTextScaleFactorChanged});
+    m_textScaleChangedRevoker = GetUISettings().TextScaleFactorChanged(winrt::auto_revoke, { this, &RatingControl::OnTextScaleFactorChanged });
 }
+
 
 double RatingControl::CoerceValueBetweenMinAndMax(double value)
 {
@@ -167,14 +165,14 @@ winrt::AutomationPeer RatingControl::OnCreateAutomationPeer()
     return winrt::make<RatingControlAutomationPeer>(*this);
 }
 
-// private methods
+// private methods 
 
 // TODO: call me when font size changes, and stuff like that, glyph, etc
 void RatingControl::StampOutRatingItems()
 {
     if (!m_backgroundStackPanel || !m_foregroundStackPanel)
     {
-        // OnApplyTemplate() hasn't executed yet, this is being called
+        // OnApplyTemplate() hasn't executed yet, this is being called 
         // from a property value changed handler for markup set values.
 
         return;
@@ -203,7 +201,7 @@ void RatingControl::StampOutRatingItems()
     {
         PopulateStackPanelWithItems(L"ForegroundImageDefaultTemplate", m_foregroundStackPanel.get(), RatingControlStates::Set);
     }
-
+    
     UpdateRatingItemsAppearance();
 }
 
@@ -224,7 +222,7 @@ void RatingControl::UpdateRatingItemsAppearance()
         const double placeholderValue = PlaceholderValue();
         const double ratingValue = Value();
         double value = 0.0;
-
+       
         if (m_isPointerOver)
         {
             value = ceil(m_mousePercentage * MaxRating());
@@ -305,7 +303,7 @@ void RatingControl::UpdateRatingItemsAppearance()
 }
 
 void RatingControl::ApplyScaleExpressionAnimation(const winrt::UIElement& uiElement, int starIndex)
-{
+{ 
     const winrt::Visual uiElementVisual = winrt::ElementCompositionPreview::GetElementVisual(uiElement);
     const winrt::Compositor comp = uiElementVisual.Compositor();
 
@@ -313,8 +311,8 @@ void RatingControl::ApplyScaleExpressionAnimation(const winrt::UIElement& uiElem
     // This expression uses the horizontal delta between pointer position and star center to calculate the star scale.
     // Star gets larger when pointer is closer to its center, and gets smaller when pointer moves further away.
     const winrt::ExpressionAnimation ea = comp.CreateExpressionAnimation(
-        L"max( (-0.0005 * sharedPropertySet.pointerScalar * ((starCenterX - sharedPropertySet.starsScaleFocalPoint)*(starCenterX "
-        L"- sharedPropertySet.starsScaleFocalPoint))) + 1.0*sharedPropertySet.pointerScalar, 0.5)");
+        L"max( (-0.0005 * sharedPropertySet.pointerScalar * ((starCenterX - sharedPropertySet.starsScaleFocalPoint)*(starCenterX - sharedPropertySet.starsScaleFocalPoint))) + 1.0*sharedPropertySet.pointerScalar, 0.5)"
+    );
     const auto starCenter = static_cast<float>(CalculateStarCenter(starIndex));
     ea.SetScalarParameter(L"starCenterX", starCenter);
     ea.SetReferenceParameter(L"sharedPropertySet", m_sharedPointerPropertySet);
@@ -324,10 +322,7 @@ void RatingControl::ApplyScaleExpressionAnimation(const winrt::UIElement& uiElem
 
     // Star size = 16. 0.5 and 0.8 are just arbitrary center point chosen in design spec
     // 32 = star size * 2 because of the rendering at double size we do
-    uiElementVisual.CenterPoint(winrt::float3(
-        c_defaultRatingFontSizeForRendering * c_horizontalScaleAnimationCenterPoint,
-        c_defaultRatingFontSizeForRendering * c_verticalScaleAnimationCenterPoint,
-        0.0f));
+    uiElementVisual.CenterPoint(winrt::float3(c_defaultRatingFontSizeForRendering * c_horizontalScaleAnimationCenterPoint, c_defaultRatingFontSizeForRendering * c_verticalScaleAnimationCenterPoint, 0.0f));
 }
 
 void RatingControl::PopulateStackPanelWithItems(wstring_view templateName, const winrt::StackPanel& stackPanel, RatingControlStates state)
@@ -361,7 +356,7 @@ void RatingControl::CustomizeRatingItem(const winrt::UIElement& ui, RatingContro
         if (auto image = ui.as<winrt::Image>())
         {
             image.Source(GetAppropriateImageSource(type));
-            image.Width(RenderingRatingFontSize());  //
+            image.Width(RenderingRatingFontSize()); // 
             image.Height(RenderingRatingFontSize()); // MSFT #10030063 Replacing with Rating size DPs
         }
     }
@@ -369,6 +364,7 @@ void RatingControl::CustomizeRatingItem(const winrt::UIElement& ui, RatingContro
     {
         MUX_FAIL_FAST_MSG("Runtime error, ItemInfo property is null");
     }
+
 }
 
 void RatingControl::CustomizeStackPanel(const winrt::StackPanel& stackPanel, RatingControlStates state)
@@ -661,10 +657,12 @@ void RatingControl::OnFontFamilyChanged(const winrt::DependencyObject& /*sender*
 
 void RatingControl::OnInitialSetValueChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
+
 }
 
 void RatingControl::OnIsClearEnabledChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
+
 }
 
 void RatingControl::OnIsReadOnlyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
@@ -871,7 +869,7 @@ double RatingControl::CalculateTotalRatingControlWidth()
     }
 
     double captionWidth = 0.0;
-
+    
     if (m_captionTextBlock)
     {
         captionWidth = m_captionTextBlock.get().ActualWidth();
@@ -908,7 +906,7 @@ void RatingControl::OnKeyDown(winrt::KeyRoutedEventArgs const& eventArgs)
     {
         bool handled = false;
         winrt::VirtualKey key = eventArgs.as<winrt::KeyRoutedEventArgs>().Key();
-
+      
         double flowDirectionReverser = 1.0;
 
         if (FlowDirection() == winrt::FlowDirection::RightToLeft)
@@ -986,7 +984,7 @@ void RatingControl::OnPreviewKeyDown(winrt::KeyRoutedEventArgs const& eventArgs)
 {
     if (eventArgs.Handled())
     {
-        return;
+        return ;
     }
 
     if (!IsReadOnly() && IsFocusEngaged() && IsFocusEngagementEnabled())
@@ -1098,7 +1096,7 @@ void RatingControl::EnterGamepadEngagementMode()
     {
         winrt::ElementSoundPlayer::Play(winrt::ElementSoundKind::Invoke);
     }
-
+    
     if (ShouldEnableAnimation())
     {
         const double focalPoint = CalculateStarCenter((int)(currentValue - 1.0));
@@ -1178,10 +1176,12 @@ void RatingControl::OnTextScaleFactorChanged(const winrt::UISettings& setting, c
 {
     // OnTextScaleFactorChanged happens in non-UI thread, use dispatcher to call StampOutRatingItems in UI thread.
     auto strongThis = get_strong();
-    m_dispatcherHelper.RunAsync([strongThis]() {
+    m_dispatcherHelper.RunAsync([strongThis]()
+    {
         strongThis->StampOutRatingItems();
         strongThis->UpdateCaptionMargins();
     });
+    
 }
 
 winrt::UISettings RatingControl::GetUISettings()

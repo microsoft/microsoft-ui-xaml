@@ -11,7 +11,8 @@
 
 #include "MUXControlsTestHooks.g.h"
 
-class MUXControlsTestHooks : public winrt::implementation::MUXControlsTestHooksT<MUXControlsTestHooks>
+class MUXControlsTestHooks :
+    public winrt::implementation::MUXControlsTestHooksT<MUXControlsTestHooks>
 {
 public:
     UCHAR GetLoggingLevelForType(const wstring_view& type);
@@ -55,6 +56,6 @@ private:
     winrt::event<winrt::TypedEventHandler<winrt::IInspectable, winrt::MUXControlsTestHooksLoggingMessageEventArgs>> m_loggingMessageEventSource;
     std::map<std::wstring /*key:Type*/, UCHAR /*value:LoggingProviderLevel*/, std::less<>> m_typeLoggingLevels;
     std::map<winrt::IInspectable /*key:Instance*/, UCHAR /*value:LoggingProviderLevel*/> m_instanceLoggingLevels;
-    UCHAR m_globalLoggingLevel{WINEVENT_LEVEL_NONE};
+    UCHAR m_globalLoggingLevel{ WINEVENT_LEVEL_NONE };
     winrt::event<winrt::TypedEventHandler<winrt::IInspectable, winrt::IInspectable>> m_buildTreeCompleted;
 };

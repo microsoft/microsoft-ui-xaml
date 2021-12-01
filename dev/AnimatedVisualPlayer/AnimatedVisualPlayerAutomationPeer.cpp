@@ -5,8 +5,8 @@
 
 #include "AnimatedVisualPlayerAutomationPeer.properties.cpp"
 
-AnimatedVisualPlayerAutomationPeer::AnimatedVisualPlayerAutomationPeer(winrt::AnimatedVisualPlayer const& owner) :
-    ReferenceTracker(owner)
+AnimatedVisualPlayerAutomationPeer::AnimatedVisualPlayerAutomationPeer(winrt::AnimatedVisualPlayer const& owner)
+    : ReferenceTracker(owner)
 {
 }
 

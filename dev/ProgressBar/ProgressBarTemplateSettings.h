@@ -6,8 +6,9 @@
 #include "ProgressBarTemplateSettings.g.h"
 #include "ProgressBarTemplateSettings.properties.h"
 
-class ProgressBarTemplateSettings : public winrt::implementation::ProgressBarTemplateSettingsT<ProgressBarTemplateSettings>,
-                                    public ProgressBarTemplateSettingsProperties
+class ProgressBarTemplateSettings :
+    public winrt::implementation::ProgressBarTemplateSettingsT<ProgressBarTemplateSettings>,
+    public ProgressBarTemplateSettingsProperties
 {
 public:
     ProgressBarTemplateSettings();

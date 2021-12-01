@@ -44,10 +44,12 @@ winrt::Deferral RefreshRequestedEventArgs::GetDeferral()
 
     com_ptr<RefreshRequestedEventArgs> strongThis = get_strong();
 
-    winrt::Deferral instance{[strongThis]() {
-        strongThis->CheckThread();
-        strongThis->DecrementDeferralCount();
-    }};
+    winrt::Deferral instance{ [strongThis]()
+        {
+            strongThis->CheckThread();
+            strongThis->DecrementDeferralCount();
+        }
+    };
     return instance;
 }
 
@@ -65,3 +67,5 @@ void RefreshRequestedEventArgs::IncrementDeferralCount()
 {
     m_deferralCount++;
 }
+
+

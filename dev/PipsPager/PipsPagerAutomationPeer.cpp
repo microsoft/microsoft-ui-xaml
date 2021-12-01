@@ -10,7 +10,8 @@
 
 #include "PipsPagerAutomationPeer.properties.cpp"
 
-PipsPagerAutomationPeer::PipsPagerAutomationPeer(winrt::PipsPager const& owner) : ReferenceTracker(owner)
+PipsPagerAutomationPeer::PipsPagerAutomationPeer(winrt::PipsPager const& owner)
+    : ReferenceTracker(owner)
 {
 }
 
@@ -70,7 +71,7 @@ winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProv
         {
             if (auto peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(pip))
             {
-                return {ProviderFromPeer(peer)};
+                return { ProviderFromPeer(peer) };
             }
         }
     }
@@ -81,8 +82,7 @@ void PipsPagerAutomationPeer::RaiseSelectionChanged(double oldIndex, double newI
 {
     if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
-        RaisePropertyChangedEvent(
-            winrt::SelectionPatternIdentifiers::SelectionProperty(),
+        RaisePropertyChangedEvent(winrt::SelectionPatternIdentifiers::SelectionProperty(),
             winrt::PropertyValue::CreateDouble(oldIndex),
             winrt::PropertyValue::CreateDouble(newIndex));
     }

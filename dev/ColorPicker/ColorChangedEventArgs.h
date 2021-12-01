@@ -5,7 +5,8 @@
 
 #include "ColorChangedEventArgs.g.h"
 
-class ColorChangedEventArgs : public winrt::implementation::ColorChangedEventArgsT<ColorChangedEventArgs>
+class ColorChangedEventArgs :
+    public winrt::implementation::ColorChangedEventArgsT<ColorChangedEventArgs>
 {
 public:
     // IColorChangedEventArgs overrides

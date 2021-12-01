@@ -14,28 +14,26 @@ TitleBar::TitleBar()
 
     SetDefaultStyleKey(this);
 
-    SizeChanged({this, &TitleBar::OnSizeChanged});
+    SizeChanged({ this, &TitleBar::OnSizeChanged });
 
     if (const auto currentView = winrt::CoreApplication::GetCurrentView())
     {
         if (const auto coreTitleBar = currentView.TitleBar())
         {
-            m_titleBarMetricsChangedRevoker =
-                coreTitleBar.LayoutMetricsChanged(winrt::auto_revoke, {this, &TitleBar::OnTitleBarMetricsChanged});
-            m_titleBarIsVisibleChangedRevoker =
-                coreTitleBar.IsVisibleChanged(winrt::auto_revoke, {this, &TitleBar::OnTitleBarIsVisibleChanged});
+            m_titleBarMetricsChangedRevoker = coreTitleBar.LayoutMetricsChanged(winrt::auto_revoke, { this, &TitleBar::OnTitleBarMetricsChanged });
+            m_titleBarIsVisibleChangedRevoker = coreTitleBar.IsVisibleChanged(winrt::auto_revoke, { this, &TitleBar::OnTitleBarIsVisibleChanged });
         }
     }
 
     if (const auto window = winrt::Window::Current())
     {
-        window.Activated({this, &TitleBar::OnWindowActivated});
+        window.Activated({ this, &TitleBar::OnWindowActivated });
     }
 
     if (winrt::IFrameworkElement6 frameworkElement6 = *this)
     {
-        m_actualThemeChangedRevoker =
-            frameworkElement6.ActualThemeChanged(winrt::auto_revoke, [this](auto&&, auto&&) { UpdateTheme(); });
+        m_actualThemeChangedRevoker = frameworkElement6.ActualThemeChanged(winrt::auto_revoke,
+                [this](auto&&, auto&&) { UpdateTheme(); });
     }
 }
 
@@ -46,7 +44,7 @@ winrt::AutomationPeer TitleBar::OnCreateAutomationPeer()
 
 void TitleBar::OnApplyTemplate()
 {
-    winrt::IControlProtected controlProtected{*this};
+    winrt::IControlProtected controlProtected{ *this };
 
     if (const auto currentView = winrt::CoreApplication::GetCurrentView())
     {
@@ -77,7 +75,7 @@ void TitleBar::OnApplyTemplate()
 
     if (const auto backButton = GetTemplateChildT<winrt::Button>(L"BackButton", controlProtected))
     {
-        m_backButtonClickRevoker = backButton.Click(winrt::auto_revoke, {this, &TitleBar::OnBackButtonClick});
+        m_backButtonClickRevoker = backButton.Click(winrt::auto_revoke, { this, &TitleBar::OnBackButtonClick });
 
         // Do localization for the back button
         if (winrt::AutomationProperties::GetName(backButton).empty())
@@ -140,8 +138,8 @@ void TitleBar::OnSizeChanged(const winrt::IInspectable& sender, const winrt::Siz
             // If the title column has * sizing but it's not trimmed anymore, then give the extra space back to the custom area.
             if (!titleTextBlock.IsTextTrimmed())
             {
-                templateSettings->TitleColumnGridLength({1, winrt::GridUnitType::Auto});
-                templateSettings->CustomColumnGridLength({1, winrt::GridUnitType::Star});
+                templateSettings->TitleColumnGridLength({ 1, winrt::GridUnitType::Auto });
+                templateSettings->CustomColumnGridLength({ 1, winrt::GridUnitType::Star });
 
                 m_isTitleSquished = false;
             }
@@ -151,8 +149,8 @@ void TitleBar::OnSizeChanged(const winrt::IInspectable& sender, const winrt::Siz
             // If the custom area is at its minimum width, switch the title column to be * sized so it squishes instead.
             if (!m_isTitleSquished && customArea.DesiredSize().Width >= customArea.ActualWidth())
             {
-                templateSettings->TitleColumnGridLength({1, winrt::GridUnitType::Star});
-                templateSettings->CustomColumnGridLength({1, winrt::GridUnitType::Auto});
+                templateSettings->TitleColumnGridLength({ 1, winrt::GridUnitType::Star });
+                templateSettings->CustomColumnGridLength({ 1, winrt::GridUnitType::Auto });
 
                 m_isTitleSquished = true;
             }
@@ -162,8 +160,9 @@ void TitleBar::OnSizeChanged(const winrt::IInspectable& sender, const winrt::Siz
 
 void TitleBar::OnWindowActivated(const winrt::IInspectable& sender, const winrt::WindowActivatedEventArgs& args)
 {
-    winrt::VisualStateManager::GoToState(
-        *this, (args.WindowActivationState() == winrt::CoreWindowActivationState::Deactivated) ? L"Deactivated" : L"Activated", false);
+    winrt::VisualStateManager::GoToState(*this,
+        (args.WindowActivationState() == winrt::CoreWindowActivationState::Deactivated) ? L"Deactivated" : L"Activated",
+        false);
 }
 
 void TitleBar::OnTitleBarMetricsChanged(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
@@ -193,7 +192,9 @@ void TitleBar::UpdateIcon()
 
 void TitleBar::UpdateBackButton()
 {
-    winrt::VisualStateManager::GoToState(*this, IsBackButtonVisible() ? L"BackButtonVisible" : L"BackButtonCollapsed", false);
+    winrt::VisualStateManager::GoToState(*this,
+        IsBackButtonVisible() ? L"BackButtonVisible" : L"BackButtonCollapsed",
+        false);
 }
 
 void TitleBar::UpdateVisibility()
@@ -202,14 +203,18 @@ void TitleBar::UpdateVisibility()
     {
         if (const auto coreTitleBar = currentView.TitleBar())
         {
-            winrt::VisualStateManager::GoToState(*this, coreTitleBar.IsVisible() ? L"TitleBarVisible" : L"TitleBarCollapsed", false);
+            winrt::VisualStateManager::GoToState(*this,
+                coreTitleBar.IsVisible() ? L"TitleBarVisible" : L"TitleBarCollapsed",
+                false);
         }
     }
 }
 
 void TitleBar::UpdateHeight()
 {
-    winrt::VisualStateManager::GoToState(*this, (CustomContent() == nullptr) ? L"CompactHeight" : L"ExpandedHeight", false);
+    winrt::VisualStateManager::GoToState(*this,
+        (CustomContent() == nullptr) ? L"CompactHeight" : L"ExpandedHeight",
+        false);
 }
 
 void TitleBar::UpdatePadding()
@@ -238,36 +243,29 @@ void TitleBar::UpdateTheme()
         if (const auto titleBar = appView.TitleBar())
         {
             // rest colors
-            const auto buttonForegroundColor =
-                ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonForegroundColor")).as<winrt::Color>();
+            const auto buttonForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonForegroundColor")).as<winrt::Color>();
             titleBar.ButtonForegroundColor(buttonForegroundColor);
 
-            const auto buttonBackgroundColor =
-                ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonBackgroundColor")).as<winrt::Color>();
+            const auto buttonBackgroundColor = ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonBackgroundColor")).as<winrt::Color>();
             titleBar.ButtonBackgroundColor(buttonBackgroundColor);
             titleBar.ButtonInactiveBackgroundColor(buttonBackgroundColor);
 
             // hover colors
-            const auto buttonHoverForegroundColor =
-                ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonHoverForegroundColor")).as<winrt::Color>();
+            const auto buttonHoverForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonHoverForegroundColor")).as<winrt::Color>();
             titleBar.ButtonHoverForegroundColor(buttonHoverForegroundColor);
 
-            const auto buttonHoverBackgroundColor =
-                ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonHoverBackgroundColor")).as<winrt::Color>();
+            const auto buttonHoverBackgroundColor = ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonHoverBackgroundColor")).as<winrt::Color>();
             titleBar.ButtonHoverBackgroundColor(buttonHoverBackgroundColor);
 
             // pressed colors
-            const auto buttonPressedForegroundColor =
-                ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonPressedForegroundColor")).as<winrt::Color>();
+            const auto buttonPressedForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonPressedForegroundColor")).as<winrt::Color>();
             titleBar.ButtonPressedForegroundColor(buttonPressedForegroundColor);
 
-            const auto buttonPressedBackgroundColor =
-                ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonPressedBackgroundColor")).as<winrt::Color>();
+            const auto buttonPressedBackgroundColor = ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonPressedBackgroundColor")).as<winrt::Color>();
             titleBar.ButtonPressedBackgroundColor(buttonPressedBackgroundColor);
 
             // inactive foreground
-            const auto buttonInactiveForegroundColor =
-                ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonInactiveForegroundColor")).as<winrt::Color>();
+            const auto buttonInactiveForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(L"TitleBarButtonInactiveForegroundColor")).as<winrt::Color>();
             titleBar.ButtonInactiveForegroundColor(buttonInactiveForegroundColor);
         }
     }
@@ -285,3 +283,4 @@ void TitleBar::UpdateTitle()
         winrt::VisualStateManager::GoToState(*this, L"TitleTextVisible", false);
     }
 }
+

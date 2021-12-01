@@ -56,4 +56,5 @@ winrt::UIElement RadioButtonsElementFactory::GetElementCore(const winrt::Element
 
 void RadioButtonsElementFactory::RecycleElementCore(const winrt::ElementFactoryRecycleArgs& args)
 {
+
 }

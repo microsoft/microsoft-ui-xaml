@@ -8,22 +8,30 @@
 
 #pragma region IRecyclePool
 
-void RecyclePool::PutElement(winrt::UIElement const& element, winrt::hstring const& key)
+void RecyclePool::PutElement(
+    winrt::UIElement const& element,
+    winrt::hstring const& key)
 {
     PutElementCore(element, key, nullptr /* owner */);
 }
 
-void RecyclePool::PutElement(winrt::UIElement const& element, winrt::hstring const& key, winrt::UIElement const& owner)
+void RecyclePool::PutElement(
+    winrt::UIElement const& element,
+    winrt::hstring const& key,
+    winrt::UIElement const& owner)
 {
     PutElementCore(element, key, owner);
 }
 
-winrt::UIElement RecyclePool::TryGetElement(winrt::hstring const& key)
+winrt::UIElement RecyclePool::TryGetElement(
+    winrt::hstring const& key)
 {
     return TryGetElementCore(key, nullptr /* owner */);
 }
 
-winrt::UIElement RecyclePool::TryGetElement(winrt::hstring const& key, winrt::UIElement const& owner)
+winrt::UIElement RecyclePool::TryGetElement(
+    winrt::hstring const& key,
+    winrt::UIElement const& owner)
 {
     return TryGetElementCore(key, owner);
 }
@@ -32,7 +40,10 @@ winrt::UIElement RecyclePool::TryGetElement(winrt::hstring const& key, winrt::UI
 
 #pragma region IRecyclePoolOverrides
 
-void RecyclePool::PutElementCore(winrt::UIElement const& element, winrt::hstring const& key, winrt::UIElement const& owner)
+void RecyclePool::PutElementCore(
+    winrt::UIElement const& element,
+    winrt::hstring const& key,
+    winrt::UIElement const& owner)
 {
 
     const auto& winrtKey = key;
@@ -40,7 +51,7 @@ void RecyclePool::PutElementCore(winrt::UIElement const& element, winrt::hstring
     const auto& winrtOwner = owner;
     auto winrtOwnerAsPanel = EnsureOwnerIsPanelOrNull(winrtOwner);
 
-    ElementInfo elementInfo{this /* refManager */, element, winrtOwnerAsPanel};
+    ElementInfo elementInfo{ this /* refManager */, element, winrtOwnerAsPanel };
 
     if (iterator != m_elements.end())
     {
@@ -54,7 +65,9 @@ void RecyclePool::PutElementCore(winrt::UIElement const& element, winrt::hstring
     }
 }
 
-winrt::UIElement RecyclePool::TryGetElementCore(winrt::hstring const& key, winrt::UIElement const& owner)
+winrt::UIElement RecyclePool::TryGetElementCore(
+    winrt::hstring const& key,
+    winrt::UIElement const& owner)
 {
     const auto iterator = m_elements.find(key);
     if (iterator != m_elements.end())
@@ -62,14 +75,15 @@ winrt::UIElement RecyclePool::TryGetElementCore(winrt::hstring const& key, winrt
         auto& elements = iterator->second;
         if (elements.size() > 0)
         {
-            ElementInfo elementInfo{this /* refManager */, nullptr, nullptr};
+            ElementInfo elementInfo{ this /* refManager */, nullptr, nullptr };
             // Prefer an element from the same owner or with no owner so that we don't incur
             // the enter/leave cost during recycling.
             // TODO: prioritize elements with the same owner to those without an owner.
             const auto& winrtOwner = owner;
-            auto iter = std::find_if(elements.begin(), elements.end(), [&winrtOwner](const ElementInfo& elemInfo) {
-                return elemInfo.Owner() == winrtOwner || !elemInfo.Owner();
-            });
+            auto iter = std::find_if(
+                elements.begin(),
+                elements.end(),
+                [&winrtOwner](const ElementInfo& elemInfo) { return elemInfo.Owner() == winrtOwner || !elemInfo.Owner(); });
 
             if (iter != elements.end())
             {
@@ -106,6 +120,7 @@ winrt::UIElement RecyclePool::TryGetElementCore(winrt::hstring const& key, winrt
 
     return nullptr;
 }
+
 
 #pragma endregion
 

@@ -9,10 +9,12 @@
 #include "AnimatedVisualPlayer.g.h"
 #include "AnimatedVisualPlayer.properties.h"
 
+
 // Derive from DeriveFromPanelHelper_base so that we get access to Children collection
 // in Panel. The Children collection holds the fallback content.
-struct AnimatedVisualPlayer : public ReferenceTracker<AnimatedVisualPlayer, DeriveFromPanelHelper_base, winrt::AnimatedVisualPlayer>,
-                              public AnimatedVisualPlayerProperties
+struct AnimatedVisualPlayer:
+    public ReferenceTracker<AnimatedVisualPlayer, DeriveFromPanelHelper_base, winrt::AnimatedVisualPlayer>,
+    public AnimatedVisualPlayerProperties
 {
     friend class AnimatedVisualPlayerProperties;
 
@@ -38,7 +40,11 @@ private:
     //
     struct AnimationPlay final : public Awaitable
     {
-        AnimationPlay(AnimatedVisualPlayer& owner, float fromProgress, float toProgress, bool looped);
+        AnimationPlay(
+            AnimatedVisualPlayer& owner,
+            float fromProgress,
+            float toProgress,
+            bool looped);
 
         float FromProgress();
 
@@ -68,11 +74,11 @@ private:
         const bool m_looped{};
         winrt::TimeSpan m_playDuration{};
 
-        winrt::Composition::AnimationController m_controller{nullptr};
-        bool m_isPaused{false};
-        bool m_isPausedBecauseHidden{false};
+        winrt::Composition::AnimationController m_controller{ nullptr };
+        bool m_isPaused{ false };
+        bool m_isPausedBecauseHidden{ false };
         winrt::event_token m_batchCompletedToken{0};
-        winrt::Composition::CompositionScopedBatch m_batch{nullptr};
+        winrt::Composition::CompositionScopedBatch m_batch{ nullptr };
     };
 
     void OnAutoPlayPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
@@ -102,10 +108,10 @@ private:
     // Initialized by the constructor.
     //
     // A Visual used for clipping and for parenting of m_animatedVisualRoot.
-    winrt::Composition::SpriteVisual m_rootVisual{nullptr};
+    winrt::Composition::SpriteVisual m_rootVisual{ nullptr };
     // The property set that contains the Progress property that will be used to
     // set the progress of the animated visual.
-    winrt::Composition::CompositionPropertySet m_progressPropertySet{nullptr};
+    winrt::Composition::CompositionPropertySet m_progressPropertySet{ nullptr };
     // Revokers for events that we are subscribed to.
     winrt::Application::Suspending_revoker m_suspendingRevoker{};
     winrt::Application::Resuming_revoker m_resumingRevoker{};
@@ -116,23 +122,23 @@ private:
     //
     // Player mutable state state.
     //
-    tracker_ref<winrt::IAnimatedVisual> m_animatedVisual{this};
+    tracker_ref<winrt::IAnimatedVisual> m_animatedVisual{ this };
     // The native size of the current animated visual. Only valid if m_animatedVisual is not nullptr.
     winrt::float2 m_animatedVisualSize;
-    winrt::Composition::Visual m_animatedVisualRoot{nullptr};
-    int m_playAsyncVersion{0};
-    double m_currentPlayFromProgress{0};
+    winrt::Composition::Visual m_animatedVisualRoot{ nullptr };
+    int m_playAsyncVersion{ 0 };
+    double m_currentPlayFromProgress{ 0 };
     // The play that will be stopped when Stop() is called.
-    std::shared_ptr<AnimationPlay> m_nowPlaying{nullptr};
-    winrt::IDynamicAnimatedVisualSource::AnimatedVisualInvalidated_revoker m_dynamicAnimatedVisualInvalidatedRevoker{};
+    std::shared_ptr<AnimationPlay> m_nowPlaying{ nullptr };
+    winrt::IDynamicAnimatedVisualSource::AnimatedVisualInvalidated_revoker  m_dynamicAnimatedVisualInvalidatedRevoker{};
 
     // Set true if an animated visual has failed to load and set false the next time an animated
     // visual loads with non-null content. When this is true the fallback content (if any) will
     // be displayed.
-    bool m_isFallenBack{false};
+    bool m_isFallenBack{ false };
 
     // Set true when FrameworkElement::Unloaded is fired, then set false when FrameworkElement::Loaded is fired.
     // This is used to differentiate the first Loaded event (when the element has never been
     // unloaded) from later Loaded events.
-    bool m_isUnloaded{false};
+    bool m_isUnloaded{ false };
 };

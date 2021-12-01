@@ -19,7 +19,7 @@ struct ComposableBasePointersImplTTypeForIterator<false>
 };
 
 template <typename T, bool isBindable, bool isDependencyObjectBase>
-struct VectorIteratorTraits : ComposableBasePointersImplTTypeForIterator<isDependencyObjectBase>
+struct VectorIteratorTraits: ComposableBasePointersImplTTypeForIterator<isDependencyObjectBase>
 {
     using T_type = typename T;
     using VectorType = typename winrt::IVector<T>;
@@ -27,16 +27,20 @@ struct VectorIteratorTraits : ComposableBasePointersImplTTypeForIterator<isDepen
 };
 
 template <typename T, bool isDependencyObjectBase>
-struct VectorIteratorTraits<T, true, isDependencyObjectBase> : ComposableBasePointersImplTTypeForIterator<isDependencyObjectBase>
+struct VectorIteratorTraits<T, true, isDependencyObjectBase>:
+    ComposableBasePointersImplTTypeForIterator<isDependencyObjectBase>
 {
     using T_type = typename winrt::IInspectable;
     using VectorType = typename winrt::IBindableVector;
     using IteratorType = typename winrt::IBindableIterator;
 };
 
-template <typename T, bool isBindable = false, bool isDependencyObjectBase = true, typename Traits = VectorIteratorTraits<T, isBindable, isDependencyObjectBase>>
-class VectorIterator
-    : public ReferenceTracker<VectorIterator<T, isBindable, isDependencyObjectBase, Traits>, reference_tracker_implements_t<typename Traits::IteratorType>::type>
+template <typename T, bool isBindable = false, bool isDependencyObjectBase = true, 
+    typename Traits = VectorIteratorTraits<T, isBindable, isDependencyObjectBase>>
+class VectorIterator : 
+    public ReferenceTracker<
+        VectorIterator<T, isBindable, isDependencyObjectBase, Traits>,
+        reference_tracker_implements_t<typename Traits::IteratorType>::type>
 {
 public:
     VectorIterator(typename Traits::VectorType const& vector)
@@ -68,8 +72,7 @@ public:
         {
             do
             {
-                if (howMany >= values.size())
-                    break;
+                if (howMany >= values.size()) break;
 
                 values[howMany] = Current();
                 howMany++;
@@ -79,7 +82,9 @@ public:
         return howMany;
     }
 
+
 private:
-    tracker_ref<typename Traits::VectorType> m_vector{this};
-    unsigned int m_currentIndex{0};
+    tracker_ref<typename Traits::VectorType> m_vector{ this };
+    unsigned int m_currentIndex{ 0 };
 };
+

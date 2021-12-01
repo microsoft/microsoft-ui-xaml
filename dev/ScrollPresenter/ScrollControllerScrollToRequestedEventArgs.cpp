@@ -10,9 +10,12 @@
 
 #include "ScrollControllerScrollToRequestedEventArgs.properties.cpp"
 
-ScrollControllerScrollToRequestedEventArgs::ScrollControllerScrollToRequestedEventArgs(double offset, winrt::ScrollingScrollOptions const& options)
+ScrollControllerScrollToRequestedEventArgs::ScrollControllerScrollToRequestedEventArgs(
+    double offset,
+    winrt::ScrollingScrollOptions const& options)
 {
-    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_DBL, METH_NAME, this, TypeLogging::ScrollOptionsToString(options).c_str(), offset);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_DBL, METH_NAME, this,
+        TypeLogging::ScrollOptionsToString(options).c_str(), offset);
 
     m_offset = offset;
     m_options = options;

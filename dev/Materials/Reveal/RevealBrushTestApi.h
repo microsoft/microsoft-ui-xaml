@@ -5,7 +5,8 @@
 
 #include "RevealBrushTestApi.g.h"
 
-class RevealBrushTestApi : public ReferenceTracker<RevealBrushTestApi, winrt::implementation::RevealBrushTestApiT, winrt::composable>
+class RevealBrushTestApi :
+    public ReferenceTracker<RevealBrushTestApi, winrt::implementation::RevealBrushTestApiT, winrt::composable>
 {
 public:
     winrt::RevealBrush RevealBrush();
@@ -19,5 +20,5 @@ public:
     winrt::CompositionBrush NoiseBrush();
 
 private:
-    winrt::RevealBrush m_revealBrush{nullptr};
+    winrt::RevealBrush m_revealBrush{ nullptr };
 };

@@ -9,7 +9,8 @@
 
 #include "ScrollControllerInteractionRequestedEventArgs.properties.cpp"
 
-ScrollControllerInteractionRequestedEventArgs::ScrollControllerInteractionRequestedEventArgs(const winrt::PointerPoint& pointerPoint)
+ScrollControllerInteractionRequestedEventArgs::ScrollControllerInteractionRequestedEventArgs(
+    const winrt::PointerPoint& pointerPoint)
 {
     SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::PointerPointToString(pointerPoint).c_str());
 

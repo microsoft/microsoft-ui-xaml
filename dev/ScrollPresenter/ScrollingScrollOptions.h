@@ -6,7 +6,8 @@
 #include "ScrollPresenter.h"
 #include "ScrollingScrollOptions.g.h"
 
-class ScrollingScrollOptions : public winrt::implementation::ScrollingScrollOptionsT<ScrollingScrollOptions>
+class ScrollingScrollOptions :
+    public winrt::implementation::ScrollingScrollOptionsT<ScrollingScrollOptions>
 {
 public:
     ScrollingScrollOptions(winrt::ScrollingAnimationMode const& animationMode);
@@ -17,8 +18,8 @@ public:
         SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    static constexpr winrt::ScrollingAnimationMode s_defaultAnimationMode{winrt::ScrollingAnimationMode::Auto};
-    static constexpr winrt::ScrollingSnapPointsMode s_defaultSnapPointsMode{winrt::ScrollingSnapPointsMode::Default};
+    static constexpr winrt::ScrollingAnimationMode s_defaultAnimationMode{ winrt::ScrollingAnimationMode::Auto };
+    static constexpr winrt::ScrollingSnapPointsMode s_defaultSnapPointsMode{ winrt::ScrollingSnapPointsMode::Default };
 
     winrt::ScrollingAnimationMode AnimationMode() const;
     void AnimationMode(winrt::ScrollingAnimationMode const& animationMode);
@@ -27,6 +28,6 @@ public:
     void SnapPointsMode(winrt::ScrollingSnapPointsMode const& snapPointsMode);
 
 private:
-    winrt::ScrollingAnimationMode m_animationMode{s_defaultAnimationMode};
-    winrt::ScrollingSnapPointsMode m_snapPointsMode{s_defaultSnapPointsMode};
+    winrt::ScrollingAnimationMode m_animationMode{ s_defaultAnimationMode };
+    winrt::ScrollingSnapPointsMode m_snapPointsMode{ s_defaultSnapPointsMode };
 };

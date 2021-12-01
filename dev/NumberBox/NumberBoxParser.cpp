@@ -6,7 +6,7 @@
 #include "NumberBoxParser.h"
 #include "Utils.h"
 
-static constexpr wstring_view c_numberBoxOperators{L"+-*/^"sv};
+static constexpr wstring_view c_numberBoxOperators{ L"+-*/^"sv };
 
 // Returns list of MathTokens from expression input string. If there are any parsing errors, it returns an empty vector.
 std::vector<MathToken> NumberBoxParser::GetTokens(const wchar_t* input, const winrt::INumberParser& numberParser)
@@ -35,7 +35,7 @@ std::vector<MathToken> NumberBoxParser::GetTokens(const wchar_t* input, const wi
                     {
                         tokens.push_back(MathToken(MathTokenType::Numeric, value));
                         input += charLength - 1; // advance the end of the token
-                        expectNumber = false;    // next token should be an operator
+                        expectNumber = false; // next token should be an operator
                     }
                     else
                     {
@@ -85,11 +85,11 @@ std::tuple<double, size_t> NumberBoxParser::GetNextNumber(const std::wstring& in
         if (parsedNum)
         {
             // Parsing was successful
-            return {parsedNum.Value(), matchLength};
+            return { parsedNum.Value(), matchLength };
         }
     }
 
-    return {std::numeric_limits<double>::quiet_NaN(), 0};
+    return { std::numeric_limits<double>::quiet_NaN(), 0 };
 }
 
 int constexpr NumberBoxParser::GetPrecedenceValue(wchar_t c)
@@ -203,36 +203,36 @@ winrt::IReference<double> NumberBoxParser::ComputePostfixExpression(const std::v
 
             switch (token.Char)
             {
-            case L'-':
-                result = op2 - op1;
-                break;
+                case L'-':
+                    result = op2 - op1;
+                    break;
 
-            case L'+':
-                result = op1 + op2;
-                break;
+                case L'+':
+                    result = op1 + op2;
+                    break;
 
-            case L'*':
-                result = op1 * op2;
-                break;
+                case L'*':
+                    result = op1 * op2;
+                    break;
 
-            case L'/':
-                if (op1 == 0)
-                {
-                    // divide by zero
-                    return std::numeric_limits<double>::quiet_NaN();
-                }
-                else
-                {
-                    result = op2 / op1;
-                }
-                break;
+                case L'/':
+                    if (op1 == 0)
+                    {
+                        // divide by zero
+                        return std::numeric_limits<double>::quiet_NaN();
+                    }
+                    else
+                    {
+                        result = op2 / op1;
+                    }
+                    break;
 
-            case L'^':
-                result = std::pow(op2, op1);
-                break;
+                case L'^':
+                    result = std::pow(op2, op1);
+                    break;
 
-            default:
-                return nullptr;
+                default:
+                    return nullptr;
             }
 
             stack.push(result);

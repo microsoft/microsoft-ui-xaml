@@ -6,7 +6,8 @@
 #include "Layout.h"
 #include "NonVirtualizingLayout.g.h"
 
-class NonVirtualizingLayout : public winrt::implementation::NonVirtualizingLayoutT<NonVirtualizingLayout, Layout>
+class NonVirtualizingLayout :
+    public winrt::implementation::NonVirtualizingLayoutT<NonVirtualizingLayout, Layout>
 {
 public:
     NonVirtualizingLayout();
@@ -18,4 +19,5 @@ public:
     virtual winrt::Size MeasureOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& availableSize);
     virtual winrt::Size ArrangeOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& finalSize);
 #pragma endregion
+
 };

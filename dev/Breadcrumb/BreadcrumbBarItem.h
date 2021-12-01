@@ -9,7 +9,8 @@
 
 #include "BreadcrumbBarItem.g.h"
 
-class BreadcrumbBarItem : public ReferenceTracker<BreadcrumbBarItem, winrt::implementation::BreadcrumbBarItemT>
+class BreadcrumbBarItem :
+    public ReferenceTracker<BreadcrumbBarItem, winrt::implementation::BreadcrumbBarItemT>
 {
 public:
     BreadcrumbBarItem();
@@ -54,7 +55,7 @@ public:
 private:
     void OnLoadedEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnEllipsisItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnBreadcrumbBarItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnBreadcrumbBarItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs & args);
     void OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&);
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnIsEnabledChanged(const winrt::IInspectable& sender, const winrt::DependencyPropertyChangedEventArgs& args);
@@ -93,25 +94,25 @@ private:
     bool m_isLastItem{};
 
     // BreadcrumbBarItem visual representation
-    tracker_ref<winrt::Button> m_button{this};
+    tracker_ref<winrt::Button> m_button{ this };
     // Parent BreadcrumbBarItem to ask for hidden elements
-    tracker_ref<winrt::BreadcrumbBar> m_parentBreadcrumb{this};
+    tracker_ref<winrt::BreadcrumbBar> m_parentBreadcrumb{ this };
 
     // Flyout content for ellipsis item
-    tracker_ref<winrt::Flyout> m_ellipsisFlyout{this};
-    tracker_ref<winrt::ItemsRepeater> m_ellipsisItemsRepeater{this};
-    tracker_ref<winrt::DataTemplate> m_ellipsisDropDownItemDataTemplate{this};
-    com_ptr<BreadcrumbElementFactory> m_ellipsisElementFactory{nullptr};
+    tracker_ref<winrt::Flyout> m_ellipsisFlyout{ this };
+    tracker_ref<winrt::ItemsRepeater> m_ellipsisItemsRepeater{ this };
+    tracker_ref<winrt::DataTemplate> m_ellipsisDropDownItemDataTemplate{ this };
+    com_ptr<BreadcrumbElementFactory> m_ellipsisElementFactory{ nullptr };
 
     // Ellipsis dropdown item fields
 
     // BreadcrumbBarItem that owns the flyout
-    tracker_ref<winrt::BreadcrumbBarItem> m_ellipsisItem{this};
+    tracker_ref<winrt::BreadcrumbBarItem> m_ellipsisItem{ this };
 
     // Visual State tracking
-    uint32_t m_trackedPointerId{0};
-    bool m_isPressed{false};
-    bool m_isPointerOver{false};
+    uint32_t m_trackedPointerId{ 0 };
+    bool m_isPressed{ false };
+    bool m_isPointerOver{ false };
 
     // Common item token & revoker
 
@@ -135,29 +136,29 @@ private:
     IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
 
     // Common Visual States
-    static constexpr std::wstring_view s_normalStateName{L"Normal"sv};
-    static constexpr std::wstring_view s_currentStateName{L"Current"sv};
-    static constexpr std::wstring_view s_pointerOverStateName{L"PointerOver"sv};
-    static constexpr std::wstring_view s_pressedStateName{L"Pressed"sv};
-    static constexpr std::wstring_view s_disabledStateName{L"Disabled"sv};
+    static constexpr std::wstring_view s_normalStateName{ L"Normal"sv };
+    static constexpr std::wstring_view s_currentStateName{ L"Current"sv };
+    static constexpr std::wstring_view s_pointerOverStateName{ L"PointerOver"sv };
+    static constexpr std::wstring_view s_pressedStateName{ L"Pressed"sv };
+    static constexpr std::wstring_view s_disabledStateName{ L"Disabled"sv };
 
     // Inline Item Type Visual States
-    static constexpr std::wstring_view s_ellipsisStateName{L"Ellipsis"sv};
-    static constexpr std::wstring_view s_ellipsisRTLStateName{L"EllipsisRTL"sv};
-    static constexpr std::wstring_view s_lastItemStateName{L"LastItem"sv};
-    static constexpr std::wstring_view s_defaultStateName{L"Default"sv};
-    static constexpr std::wstring_view s_defaultRTLStateName{L"DefaultRTL"sv};
+    static constexpr std::wstring_view s_ellipsisStateName{ L"Ellipsis"sv };
+    static constexpr std::wstring_view s_ellipsisRTLStateName{ L"EllipsisRTL"sv };
+    static constexpr std::wstring_view s_lastItemStateName{ L"LastItem"sv };
+    static constexpr std::wstring_view s_defaultStateName{ L"Default"sv };
+    static constexpr std::wstring_view s_defaultRTLStateName{ L"DefaultRTL"sv };
 
     // Item Type Visual States
-    static constexpr std::wstring_view s_inlineStateName{L"Inline"sv};
-    static constexpr std::wstring_view s_ellipsisDropDownStateName{L"EllipsisDropDown"sv};
+    static constexpr std::wstring_view s_inlineStateName{ L"Inline"sv };
+    static constexpr std::wstring_view s_ellipsisDropDownStateName{ L"EllipsisDropDown"sv };
 
     // Template Parts
-    static constexpr std::wstring_view s_ellipsisItemsRepeaterPartName{L"PART_EllipsisItemsRepeater"sv};
-    static constexpr std::wstring_view s_itemButtonPartName{L"PART_ItemButton"sv};
-    static constexpr std::wstring_view s_itemEllipsisFlyoutPartName{L"PART_EllipsisFlyout"sv};
+    static constexpr std::wstring_view s_ellipsisItemsRepeaterPartName{ L"PART_EllipsisItemsRepeater"sv };
+    static constexpr std::wstring_view s_itemButtonPartName{ L"PART_ItemButton"sv };
+    static constexpr std::wstring_view s_itemEllipsisFlyoutPartName{ L"PART_EllipsisFlyout"sv };
 
     // Automation Names
-    static constexpr std::wstring_view s_ellipsisFlyoutAutomationName{L"EllipsisFlyout"sv};
-    static constexpr std::wstring_view s_ellipsisItemsRepeaterAutomationName{L"EllipsisItemsRepeater"sv};
+    static constexpr std::wstring_view s_ellipsisFlyoutAutomationName{ L"EllipsisFlyout"sv };
+    static constexpr std::wstring_view s_ellipsisItemsRepeaterAutomationName{ L"EllipsisItemsRepeater"sv };
 };

@@ -9,10 +9,12 @@
 
 #include "ScrollControllerAddScrollVelocityRequestedEventArgs.properties.cpp"
 
-ScrollControllerAddScrollVelocityRequestedEventArgs::ScrollControllerAddScrollVelocityRequestedEventArgs(float offsetVelocity, winrt::IReference<float> inertiaDecayRate)
+ScrollControllerAddScrollVelocityRequestedEventArgs::ScrollControllerAddScrollVelocityRequestedEventArgs(
+    float offsetVelocity,
+    winrt::IReference<float> inertiaDecayRate)
 {
-    SCROLLPRESENTER_TRACE_VERBOSE(
-        nullptr, TRACE_MSG_METH_STR_FLT, METH_NAME, this, TypeLogging::NullableFloatToString(inertiaDecayRate).c_str(), offsetVelocity);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloatToString(inertiaDecayRate).c_str(), offsetVelocity);
 
     m_offsetVelocity = offsetVelocity;
     m_inertiaDecayRate = inertiaDecayRate;

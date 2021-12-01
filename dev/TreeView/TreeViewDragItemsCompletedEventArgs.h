@@ -6,8 +6,8 @@
 
 using winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation;
 
-class TreeViewDragItemsCompletedEventArgs
-    : public ReferenceTracker<TreeViewDragItemsCompletedEventArgs, winrt::implementation::TreeViewDragItemsCompletedEventArgsT, winrt::composing, winrt::composable>
+class TreeViewDragItemsCompletedEventArgs :
+    public ReferenceTracker<TreeViewDragItemsCompletedEventArgs, winrt::implementation::TreeViewDragItemsCompletedEventArgsT, winrt::composing, winrt::composable>
 {
 public:
     TreeViewDragItemsCompletedEventArgs(const winrt::DragItemsCompletedEventArgs& args, const winrt::IInspectable& newParent);
@@ -16,6 +16,6 @@ public:
     winrt::IInspectable NewParentItem();
 
 private:
-    winrt::DragItemsCompletedEventArgs m_dragItemsCompletedEventArgs{nullptr};
+    winrt::DragItemsCompletedEventArgs m_dragItemsCompletedEventArgs{ nullptr };
     winrt::IInspectable m_newParentItem;
 };

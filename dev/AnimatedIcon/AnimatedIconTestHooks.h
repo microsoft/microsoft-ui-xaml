@@ -4,7 +4,8 @@
 
 #include "AnimatedIconTestHooks.g.h"
 
-class AnimatedIconTestHooks : public winrt::implementation::AnimatedIconTestHooksT<AnimatedIconTestHooks>
+class AnimatedIconTestHooks :
+    public winrt::implementation::AnimatedIconTestHooksT<AnimatedIconTestHooks>
 {
 public:
     static com_ptr<AnimatedIconTestHooks> GetGlobalTestHooks()
@@ -26,7 +27,6 @@ public:
     static void NotifyLastAnimationSegmentChanged(const winrt::AnimatedIcon& sender);
     static winrt::event_token LastAnimationSegmentChanged(winrt::TypedEventHandler<winrt::AnimatedIcon, winrt::IInspectable> const& value);
     static void LastAnimationSegmentChanged(winrt::event_token const& token);
-
 private:
     static com_ptr<AnimatedIconTestHooks> s_testHooks;
     winrt::event<winrt::TypedEventHandler<winrt::AnimatedIcon, winrt::IInspectable>> m_lastAnimationSegmentChangedEventSource;

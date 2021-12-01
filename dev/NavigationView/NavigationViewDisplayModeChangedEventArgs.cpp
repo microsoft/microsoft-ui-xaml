@@ -13,7 +13,8 @@ winrt::NavigationViewDisplayMode NavigationViewDisplayModeChangedEventArgs::Disp
 }
 #pragma endregion
 
-void NavigationViewDisplayModeChangedEventArgs::DisplayMode(winrt::NavigationViewDisplayMode value)
+void NavigationViewDisplayModeChangedEventArgs::DisplayMode(
+    winrt::NavigationViewDisplayMode value)
 {
     m_DisplayMode = value;
 }

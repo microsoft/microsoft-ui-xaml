@@ -5,7 +5,8 @@
 
 #include "MaterialHelperTestApi.g.h"
 
-class MaterialHelperTestApi : public ReferenceTracker<MaterialHelperTestApi, winrt::implementation::MaterialHelperTestApiT, winrt::composable>
+class MaterialHelperTestApi :
+    public ReferenceTracker<MaterialHelperTestApi, winrt::implementation::MaterialHelperTestApiT, winrt::composable>
 {
 public:
     static bool SimulateDisabledByPolicy();

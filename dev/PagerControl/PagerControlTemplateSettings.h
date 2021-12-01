@@ -6,9 +6,10 @@
 #include "PagerControlTemplateSettings.g.h"
 #include "PagerControlTemplateSettings.properties.h"
 
-class PagerControlTemplateSettings : public winrt::implementation::PagerControlTemplateSettingsT<PagerControlTemplateSettings>,
-                                     public PagerControlTemplateSettingsProperties
+class PagerControlTemplateSettings :
+    public winrt::implementation::PagerControlTemplateSettingsT<PagerControlTemplateSettings>,
+    public PagerControlTemplateSettingsProperties
 {
 public:
-    PagerControlTemplateSettings(){};
+    PagerControlTemplateSettings() { };
 };

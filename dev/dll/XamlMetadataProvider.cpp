@@ -7,7 +7,7 @@
 #include "XamlType.h"
 #include "MUXControlsFactory.h"
 
-std::vector<XamlMetadataProvider::Entry>* XamlMetadataProvider::s_types{nullptr};
+std::vector<XamlMetadataProvider::Entry>* XamlMetadataProvider::s_types{ nullptr };
 
 XamlMetadataProvider::XamlMetadataProvider()
 {
@@ -19,7 +19,10 @@ void XamlMetadataProvider::Initialize()
     MUXControlsFactory::EnsureInitialized();
 }
 
-bool XamlMetadataProvider::RegisterXamlType(PCWSTR typeName, std::function<winrt::IXamlType()> createXamlTypeCallback)
+bool XamlMetadataProvider::RegisterXamlType(
+    PCWSTR typeName,
+    std::function<winrt::IXamlType()> createXamlTypeCallback
+    )
 {
     if (!s_types)
     {
@@ -29,13 +32,14 @@ bool XamlMetadataProvider::RegisterXamlType(PCWSTR typeName, std::function<winrt
 #pragma warning(pop)
     }
 
-    Entry type{typeName, createXamlTypeCallback};
+    Entry type{ typeName, createXamlTypeCallback };
 
     s_types->push_back(type);
     return true;
 }
 
-winrt::IXamlType XamlMetadataProvider::GetXamlType(const wstring_view& typeName)
+winrt::IXamlType XamlMetadataProvider::GetXamlType(
+    const wstring_view& typeName)
 {
     if (s_types)
     {

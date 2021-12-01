@@ -5,11 +5,14 @@
 
 #include "ItemsRepeaterElementIndexChangedEventArgs.g.h"
 
-class ItemsRepeaterElementIndexChangedEventArgs
-    : public ReferenceTracker<ItemsRepeaterElementIndexChangedEventArgs, winrt::implementation::ItemsRepeaterElementIndexChangedEventArgsT, winrt::composable, winrt::composing>
+class ItemsRepeaterElementIndexChangedEventArgs :
+    public ReferenceTracker<ItemsRepeaterElementIndexChangedEventArgs, winrt::implementation::ItemsRepeaterElementIndexChangedEventArgsT, winrt::composable, winrt::composing>
 {
 public:
-    ItemsRepeaterElementIndexChangedEventArgs(const winrt::UIElement& element, int oldIndex, int newIndex);
+    ItemsRepeaterElementIndexChangedEventArgs(
+        const winrt::UIElement& element,
+        int oldIndex,
+        int newIndex);
 
 #pragma region IElementPreparedEventArgs
     winrt::UIElement Element();
@@ -20,7 +23,7 @@ public:
     void Update(const winrt::UIElement& element, int oldIndex, int newIndex);
 
 private:
-    tracker_ref<winrt::UIElement> m_element{this};
+    tracker_ref<winrt::UIElement> m_element{ this };
     int m_oldIndex;
     int m_newIndex;
 };

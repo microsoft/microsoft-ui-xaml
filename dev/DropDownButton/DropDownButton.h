@@ -8,7 +8,8 @@
 
 #include "DropDownButton.g.h"
 
-class DropDownButton : public ReferenceTracker<DropDownButton, winrt::implementation::DropDownButtonT>
+class DropDownButton :
+    public ReferenceTracker<DropDownButton, winrt::implementation::DropDownButtonT>
 {
 
 public:
@@ -16,7 +17,7 @@ public:
 
     // IFrameworkElement
     void OnApplyTemplate();
-
+    
     // IUIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
 
@@ -32,9 +33,10 @@ private:
     void OnFlyoutOpened(const winrt::IInspectable& sender, const winrt::IInspectable& args);
     void OnFlyoutClosed(const winrt::IInspectable& sender, const winrt::IInspectable& args);
 
-    bool m_isFlyoutOpen{false};
+    bool m_isFlyoutOpen{ false };
 
     PropertyChanged_revoker m_flyoutPropertyChangedRevoker{};
     winrt::FlyoutBase::Opened_revoker m_flyoutOpenedRevoker{};
     winrt::FlyoutBase::Closed_revoker m_flyoutClosedRevoker{};
 };
+

@@ -3,73 +3,76 @@
 
 #include "SystemBackdropPolicyStateMachine.h"
 
-namespace SystemBackdropComponentInternal {
-SystemBackdropPolicyStateMachine::SystemBackdropPolicyStateMachine(SystemBackdropPolicyState initialState) : m_state(initialState)
+namespace SystemBackdropComponentInternal
 {
-}
+    SystemBackdropPolicyStateMachine::SystemBackdropPolicyStateMachine(SystemBackdropPolicyState initialState) :
+        m_state(initialState)
+    {
 
-void SystemBackdropPolicyStateMachine::SetWindowNotInFocus(bool isNotInFocus)
-{
-    if (isNotInFocus)
-    {
-        m_state |= SystemBackdropPolicyState::WindowOutOfFocus;
     }
-    else
-    {
-        m_state &= ~SystemBackdropPolicyState::WindowOutOfFocus;
-    }
-}
 
-void SystemBackdropPolicyStateMachine::SetPowerSavingMode(bool isEnabled)
-{
-    if (isEnabled)
+    void SystemBackdropPolicyStateMachine::SetWindowNotInFocus(bool isNotInFocus)
     {
-        m_state |= SystemBackdropPolicyState::PowerSavingMode;
+        if (isNotInFocus)
+        {
+            m_state |= SystemBackdropPolicyState::WindowOutOfFocus;
+        }
+        else
+        {
+            m_state &= ~SystemBackdropPolicyState::WindowOutOfFocus;
+        }
     }
-    else
-    {
-        m_state &= ~SystemBackdropPolicyState::PowerSavingMode;
-    }
-}
 
-void SystemBackdropPolicyStateMachine::SetHighContrastMode(bool isEnabled)
-{
-    if (isEnabled)
+    void SystemBackdropPolicyStateMachine::SetPowerSavingMode(bool isEnabled)
     {
-        m_state |= SystemBackdropPolicyState::HighContrastMode;
+        if (isEnabled)
+        {
+            m_state |= SystemBackdropPolicyState::PowerSavingMode;
+        }
+        else
+        {
+            m_state &= ~SystemBackdropPolicyState::PowerSavingMode;
+        }
     }
-    else
-    {
-        m_state &= ~SystemBackdropPolicyState::HighContrastMode;
-    }
-}
 
-void SystemBackdropPolicyStateMachine::SetIncompatibleGraphicsDevice(bool isIncompatibleGraphicsDevice)
-{
-    if (isIncompatibleGraphicsDevice)
+    void SystemBackdropPolicyStateMachine::SetHighContrastMode(bool isEnabled)
     {
-        m_state |= SystemBackdropPolicyState::IncompatibleGraphicsDevice;
+        if (isEnabled)
+        {
+            m_state |= SystemBackdropPolicyState::HighContrastMode;
+        }
+        else
+        {
+            m_state &= ~SystemBackdropPolicyState::HighContrastMode;
+        }
     }
-    else
-    {
-        m_state &= ~SystemBackdropPolicyState::IncompatibleGraphicsDevice;
-    }
-}
 
-void SystemBackdropPolicyStateMachine::SetTransparencyDisabled(bool isDisabled)
-{
-    if (isDisabled)
+    void SystemBackdropPolicyStateMachine::SetIncompatibleGraphicsDevice(bool isIncompatibleGraphicsDevice)
     {
-        m_state |= SystemBackdropPolicyState::TransparencyDisabled;
+        if (isIncompatibleGraphicsDevice)
+        {
+            m_state |= SystemBackdropPolicyState::IncompatibleGraphicsDevice;
+        }
+        else
+        {
+            m_state &= ~SystemBackdropPolicyState::IncompatibleGraphicsDevice;
+        }
     }
-    else
-    {
-        m_state &= ~SystemBackdropPolicyState::TransparencyDisabled;
-    }
-}
 
-bool SystemBackdropPolicyStateMachine::IsActive() const
-{
-    return m_state == SystemBackdropPolicyState::Active;
+    void SystemBackdropPolicyStateMachine::SetTransparencyDisabled(bool isDisabled)
+    {
+        if (isDisabled)
+        {
+            m_state |= SystemBackdropPolicyState::TransparencyDisabled;
+        }
+        else
+        {
+            m_state &= ~SystemBackdropPolicyState::TransparencyDisabled;
+        }
+    }
+
+    bool SystemBackdropPolicyStateMachine::IsActive() const
+    {
+        return m_state == SystemBackdropPolicyState::Active;
+    }
 }
-} // namespace SystemBackdropComponentInternal

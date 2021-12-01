@@ -16,7 +16,7 @@ TreeViewItemDataAutomationPeer::TreeViewItemDataAutomationPeer(winrt::IInspectab
 {
 }
 
-// IExpandCollapseProvider
+// IExpandCollapseProvider 
 winrt::ExpandCollapseState TreeViewItemDataAutomationPeer::ExpandCollapseState()
 {
     if (auto peer = GetTreeViewItemAutomationPeer())
@@ -58,15 +58,14 @@ winrt::IInspectable TreeViewItemDataAutomationPeer::GetPatternCore(winrt::Patter
 winrt::TreeViewItemAutomationPeer TreeViewItemDataAutomationPeer::GetTreeViewItemAutomationPeer()
 {
     // ItemsAutomationPeer hold ItemsControlAutomationPeer and Item properties.
-    // ItemsControlAutomationPeer -> ItemsControl by ItemsControlAutomationPeer.Owner -> ItemsControl Look up Item to get TreeViewItem -> Get TreeViewItemAutomationPeer
+    // ItemsControlAutomationPeer -> ItemsControl by ItemsControlAutomationPeer.Owner -> ItemsControl Look up Item to get TreeViewItem -> Get TreeViewItemAutomationPeer 
     if (auto itemsControlAutomationPeer = ItemsControlAutomationPeer())
     {
         if (auto itemsControl = itemsControlAutomationPeer.Owner().try_as<winrt::ItemsControl>())
         {
             if (auto item = itemsControl.ContainerFromItem(Item()).try_as<winrt::UIElement>())
             {
-                if (auto treeViewItemAutomationPeer =
-                        winrt::FrameworkElementAutomationPeer::CreatePeerForElement(item).try_as<winrt::TreeViewItemAutomationPeer>())
+                if (auto treeViewItemAutomationPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(item).try_as<winrt::TreeViewItemAutomationPeer>())
                 {
                     return treeViewItemAutomationPeer;
                 }

@@ -5,7 +5,9 @@
 #include "ComboBoxHelper.g.h"
 #include "ComboBoxHelper.properties.h"
 
-class ComboBoxHelper : public winrt::implementation::ComboBoxHelperT<ComboBoxHelper>, public ComboBoxHelperProperties
+class ComboBoxHelper
+    : public winrt::implementation::ComboBoxHelperT<ComboBoxHelper>
+    , public ComboBoxHelperProperties
 {
 public:
     ComboBoxHelper();
@@ -13,14 +15,10 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static winrt::DependencyProperty DropDownEventRevokersProperty()
-    {
-        return s_DropDownEventRevokersProperty;
-    }
+    static winrt::DependencyProperty DropDownEventRevokersProperty() { return s_DropDownEventRevokersProperty; }
     static void OnKeepInteriorCornersSquarePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
 
     static GlobalDependencyProperty s_DropDownEventRevokersProperty;
-
 private:
     static void OnDropDownOpened(const winrt::IInspectable& sender, const winrt::IInspectable& args);
     static void OnDropDownClosed(const winrt::IInspectable& sender, const winrt::IInspectable& args);
@@ -29,7 +27,8 @@ private:
     static bool IsPopupOpenDown(const winrt::ComboBox& comboBox);
 };
 
-class ComboBoxDropDownEventRevokers : public winrt::implements<ComboBoxDropDownEventRevokers, winrt::Windows::Foundation::IInspectable>
+class ComboBoxDropDownEventRevokers
+    : public winrt::implements<ComboBoxDropDownEventRevokers, winrt::Windows::Foundation::IInspectable>
 {
 public:
     void RevokeAll()

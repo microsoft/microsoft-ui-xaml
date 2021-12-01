@@ -17,13 +17,18 @@
 
 typedef typename VectorOptionsFromFlag<winrt::TreeViewNode, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()> SelectedTreeNodeVectorOptions;
 
-class SelectedTreeNodeVector
-    : public ReferenceTracker<SelectedTreeNodeVector, reference_tracker_implements_t<typename SelectedTreeNodeVectorOptions::VectorType>::type, typename TreeViewNodeVectorOptions::IterableType, typename TreeViewNodeVectorOptions::ObservableVectorType>,
-      public TreeViewNodeVectorOptions::IVectorOwner
+class SelectedTreeNodeVector :
+    public ReferenceTracker<
+    SelectedTreeNodeVector,
+    reference_tracker_implements_t<typename SelectedTreeNodeVectorOptions::VectorType>::type,
+    typename TreeViewNodeVectorOptions::IterableType,
+    typename TreeViewNodeVectorOptions::ObservableVectorType>,
+    public TreeViewNodeVectorOptions::IVectorOwner
 {
     Implement_Vector_Read(SelectedTreeNodeVectorOptions)
 
-        private : winrt::weak_ref<ViewModel> m_viewModel{nullptr};
+private:
+    winrt::weak_ref<ViewModel> m_viewModel{ nullptr };
 
     void UpdateSelection(winrt::TreeViewNode const& node, TreeNodeSelectionState state)
     {
@@ -150,13 +155,18 @@ public:
 
 typedef typename VectorOptionsFromFlag<winrt::IInspectable, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()> SelectedItemsVectorOptions;
 
-class SelectedItemsVector
-    : public ReferenceTracker<SelectedItemsVector, reference_tracker_implements_t<typename SelectedItemsVectorOptions::VectorType>::type, typename SelectedItemsVectorOptions::IterableType, typename SelectedItemsVectorOptions::ObservableVectorType>,
-      public SelectedItemsVectorOptions::IVectorOwner
+class SelectedItemsVector :
+    public ReferenceTracker<
+    SelectedItemsVector,
+    reference_tracker_implements_t<typename SelectedItemsVectorOptions::VectorType>::type,
+    typename SelectedItemsVectorOptions::IterableType,
+    typename SelectedItemsVectorOptions::ObservableVectorType>,
+    public SelectedItemsVectorOptions::IVectorOwner
 {
     Implement_Vector_Read(SelectedItemsVectorOptions)
 
-        private : winrt::weak_ref<ViewModel> m_viewModel{nullptr};
+private:
+    winrt::weak_ref<ViewModel> m_viewModel{ nullptr };
 
 public:
     void SetViewModel(ViewModel& viewModel)
@@ -364,8 +374,7 @@ void ViewModel::BeginSelectionChanges()
     if (!IsInSingleSelectionMode())
     {
         m_selectionTrackingCounter++;
-        if (m_selectionTrackingCounter == 1)
-        {
+        if (m_selectionTrackingCounter == 1) {
             m_addedSelectedItems.clear();
             m_removedSelectedItems.clear();
         }
@@ -377,8 +386,7 @@ void ViewModel::EndSelectionChanges()
     if (!IsInSingleSelectionMode())
     {
         m_selectionTrackingCounter--;
-        if (m_selectionTrackingCounter == 0 && (m_addedSelectedItems.size() > 0 || m_removedSelectedItems.size() > 0))
-        {
+        if (m_selectionTrackingCounter == 0 && (m_addedSelectedItems.size() > 0 || m_removedSelectedItems.size() > 0)) {
             auto treeView = winrt::get_self<TreeView>(m_TreeView.get());
 
             auto added = winrt::make<Vector<winrt::IInspectable>>();
@@ -462,8 +470,8 @@ void ViewModel::SetAt(uint32_t index, winrt::IInspectable const& value)
 
     // Hook up events and replace tokens
     auto tvnNewNode = winrt::get_self<TreeViewNode>(newNode);
-    m_collectionChangedEventTokenVector[index] = tvnNewNode->ChildrenChanged({this, &ViewModel::TreeViewNodeVectorChanged});
-    m_IsExpandedChangedEventTokenVector[index] = tvnNewNode->AddExpandedChanged({this, &ViewModel::TreeViewNodePropertyChanged});
+    m_collectionChangedEventTokenVector[index] = tvnNewNode->ChildrenChanged({ this, &ViewModel::TreeViewNodeVectorChanged });
+    m_IsExpandedChangedEventTokenVector[index] = tvnNewNode->AddExpandedChanged({ this, &ViewModel::TreeViewNodePropertyChanged });
 }
 
 void ViewModel::InsertAt(uint32_t index, winrt::IInspectable const& value)
@@ -473,10 +481,8 @@ void ViewModel::InsertAt(uint32_t index, winrt::IInspectable const& value)
 
     // Hook up events and save tokens
     auto tvnNewNode = winrt::get_self<TreeViewNode>(newNode);
-    m_collectionChangedEventTokenVector.insert(
-        m_collectionChangedEventTokenVector.begin() + index, tvnNewNode->ChildrenChanged({this, &ViewModel::TreeViewNodeVectorChanged}));
-    m_IsExpandedChangedEventTokenVector.insert(
-        m_IsExpandedChangedEventTokenVector.begin() + index, tvnNewNode->AddExpandedChanged({this, &ViewModel::TreeViewNodePropertyChanged}));
+    m_collectionChangedEventTokenVector.insert(m_collectionChangedEventTokenVector.begin() + index, tvnNewNode->ChildrenChanged({ this, &ViewModel::TreeViewNodeVectorChanged }));
+    m_IsExpandedChangedEventTokenVector.insert(m_IsExpandedChangedEventTokenVector.begin() + index, tvnNewNode->AddExpandedChanged({ this, &ViewModel::TreeViewNodePropertyChanged }));
 }
 
 void ViewModel::RemoveAt(uint32_t index)
@@ -499,11 +505,11 @@ void ViewModel::Append(winrt::IInspectable const& value)
 {
     GetVectorInnerImpl()->Append(value);
     winrt::TreeViewNode newNode = value.as<winrt::TreeViewNode>();
-
+    
     // Hook up events and save tokens
     auto tvnNewNode = winrt::get_self<TreeViewNode>(newNode);
-    m_collectionChangedEventTokenVector.push_back(tvnNewNode->ChildrenChanged({this, &ViewModel::TreeViewNodeVectorChanged}));
-    m_IsExpandedChangedEventTokenVector.push_back(tvnNewNode->AddExpandedChanged({this, &ViewModel::TreeViewNodePropertyChanged}));
+    m_collectionChangedEventTokenVector.push_back(tvnNewNode->ChildrenChanged({ this, &ViewModel::TreeViewNodeVectorChanged }));
+    m_IsExpandedChangedEventTokenVector.push_back(tvnNewNode->AddExpandedChanged({ this, &ViewModel::TreeViewNodePropertyChanged }));
 }
 
 void ViewModel::RemoveAtEnd()
@@ -559,8 +565,7 @@ void ViewModel::PrepareView(const winrt::TreeViewNode& originNode)
 
     // Add new RootNode & children
     m_originNode.set(originNode);
-    m_rootNodeChildrenChangedEventToken =
-        winrt::get_self<TreeViewNode>(originNode)->ChildrenChanged({this, &ViewModel::TreeViewNodeVectorChanged});
+    m_rootNodeChildrenChangedEventToken = winrt::get_self<TreeViewNode>(originNode)->ChildrenChanged({ this, &ViewModel::TreeViewNodeVectorChanged });
     originNode.IsExpanded(true);
 
     int allOpenedDescendantsCount = 0;
@@ -771,8 +776,7 @@ void ViewModel::UpdateNodeSelection(winrt::TreeViewNode const& selectNode, TreeN
         {
         case TreeNodeSelectionState::Selected:
             selectedNodes->InsertAtCore(selectedNodes->Size(), selectNode);
-            m_selectedNodeChildrenChangedEventTokenVector.push_back(
-                winrt::get_self<TreeViewNode>(selectNode)->ChildrenChanged({this, &ViewModel::SelectedNodeChildrenChanged}));
+            m_selectedNodeChildrenChangedEventTokenVector.push_back(winrt::get_self<TreeViewNode>(selectNode)->ChildrenChanged({ this, &ViewModel::SelectedNodeChildrenChanged }));
             break;
 
         case TreeNodeSelectionState::PartialSelected:
@@ -791,7 +795,7 @@ void ViewModel::UpdateNodeSelection(winrt::TreeViewNode const& selectNode, TreeN
 
 void ViewModel::UpdateSelection(winrt::TreeViewNode const& selectNode, TreeNodeSelectionState const& selectionState)
 {
-    if (NodeSelectionState(selectNode) != selectionState)
+    if(NodeSelectionState(selectNode) != selectionState)
     {
         UpdateNodeSelection(selectNode, selectionState);
 
@@ -805,8 +809,7 @@ void ViewModel::UpdateSelection(winrt::TreeViewNode const& selectNode, TreeNodeS
 
 void ViewModel::UpdateSelectionStateOfDescendants(winrt::TreeViewNode const& targetNode, TreeNodeSelectionState const& selectionState)
 {
-    if (selectionState == TreeNodeSelectionState::PartialSelected)
-        return;
+    if (selectionState == TreeNodeSelectionState::PartialSelected) return;
 
     for (auto const& childNode : targetNode.Children())
     {
@@ -838,8 +841,8 @@ void ViewModel::UpdateSelectionStateOfAncestors(winrt::TreeViewNode const& targe
 
 TreeNodeSelectionState ViewModel::SelectionStateBasedOnChildren(winrt::TreeViewNode const& node)
 {
-    bool hasSelectedChildren{false};
-    bool hasUnSelectedChildren{false};
+    bool hasSelectedChildren{ false };
+    bool hasUnSelectedChildren{ false };
 
     for (auto const& childNode : node.Children())
     {
@@ -853,7 +856,8 @@ TreeNodeSelectionState ViewModel::SelectionStateBasedOnChildren(winrt::TreeViewN
             hasUnSelectedChildren = true;
         }
 
-        if ((hasSelectedChildren && hasUnSelectedChildren) || state == TreeNodeSelectionState::PartialSelected)
+        if ((hasSelectedChildren && hasUnSelectedChildren) ||
+            state == TreeNodeSelectionState::PartialSelected)
         {
             return TreeNodeSelectionState::PartialSelected;
         }
@@ -919,14 +923,14 @@ void ViewModel::TreeViewNodeVectorChanged(winrt::TreeViewNode const& sender, win
     switch (collectionChange)
     {
         // Reset case, commonly seen when a TreeNode is cleared.
-        // removes all nodes that need removing then
+        // removes all nodes that need removing then 
         // toggles a collapse / expand to ensure order.
     case (winrt::CollectionChange::Reset):
     {
         auto resetNode = sender.as<winrt::TreeViewNode>();
         if (resetNode.IsExpanded())
         {
-            // The lowIndex is the index of the first child, while the high index is the index of the last descendant in the list.
+            //The lowIndex is the index of the first child, while the high index is the index of the last descendant in the list.
             const unsigned int lowIndex = GetNextIndexInFlatTree(resetNode);
             const unsigned int highIndex = IndexOfNextSibling(resetNode) - 1;
             RemoveNodesAndDescendentsWithFlatIndexRange(lowIndex, highIndex);
@@ -1076,9 +1080,9 @@ void ViewModel::SelectedNodeChildrenChanged(winrt::TreeViewNode const& sender, w
     case (winrt::CollectionChange::ItemRemoved):
     case (winrt::CollectionChange::Reset):
     {
-        // This checks if there are still children, then re-evaluates parents selection based on current state of remaining children
-        // If a node has 2 children selected, and 1 unselected, and the unselected is removed, we then change the parent node to selected.
-        // If the last child is removed, we preserve the current selection state of the parent, and this code need not execute.
+        //This checks if there are still children, then re-evaluates parents selection based on current state of remaining children
+        //If a node has 2 children selected, and 1 unselected, and the unselected is removed, we then change the parent node to selected.
+        //If the last child is removed, we preserve the current selection state of the parent, and this code need not execute.
         if (changingChildrenNode.Children().Size() > 0)
         {
             auto firstChildNode = changingChildrenNode.Children().GetAt(0);
@@ -1103,6 +1107,7 @@ void ViewModel::SelectedNodeChildrenChanged(winrt::TreeViewNode const& sender, w
         }
         break;
     }
+
     }
 }
 
@@ -1132,26 +1137,26 @@ void ViewModel::TreeViewNodeIsExpandedPropertyChanged(winrt::TreeViewNode const&
             index = index + 1;
             for (unsigned int i = 0; i < targetNode.Children().Size(); i++)
             {
-                winrt::TreeViewNode childNode{nullptr};
+                winrt::TreeViewNode childNode{ nullptr };
                 childNode = targetNode.Children().GetAt(i).as<winrt::TreeViewNode>();
                 AddNodeToView(childNode, index + i + openedDescendantOffset);
                 openedDescendantOffset = AddNodeDescendantsToView(childNode, index + i, openedDescendantOffset);
             }
         }
 
-        // Notify TreeView that a node is being expanded.
+        //Notify TreeView that a node is being expanded.
         m_nodeExpandingEventSource(targetNode, nullptr);
     }
     else
     {
         for (unsigned int i = 0; i < targetNode.Children().Size(); i++)
         {
-            winrt::TreeViewNode childNode{nullptr};
+            winrt::TreeViewNode childNode{ nullptr };
             childNode = targetNode.Children().GetAt(i).as<winrt::TreeViewNode>();
             RemoveNodeAndDescendantsFromView(childNode);
         }
 
-        // Notify TreeView that a node is being collapsed
+        //Notify TreeView that a node is being collapsed
         m_nodeCollapsedEventSource(targetNode, nullptr);
     }
 }
@@ -1184,7 +1189,7 @@ void ViewModel::ClearEventTokenVectors()
 {
     // Remove ChildrenChanged and ExpandedChanged events
     auto inner = GetVectorInnerImpl();
-    for (uint32_t i = 0; i < Size(); i++)
+    for (uint32_t i =0 ; i < Size(); i++)
     {
         if (auto current = inner->SafeGetAt(i))
         {

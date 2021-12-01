@@ -7,7 +7,9 @@
 #include "InfoBadgeTemplateSettings.g.h"
 #include "InfoBadgeTemplateSettings.properties.h"
 
-class InfoBadgeTemplateSettings : public winrt::implementation::InfoBadgeTemplateSettingsT<InfoBadgeTemplateSettings>, public InfoBadgeTemplateSettingsProperties
+class InfoBadgeTemplateSettings :
+    public winrt::implementation::InfoBadgeTemplateSettingsT<InfoBadgeTemplateSettings>,
+    public InfoBadgeTemplateSettingsProperties
 {
 public:
     InfoBadgeTemplateSettings();

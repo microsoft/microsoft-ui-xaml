@@ -22,7 +22,9 @@ public:
     winrt::ToggleButton::Unchecked_revoker uncheckedRevoker;
 };
 
-class RadioButtons : public ReferenceTracker<RadioButtons, winrt::implementation::RadioButtonsT>, public RadioButtonsProperties
+class RadioButtons :
+    public ReferenceTracker<RadioButtons, winrt::implementation::RadioButtonsT>,
+    public RadioButtonsProperties
 {
 
 public:
@@ -38,9 +40,9 @@ public:
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    GlobalDependencyProperty s_childHandlersProperty{nullptr};
+    GlobalDependencyProperty s_childHandlersProperty{ nullptr };
 
-    // Test hooks helpers, only function while m_testHooksEnabled = true
+    //Test hooks helpers, only function while m_testHooksEnabled = true
     void SetTestHooksEnabled(bool enabled);
     ~RadioButtons();
     int GetRows();
@@ -48,6 +50,7 @@ public:
     int GetLargerColumns();
 
 private:
+
     void OnGettingFocus(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args);
     void OnRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnRepeaterElementPrepared(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
@@ -79,17 +82,17 @@ private:
     bool MoveFocus(int initialIndexIncrement);
     bool HandleEdgeCaseFocus(bool first, const winrt::IInspectable& source);
 
-    int m_selectedIndex{-1};
+    int m_selectedIndex{ -1 };
     // This is used to guard against reentrency when calling select, since select changes
     // the Selected Index/Item which in turn calls select.
-    bool m_currentlySelecting{false};
+    bool m_currentlySelecting{ false };
     // We block selection before the control has loaded.
     // This is to ensure that we do not overwrite a provided Selected Index/Item value.
-    bool m_blockSelecting{true};
+    bool m_blockSelecting{ true };
 
-    tracker_ref<winrt::ItemsRepeater> m_repeater{this};
+    tracker_ref<winrt::ItemsRepeater> m_repeater{ this };
 
-    com_ptr<RadioButtonsElementFactory> m_radioButtonsElementFactory{nullptr};
+    com_ptr<RadioButtonsElementFactory> m_radioButtonsElementFactory{ nullptr };
 
     winrt::Control::Loaded_revoker m_repeaterLoadedRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
@@ -98,14 +101,14 @@ private:
     winrt::ItemsRepeater::ElementClearing_revoker m_repeaterElementClearingRevoker{};
     winrt::ItemsRepeater::ElementIndexChanged_revoker m_repeaterElementIndexChangedRevoker{};
 
-    // Test hooks helpers, only function while m_testHooksEnabled == true
-    bool m_testHooksEnabled{false};
+    //Test hooks helpers, only function while m_testHooksEnabled == true
+    bool m_testHooksEnabled{ false };
     void OnLayoutChanged(const winrt::ColumnMajorUniformToLargestGridLayout&, const winrt::IInspectable&);
     winrt::event_token m_layoutChangedToken{};
     void AttachToLayoutChanged();
     void DetatchFromLayoutChanged();
     com_ptr<ColumnMajorUniformToLargestGridLayout> GetLayout();
 
-    static constexpr wstring_view s_repeaterName{L"InnerRepeater"sv};
-    static constexpr wstring_view s_childHandlersPropertyName{L"ChildHandlers"sv};
+    static constexpr wstring_view s_repeaterName{ L"InnerRepeater"sv };
+    static constexpr wstring_view s_childHandlersPropertyName{ L"ChildHandlers"sv };
 };

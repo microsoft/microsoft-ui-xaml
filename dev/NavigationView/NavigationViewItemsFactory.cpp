@@ -13,7 +13,7 @@ void NavigationViewItemsFactory::UserElementFactory(winrt::IInspectable const& n
     m_itemTemplateWrapper = newValue.try_as<winrt::IElementFactoryShim>();
     if (!m_itemTemplateWrapper)
     {
-        // ItemTemplate set does not implement IElementFactoryShim. We also
+        // ItemTemplate set does not implement IElementFactoryShim. We also 
         // want to support DataTemplate and DataTemplateSelectors automagically.
         if (auto dataTemplate = newValue.try_as<winrt::DataTemplate>())
         {
@@ -32,6 +32,7 @@ void NavigationViewItemsFactory::SettingsItem(winrt::NavigationViewItemBase cons
 {
     m_settingsItem = settingsItem;
 }
+
 
 // Retrieve the element that will be displayed for a specific data item.
 // If the resolved element is not derived from NavigationViewItemBase, wrap in a NavigationViewItem before returning.
@@ -62,9 +63,7 @@ winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactor
     // we are explicitly checking for this scenario here and throw a helpful error message so that they can quickly fix their app.
     if (newContent.try_as<winrt::Windows::UI::Xaml::Controls::NavigationViewItemBase>())
     {
-        throw winrt::hresult_invalid_argument(
-            L"A NavigationView instance contains a Windows.UI.Xaml.Controls.NavigationViewItem. This control requires that its "
-            L"NavigationViewItems be of type Microsoft.UI.Xaml.Controls.NavigationViewItem.");
+        throw winrt::hresult_invalid_argument(L"A NavigationView instance contains a Windows.UI.Xaml.Controls.NavigationViewItem. This control requires that its NavigationViewItems be of type Microsoft.UI.Xaml.Controls.NavigationViewItem.");
     }
 
     // Get or create a wrapping container for the data
@@ -89,6 +88,7 @@ winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactor
             auto const tempArgs = winrt::make_self<ElementFactoryRecycleArgs>();
             tempArgs->Element(newContent.try_as<winrt::UIElement>());
             m_itemTemplateWrapper.RecycleElement(static_cast<winrt::ElementFactoryRecycleArgs>(*tempArgs));
+
 
             nviImpl->Content(args.Data());
             nviImpl->ContentTemplate(itemTemplateWrapper->Template());

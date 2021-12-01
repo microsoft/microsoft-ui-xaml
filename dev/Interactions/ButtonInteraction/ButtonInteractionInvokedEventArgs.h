@@ -5,8 +5,8 @@
 
 #include "ButtonInteractionInvokedEventArgs.g.h"
 
-class ButtonInteractionInvokedEventArgs
-    : public ReferenceTracker<ButtonInteractionInvokedEventArgs, winrt::implementation::ButtonInteractionInvokedEventArgsT, winrt::composing, winrt::composable>
+class ButtonInteractionInvokedEventArgs :
+    public ReferenceTracker<ButtonInteractionInvokedEventArgs, winrt::implementation::ButtonInteractionInvokedEventArgsT, winrt::composing, winrt::composable>
 {
 public:
     ButtonInteractionInvokedEventArgs(winrt::UIElement const& target);
@@ -14,5 +14,5 @@ public:
     winrt::UIElement Target();
 
 private:
-    tracker_ref<winrt::UIElement> m_target{this};
+    tracker_ref<winrt::UIElement> m_target{ this };
 };

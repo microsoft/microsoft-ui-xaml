@@ -59,3 +59,4 @@ void MenuBar::IsFlyoutOpen(bool state)
 {
     m_isFlyoutOpen = state;
 }
+

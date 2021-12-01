@@ -7,7 +7,9 @@
 #include "RatingItemFontInfo.g.h"
 #include "RatingItemFontInfo.properties.h"
 
-class RatingItemFontInfo : public winrt::implementation::RatingItemFontInfoT<RatingItemFontInfo, RatingItemInfo>, public RatingItemFontInfoProperties
+class RatingItemFontInfo :
+    public winrt::implementation::RatingItemFontInfoT<RatingItemFontInfo, RatingItemInfo>,
+    public RatingItemFontInfoProperties
 {
 public:
     ForwardRefToBaseReferenceTracker(RatingItemInfo)

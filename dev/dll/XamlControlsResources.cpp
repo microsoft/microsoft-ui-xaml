@@ -19,7 +19,7 @@ static constexpr auto c_AccentAcrylicBackgroundFillColorBaseBrush = L"AccentAcry
 static constexpr auto c_AccentAcrylicInAppFillColorBaseBrush = L"AccentAcrylicInAppFillColorBaseBrush"sv;
 
 // Controls knows nothing about XamlControlsResources, but we need a way to pass the new visual flag from XamlControlsResources to Controls
-// Assume XamlControlsResources is one per Application resource, and application is per thread,
+// Assume XamlControlsResources is one per Application resource, and application is per thread, 
 // so it's OK to assume one instance of XamlControlsResources per thread.
 static thread_local bool s_tlsIsControlsResourcesVersion2 = true;
 
@@ -50,8 +50,7 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
     // Version is going to be replaced with ControlsResourcesVersion
     else if (property == s_VersionProperty)
     {
-        ControlsResourcesVersion(
-            Version() == winrt::StylesVersion::Latest ? winrt::ControlsResourcesVersion::Version2 : winrt::ControlsResourcesVersion::Version1);
+        ControlsResourcesVersion(Version() == winrt::StylesVersion::Latest ? winrt::ControlsResourcesVersion::Version2 : winrt::ControlsResourcesVersion::Version1);
     }
 }
 
@@ -60,69 +59,71 @@ void XamlControlsResources::UpdateSource()
     const bool useCompactResources = UseCompactResources();
     const bool useControlsResourcesVersion2 = IsControlsResourcesVersion2();
 
-    // At runtime choose the URI to use. If we're in a framework package and/or running on a different OS,
-    // we need to choose a different version because the URIs they have internally are different and this
+    // At runtime choose the URI to use. If we're in a framework package and/or running on a different OS, 
+    // we need to choose a different version because the URIs they have internally are different and this 
     // is the best we can do without conditional markup.
-    winrt::Uri uri{[useCompactResources, useControlsResourcesVersion2]() -> hstring {
-        // RS3 styles should be used on builds where ListViewItemPresenter's VSM integration works.
-        const bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
-        const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
-        const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
-        const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
-        const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher();
+    winrt::Uri uri {
+        [useCompactResources, useControlsResourcesVersion2]() -> hstring {
+            // RS3 styles should be used on builds where ListViewItemPresenter's VSM integration works.
+            const bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
+            const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
+            const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
+            const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
+            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher();
 
-        const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
-        const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
+            const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
+            const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
 
-        hstring compactPrefix = useCompactResources ? L"compact_" : L"";
-        hstring packagePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
-        hstring postfix = useControlsResourcesVersion2 ? L"themeresources.xaml" : L"themeresources_v1.xaml";
+            hstring compactPrefix = useCompactResources ? L"compact_" : L"";
+            hstring packagePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
+            hstring postfix = useControlsResourcesVersion2 ? L"themeresources.xaml" : L"themeresources_v1.xaml";
 
-        if (isInFrameworkPackage)
-        {
-            packagePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
-        }
-        else if (isInCBSPackage)
-        {
-            packagePrefix = L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
-        }
+            if (isInFrameworkPackage)
+            {
+                packagePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR  "/Themes/";
+            }
+            else if (isInCBSPackage)
+            {
+                packagePrefix = L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR  "/Themes/";
+            }
 
-        hstring releasePrefix;
+            hstring releasePrefix;
 
-        if (is21H1OrHigher)
-        {
-            releasePrefix = L"21h1_";
-        }
-        else if (is19H1OrHigher)
-        {
-            releasePrefix = L"19h1_";
-        }
-        else if (isRS5OrHigher)
-        {
-            releasePrefix = L"rs5_";
-        }
-        else if (isRS4OrHigher)
-        {
-            releasePrefix = L"rs4_";
-        }
-        else if (isRS3OrHigher)
-        {
-            releasePrefix = L"rs3_";
-        }
-        else
-        {
-            releasePrefix = L"rs2_";
-        }
+            if (is21H1OrHigher)
+            {
+                releasePrefix = L"21h1_";
+            }
+            else if (is19H1OrHigher)
+            {
+                releasePrefix = L"19h1_";
+            }
+            else if (isRS5OrHigher)
+            {
+                releasePrefix = L"rs5_";
+            }
+            else if (isRS4OrHigher)
+            {
+                releasePrefix = L"rs4_";
+            }
+            else if (isRS3OrHigher)
+            {
+                releasePrefix = L"rs3_";
+            }
+            else
+            {
+                releasePrefix = L"rs2_";
+            }
 
-        if (isInCBSPackage && !is21H1OrHigher)
-        {
-            MUX_FAIL_FAST_MSG("CBS package can run only on os when is21H1OrHigher is true");
-        }
-        return packagePrefix + releasePrefix + compactPrefix + postfix;
-    }()};
+            if (isInCBSPackage && !is21H1OrHigher)
+            {
+                MUX_FAIL_FAST_MSG("CBS package can run only on os when is21H1OrHigher is true");                
+            }
+            return packagePrefix + releasePrefix + compactPrefix + postfix;
+        }()
+    };
 
-    // Because of Compact, UpdateSource may be executed twice, but there is a bug in XAML and manually clear theme dictionaries
-    // here: Prior to RS5, when ResourceDictionary.Source property is changed, XAML forgot to clear ThemeDictionaries.
+    // Because of Compact, UpdateSource may be executed twice, but there is a bug in XAML and manually clear theme dictionaries here:
+    // Prior to RS5, when ResourceDictionary.Source property is changed, XAML forgot to clear ThemeDictionaries.
     ThemeDictionaries().Clear();
 
     Source(uri);
@@ -155,53 +156,43 @@ void XamlControlsResources::UpdateSource()
 void XamlControlsResources::UpdateAcrylicBrushesLightTheme(const winrt::IInspectable themeDictionary)
 {
     const auto dictionary = themeDictionary.try_as<winrt::ResourceDictionary>();
-    if (const auto acrylicBackgroundFillColorDefaultBrush =
-            dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+    if (const auto acrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
     {
         UpdateTintLuminosityOpacity(acrylicBackgroundFillColorDefaultBrush, 0.85);
     }
-    if (const auto acrylicInAppFillColorDefaultBrush =
-            dictionary.Lookup(box_value(c_AcrylicInAppFillColorDefaultBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+    if (const auto acrylicInAppFillColorDefaultBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorDefaultBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
     {
         UpdateTintLuminosityOpacity(acrylicInAppFillColorDefaultBrush, 0.85);
     }
-    if (const auto acrylicBackgroundFillColorDefaultInverseBrush =
-            dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultInverseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+    if (const auto acrylicBackgroundFillColorDefaultInverseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultInverseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
     {
         UpdateTintLuminosityOpacity(acrylicBackgroundFillColorDefaultInverseBrush, 0.96);
     }
-    if (const auto acrylicInAppFillColorDefaultInverseBrush =
-            dictionary.Lookup(box_value(c_AcrylicInAppFillColorDefaultInverseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+    if (const auto acrylicInAppFillColorDefaultInverseBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorDefaultInverseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
     {
         UpdateTintLuminosityOpacity(acrylicInAppFillColorDefaultInverseBrush, 0.96);
     }
-    if (const auto acrylicBackgroundFillColorBaseBrush =
-            dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorBaseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+    if (const auto acrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorBaseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
     {
         UpdateTintLuminosityOpacity(acrylicBackgroundFillColorBaseBrush, 0.9);
     }
-    if (const auto acrylicInAppFillColorBaseBrush =
-            dictionary.Lookup(box_value(c_AcrylicInAppFillColorBaseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+    if (const auto acrylicInAppFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorBaseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
     {
         UpdateTintLuminosityOpacity(acrylicInAppFillColorBaseBrush, 0.9);
     }
-    if (const auto accentAcrylicBackgroundFillColorDefaultBrush =
-            dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorDefaultBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+    if (const auto accentAcrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorDefaultBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
     {
         UpdateTintLuminosityOpacity(accentAcrylicBackgroundFillColorDefaultBrush, 0.9);
     }
-    if (const auto accentAcrylicInAppFillColorDefaultBrush =
-            dictionary.Lookup(box_value(c_AccentAcrylicInAppFillColorDefaultBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+    if (const auto accentAcrylicInAppFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicInAppFillColorDefaultBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
     {
         UpdateTintLuminosityOpacity(accentAcrylicInAppFillColorDefaultBrush, 0.9);
     }
-    if (const auto accentAcrylicBackgroundFillColorBaseBrush =
-            dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorBaseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+    if (const auto accentAcrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorBaseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
     {
         UpdateTintLuminosityOpacity(accentAcrylicBackgroundFillColorBaseBrush, 0.9);
     }
-    if (const auto accentAcrylicInAppFillColorBaseBrush =
-            dictionary.Lookup(box_value(c_AccentAcrylicInAppFillColorBaseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+    if (const auto accentAcrylicInAppFillColorBaseBrush = dictionary.Lookup(box_value(c_AccentAcrylicInAppFillColorBaseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
     {
         UpdateTintLuminosityOpacity(accentAcrylicInAppFillColorBaseBrush, 0.9);
     }
@@ -211,53 +202,43 @@ void XamlControlsResources::UpdateAcrylicBrushesDarkTheme(const winrt::IInspecta
 {
     if (const auto dictionary = themeDictionary.try_as<winrt::ResourceDictionary>())
     {
-        if (const auto acrylicBackgroundFillColorDefaultBrush =
-                dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+        if (const auto acrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
         {
             UpdateTintLuminosityOpacity(acrylicBackgroundFillColorDefaultBrush, 0.96);
         }
-        if (const auto acrylicInAppFillColorDefaultBrush =
-                dictionary.Lookup(box_value(c_AcrylicInAppFillColorDefaultBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+        if (const auto acrylicInAppFillColorDefaultBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorDefaultBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
         {
             UpdateTintLuminosityOpacity(acrylicInAppFillColorDefaultBrush, 0.96);
         }
-        if (const auto acrylicBackgroundFillColorDefaultInverseBrush =
-                dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultInverseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+        if (const auto acrylicBackgroundFillColorDefaultInverseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultInverseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
         {
             UpdateTintLuminosityOpacity(acrylicBackgroundFillColorDefaultInverseBrush, 0.85);
         }
-        if (const auto acrylicInAppFillColorDefaultInverseBrush =
-                dictionary.Lookup(box_value(c_AcrylicInAppFillColorDefaultInverseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+        if (const auto acrylicInAppFillColorDefaultInverseBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorDefaultInverseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
         {
             UpdateTintLuminosityOpacity(acrylicInAppFillColorDefaultInverseBrush, 0.85);
         }
-        if (const auto acrylicBackgroundFillColorBaseBrush =
-                dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorBaseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+        if (const auto acrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorBaseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
         {
             UpdateTintLuminosityOpacity(acrylicBackgroundFillColorBaseBrush, 0.96);
         }
-        if (const auto acrylicInAppFillColorBaseBrush =
-                dictionary.Lookup(box_value(c_AcrylicInAppFillColorBaseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+        if (const auto acrylicInAppFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorBaseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
         {
             UpdateTintLuminosityOpacity(acrylicInAppFillColorBaseBrush, 0.96);
         }
-        if (const auto accentAcrylicBackgroundFillColorDefaultBrush =
-                dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorDefaultBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+        if (const auto accentAcrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorDefaultBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
         {
             UpdateTintLuminosityOpacity(accentAcrylicBackgroundFillColorDefaultBrush, 0.8);
         }
-        if (const auto accentAcrylicInAppFillColorDefaultBrush =
-                dictionary.Lookup(box_value(c_AccentAcrylicInAppFillColorDefaultBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+        if (const auto accentAcrylicInAppFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicInAppFillColorDefaultBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
         {
             UpdateTintLuminosityOpacity(accentAcrylicInAppFillColorDefaultBrush, 0.8);
         }
-        if (const auto accentAcrylicBackgroundFillColorBaseBrush =
-                dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorBaseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+        if (const auto accentAcrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorBaseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
         {
             UpdateTintLuminosityOpacity(accentAcrylicBackgroundFillColorBaseBrush, 0.8);
         }
-        if (const auto accentAcrylicInAppFillColorBaseBrush =
-                dictionary.Lookup(box_value(c_AccentAcrylicInAppFillColorBaseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
+        if (const auto accentAcrylicInAppFillColorBaseBrush = dictionary.Lookup(box_value(c_AccentAcrylicInAppFillColorBaseBrush)).as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>())
         {
             UpdateTintLuminosityOpacity(accentAcrylicInAppFillColorBaseBrush, 0.8);
         }
@@ -278,13 +259,15 @@ void XamlControlsResources::UpdateTintLuminosityOpacity(winrt::Windows::UI::Xaml
     }
 }
 
-void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, std::wstring_view const& className)
+void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, std::wstring_view const& className) 
 {
     controlProtected.DefaultStyleKey(box_value(className));
 
     if (auto control5 = controlProtected.try_as<winrt::IControl5>())
     {
-        winrt::Uri uri{[]() {
+        winrt::Uri uri{
+            []() {
+            
             // RS3 styles should be used on builds where ListViewItemPresenter's VSM integration works.
             const bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
             const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
@@ -294,10 +277,10 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
-
+            
             std::wstring postfix = s_tlsIsControlsResourcesVersion2 ? L"generic.xaml" : L"generic_v1.xaml";
             std::wstring releasePrefix = L"";
-
+            
             if (isInFrameworkPackage)
             {
                 if (is21H1OrHigher)
@@ -310,19 +293,19 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
                 }
                 else if (isRS5OrHigher)
                 {
-                    releasePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs5_";
+                    releasePrefix =  L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs5_";
                 }
                 else if (isRS4OrHigher)
                 {
-                    releasePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs4_";
+                    releasePrefix =  L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs4_";
                 }
                 else if (isRS3OrHigher)
                 {
-                    releasePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs3_";
+                    releasePrefix =  L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs3_";
                 }
                 else
                 {
-                    releasePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_";
+                    releasePrefix =  L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_";
                 }
             }
             else if (isInCBSPackage)
@@ -333,12 +316,12 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
                 }
                 else if (is19H1OrHigher)
                 {
-                    releasePrefix = L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
+                    releasePrefix =  L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
                 }
                 else
                 {
                     MUX_FAIL_FAST_MSG("CBS package doesn't apply to old platforms");
-                    releasePrefix = L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_";
+                    releasePrefix =  L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_";
                 }
             }
             else
@@ -349,28 +332,29 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
                 }
                 else if (is19H1OrHigher)
                 {
-                    releasePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
+                    releasePrefix =  L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
                 }
                 else if (isRS5OrHigher)
                 {
-                    releasePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs5_";
+                    releasePrefix =  L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs5_";
                 }
                 else if (isRS4OrHigher)
                 {
-                    releasePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs4_";
+                    releasePrefix =  L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs4_";
                 }
                 else if (isRS3OrHigher)
                 {
-                    releasePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs3_";
+                    releasePrefix =  L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs3_";
                 }
                 else
                 {
-                    releasePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_";
+                    releasePrefix =  L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_";
                 }
             }
 
             return releasePrefix + postfix;
-        }()};
+        }()
+        };
         // Choose a default resource URI based on whether we're running in a framework package scenario or not.
         control5.DefaultStyleResourceUri(uri);
     }
@@ -393,15 +377,16 @@ void XamlControlsResources::EnsureRevealLights(winrt::UIElement const& element)
         // If Xaml can apply a light on the root visual, then the app doesn't need to manually attach lights to some other root
         && !SharedHelpers::DoesXamlMoveRSVLightToRootVisual())
     {
-        // Defer until next Rendering event. Otherwise, in the FullWindow media case
+        // Defer until next Rendering event. Otherwise, in the FullWindow media case 
         // VisualTreehelper may fail to find the FullWindowMediaRoot that had been created just prior to this call
         auto renderingEventToken = std::make_shared<winrt::event_token>();
-        *renderingEventToken = winrt::Xaml::Media::CompositionTarget::Rendering([renderingEventToken, element](auto&, auto&) {
-            // Detach event or Rendering will keep calling us back.
-            winrt::Xaml::Media::CompositionTarget::Rendering(*renderingEventToken);
+        *renderingEventToken = winrt::Xaml::Media::CompositionTarget::Rendering(
+            [renderingEventToken, element](auto&, auto&) {
+                // Detach event or Rendering will keep calling us back.
+                winrt::Xaml::Media::CompositionTarget::Rendering(*renderingEventToken);
 
-            RevealBrush::AttachLightsToAncestor(element, false);
-        });
+                RevealBrush::AttachLightsToAncestor(element, false);
+            });
     }
 }
 

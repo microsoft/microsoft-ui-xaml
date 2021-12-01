@@ -11,7 +11,7 @@ void NavigationViewItemBase::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
 
-    Loaded({this, &NavigationViewItemBase::OnLoaded});
+    Loaded({ this, &NavigationViewItemBase::OnLoaded });
 }
 
 void NavigationViewItemBase::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
@@ -58,7 +58,7 @@ int NavigationViewItemBase::Depth() const
 
 winrt::SplitView NavigationViewItemBase::GetSplitView() const
 {
-    winrt::SplitView splitView{nullptr};
+    winrt::SplitView splitView{ nullptr };
     auto navigationView = GetNavigationView();
     if (navigationView)
     {

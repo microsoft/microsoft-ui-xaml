@@ -4,13 +4,13 @@
 //
 //       LottieGen version:
 //           7.1.0+ge1fa92580f
-//
+//       
 //       Command:
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedFindVisualSource.json
-//
+//       
 //       Input file:
 //           AnimatedFindVisualSource.json (14456 bytes created 23:37-07:00 Oct 5 2021)
-//
+//       
 //       LottieGen source:
 //           http://aka.ms/Lottie
 //
@@ -53,7 +53,8 @@
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
 #ifdef BUILD_WINDOWS
-namespace ABI {
+namespace ABI
+{
 #include <Windows.Graphics.Effects.Interop.h>
 }
 #else
@@ -69,25 +70,25 @@ using namespace winrt::Windows::UI;
 using namespace winrt::Windows::UI::Composition;
 using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
-namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals {
+namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
+{
 CppWinRTActivatableClassWithBasicFactory(AnimatedFindVisualSource)
 }
 #include "AnimatedVisuals\AnimatedFindVisualSource.g.cpp"
 
-class CanvasGeometry : public winrt::implements<CanvasGeometry, IGeometrySource2D, ::ABI::Windows::Graphics::IGeometrySource2DInterop>
+class CanvasGeometry : public winrt::implements<CanvasGeometry,
+    IGeometrySource2D,
+    ::ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
-    winrt::com_ptr<ID2D1Geometry> _geometry{nullptr};
+    winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 
 public:
-    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry) : _geometry{geometry}
-    {
-    }
+    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry)
+        : _geometry{ geometry }
+    { }
 
     // IGeometrySource2D.
-    winrt::com_ptr<ID2D1Geometry> Geometry()
-    {
-        return _geometry;
-    }
+    winrt::com_ptr<ID2D1Geometry> Geometry() { return _geometry; }
 
     // IGeometrySource2DInterop.
     IFACEMETHODIMP GetGeometry(ID2D1Geometry** value) override
@@ -102,28 +103,33 @@ public:
         return E_NOTIMPL;
     }
 };
-class AnimatedFindVisualSource_AnimatedVisual
-    : public winrt::implements<AnimatedFindVisualSource_AnimatedVisual, winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual, IClosable>
+class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<AnimatedFindVisualSource_AnimatedVisual,
+        winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
+        IClosable>
 {
-    winrt::com_ptr<ID2D1Factory> _d2dFactory{nullptr};
-    static constexpr int64_t c_durationTicks{13333333L};
-    Compositor const _c{nullptr};
-    ExpressionAnimation const _reusableExpressionAnimation{nullptr};
-    CompositionPropertySet const _themeProperties{nullptr};
-    CompositionColorBrush _themeColor_Foreground{nullptr};
-    ContainerVisual _root{nullptr};
-    CubicBezierEasingFunction _cubicBezierEasingFunction_0{nullptr};
-    CubicBezierEasingFunction _cubicBezierEasingFunction_1{nullptr};
-    CubicBezierEasingFunction _cubicBezierEasingFunction_2{nullptr};
-    CubicBezierEasingFunction _cubicBezierEasingFunction_3{nullptr};
-    CubicBezierEasingFunction _cubicBezierEasingFunction_4{nullptr};
-    CubicBezierEasingFunction _cubicBezierEasingFunction_5{nullptr};
-    ExpressionAnimation _rootProgress{nullptr};
-    ScalarKeyFrameAnimation _scalarAnimation_1_to_1{nullptr};
-    StepEasingFunction _holdThenStepEasingFunction{nullptr};
-    StepEasingFunction _stepThenHoldEasingFunction{nullptr};
+    winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
+    static constexpr int64_t c_durationTicks{ 13333333L };
+    Compositor const _c{ nullptr };
+    ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
+    CompositionPropertySet const _themeProperties{ nullptr };
+    CompositionColorBrush _themeColor_Foreground{ nullptr };
+    ContainerVisual _root{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_0{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_1{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_2{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_3{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_4{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_5{ nullptr };
+    ExpressionAnimation _rootProgress{ nullptr };
+    ScalarKeyFrameAnimation _scalarAnimation_1_to_1{ nullptr };
+    StepEasingFunction _holdThenStepEasingFunction{ nullptr };
+    StepEasingFunction _stepThenHoldEasingFunction{ nullptr };
 
-    static void StartProgressBoundAnimation(CompositionObject target, winrt::hstring animatedPropertyName, CompositionAnimation animation, ExpressionAnimation controllerProgressExpression)
+    static void StartProgressBoundAnimation(
+        CompositionObject target,
+        winrt::hstring animatedPropertyName,
+        CompositionAnimation animation,
+        ExpressionAnimation controllerProgressExpression)
     {
         target.StartAnimation(animatedPropertyName, animation);
         const auto controller = target.TryGetAnimationController(animatedPropertyName);
@@ -131,7 +137,12 @@ class AnimatedFindVisualSource_AnimatedVisual
         controller.StartAnimation(L"Progress", controllerProgressExpression);
     }
 
-    void BindProperty(CompositionObject target, winrt::hstring animatedPropertyName, winrt::hstring expression, winrt::hstring referenceParameterName, CompositionObject referencedObject)
+    void BindProperty(
+        CompositionObject target,
+        winrt::hstring animatedPropertyName,
+        winrt::hstring expression,
+        winrt::hstring referenceParameterName,
+        CompositionObject referencedObject)
     {
         _reusableExpressionAnimation.ClearAllParameters();
         _reusableExpressionAnimation.Expression(expression);
@@ -142,7 +153,7 @@ class AnimatedFindVisualSource_AnimatedVisual
     ScalarKeyFrameAnimation CreateScalarKeyFrameAnimation(float initialProgress, float initialValue, CompositionEasingFunction initialEasingFunction)
     {
         const auto result = _c.CreateScalarKeyFrameAnimation();
-        result.Duration(TimeSpan{c_durationTicks});
+        result.Duration(TimeSpan{ c_durationTicks });
         result.InsertKeyFrame(initialProgress, initialValue, initialEasingFunction);
         return result;
     }
@@ -150,7 +161,7 @@ class AnimatedFindVisualSource_AnimatedVisual
     Vector2KeyFrameAnimation CreateVector2KeyFrameAnimation(float initialProgress, winrt::float2 initialValue, CompositionEasingFunction initialEasingFunction)
     {
         const auto result = _c.CreateVector2KeyFrameAnimation();
-        result.Duration(TimeSpan{c_durationTicks});
+        result.Duration(TimeSpan{ c_durationTicks });
         result.InsertKeyFrame(initialProgress, initialValue, initialEasingFunction);
         return result;
     }
@@ -171,19 +182,19 @@ class AnimatedFindVisualSource_AnimatedVisual
     // - - ShapeGroup: Group 1 Group 1 Group 1 Group 1 Group 1 Group 1
     winrt::com_ptr<CanvasGeometry> Geometry()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
+        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
+        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({12.9329996F, 278.140015F}, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({9.42300034F, 281.64801F});
-        sink->AddBezier({{9.25599957F, 281.815002F}, {9.25599957F, 282.087006F}, {9.42300034F, 282.253998F}});
-        sink->AddBezier({{9.57199955F, 282.403015F}, {9.80300045F, 282.419006F}, {9.97000027F, 282.303009F}});
-        sink->AddLine({10.0290003F, 282.253998F});
-        sink->AddLine({13.5340004F, 278.748993F});
-        sink->AddBezier({{13.5340004F, 278.748993F}, {13.3599997F, 278.609985F}, {13.1879997F, 278.432007F}});
-        sink->AddBezier({{13.0159998F, 278.253998F}, {12.9329996F, 278.140015F}, {12.9329996F, 278.140015F}});
+        sink->BeginFigure({ 12.9329996F, 278.140015F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ 9.42300034F, 281.64801F });
+        sink->AddBezier({ { 9.25599957F, 281.815002F }, { 9.25599957F, 282.087006F }, { 9.42300034F, 282.253998F } });
+        sink->AddBezier({ { 9.57199955F, 282.403015F }, { 9.80300045F, 282.419006F }, { 9.97000027F, 282.303009F } });
+        sink->AddLine({ 10.0290003F, 282.253998F });
+        sink->AddLine({ 13.5340004F, 278.748993F });
+        sink->AddBezier({ { 13.5340004F, 278.748993F }, { 13.3599997F, 278.609985F }, { 13.1879997F, 278.432007F } });
+        sink->AddBezier({ { 13.0159998F, 278.253998F }, { 12.9329996F, 278.140015F }, { 12.9329996F, 278.140015F } });
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -194,12 +205,7 @@ class AnimatedFindVisualSource_AnimatedVisual
     CompositionColorBrush ThemeColor_Foreground()
     {
         const auto result = _themeColor_Foreground = _c.CreateColorBrush();
-        BindProperty(
-            result,
-            L"Color",
-            L"ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)",
-            L"_theme",
-            _themeProperties);
+        BindProperty(result, L"Color", L"ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties);
         return result;
     }
 
@@ -212,8 +218,8 @@ class AnimatedFindVisualSource_AnimatedVisual
     CompositionContainerShape ContainerShape()
     {
         const auto result = _c.CreateContainerShape();
-        result.CenterPoint({3.81299996F, -3.93799996F});
-        result.Offset({24.0F, 24.0F});
+        result.CenterPoint({ 3.81299996F, -3.93799996F });
+        result.Offset({ 24.0F, 24.0F });
         // ShapeGroup: Ellipse 1 Ellipse 1 Ellipse 1 Ellipse 1 Ellipse 1 Ellipse 1
         // Scale:0.92286,0.92286, Offset:<3.812, -3.938>
         result.Shapes().Append(SpriteShape_1());
@@ -236,7 +242,7 @@ class AnimatedFindVisualSource_AnimatedVisual
     CompositionEllipseGeometry Ellipse_14p188()
     {
         const auto result = _c.CreateEllipseGeometry();
-        result.Radius({14.1875F, 14.1875F});
+        result.Radius({ 14.1875F, 14.1875F });
         return result;
     }
 
@@ -260,8 +266,8 @@ class AnimatedFindVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_0()
     {
         const auto result = _c.CreateSpriteShape(PathGeometry());
-        result.CenterPoint({13.566F, 278.109985F});
-        result.Scale({3.0F, 3.0F});
+        result.CenterPoint({ 13.566F, 278.109985F });
+        result.Scale({ 3.0F, 3.0F });
         result.FillBrush(ThemeColor_Foreground());
         StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation(), RootProgress());
         return result;
@@ -278,7 +284,7 @@ class AnimatedFindVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_1()
     {
         // Offset:<3.812, -3.938>, Scale:<0.92286, 0.92286>
-        const auto result = CreateSpriteShape(Ellipse_14p188(), {0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F});
+        const auto result = CreateSpriteShape(Ellipse_14p188(), { 0.922860026F, 0.0F, 0.0F, 0.922860026F, 3.81200004F, -3.93799996F });
         result.StrokeBrush(_themeColor_Foreground);
         StartProgressBoundAnimation(result, L"StrokeThickness", StrokeThicknessScalarAnimation_2p5_to_2p5(), _rootProgress);
         return result;
@@ -292,9 +298,9 @@ class AnimatedFindVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(InsetClip_0());
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
         const auto children = result.Children();
         // Shape tree root for layer: Layer 4 Layer 4 Layer 4 Layer 4 Layer 4 Layer 4
         children.InsertAtTop(ShapeVisual_0());
@@ -326,32 +332,32 @@ class AnimatedFindVisualSource_AnimatedVisual
 
     CubicBezierEasingFunction CubicBezierEasingFunction_0()
     {
-        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({0.166999996F, 0.166999996F}, {0.0F, 1.0F});
+        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_1()
     {
-        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({0.550000012F, 0.0F}, {0.75F, 1.0F});
+        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.550000012F, 0.0F }, { 0.75F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_2()
     {
-        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({0.349999994F, 0.0F}, {0.0F, 1.0F});
+        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_3()
     {
-        return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({0.166999996F, 0.166999996F}, {0.449999988F, 1.0F});
+        return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.449999988F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_4()
     {
-        return _cubicBezierEasingFunction_4 = _c.CreateCubicBezierEasingFunction({0.449999988F, 0.0F}, {0.75F, 1.0F});
+        return _cubicBezierEasingFunction_4 = _c.CreateCubicBezierEasingFunction({ 0.449999988F, 0.0F }, { 0.75F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_5()
     {
-        return _cubicBezierEasingFunction_5 = _c.CreateCubicBezierEasingFunction({0.75F, 0.0F}, {0.75F, 1.0F});
+        return _cubicBezierEasingFunction_5 = _c.CreateCubicBezierEasingFunction({ 0.75F, 0.0F }, { 0.75F, 1.0F });
     }
 
     ExpressionAnimation RootProgress()
@@ -490,7 +496,7 @@ class AnimatedFindVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_0()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // ShapeGroup: Group 1 Group 1 Group 1 Group 1 Group 1 Group 1
         result.Shapes().Append(SpriteShape_0());
         return result;
@@ -506,7 +512,7 @@ class AnimatedFindVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateShapeVisual();
         result.Opacity(0.970000029F);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         result.Shapes().Append(ContainerShape());
         return result;
     }
@@ -535,62 +541,38 @@ class AnimatedFindVisualSource_AnimatedVisual
     Vector2KeyFrameAnimation OffsetVector2Animation()
     {
         // Frame 0.
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, {5.64699984F, -249.322998F}, HoldThenStepEasingFunction());
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 5.64699984F, -249.322998F }, HoldThenStepEasingFunction());
         result.SetReferenceParameter(L"_", _root);
         // Frame 10.
-        result.InsertKeyFrame(0.125F, {5.64699984F, -249.322998F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.125F, { 5.64699984F, -249.322998F }, _holdThenStepEasingFunction);
         // Frame 19.
-        result.InsertExpressionKeyFrame(
-            0.237499982F,
-            L"Pow(1-_.t0,3)*Vector2(5.647,-249.323)+(3*Square(1-_.t0)*_.t0*Vector2(5.939,-249.615))+(3*(1-_.t0)*Square(_.t0)*"
-            L"Vector2(7.105,-250.781))+(Pow(_.t0,3)*Vector2(7.397,-251.073))",
-            StepThenHoldEasingFunction());
+        result.InsertExpressionKeyFrame(0.237499982F, L"Pow(1-_.t0,3)*Vector2(5.647,-249.323)+(3*Square(1-_.t0)*_.t0*Vector2(5.939,-249.615))+(3*(1-_.t0)*Square(_.t0)*Vector2(7.105,-250.781))+(Pow(_.t0,3)*Vector2(7.397,-251.073))", StepThenHoldEasingFunction());
         // Frame 19.
-        result.InsertKeyFrame(0.237499997F, {7.39699984F, -251.072998F}, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.237499997F, { 7.39699984F, -251.072998F }, _stepThenHoldEasingFunction);
         // Frame 20.
-        result.InsertKeyFrame(0.25F, {5.64699984F, -249.322998F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.25F, { 5.64699984F, -249.322998F }, _holdThenStepEasingFunction);
         // Frame 30.
-        result.InsertKeyFrame(0.375F, {5.64699984F, -249.322998F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.375F, { 5.64699984F, -249.322998F }, _holdThenStepEasingFunction);
         // Frame 39.
-        result.InsertExpressionKeyFrame(
-            0.487499982F,
-            L"Pow(1-_.t0,3)*Vector2(5.647,-249.323)+(3*Square(1-_.t0)*_.t0*Vector2(5.939,-249.615))+(3*(1-_.t0)*Square(_.t0)*"
-            L"Vector2(7.105,-250.781))+(Pow(_.t0,3)*Vector2(7.397,-251.073))",
-            _stepThenHoldEasingFunction);
+        result.InsertExpressionKeyFrame(0.487499982F, L"Pow(1-_.t0,3)*Vector2(5.647,-249.323)+(3*Square(1-_.t0)*_.t0*Vector2(5.939,-249.615))+(3*(1-_.t0)*Square(_.t0)*Vector2(7.105,-250.781))+(Pow(_.t0,3)*Vector2(7.397,-251.073))", _stepThenHoldEasingFunction);
         // Frame 39.
-        result.InsertKeyFrame(0.487500012F, {7.39699984F, -251.072998F}, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.487500012F, { 7.39699984F, -251.072998F }, _stepThenHoldEasingFunction);
         // Frame 40.
-        result.InsertKeyFrame(0.5F, {7.39699984F, -251.072998F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.5F, { 7.39699984F, -251.072998F }, _holdThenStepEasingFunction);
         // Frame 45.
-        result.InsertExpressionKeyFrame(
-            0.56249994F,
-            L"Pow(1-_.t1,3)*Vector2(7.397,-251.073)+(3*Square(1-_.t1)*_.t1*Vector2(6.767,-250.443))+(3*(1-_.t1)*Square(_.t1)*"
-            L"Vector2(3.616,-247.292))+(Pow(_.t1,3)*Vector2(3.616,-247.292))",
-            _stepThenHoldEasingFunction);
+        result.InsertExpressionKeyFrame(0.56249994F, L"Pow(1-_.t1,3)*Vector2(7.397,-251.073)+(3*Square(1-_.t1)*_.t1*Vector2(6.767,-250.443))+(3*(1-_.t1)*Square(_.t1)*Vector2(3.616,-247.292))+(Pow(_.t1,3)*Vector2(3.616,-247.292))", _stepThenHoldEasingFunction);
         // Frame 59.
-        result.InsertExpressionKeyFrame(
-            0.737499952F,
-            L"Pow(1-_.t1,3)*Vector2(3.616,-247.292)+(3*Square(1-_.t1)*_.t1*Vector2(3.616,-247.292))+(3*(1-_.t1)*Square(_.t1)*"
-            L"Vector2(5.308,-248.984))+(Pow(_.t1,3)*Vector2(5.647,-249.323))",
-            _stepThenHoldEasingFunction);
+        result.InsertExpressionKeyFrame(0.737499952F, L"Pow(1-_.t1,3)*Vector2(3.616,-247.292)+(3*Square(1-_.t1)*_.t1*Vector2(3.616,-247.292))+(3*(1-_.t1)*Square(_.t1)*Vector2(5.308,-248.984))+(Pow(_.t1,3)*Vector2(5.647,-249.323))", _stepThenHoldEasingFunction);
         // Frame 59.
-        result.InsertKeyFrame(0.737500012F, {5.64699984F, -249.322998F}, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.737500012F, { 5.64699984F, -249.322998F }, _stepThenHoldEasingFunction);
         // Frame 60.
-        result.InsertKeyFrame(0.75F, {7.39699984F, -251.072998F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.75F, { 7.39699984F, -251.072998F }, _holdThenStepEasingFunction);
         // Frame 65.
-        result.InsertExpressionKeyFrame(
-            0.81249994F,
-            L"Pow(1-_.t2,3)*Vector2(7.397,-251.073)+(3*Square(1-_.t2)*_.t2*Vector2(6.767,-250.443))+(3*(1-_.t2)*Square(_.t2)*"
-            L"Vector2(3.616,-247.292))+(Pow(_.t2,3)*Vector2(3.616,-247.292))",
-            _stepThenHoldEasingFunction);
+        result.InsertExpressionKeyFrame(0.81249994F, L"Pow(1-_.t2,3)*Vector2(7.397,-251.073)+(3*Square(1-_.t2)*_.t2*Vector2(6.767,-250.443))+(3*(1-_.t2)*Square(_.t2)*Vector2(3.616,-247.292))+(Pow(_.t2,3)*Vector2(3.616,-247.292))", _stepThenHoldEasingFunction);
         // Frame 79.
-        result.InsertExpressionKeyFrame(
-            0.987499952F,
-            L"Pow(1-_.t2,3)*Vector2(3.616,-247.292)+(3*Square(1-_.t2)*_.t2*Vector2(3.616,-247.292))+(3*(1-_.t2)*Square(_.t2)*"
-            L"Vector2(5.308,-248.984))+(Pow(_.t2,3)*Vector2(5.647,-249.323))",
-            _stepThenHoldEasingFunction);
+        result.InsertExpressionKeyFrame(0.987499952F, L"Pow(1-_.t2,3)*Vector2(3.616,-247.292)+(3*Square(1-_.t2)*_.t2*Vector2(3.616,-247.292))+(3*(1-_.t2)*Square(_.t2)*Vector2(5.308,-248.984))+(Pow(_.t2,3)*Vector2(5.647,-249.323))", _stepThenHoldEasingFunction);
         // Frame 79.
-        result.InsertKeyFrame(0.987500012F, {5.64699984F, -249.322998F}, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.987500012F, { 5.64699984F, -249.322998F }, _stepThenHoldEasingFunction);
         return result;
     }
 
@@ -600,8 +582,12 @@ class AnimatedFindVisualSource_AnimatedVisual
     }
 
 public:
-    AnimatedFindVisualSource_AnimatedVisual(Compositor compositor, CompositionPropertySet themeProperties) :
-        _c{compositor}, _themeProperties{themeProperties}, _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
+    AnimatedFindVisualSource_AnimatedVisual(
+        Compositor compositor,
+        CompositionPropertySet themeProperties)
+        : _c{compositor}
+        , _themeProperties{themeProperties}
+        , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
     {
         winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.put()));
         const auto _ = Root();
@@ -617,7 +603,7 @@ public:
 
     TimeSpan Duration() const
     {
-        return TimeSpan{c_durationTicks};
+        return TimeSpan{ c_durationTicks };
     }
 
     Visual RootVisual() const
@@ -627,19 +613,18 @@ public:
 
     winrt::float2 Size() const
     {
-        return {48.0F, 48.0F};
+        return { 48.0F, 48.0F };
     }
 
     static bool IsRuntimeCompatible()
     {
-        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(
-            L"Windows.Foundation.UniversalApiContract", 7);
+        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 7);
     }
 };
 
 winrt::float4 AnimatedFindVisualSource::ColorAsVector4(Color color)
 {
-    return {static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A)};
+    return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
 }
 
 CompositionPropertySet AnimatedFindVisualSource::EnsureThemeProperties(Compositor compositor)
@@ -667,20 +652,25 @@ void AnimatedFindVisualSource::Foreground(Color value)
     }
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedFindVisualSource::TryCreateAnimatedVisual(Compositor const& compositor)
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedFindVisualSource::TryCreateAnimatedVisual(
+    Compositor const& compositor)
 {
     IInspectable diagnostics = nullptr;
     return TryCreateAnimatedVisual(compositor, diagnostics);
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedFindVisualSource::TryCreateAnimatedVisual(Compositor const& compositor, IInspectable& diagnostics)
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedFindVisualSource::TryCreateAnimatedVisual(
+    Compositor const& compositor,
+    IInspectable& diagnostics)
 {
     const auto _ = EnsureThemeProperties(compositor);
     diagnostics = nullptr;
 
     if (AnimatedFindVisualSource_AnimatedVisual::IsRuntimeCompatible())
     {
-        return winrt::make<AnimatedFindVisualSource_AnimatedVisual>(compositor, _themeProperties);
+        return winrt::make<AnimatedFindVisualSource_AnimatedVisual>(
+            compositor,
+            _themeProperties);
     }
 
     return nullptr;
@@ -698,7 +688,7 @@ double AnimatedFindVisualSource::Framerate()
 
 TimeSpan AnimatedFindVisualSource::Duration()
 {
-    return TimeSpan{13333333L};
+    return TimeSpan{ 13333333L };
 }
 
 double AnimatedFindVisualSource::FrameToProgress(double frameNumber)
@@ -708,21 +698,23 @@ double AnimatedFindVisualSource::FrameToProgress(double frameNumber)
 
 winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedFindVisualSource::Markers()
 {
-    return winrt::single_threaded_map<winrt::hstring, double>(std::map<winrt::hstring, double>{
-                                                                  {L"NormalToPointerOver_Start", 0.0},
-                                                                  {L"NormalToPointerOver_End", 0.113125},
-                                                                  {L"NormalToPressed_Start", 0.125625},
-                                                                  {L"NormalToPressed_End", 0.238125},
-                                                                  {L"PointerOverToNormal_Start", 0.250625},
-                                                                  {L"PointerOverToNormal_End", 0.363125},
-                                                                  {L"PointerOverToPressed_Start", 0.375625},
-                                                                  {L"PointerOverToPressed_End", 0.488125},
-                                                                  {L"PressedToNormal_Start", 0.500625},
-                                                                  {L"PressedToNormal_End", 0.738125},
-                                                                  {L"PressedToPointerOver_Start", 0.750625},
-                                                                  {L"PressedToPointerOver_End", 0.988125},
-                                                              })
-        .GetView();
+    return winrt::single_threaded_map<winrt::hstring, double>(
+        std::map<winrt::hstring, double>
+        {
+            { L"NormalToPointerOver_Start", 0.0 },
+            { L"NormalToPointerOver_End", 0.113125 },
+            { L"NormalToPressed_Start", 0.125625 },
+            { L"NormalToPressed_End", 0.238125 },
+            { L"PointerOverToNormal_Start", 0.250625 },
+            { L"PointerOverToNormal_End", 0.363125 },
+            { L"PointerOverToPressed_Start", 0.375625 },
+            { L"PointerOverToPressed_End", 0.488125 },
+            { L"PressedToNormal_Start", 0.500625 },
+            { L"PressedToNormal_End", 0.738125 },
+            { L"PressedToPointerOver_Start", 0.750625 },
+            { L"PressedToPointerOver_End", 0.988125 },
+        }
+    ).GetView();
 }
 
 void AnimatedFindVisualSource::SetColorProperty(hstring const& propertyName, Color value)

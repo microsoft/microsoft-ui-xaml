@@ -30,51 +30,28 @@ public:
 std::optional<unsigned long> TryParseInt(const wstring_view& s);
 std::optional<unsigned long> TryParseInt(const wstring_view& str, int base);
 
-Hsv RgbToHsv(const Rgb& rgb);
-Rgb HsvToRgb(const Hsv& hsv);
+Hsv RgbToHsv(const Rgb &rgb);
+Rgb HsvToRgb(const Hsv &hsv);
 
 Rgb HexToRgb(const wstring_view& input);
-winrt::hstring RgbToHex(const Rgb& rgb);
+winrt::hstring RgbToHex(const Rgb &rgb);
 
 std::tuple<Rgb, double> HexToRgba(const wstring_view& input);
-winrt::hstring RgbaToHex(const Rgb& rgb, double alpha);
+winrt::hstring RgbaToHex(const Rgb &rgb, double alpha);
 
-winrt::Color ColorFromRgba(const Rgb& rgb, double alpha = 1.0);
-Rgb RgbFromColor(const winrt::Color& color);
+winrt::Color ColorFromRgba(const Rgb &rgb, double alpha = 1.0);
+Rgb RgbFromColor(const winrt::Color &color);
 
 // We represent HSV and alpha using a Vector4 (float4 in C++/WinRT).
 // We'll use the following helper methods to convert between the four dimensions and HSVA.
-namespace hsv {
-inline float GetHue(const winrt::float4& hsva)
+namespace hsv
 {
-    return hsva.x;
+    inline float GetHue(const winrt::float4 &hsva) { return hsva.x; }
+    inline void SetHue(winrt::float4 &hsva, float hue) { hsva.x = hue; }
+    inline float GetSaturation(const winrt::float4 &hsva) { return hsva.y; }
+    inline void SetSaturation(winrt::float4 &hsva, float saturation) { hsva.y = saturation; }
+    inline float GetValue(const winrt::float4 &hsva) { return hsva.z; }
+    inline void SetValue(winrt::float4 &hsva, float value) { hsva.z = value; }
+    inline float GetAlpha(const winrt::float4 &hsva) { return hsva.w; }
+    inline void SetAlpha(winrt::float4 &hsva, float alpha) { hsva.w = alpha; }
 }
-inline void SetHue(winrt::float4& hsva, float hue)
-{
-    hsva.x = hue;
-}
-inline float GetSaturation(const winrt::float4& hsva)
-{
-    return hsva.y;
-}
-inline void SetSaturation(winrt::float4& hsva, float saturation)
-{
-    hsva.y = saturation;
-}
-inline float GetValue(const winrt::float4& hsva)
-{
-    return hsva.z;
-}
-inline void SetValue(winrt::float4& hsva, float value)
-{
-    hsva.z = value;
-}
-inline float GetAlpha(const winrt::float4& hsva)
-{
-    return hsva.w;
-}
-inline void SetAlpha(winrt::float4& hsva, float alpha)
-{
-    hsva.w = alpha;
-}
-} // namespace hsv

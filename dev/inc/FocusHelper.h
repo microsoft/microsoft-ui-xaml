@@ -11,16 +11,23 @@ class FocusHelper
 public:
     static bool constexpr IsGamepadNavigationDirection(winrt::VirtualKey key)
     {
-        return key == winrt::VirtualKey::GamepadLeftThumbstickDown || key == winrt::VirtualKey::GamepadDPadDown ||
-               key == winrt::VirtualKey::GamepadLeftThumbstickUp || key == winrt::VirtualKey::GamepadDPadUp ||
-               key == winrt::VirtualKey::GamepadLeftThumbstickRight || key == winrt::VirtualKey::GamepadDPadRight ||
-               key == winrt::VirtualKey::GamepadLeftThumbstickLeft || key == winrt::VirtualKey::GamepadDPadLeft;
+        return key == winrt::VirtualKey::GamepadLeftThumbstickDown
+            || key == winrt::VirtualKey::GamepadDPadDown
+            || key == winrt::VirtualKey::GamepadLeftThumbstickUp
+            || key == winrt::VirtualKey::GamepadDPadUp
+            || key == winrt::VirtualKey::GamepadLeftThumbstickRight
+            || key == winrt::VirtualKey::GamepadDPadRight
+            || key == winrt::VirtualKey::GamepadLeftThumbstickLeft
+            || key == winrt::VirtualKey::GamepadDPadLeft;
     }
 
     static bool constexpr IsGamepadPageNavigationDirection(winrt::VirtualKey key)
     {
-        return key == winrt::VirtualKey::GamepadLeftShoulder || key == winrt::VirtualKey::GamepadRightShoulder ||
-               key == winrt::VirtualKey::GamepadLeftTrigger || key == winrt::VirtualKey::GamepadRightTrigger;
+        return
+            key == winrt::VirtualKey::GamepadLeftShoulder ||
+            key == winrt::VirtualKey::GamepadRightShoulder ||
+            key == winrt::VirtualKey::GamepadLeftTrigger ||
+            key == winrt::VirtualKey::GamepadRightTrigger;
     }
 
     static winrt::FocusNavigationDirection constexpr GetNavigationDirection(winrt::VirtualKey key)

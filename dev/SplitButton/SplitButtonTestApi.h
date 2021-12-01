@@ -5,7 +5,8 @@
 
 #include "SplitButtonTestApi.g.h"
 
-class SplitButtonTestApi : public winrt::implementation::SplitButtonTestApiT<SplitButtonTestApi>
+class SplitButtonTestApi :
+    public winrt::implementation::SplitButtonTestApiT<SplitButtonTestApi>
 {
 public:
     static bool SimulateTouch();

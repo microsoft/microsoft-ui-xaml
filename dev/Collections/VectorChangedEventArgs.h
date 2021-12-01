@@ -11,14 +11,8 @@ public:
         m_index = index;
     }
 
-    winrt::CollectionChange CollectionChange()
-    {
-        return m_action;
-    }
-    uint32_t Index()
-    {
-        return m_index;
-    }
+    winrt::CollectionChange CollectionChange() { return m_action; }
+    uint32_t Index() { return m_index; }
 
 private:
     winrt::CollectionChange m_action;

@@ -31,10 +31,12 @@ winrt::Deferral TeachingTipClosingEventArgs::GetDeferral()
 
     com_ptr<TeachingTipClosingEventArgs> strongThis = get_strong();
 
-    winrt::Deferral instance{[strongThis]() {
+    winrt::Deferral instance{ [strongThis]()
+    {
         strongThis->CheckThread();
         strongThis->DecrementDeferralCount();
-    }};
+    }
+    };
     return instance;
 }
 

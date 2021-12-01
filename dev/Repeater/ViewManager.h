@@ -62,14 +62,8 @@ private:
     {
         PinnedElementInfo(const ITrackerHandleManager* owner, const winrt::UIElement& element);
 
-        winrt::UIElement PinnedElement() const
-        {
-            return m_pinnedElement.get();
-        }
-        winrt::com_ptr<VirtualizationInfo> VirtualizationInfo() const
-        {
-            return m_virtInfo.get();
-        }
+        winrt::UIElement PinnedElement() const { return m_pinnedElement.get(); }
+        winrt::com_ptr<VirtualizationInfo> VirtualizationInfo() const { return m_virtInfo.get(); }
 
     private:
         tracker_ref<winrt::UIElement> m_pinnedElement;
@@ -82,7 +76,7 @@ private:
         tracker_com_ref<::VirtualizationInfo> m_virtInfo;
     };
 
-    ItemsRepeater* m_owner{nullptr};
+    ItemsRepeater* m_owner{ nullptr };
 
     // Pinned elements that are currently owned by layout are *NOT* in this pool.
     std::vector<PinnedElementInfo> m_pinnedPool;
@@ -105,10 +99,10 @@ private:
 
     // These are first/last indices requested by layout and not cleared yet.
     // These are also not truly first / last because they are a lower / upper bound on the known realized range.
-    // For example, if we didn't have the optimization in ElementManager.cpp, m_lastRealizedElementIndexHeldByLayout
+    // For example, if we didn't have the optimization in ElementManager.cpp, m_lastRealizedElementIndexHeldByLayout 
     // will not be accurate. Rather, it will be an upper bound on what we think is the last realized index.
-    int m_firstRealizedElementIndexHeldByLayout{FirstRealizedElementIndexDefault};
-    int m_lastRealizedElementIndexHeldByLayout{LastRealizedElementIndexDefault};
+    int m_firstRealizedElementIndexHeldByLayout{ FirstRealizedElementIndexDefault };
+    int m_lastRealizedElementIndexHeldByLayout{ LastRealizedElementIndexDefault };
     static constexpr int FirstRealizedElementIndexDefault = std::numeric_limits<int>::max();
     static constexpr int LastRealizedElementIndexDefault = std::numeric_limits<int>::min();
 };

@@ -5,7 +5,8 @@
 
 #include "VirtualizingLayoutContext.h"
 
-class RepeaterLayoutContext : public winrt::implements<RepeaterLayoutContext, VirtualizingLayoutContext>
+class RepeaterLayoutContext :
+    public winrt::implements<RepeaterLayoutContext, VirtualizingLayoutContext>
 {
 public:
     RepeaterLayoutContext(const winrt::ItemsRepeater& owner);

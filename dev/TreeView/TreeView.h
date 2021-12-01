@@ -14,7 +14,9 @@
 #include "TreeView.g.h"
 #include "TreeView.properties.h"
 
-class TreeView : public ReferenceTracker<TreeView, winrt::implementation::TreeViewT>, public TreeViewProperties
+class TreeView :
+    public ReferenceTracker<TreeView, winrt::implementation::TreeViewT>,
+    public TreeViewProperties
 {
 public:
     TreeView();
@@ -53,7 +55,7 @@ public:
 private:
     static void OnPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
 
-    winrt::ItemsSourceView m_itemsDataSource{nullptr};
+    winrt::ItemsSourceView m_itemsDataSource{ nullptr };
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemItemsSourceViewChangedRevoker{};
     void OnItemsSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
     void SyncRootNodesWithItemsSource();
@@ -65,13 +67,13 @@ public:
     void OnApplyTemplate();
 
 private:
-    tracker_ref<winrt::TreeViewNode> m_rootNode{this};
-    tracker_ref<winrt::TreeViewList> m_listControl{this};
+    tracker_ref<winrt::TreeViewNode> m_rootNode{ this };
+    tracker_ref<winrt::TreeViewList> m_listControl{ this };
     // SelectedNodes vector is initialized in OnApplyTemplate, if developers try to update SelectedNodes in page constructor they'll get an exception since the vector is not ready.
     // This pendingSelectedNodes is to temporarily hold the content before SelectedNodes is ready. It gets copied over and cleared in OnApplyTemplate.
-    tracker_ref<winrt::IVector<winrt::TreeViewNode>> m_pendingSelectedNodes{this};
+    tracker_ref<winrt::IVector<winrt::TreeViewNode>> m_pendingSelectedNodes{ this };
 
-    event_source<winrt::TypedEventHandler<winrt::ListViewBase, winrt::ContainerContentChangingEventArgs>> m_containerContentChangedSource{this};
+    event_source<winrt::TypedEventHandler<winrt::ListViewBase, winrt::ContainerContentChangingEventArgs>> m_containerContentChangedSource{ this };
 
     winrt::ListViewBase::ItemClick_revoker m_itemClickRevoker{};
     winrt::ListViewBase::ContainerContentChanging_revoker m_containerContentChangingRevoker{};

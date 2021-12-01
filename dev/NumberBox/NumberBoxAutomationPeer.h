@@ -6,8 +6,8 @@
 #include "NumberBox.h"
 #include "NumberBoxAutomationPeer.g.h"
 
-class NumberBoxAutomationPeer
-    : public ReferenceTracker<NumberBoxAutomationPeer, winrt::implementation::NumberBoxAutomationPeerT, winrt::IRangeValueProvider>
+class NumberBoxAutomationPeer :
+    public ReferenceTracker<NumberBoxAutomationPeer, winrt::implementation::NumberBoxAutomationPeerT, winrt::IRangeValueProvider>
 {
 
 public:
@@ -20,10 +20,7 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore();
 
     // IRangeValueProvider
-    bool IsReadOnly()
-    {
-        return false;
-    }
+    bool IsReadOnly() { return false; }
     double Minimum();
     double Maximum();
     double Value();
@@ -36,3 +33,4 @@ public:
 private:
     com_ptr<NumberBox> GetImpl();
 };
+

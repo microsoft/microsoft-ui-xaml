@@ -6,8 +6,8 @@
 #include "ScrollPresenterTrace.h"
 #include "ScrollingScrollAnimationStartingEventArgs.g.h"
 
-class ScrollingScrollAnimationStartingEventArgs
-    : public winrt::implementation::ScrollingScrollAnimationStartingEventArgsT<ScrollingScrollAnimationStartingEventArgs>
+class ScrollingScrollAnimationStartingEventArgs :
+    public winrt::implementation::ScrollingScrollAnimationStartingEventArgsT<ScrollingScrollAnimationStartingEventArgs>
 {
 public:
     ScrollingScrollAnimationStartingEventArgs()
@@ -34,8 +34,8 @@ public:
     void SetEndPosition(const winrt::float2& endPosition);
 
 private:
-    winrt::CompositionAnimation m_animation{nullptr};
-    int32_t m_offsetsChangeCorrelationId{-1};
-    winrt::float2 m_startPosition{0.0f, 0.0f};
-    winrt::float2 m_endPosition{0.0f, 0.0f};
+    winrt::CompositionAnimation m_animation{ nullptr };
+    int32_t m_offsetsChangeCorrelationId{ -1 };
+    winrt::float2 m_startPosition{ 0.0f, 0.0f };
+    winrt::float2 m_endPosition{ 0.0f, 0.0f };
 };

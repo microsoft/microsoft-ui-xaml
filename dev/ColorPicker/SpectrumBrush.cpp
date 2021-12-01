@@ -53,8 +53,8 @@ void SpectrumBrush::CreateSpectrumBrush()
     winrt::Compositor compositor = winrt::Window::Current().Compositor();
 
     m_brushEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::CrossFadeEffect>();
-    m_brushEffect->Source1(winrt::CompositionEffectSourceParameter{L"MinSurface"});
-    m_brushEffect->Source2(winrt::CompositionEffectSourceParameter{L"MaxSurface"});
+    m_brushEffect->Source1(winrt::CompositionEffectSourceParameter{ L"MinSurface" });
+    m_brushEffect->Source2(winrt::CompositionEffectSourceParameter{ L"MaxSurface" });
     m_brushEffect->Weight(static_cast<float>(MaxSurfaceOpacity()));
 
     winrt::CompositionEffectFactory effectFactory = compositor.CreateEffectFactory(*m_brushEffect);

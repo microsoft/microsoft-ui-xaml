@@ -5,9 +5,10 @@
 
 #include "common.h"
 
-// Class that handles the InteractionTracker callbacks. Has a weak reference back to the ScrollPresenter so it can be
-// garbage-collected, since the InteractionTracker keeps a strong reference to this object.
-class SwipeControlInteractionTrackerOwner : public winrt::implements<SwipeControlInteractionTrackerOwner, winrt::IInteractionTrackerOwner>
+// Class that handles the InteractionTracker callbacks. Has a weak reference back to the ScrollPresenter so it can be garbage-collected, 
+// since the InteractionTracker keeps a strong reference to this object.
+class SwipeControlInteractionTrackerOwner
+    : public winrt::implements<SwipeControlInteractionTrackerOwner, winrt::IInteractionTrackerOwner>
 {
 public:
     SwipeControlInteractionTrackerOwner(const winrt::SwipeControl& swipeControl);
@@ -23,5 +24,5 @@ public:
 #pragma endregion
 
 private:
-    weak_ref<winrt::SwipeControl> m_owner{nullptr};
+    weak_ref<winrt::SwipeControl> m_owner{ nullptr };
 };

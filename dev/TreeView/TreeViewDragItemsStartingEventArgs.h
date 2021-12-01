@@ -5,8 +5,8 @@
 
 using winrt::Windows::ApplicationModel::DataTransfer::DataPackage;
 
-class TreeViewDragItemsStartingEventArgs
-    : public ReferenceTracker<TreeViewDragItemsStartingEventArgs, winrt::implementation::TreeViewDragItemsStartingEventArgsT, winrt::composing, winrt::composable>
+class TreeViewDragItemsStartingEventArgs :
+    public ReferenceTracker<TreeViewDragItemsStartingEventArgs, winrt::implementation::TreeViewDragItemsStartingEventArgsT, winrt::composing, winrt::composable>
 {
 public:
     TreeViewDragItemsStartingEventArgs(const winrt::DragItemsStartingEventArgs& args);

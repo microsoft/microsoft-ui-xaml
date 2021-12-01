@@ -12,7 +12,7 @@
 #include <limits>
 
 #pragma warning(push)
-#pragma warning(disable : 6101) // Returning uninitialized memory '<value>'.  A successful path through the function does not set the named _Out_ parameter.
+#pragma warning(disable: 6101)  // Returning uninitialized memory '<value>'.  A successful path through the function does not set the named _Out_ parameter.
 #include "Microsoft.UI.Private.Composition.Effects_impl.h"
 #pragma warning(pop)
 
@@ -50,11 +50,12 @@ public:
     void OnWindowSizeChanged(const com_ptr<MaterialHelperBase>& sender, bool isFullScreenOrTabletMode);
 #endif
 
+
 public:
     // Default value on public DP - ok to be public
-    static constexpr winrt::Color sc_defaultTintColor{204, 255, 255, 255};
-    static constexpr double sc_defaultTintOpacity{1.0};
-    static constexpr winrt::TimeSpan sc_defaultTintTransitionDuration{500ms};
+    static constexpr winrt::Color sc_defaultTintColor{ 204, 255, 255, 255 };
+    static constexpr double sc_defaultTintOpacity{ 1.0 };
+    static constexpr winrt::TimeSpan sc_defaultTintTransitionDuration{ 500ms };
 
     static winrt::CompositionEffectBrush CreateAcrylicBrushWorker(
         const winrt::Compositor& compositor,
@@ -73,13 +74,13 @@ protected: // AcrylicTestApi needs CreateAcrylicBrush be public or protected
     void CreateAcrylicBrush(bool useCrossFadeEffect, bool forceCreateAcrylicBrush = false);
 
 private:
-    static constexpr auto TintColorColor{L"TintColor.Color"sv};
-    static constexpr auto LuminosityColorColor{L"LuminosityColor.Color"sv};
-    static constexpr auto FallbackColorColor{L"FallbackColor.Color"sv};
+    static constexpr auto TintColorColor{ L"TintColor.Color"sv };
+    static constexpr auto LuminosityColorColor{ L"LuminosityColor.Color"sv };
+    static constexpr auto FallbackColorColor{ L"FallbackColor.Color"sv };
 
     static constexpr float sc_blurRadius = 30.0f;
     static constexpr float sc_noiseOpacity = 0.02f;
-    static constexpr winrt::Color sc_exclusionColor{26, 255, 255, 255};
+    static constexpr winrt::Color sc_exclusionColor{ 26, 255, 255, 255 };
     static constexpr float sc_saturation = 1.25f;
 
     static winrt::IGraphicsEffect CombineNoiseWithTintEffect_Legacy(
@@ -92,8 +93,7 @@ private:
         const winrt::Color initialLuminosityColor,
         std::vector<winrt::hstring>& animatedProperties);
 
-    static winrt::CompositionEffectFactory CreateAcrylicBrushCompositionEffectFactory(
-        const winrt::Compositor& compositor,
+    static winrt::CompositionEffectFactory CreateAcrylicBrushCompositionEffectFactory(const winrt::Compositor& compositor,
         bool shouldBrushBeOpaque,
         bool useWindowAcrylic,
         bool useCrossFadeEffect,
@@ -123,8 +123,7 @@ private:
 
     void OnFallbackColorChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
-    void CreateAnimation(
-        const winrt::CompositionBrush& brush,
+    void CreateAnimation(const winrt::CompositionBrush& brush,
         winrt::CompositionScopedBatch& scopedBatch,
         winrt::event_token& token,
         float acrylicStart,
@@ -135,13 +134,14 @@ private:
 
     static winrt::CompositionAnimation MakeColorAnimation(const winrt::Color& color, const winrt::TimeSpan& duration, const winrt::Compositor& compositor);
     static winrt::CompositionAnimation MakeFloatAnimation(
-        float fromValue, float toValue, const winrt::TimeSpan& duration, const winrt::CompositionEasingFunction& easing, const winrt::Compositor& compositor);
+        float fromValue,
+        float toValue,
+        const winrt::TimeSpan& duration,
+        const winrt::CompositionEasingFunction& easing,
+        const winrt::Compositor& compositor);
     static void PlayCrossFadeAnimation(const winrt::CompositionBrush& brush, float acrylicStart, float acrylicEnd);
 
-    bool IsInFallbackMode()
-    {
-        return !m_isUsingAcrylicBrush;
-    }
+    bool IsInFallbackMode() { return !m_isUsingAcrylicBrush; }
 
 #if BUILD_WINDOWS
     void PolicyStatusChangedHelper(bool isDisabledByBackdropPolicy, bool isDisabledByHostBackdropPolicy);
@@ -163,33 +163,33 @@ private:
     bool m_isDisabledByHostBackdropPolicy{};
     bool m_isInterIsland{};
 #else
-    bool m_isActivated{true};
+    bool m_isActivated{ true };
     bool m_isFullScreenOrTabletMode{};
     bool m_isDisabledByMaterialPolicy{};
 #endif
 
     winrt::event_token m_fallbackColorChangedToken{};
     winrt::event_token m_waitingForFallbackAnimationCompleteToken{};
-    winrt::CompositionScopedBatch m_waitingForFallbackAnimationCompleteBatch{nullptr};
-    winrt::CompositionBrush m_brush{nullptr};
+    winrt::CompositionScopedBatch m_waitingForFallbackAnimationCompleteBatch{ nullptr };
+    winrt::CompositionBrush m_brush{ nullptr };
 
 #if BUILD_WINDOWS
     float m_logicalDpi{};
     winrt::DisplayInformation::DpiChanged_revoker m_dpiChangedRevoker{};
     winrt::MaterialProperties::TransparencyPolicyChanged_revoker m_transparencyPolicyChangedRevoker{};
     winrt::event_token m_islandTransformChangedToken{};
-    winrt::CompositionSurfaceBrush m_dpiScaledNoiseBrush{nullptr};
-    winrt::DispatcherQueue m_dispatcherQueue{nullptr};
-    winrt::MaterialProperties m_materialProperties{nullptr};
-    winrt::XamlIsland m_associatedIsland{nullptr};
-    winrt::CompositionIsland m_associatedCompositionIsland{nullptr};
+    winrt::CompositionSurfaceBrush m_dpiScaledNoiseBrush{ nullptr };
+    winrt::DispatcherQueue m_dispatcherQueue{ nullptr };
+    winrt::MaterialProperties m_materialProperties{ nullptr };
+    winrt::XamlIsland m_associatedIsland{ nullptr };
+    winrt::CompositionIsland m_associatedCompositionIsland{ nullptr };
     winrt::event_token m_additionalMaterialPolicyChangedToken{};
 #else
     winrt::event_token m_windowActivatedToken{};
     winrt::event_token m_materialPolicyChangedToken{};
     winrt::event_token m_windowSizeChangedToken{};
     winrt::event_token m_noiseChangedToken{};
-    tracker_ref<winrt::Window> m_currentWindow{this};
-    winrt::CompositionSurfaceBrush m_noiseBrush{nullptr};
+    tracker_ref<winrt::Window> m_currentWindow{ this };
+    winrt::CompositionSurfaceBrush m_noiseBrush{ nullptr };
 #endif
 };

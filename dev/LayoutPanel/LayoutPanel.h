@@ -5,17 +5,14 @@
 #include "LayoutPanel.g.h"
 #include "LayoutPanel.properties.h"
 
-class LayoutPanel : public ReferenceTracker<LayoutPanel, winrt::implementation::LayoutPanelT>, public LayoutPanelProperties
+class LayoutPanel : 
+    public ReferenceTracker<LayoutPanel, winrt::implementation::LayoutPanelT>,
+    public LayoutPanelProperties
 {
 public:
-    winrt::IInspectable LayoutState()
-    {
-        return m_layoutState.get();
-    }
-    void LayoutState(winrt::IInspectable const& value)
-    {
-        m_layoutState.set(value);
-    }
+
+    winrt::IInspectable LayoutState() { return m_layoutState.get(); }
+    void LayoutState(winrt::IInspectable const& value) { m_layoutState.set(value); }
 
     void OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
@@ -23,10 +20,10 @@ public:
     winrt::Size ArrangeOverride(winrt::Size const& finalSize);
 
 private:
-    winrt::LayoutContext m_layoutContext{nullptr};
+    winrt::LayoutContext m_layoutContext{ nullptr };
 
-    tracker_ref<winrt::IInspectable> m_layoutState{this};
-    tracker_ref<winrt::Layout, TrackerRefFallback::FallbackToComPtrBeforeRS4> m_layout{this};
+    tracker_ref<winrt::IInspectable> m_layoutState{ this };
+    tracker_ref<winrt::Layout, TrackerRefFallback::FallbackToComPtrBeforeRS4> m_layout{ this };
 
     winrt::Layout::MeasureInvalidated_revoker m_measureInvalidated{};
     winrt::Layout::ArrangeInvalidated_revoker m_arrangeInvalidated{};

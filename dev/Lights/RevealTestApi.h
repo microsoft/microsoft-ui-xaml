@@ -5,7 +5,8 @@
 
 #include "RevealTestApi.g.h"
 
-class RevealTestApi : public ReferenceTracker<RevealTestApi, winrt::implementation::RevealTestApiT, winrt::composable>
+class RevealTestApi :
+    public ReferenceTracker<RevealTestApi, winrt::implementation::RevealTestApiT, winrt::composable>
 {
 public:
     winrt::ApplicationTheme TargetTheme();

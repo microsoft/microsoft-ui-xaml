@@ -129,7 +129,8 @@ int InspectingDataSource::IndexOfCore(winrt::IInspectable const& value)
 
 #pragma endregion
 
-winrt::IVector<winrt::IInspectable> InspectingDataSource::WrapIterable(const winrt::IIterable<winrt::IInspectable>& iterable)
+winrt::IVector<winrt::IInspectable>
+InspectingDataSource::WrapIterable(const winrt::IIterable<winrt::IInspectable>& iterable)
 {
     auto vector = winrt::make<Vector<winrt::IInspectable, MakeVectorParam<VectorFlag::DependencyObjectBase>()>>();
     auto iterator = iterable.First();
@@ -179,29 +180,33 @@ void InspectingDataSource::ListenToCollectionChanges()
         }
     }();
 
-    if (incc)
+    if(incc)
     {
-        m_eventToken = incc.CollectionChanged({this, &InspectingDataSource::OnCollectionChanged});
+        m_eventToken = incc.CollectionChanged({ this, &InspectingDataSource::OnCollectionChanged });
         m_notifyCollectionChanged.set(incc);
     }
     else if (const auto bindableObservableVector = m_vector.try_as<winrt::IBindableObservableVector>())
     {
-        m_eventToken = bindableObservableVector.VectorChanged({this, &InspectingDataSource::OnBindableVectorChanged});
+        m_eventToken = bindableObservableVector.VectorChanged({ this, &InspectingDataSource::OnBindableVectorChanged });
         m_bindableObservableVector.set(bindableObservableVector);
+
     }
-    else if (const auto observableVector = m_vector.try_as<winrt::IObservableVector<winrt::IInspectable>>())
-    {
-        m_eventToken = observableVector.VectorChanged({this, &InspectingDataSource::OnVectorChanged});
+    else if(const auto observableVector = m_vector.try_as<winrt::IObservableVector<winrt::IInspectable>>()){
+        m_eventToken = observableVector.VectorChanged({ this, &InspectingDataSource::OnVectorChanged });
         m_observableVector.set(observableVector);
     }
 }
 
-void InspectingDataSource::OnCollectionChanged(const winrt::IInspectable& /*sender*/, const winrt::NotifyCollectionChangedEventArgs& e)
+void InspectingDataSource::OnCollectionChanged(
+    const winrt::IInspectable& /*sender*/,
+    const winrt::NotifyCollectionChangedEventArgs& e)
 {
     OnItemsSourceChanged(e);
 }
 
-void InspectingDataSource::OnBindableVectorChanged(const winrt::IBindableObservableVector& sender, const winrt::IInspectable& e)
+void InspectingDataSource::OnBindableVectorChanged(
+    const winrt::IBindableObservableVector& sender,
+    const winrt::IInspectable& e)
 {
     OnVectorChanged(
         reinterpret_cast<const winrt::IObservableVector<winrt::IInspectable>&>(sender),
@@ -209,12 +214,13 @@ void InspectingDataSource::OnBindableVectorChanged(const winrt::IBindableObserva
 }
 
 void InspectingDataSource::OnVectorChanged(
-    const winrt::Collections::IObservableVector<winrt::IInspectable>& /*sender*/, const winrt::Collections::IVectorChangedEventArgs& e)
+    const winrt::Collections::IObservableVector<winrt::IInspectable>& /*sender*/,
+    const winrt::Collections::IVectorChangedEventArgs& e)
 {
     // We need to build up NotifyCollectionChangedEventArgs here to raise the event.
-    // There is opportunity to make this faster by caching the args if it does
+    // There is opportunity to make this faster by caching the args if it does 
     // show up as a perf issue.
-    // Also note that we do not access the data - we just add nullptr. We just
+    // Also note that we do not access the data - we just add nullptr. We just 
     // need the count.
 
     winrt::NotifyCollectionChangedAction action{};
@@ -251,5 +257,11 @@ void InspectingDataSource::OnVectorChanged(
         break;
     }
 
-    OnItemsSourceChanged(winrt::NotifyCollectionChangedEventArgs(action, newItems, oldItems, newStartingIndex, oldStartingIndex));
+    OnItemsSourceChanged(
+        winrt::NotifyCollectionChangedEventArgs(
+            action,
+            newItems,
+            oldItems,
+            newStartingIndex,
+            oldStartingIndex));
 }

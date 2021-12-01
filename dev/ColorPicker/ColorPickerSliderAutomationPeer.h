@@ -7,13 +7,13 @@
 
 #include "ColorPickerSliderAutomationPeer.g.h"
 
-class ColorPickerSliderAutomationPeer
-    : public ReferenceTracker<ColorPickerSliderAutomationPeer, winrt::implementation::ColorPickerSliderAutomationPeerT, winrt::IValueProvider>
+class ColorPickerSliderAutomationPeer :
+    public ReferenceTracker<ColorPickerSliderAutomationPeer, winrt::implementation::ColorPickerSliderAutomationPeerT, winrt::IValueProvider>
 {
 public:
     ColorPickerSliderAutomationPeer(winrt::ColorPickerSlider const& owner);
 
-    // IAutomationPeerOverrides
+    // IAutomationPeerOverrides 
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
 
     // IValueProvider properties and methods
@@ -26,3 +26,4 @@ public:
 private:
     winrt::hstring GetValueString(winrt::Color color, int value);
 };
+

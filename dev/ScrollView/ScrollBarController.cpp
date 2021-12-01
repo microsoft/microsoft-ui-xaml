@@ -84,18 +84,36 @@ void ScrollBarController::SetExpressionAnimationSources(
     SCROLLVIEW_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 }
 
-void ScrollBarController::SetScrollMode(winrt::ScrollingScrollMode const& scrollMode)
+void ScrollBarController::SetScrollMode(
+    winrt::ScrollingScrollMode const& scrollMode)
 {
-    SCROLLVIEW_TRACE_INFO(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::ScrollModeToString(scrollMode).c_str());
+    SCROLLVIEW_TRACE_INFO(
+        nullptr,
+        TRACE_MSG_METH_STR,
+        METH_NAME,
+        this,
+        TypeLogging::ScrollModeToString(scrollMode).c_str());
     m_scrollMode = scrollMode;
 
     UpdateAreScrollControllerInteractionsAllowed();
 }
 
-void ScrollBarController::SetValues(double minOffset, double maxOffset, double offset, double viewport)
+void ScrollBarController::SetValues(
+    double minOffset,
+    double maxOffset,
+    double offset,
+    double viewport)
 {
     SCROLLVIEW_TRACE_INFO(
-        nullptr, L"%s[0x%p](minOffset:%lf, maxOffset:%lf, offset:%lf, viewport:%lf, operationsCount:%d)\n", METH_NAME, this, minOffset, maxOffset, offset, viewport, m_operationsCount);
+        nullptr,
+        L"%s[0x%p](minOffset:%lf, maxOffset:%lf, offset:%lf, viewport:%lf, operationsCount:%d)\n",
+        METH_NAME,
+        this,
+        minOffset,
+        maxOffset,
+        offset,
+        viewport,
+        m_operationsCount);
 
     if (maxOffset < minOffset)
     {
@@ -150,7 +168,9 @@ void ScrollBarController::SetValues(double minOffset, double maxOffset, double o
 }
 
 winrt::CompositionAnimation ScrollBarController::GetScrollAnimation(
-    int correlationId, winrt::float2 const& currentPosition, winrt::CompositionAnimation const& defaultAnimation)
+    int correlationId,
+    winrt::float2 const& currentPosition,
+    winrt::CompositionAnimation const& defaultAnimation)
 {
     SCROLLVIEW_TRACE_INFO(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, correlationId);
 
@@ -158,9 +178,15 @@ winrt::CompositionAnimation ScrollBarController::GetScrollAnimation(
     return nullptr;
 }
 
-void ScrollBarController::NotifyScrollCompleted(int correlationId)
+void ScrollBarController::NotifyScrollCompleted(
+    int correlationId)
 {
-    SCROLLVIEW_TRACE_INFO(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, correlationId);
+    SCROLLVIEW_TRACE_INFO(
+        nullptr,
+        TRACE_MSG_METH_INT,
+        METH_NAME,
+        this,
+        correlationId);
 
     MUX_ASSERT(m_operationsCount > 0);
     m_operationsCount--;
@@ -172,8 +198,7 @@ void ScrollBarController::NotifyScrollCompleted(int correlationId)
     }
 }
 
-winrt::event_token ScrollBarController::ScrollToRequested(
-    winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollToRequestedEventArgs> const& value)
+winrt::event_token ScrollBarController::ScrollToRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollToRequestedEventArgs> const& value)
 {
     SCROLLVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
@@ -187,8 +212,7 @@ void ScrollBarController::ScrollToRequested(winrt::event_token const& token)
     m_scrollToRequested.remove(token);
 }
 
-winrt::event_token ScrollBarController::ScrollByRequested(
-    winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollByRequestedEventArgs> const& value)
+winrt::event_token ScrollBarController::ScrollByRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollByRequestedEventArgs> const& value)
 {
     SCROLLVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
@@ -202,8 +226,7 @@ void ScrollBarController::ScrollByRequested(winrt::event_token const& token)
     m_scrollByRequested.remove(token);
 }
 
-winrt::event_token ScrollBarController::AddScrollVelocityRequested(
-    winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerAddScrollVelocityRequestedEventArgs> const& value)
+winrt::event_token ScrollBarController::AddScrollVelocityRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerAddScrollVelocityRequestedEventArgs> const& value)
 {
     SCROLLVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
@@ -217,11 +240,10 @@ void ScrollBarController::AddScrollVelocityRequested(winrt::event_token const& t
     m_addScrollVelocityRequested.remove(token);
 }
 
-winrt::event_token ScrollBarController::InteractionRequested(
-    winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerInteractionRequestedEventArgs> const& value)
+winrt::event_token ScrollBarController::InteractionRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerInteractionRequestedEventArgs> const& value)
 {
     SCROLLVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
-    // Because this IScrollController implementation does not expose an InteractionElement,
+    // Because this IScrollController implementation does not expose an InteractionElement, 
     // this InteractionRequested event is not going to be raised.
     return {};
 }
@@ -229,7 +251,7 @@ winrt::event_token ScrollBarController::InteractionRequested(
 void ScrollBarController::InteractionRequested(winrt::event_token const& token)
 {
     SCROLLVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
-    // Because this IScrollController implementation does not expose an InteractionElement,
+    // Because this IScrollController implementation does not expose an InteractionElement, 
     // this InteractionRequested event is not going to be raised.
 }
 
@@ -263,14 +285,14 @@ void ScrollBarController::HookScrollBarPropertyChanged()
     {
 #ifdef _DEBUG
         m_scrollBarIndicatorModeChangedToken.value = m_scrollBar.RegisterPropertyChangedCallback(
-            winrt::ScrollBar::IndicatorModeProperty(), {this, &ScrollBarController::OnScrollBarPropertyChanged});
+            winrt::ScrollBar::IndicatorModeProperty(), { this, &ScrollBarController::OnScrollBarPropertyChanged });
 
         m_scrollBarVisibilityChangedToken.value = m_scrollBar.RegisterPropertyChangedCallback(
-            winrt::UIElement::VisibilityProperty(), {this, &ScrollBarController::OnScrollBarPropertyChanged});
+            winrt::UIElement::VisibilityProperty(), { this, &ScrollBarController::OnScrollBarPropertyChanged });
 #endif //_DEBUG
 
         m_scrollBarIsEnabledChangedToken.value = m_scrollBar.RegisterPropertyChangedCallback(
-            winrt::Control::IsEnabledProperty(), {this, &ScrollBarController::OnScrollBarPropertyChanged});
+            winrt::Control::IsEnabledProperty(), { this, &ScrollBarController::OnScrollBarPropertyChanged });
     }
 }
 
@@ -283,15 +305,13 @@ void ScrollBarController::UnhookScrollBarPropertyChanged()
 #ifdef _DEBUG
         if (m_scrollBarIndicatorModeChangedToken.value != 0)
         {
-            m_scrollBar.UnregisterPropertyChangedCallback(
-                winrt::ScrollBar::IndicatorModeProperty(), m_scrollBarIndicatorModeChangedToken.value);
+            m_scrollBar.UnregisterPropertyChangedCallback(winrt::ScrollBar::IndicatorModeProperty(), m_scrollBarIndicatorModeChangedToken.value);
             m_scrollBarIndicatorModeChangedToken.value = 0;
         }
 
         if (m_scrollBarVisibilityChangedToken.value != 0)
         {
-            m_scrollBar.UnregisterPropertyChangedCallback(
-                winrt::UIElement::VisibilityProperty(), m_scrollBarVisibilityChangedToken.value);
+            m_scrollBar.UnregisterPropertyChangedCallback(winrt::UIElement::VisibilityProperty(), m_scrollBarVisibilityChangedToken.value);
             m_scrollBarVisibilityChangedToken.value = 0;
         }
 #endif //_DEBUG
@@ -308,8 +328,11 @@ void ScrollBarController::UpdateAreScrollControllerInteractionsAllowed()
 {
     const bool oldAreScrollControllerInteractionsAllowed = m_areScrollControllerInteractionsAllowed;
 
-    m_areScrollControllerInteractionsAllowed = m_scrollBar && m_scrollBar.IsEnabled() && m_scrollBar.Maximum() > m_scrollBar.Minimum() &&
-                                               m_scrollMode != winrt::ScrollingScrollMode::Disabled;
+    m_areScrollControllerInteractionsAllowed =
+        m_scrollBar &&
+        m_scrollBar.IsEnabled() &&
+        m_scrollBar.Maximum() > m_scrollBar.Minimum() &&
+        m_scrollMode != winrt::ScrollingScrollMode::Disabled;
 
     if (oldAreScrollControllerInteractionsAllowed != m_areScrollControllerInteractionsAllowed)
     {
@@ -325,7 +348,7 @@ void ScrollBarController::HookScrollBarEvent()
 
     if (m_scrollBar)
     {
-        m_scrollBarScrollToken = m_scrollBar.Scroll({this, &ScrollBarController::OnScroll});
+        m_scrollBarScrollToken = m_scrollBar.Scroll({ this, &ScrollBarController::OnScroll });
     }
 }
 
@@ -340,13 +363,21 @@ void ScrollBarController::UnhookScrollBarEvent()
     }
 }
 
-void ScrollBarController::OnScrollBarPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args)
+void ScrollBarController::OnScrollBarPropertyChanged(
+    const winrt::DependencyObject& /*sender*/,
+    const winrt::DependencyProperty& args)
 {
     MUX_ASSERT(m_scrollBar);
 
     if (args == winrt::Control::IsEnabledProperty())
     {
-        SCROLLVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"IsEnabled", m_scrollBar.IsEnabled());
+        SCROLLVIEW_TRACE_VERBOSE(
+            nullptr,
+            TRACE_MSG_METH_STR_INT,
+            METH_NAME,
+            this,
+            L"IsEnabled",
+            m_scrollBar.IsEnabled());
 
         // Potentially changed ScrollBar.Minimum / ScrollBar.Maximum value(s) may have an effect
         // on the read-only IScrollController.AreScrollControllerInteractionsAllowed property.
@@ -355,7 +386,13 @@ void ScrollBarController::OnScrollBarPropertyChanged(const winrt::DependencyObje
 #ifdef _DEBUG
     else if (args == winrt::UIElement::VisibilityProperty())
     {
-        SCROLLVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"Visibility", m_scrollBar.Visibility());
+        SCROLLVIEW_TRACE_VERBOSE(
+            nullptr,
+            TRACE_MSG_METH_STR_INT,
+            METH_NAME,
+            this,
+            L"Visibility",
+            m_scrollBar.Visibility());
     }
     else if (args == winrt::ScrollBar::IndicatorModeProperty())
     {
@@ -370,11 +407,18 @@ void ScrollBarController::OnScrollBarPropertyChanged(const winrt::DependencyObje
 #endif //_DEBUG
 }
 
-void ScrollBarController::OnScroll(const winrt::IInspectable& /*sender*/, const winrt::ScrollEventArgs& args)
+void ScrollBarController::OnScroll(
+    const winrt::IInspectable& /*sender*/,
+    const winrt::ScrollEventArgs& args)
 {
     const auto scrollEventType = args.ScrollEventType();
 
-    SCROLLVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::ScrollEventTypeToString(scrollEventType).c_str());
+    SCROLLVIEW_TRACE_VERBOSE(
+        nullptr,
+        TRACE_MSG_METH_STR,
+        METH_NAME,
+        this,
+        TypeLogging::ScrollEventTypeToString(scrollEventType).c_str());
 
     if (!m_scrollBar)
     {
@@ -426,7 +470,8 @@ void ScrollBarController::OnScroll(const winrt::IInspectable& /*sender*/, const 
 
         bool offsetChangeRequested = false;
 
-        if (scrollEventType == winrt::ScrollEventType::ThumbPosition || scrollEventType == winrt::ScrollEventType::ThumbTrack)
+        if (scrollEventType == winrt::ScrollEventType::ThumbPosition ||
+            scrollEventType == winrt::ScrollEventType::ThumbTrack)
         {
             offsetChangeRequested = RaiseScrollToRequested(args.NewValue());
         }
@@ -485,7 +530,8 @@ void ScrollBarController::OnScroll(const winrt::IInspectable& /*sender*/, const 
     m_lastScrollBarValue = m_scrollBar.Value();
 }
 
-bool ScrollBarController::RaiseScrollToRequested(double offset)
+bool ScrollBarController::RaiseScrollToRequested(
+    double offset)
 {
     SCROLLVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, offset);
 
@@ -494,15 +540,19 @@ bool ScrollBarController::RaiseScrollToRequested(double offset)
         return false;
     }
 
-    auto options = winrt::make_self<ScrollingScrollOptions>(winrt::ScrollingAnimationMode::Disabled, winrt::ScrollingSnapPointsMode::Ignore);
+    auto options = winrt::make_self<ScrollingScrollOptions>(
+        winrt::ScrollingAnimationMode::Disabled,
+        winrt::ScrollingSnapPointsMode::Ignore);
 
-    auto scrollToRequestedEventArgs = winrt::make_self<ScrollControllerScrollToRequestedEventArgs>(offset, *options);
+    auto scrollToRequestedEventArgs = winrt::make_self<ScrollControllerScrollToRequestedEventArgs>(
+        offset,
+        *options);
 
     m_scrollToRequested(*this, *scrollToRequestedEventArgs);
 
     int32_t offsetChangeCorrelationId = scrollToRequestedEventArgs.as<winrt::ScrollControllerScrollToRequestedEventArgs>().CorrelationId();
 
-    // Only increment m_operationsCount when the returned OffsetsChangeCorrelationId represents a new request that was not coalesced with a pending request.
+    // Only increment m_operationsCount when the returned OffsetsChangeCorrelationId represents a new request that was not coalesced with a pending request. 
     if (offsetChangeCorrelationId != -1 && offsetChangeCorrelationId != m_lastOffsetChangeCorrelationIdForScrollTo)
     {
         m_lastOffsetChangeCorrelationIdForScrollTo = offsetChangeCorrelationId;
@@ -513,7 +563,8 @@ bool ScrollBarController::RaiseScrollToRequested(double offset)
     return false;
 }
 
-bool ScrollBarController::RaiseScrollByRequested(double offsetChange)
+bool ScrollBarController::RaiseScrollByRequested(
+    double offsetChange)
 {
     SCROLLVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, offsetChange);
 
@@ -522,15 +573,19 @@ bool ScrollBarController::RaiseScrollByRequested(double offsetChange)
         return false;
     }
 
-    auto options = winrt::make_self<ScrollingScrollOptions>(winrt::ScrollingAnimationMode::Disabled, winrt::ScrollingSnapPointsMode::Ignore);
+    auto options = winrt::make_self<ScrollingScrollOptions>(
+        winrt::ScrollingAnimationMode::Disabled,
+        winrt::ScrollingSnapPointsMode::Ignore);
 
-    auto scrollByRequestedEventArgs = winrt::make_self<ScrollControllerScrollByRequestedEventArgs>(offsetChange, *options);
+    auto scrollByRequestedEventArgs = winrt::make_self<ScrollControllerScrollByRequestedEventArgs>(
+        offsetChange,
+        *options);
 
     m_scrollByRequested(*this, *scrollByRequestedEventArgs);
 
     int32_t offsetChangeCorrelationId = scrollByRequestedEventArgs.as<winrt::ScrollControllerScrollByRequestedEventArgs>().CorrelationId();
 
-    // Only increment m_operationsCount when the returned OffsetsChangeCorrelationId represents a new request that was not coalesced with a pending request.
+    // Only increment m_operationsCount when the returned OffsetsChangeCorrelationId represents a new request that was not coalesced with a pending request. 
     if (offsetChangeCorrelationId != -1 && offsetChangeCorrelationId != m_lastOffsetChangeCorrelationIdForScrollBy)
     {
         m_lastOffsetChangeCorrelationIdForScrollBy = offsetChangeCorrelationId;
@@ -541,7 +596,8 @@ bool ScrollBarController::RaiseScrollByRequested(double offsetChange)
     return false;
 }
 
-bool ScrollBarController::RaiseAddScrollVelocityRequested(double offsetChange)
+bool ScrollBarController::RaiseAddScrollVelocityRequested(
+    double offsetChange)
 {
     if (!m_addScrollVelocityRequested)
     {
@@ -561,15 +617,15 @@ bool ScrollBarController::RaiseAddScrollVelocityRequested(double offsetChange)
     winrt::IInspectable inertiaDecayRateAsInsp = box_value(s_inertiaDecayRate);
     winrt::IReference<float> inertiaDecayRate = inertiaDecayRateAsInsp.as<winrt::IReference<float>>();
 
-    auto addScrollVelocityRequestedEventArgs =
-        winrt::make_self<ScrollControllerAddScrollVelocityRequestedEventArgs>(static_cast<float>(offsetVelocity), inertiaDecayRate);
+    auto addScrollVelocityRequestedEventArgs = winrt::make_self<ScrollControllerAddScrollVelocityRequestedEventArgs>(
+        static_cast<float>(offsetVelocity),
+        inertiaDecayRate);
 
     m_addScrollVelocityRequested(*this, *addScrollVelocityRequestedEventArgs);
 
-    int32_t offsetChangeCorrelationId =
-        addScrollVelocityRequestedEventArgs.as<winrt::ScrollControllerAddScrollVelocityRequestedEventArgs>().CorrelationId();
+    int32_t offsetChangeCorrelationId = addScrollVelocityRequestedEventArgs.as<winrt::ScrollControllerAddScrollVelocityRequestedEventArgs>().CorrelationId();
 
-    // Only increment m_operationsCount when the returned OffsetsChangeCorrelationId represents a new request that was not coalesced with a pending request.
+    // Only increment m_operationsCount when the returned OffsetsChangeCorrelationId represents a new request that was not coalesced with a pending request. 
     if (offsetChangeCorrelationId != -1 && offsetChangeCorrelationId != m_lastOffsetChangeCorrelationIdForAddScrollVelocity)
     {
         m_lastOffsetChangeCorrelationIdForAddScrollVelocity = offsetChangeCorrelationId;

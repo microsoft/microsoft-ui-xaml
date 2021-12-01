@@ -17,12 +17,8 @@ enum class MathTokenType
 
 struct MathToken
 {
-    MathToken(MathTokenType t, wchar_t c) : Type(t), Char(c), Value(std::numeric_limits<double>::quiet_NaN())
-    {
-    }
-    MathToken(MathTokenType t, double d) : Type(t), Value(d), Char(0)
-    {
-    }
+    MathToken(MathTokenType t, wchar_t c) : Type(t), Char(c), Value(std::numeric_limits<double>::quiet_NaN()) {}
+    MathToken(MathTokenType t, double d) : Type(t), Value(d), Char(0) {}
 
     MathTokenType Type;
     wchar_t Char;
@@ -31,16 +27,16 @@ struct MathToken
 
 class NumberBoxParser
 {
-public:
-    static winrt::IReference<double> Compute(const std::wstring_view expr, const winrt::INumberParser& numberParser);
+    public:
+        static winrt::IReference<double> Compute(const std::wstring_view expr, const winrt::INumberParser& numberParser);
 
-private:
-    static std::vector<MathToken> GetTokens(const wchar_t* input, const winrt::INumberParser& numberParser);
+    private:
+        static std::vector<MathToken> GetTokens(const wchar_t *input, const winrt::INumberParser& numberParser);
 
-    static std::tuple<double, size_t> GetNextNumber(const std::wstring& input, const winrt::INumberParser& numberParser);
-    static int constexpr GetPrecedenceValue(wchar_t c);
+        static std::tuple<double, size_t> GetNextNumber(const std::wstring& input, const winrt::INumberParser& numberParser);
+        static int constexpr GetPrecedenceValue(wchar_t c);
 
-    static std::vector<MathToken> ConvertInfixToPostfix(const std::vector<MathToken>& tokens);
+        static std::vector<MathToken> ConvertInfixToPostfix(const std::vector<MathToken>& tokens);
 
-    static winrt::IReference<double> ComputePostfixExpression(const std::vector<MathToken>& tokens);
+        static winrt::IReference<double> ComputePostfixExpression(const std::vector<MathToken>& tokens);
 };

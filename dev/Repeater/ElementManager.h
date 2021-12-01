@@ -11,15 +11,13 @@ class ElementManager final
 {
 
 public:
-    ElementManager(const ITrackerHandleManager* owner) : m_owner(owner)
-    {
-    }
+    ElementManager(const ITrackerHandleManager* owner) : m_owner(owner) { }
 
     void SetContext(const winrt::VirtualizingLayoutContext& virtualContext);
-
+    
     void OnBeginMeasure(const ScrollOrientation& orientation);
 
-    int GetRealizedElementCount() const;
+    int GetRealizedElementCount() const ;
     winrt::UIElement GetAt(int realizedIndex);
 
     void Add(const winrt::UIElement& element, int dataIndex);
@@ -42,7 +40,7 @@ public:
 
     bool IsWindowConnected(const winrt::Rect& window, const ScrollOrientation& orientation, bool scrollOrientationSameAsFlow) const;
     void DataSourceChanged(const winrt::IInspectable& source, winrt::NotifyCollectionChangedEventArgs const& args);
-
+    
     // we do not want copies of this type
     ElementManager(const ElementManager& that) = delete;
     ElementManager& ElementManager::operator=(const ElementManager& other) = delete;
@@ -65,6 +63,6 @@ private:
 
     std::vector<tracker_ref<winrt::UIElement>> m_realizedElements;
     std::vector<winrt::Rect> m_realizedElementLayoutBounds;
-    int m_firstRealizedDataIndex{-1};
-    winrt::VirtualizingLayoutContext m_context{nullptr};
+    int m_firstRealizedDataIndex{ -1 };
+    winrt::VirtualizingLayoutContext m_context{ nullptr };
 };

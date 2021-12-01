@@ -10,8 +10,15 @@
 #include <winerror.h>
 #include <math.h>
 
-AnimatedVisualPlayer::AnimationPlay::AnimationPlay(AnimatedVisualPlayer& owner, float fromProgress, float toProgress, bool looped) :
-    m_owner{&owner}, m_fromProgress(fromProgress), m_toProgress(toProgress), m_looped(looped)
+AnimatedVisualPlayer::AnimationPlay::AnimationPlay(
+    AnimatedVisualPlayer& owner,
+    float fromProgress,
+    float toProgress,
+    bool looped)
+    : m_owner{ &owner }
+    , m_fromProgress(fromProgress)
+    , m_toProgress(toProgress)
+    , m_looped(looped)
 {
     // Save the play duration as time.
     // If toProgress is less than fromProgress the animation will wrap around,
@@ -34,7 +41,7 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
     MUX_ASSERT(!m_controller);
 
     // If the duration is really short (< 20ms) don't bother trying to animate.
-    if (m_playDuration < winrt::TimeSpan{20ms})
+    if (m_playDuration < winrt::TimeSpan{ 20ms })
     {
         // Nothing to play. Jump to the from position.
         // This will have the side effect of completing this play immediately.
@@ -80,7 +87,9 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
         // Create a batch so that we can know when the animation finishes. This only
         // works for non-looping animations (the batch completes immediately
         // for looping animations).
-        m_batch = m_looped ? nullptr : compositor.CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
+        m_batch = m_looped
+            ? nullptr
+            : compositor.CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
 
         // Start the animation and get the controller.
         m_owner->m_progressPropertySet.StartAnimation(L"Progress", animation);
@@ -106,22 +115,23 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
         if (m_batch)
         {
             // Subscribe to the batch completed event.
-            m_batchCompletedToken = m_batch.Completed([this](winrt::IInspectable const&, winrt::CompositionBatchCompletedEventArgs const&) {
-                // Complete the play when the batch completes.
-                //
-                // The "this" pointer is guaranteed to be valid because:
-                // 1) The AnimationPlay (*this) is kept alive by a reference from m_owner.m_nowPlaying that
-                //    is only reset by a call to the AnimationPlay::Complete() method.
-                // 2) Before m_owner.m_nowPlaying is reset in AnimationPlay::Complete(),
-                //    the m_batch.Completed event is unsubscribed, guaranteeing that this lambda
-                //    will not run after AnimationPlay::Complete() has been called.
-                // 3) To handle AnimatedVisualPlayer shutdown, AnimationPlay::Complete() is called when
-                //    the AnimatedVisualPlayer is unloaded, so that the AnimationPlay cannot outlive
-                //    the AnimatedVisualPlayer.
-                //
-                // Do not do anything after calling Complete()... the object is destructed already.
-                this->Complete();
-            });
+            m_batchCompletedToken = m_batch.Completed([this](winrt::IInspectable const&, winrt::CompositionBatchCompletedEventArgs const&)
+                {
+                    // Complete the play when the batch completes.
+                    //
+                    // The "this" pointer is guaranteed to be valid because:
+                    // 1) The AnimationPlay (*this) is kept alive by a reference from m_owner.m_nowPlaying that
+                    //    is only reset by a call to the AnimationPlay::Complete() method.
+                    // 2) Before m_owner.m_nowPlaying is reset in AnimationPlay::Complete(),
+                    //    the m_batch.Completed event is unsubscribed, guaranteeing that this lambda
+                    //    will not run after AnimationPlay::Complete() has been called.
+                    // 3) To handle AnimatedVisualPlayer shutdown, AnimationPlay::Complete() is called when
+                    //    the AnimatedVisualPlayer is unloaded, so that the AnimationPlay cannot outlive
+                    //    the AnimatedVisualPlayer.
+                    //
+                    // Do not do anything after calling Complete()... the object is destructed already.
+                    this->Complete();
+                });
             // Indicate that nothing else is going into the batch.
             m_batch.End();
         }
@@ -151,7 +161,7 @@ void AnimatedVisualPlayer::AnimationPlay::OnHiding()
     {
         m_isPausedBecauseHidden = true;
 
-        // Pause the animation if it's not already paused.
+        // Pause the animation if it's not already paused. 
         // This is necessary to ensure that the animation doesn't
         // keep running and causing DWM to wake up when the animation
         // cannot be seen.
@@ -234,7 +244,7 @@ void AnimatedVisualPlayer::AnimationPlay::Complete()
     //     alive because if it had been unloaded or destroyedComplete() would have been
     //     called during the unload or from the destructor which would have unsubscribed
     //     from the batch completion event.
-    //
+    //    
 
     // Grab a copy of the pointer so the object stays alive until the method returns.
     // We need to copy pointer only in case if owner is alive,
@@ -249,7 +259,7 @@ void AnimatedVisualPlayer::AnimationPlay::Complete()
     if (m_batch)
     {
         m_batch.Completed(m_batchCompletedToken);
-        m_batchCompletedToken = {0};
+        m_batchCompletedToken = { 0 };
     }
 
     // If this play is the one that is currently associated with the player,
@@ -294,48 +304,54 @@ AnimatedVisualPlayer::AnimatedVisualPlayer()
     // Ensure the content can't render outside the bounds of the element.
     m_rootVisual.Clip(compositor.CreateInsetClip());
 
-    // Subscribe to suspending, resuming, and visibility events so we can pause the animation if it's
+    // Subscribe to suspending, resuming, and visibility events so we can pause the animation if it's 
     // definitely not visible.
-    m_suspendingRevoker =
-        winrt::Application::Current().Suspending(winrt::auto_revoke, [weakThis{get_weak()}](auto const& /*sender*/, auto const& /*e*/) {
-            if (auto strongThis = weakThis.get())
+    m_suspendingRevoker = winrt::Application::Current().Suspending(winrt::auto_revoke, [weakThis{ get_weak() }](
+        auto const& /*sender*/,
+        auto const& /*e*/)
+    {
+        if (auto strongThis = weakThis.get())
+        {
+            strongThis->OnHiding();
+        }
+    });
+
+    m_resumingRevoker = winrt::Application::Current().Resuming(winrt::auto_revoke, [weakThis{ get_weak() }](
+        auto const& /*sender*/,
+        auto const& /*e*/)
+    {
+        if (auto strongThis = weakThis.get())
+        {
+            if (winrt::CoreWindow::GetForCurrentThread().Visible())
             {
+                strongThis->OnUnhiding();
+            }
+        }
+    });
+
+    m_visibilityChangedRevoker = winrt::CoreWindow::GetForCurrentThread().VisibilityChanged(winrt::auto_revoke, [weakThis{ get_weak() }](
+        auto const& /*sender*/,
+        auto const& e)
+    {
+        if (auto strongThis = weakThis.get())
+        {
+            if (e.Visible())
+            {
+                // Transition from invisible to visible.
+                strongThis->OnUnhiding();
+            }
+            else
+            {
+                // Transition from visible to invisible.
                 strongThis->OnHiding();
             }
-        });
-
-    m_resumingRevoker =
-        winrt::Application::Current().Resuming(winrt::auto_revoke, [weakThis{get_weak()}](auto const& /*sender*/, auto const& /*e*/) {
-            if (auto strongThis = weakThis.get())
-            {
-                if (winrt::CoreWindow::GetForCurrentThread().Visible())
-                {
-                    strongThis->OnUnhiding();
-                }
-            }
-        });
-
-    m_visibilityChangedRevoker = winrt::CoreWindow::GetForCurrentThread().VisibilityChanged(
-        winrt::auto_revoke, [weakThis{get_weak()}](auto const& /*sender*/, auto const& e) {
-            if (auto strongThis = weakThis.get())
-            {
-                if (e.Visible())
-                {
-                    // Transition from invisible to visible.
-                    strongThis->OnUnhiding();
-                }
-                else
-                {
-                    // Transition from visible to invisible.
-                    strongThis->OnHiding();
-                }
-            }
-        });
+        }
+    });
 
     // Subscribe to the Loaded/Unloaded events to ensure we unload the animated visual then reload
     // when it is next loaded.
-    m_loadedRevoker = Loaded(winrt::auto_revoke, {this, &AnimatedVisualPlayer::OnLoaded});
-    m_unloadedRevoker = Unloaded(winrt::auto_revoke, {this, &AnimatedVisualPlayer::OnUnloaded});
+    m_loadedRevoker = Loaded(winrt::auto_revoke, { this, &AnimatedVisualPlayer::OnLoaded });
+    m_unloadedRevoker = Unloaded(winrt::auto_revoke, { this, &AnimatedVisualPlayer::OnUnloaded });
 }
 
 AnimatedVisualPlayer::~AnimatedVisualPlayer()
@@ -360,8 +376,8 @@ void AnimatedVisualPlayer::OnLoaded(winrt::IInspectable const& /*sender*/, winrt
     // Any initialization that can call back into the outer object MUST be
     // done here rather than the constructor.
     //
-    // Other initialization can be done here too, so rather than having to
-    // guess whether an initialization call calls back into the outer, just
+    // Other initialization can be done here too, so rather than having to 
+    // guess whether an initialization call calls back into the outer, just 
     // put most of the initialization here.
     //
 
@@ -376,7 +392,7 @@ void AnimatedVisualPlayer::OnLoaded(winrt::IInspectable const& /*sender*/, winrt
 
     if (m_isUnloaded)
     {
-        // Reload the content.
+        // Reload the content. 
         // Only do this if the element had been previously unloaded so that the
         // first Loaded event doesn't overwrite any state that was set before
         // the event was fired.
@@ -431,14 +447,14 @@ winrt::Size AnimatedVisualPlayer::MeasureOverride(winrt::Size const& availableSi
 
     if ((!m_animatedVisualRoot) || (m_animatedVisualSize == winrt::float2::zero()))
     {
-        return {0, 0};
+        return { 0, 0 };
     }
 
     switch (Stretch())
     {
     case winrt::Stretch::None:
         // No scaling will be done. Measured size is the smallest of each dimension.
-        return {std::min(m_animatedVisualSize.x, availableSize.Width), std::min(m_animatedVisualSize.y, availableSize.Height)};
+        return { std::min(m_animatedVisualSize.x, availableSize.Width), std::min(m_animatedVisualSize.y, availableSize.Height) };
     case winrt::Stretch::Fill:
         // Both height and width will be scaled to fill the available space.
         if (availableSize.Width != std::numeric_limits<double>::infinity() && availableSize.Height != std::numeric_limits<double>::infinity())
@@ -457,12 +473,15 @@ winrt::Size AnimatedVisualPlayer::MeasureOverride(winrt::Size const& availableSi
             // Scale so there is no space around the edge.
             const auto widthScale = availableSize.Width / m_animatedVisualSize.x;
             const auto heightScale = availableSize.Height / m_animatedVisualSize.y;
-            auto measuredSize = (heightScale < widthScale) ? winrt::Size{availableSize.Width, m_animatedVisualSize.y * widthScale}
-                                                           : winrt::Size{m_animatedVisualSize.x * heightScale, availableSize.Height};
+            auto measuredSize = (heightScale < widthScale)
+                ? winrt::Size{ availableSize.Width, m_animatedVisualSize.y * widthScale }
+                : winrt::Size{ m_animatedVisualSize.x * heightScale, availableSize.Height };
 
             // Clip the size to the available size.
-            measuredSize =
-                winrt::Size{std::min(measuredSize.Width, availableSize.Width), std::min(measuredSize.Height, availableSize.Height)};
+            measuredSize = winrt::Size{
+                            std::min(measuredSize.Width, availableSize.Width),
+                            std::min(measuredSize.Height, availableSize.Height)
+            };
 
             return measuredSize;
         }
@@ -471,18 +490,17 @@ winrt::Size AnimatedVisualPlayer::MeasureOverride(winrt::Size const& availableSi
         break;
     } // end switch
 
-    // Uniform scaling.
-    // Scale so that one dimension fits exactly and no dimension exceeds the boundary.
-    const auto widthScale =
-        ((availableSize.Width == std::numeric_limits<double>::infinity()) ? FLT_MAX : availableSize.Width) / m_animatedVisualSize.x;
-    const auto heightScale = ((availableSize.Height == std::numeric_limits<double>::infinity()) ? FLT_MAX : availableSize.Height) /
-                             m_animatedVisualSize.y;
-    return (heightScale > widthScale) ? winrt::Size{availableSize.Width, m_animatedVisualSize.y * widthScale}
-                                      : winrt::Size{m_animatedVisualSize.x * heightScale, availableSize.Height};
+        // Uniform scaling.
+        // Scale so that one dimension fits exactly and no dimension exceeds the boundary.
+    const auto widthScale = ((availableSize.Width == std::numeric_limits<double>::infinity()) ? FLT_MAX : availableSize.Width) / m_animatedVisualSize.x;
+    const auto heightScale = ((availableSize.Height == std::numeric_limits<double>::infinity()) ? FLT_MAX : availableSize.Height) / m_animatedVisualSize.y;
+    return (heightScale > widthScale)
+        ? winrt::Size{ availableSize.Width, m_animatedVisualSize.y * widthScale }
+        : winrt::Size{ m_animatedVisualSize.x * heightScale, availableSize.Height };
 }
 
 // Public API.
-// Overrides FrameworkElement::ArrangeOverride. Scales to fit the animated visual into finalSize
+// Overrides FrameworkElement::ArrangeOverride. Scales to fit the animated visual into finalSize 
 // respecting the current Stretch and returns the size actually used.
 winrt::Size AnimatedVisualPlayer::ArrangeOverride(winrt::Size const& finalSize)
 {
@@ -490,7 +508,7 @@ winrt::Size AnimatedVisualPlayer::ArrangeOverride(winrt::Size const& finalSize)
     {
         // We are showing the fallback content due to a failure to load an animated visual.
         // Tell the content to arrange itself.
-        Children().GetAt(0).Arrange(winrt::Rect{winrt::Point{0, 0}, finalSize});
+        Children().GetAt(0).Arrange(winrt::Rect{ winrt::Point{0,0}, finalSize });
         return finalSize;
     }
 
@@ -500,8 +518,8 @@ winrt::Size AnimatedVisualPlayer::ArrangeOverride(winrt::Size const& finalSize)
     if (!m_animatedVisualRoot)
     {
         // No content. 0 size.
-        scale = {1, 1};
-        arrangedSize = {0, 0};
+        scale = { 1, 1 };
+        arrangedSize = { 0,0 };
     }
     else
     {
@@ -509,8 +527,11 @@ winrt::Size AnimatedVisualPlayer::ArrangeOverride(winrt::Size const& finalSize)
         if (stretch == winrt::Stretch::None)
         {
             // Do not scale, do not center.
-            scale = {1, 1};
-            arrangedSize = {std::min(finalSize.Width, m_animatedVisualSize.x), std::min(finalSize.Height, m_animatedVisualSize.y)};
+            scale = { 1, 1 };
+            arrangedSize = {
+                std::min(finalSize.Width, m_animatedVisualSize.x),
+                std::min(finalSize.Height, m_animatedVisualSize.y)
+            };
         }
         else
         {
@@ -542,25 +563,30 @@ winrt::Size AnimatedVisualPlayer::ArrangeOverride(winrt::Size const& finalSize)
                 break;
             }
 
-            // A size needs to be set because there's an InsetClip applied, and without a
+            // A size needs to be set because there's an InsetClip applied, and without a 
             // size the clip will prevent anything from being visible.
             arrangedSize = {
                 std::min(finalSize.Width / scale.x, m_animatedVisualSize.x),
-                std::min(finalSize.Height / scale.y, m_animatedVisualSize.y)};
+                std::min(finalSize.Height / scale.y, m_animatedVisualSize.y)
+            };
 
             // Center the animation within the available space.
             const auto offset = (finalSize - (m_animatedVisualSize * scale)) / 2;
             const auto z = 0.0F;
-            m_rootVisual.Offset({offset, z});
+            m_rootVisual.Offset({ offset, z });
 
             // Adjust the position of the clip.
-            m_rootVisual.Clip().Offset((stretch == winrt::Stretch::UniformToFill) ? -(offset / scale) : winrt::float2::zero());
+            m_rootVisual.Clip().Offset(
+                (stretch == winrt::Stretch::UniformToFill)
+                ? -(offset / scale)
+                : winrt::float2::zero()
+            );
         }
     }
 
     m_rootVisual.Size(arrangedSize);
     const auto z = 1.0F;
-    m_rootVisual.Scale({scale, z});
+    m_rootVisual.Scale({ scale, z });
 
     return finalSize;
 }
@@ -599,7 +625,7 @@ winrt::IAsyncAction AnimatedVisualPlayer::PlayAsync(double fromProgress, double 
     // Used to detect reentrance.
     const auto version = ++m_playAsyncVersion;
 
-    // Cause any other plays to return.
+    // Cause any other plays to return. 
     // WARNING - this call may cause reentrance via the IsPlaying DP.
     Stop();
 
@@ -612,7 +638,7 @@ winrt::IAsyncAction AnimatedVisualPlayer::PlayAsync(double fromProgress, double 
     MUX_ASSERT(!m_nowPlaying);
 
     // Adjust for the case where there is a segment that
-    // goes from [fromProgress..0] where m_fromProgress > 0.
+    // goes from [fromProgress..0] where m_fromProgress > 0. 
     // This is equivalent to [fromProgress..1], and by setting
     // toProgress to 1 it saves us from generating extra key frames.
     if (toProgress == 0 && fromProgress > 0)
@@ -633,7 +659,10 @@ winrt::IAsyncAction AnimatedVisualPlayer::PlayAsync(double fromProgress, double 
     // Keep a copy of the pointer because reentrance may cause the m_nowPlaying
     // value to change.
     auto thisPlay = m_nowPlaying = std::make_shared<AnimationPlay>(
-        *this, std::clamp(static_cast<float>(fromProgress), 0.0F, 1.0F), std::clamp(static_cast<float>(toProgress), 0.0F, 1.0F), looped);
+        *this,
+        std::clamp(static_cast<float>(fromProgress), 0.0F, 1.0F),
+        std::clamp(static_cast<float>(toProgress), 0.0F, 1.0F),
+        looped);
 
     if (IsAnimatedVisualLoaded())
     {
@@ -711,7 +740,8 @@ void AnimatedVisualPlayer::Stop()
     }
 }
 
-void AnimatedVisualPlayer::OnAutoPlayPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+void AnimatedVisualPlayer::OnAutoPlayPropertyChanged(
+    winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto newValue = unbox_value<bool>(args.NewValue());
 
@@ -725,7 +755,8 @@ void AnimatedVisualPlayer::OnAutoPlayPropertyChanged(winrt::DependencyPropertyCh
     }
 }
 
-void AnimatedVisualPlayer::OnFallbackContentPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+void AnimatedVisualPlayer::OnFallbackContentPropertyChanged(
+    winrt::DependencyPropertyChangedEventArgs const& args)
 {
     if (m_isFallenBack)
     {
@@ -733,7 +764,8 @@ void AnimatedVisualPlayer::OnFallbackContentPropertyChanged(winrt::DependencyPro
     }
 }
 
-void AnimatedVisualPlayer::OnSourcePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+void AnimatedVisualPlayer::OnSourcePropertyChanged(
+    winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto newSource = args.NewValue().as<winrt::IAnimatedVisualSource>();
 
@@ -746,13 +778,16 @@ void AnimatedVisualPlayer::OnSourcePropertyChanged(winrt::DependencyPropertyChan
     if (auto newDynamicSource = newSource.try_as<winrt::IDynamicAnimatedVisualSource>())
     {
         // Connect to the update notifications of the new source.
-        m_dynamicAnimatedVisualInvalidatedRevoker =
-            newDynamicSource.AnimatedVisualInvalidated(winrt::auto_revoke, [weakThis{get_weak()}](auto const& /*sender*/, auto const& /*e*/) {
-                if (auto strongThis = weakThis.get())
-                {
-                    strongThis->UpdateContent();
-                }
-            });
+        m_dynamicAnimatedVisualInvalidatedRevoker
+            = newDynamicSource.AnimatedVisualInvalidated(winrt::auto_revoke, [weakThis{ get_weak() }](
+                auto const& /*sender*/,
+                auto const& /*e*/)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->UpdateContent();
+            }
+        });
     }
 
     UpdateContent();
@@ -788,7 +823,7 @@ void AnimatedVisualPlayer::UnloadContent()
         InvalidateMeasure();
 
         // WARNING - these may cause reentrance.
-        Duration(winrt::TimeSpan{0});
+        Duration(winrt::TimeSpan{ 0 });
         Diagnostics(nullptr);
         // Set IsAnimatedVisualLoaded last as it is the property that is most likely
         // to have user code react to its state change.
@@ -903,7 +938,7 @@ void AnimatedVisualPlayer::LoadFallbackContent()
 {
     MUX_ASSERT(m_isFallenBack);
 
-    winrt::UIElement fallbackContentElement{nullptr};
+    winrt::UIElement fallbackContentElement{ nullptr };
     auto fallbackContentTemplate = FallbackContent();
     if (fallbackContentTemplate)
     {
@@ -940,7 +975,8 @@ void AnimatedVisualPlayer::SetFallbackContent(winrt::UIElement const& uiElement)
     InvalidateMeasure();
 }
 
-void AnimatedVisualPlayer::OnPlaybackRatePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+void AnimatedVisualPlayer::OnPlaybackRatePropertyChanged(
+    winrt::DependencyPropertyChangedEventArgs const& args)
 {
     if (m_nowPlaying)
     {
@@ -948,7 +984,8 @@ void AnimatedVisualPlayer::OnPlaybackRatePropertyChanged(winrt::DependencyProper
     }
 }
 
-void AnimatedVisualPlayer::OnStretchPropertyChanged(winrt::DependencyPropertyChangedEventArgs const&)
+void AnimatedVisualPlayer::OnStretchPropertyChanged(
+    winrt::DependencyPropertyChangedEventArgs const&)
 {
     InvalidateMeasure();
 }

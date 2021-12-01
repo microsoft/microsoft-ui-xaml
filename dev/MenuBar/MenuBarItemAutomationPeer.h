@@ -6,13 +6,14 @@
 #include "MenuBarItem.h"
 #include "MenuBarItemAutomationPeer.g.h"
 
-class MenuBarItemAutomationPeer : public ReferenceTracker<MenuBarItemAutomationPeer, winrt::implementation::MenuBarItemAutomationPeerT>
+class MenuBarItemAutomationPeer :
+    public ReferenceTracker<MenuBarItemAutomationPeer, winrt::implementation::MenuBarItemAutomationPeerT>
 {
 
 public:
     MenuBarItemAutomationPeer(winrt::MenuBarItem const& owner);
 
-    // IAutomationPeerOverrides
+    // IAutomationPeerOverrides 
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     winrt::AutomationControlType GetAutomationControlTypeCore();
     winrt::hstring GetNameCore();
@@ -25,4 +26,5 @@ public:
     winrt::ExpandCollapseState ExpandCollapseState();
     void Collapse();
     void Expand();
+
 };

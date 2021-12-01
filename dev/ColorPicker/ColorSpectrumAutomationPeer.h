@@ -7,13 +7,13 @@
 
 #include "ColorSpectrumAutomationPeer.g.h"
 
-class ColorSpectrumAutomationPeer
-    : public ReferenceTracker<ColorSpectrumAutomationPeer, winrt::implementation::ColorSpectrumAutomationPeerT, winrt::IValueProvider>
+class ColorSpectrumAutomationPeer :
+    public ReferenceTracker<ColorSpectrumAutomationPeer, winrt::implementation::ColorSpectrumAutomationPeerT, winrt::IValueProvider>
 {
 public:
     ColorSpectrumAutomationPeer(winrt::ColorSpectrum const& owner);
 
-    // IAutomationPeerOverrides
+    // IAutomationPeerOverrides 
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     winrt::AutomationControlType GetAutomationControlTypeCore();
     winrt::hstring GetLocalizedControlTypeCore();

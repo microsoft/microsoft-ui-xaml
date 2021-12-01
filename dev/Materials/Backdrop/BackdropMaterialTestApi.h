@@ -11,10 +11,7 @@
 class BackdropMaterialTestApi : public winrt::implementation::BackdropMaterialTestApiT<BackdropMaterialTestApi>
 {
 public:
-    static auto GetMicaController()
-    {
-        return BackdropMaterial::GetMicaController();
-    }
+    static auto GetMicaController() { return BackdropMaterial::GetMicaController(); }
 
     static bool IsBackdropMaterialActive()
     {
@@ -23,7 +20,7 @@ public:
 
     static winrt::Color TintColor()
     {
-        return GetMicaController() ? GetMicaController()->TintColor() : winrt::Color{0, 0, 0, 0};
+        return GetMicaController() ? GetMicaController()->TintColor() : winrt::Color{0,0,0,0};
     }
     static void TintColor(winrt::Color const& value)
     {
@@ -56,7 +53,7 @@ public:
     }
     static winrt::Color FallbackColor()
     {
-        return GetMicaController() ? GetMicaController()->FallbackColor() : winrt::Color{0, 0, 0, 0};
+        return GetMicaController() ? GetMicaController()->FallbackColor() : winrt::Color{ 0,0,0,0 };
     }
     static void FallbackColor(winrt::Color const& value)
     {
@@ -65,18 +62,15 @@ public:
             GetMicaController()->FallbackColor(value);
         }
     }
+
 };
 
-struct BackdropMaterialTestApiFactory
-    : winrt::factory_implementation::BackdropMaterialTestApiT<BackdropMaterialTestApiFactory, BackdropMaterialTestApi>
+struct BackdropMaterialTestApiFactory : winrt::factory_implementation::BackdropMaterialTestApiT<BackdropMaterialTestApiFactory, BackdropMaterialTestApi>
 {
 };
 
-namespace winrt::Microsoft::UI::Private::Controls {
-namespace factory_implementation {
-    using BackdropMaterialTestApi = ::BackdropMaterialTestApiFactory;
-};
-namespace implementation {
-    using BackdropMaterialTestApi = ::BackdropMaterialTestApi;
-};
-} // namespace winrt::Microsoft::UI::Private::Controls
+namespace winrt::Microsoft::UI::Private::Controls
+{
+    namespace factory_implementation { using BackdropMaterialTestApi = ::BackdropMaterialTestApiFactory; };
+    namespace implementation { using BackdropMaterialTestApi = ::BackdropMaterialTestApi; };
+}

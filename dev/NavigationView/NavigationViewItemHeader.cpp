@@ -19,10 +19,10 @@ void NavigationViewItemHeader::OnApplyTemplate()
 {
     if (auto splitView = GetSplitView())
     {
-        m_splitViewIsPaneOpenChangedRevoker = RegisterPropertyChanged(
-            splitView, winrt::SplitView::IsPaneOpenProperty(), {this, &NavigationViewItemHeader::OnSplitViewPropertyChanged});
-        m_splitViewDisplayModeChangedRevoker = RegisterPropertyChanged(
-            splitView, winrt::SplitView::DisplayModeProperty(), {this, &NavigationViewItemHeader::OnSplitViewPropertyChanged});
+        m_splitViewIsPaneOpenChangedRevoker = RegisterPropertyChanged(splitView,
+            winrt::SplitView::IsPaneOpenProperty(), { this, &NavigationViewItemHeader::OnSplitViewPropertyChanged });
+        m_splitViewDisplayModeChangedRevoker = RegisterPropertyChanged(splitView,
+            winrt::SplitView::DisplayModeProperty(), { this, &NavigationViewItemHeader::OnSplitViewPropertyChanged });
 
         UpdateIsClosedCompact();
     }
@@ -41,7 +41,8 @@ void NavigationViewItemHeader::OnApplyTemplate()
 
 void NavigationViewItemHeader::OnSplitViewPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args)
 {
-    if (args == winrt::SplitView::IsPaneOpenProperty() || args == winrt::SplitView::DisplayModeProperty())
+    if (args == winrt::SplitView::IsPaneOpenProperty() ||
+        args == winrt::SplitView::DisplayModeProperty())
     {
         UpdateIsClosedCompact();
     }
@@ -52,8 +53,7 @@ void NavigationViewItemHeader::UpdateIsClosedCompact()
     if (auto splitView = GetSplitView())
     {
         // Check if the pane is closed and if the splitview is in either compact mode.
-        m_isClosedCompact = !splitView.IsPaneOpen() && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay ||
-                                                        splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline);
+        m_isClosedCompact = !splitView.IsPaneOpen() && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline);
         UpdateVisualState(true /*useTransitions*/);
     }
 }
@@ -64,8 +64,7 @@ void NavigationViewItemHeader::UpdateVisualState(bool useTransitions)
 
     if (auto navigationView = GetNavigationView())
     {
-        winrt::VisualStateManager::GoToState(
-            *this, navigationView.PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::Top ? L"TopMode" : L"LeftMode", useTransitions);
+        winrt::VisualStateManager::GoToState(*this, navigationView.PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::Top ? L"TopMode" : L"LeftMode", useTransitions);
     }
 }
 
@@ -81,6 +80,6 @@ void NavigationViewItemHeader::UpdateItemIndentation()
     {
         auto const oldMargin = rootGrid.Margin();
         const auto newLeftMargin = Depth() * c_itemIndentation;
-        rootGrid.Margin({static_cast<double>(newLeftMargin), oldMargin.Top, oldMargin.Right, oldMargin.Bottom});
+        rootGrid.Margin({ static_cast<double>(newLeftMargin), oldMargin.Top, oldMargin.Right, oldMargin.Bottom });
     }
 }

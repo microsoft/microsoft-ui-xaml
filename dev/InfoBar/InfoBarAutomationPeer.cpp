@@ -47,11 +47,13 @@ void InfoBarAutomationPeer::RaiseClosedEvent(winrt::InfoBarSeverity severity, ws
     }
 }
 
+
 winrt::Peers::AutomationNotificationProcessing InfoBarAutomationPeer::GetProcessingForSeverity(winrt::InfoBarSeverity severity)
 {
     winrt::Peers::AutomationNotificationProcessing processing = winrt::Peers::AutomationNotificationProcessing::CurrentThenMostRecent;
 
-    if (severity == winrt::InfoBarSeverity::Error || severity == winrt::InfoBarSeverity::Warning)
+    if (severity == winrt::InfoBarSeverity::Error
+        || severity == winrt::InfoBarSeverity::Warning)
     {
         processing = winrt::Peers::AutomationNotificationProcessing::ImportantAll;
     }

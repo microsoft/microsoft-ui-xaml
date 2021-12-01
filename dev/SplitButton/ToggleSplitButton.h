@@ -10,17 +10,19 @@
 #include "SplitButton.h"
 #include "ToggleSplitButton.properties.h"
 
-class ToggleSplitButton : public winrt::implementation::ToggleSplitButtonT<ToggleSplitButton, SplitButton>, public ToggleSplitButtonProperties
+class ToggleSplitButton :
+    public winrt::implementation::ToggleSplitButtonT<ToggleSplitButton, SplitButton>,
+    public ToggleSplitButtonProperties
 {
 
 public:
     ForwardRefToBaseReferenceTracker(SplitButton)
 
-        ToggleSplitButton();
+    ToggleSplitButton();
 
     // Lift up EnsureProperties and ClearProperties to resolve ambiguity between ToggleSplitButtonProperties and SplitButtonProperties
-    using ToggleSplitButtonProperties::ClearProperties;
     using ToggleSplitButtonProperties::EnsureProperties;
+    using ToggleSplitButtonProperties::ClearProperties;
 
     // IFrameworkElement
     void OnApplyTemplate();

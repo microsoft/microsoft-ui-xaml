@@ -6,7 +6,9 @@
 #include "SwipeItem.g.h"
 #include "SwipeItem.properties.h"
 
-class SwipeItem : public ReferenceTracker<SwipeItem, winrt::implementation::SwipeItemT>, public SwipeItemProperties
+class SwipeItem :
+    public ReferenceTracker<SwipeItem, winrt::implementation::SwipeItemT>,
+    public SwipeItemProperties
 {
 public:
     SwipeItem();
@@ -18,11 +20,15 @@ public:
     void InvokeSwipe(const winrt::SwipeControl& content);
 
 private:
-    void OnItemTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args);
-
-    void OnPointerPressed(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnItemTapped(
+        const winrt::IInspectable& sender,
+        const winrt::TappedRoutedEventArgs& args);
+        
+    void OnPointerPressed(
+        const winrt::IInspectable& sender,
+        const winrt::PointerRoutedEventArgs& args);
 
     void OnCommandChanged(const winrt::ICommand& oldCommand, const winrt::ICommand& newCommand);
-
+    
     void AttachEventHandlers(const winrt::AppBarButton& appBarButton);
 };

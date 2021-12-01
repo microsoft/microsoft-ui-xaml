@@ -10,31 +10,27 @@
 #include "NumberBox.properties.h"
 #include "Windows.Globalization.NumberFormatting.h"
 
-class NumberBoxValueChangedEventArgs : public winrt::implementation::NumberBoxValueChangedEventArgsT<NumberBoxValueChangedEventArgs>
+class NumberBoxValueChangedEventArgs :
+    public winrt::implementation::NumberBoxValueChangedEventArgsT<NumberBoxValueChangedEventArgs>
 {
 public:
-    NumberBoxValueChangedEventArgs(double oldValue, double newValue) : m_oldValue(oldValue), m_newValue(newValue)
-    {
-    }
+    NumberBoxValueChangedEventArgs(double oldValue, double newValue) : m_oldValue(oldValue), m_newValue(newValue) {}
 
-    double OldValue()
-    {
-        return m_oldValue;
-    }
-    double NewValue()
-    {
-        return m_newValue;
-    }
+    double OldValue() { return m_oldValue; }
+    double NewValue() { return m_newValue; }
 
 private:
     double m_oldValue;
     double m_newValue;
 };
 
-class NumberBox : public ReferenceTracker<NumberBox, winrt::implementation::NumberBoxT>, public NumberBoxProperties
+class NumberBox :
+    public ReferenceTracker<NumberBox, winrt::implementation::NumberBoxT>,
+    public NumberBoxProperties
 {
-
+    
 public:
+
     NumberBox();
 
     void Value(double value);
@@ -99,14 +95,14 @@ private:
 
     void SetDefaultInputScope();
 
-    bool m_valueUpdating{false};
-    bool m_textUpdating{false};
+    bool m_valueUpdating{ false };
+    bool m_textUpdating{ false };
 
     winrt::SignificantDigitsNumberRounder m_displayRounder{};
 
-    tracker_ref<winrt::TextBox> m_textBox{this};
-    tracker_ref<winrt::ContentPresenter> m_headerPresenter{this};
-    tracker_ref<winrt::Popup> m_popup{this};
+    tracker_ref<winrt::TextBox> m_textBox{ this };
+    tracker_ref<winrt::ContentPresenter> m_headerPresenter{ this };
+    tracker_ref<winrt::Popup> m_popup{ this };
 
     winrt::RepeatButton::Click_revoker m_upButtonClickRevoker{};
     winrt::RepeatButton::Click_revoker m_downButtonClickRevoker{};

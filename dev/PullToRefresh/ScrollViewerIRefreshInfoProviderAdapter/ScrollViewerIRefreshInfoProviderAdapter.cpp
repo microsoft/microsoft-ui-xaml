@@ -48,8 +48,7 @@ ScrollViewerIRefreshInfoProviderAdapter::ScrollViewerIRefreshInfoProviderAdapter
     }
     else
     {
-        m_animationHandler.set(winrt::make_self<ScrollViewerIRefreshInfoProviderDefaultAnimationHandler>(nullptr, m_refreshPullDirection)
-                                   .as<winrt::IAdapterAnimationHandler>());
+        m_animationHandler.set(winrt::make_self<ScrollViewerIRefreshInfoProviderDefaultAnimationHandler>(nullptr, m_refreshPullDirection).as<winrt::IAdapterAnimationHandler>());
     }
 }
 
@@ -104,6 +103,7 @@ winrt::IRefreshInfoProvider ScrollViewerIRefreshInfoProviderAdapter::Adapt(winrt
     m_visualInteractionSource.set(nullptr);
     m_scrollViewer.set(adaptee);
 
+
     if (!m_scrollViewer.get().Content())
     {
         throw winrt::hresult_invalid_argument(L"Adaptee's content property cannot be null.");
@@ -118,9 +118,9 @@ winrt::IRefreshInfoProvider ScrollViewerIRefreshInfoProviderAdapter::Adapt(winrt
     auto contentParent = winrt::VisualTreeHelper::GetParent(content);
     if (!contentParent)
     {
-        // If the Content property does not have a parent this likely means the OnLoaded event of the SV has not fired yet.
-        // Attach to this event to finish the adaption.
-        m_scrollViewer_LoadedToken = m_scrollViewer.get().Loaded({this, &ScrollViewerIRefreshInfoProviderAdapter::OnScrollViewerLoaded});
+        //If the Content property does not have a parent this likely means the OnLoaded event of the SV has not fired yet.
+        //Attach to this event to finish the adaption.
+        m_scrollViewer_LoadedToken = m_scrollViewer.get().Loaded({ this, &ScrollViewerIRefreshInfoProviderAdapter::OnScrollViewerLoaded });
     }
     else
     {
@@ -136,10 +136,8 @@ winrt::IRefreshInfoProvider ScrollViewerIRefreshInfoProviderAdapter::Adapt(winrt
 
     m_infoProvider.set(winrt::make_self<RefreshInfoProviderImpl>(m_refreshPullDirection, refreshVisualizerSize, compositor));
 
-    m_infoProvider_RefreshStartedToken =
-        m_infoProvider.get()->RefreshStarted({this, &ScrollViewerIRefreshInfoProviderAdapter::OnRefreshStarted});
-    m_infoProvider_RefreshCompletedToken =
-        m_infoProvider.get()->RefreshCompleted({this, &ScrollViewerIRefreshInfoProviderAdapter::OnRefreshCompleted});
+    m_infoProvider_RefreshStartedToken = m_infoProvider.get()->RefreshStarted({ this, &ScrollViewerIRefreshInfoProviderAdapter::OnRefreshStarted });
+    m_infoProvider_RefreshCompletedToken = m_infoProvider.get()->RefreshCompleted({ this, &ScrollViewerIRefreshInfoProviderAdapter::OnRefreshCompleted });
 
     m_interactionTracker.set(winrt::InteractionTracker::CreateWithOwner(compositor, m_infoProvider.as<winrt::IInteractionTrackerOwner>()));
 
@@ -154,7 +152,9 @@ winrt::IRefreshInfoProvider ScrollViewerIRefreshInfoProviderAdapter::Adapt(winrt
         m_visualInteractionSourceIsAttached = true;
     }
 
-    winrt::PointerEventHandler myEventHandler = [=](auto sender, auto args) {
+    winrt::PointerEventHandler myEventHandler = 
+    [=](auto sender, auto args)
+    {
         PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, L"ScrollViewer::PointerPressedHandler", this);
         if (args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Touch && m_visualInteractionSource.get())
         {
@@ -168,12 +168,7 @@ winrt::IRefreshInfoProvider ScrollViewerIRefreshInfoProviderAdapter::Adapt(winrt
 
                     try
                     {
-                        PTR_TRACE_INFO(
-                            nullptr,
-                            TRACE_MSG_METH_METH,
-                            L"ScrollViewer::PointerPressedHandler",
-                            this,
-                            L"TryRedirectForManipulation");
+                        PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_METH, L"ScrollViewer::PointerPressedHandler", this, L"TryRedirectForManipulation");
                         m_visualInteractionSource.get().TryRedirectForManipulation(pp);
                     }
                     catch (const winrt::hresult_error& e)
@@ -195,19 +190,15 @@ winrt::IRefreshInfoProvider ScrollViewerIRefreshInfoProviderAdapter::Adapt(winrt
             }
             else
             {
-                throw winrt::hresult_invalid_argument(
-                    L"Invalid IRefreshInfoProvider adaptation of scroll viewer, this can occur when calling "
-                    L"TryRedirectForManipulation to an unattached visual interaction source.");
+                throw winrt::hresult_invalid_argument(L"Invalid IRefreshInfoProvider adaptation of scroll viewer, this can occur when calling TryRedirectForManipulation to an unattached visual interaction source.");
             }
         }
     };
 
     m_boxedPointerPressedEventHandler.set(winrt::box_value<winrt::PointerEventHandler>(myEventHandler));
     m_scrollViewer.get().AddHandler(winrt::UIElement::PointerPressedEvent(), m_boxedPointerPressedEventHandler.get(), true /* handledEventsToo */);
-    m_scrollViewer_DirectManipulationCompletedToken = m_scrollViewer.get().DirectManipulationCompleted(
-        {this, &ScrollViewerIRefreshInfoProviderAdapter::OnScrollViewerDirectManipulationCompleted});
-    m_scrollViewer_ViewChangingToken =
-        m_scrollViewer.get().ViewChanging({this, &ScrollViewerIRefreshInfoProviderAdapter::OnScrollViewerViewChanging});
+    m_scrollViewer_DirectManipulationCompletedToken = m_scrollViewer.get().DirectManipulationCompleted({ this, &ScrollViewerIRefreshInfoProviderAdapter::OnScrollViewerDirectManipulationCompleted });
+    m_scrollViewer_ViewChangingToken = m_scrollViewer.get().ViewChanging({ this, &ScrollViewerIRefreshInfoProviderAdapter::OnScrollViewerViewChanging });
 
     return m_infoProvider.as<winrt::IRefreshInfoProvider>();
 }
@@ -237,7 +228,7 @@ void ScrollViewerIRefreshInfoProviderAdapter::OnRefreshStarted(const winrt::IIns
     {
         executionRatio = m_infoProvider.get()->ExecutionRatio();
     }
-
+    
     m_animationHandler.get().RefreshRequestedAnimation(nullptr, content, executionRatio);
 }
 
@@ -282,20 +273,14 @@ void ScrollViewerIRefreshInfoProviderAdapter::OnScrollViewerDirectManipulationCo
     }
 }
 
-void ScrollViewerIRefreshInfoProviderAdapter::OnScrollViewerViewChanging(
-    const winrt::IInspectable& /*sender*/, const winrt::Windows::UI::Xaml::Controls::ScrollViewerViewChangingEventArgs& args)
+void ScrollViewerIRefreshInfoProviderAdapter::OnScrollViewerViewChanging(const winrt::IInspectable& /*sender*/, const winrt::Windows::UI::Xaml::Controls::ScrollViewerViewChangingEventArgs& args)
 {
     if (m_infoProvider.get() && m_infoProvider.get()->IsInteractingForRefresh())
     {
         PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, args.FinalView().HorizontalOffset(), args.FinalView().VerticalOffset());
         if (!IsWithinOffsetThreshold())
         {
-            PTR_TRACE_INFO(
-                nullptr,
-                TRACE_MSG_METH_STR,
-                METH_NAME,
-                this,
-                L"No longer interacting for refresh due to ScrollViewer view change.");
+            PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, L"No longer interacting for refresh due to ScrollViewer view change.");
             m_infoProvider.get()->UpdateIsInteractingForRefresh(false);
         }
     }
@@ -325,14 +310,10 @@ void ScrollViewerIRefreshInfoProviderAdapter::MakeInteractionSource(const winrt:
     m_visualInteractionSource.set(winrt::VisualInteractionSource::Create(contentParentVisual));
     m_visualInteractionSource.get().ManipulationRedirectionMode(winrt::VisualInteractionSourceRedirectionMode::CapableTouchpadOnly);
     m_visualInteractionSource.get().ScaleSourceMode(winrt::InteractionSourceMode::Disabled);
-    m_visualInteractionSource.get().PositionXSourceMode(
-        IsOrientationVertical() ? winrt::InteractionSourceMode::Disabled : winrt::InteractionSourceMode::EnabledWithInertia);
-    m_visualInteractionSource.get().PositionXChainingMode(
-        IsOrientationVertical() ? winrt::InteractionChainingMode::Auto : winrt::InteractionChainingMode::Never);
-    m_visualInteractionSource.get().PositionYSourceMode(
-        IsOrientationVertical() ? winrt::InteractionSourceMode::EnabledWithInertia : winrt::InteractionSourceMode::Disabled);
-    m_visualInteractionSource.get().PositionYChainingMode(
-        IsOrientationVertical() ? winrt::InteractionChainingMode::Never : winrt::InteractionChainingMode::Auto);
+    m_visualInteractionSource.get().PositionXSourceMode(IsOrientationVertical() ? winrt::InteractionSourceMode::Disabled : winrt::InteractionSourceMode::EnabledWithInertia);
+    m_visualInteractionSource.get().PositionXChainingMode(IsOrientationVertical() ? winrt::InteractionChainingMode::Auto : winrt::InteractionChainingMode::Never);
+    m_visualInteractionSource.get().PositionYSourceMode(IsOrientationVertical() ? winrt::InteractionSourceMode::EnabledWithInertia : winrt::InteractionSourceMode::Disabled);
+    m_visualInteractionSource.get().PositionYChainingMode(IsOrientationVertical() ? winrt::InteractionChainingMode::Never : winrt::InteractionChainingMode::Auto);
 
     if (m_interactionTracker)
     {

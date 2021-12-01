@@ -7,7 +7,8 @@
 #include "VirtualizingLayoutContext.h"
 #include "NonvirtualizingLayoutContext.h"
 
-class LayoutContextAdapter : public winrt::implements<LayoutContextAdapter, VirtualizingLayoutContext>
+class LayoutContextAdapter :
+    public winrt::implements<LayoutContextAdapter, VirtualizingLayoutContext>
 {
 public:
     LayoutContextAdapter(winrt::NonVirtualizingLayoutContext const& nonVirtualizingContext);
@@ -37,5 +38,5 @@ public:
 #pragma endregion
 
 private:
-    winrt::weak_ref<winrt::NonVirtualizingLayoutContext> m_nonVirtualizingContext{nullptr};
+    winrt::weak_ref<winrt::NonVirtualizingLayoutContext> m_nonVirtualizingContext{ nullptr };
 };

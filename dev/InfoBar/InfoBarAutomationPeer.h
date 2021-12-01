@@ -2,13 +2,14 @@
 #include "InfoBar.h"
 #include "InfoBarAutomationPeer.g.h"
 
-class InfoBarAutomationPeer : public ReferenceTracker<InfoBarAutomationPeer, winrt::implementation::InfoBarAutomationPeerT>
+class InfoBarAutomationPeer :
+    public ReferenceTracker<InfoBarAutomationPeer, winrt::implementation::InfoBarAutomationPeerT>
 {
 
 public:
     InfoBarAutomationPeer(winrt::InfoBar const& owner);
 
-    // IAutomationPeerOverrides
+    // IAutomationPeerOverrides 
     winrt::AutomationControlType GetAutomationControlTypeCore();
     winrt::hstring GetClassNameCore();
 

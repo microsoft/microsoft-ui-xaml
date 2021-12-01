@@ -27,7 +27,9 @@ enum class RatingInfoType
     Image
 };
 
-class RatingControl : public ReferenceTracker<RatingControl, winrt::implementation::RatingControlT>, public RatingControlProperties
+class RatingControl : 
+    public ReferenceTracker<RatingControl, winrt::implementation::RatingControlT>,
+    public RatingControlProperties
 {
 public:
     RatingControl();
@@ -75,7 +77,7 @@ private:
     void OnPointerEnteredBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPointerExitedBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void PointerExitedImpl(const winrt::PointerRoutedEventArgs& args, bool resetScaleAnimation = true);
-    void OnPointerPressedBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnPointerPressedBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args); 
     void OnPointerReleasedBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnTextScaleFactorChanged(const winrt::UISettings& setting, const winrt::IInspectable& args);
 
@@ -127,24 +129,24 @@ private:
     void UpdateCaptionMargins();
 
     // Private members
-    tracker_ref<winrt::TextBlock> m_captionTextBlock{this};
+    tracker_ref<winrt::TextBlock> m_captionTextBlock{ this };
 
-    winrt::CompositionPropertySet m_sharedPointerPropertySet{nullptr};
+    winrt::CompositionPropertySet m_sharedPointerPropertySet{ nullptr };
 
-    tracker_ref<winrt::StackPanel> m_backgroundStackPanel{this};
-    tracker_ref<winrt::StackPanel> m_foregroundStackPanel{this};
+    tracker_ref<winrt::StackPanel> m_backgroundStackPanel{ this };
+    tracker_ref<winrt::StackPanel> m_foregroundStackPanel{ this }; 
 
-    bool m_isPointerOver{false};
-    bool m_isPointerDown{false};
-    double m_mousePercentage{0.0};
+    bool m_isPointerOver{ false };
+    bool m_isPointerDown{ false };
+    double m_mousePercentage{ 0.0 };
 
-    RatingInfoType m_infoType{RatingInfoType::Font};
+    RatingInfoType m_infoType{ RatingInfoType::Font };
 
     // Holds the value of the Rating control at the moment of engagement,
     // used to handle cancel-disengagements where we reset the value.
-    double m_preEngagementValue{0.0};
-    bool m_disengagedWithA{false};
-    bool m_shouldDiscardValue{true};
+    double m_preEngagementValue{ 0.0 };
+    bool m_disengagedWithA{ false };
+    bool m_shouldDiscardValue{ true };
 
     winrt::event_token m_pointerCancelledToken{};
     winrt::event_token m_pointerCaptureLostToken{};
@@ -159,5 +161,5 @@ private:
     winrt::UISettings::TextScaleFactorChanged_revoker m_textScaleChangedRevoker{};
     static winrt::UISettings GetUISettings();
 
-    DispatcherHelper m_dispatcherHelper{*this};
+    DispatcherHelper m_dispatcherHelper{ *this };
 };

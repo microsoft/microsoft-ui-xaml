@@ -9,14 +9,14 @@
 #include "SampleControl.g.h"
 #include "SampleControl.properties.h"
 
-class SampleControl : public ReferenceTracker<SampleControl, winrt::implementation::SampleControlT>, public SampleControlProperties
+class SampleControl :
+    public ReferenceTracker<SampleControl, winrt::implementation::SampleControlT>,
+    public SampleControlProperties
 {
 
 public:
     SampleControl();
-    ~SampleControl()
-    {
-    }
+    ~SampleControl() {}
 
     // IFrameworkElement
     void OnApplyTemplate();

@@ -5,7 +5,8 @@
 
 #include "ScrollingBringingIntoViewEventArgs.g.h"
 
-class ScrollingBringingIntoViewEventArgs : public winrt::implementation::ScrollingBringingIntoViewEventArgsT<ScrollingBringingIntoViewEventArgs>
+class ScrollingBringingIntoViewEventArgs :
+    public winrt::implementation::ScrollingBringingIntoViewEventArgsT<ScrollingBringingIntoViewEventArgs>
 {
 public:
     ScrollingBringingIntoViewEventArgs()
@@ -26,7 +27,7 @@ public:
     double TargetVerticalOffset();
     int32_t CorrelationId();
     bool Cancel();
-    void Cancel(bool value);
+    void Cancel(bool value); 
 
     double GetTargetHorizontalOffset() const
     {
@@ -48,10 +49,11 @@ public:
     void TargetOffsets(double targetHorizontalOffset, double targetVerticalOffset);
 
 private:
-    winrt::ScrollingSnapPointsMode m_snapPointsMode{winrt::ScrollingSnapPointsMode::Ignore};
-    winrt::BringIntoViewRequestedEventArgs m_requestEventArgs{nullptr};
-    double m_targetHorizontalOffset{0.0};
-    double m_targetVerticalOffset{0.0};
-    bool m_cancel{false};
-    int32_t m_offsetsChangeCorrelationId{-1};
+    winrt::ScrollingSnapPointsMode m_snapPointsMode{ winrt::ScrollingSnapPointsMode::Ignore };
+    winrt::BringIntoViewRequestedEventArgs m_requestEventArgs{ nullptr };
+    double m_targetHorizontalOffset{ 0.0 };
+    double m_targetVerticalOffset{ 0.0 };
+    bool m_cancel{ false };
+    int32_t m_offsetsChangeCorrelationId{ -1 };
 };
+

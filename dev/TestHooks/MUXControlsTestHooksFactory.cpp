@@ -33,8 +33,7 @@ void MUXControlsTestHooks::SetLoggingLevelForInstance(winrt::IInspectable const&
     s_testHooks->SetLoggingLevelForInstanceImpl(sender, isLoggingInfoLevel, isLoggingVerboseLevel);
 }
 
-winrt::event_token MUXControlsTestHooks::LoggingMessage(
-    winrt::TypedEventHandler<winrt::IInspectable, winrt::MUXControlsTestHooksLoggingMessageEventArgs> const& value)
+winrt::event_token MUXControlsTestHooks::LoggingMessage(winrt::TypedEventHandler<winrt::IInspectable, winrt::MUXControlsTestHooksLoggingMessageEventArgs> const& value)
 {
     EnsureHooks();
     return s_testHooks->LoggingMessageImpl(value);

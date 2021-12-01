@@ -7,7 +7,7 @@
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
-static constexpr wstring_view c_IconPresenterName{L"IconPresenter"sv};
+static constexpr wstring_view c_IconPresenterName{ L"IconPresenter"sv };
 
 InfoBadge::InfoBadge()
 {
@@ -16,12 +16,12 @@ InfoBadge::InfoBadge()
     SetDefaultStyleKey(this);
 
     SetValue(s_TemplateSettingsProperty, winrt::make<::InfoBadgeTemplateSettings>());
-    SizeChanged({this, &InfoBadge::OnSizeChanged});
+    SizeChanged({ this, &InfoBadge::OnSizeChanged });
 }
 
 void InfoBadge::OnApplyTemplate()
 {
-    winrt::IControlProtected controlProtected{*this};
+    winrt::IControlProtected controlProtected{ *this };
 
     OnDisplayKindPropertiesChanged();
 }
@@ -31,7 +31,7 @@ winrt::Size InfoBadge::MeasureOverride(winrt::Size const& availableSize)
     auto const defaultDesiredSize = __super::MeasureOverride(availableSize);
     if (defaultDesiredSize.Width < defaultDesiredSize.Height)
     {
-        return {defaultDesiredSize.Height, defaultDesiredSize.Height};
+        return { defaultDesiredSize.Height, defaultDesiredSize.Height };
     }
     return defaultDesiredSize;
 }
@@ -49,7 +49,8 @@ void InfoBadge::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArg
         }
     }
 
-    if (property == winrt::InfoBadge::ValueProperty() || property == winrt::InfoBadge::IconSourceProperty())
+    if (property == winrt::InfoBadge::ValueProperty() ||
+             property == winrt::InfoBadge::IconSourceProperty())
     {
         OnDisplayKindPropertiesChanged();
     }
@@ -60,7 +61,7 @@ void InfoBadge::OnDisplayKindPropertiesChanged()
     winrt::Control const thisAsControl = *this;
     if (Value() >= 0)
     {
-        winrt::VisualStateManager::GoToState(thisAsControl, L"Value", true);
+    winrt::VisualStateManager::GoToState(thisAsControl, L"Value", true);
     }
     else if (auto const iconSource = IconSource())
     {
@@ -80,22 +81,24 @@ void InfoBadge::OnDisplayKindPropertiesChanged()
     }
 }
 
+
 void InfoBadge::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args)
 {
-    auto const value = [this]() {
+    auto const value = [this]()
+    {
         auto const cornerRadiusValue = ActualHeight() / 2;
         if (SharedHelpers::IsRS5OrHigher())
         {
             if (ReadLocalValue(winrt::Control::CornerRadiusProperty()) == winrt::DependencyProperty::UnsetValue())
             {
-                return winrt::CornerRadius{cornerRadiusValue, cornerRadiusValue, cornerRadiusValue, cornerRadiusValue};
+                return winrt::CornerRadius{ cornerRadiusValue, cornerRadiusValue, cornerRadiusValue, cornerRadiusValue };
             }
             else
             {
                 return CornerRadius();
             }
         }
-        return winrt::CornerRadius{cornerRadiusValue, cornerRadiusValue, cornerRadiusValue, cornerRadiusValue};
+        return winrt::CornerRadius{ cornerRadiusValue, cornerRadiusValue, cornerRadiusValue, cornerRadiusValue };
     }();
 
     TemplateSettings().InfoBadgeCornerRadius(value);

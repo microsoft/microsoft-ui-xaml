@@ -5,8 +5,8 @@
 
 #include "NavigationViewDisplayModeChangedEventArgs.g.h"
 
-class NavigationViewDisplayModeChangedEventArgs
-    : public winrt::implementation::NavigationViewDisplayModeChangedEventArgsT<NavigationViewDisplayModeChangedEventArgs>
+class NavigationViewDisplayModeChangedEventArgs :
+    public winrt::implementation::NavigationViewDisplayModeChangedEventArgsT<NavigationViewDisplayModeChangedEventArgs>
 {
 public:
 #pragma region INavigationViewDisplayModeChangedEventArgs

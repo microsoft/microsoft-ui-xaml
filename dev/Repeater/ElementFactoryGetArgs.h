@@ -5,10 +5,11 @@
 
 #include "ElementFactoryGetArgs.g.h"
 
-class ElementFactoryGetArgs
-    : public ReferenceTracker<ElementFactoryGetArgs, winrt::implementation::ElementFactoryGetArgsT, winrt::composable, winrt::composing>
+class ElementFactoryGetArgs :
+    public ReferenceTracker<ElementFactoryGetArgs, winrt::implementation::ElementFactoryGetArgsT, winrt::composable, winrt::composing>
 {
 public:
+    
 #pragma region IElementFactoryGetArgs
     winrt::IInspectable Data();
     void Data(winrt::IInspectable const& value);
@@ -21,7 +22,7 @@ public:
 #pragma endregion
 
 private:
-    tracker_ref<winrt::IInspectable> m_data{this};
-    tracker_ref<winrt::UIElement> m_parent{this};
+    tracker_ref<winrt::IInspectable> m_data{ this };
+    tracker_ref<winrt::UIElement> m_parent{ this };
     int m_index{};
 };

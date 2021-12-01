@@ -6,7 +6,9 @@
 #include "ScrollPresenterTestHooksAnchorEvaluatedEventArgs.h"
 
 ScrollPresenterTestHooksAnchorEvaluatedEventArgs::ScrollPresenterTestHooksAnchorEvaluatedEventArgs(
-    const winrt::UIElement& anchorElement, double viewportAnchorPointHorizontalOffset, double viewportAnchorPointVerticalOffset)
+    const winrt::UIElement& anchorElement,
+    double viewportAnchorPointHorizontalOffset,
+    double viewportAnchorPointVerticalOffset)
 {
     if (anchorElement)
     {

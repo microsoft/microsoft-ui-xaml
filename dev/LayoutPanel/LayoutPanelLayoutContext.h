@@ -4,7 +4,8 @@
 #pragma once
 #include "NonvirtualizingLayoutContext.h"
 
-class LayoutPanelLayoutContext : public winrt::implements<LayoutPanelLayoutContext, NonVirtualizingLayoutContext>
+class LayoutPanelLayoutContext :
+    public winrt::implements<LayoutPanelLayoutContext, NonVirtualizingLayoutContext>
 {
 public:
     LayoutPanelLayoutContext(winrt::LayoutPanel const& owner);
@@ -17,6 +18,7 @@ public:
     void LayoutStateCore(winrt::IInspectable const& state);
 
 #pragma endregion
+
 
 private:
     winrt::LayoutPanel GetOwner();

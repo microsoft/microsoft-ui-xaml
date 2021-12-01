@@ -7,7 +7,8 @@
 #include "UniqueIdElementPool.h"
 #include "ItemsRepeater.h"
 
-UniqueIdElementPool::UniqueIdElementPool(ItemsRepeater* owner) : m_owner(owner)
+UniqueIdElementPool::UniqueIdElementPool(ItemsRepeater* owner) :
+    m_owner(owner)
 {
     // ItemsRepeater is not fully constructed yet. Don't interact with it.
 }

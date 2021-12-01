@@ -15,8 +15,9 @@
 
 class VirtualizationInfo;
 
-class ItemsRepeater : public ReferenceTracker<ItemsRepeater, DeriveFromPanelHelper_base, winrt::ItemsRepeater, winrt::IItemsRepeater2>,
-                      public ItemsRepeaterProperties
+class ItemsRepeater :
+    public ReferenceTracker<ItemsRepeater, DeriveFromPanelHelper_base, winrt::ItemsRepeater, winrt::IItemsRepeater2>,
+    public ItemsRepeaterProperties
 {
 public:
     ItemsRepeater();
@@ -25,7 +26,7 @@ public:
     // StackLayout measurements are shortcut when m_stackLayoutMeasureCounter reaches this value
     // to prevent a layout cycle exception.
     // The XAML Framework's iteration limit is 250, but that limit has been reached in practice
-    // with this value as small as 61. It was never reached with 60.
+    // with this value as small as 61. It was never reached with 60. 
     static constexpr uint8_t s_maxStackLayoutIterations = 60u;
 
     static winrt::Point ClearedElementsArrangePosition;
@@ -70,18 +71,9 @@ public:
 
 #pragma endregion
 
-    winrt::Microsoft::UI::Xaml::Controls::IElementFactoryShim ItemTemplateShim()
-    {
-        return m_itemTemplateWrapper;
-    };
-    ViewManager& ViewManager()
-    {
-        return m_viewManager;
-    }
-    AnimationManager& AnimationManager()
-    {
-        return m_animationManager;
-    }
+    winrt::Microsoft::UI::Xaml::Controls::IElementFactoryShim ItemTemplateShim() { return m_itemTemplateWrapper; };
+    ViewManager& ViewManager() { return m_viewManager; }
+    AnimationManager& AnimationManager() { return m_animationManager; }
 
     winrt::UIElement GetElementImpl(int index, bool forceCreate, bool suppressAutoRecycle);
     void ClearElementImpl(const winrt::UIElement& element);
@@ -90,44 +82,21 @@ public:
     int GetElementIndexImpl(const winrt::UIElement& element);
     winrt::UIElement GetElementFromIndexImpl(int index);
 
+
     winrt::UIElement GetOrCreateElementImpl(int index);
 
     static winrt::com_ptr<VirtualizationInfo> TryGetVirtualizationInfo(const winrt::UIElement& element);
     static winrt::com_ptr<VirtualizationInfo> GetVirtualizationInfo(const winrt::UIElement& element);
     static winrt::com_ptr<VirtualizationInfo> CreateAndInitializeVirtualizationInfo(const winrt::UIElement& element);
 
-    winrt::IInspectable LayoutState() const
-    {
-        return m_layoutState.get();
-    }
-    void LayoutState(const winrt::IInspectable& value)
-    {
-        m_layoutState.set(value);
-    }
-    winrt::Rect VisibleWindow() const
-    {
-        return m_viewportManager->GetLayoutVisibleWindow();
-    }
-    winrt::Rect RealizationWindow() const
-    {
-        return m_viewportManager->GetLayoutRealizationWindow();
-    }
-    winrt::UIElement SuggestedAnchor() const
-    {
-        return m_viewportManager->SuggestedAnchor();
-    }
-    winrt::UIElement MadeAnchor() const
-    {
-        return m_viewportManager->MadeAnchor();
-    }
-    winrt::Point LayoutOrigin() const
-    {
-        return m_layoutOrigin;
-    }
-    void LayoutOrigin(winrt::Point value)
-    {
-        m_layoutOrigin = value;
-    }
+    winrt::IInspectable LayoutState() const { return m_layoutState.get(); }
+    void LayoutState(const winrt::IInspectable& value) { m_layoutState.set(value); }
+    winrt::Rect VisibleWindow() const { return m_viewportManager->GetLayoutVisibleWindow(); }
+    winrt::Rect RealizationWindow() const { return m_viewportManager->GetLayoutRealizationWindow(); }
+    winrt::UIElement SuggestedAnchor() const { return m_viewportManager->SuggestedAnchor(); }
+    winrt::UIElement MadeAnchor() const { return m_viewportManager->MadeAnchor(); }
+    winrt::Point LayoutOrigin() const { return m_layoutOrigin; }
+    void LayoutOrigin(winrt::Point value) { m_layoutOrigin = value; }
 
     // Pinning APIs
     void PinElement(winrt::UIElement const& element);
@@ -141,8 +110,13 @@ public:
 
     static winrt::DependencyProperty GetVirtualizationInfoProperty()
     {
-        static GlobalDependencyProperty s_VirtualizationInfoProperty = InitializeDependencyProperty(
-            L"VirtualizationInfo", winrt::name_of<winrt::IInspectable>(), winrt::name_of<winrt::ItemsRepeater>(), true /* isAttached */, nullptr /* defaultValue */);
+        static GlobalDependencyProperty s_VirtualizationInfoProperty =
+            InitializeDependencyProperty(
+                L"VirtualizationInfo",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::ItemsRepeater>(),
+                true /* isAttached */,
+                nullptr /* defaultValue */);
 
         return s_VirtualizationInfoProperty;
     }
@@ -164,28 +138,25 @@ private:
     void InvalidateArrangeForLayout(winrt::Layout const& sender, winrt::IInspectable const& args);
 
     winrt::VirtualizingLayoutContext GetLayoutContext();
-    bool IsProcessingCollectionChange() const
-    {
-        return m_processingItemsSourceChange != nullptr;
-    }
+    bool IsProcessingCollectionChange() const { return m_processingItemsSourceChange != nullptr; }
 
     winrt::IIterable<winrt::DependencyObject> CreateChildrenInTabFocusOrderIterable();
 
-    ::AnimationManager m_animationManager{this};
-    ::ViewManager m_viewManager{this};
-    std::shared_ptr<::ViewportManager> m_viewportManager{nullptr};
+    ::AnimationManager m_animationManager{ this };
+    ::ViewManager m_viewManager{ this };
+    std::shared_ptr<::ViewportManager> m_viewportManager{ nullptr };
 
-    tracker_ref<winrt::ItemsSourceView> m_itemsSourceView{this};
+    tracker_ref<winrt::ItemsSourceView> m_itemsSourceView{ this };
 
-    winrt::Microsoft::UI::Xaml::Controls::IElementFactoryShim m_itemTemplateWrapper{nullptr};
+    winrt::Microsoft::UI::Xaml::Controls::IElementFactoryShim m_itemTemplateWrapper{ nullptr };
 
-    tracker_ref<winrt::VirtualizingLayoutContext> m_layoutContext{this};
-    tracker_ref<winrt::IInspectable> m_layoutState{this};
+    tracker_ref<winrt::VirtualizingLayoutContext> m_layoutContext{ this };
+    tracker_ref<winrt::IInspectable> m_layoutState{ this };
     // Value is different from null only while we are on the OnItemsSourceChanged call stack.
-    tracker_ref<winrt::NotifyCollectionChangedEventArgs> m_processingItemsSourceChange{this};
+    tracker_ref<winrt::NotifyCollectionChangedEventArgs> m_processingItemsSourceChange{ this };
 
     winrt::Size m_lastAvailableSize{};
-    bool m_isLayoutInProgress{false};
+    bool m_isLayoutInProgress{ false };
     // The value of _layoutOrigin is expected to be set by the layout
     // when it gets measured. It should not be used outside of measure.
     winrt::Point m_layoutOrigin{};
@@ -196,11 +167,11 @@ private:
     winrt::Layout::ArrangeInvalidated_revoker m_arrangeInvalidated{};
 
     // Cached Event args to avoid creation cost every time
-    tracker_ref<winrt::ItemsRepeaterElementPreparedEventArgs> m_elementPreparedArgs{this};
-    tracker_ref<winrt::ItemsRepeaterElementClearingEventArgs> m_elementClearingArgs{this};
-    tracker_ref<winrt::ItemsRepeaterElementIndexChangedEventArgs> m_elementIndexChangedArgs{this};
+    tracker_ref<winrt::ItemsRepeaterElementPreparedEventArgs> m_elementPreparedArgs{ this };
+    tracker_ref<winrt::ItemsRepeaterElementClearingEventArgs> m_elementClearingArgs{ this };
+    tracker_ref<winrt::ItemsRepeaterElementIndexChangedEventArgs> m_elementIndexChangedArgs{ this };
 
-    // Loaded events fire on the first tick after an element is put into the tree
+    // Loaded events fire on the first tick after an element is put into the tree 
     // while unloaded is posted on the UI tree and may be processed out of sync with subsequent loaded
     // events. We keep these counters to detect out-of-sync unloaded events and take action to rectify.
     int _loadedCounter{};
@@ -208,16 +179,16 @@ private:
 
     // Used to avoid layout cycles with StackLayout layouts where variable sized children prevent
     // the ItemsRepeater's layout to settle.
-    uint8_t m_stackLayoutMeasureCounter{0u};
+    uint8_t m_stackLayoutMeasureCounter{ 0u };
 
     // Bug in framework's reference tracking causes crash during
     // UIAffinityQueue cleanup. To avoid that bug, take a strong ref
-    winrt::IElementFactory m_itemTemplate{nullptr};
-    winrt::Layout m_layout{nullptr};
-    winrt::ElementAnimator m_animator{nullptr};
+    winrt::IElementFactory m_itemTemplate{ nullptr };
+    winrt::Layout m_layout{ nullptr };
+    winrt::ElementAnimator m_animator{ nullptr };
 
     // Bug where DataTemplate with no content causes a crash.
     // See: https://github.com/microsoft/microsoft-ui-xaml/issues/776
     // Solution: Have flag that is only true when DataTemplate exists but it is empty.
-    bool m_isItemTemplateEmpty{false};
+    bool m_isItemTemplateEmpty{ false };
 };

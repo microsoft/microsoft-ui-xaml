@@ -8,14 +8,10 @@ class SelectionTreeHelper
 public:
     struct TreeWalkNodeInfo
     {
-        TreeWalkNodeInfo(std::shared_ptr<SelectionNode> node, const winrt::IndexPath& indexPath, std::shared_ptr<SelectionNode> parent) :
-            Node(node), Path(indexPath), ParentNode(parent)
-        {
-        }
-        TreeWalkNodeInfo(std::shared_ptr<SelectionNode> node, const winrt::IndexPath& indexPath) :
-            Node(node), Path(indexPath), ParentNode(nullptr)
-        {
-        }
+        TreeWalkNodeInfo(std::shared_ptr<SelectionNode> node, const winrt::IndexPath& indexPath, std::shared_ptr<SelectionNode> parent)
+            : Node(node), Path(indexPath), ParentNode(parent) {}
+        TreeWalkNodeInfo(std::shared_ptr<SelectionNode> node, const winrt::IndexPath& indexPath)
+            : Node(node), Path(indexPath), ParentNode(nullptr) {}
 
         std::shared_ptr<SelectionNode> Node;
         winrt::IndexPath Path;
@@ -28,7 +24,10 @@ public:
         bool realizeChildren,
         std::function<void(std::shared_ptr<SelectionNode>, const winrt::IndexPath&, int /*depth*/, int /*childIndex*/)> nodeAction);
 
-    static void Traverse(std::shared_ptr<SelectionNode> root, bool realizeChildren, std::function<void(const TreeWalkNodeInfo&)> nodeAction);
+    static void Traverse(
+        std::shared_ptr<SelectionNode> root,
+        bool realizeChildren,
+        std::function<void(const TreeWalkNodeInfo&)> nodeAction);
 
     static void TraverseRangeRealizeChildren(
         std::shared_ptr<SelectionNode> root,

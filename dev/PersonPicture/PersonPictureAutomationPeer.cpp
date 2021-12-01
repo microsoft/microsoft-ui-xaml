@@ -8,11 +8,12 @@
 
 #include "PersonPictureAutomationPeer.properties.cpp"
 
-PersonPictureAutomationPeer::PersonPictureAutomationPeer(winrt::PersonPicture const& owner) : ReferenceTracker(owner)
+PersonPictureAutomationPeer::PersonPictureAutomationPeer(winrt::PersonPicture const& owner) :
+    ReferenceTracker(owner)
 {
 }
 
-// IAutomationPeerOverrides
+//IAutomationPeerOverrides
 
 winrt::AutomationControlType PersonPictureAutomationPeer::GetAutomationControlTypeCore()
 {

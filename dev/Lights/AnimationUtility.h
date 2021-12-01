@@ -5,16 +5,16 @@
 #include "SpotLightStateHelper.h"
 
 template <typename ValueType>
-inline auto MakeAnimation(const winrt::Compositor& compositor);
+inline auto MakeAnimation(const winrt::Compositor &compositor);
 
 template <>
-inline auto MakeAnimation<float>(const winrt::Compositor& compositor)
+inline auto MakeAnimation<float>(const winrt::Compositor &compositor)
 {
     return compositor.CreateScalarKeyFrameAnimation();
 }
 
 template <>
-inline auto MakeAnimation<winrt::Color>(const winrt::Compositor& compositor)
+inline auto MakeAnimation<winrt::Color>(const winrt::Compositor &compositor)
 {
     return compositor.CreateColorKeyFrameAnimation();
 }
@@ -27,7 +27,9 @@ void SetValueDirect(const winrt::SpotLight& target, const SpotlightProperty prop
 void SetValueDirect(const winrt::CompositionPropertySet& target, const SpotlightProperty prop, const winrt::Color& value);
 
 template <typename ValueType>
-inline void AnimateTo(const winrt::SpotLight& target, const RevealHoverSpotlightAnimationInfo<ValueType>& targetFrame)
+inline void AnimateTo(
+    const winrt::SpotLight& target,
+    const RevealHoverSpotlightAnimationInfo<ValueType>& targetFrame)
 {
     if (IsIgnored(targetFrame))
     {
@@ -46,7 +48,9 @@ inline void AnimateTo(const winrt::SpotLight& target, const RevealHoverSpotlight
 }
 
 template <typename ValueType>
-inline void AnimateTo(const winrt::CompositionPropertySet& target, const RevealHoverSpotlightAnimationInfo<ValueType>& targetFrame)
+inline void AnimateTo(
+    const winrt::CompositionPropertySet& target,
+    const RevealHoverSpotlightAnimationInfo<ValueType>& targetFrame)
 {
     if (IsIgnored(targetFrame))
     {
@@ -65,7 +69,9 @@ inline void AnimateTo(const winrt::CompositionPropertySet& target, const RevealH
 }
 
 template <typename ValueType>
-inline void SetupAnimationAndStart(const winrt::CompositionObject& target, const RevealHoverSpotlightAnimationInfo<ValueType>& targetFrame)
+inline void SetupAnimationAndStart(
+    const winrt::CompositionObject& target,
+    const RevealHoverSpotlightAnimationInfo<ValueType>& targetFrame)
 {
     auto compositor = target.Compositor();
     auto animation = MakeAnimation<ValueType>(compositor);
@@ -75,10 +81,7 @@ inline void SetupAnimationAndStart(const winrt::CompositionObject& target, const
 
     if (targetFrame.EasingInfo.EasingType == EasingTypes::CubicBezier)
     {
-        animation.InsertKeyFrame(
-            1,
-            targetFrame.Value,
-            compositor.CreateCubicBezierEasingFunction(targetFrame.EasingInfo.EasingControlPoint1, targetFrame.EasingInfo.EasingControlPoint2));
+        animation.InsertKeyFrame(1, targetFrame.Value, compositor.CreateCubicBezierEasingFunction(targetFrame.EasingInfo.EasingControlPoint1, targetFrame.EasingInfo.EasingControlPoint2));
     }
     else if (targetFrame.EasingInfo.EasingType == EasingTypes::Linear)
     {

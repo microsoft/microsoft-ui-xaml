@@ -10,53 +10,56 @@
 
 inline bool IsSwipeControlTracingEnabled()
 {
-    return g_IsLoggingProviderEnabled && g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
-           (g_LoggingProviderMatchAnyKeyword & KEYWORD_SWIPECONTROL || g_LoggingProviderMatchAnyKeyword == 0);
+    return g_IsLoggingProviderEnabled &&
+        g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
+        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SWIPECONTROL || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsSwipeControlVerboseTracingEnabled()
 {
-    return g_IsLoggingProviderEnabled && g_LoggingProviderLevel >= WINEVENT_LEVEL_VERBOSE &&
-           (g_LoggingProviderMatchAnyKeyword & KEYWORD_SWIPECONTROL || g_LoggingProviderMatchAnyKeyword == 0);
+    return g_IsLoggingProviderEnabled &&
+        g_LoggingProviderLevel >= WINEVENT_LEVEL_VERBOSE &&
+        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SWIPECONTROL || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsSwipeControlPerfTracingEnabled()
 {
-    return g_IsPerfProviderEnabled && g_PerfProviderLevel >= WINEVENT_LEVEL_INFO &&
-           (g_PerfProviderMatchAnyKeyword & KEYWORD_SWIPECONTROL || g_PerfProviderMatchAnyKeyword == 0);
+    return g_IsPerfProviderEnabled &&
+        g_PerfProviderLevel >= WINEVENT_LEVEL_INFO &&
+        (g_PerfProviderMatchAnyKeyword & KEYWORD_SWIPECONTROL || g_PerfProviderMatchAnyKeyword == 0);
 }
 
 #define SWIPECONTROL_TRACE_INFO_ENABLED(includeTraceLogging, sender, message, ...) \
-    SwipeControlTrace::TraceInfo(includeTraceLogging, sender, message, __VA_ARGS__);
+SwipeControlTrace::TraceInfo(includeTraceLogging, sender, message, __VA_ARGS__); \
 
 #define SWIPECONTROL_TRACE_INFO(sender, message, ...) \
-    if (IsSwipeControlTracingEnabled()) \
-    { \
-        SWIPECONTROL_TRACE_INFO_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-    } \
-    else if (SwipeControlTrace::s_IsDebugOutputEnabled || SwipeControlTrace::s_IsVerboseDebugOutputEnabled) \
-    { \
-        SWIPECONTROL_TRACE_INFO_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-    }
+if (IsSwipeControlTracingEnabled()) \
+{ \
+    SWIPECONTROL_TRACE_INFO_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+} \
+else if (SwipeControlTrace::s_IsDebugOutputEnabled || SwipeControlTrace::s_IsVerboseDebugOutputEnabled) \
+{ \
+    SWIPECONTROL_TRACE_INFO_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+} \
 
 #define SWIPECONTROL_TRACE_VERBOSE_ENABLED(includeTraceLogging, sender, message, ...) \
-    SwipeControlTrace::TraceVerbose(includeTraceLogging, sender, message, __VA_ARGS__);
+SwipeControlTrace::TraceVerbose(includeTraceLogging, sender, message, __VA_ARGS__); \
 
 #define SWIPECONTROL_TRACE_VERBOSE(sender, message, ...) \
-    if (IsSwipeControlVerboseTracingEnabled()) \
-    { \
-        SWIPECONTROL_TRACE_VERBOSE_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-    } \
-    else if (SwipeControlTrace::s_IsVerboseDebugOutputEnabled) \
-    { \
-        SWIPECONTROL_TRACE_VERBOSE_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-    }
+if (IsSwipeControlVerboseTracingEnabled()) \
+{ \
+    SWIPECONTROL_TRACE_VERBOSE_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+} \
+else if (SwipeControlTrace::s_IsVerboseDebugOutputEnabled) \
+{ \
+    SWIPECONTROL_TRACE_VERBOSE_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+} \
 
 #define SWIPECONTROL_TRACE_PERF(info) \
-    if (IsSwipeControlPerfTracingEnabled()) \
-    { \
-        SwipeControlTrace::TracePerfInfo(info); \
-    }
+if (IsSwipeControlPerfTracingEnabled()) \
+{ \
+    SwipeControlTrace::TracePerfInfo(info); \
+} \
 
 class SwipeControlTrace
 {
@@ -74,7 +77,7 @@ public:
             if (includeTraceLogging)
             {
                 // TraceViewers
-                // http://toolbox/pef
+                // http://toolbox/pef 
                 // http://fastetw/index.aspx
                 TraceLoggingWrite(
                     g_hLoggingProvider,
@@ -91,8 +94,8 @@ public:
 
             com_ptr<MUXControlsTestHooks> globalTestHooks = MUXControlsTestHooks::GetGlobalTestHooks();
 
-            if (globalTestHooks && (globalTestHooks->GetLoggingLevelForType(L"SwipeControl") >= WINEVENT_LEVEL_INFO ||
-                                    globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_INFO))
+            if (globalTestHooks &&
+                (globalTestHooks->GetLoggingLevelForType(L"SwipeControl") >= WINEVENT_LEVEL_INFO || globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_INFO))
             {
                 globalTestHooks->LogMessage(sender, buffer, false /*isVerboseLevel*/);
             }
@@ -110,7 +113,7 @@ public:
             if (includeTraceLogging)
             {
                 // TraceViewers
-                // http://toolbox/pef
+                // http://toolbox/pef 
                 // http://fastetw/index.aspx
                 TraceLoggingWrite(
                     g_hLoggingProvider,
@@ -127,8 +130,8 @@ public:
 
             com_ptr<MUXControlsTestHooks> globalTestHooks = MUXControlsTestHooks::GetGlobalTestHooks();
 
-            if (globalTestHooks && (globalTestHooks->GetLoggingLevelForType(L"SwipeControl") >= WINEVENT_LEVEL_VERBOSE ||
-                                    globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_VERBOSE))
+            if (globalTestHooks &&
+                (globalTestHooks->GetLoggingLevelForType(L"SwipeControl") >= WINEVENT_LEVEL_VERBOSE || globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_VERBOSE))
             {
                 globalTestHooks->LogMessage(sender, buffer, true /*isVerboseLevel*/);
             }
@@ -139,7 +142,7 @@ public:
     static void TracePerfInfo(PCWSTR info) noexcept
     {
         // TraceViewers
-        // http://toolbox/pef
+        // http://toolbox/pef 
         // http://fastetw/index.aspx
         TraceLoggingWrite(
             g_hPerfProvider,

@@ -3,7 +3,8 @@
 
 #pragma once
 
-class XamlMember : public winrt::implements<XamlMember, winrt::IXamlMember>
+class XamlMember :
+    public winrt::implements<XamlMember, winrt::IXamlMember>
 {
 public:
     XamlMember(
@@ -26,6 +27,7 @@ public:
     void SetValue(winrt::IInspectable const& instance, winrt::IInspectable const& value);
 
 private:
+
     hstring m_memberName{};
     winrt::IXamlType m_type{};
     bool m_isDependencyProperty{};

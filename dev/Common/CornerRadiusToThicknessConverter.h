@@ -5,16 +5,24 @@
 #include "CornerRadiusToThicknessConverter.g.h"
 #include "CornerRadiusToThicknessConverter.properties.h"
 
-class CornerRadiusToThicknessConverter
-    : public winrt::implementation::CornerRadiusToThicknessConverterT<CornerRadiusToThicknessConverter>,
-      public CornerRadiusToThicknessConverterProperties
+class CornerRadiusToThicknessConverter :
+    public winrt::implementation::CornerRadiusToThicknessConverterT<CornerRadiusToThicknessConverter>,
+    public CornerRadiusToThicknessConverterProperties
 {
 public:
-    winrt::Thickness Convert(winrt::CornerRadius const& radius, winrt::CornerRadiusToThicknessConverterKind const& filterKind, double multiplier);
+    winrt::Thickness Convert(winrt::CornerRadius const& radius,
+        winrt::CornerRadiusToThicknessConverterKind const& filterKind,
+        double multiplier);
 
     winrt::IInspectable Convert(
-        winrt::IInspectable const& value, winrt::TypeName const& targetType, winrt::IInspectable const& parameter, winrt::hstring const& language);
+        winrt::IInspectable const& value,
+        winrt::TypeName const& targetType,
+        winrt::IInspectable const& parameter,
+        winrt::hstring const& language);
 
     winrt::IInspectable ConvertBack(
-        winrt::IInspectable const& value, winrt::TypeName const& targetType, winrt::IInspectable const& parameter, winrt::hstring const& language);
+        winrt::IInspectable const& value,
+        winrt::TypeName const& targetType,
+        winrt::IInspectable const& parameter,
+        winrt::hstring const& language);
 };

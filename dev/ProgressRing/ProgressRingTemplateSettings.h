@@ -6,8 +6,9 @@
 #include "ProgressRingTemplateSettings.g.h"
 #include "ProgressRingTemplateSettings.properties.h"
 
-class ProgressRingTemplateSettings : public winrt::implementation::ProgressRingTemplateSettingsT<ProgressRingTemplateSettings>,
-                                     public ProgressRingTemplateSettingsProperties
+class ProgressRingTemplateSettings :
+    public winrt::implementation::ProgressRingTemplateSettingsT<ProgressRingTemplateSettings>,
+    public ProgressRingTemplateSettingsProperties
 {
 public:
     ProgressRingTemplateSettings();

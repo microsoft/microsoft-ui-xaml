@@ -19,10 +19,12 @@ NonVirtualizingLayout::NonVirtualizingLayout()
 
 void NonVirtualizingLayout::InitializeForContextCore(winrt::LayoutContext const& context)
 {
+
 }
 
 void NonVirtualizingLayout::UninitializeForContextCore(winrt::LayoutContext const& context)
 {
+
 }
 
 winrt::Size NonVirtualizingLayout::MeasureOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& availableSize)

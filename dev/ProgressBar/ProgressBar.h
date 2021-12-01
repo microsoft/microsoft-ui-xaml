@@ -11,7 +11,9 @@
 #include "ProgressBar.g.h"
 #include "ProgressBar.properties.h"
 
-class ProgressBar : public ReferenceTracker<ProgressBar, winrt::implementation::ProgressBarT>, public ProgressBarProperties
+class ProgressBar :
+    public ReferenceTracker<ProgressBar, winrt::implementation::ProgressBarT>,
+    public ProgressBarProperties
 {
 
 public:
@@ -37,21 +39,21 @@ private:
     winrt::Grid::Loaded_revoker m_layoutRootLoadedRevoker{};
     winrt::Rectangle::Loaded_revoker m_progressBarIndicatorRevoker{};
 
-    tracker_ref<winrt::Grid> m_layoutRoot{this};
-    tracker_ref<winrt::Rectangle> m_determinateProgressBarIndicator{this};
-    tracker_ref<winrt::Rectangle> m_indeterminateProgressBarIndicator{this};
-    tracker_ref<winrt::Rectangle> m_indeterminateProgressBarIndicator2{this};
+    tracker_ref<winrt::Grid> m_layoutRoot{ this };
+    tracker_ref<winrt::Rectangle> m_determinateProgressBarIndicator{ this };
+    tracker_ref<winrt::Rectangle> m_indeterminateProgressBarIndicator{ this };
+    tracker_ref<winrt::Rectangle> m_indeterminateProgressBarIndicator2{ this };
 
-    static constexpr wstring_view s_LayoutRootName{L"LayoutRoot"};
-    static constexpr wstring_view s_DeterminateProgressBarIndicatorName{L"DeterminateProgressBarIndicator"};
-    static constexpr wstring_view s_IndeterminateProgressBarIndicatorName{L"IndeterminateProgressBarIndicator"};
-    static constexpr wstring_view s_IndeterminateProgressBarIndicator2Name{L"IndeterminateProgressBarIndicator2"};
-    static constexpr wstring_view s_ErrorStateName{L"Error"};
-    static constexpr wstring_view s_PausedStateName{L"Paused"};
-    static constexpr wstring_view s_IndeterminateStateName{L"Indeterminate"};
-    static constexpr wstring_view s_IndeterminateErrorStateName{L"IndeterminateError"};
-    static constexpr wstring_view s_IndeterminatePausedStateName{L"IndeterminatePaused"};
-    static constexpr wstring_view s_DeterminateStateName{L"Determinate"};
-    static constexpr wstring_view s_UpdatingStateName{L"Updating"};
-    static constexpr wstring_view s_UpdatingWithErrorStateName{L"UpdatingError"};
+    static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot" };
+    static constexpr wstring_view s_DeterminateProgressBarIndicatorName{ L"DeterminateProgressBarIndicator" };
+    static constexpr wstring_view s_IndeterminateProgressBarIndicatorName{ L"IndeterminateProgressBarIndicator" };
+    static constexpr wstring_view s_IndeterminateProgressBarIndicator2Name{ L"IndeterminateProgressBarIndicator2" };
+    static constexpr wstring_view s_ErrorStateName{ L"Error" };
+    static constexpr wstring_view s_PausedStateName{ L"Paused" };
+    static constexpr wstring_view s_IndeterminateStateName{ L"Indeterminate" };
+    static constexpr wstring_view s_IndeterminateErrorStateName{ L"IndeterminateError" };
+    static constexpr wstring_view s_IndeterminatePausedStateName{ L"IndeterminatePaused" };
+    static constexpr wstring_view s_DeterminateStateName{ L"Determinate" };
+    static constexpr wstring_view s_UpdatingStateName{ L"Updating" };
+    static constexpr wstring_view s_UpdatingWithErrorStateName{ L"UpdatingError" };
 };

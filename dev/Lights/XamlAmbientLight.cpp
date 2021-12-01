@@ -7,11 +7,11 @@
 #include "IsTargetDPHelper.h"
 
 #pragma warning(push)
-#pragma warning(disable : 6101) // Returning uninitialized memory '<value>'.  A successful path through the function does not set the named _Out_ parameter.
+#pragma warning(disable: 6101)  // Returning uninitialized memory '<value>'.  A successful path through the function does not set the named _Out_ parameter.
 #include "Microsoft.UI.Private.Composition.Effects_impl.h"
 #pragma warning(pop)
 
-const winrt::Color XamlAmbientLight::sc_defaultColor{255, 255, 255, 255};
+const winrt::Color XamlAmbientLight::sc_defaultColor{ 255, 255, 255, 255 };
 
 XamlAmbientLight::XamlAmbientLight()
 {
@@ -20,7 +20,7 @@ XamlAmbientLight::XamlAmbientLight()
 
 winrt::hstring& XamlAmbientLight::GetLightIdStatic()
 {
-    static winrt::hstring s_XamlAmbientLightId{MUXCONTROLSMEDIA_NAMESPACE_STR L".XamlAmbientLight"};
+    static winrt::hstring s_XamlAmbientLightId{ MUXCONTROLSMEDIA_NAMESPACE_STR L".XamlAmbientLight" };
     return s_XamlAmbientLightId;
 }
 
@@ -47,29 +47,34 @@ void XamlAmbientLight::OnConnected(winrt::UIElement const& /*newElement*/)
         // This matches the legacy MaterialHelper behavior and should be sufficient for the special case of login screen.
         if (m_dispatcherQueue)
         {
-            m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(
-                winrt::auto_revoke,
-                {[weakThis = get_weak(),
-                  dispatcherQueue = m_dispatcherQueue](const winrt::IMaterialProperties& sender, const winrt::IInspectable& args) {
+            m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(winrt::auto_revoke, {
+                [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue] (const winrt::IMaterialProperties& sender, const winrt::IInspectable& args)
+                {
                     MaterialHelper::LightTemplates<XamlAmbientLight>::OnLightTransparencyPolicyChanged(
-                        weakThis, sender, dispatcherQueue, false /* onUIThread */);
-                }});
+                        weakThis,
+                        sender,
+                        dispatcherQueue,
+                        false /* onUIThread */);
+                }
+                });
         }
     }
 
     // Apply Initial policy state
     MaterialHelper::LightTemplates<XamlAmbientLight>::OnLightTransparencyPolicyChanged(
-        get_weak(), m_materialProperties, m_dispatcherQueue, true /* onUIThread */);
-    m_additionalMaterialPolicyChangedToken =
-        MaterialHelper::AdditionalPolicyChanged([this](auto sender) { OnAdditionalMaterialPolicyChanged(sender); });
+        get_weak(),
+        m_materialProperties,
+        m_dispatcherQueue,
+        true /* onUIThread */);
+    m_additionalMaterialPolicyChangedToken = MaterialHelper::AdditionalPolicyChanged([this](auto sender) { OnAdditionalMaterialPolicyChanged(sender); });
 #else
-    m_materialPolicyChangedToken =
-        MaterialHelper::PolicyChanged([this](auto sender, auto args) { OnMaterialPolicyStatusChanged(sender, args); });
+    m_materialPolicyChangedToken = MaterialHelper::PolicyChanged([this](auto sender, auto args) { OnMaterialPolicyStatusChanged(sender, args); });
 #endif
     if (!m_isDisabledByMaterialPolicy)
     {
         EnsureCompositionResources();
     }
+
 }
 
 void XamlAmbientLight::OnDisconnected(winrt::UIElement const& /*oldElement*/)
@@ -109,7 +114,10 @@ void XamlAmbientLight::ReleaseCompositionResources()
 void XamlAmbientLight::OnAdditionalMaterialPolicyChanged(const com_ptr<MaterialHelperBase>& sender)
 {
     MaterialHelper::LightTemplates<XamlAmbientLight>::OnLightTransparencyPolicyChanged(
-        get_weak(), m_materialProperties, m_dispatcherQueue, true /* onUIThread */);
+        get_weak(),
+        m_materialProperties,
+        m_dispatcherQueue,
+        true /* onUIThread */);
 }
 #else
 void XamlAmbientLight::OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>& sender, bool isDisabledByMaterialPolicy)
@@ -118,7 +126,8 @@ void XamlAmbientLight::OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelpe
 }
 #endif
 
-void XamlAmbientLight::OnColorPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void XamlAmbientLight::OnColorPropertyChanged(
+    const winrt::DependencyPropertyChangedEventArgs& args)
 {
     m_ambientLightColor = unbox_value<winrt::Color>(args.NewValue());
     if (m_compositionAmbientLight)
@@ -127,7 +136,9 @@ void XamlAmbientLight::OnColorPropertyChanged(const winrt::DependencyPropertyCha
     }
 }
 
-void XamlAmbientLight::OnIsTargetPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args)
+void XamlAmbientLight::OnIsTargetPropertyChanged(
+    const winrt::DependencyObject& sender,
+    const winrt::DependencyPropertyChangedEventArgs& args)
 {
     OnAttachedIsTargetPropertyChanged<XamlAmbientLight>(sender, args);
 }

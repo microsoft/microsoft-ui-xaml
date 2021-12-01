@@ -13,10 +13,10 @@ SampleControl::SampleControl()
 
 void SampleControl::OnApplyTemplate()
 {
-    winrt::IControlProtected controlProtected{*this};
+    winrt::IControlProtected controlProtected{ *this };
 }
 
-void SampleControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void  SampleControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
 }

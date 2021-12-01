@@ -5,8 +5,8 @@
 
 #include "SelectionModelSelectionChangedEventArgs.g.h"
 
-class SelectionModelSelectionChangedEventArgs
-    : public winrt::implementation::SelectionModelSelectionChangedEventArgsT<SelectionModelSelectionChangedEventArgs>
+class SelectionModelSelectionChangedEventArgs :
+    public winrt::implementation::SelectionModelSelectionChangedEventArgsT<SelectionModelSelectionChangedEventArgs>
 {
 public:
 };

@@ -10,11 +10,12 @@
 
 #include "TreeViewItemAutomationPeer.properties.cpp"
 
-TreeViewItemAutomationPeer::TreeViewItemAutomationPeer(winrt::TreeViewItem const& owner) : ReferenceTracker(owner)
+TreeViewItemAutomationPeer::TreeViewItemAutomationPeer(winrt::TreeViewItem const& owner) :
+    ReferenceTracker(owner)
 {
 }
 
-// IExpandCollapseProvider
+// IExpandCollapseProvider 
 winrt::ExpandCollapseState TreeViewItemAutomationPeer::ExpandCollapseState()
 {
     auto targetNode = GetTreeViewNode();
@@ -25,7 +26,7 @@ winrt::ExpandCollapseState TreeViewItemAutomationPeer::ExpandCollapseState()
             return winrt::ExpandCollapseState::Expanded;
         }
         return winrt::ExpandCollapseState::Collapsed;
-    }
+    }   
     return winrt::ExpandCollapseState::LeafNode;
 }
 
@@ -72,6 +73,7 @@ winrt::IInspectable TreeViewItemAutomationPeer::GetPatternCore(winrt::PatternInt
     return __super::GetPatternCore(patternInterface);
 }
 
+
 winrt::AutomationControlType TreeViewItemAutomationPeer::GetAutomationControlTypeCore()
 {
     return winrt::AutomationControlType::TreeItem;
@@ -79,7 +81,7 @@ winrt::AutomationControlType TreeViewItemAutomationPeer::GetAutomationControlTyp
 
 winrt::hstring TreeViewItemAutomationPeer::GetNameCore()
 {
-    // Check to see if the item has a defined Automation Name
+    //Check to see if the item has a defined Automation Name
     winrt::hstring nameHString = __super::GetNameCore();
 
     if (nameHString.empty())
@@ -189,7 +191,7 @@ bool TreeViewItemAutomationPeer::IsSelected()
 
 winrt::IRawElementProviderSimple TreeViewItemAutomationPeer::SelectionContainer()
 {
-    winrt::IRawElementProviderSimple provider{nullptr};
+    winrt::IRawElementProviderSimple provider{ nullptr };
     if (auto listView = GetParentListView())
     {
         if (auto peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(listView))
@@ -219,7 +221,7 @@ void TreeViewItemAutomationPeer::Select()
 winrt::ListView TreeViewItemAutomationPeer::GetParentListView()
 {
     auto treeViewItemAncestor = Owner().as<winrt::DependencyObject>();
-    winrt::ListView ancestorListView{nullptr};
+    winrt::ListView ancestorListView{ nullptr };
 
     while (treeViewItemAncestor && !ancestorListView)
     {
@@ -236,7 +238,7 @@ winrt::ListView TreeViewItemAutomationPeer::GetParentListView()
 winrt::TreeView TreeViewItemAutomationPeer::GetParentTreeView()
 {
     auto treeViewItemAncestor = static_cast<winrt::DependencyObject>(Owner());
-    winrt::TreeView ancestorTreeView{nullptr};
+    winrt::TreeView ancestorTreeView{ nullptr };
 
     while (treeViewItemAncestor && !ancestorTreeView)
     {
@@ -252,7 +254,7 @@ winrt::TreeView TreeViewItemAutomationPeer::GetParentTreeView()
 
 winrt::TreeViewNode TreeViewItemAutomationPeer::GetTreeViewNode()
 {
-    winrt::TreeViewNode targetNode{nullptr};
+    winrt::TreeViewNode targetNode{ nullptr };
     if (auto treeview = GetParentTreeView())
     {
         targetNode = treeview.NodeFromContainer(Owner());

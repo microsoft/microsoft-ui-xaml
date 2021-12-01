@@ -8,53 +8,56 @@
 
 inline bool IsPTRTracingEnabled()
 {
-    return g_IsLoggingProviderEnabled && g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
-           (g_LoggingProviderMatchAnyKeyword & KEYWORD_PTR || g_LoggingProviderMatchAnyKeyword == 0);
+    return g_IsLoggingProviderEnabled &&
+        g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
+        (g_LoggingProviderMatchAnyKeyword & KEYWORD_PTR || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsPTRVerboseTracingEnabled()
 {
-    return g_IsLoggingProviderEnabled && g_LoggingProviderLevel >= WINEVENT_LEVEL_VERBOSE &&
-           (g_LoggingProviderMatchAnyKeyword & KEYWORD_PTR || g_LoggingProviderMatchAnyKeyword == 0);
+    return g_IsLoggingProviderEnabled &&
+        g_LoggingProviderLevel >= WINEVENT_LEVEL_VERBOSE &&
+        (g_LoggingProviderMatchAnyKeyword & KEYWORD_PTR || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsPTRPerfTracingEnabled()
 {
-    return g_IsPerfProviderEnabled && g_PerfProviderLevel >= WINEVENT_LEVEL_INFO &&
-           (g_PerfProviderMatchAnyKeyword & KEYWORD_PTR || g_PerfProviderMatchAnyKeyword == 0);
+    return g_IsPerfProviderEnabled &&
+        g_PerfProviderLevel >= WINEVENT_LEVEL_INFO &&
+        (g_PerfProviderMatchAnyKeyword & KEYWORD_PTR || g_PerfProviderMatchAnyKeyword == 0);
 }
 
 #define PTR_TRACE_INFO_ENABLED(includeTraceLogging, sender, message, ...) \
-    PTRTrace::TraceInfo(includeTraceLogging, sender, message, __VA_ARGS__);
+PTRTrace::TraceInfo(includeTraceLogging, sender, message, __VA_ARGS__); \
 
 #define PTR_TRACE_INFO(sender, message, ...) \
-    if (IsPTRTracingEnabled()) \
-    { \
-        PTR_TRACE_INFO_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-    } \
-    else if (PTRTrace::s_IsDebugOutputEnabled || PTRTrace::s_IsVerboseDebugOutputEnabled) \
-    { \
-        PTR_TRACE_INFO_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-    }
+if (IsPTRTracingEnabled()) \
+{ \
+    PTR_TRACE_INFO_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+} \
+else if (PTRTrace::s_IsDebugOutputEnabled || PTRTrace::s_IsVerboseDebugOutputEnabled) \
+{ \
+    PTR_TRACE_INFO_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+} \
 
 #define PTR_TRACE_VERBOSE_ENABLED(includeTraceLogging, sender, message, ...) \
-    PTRTrace::TraceVerbose(includeTraceLogging, sender, message, __VA_ARGS__);
+PTRTrace::TraceVerbose(includeTraceLogging, sender, message, __VA_ARGS__); \
 
 #define PTR_TRACE_VERBOSE(sender, message, ...) \
-    if (IsPTRVerboseTracingEnabled()) \
-    { \
-        PTR_TRACE_VERBOSE_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-    } \
-    else if (PTRTrace::s_IsVerboseDebugOutputEnabled) \
-    { \
-        PTR_TRACE_VERBOSE_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-    }
+if (IsPTRVerboseTracingEnabled()) \
+{ \
+    PTR_TRACE_VERBOSE_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+} \
+else if (PTRTrace::s_IsVerboseDebugOutputEnabled) \
+{ \
+    PTR_TRACE_VERBOSE_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+} \
 
 #define PTR_TRACE_PERF(info) \
-    if (IsPTRPerfTracingEnabled()) \
-    { \
-        PTRTrace::TracePerfInfo(info); \
-    }
+if (IsPTRPerfTracingEnabled()) \
+{ \
+    PTRTrace::TracePerfInfo(info); \
+} \
 
 class PTRTrace
 {
@@ -72,7 +75,7 @@ public:
             if (includeTraceLogging)
             {
                 // TraceViewers
-                // http://toolbox/pef
+                // http://toolbox/pef 
                 // http://fastetw/index.aspx
                 TraceLoggingWrite(
                     g_hLoggingProvider,
@@ -89,8 +92,8 @@ public:
 
             com_ptr<MUXControlsTestHooks> globalTestHooks = MUXControlsTestHooks::GetGlobalTestHooks();
 
-            if (globalTestHooks && (globalTestHooks->GetLoggingLevelForType(L"PTR") >= WINEVENT_LEVEL_INFO ||
-                                    globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_INFO))
+            if (globalTestHooks &&
+                (globalTestHooks->GetLoggingLevelForType(L"PTR") >= WINEVENT_LEVEL_INFO || globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_INFO))
             {
                 globalTestHooks->LogMessage(sender, buffer, false /*isVerboseLevel*/);
             }
@@ -103,12 +106,12 @@ public:
         va_list args;
         va_start(args, message);
         WCHAR buffer[256]{};
-        if SUCCEEDED ((StringCchVPrintfW(buffer, ARRAYSIZE(buffer), message, args)))
+        if SUCCEEDED((StringCchVPrintfW(buffer, ARRAYSIZE(buffer), message, args)))
         {
             if (includeTraceLogging)
             {
                 // TraceViewers
-                // http://toolbox/pef
+                // http://toolbox/pef 
                 // http://fastetw/index.aspx
                 TraceLoggingWrite(
                     g_hLoggingProvider,
@@ -125,8 +128,8 @@ public:
 
             com_ptr<MUXControlsTestHooks> globalTestHooks = MUXControlsTestHooks::GetGlobalTestHooks();
 
-            if (globalTestHooks && (globalTestHooks->GetLoggingLevelForType(L"PTR") >= WINEVENT_LEVEL_VERBOSE ||
-                                    globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_VERBOSE))
+            if (globalTestHooks &&
+                (globalTestHooks->GetLoggingLevelForType(L"PTR") >= WINEVENT_LEVEL_VERBOSE || globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_VERBOSE))
             {
                 globalTestHooks->LogMessage(sender, buffer, true /*isVerboseLevel*/);
             }
@@ -137,7 +140,7 @@ public:
     static void TracePerfInfo(PCWSTR info) noexcept
     {
         // TraceViewers
-        // http://toolbox/pef
+        // http://toolbox/pef 
         // http://fastetw/index.aspx
         TraceLoggingWrite(
             g_hPerfProvider,

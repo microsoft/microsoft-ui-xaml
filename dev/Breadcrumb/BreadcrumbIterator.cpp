@@ -50,8 +50,7 @@ uint32_t BreadcrumbIterator::GetMany(winrt::array_view<winrt::IInspectable> item
     {
         do
         {
-            if (howMany >= items.size())
-                break;
+            if (howMany >= items.size()) break;
 
             items[howMany] = Current();
             howMany++;

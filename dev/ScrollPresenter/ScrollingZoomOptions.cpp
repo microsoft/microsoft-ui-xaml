@@ -9,20 +9,20 @@
 
 #include "ScrollingZoomOptions.properties.cpp"
 
-ScrollingZoomOptions::ScrollingZoomOptions(winrt::ScrollingAnimationMode const& animationMode)
+ScrollingZoomOptions::ScrollingZoomOptions(
+    winrt::ScrollingAnimationMode const& animationMode)
 {
-    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::AnimationModeToString(animationMode).c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
+        TypeLogging::AnimationModeToString(animationMode).c_str());
 
     m_animationMode = animationMode;
 }
 
-ScrollingZoomOptions::ScrollingZoomOptions(winrt::ScrollingAnimationMode const& animationMode, winrt::ScrollingSnapPointsMode const& snapPointsMode)
+ScrollingZoomOptions::ScrollingZoomOptions(
+    winrt::ScrollingAnimationMode const& animationMode,
+    winrt::ScrollingSnapPointsMode const& snapPointsMode)
 {
-    SCROLLPRESENTER_TRACE_VERBOSE(
-        nullptr,
-        TRACE_MSG_METH_STR_STR,
-        METH_NAME,
-        this,
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR, METH_NAME, this,
         TypeLogging::AnimationModeToString(animationMode).c_str(),
         TypeLogging::SnapPointsModeToString(snapPointsMode).c_str());
 
@@ -37,7 +37,8 @@ winrt::ScrollingAnimationMode ScrollingZoomOptions::AnimationMode() const
 
 void ScrollingZoomOptions::AnimationMode(winrt::ScrollingAnimationMode const& animationMode)
 {
-    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::AnimationModeToString(animationMode).c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
+        TypeLogging::AnimationModeToString(animationMode).c_str());
 
     m_animationMode = animationMode;
 }
@@ -49,8 +50,8 @@ winrt::ScrollingSnapPointsMode ScrollingZoomOptions::SnapPointsMode() const
 
 void ScrollingZoomOptions::SnapPointsMode(winrt::ScrollingSnapPointsMode const& snapPointsMode)
 {
-    SCROLLPRESENTER_TRACE_VERBOSE(
-        nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::SnapPointsModeToString(snapPointsMode).c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
+        TypeLogging::SnapPointsModeToString(snapPointsMode).c_str());
 
     m_snapPointsMode = snapPointsMode;
 }

@@ -7,11 +7,12 @@
 #include "NavigationViewHelper.h"
 #include "NavigationViewItemBase.properties.h"
 
-class NavigationViewItemBase
-    : public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>,
-      public NavigationViewItemBaseProperties
+class NavigationViewItemBase :
+    public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>,
+    public NavigationViewItemBaseProperties
 {
 public:
+
     // Promote all overrides that our derived classes want into virtual so that our shim will call them.
     // IFrameworkElementOverrides
     virtual void OnApplyTemplate();
@@ -44,19 +45,13 @@ public:
 
     NavigationViewRepeaterPosition Position() const;
     void Position(NavigationViewRepeaterPosition value);
-    virtual void OnNavigationViewItemBasePositionChanged()
-    {
-    }
+    virtual void OnNavigationViewItemBasePositionChanged() {}
 
     void Depth(int depth);
     int Depth() const;
-    virtual void OnNavigationViewItemBaseDepthChanged()
-    {
-    }
+    virtual void OnNavigationViewItemBaseDepthChanged() {}
 
-    virtual void OnNavigationViewItemBaseIsSelectedChanged()
-    {
-    }
+    virtual void OnNavigationViewItemBaseIsSelectedChanged() {}
 
     winrt::NavigationView GetNavigationView() const;
     winrt::SplitView GetSplitView() const;
@@ -65,33 +60,23 @@ public:
     // TODO: Constant is a temporary measure. Potentially expose using TemplateSettings.
     static constexpr int c_itemIndentation = 31;
 
-    void IsTopLevelItem(bool isTopLevelItem)
-    {
-        m_isTopLevelItem = isTopLevelItem;
-    };
-    bool IsTopLevelItem() const
-    {
-        return m_isTopLevelItem;
-    };
+    void IsTopLevelItem(bool isTopLevelItem) { m_isTopLevelItem = isTopLevelItem; };
+    bool IsTopLevelItem() const { return m_isTopLevelItem; };
 
-    void CreatedByNavigationViewItemsFactory(bool createdByNavigationViewItemsFactory)
-    {
-        m_createdByNavigationViewItemsFactory = createdByNavigationViewItemsFactory;
-    };
-    bool CreatedByNavigationViewItemsFactory()
-    {
-        return m_createdByNavigationViewItemsFactory;
-    };
+    void CreatedByNavigationViewItemsFactory(bool createdByNavigationViewItemsFactory) { m_createdByNavigationViewItemsFactory = createdByNavigationViewItemsFactory; };
+    bool CreatedByNavigationViewItemsFactory() { return m_createdByNavigationViewItemsFactory; };
 
 protected:
-    winrt::weak_ref<winrt::NavigationView> m_navigationView{nullptr};
+
+    winrt::weak_ref<winrt::NavigationView> m_navigationView{ nullptr };
 
 private:
-    NavigationViewRepeaterPosition m_position{NavigationViewRepeaterPosition::LeftNav};
-    int m_depth{0};
-    bool m_isTopLevelItem{false};
+
+    NavigationViewRepeaterPosition m_position{ NavigationViewRepeaterPosition::LeftNav };
+    int m_depth{ 0 };
+    bool m_isTopLevelItem{ false };
 
     // Flag to keep track of whether this item was created by the custom internal NavigationViewItemsFactory.
     // This is required in order to achieve proper recycling
-    bool m_createdByNavigationViewItemsFactory{false};
+    bool m_createdByNavigationViewItemsFactory{ false };
 };

@@ -6,8 +6,8 @@
 #include "ItemsRepeaterScrollHost.g.h"
 
 // TODO: move to framework level element tracking.
-class ItemsRepeaterScrollHost
-    : public ReferenceTracker<ItemsRepeaterScrollHost, DeriveFromPanelHelper_base, winrt::ItemsRepeaterScrollHost, winrt::cloaked<winrt::IRepeaterScrollingSurface>>
+class ItemsRepeaterScrollHost :
+    public ReferenceTracker<ItemsRepeaterScrollHost, DeriveFromPanelHelper_base, winrt::ItemsRepeaterScrollHost, winrt::cloaked<winrt::IRepeaterScrollingSurface>>
 {
 public:
     ItemsRepeaterScrollHost();
@@ -61,11 +61,18 @@ public:
 
     void UnregisterAnchorCandidate(winrt::UIElement const& element);
 
-    winrt::Rect GetRelativeViewport(winrt::UIElement const& element);
+    winrt::Rect GetRelativeViewport(
+        winrt::UIElement const& element);
 
 #pragma endregion
 
-    void StartBringIntoView(winrt::UIElement const& element, double alignmentX, double alignmentY, double offsetX, double offsetY, bool animate);
+    void StartBringIntoView(
+        winrt::UIElement const& element,
+        double alignmentX,
+        double alignmentY,
+        double offsetX,
+        double offsetY,
+        bool animate);
 
 private:
     void ApplyPendingChangeView(const winrt::FxScrollViewer& scrollViewer);
@@ -76,96 +83,58 @@ private:
     void OnScrollViewerViewChanged(winrt::IInspectable const& sender, winrt::ScrollViewerViewChangedEventArgs const& args);
     void OnScrollViewerSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
 
-    bool HasPendingBringIntoView() const
-    {
-        return !!m_pendingBringIntoView.TargetElement();
-    }
+    bool HasPendingBringIntoView() const { return !!m_pendingBringIntoView.TargetElement(); }
 
     struct CandidateInfo
     {
-        CandidateInfo(const ITrackerHandleManager* owner, winrt::UIElement element) : m_element(owner, element)
-        {
-        }
+        CandidateInfo(
+            const ITrackerHandleManager* owner,
+            winrt::UIElement element) :
+            m_element(owner, element)
+        { }
 
-        winrt::UIElement Element() const
-        {
-            return m_element.get();
-        }
-        winrt::Rect RelativeBounds() const
-        {
-            return m_relativeBounds;
-        }
-        void RelativeBounds(winrt::Rect bounds)
-        {
-            m_relativeBounds = bounds;
-        }
-        bool IsRelativeBoundsSet() const
-        {
-            return m_relativeBounds != InvalidBounds;
-        }
+        winrt::UIElement Element() const { return m_element.get(); }
+        winrt::Rect RelativeBounds() const { return m_relativeBounds; }
+        void RelativeBounds(winrt::Rect bounds) { m_relativeBounds = bounds; }
+        bool IsRelativeBoundsSet() const { return m_relativeBounds != InvalidBounds; }
 
-        static constexpr winrt::Rect InvalidBounds{-1.0f, -1.0f, -1.0f, -1.0f};
-
+        static constexpr winrt::Rect InvalidBounds{ -1.0f, -1.0f, -1.0f, -1.0f };
     private:
         tracker_ref<winrt::UIElement> m_element;
-        winrt::Rect m_relativeBounds{InvalidBounds};
+        winrt::Rect m_relativeBounds{ InvalidBounds };
     };
 
     struct BringIntoViewState
     {
-        BringIntoViewState(const ITrackerHandleManager* owner) : m_targetElement(owner)
-        {
-        }
-        BringIntoViewState(const ITrackerHandleManager* owner, winrt::UIElement targetElement, double alignmentX, double alignmentY, double offsetX, double offsetY, bool animate) :
+        BringIntoViewState(const ITrackerHandleManager* owner)
+            : m_targetElement(owner)
+        { }
+        BringIntoViewState(
+            const ITrackerHandleManager* owner,
+            winrt::UIElement targetElement,
+            double alignmentX,
+            double alignmentY,
+            double offsetX,
+            double offsetY,
+            bool animate) :
             m_targetElement(owner, targetElement),
             m_alignmentX(alignmentX),
             m_alignmentY(alignmentY),
             m_offsetX(offsetX),
             m_offsetY(offsetY),
             m_animate(animate)
-        {
-        }
+        { }
 
-        winrt::UIElement TargetElement() const
-        {
-            return m_targetElement.get();
-        }
-        double AlignmentX() const
-        {
-            return m_alignmentX;
-        }
-        double AlignmentY() const
-        {
-            return m_alignmentY;
-        }
-        double OffsetX() const
-        {
-            return m_offsetX;
-        }
-        double OffsetY() const
-        {
-            return m_offsetY;
-        }
-        bool Animate() const
-        {
-            return m_animate;
-        }
-        bool ChangeViewCalled() const
-        {
-            return m_changeViewCalled;
-        }
-        void ChangeViewCalled(bool value)
-        {
-            m_changeViewCalled = value;
-        }
-        winrt::Point ChangeViewOffset() const
-        {
-            return m_changeViewOffset;
-        }
-        void ChangeViewOffset(winrt::Point value)
-        {
-            m_changeViewOffset = value;
-        }
+        winrt::UIElement TargetElement() const { return m_targetElement.get(); }
+        double AlignmentX() const { return m_alignmentX; }
+        double AlignmentY() const { return m_alignmentY; }
+        double OffsetX() const { return m_offsetX; }
+        double OffsetY() const { return m_offsetY; }
+        bool Animate() const { return m_animate; }
+        bool ChangeViewCalled() const { return m_changeViewCalled; }
+        void ChangeViewCalled(bool value) { m_changeViewCalled = value; }
+        winrt::Point ChangeViewOffset() const { return m_changeViewOffset; }
+        void ChangeViewOffset(winrt::Point value) { m_changeViewOffset = value; }
 
         void Reset()
         {
@@ -188,13 +157,13 @@ private:
 
     std::vector<CandidateInfo> m_candidates;
 
-    tracker_ref<winrt::UIElement> m_anchorElement{this};
+    tracker_ref<winrt::UIElement> m_anchorElement{ this };
     winrt::Rect m_anchorElementRelativeBounds{};
     // Whenever the m_candidates list changes, we set this to true.
-    bool m_isAnchorElementDirty{true};
+    bool m_isAnchorElementDirty{ true };
 
     double m_horizontalEdge{};
-    double m_verticalEdge{}; // Not used in this temporary implementation.
+    double m_verticalEdge{};    // Not used in this temporary implementation.
 
     // We can only bring an element into view after it got arranged and
     // we know its bounds as well as the viewport (so that we can account
@@ -202,7 +171,7 @@ private:
     // The BringIntoView call can however be made at any point, even
     // in the constructor of a page (deserialization scenario) so we
     // need to hold on the parameter that are passed in BringIntoViewOperation.
-    BringIntoViewState m_pendingBringIntoView{this};
+    BringIntoViewState m_pendingBringIntoView{ this };
 
     // A ScrollViewer.ChangeView operation, even if not animated, is not synchronous.
     // In other words, right after the call, ScrollViewer.[Vertical|Horizontal]Offset and
@@ -211,10 +180,11 @@ private:
     // asynchronously.
     double m_pendingViewportShift{};
 
-    event_source<winrt::ViewportChangedEventHandler> m_viewportChanged{this};
-    event_source<winrt::PostArrangeEventHandler> m_postArrange{this};
+    event_source<winrt::ViewportChangedEventHandler> m_viewportChanged{ this };
+    event_source<winrt::PostArrangeEventHandler> m_postArrange{ this };
 
     winrt::FxScrollViewer::ViewChanging_revoker m_scrollViewerViewChanging{};
     winrt::FxScrollViewer::ViewChanged_revoker m_scrollViewerViewChanged{};
     winrt::FxScrollViewer::SizeChanged_revoker m_scrollViewerSizeChanged{};
+
 };

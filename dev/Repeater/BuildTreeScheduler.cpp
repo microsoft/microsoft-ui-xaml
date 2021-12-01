@@ -32,9 +32,7 @@ void BuildTreeScheduler::OnRendering(const winrt::IInspectable&, const winrt::II
     if (!budgetReached && m_pendingWork.size() > 0)
     {
         // Sort in descending order of priority and work from the end of the list to avoid moving around during erase.
-        std::sort(m_pendingWork.begin(), m_pendingWork.end(), [](const auto& lhs, const auto& rhs) {
-            return lhs.Priority() > rhs.Priority();
-        });
+        std::sort(m_pendingWork.begin(), m_pendingWork.end(), [](const auto& lhs, const auto& rhs) { return lhs.Priority() > rhs.Priority(); });
         int currentIndex = static_cast<int>(m_pendingWork.size()) - 1;
 
         do
@@ -46,7 +44,7 @@ void BuildTreeScheduler::OnRendering(const winrt::IInspectable&, const winrt::II
 
     if (m_pendingWork.empty())
     {
-        // No more pending work, unhook from rendering event since being hooked up will case wux to try to
+        // No more pending work, unhook from rendering event since being hooked up will case wux to try to 
         // call the event at 60 frames per second
         winrt::Windows::UI::Xaml::Media::CompositionTarget::CompositionTarget::Rendering(m_renderingToken);
         m_renderingToken.value = 0;
@@ -57,7 +55,7 @@ void BuildTreeScheduler::OnRendering(const winrt::IInspectable&, const winrt::II
     m_timer.Reset();
 }
 
-void BuildTreeScheduler::QueueTick()
+void  BuildTreeScheduler::QueueTick()
 {
     if (m_renderingToken.value == 0)
     {

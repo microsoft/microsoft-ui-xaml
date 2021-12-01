@@ -5,10 +5,11 @@
 #include "common.h"
 #include "BackdropMaterial.h"
 
-thread_local int BackdropMaterial::m_connectedBrushCount{};
-thread_local winrt::com_ptr<MicaController> BackdropMaterial::m_micaController{nullptr};
 
-GlobalDependencyProperty BackdropMaterial::s_StateProperty{nullptr};
+thread_local int BackdropMaterial::m_connectedBrushCount{};
+thread_local winrt::com_ptr<MicaController> BackdropMaterial::m_micaController{ nullptr };
+
+GlobalDependencyProperty BackdropMaterial::s_StateProperty{ nullptr };
 
 void BackdropMaterial::ClearProperties()
 {
@@ -21,8 +22,14 @@ void BackdropMaterial::EnsureProperties()
     BackdropMaterialProperties::EnsureProperties();
     if (!s_StateProperty)
     {
-        s_StateProperty = InitializeDependencyProperty(
-            L"State", winrt::name_of<bool>(), winrt::name_of<winrt::BackdropMaterial>(), true /* isAttached */, box_value(false), nullptr);
+        s_StateProperty =
+            InitializeDependencyProperty(
+                L"State",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::BackdropMaterial>(),
+                true /* isAttached */,
+                box_value(false),
+                nullptr);
     }
 }
 
@@ -78,13 +85,14 @@ BackdropMaterial::BackdropMaterialState::BackdropMaterialState(winrt::Control co
     m_connectedBrushCount++;
     CreateOrDestroyMicaController();
 
-    // Normally QI would be fine, but .NET is lying about implementing this interface (e.g. C# TestFrame derives from Frame and
-    // this QI returns success even on RS2, but it's not implemented by XAML until RS3).
+    // Normally QI would be fine, but .NET is lying about implementing this interface (e.g. C# TestFrame derives from Frame and this QI
+    // returns success even on RS2, but it's not implemented by XAML until RS3).
     if (SharedHelpers::IsRS3OrHigher())
     {
         if (auto targetThemeChanged = target.try_as<winrt::IFrameworkElement6>())
         {
-            m_themeChangedRevoker = targetThemeChanged.ActualThemeChanged(winrt::auto_revoke, [weakThis = get_weak()](auto&&, auto&&) {
+            m_themeChangedRevoker = targetThemeChanged.ActualThemeChanged(winrt::auto_revoke, [weakThis = get_weak()](auto&&, auto&&)
+            {
                 if (auto instance = weakThis.get())
                 {
                     instance->UpdateFallbackBrush();
@@ -93,15 +101,19 @@ BackdropMaterial::BackdropMaterialState::BackdropMaterialState(winrt::Control co
         }
     }
 
-    m_colorValuesChangedRevoker = m_uiSettings.ColorValuesChanged(winrt::auto_revoke, [this](auto&&, auto&&) {
-        m_dispatcherHelper.RunAsync([strongThis = get_strong()]() { strongThis->UpdateFallbackBrush(); });
-    });
+    m_colorValuesChangedRevoker = m_uiSettings.ColorValuesChanged(winrt::auto_revoke, [this](auto&&, auto&&)
+        {
+            m_dispatcherHelper.RunAsync([strongThis = get_strong()]() {
+                strongThis->UpdateFallbackBrush();
+            });
+        });
 
     // Listen for High Contrast changes
     auto accessibilitySettings = winrt::AccessibilitySettings();
     m_isHighContrast = accessibilitySettings.HighContrast();
-    m_highContrastChangedRevoker =
-        accessibilitySettings.HighContrastChanged(winrt::auto_revoke, [this, accessibilitySettings](auto& sender, auto& args) {
+    m_highContrastChangedRevoker = accessibilitySettings.HighContrastChanged(winrt::auto_revoke,
+        [this, accessibilitySettings](auto& sender, auto& args)
+        {
             m_dispatcherHelper.RunAsync([strongThis = get_strong(), accessibilitySettings]() {
                 strongThis->m_isHighContrast = accessibilitySettings.HighContrast();
                 strongThis->UpdateFallbackBrush();
@@ -152,7 +164,8 @@ void BackdropMaterial::BackdropMaterialState::UpdateFallbackBrush()
                 return winrt::ElementTheme::Light;
             }();
 
-            const auto color = [=]() {
+            const auto color = [=]()
+            {
                 if (m_isHighContrast)
                 {
                     return m_uiSettings.GetColorValue(winrt::UIColorType::Background);
@@ -174,7 +187,7 @@ void BackdropMaterial::BackdropMaterialState::UpdateFallbackBrush()
         {
             // When Mica is involved, use transparent for the background (this is so that the hit testing
             // behavior is consistent with/without the material).
-            target.Background(winrt::SolidColorBrush(winrt::Color{0, 0, 0, 0}));
+            target.Background(winrt::SolidColorBrush(winrt::Color{0,0,0,0}));
         }
     }
 }

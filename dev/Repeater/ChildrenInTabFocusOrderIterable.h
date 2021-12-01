@@ -3,8 +3,10 @@
 
 #pragma once
 
-class ChildrenInTabFocusOrderIterable
-    : public ReferenceTracker<ChildrenInTabFocusOrderIterable, reference_tracker_implements_t<winrt::IIterable<winrt::DependencyObject>>::type>
+class ChildrenInTabFocusOrderIterable :
+    public ReferenceTracker<
+        ChildrenInTabFocusOrderIterable,
+        reference_tracker_implements_t<winrt::IIterable<winrt::DependencyObject>>::type>
 {
 public:
     ChildrenInTabFocusOrderIterable(const winrt::ItemsRepeater& repeater);
@@ -13,9 +15,10 @@ public:
     winrt::IIterator<winrt::DependencyObject> First();
 #pragma endregion
 
+
 private:
-    class ChildrenInTabFocusOrderIterator
-        : public winrt::implements<ChildrenInTabFocusOrderIterator, winrt::IIterator<winrt::DependencyObject>>
+    class ChildrenInTabFocusOrderIterator :
+        public winrt::implements<ChildrenInTabFocusOrderIterator, winrt::IIterator<winrt::DependencyObject>>
     {
     public:
         ChildrenInTabFocusOrderIterator(const winrt::ItemsRepeater& repeater);
@@ -48,8 +51,7 @@ private:
             {
                 do
                 {
-                    if (howMany >= values.size())
-                        break;
+                    if (howMany >= values.size()) break;
 
                     values[howMany] = Current();
                     howMany++;
@@ -65,5 +67,6 @@ private:
         int m_index = 0;
     };
 
-    tracker_ref<winrt::ItemsRepeater> m_repeater{this};
+
+    tracker_ref<winrt::ItemsRepeater> m_repeater{ this };
 };

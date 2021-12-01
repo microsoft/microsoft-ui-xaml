@@ -10,7 +10,8 @@
 
 #include "NumberBoxAutomationPeer.properties.cpp"
 
-NumberBoxAutomationPeer::NumberBoxAutomationPeer(winrt::NumberBox const& owner) : ReferenceTracker(owner)
+NumberBoxAutomationPeer::NumberBoxAutomationPeer(winrt::NumberBox const& owner)
+    : ReferenceTracker(owner)
 {
 }
 
@@ -95,8 +96,7 @@ void NumberBoxAutomationPeer::SetValue(double value)
 
 void NumberBoxAutomationPeer::RaiseValueChangedEvent(double oldValue, double newValue)
 {
-    __super::RaisePropertyChangedEvent(
-        winrt::RangeValuePatternIdentifiers::ValueProperty(),
+    __super::RaisePropertyChangedEvent(winrt::RangeValuePatternIdentifiers::ValueProperty(),
         winrt::PropertyValue::CreateDouble(oldValue),
         winrt::PropertyValue::CreateDouble(newValue));
 }

@@ -6,8 +6,9 @@
 #include "TreeViewItemTemplateSettings.g.h"
 #include "TreeViewItemTemplateSettings.properties.h"
 
-class TreeViewItemTemplateSettings : public winrt::implementation::TreeViewItemTemplateSettingsT<TreeViewItemTemplateSettings>,
-                                     public TreeViewItemTemplateSettingsProperties
+class TreeViewItemTemplateSettings :
+    public winrt::implementation::TreeViewItemTemplateSettingsT<TreeViewItemTemplateSettings>,
+    public TreeViewItemTemplateSettingsProperties
 {
 public:
     TreeViewItemTemplateSettings();

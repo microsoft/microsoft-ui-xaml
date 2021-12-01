@@ -13,7 +13,9 @@
 #include "ProgressRing.g.h"
 #include "ProgressRing.properties.h"
 
-class ProgressRing : public ReferenceTracker<ProgressRing, winrt::implementation::ProgressRingT>, public ProgressRingProperties
+class ProgressRing :
+    public ReferenceTracker<ProgressRing, winrt::implementation::ProgressRingT>,
+    public ProgressRingProperties
 {
 
 public:
@@ -50,12 +52,12 @@ private:
     void CoerceValue();
     bool IsInBounds(double value);
 
-    tracker_ref<winrt::Grid> m_layoutRoot{this};
-    tracker_ref<winrt::AnimatedVisualPlayer> m_player{this};
+    tracker_ref<winrt::Grid> m_layoutRoot{ this };
+    tracker_ref<winrt::AnimatedVisualPlayer> m_player{ this };
 
     PropertyChanged_revoker m_foregroundColorPropertyChangedRevoker{};
     PropertyChanged_revoker m_backgroundColorPropertyChangedRevoker{};
 
-    double m_oldValue{0};
-    bool m_rangeBasePropertyUpdating{false};
+    double m_oldValue{ 0 };
+    bool m_rangeBasePropertyUpdating{ false };
 };

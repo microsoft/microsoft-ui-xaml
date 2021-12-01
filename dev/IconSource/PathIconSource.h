@@ -7,11 +7,13 @@
 #include "PathIconSource.g.h"
 #include "PathIconSource.properties.h"
 
-class PathIconSource : public ReferenceTracker<PathIconSource, winrt::implementation::PathIconSourceT, IconSource>, public PathIconSourceProperties
+class PathIconSource :
+    public ReferenceTracker<PathIconSource, winrt::implementation::PathIconSourceT, IconSource>,
+    public PathIconSourceProperties
 {
 public:
-    using PathIconSourceProperties::ClearProperties;
     using PathIconSourceProperties::EnsureProperties;
+    using PathIconSourceProperties::ClearProperties;
 
     winrt::DependencyProperty GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty);
     winrt::IconElement CreateIconElementCore();

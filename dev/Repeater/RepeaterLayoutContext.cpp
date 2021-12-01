@@ -26,11 +26,9 @@ int32_t RepeaterLayoutContext::ItemCountCore()
 
 winrt::UIElement RepeaterLayoutContext::GetOrCreateElementAtCore(int index, winrt::ElementRealizationOptions const& options)
 {
-    return winrt::get_self<ItemsRepeater>(GetOwner())
-        ->GetElementImpl(
-            index,
-            (options & winrt::ElementRealizationOptions::ForceCreate) == winrt::ElementRealizationOptions::ForceCreate,
-            (options & winrt::ElementRealizationOptions::SuppressAutoRecycle) == winrt::ElementRealizationOptions::SuppressAutoRecycle);
+    return winrt::get_self<ItemsRepeater>(GetOwner())->GetElementImpl(index, 
+        (options & winrt::ElementRealizationOptions::ForceCreate) == winrt::ElementRealizationOptions::ForceCreate,
+        (options & winrt::ElementRealizationOptions::SuppressAutoRecycle) == winrt::ElementRealizationOptions::SuppressAutoRecycle);
 }
 
 winrt::IInspectable RepeaterLayoutContext::LayoutStateCore()
@@ -47,7 +45,8 @@ void RepeaterLayoutContext::LayoutStateCore(winrt::IInspectable const& value)
 
 #pragma region IVirtualizingLayoutContextOverrides
 
-winrt::IInspectable RepeaterLayoutContext::GetItemAtCore(int index)
+winrt::IInspectable RepeaterLayoutContext::GetItemAtCore(
+    int index)
 {
     return GetOwner().ItemsSourceView().GetAt(index);
 }

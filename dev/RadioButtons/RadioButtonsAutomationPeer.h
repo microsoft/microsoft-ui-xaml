@@ -6,7 +6,8 @@
 #include "RadioButtons.h"
 #include "RadioButtonsAutomationPeer.g.h"
 
-class RadioButtonsAutomationPeer : public ReferenceTracker<RadioButtonsAutomationPeer, winrt::implementation::RadioButtonsAutomationPeerT>
+class RadioButtonsAutomationPeer :
+    public ReferenceTracker<RadioButtonsAutomationPeer, winrt::implementation::RadioButtonsAutomationPeerT>
 {
 
 public:
@@ -17,3 +18,4 @@ public:
     hstring GetNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
 };
+

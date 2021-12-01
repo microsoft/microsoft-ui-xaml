@@ -9,7 +9,8 @@
 
 #include "RatingControlAutomationPeer.properties.cpp"
 
-RatingControlAutomationPeer::RatingControlAutomationPeer(winrt::FrameworkElement const& owner) : ReferenceTracker(owner)
+RatingControlAutomationPeer::RatingControlAutomationPeer(winrt::FrameworkElement const& owner)
+    : ReferenceTracker(owner)
 {
 }
 
@@ -101,7 +102,7 @@ void RatingControlAutomationPeer::SetValue(double value)
     GetRatingControl().Value(value);
 }
 
-// IAutomationPeerOverrides
+//IAutomationPeerOverrides
 
 winrt::IInspectable RatingControlAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
@@ -159,7 +160,7 @@ int RatingControlAutomationPeer::DetermineFractionDigits(double value)
 
     if (intValue % 100 == 0)
     {
-        return 0;
+        return 0;   
     }
     else if (intValue % 10 == 0)
     {

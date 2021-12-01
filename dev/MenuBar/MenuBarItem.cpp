@@ -11,12 +11,12 @@
 #include "MenuBarItemAutomationPeer.h"
 
 MenuBarItem::MenuBarItem()
-{
+{   
     SetDefaultStyleKey(this);
 
     auto items = winrt::make<Vector<winrt::MenuFlyoutItemBase>>();
     auto observableVector = items.try_as<winrt::IObservableVector<winrt::MenuFlyoutItemBase>>();
-    observableVector.VectorChanged({this, &MenuBarItem::OnItemsVectorChanged});
+    observableVector.VectorChanged({ this, &MenuBarItem::OnItemsVectorChanged });
     SetValue(s_ItemsProperty, items);
 }
 
@@ -81,29 +81,37 @@ void MenuBarItem::AttachEventHandlers()
 {
     if (auto button = m_button.get())
     {
-        m_pressedRevoker =
-            RegisterPropertyChanged(button, winrt::ButtonBase::IsPressedProperty(), {this, &MenuBarItem::OnVisualPropertyChanged});
-        m_pointerOverRevoker =
-            RegisterPropertyChanged(button, winrt::ButtonBase::IsPointerOverProperty(), {this, &MenuBarItem::OnVisualPropertyChanged});
+        m_pressedRevoker = RegisterPropertyChanged(button, winrt::ButtonBase::IsPressedProperty(), { this, &MenuBarItem::OnVisualPropertyChanged });
+        m_pointerOverRevoker = RegisterPropertyChanged(button, winrt::ButtonBase::IsPointerOverProperty(), { this, &MenuBarItem::OnVisualPropertyChanged });
     }
 
     m_onMenuBarItemPointerPressedRevoker = AddRoutedEventHandler<RoutedEventType::PointerPressed>(
-        *this, [this](auto const& sender, auto const& args) { OnMenuBarItemPointerPressed(sender, args); }, true /*handledEventsToo*/
+        *this,
+        [this](auto const& sender, auto const& args)
+        {
+            OnMenuBarItemPointerPressed(sender, args);
+        },
+        true /*handledEventsToo*/
     );
 
     m_onMenuBarItemKeyDownRevoker = AddRoutedEventHandler<RoutedEventType::KeyDown>(
-        *this, [this](auto const& sender, auto const& args) { OnMenuBarItemKeyDown(sender, args); }, true /*handledEventsToo*/
-    );
+        *this,
+        [this](auto const& sender, auto const& args)
+        {
+            OnMenuBarItemKeyDown(sender, args);
+        },
+        true /*handledEventsToo*/
+     );
 
     if (auto flyout = m_flyout.get())
     {
-        m_flyoutClosedRevoker = flyout.Closed(winrt::auto_revoke, {this, &MenuBarItem::OnFlyoutClosed});
-        m_flyoutOpeningRevoker = flyout.Opening(winrt::auto_revoke, {this, &MenuBarItem::OnFlyoutOpening});
+        m_flyoutClosedRevoker = flyout.Closed(winrt::auto_revoke, { this, &MenuBarItem::OnFlyoutClosed });
+        m_flyoutOpeningRevoker = flyout.Opening(winrt::auto_revoke, { this, &MenuBarItem::OnFlyoutOpening });
     }
 
-    m_pointerEnteredRevoker = PointerEntered(winrt::auto_revoke, {this, &MenuBarItem::OnMenuBarItemPointerEntered});
+    m_pointerEnteredRevoker = PointerEntered(winrt::auto_revoke, { this, &MenuBarItem::OnMenuBarItemPointerEntered });
 
-    m_accessKeyInvokedRevoker = AccessKeyInvoked(winrt::auto_revoke, {this, &MenuBarItem::OnMenuBarItemAccessKeyInvoked});
+    m_accessKeyInvokedRevoker = AccessKeyInvoked(winrt::auto_revoke, { this, &MenuBarItem::OnMenuBarItemAccessKeyInvoked });
 }
 
 void MenuBarItem::DetachEventHandlers(bool useSafeGet)
@@ -143,16 +151,18 @@ void MenuBarItem::OnMenuBarItemPointerPressed(winrt::IInspectable const& sender,
     }
 }
 
-void MenuBarItem::OnMenuBarItemKeyDown(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
+void MenuBarItem::OnMenuBarItemKeyDown( winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
     const auto key = args.Key();
-    if (key == winrt::VirtualKey::Down || key == winrt::VirtualKey::Enter || key == winrt::VirtualKey::Space)
+    if (key == winrt::VirtualKey::Down
+        || key == winrt::VirtualKey::Enter
+        || key == winrt::VirtualKey::Space)
     {
         ShowMenuFlyout();
     }
 }
 
-void MenuBarItem::OnPresenterKeyDown(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
+void MenuBarItem::OnPresenterKeyDown( winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
     const auto key = args.Key();
     if (key == winrt::VirtualKey::Right)
@@ -179,8 +189,7 @@ void MenuBarItem::OnPresenterKeyDown(winrt::IInspectable const& sender, winrt::K
     }
 }
 
-void MenuBarItem::OnItemsVectorChanged(
-    winrt::Collections::IObservableVector<winrt::MenuFlyoutItemBase> const& sender, winrt::Collections::IVectorChangedEventArgs const& e)
+void MenuBarItem::OnItemsVectorChanged(winrt::Collections::IObservableVector<winrt::MenuFlyoutItemBase> const& sender, winrt::Collections::IVectorChangedEventArgs const& e)
 {
     if (auto flyout = m_flyout.safe_get())
     {
@@ -232,7 +241,7 @@ void MenuBarItem::ShowMenuFlyout()
 
             // Attach keyboard event handler
             auto presenter = winrt::get_self<MenuBarItemFlyout>(m_flyout.get())->m_presenter.get();
-            m_presenterKeyDownRevoker = presenter.KeyDown(winrt::auto_revoke, {this, &MenuBarItem::OnPresenterKeyDown});
+            m_presenterKeyDownRevoker = presenter.KeyDown(winrt::auto_revoke, { this,  &MenuBarItem::OnPresenterKeyDown });
         }
     }
 }
@@ -283,7 +292,7 @@ void MenuBarItem::Invoke()
 }
 
 // Menu Flyout Events
-void MenuBarItem::OnFlyoutClosed(winrt::IInspectable const& sender, winrt::IInspectable const& args)
+void MenuBarItem::OnFlyoutClosed( winrt::IInspectable const& sender, winrt::IInspectable const& args)
 {
     m_isFlyoutOpen = false;
 
@@ -295,7 +304,7 @@ void MenuBarItem::OnFlyoutClosed(winrt::IInspectable const& sender, winrt::IInsp
     UpdateVisualStates();
 }
 
-void MenuBarItem::OnFlyoutOpening(winrt::IInspectable const& sender, winrt::IInspectable const& args)
+void MenuBarItem::OnFlyoutOpening( winrt::IInspectable const& sender, winrt::IInspectable const& args)
 {
     Focus(winrt::FocusState::Pointer);
 

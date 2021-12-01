@@ -12,12 +12,12 @@ bool IsStateAnimated(const RevealHoverSpotlightStateDesc& state)
     if (SharedHelpers::IsRS3OrHigher())
     {
         isColorOrIntensityAnimated = (!IsIgnored(state.InnerConeIntensity) && IsAnimated(state.InnerConeIntensity)) ||
-                                     (!IsIgnored(state.OuterConeIntensity) && IsAnimated(state.OuterConeIntensity));
+            (!IsIgnored(state.OuterConeIntensity) && IsAnimated(state.OuterConeIntensity));
     }
     else
     {
         isColorOrIntensityAnimated = (!IsIgnored(state.InnerConeColor) && IsAnimated(state.InnerConeColor)) ||
-                                     (!IsIgnored(state.OuterConeColor) && IsAnimated(state.OuterConeColor));
+            (!IsIgnored(state.OuterConeColor) && IsAnimated(state.OuterConeColor));
     }
 
     const bool isOuterAngleScaleAnimated = !IsIgnored(state.OuterAngleScale) && IsAnimated(state.OuterAngleScale);
@@ -42,6 +42,7 @@ bool IsStateIgnored(const RevealHoverSpotlightStateDesc& state)
     return isColorOrIntensityIgnored && isOuterAngleScaleIgnored;
 }
 
+
 // Returns a function that cancels onComplete callback
 void PlaySpotLightStateAnimation(
     const winrt::SpotLight& compositionSpotLight,
@@ -51,8 +52,7 @@ void PlaySpotLightStateAnimation(
     std::function<void()>* cancelationFunction,
     std::function<void()> onComplete)
 {
-    if (cancelationFunction)
-        *cancelationFunction = nullptr;
+    if (cancelationFunction) *cancelationFunction = nullptr;
 
     if (compositionSpotLight && colorsProxy && offsetProps)
     {
@@ -77,8 +77,7 @@ void PlaySpotLightStateAnimation(
         }
         else
         {
-            winrt::CompositionScopedBatch scopedBatch =
-                compositionSpotLight.Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
+            winrt::CompositionScopedBatch scopedBatch = compositionSpotLight.Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
 
             if (SharedHelpers::IsRS3OrHigher())
             {
@@ -96,12 +95,17 @@ void PlaySpotLightStateAnimation(
 
             if (onComplete)
             {
-                const auto completedEventToken =
-                    scopedBatch.Completed([onComplete = std::move(onComplete)](auto&, auto&) { onComplete(); });
+                const auto completedEventToken = scopedBatch.Completed([onComplete = std::move(onComplete)](auto&, auto&)
+                {
+                    onComplete();
+                });
 
                 if (cancelationFunction)
                 {
-                    *cancelationFunction = [scopedBatch, completedEventToken] { scopedBatch.Completed(completedEventToken); };
+                    *cancelationFunction = [scopedBatch, completedEventToken]
+                    {
+                        scopedBatch.Completed(completedEventToken);
+                    };
                 }
             }
         }
@@ -115,8 +119,7 @@ void PlaySpotLightStateAnimation(
     }
 }
 
-void SetSpotLightStateImmediate(
-    const winrt::SpotLight& compositionSpotLight,
+void SetSpotLightStateImmediate(const winrt::SpotLight& compositionSpotLight,
     const winrt::CompositionPropertySet& colorsProxy,
     const winrt::CompositionPropertySet& offsetProps,
     const RevealHoverSpotlightStateDesc& targetState)
@@ -157,8 +160,7 @@ void SetSpotLightStateImmediate(
     }
 }
 
-void SetSpotLightStateImmediate(
-    const winrt::SpotLight& compositionSpotLight,
+void SetSpotLightStateImmediate(const winrt::SpotLight& compositionSpotLight,
     const winrt::CompositionPropertySet& colorsProxy,
     const winrt::CompositionPropertySet& offsetProps,
     const RevealBorderSpotlightStateDesc& targetState)
@@ -170,11 +172,9 @@ void SetSpotLightStateImmediate(
 
     SetValueDirect(compositionSpotLight, targetState.ConstantAttenuation.SpotlightProperty, targetState.ConstantAttenuation.Value);
     SetValueDirect(compositionSpotLight, targetState.LinearAttenuation.SpotlightProperty, targetState.LinearAttenuation.Value);
-    SetValueDirect(
-        compositionSpotLight, targetState.InnerConeAngleInDegrees.SpotlightProperty, targetState.InnerConeAngleInDegrees.Value);
+    SetValueDirect(compositionSpotLight, targetState.InnerConeAngleInDegrees.SpotlightProperty, targetState.InnerConeAngleInDegrees.Value);
     SetValueDirect(colorsProxy, targetState.InnerConeColor.SpotlightProperty, targetState.InnerConeColor.Value);
-    SetValueDirect(
-        compositionSpotLight, targetState.OuterConeAngleInDegrees.SpotlightProperty, targetState.OuterConeAngleInDegrees.Value);
+    SetValueDirect(compositionSpotLight, targetState.OuterConeAngleInDegrees.SpotlightProperty, targetState.OuterConeAngleInDegrees.Value);
     SetValueDirect(colorsProxy, targetState.OuterConeColor.SpotlightProperty, targetState.OuterConeColor.Value);
     SetValueDirect(offsetProps, targetState.Height.PropertyName, targetState.Height.Value);
     SetValueDirect(offsetProps, targetState.OuterAngleScale.PropertyName, targetState.OuterAngleScale.Value);
@@ -191,16 +191,14 @@ winrt::CompositionPropertySet CreateSpotLightColorsProxy(const winrt::SpotLight&
     auto lightProperties = compositionSpotLight.Properties();
     auto compositor = compositionSpotLight.Compositor();
 
-    lightProperties.InsertColor(L"InnerConeColor", {255, 255, 255, 255});
-    lightProperties.InsertColor(L"OuterConeColor", {255, 255, 255, 255});
+    lightProperties.InsertColor(L"InnerConeColor", { 255, 255, 255, 255 });
+    lightProperties.InsertColor(L"OuterConeColor", { 255, 255, 255, 255 });
     lightProperties.InsertScalar(L"LightIntensity", 0);
 
-    auto innerConeColorExpression =
-        compositor.CreateExpressionAnimation(L"ColorLerp(ColorRgb(0,0,0,0), target.InnerConeColor, target.LightIntensity)");
+    auto innerConeColorExpression = compositor.CreateExpressionAnimation(L"ColorLerp(ColorRgb(0,0,0,0), target.InnerConeColor, target.LightIntensity)");
     innerConeColorExpression.SetReferenceParameter(L"target", lightProperties);
 
-    auto outerConeColorExpression =
-        compositor.CreateExpressionAnimation(L"ColorLerp(ColorRgb(0,0,0,0), target.OuterConeColor, target.LightIntensity)");
+    auto outerConeColorExpression = compositor.CreateExpressionAnimation(L"ColorLerp(ColorRgb(0,0,0,0), target.OuterConeColor, target.LightIntensity)");
     outerConeColorExpression.SetReferenceParameter(L"target", lightProperties);
 
     compositionSpotLight.StartAnimation(L"InnerConeColor", innerConeColorExpression);

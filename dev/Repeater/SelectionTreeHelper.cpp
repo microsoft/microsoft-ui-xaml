@@ -28,8 +28,11 @@ void SelectionTreeHelper::TraverseIndexPath(
     }
 }
 
-// static
-void SelectionTreeHelper::Traverse(std::shared_ptr<SelectionNode> root, bool realizeChildren, std::function<void(const TreeWalkNodeInfo&)> nodeAction)
+// static 
+void SelectionTreeHelper::Traverse(
+    std::shared_ptr<SelectionNode> root,
+    bool realizeChildren,
+    std::function<void(const TreeWalkNodeInfo&)> nodeAction)
 {
     auto pendingNodes = std::vector<TreeWalkNodeInfo>();
     auto current = winrt::make<IndexPath>(nullptr);
@@ -56,40 +59,44 @@ void SelectionTreeHelper::Traverse(std::shared_ptr<SelectionNode> root, bool rea
     }
 }
 
-// static
+
+// static 
 void SelectionTreeHelper::TraverseRangeRealizeChildren(
-    std::shared_ptr<SelectionNode> root, const winrt::IndexPath& start, const winrt::IndexPath& end, std::function<void(const TreeWalkNodeInfo&)> nodeAction)
+    std::shared_ptr<SelectionNode> root,
+    const winrt::IndexPath& start,
+    const winrt::IndexPath& end,
+    std::function<void(const TreeWalkNodeInfo&)> nodeAction)
 {
     MUX_ASSERT(start.CompareTo(end) == -1);
 
     auto pendingNodes = std::vector<TreeWalkNodeInfo>();
     winrt::IndexPath current = start;
 
-    // Build up the stack to account for the depth first walk up to the
+    // Build up the stack to account for the depth first walk up to the 
     // start index path.
     TraverseIndexPath(
         root,
         start,
         true, /* realizeChildren */
-        [&start, &end, &pendingNodes](std::shared_ptr<SelectionNode> node, const winrt::IndexPath& path, int depth, int childIndex) {
-            const auto currentPath = StartPath(path, depth);
-            const bool isStartPath = IsSubSet(start, currentPath);
-            const bool isEndPath = IsSubSet(end, currentPath);
+        [&start, &end, &pendingNodes](std::shared_ptr<SelectionNode> node, const winrt::IndexPath& path, int depth, int childIndex)
+    {
+        const auto currentPath = StartPath(path, depth);
+        const bool isStartPath = IsSubSet(start, currentPath);
+        const bool isEndPath = IsSubSet(end, currentPath);
 
-            const int startIndex = depth < start.GetSize() && isStartPath ? std::max(0, start.GetAt(depth)) : 0;
-            const int endIndex =
-                depth < end.GetSize() && isEndPath ? std::min(node->DataCount() - 1, end.GetAt(depth)) : node->DataCount() - 1;
+        const int startIndex = depth < start.GetSize() && isStartPath ? std::max(0, start.GetAt(depth)) : 0;
+        const int endIndex = depth < end.GetSize() && isEndPath ? std::min(node->DataCount() - 1, end.GetAt(depth)) : node->DataCount() - 1;
 
-            for (int i = endIndex; i >= startIndex; i--)
+        for (int i = endIndex; i >= startIndex; i--)
+        {
+            auto child = node->GetAt(i, true /* realizeChild */);
+            if (child)
             {
-                auto child = node->GetAt(i, true /* realizeChild */);
-                if (child)
-                {
-                    auto childPath = winrt::get_self<IndexPath>(currentPath)->CloneWithChildIndex(i);
-                    pendingNodes.push_back(TreeWalkNodeInfo(child, childPath, node));
-                }
+                auto childPath = winrt::get_self<IndexPath>(currentPath)->CloneWithChildIndex(i);
+                pendingNodes.push_back(TreeWalkNodeInfo(child, childPath, node));
             }
-        });
+        }
+    });
 
     // From the start index path, do a depth first walk as long as the
     // current path is less than the end path.
@@ -122,7 +129,7 @@ void SelectionTreeHelper::TraverseRangeRealizeChildren(
     }
 }
 
-// static
+// static 
 bool SelectionTreeHelper::IsSubSet(const winrt::IndexPath& path, const winrt::IndexPath& subset)
 {
     const auto subsetSize = subset.GetSize();
@@ -142,7 +149,7 @@ bool SelectionTreeHelper::IsSubSet(const winrt::IndexPath& path, const winrt::In
     return true;
 }
 
-// static
+// static 
 winrt::IndexPath SelectionTreeHelper::StartPath(const winrt::IndexPath& path, int length)
 {
     std::vector<int> subPath;

@@ -9,10 +9,12 @@
 
 #include "FlowLayoutState.properties.cpp"
 
-void FlowLayoutState::InitializeForContext(const winrt::VirtualizingLayoutContext& context, IFlowLayoutAlgorithmDelegates* callbacks)
+void FlowLayoutState::InitializeForContext(
+    const winrt::VirtualizingLayoutContext& context,
+    IFlowLayoutAlgorithmDelegates* callbacks)
 {
     m_flowAlgorithm.InitializeForContext(context, callbacks);
-
+    
     if (m_lineSizeEstimationBuffer.size() == 0)
     {
         m_lineSizeEstimationBuffer.resize(BufferSize, 0.0f);
@@ -29,7 +31,7 @@ void FlowLayoutState::UninitializeForContext(const winrt::VirtualizingLayoutCont
 
 void FlowLayoutState::OnLineArranged(int startIndex, int countInLine, double lineSize, const winrt::VirtualizingLayoutContext& context)
 {
-    // If we do not have any estimation information, use the line for estimation.
+    // If we do not have any estimation information, use the line for estimation. 
     // If we do have some estimation information, don't account for the last line which is quite likely
     // different from the rest of the lines and can throw off estimation.
     if (m_totalLinesMeasured == 0 || startIndex + countInLine != context.ItemCount())

@@ -28,7 +28,8 @@ void SwipeItems::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     }
 }
 
-void SwipeItems::put_Items(const winrt::Collections::IVector<winrt::SwipeItem>& value)
+void SwipeItems::put_Items(
+    const winrt::Collections::IVector<winrt::SwipeItem>& value)
 {
     if (Mode() == winrt::SwipeMode::Execute && value.Size() > 1)
     {
@@ -103,7 +104,7 @@ void SwipeItems::Append(winrt::SwipeItem const& value)
     {
         throw winrt::hresult_invalid_argument(L"Execute items should only have one item.");
     }
-
+    
     m_items.get().Append(value);
     m_vectorChangedEventSource(*this, nullptr);
 }

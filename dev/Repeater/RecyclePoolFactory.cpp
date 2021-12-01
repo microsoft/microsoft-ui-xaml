@@ -10,7 +10,8 @@
 GlobalDependencyProperty RecyclePool::s_reuseKeyProperty = nullptr;
 GlobalDependencyProperty RecyclePool::s_originTemplateProperty = nullptr;
 
-#pragma region IRecyclePoolStatics
+
+#pragma region IRecyclePoolStatics 
 
 winrt::hstring RecyclePool::GetReuseKey(winrt::UIElement const& element)
 {
@@ -42,6 +43,7 @@ void RecyclePool::SetPoolInstance(winrt::DataTemplate const& dataTemplate, winrt
     RecyclePoolProperties::SetPoolInstance(dataTemplate, value);
 }
 
+
 #pragma endregion
 
 /* static */
@@ -50,24 +52,26 @@ void RecyclePool::EnsureProperties()
     RecyclePoolProperties::EnsureProperties();
     if (s_reuseKeyProperty == nullptr)
     {
-        s_reuseKeyProperty = InitializeDependencyProperty(
-            L"ReuseKey",
-            winrt::name_of<hstring>(),
-            winrt::name_of<winrt::RecyclePool>(),
-            true /* isAttached */,
-            box_value(wstring_view(L"")) /* defaultValue */,
-            nullptr /* propertyChangedCallback */);
+        s_reuseKeyProperty =
+            InitializeDependencyProperty(
+                L"ReuseKey",
+                winrt::name_of<hstring>(),
+                winrt::name_of<winrt::RecyclePool>(),
+                true /* isAttached */,
+                box_value(wstring_view(L"")) /* defaultValue */,
+                nullptr /* propertyChangedCallback */);
     }
 
     if (s_originTemplateProperty == nullptr)
     {
-        s_originTemplateProperty = InitializeDependencyProperty(
-            L"OriginTemplate",
-            winrt::name_of<winrt::DataTemplate>(),
-            winrt::name_of<winrt::RecyclePool>(),
-            true /* isAttached */,
-            nullptr /* defaultValue */,
-            nullptr /* propertyChangedCallback */);
+        s_originTemplateProperty =
+            InitializeDependencyProperty(
+                L"OriginTemplate",
+                winrt::name_of<winrt::DataTemplate>(),
+                winrt::name_of<winrt::RecyclePool>(),
+                true /* isAttached */,
+                nullptr /* defaultValue */,
+                nullptr /* propertyChangedCallback */);
     }
 }
 

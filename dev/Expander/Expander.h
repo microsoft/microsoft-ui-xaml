@@ -11,19 +11,20 @@
 #include "Expander.g.h"
 #include "Expander.properties.h"
 
-class Expander : public ReferenceTracker<Expander, winrt::implementation::ExpanderT>, public ExpanderProperties
+class Expander :
+    public ReferenceTracker<Expander, winrt::implementation::ExpanderT>,
+    public ExpanderProperties
 {
 public:
     Expander();
-    ~Expander()
-    {
-    }
+    ~Expander() {}
 
     // IUIElement
     virtual winrt::AutomationPeer OnCreateAutomationPeer();
 
     // IFrameworkElement
     void OnApplyTemplate();
+
 
     void RaiseExpandingEvent(const winrt::Expander& container);
     void RaiseCollapsedEvent(const winrt::Expander& container);

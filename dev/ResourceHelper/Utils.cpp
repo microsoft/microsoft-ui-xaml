@@ -8,11 +8,19 @@ winrt::hstring StringUtil::FormatString(std::wstring_view formatString, ...)
 {
     va_list pArgs;
     va_start(pArgs, formatString);
-
+    
     LPVOID formattedString = nullptr;
 
     // Format the string
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_STRING, formatString.data(), 0, 0, (LPTSTR)&formattedString, 0, &pArgs);
+    FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER |
+        FORMAT_MESSAGE_FROM_STRING,
+        formatString.data(),
+        0,
+        0,
+        (LPTSTR)&formattedString,
+        0,
+        &pArgs);
 
     va_end(pArgs);
 

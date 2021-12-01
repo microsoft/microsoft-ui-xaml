@@ -4,13 +4,13 @@
 //
 //       LottieGen version:
 //           7.1.0+ge1fa92580f
-//
+//       
 //       Command:
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedChevronUpDownSmallVisualSource.json
-//
+//       
 //       Input file:
 //           AnimatedChevronUpDownSmallVisualSource.json (24992 bytes created 23:37-07:00 Oct 5 2021)
-//
+//       
 //       LottieGen source:
 //           http://aka.ms/Lottie
 //
@@ -53,7 +53,8 @@
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
 #ifdef BUILD_WINDOWS
-namespace ABI {
+namespace ABI
+{
 #include <Windows.Graphics.Effects.Interop.h>
 }
 #else
@@ -69,25 +70,25 @@ using namespace winrt::Windows::UI;
 using namespace winrt::Windows::UI::Composition;
 using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
-namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals {
-CppWinRTActivatableClassWithBasicFactory(AnimatedChevronUpDownSmallVisualSource)
+namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
+{
+    CppWinRTActivatableClassWithBasicFactory(AnimatedChevronUpDownSmallVisualSource)
 }
 #include "AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.g.cpp"
 
-class CanvasGeometry : public winrt::implements<CanvasGeometry, IGeometrySource2D, ::ABI::Windows::Graphics::IGeometrySource2DInterop>
+class CanvasGeometry : public winrt::implements<CanvasGeometry,
+    IGeometrySource2D,
+    ::ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
-    winrt::com_ptr<ID2D1Geometry> _geometry{nullptr};
+    winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 
 public:
-    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry) : _geometry{geometry}
-    {
-    }
+    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry)
+        : _geometry{ geometry }
+    { }
 
     // IGeometrySource2D.
-    winrt::com_ptr<ID2D1Geometry> Geometry()
-    {
-        return _geometry;
-    }
+    winrt::com_ptr<ID2D1Geometry> Geometry() { return _geometry; }
 
     // IGeometrySource2DInterop.
     IFACEMETHODIMP GetGeometry(ID2D1Geometry** value) override
@@ -102,23 +103,28 @@ public:
         return E_NOTIMPL;
     }
 };
-class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual
-    : public winrt::implements<AnimatedChevronUpDownSmallVisualSource_AnimatedVisual, winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual, IClosable>
+class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual : public winrt::implements<AnimatedChevronUpDownSmallVisualSource_AnimatedVisual,
+        winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
+        IClosable>
 {
-    winrt::com_ptr<ID2D1Factory> _d2dFactory{nullptr};
-    static constexpr int64_t c_durationTicks{43333333L};
-    Compositor const _c{nullptr};
-    ExpressionAnimation const _reusableExpressionAnimation{nullptr};
-    CompositionPropertySet const _themeProperties{nullptr};
-    ContainerVisual _root{nullptr};
-    CubicBezierEasingFunction _cubicBezierEasingFunction_0{nullptr};
-    CubicBezierEasingFunction _cubicBezierEasingFunction_1{nullptr};
-    CubicBezierEasingFunction _cubicBezierEasingFunction_2{nullptr};
-    CubicBezierEasingFunction _cubicBezierEasingFunction_3{nullptr};
-    ExpressionAnimation _rootProgress{nullptr};
-    StepEasingFunction _holdThenStepEasingFunction{nullptr};
+    winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
+    static constexpr int64_t c_durationTicks{ 43333333L };
+    Compositor const _c{ nullptr };
+    ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
+    CompositionPropertySet const _themeProperties{ nullptr };
+    ContainerVisual _root{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_0{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_1{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_2{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_3{ nullptr };
+    ExpressionAnimation _rootProgress{ nullptr };
+    StepEasingFunction _holdThenStepEasingFunction{ nullptr };
 
-    static void StartProgressBoundAnimation(CompositionObject target, winrt::hstring animatedPropertyName, CompositionAnimation animation, ExpressionAnimation controllerProgressExpression)
+    static void StartProgressBoundAnimation(
+        CompositionObject target,
+        winrt::hstring animatedPropertyName,
+        CompositionAnimation animation,
+        ExpressionAnimation controllerProgressExpression)
     {
         target.StartAnimation(animatedPropertyName, animation);
         const auto controller = target.TryGetAnimationController(animatedPropertyName);
@@ -126,7 +132,12 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual
         controller.StartAnimation(L"Progress", controllerProgressExpression);
     }
 
-    void BindProperty(CompositionObject target, winrt::hstring animatedPropertyName, winrt::hstring expression, winrt::hstring referenceParameterName, CompositionObject referencedObject)
+    void BindProperty(
+        CompositionObject target,
+        winrt::hstring animatedPropertyName,
+        winrt::hstring expression,
+        winrt::hstring referenceParameterName,
+        CompositionObject referencedObject)
     {
         _reusableExpressionAnimation.ClearAllParameters();
         _reusableExpressionAnimation.Expression(expression);
@@ -137,7 +148,7 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual
     ScalarKeyFrameAnimation CreateScalarKeyFrameAnimation(float initialProgress, float initialValue, CompositionEasingFunction initialEasingFunction)
     {
         const auto result = _c.CreateScalarKeyFrameAnimation();
-        result.Duration(TimeSpan{c_durationTicks});
+        result.Duration(TimeSpan{ c_durationTicks });
         result.InsertKeyFrame(initialProgress, initialValue, initialEasingFunction);
         return result;
     }
@@ -145,7 +156,7 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual
     Vector2KeyFrameAnimation CreateVector2KeyFrameAnimation(float initialProgress, winrt::float2 initialValue, CompositionEasingFunction initialEasingFunction)
     {
         const auto result = _c.CreateVector2KeyFrameAnimation();
-        result.Duration(TimeSpan{c_durationTicks});
+        result.Duration(TimeSpan{ c_durationTicks });
         result.InsertKeyFrame(initialProgress, initialValue, initialEasingFunction);
         return result;
     }
@@ -175,13 +186,13 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual
     // Shape 1 Shape 1 Shape 1 Shape 1 Shape 1 Shape 1 Shape 1 Shape 1 Shape 1 Shape 1
     winrt::com_ptr<CanvasGeometry> Geometry()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
+        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
+        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
-        sink->BeginFigure({-3.54299998F, -1.79299998F}, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({0.0199999996F, 1.70700002F});
-        sink->AddLine({3.48900008F, -1.71500003F});
+        sink->BeginFigure({ -3.54299998F, -1.79299998F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ 0.0199999996F, 1.70700002F });
+        sink->AddLine({ 3.48900008F, -1.71500003F });
         sink->EndFigure(D2D1_FIGURE_END_OPEN);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -215,12 +226,7 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual
     CompositionColorBrush ThemeColor_Foreground()
     {
         const auto result = _c.CreateColorBrush();
-        BindProperty(
-            result,
-            L"Color",
-            L"ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)",
-            L"_theme",
-            _themeProperties);
+        BindProperty(result, L"Color", L"ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties);
         return result;
     }
 
@@ -278,7 +284,7 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape()
     {
         const auto result = _c.CreateSpriteShape(PathGeometry());
-        result.Scale({4.0F, 4.0F});
+        result.Scale({ 4.0F, 4.0F });
         result.StrokeBrush(ThemeColor_Foreground());
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -310,9 +316,9 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(InsetClip_0());
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
         // Shape tree root for layer: DownArrowRotate 2 DownArrowRotate 2 DownArrowRotate 2
         // DownArrowRotate 2 DownArrowRotate 2 DownArrowRotate 2 DownArrowRotate 2
         // DownArrowRotate 2 DownArrowRotate 2 DownArrowRotate 2 DownArrowRotate 2
@@ -350,22 +356,22 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual
 
     CubicBezierEasingFunction CubicBezierEasingFunction_0()
     {
-        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({0.166999996F, 0.166999996F}, {0.0F, 1.0F});
+        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_1()
     {
-        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({0.850000024F, 0.0F}, {0.75F, 1.0F});
+        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.0F }, { 0.75F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_2()
     {
-        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({0.349999994F, 0.0F}, {0.0F, 1.0F});
+        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_3()
     {
-        return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({0.850000024F, 0.0F}, {0.449999988F, 1.0F});
+        return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.0F }, { 0.449999988F, 1.0F });
     }
 
     ExpressionAnimation RootProgress()
@@ -518,7 +524,7 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_0()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // ShapeGroup: Shape 1 Shape 1 Shape 1 Shape 1 Shape 1 Shape 1 Shape 1 Shape 1 Shape 1
         // Shape 1 Shape 1 Shape 1 Shape 1 Shape 1 Shape 1 Shape 1 Shape 1 Shape 1
         result.Shapes().Append(SpriteShape());
@@ -590,75 +596,75 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual
     Vector2KeyFrameAnimation OffsetVector2Animation()
     {
         // Frame 0.
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, {24.0F, 24.0F}, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
         // Frame 10.
-        result.InsertKeyFrame(0.0384615399F, {24.0F, 26.0F}, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.0384615399F, { 24.0F, 26.0F }, _cubicBezierEasingFunction_0);
         // Frame 15.
-        result.InsertKeyFrame(0.057692308F, {24.0F, 18.0F}, CubicBezierEasingFunction_1());
+        result.InsertKeyFrame(0.057692308F, { 24.0F, 18.0F }, CubicBezierEasingFunction_1());
         // Frame 29.
-        result.InsertKeyFrame(0.111538462F, {24.1709995F, 23.9230003F}, CubicBezierEasingFunction_2());
+        result.InsertKeyFrame(0.111538462F, { 24.1709995F, 23.9230003F }, CubicBezierEasingFunction_2());
         // Frame 30.
-        result.InsertKeyFrame(0.115384616F, {24.0F, 24.0F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.115384616F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
         // Frame 40.
-        result.InsertKeyFrame(0.15384616F, {24.0F, 24.0F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.15384616F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
         // Frame 49.
-        result.InsertKeyFrame(0.188461542F, {24.0F, 26.0F}, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.188461542F, { 24.0F, 26.0F }, _cubicBezierEasingFunction_0);
         // Frame 50.
-        result.InsertKeyFrame(0.192307696F, {24.0F, 24.0F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.192307696F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
         // Frame 60.
-        result.InsertKeyFrame(0.230769232F, {24.0F, 22.0F}, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.230769232F, { 24.0F, 22.0F }, _cubicBezierEasingFunction_0);
         // Frame 65.
-        result.InsertKeyFrame(0.25F, {24.0F, 30.0F}, CubicBezierEasingFunction_3());
+        result.InsertKeyFrame(0.25F, { 24.0F, 30.0F }, CubicBezierEasingFunction_3());
         // Frame 79.
-        result.InsertKeyFrame(0.303846151F, {24.0F, 24.0F}, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.303846151F, { 24.0F, 24.0F }, _cubicBezierEasingFunction_2);
         // Frame 90.
-        result.InsertKeyFrame(0.346153855F, {24.0F, 24.0F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.346153855F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
         // Frame 99.
-        result.InsertKeyFrame(0.380769223F, {24.0F, 22.0F}, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.380769223F, { 24.0F, 22.0F }, _cubicBezierEasingFunction_0);
         // Frame 100.
-        result.InsertKeyFrame(0.384615391F, {24.0F, 24.0F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.384615391F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
         // Frame 120.
-        result.InsertKeyFrame(0.461538464F, {24.0F, 24.0F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.461538464F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
         // Frame 129.
-        result.InsertKeyFrame(0.496153831F, {24.0F, 26.0F}, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.496153831F, { 24.0F, 26.0F }, _cubicBezierEasingFunction_0);
         // Frame 130.
-        result.InsertKeyFrame(0.5F, {24.0F, 24.0F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.5F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
         // Frame 150.
-        result.InsertKeyFrame(0.576923072F, {24.0F, 24.0F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.576923072F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
         // Frame 159.
-        result.InsertKeyFrame(0.61153847F, {24.0F, 22.0F}, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.61153847F, { 24.0F, 22.0F }, _cubicBezierEasingFunction_0);
         // Frame 160.
-        result.InsertKeyFrame(0.615384638F, {24.0F, 26.0F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.615384638F, { 24.0F, 26.0F }, _holdThenStepEasingFunction);
         // Frame 169.
-        result.InsertKeyFrame(0.649999976F, {24.0F, 22.0F}, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.649999976F, { 24.0F, 22.0F }, _cubicBezierEasingFunction_0);
         // Frame 170.
-        result.InsertKeyFrame(0.653846145F, {24.0F, 26.0F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.653846145F, { 24.0F, 26.0F }, _holdThenStepEasingFunction);
         // Frame 175.
-        result.InsertKeyFrame(0.673076928F, {24.0F, 18.0F}, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.673076928F, { 24.0F, 18.0F }, _cubicBezierEasingFunction_1);
         // Frame 189.
-        result.InsertKeyFrame(0.726923048F, {24.1709995F, 23.9230003F}, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.726923048F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_2);
         // Frame 190.
-        result.InsertKeyFrame(0.730769217F, {24.0F, 26.0F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.730769217F, { 24.0F, 26.0F }, _holdThenStepEasingFunction);
         // Frame 195.
-        result.InsertKeyFrame(0.75F, {24.0F, 18.0F}, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.75F, { 24.0F, 18.0F }, _cubicBezierEasingFunction_1);
         // Frame 209.
-        result.InsertKeyFrame(0.80384618F, {24.1709995F, 23.9230003F}, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.80384618F, { 24.1709995F, 23.9230003F }, _cubicBezierEasingFunction_2);
         // Frame 210.
-        result.InsertKeyFrame(0.807692289F, {24.0F, 22.0F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.807692289F, { 24.0F, 22.0F }, _holdThenStepEasingFunction);
         // Frame 219.
-        result.InsertKeyFrame(0.842307687F, {24.0F, 26.0F}, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.842307687F, { 24.0F, 26.0F }, _cubicBezierEasingFunction_0);
         // Frame 220.
-        result.InsertKeyFrame(0.846153855F, {24.0F, 22.0F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.846153855F, { 24.0F, 22.0F }, _holdThenStepEasingFunction);
         // Frame 225.
-        result.InsertKeyFrame(0.865384638F, {24.0F, 30.0F}, _cubicBezierEasingFunction_3);
+        result.InsertKeyFrame(0.865384638F, { 24.0F, 30.0F }, _cubicBezierEasingFunction_3);
         // Frame 239.
-        result.InsertKeyFrame(0.919230759F, {24.0F, 24.0F}, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.919230759F, { 24.0F, 24.0F }, _cubicBezierEasingFunction_2);
         // Frame 240.
-        result.InsertKeyFrame(0.923076928F, {24.0F, 22.0F}, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.923076928F, { 24.0F, 22.0F }, _holdThenStepEasingFunction);
         // Frame 245.
-        result.InsertKeyFrame(0.942307711F, {24.0F, 30.0F}, _cubicBezierEasingFunction_3);
+        result.InsertKeyFrame(0.942307711F, { 24.0F, 30.0F }, _cubicBezierEasingFunction_3);
         // Frame 259.
-        result.InsertKeyFrame(0.996153831F, {24.0F, 24.0F}, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.996153831F, { 24.0F, 24.0F }, _cubicBezierEasingFunction_2);
         return result;
     }
 
@@ -668,8 +674,12 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual
     }
 
 public:
-    AnimatedChevronUpDownSmallVisualSource_AnimatedVisual(Compositor compositor, CompositionPropertySet themeProperties) :
-        _c{compositor}, _themeProperties{themeProperties}, _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
+    AnimatedChevronUpDownSmallVisualSource_AnimatedVisual(
+        Compositor compositor,
+        CompositionPropertySet themeProperties)
+        : _c{compositor}
+        , _themeProperties{themeProperties}
+        , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
     {
         winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.put()));
         const auto _ = Root();
@@ -685,7 +695,7 @@ public:
 
     TimeSpan Duration() const
     {
-        return TimeSpan{c_durationTicks};
+        return TimeSpan{ c_durationTicks };
     }
 
     Visual RootVisual() const
@@ -695,19 +705,18 @@ public:
 
     winrt::float2 Size() const
     {
-        return {48.0F, 48.0F};
+        return { 48.0F, 48.0F };
     }
 
     static bool IsRuntimeCompatible()
     {
-        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(
-            L"Windows.Foundation.UniversalApiContract", 7);
+        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 7);
     }
 };
 
 winrt::float4 AnimatedChevronUpDownSmallVisualSource::ColorAsVector4(Color color)
 {
-    return {static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A)};
+    return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
 }
 
 CompositionPropertySet AnimatedChevronUpDownSmallVisualSource::EnsureThemeProperties(Compositor compositor)
@@ -735,21 +744,25 @@ void AnimatedChevronUpDownSmallVisualSource::Foreground(Color value)
     }
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedChevronUpDownSmallVisualSource::TryCreateAnimatedVisual(Compositor const& compositor)
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedChevronUpDownSmallVisualSource::TryCreateAnimatedVisual(
+    Compositor const& compositor)
 {
     IInspectable diagnostics = nullptr;
     return TryCreateAnimatedVisual(compositor, diagnostics);
 }
 
 winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedChevronUpDownSmallVisualSource::TryCreateAnimatedVisual(
-    Compositor const& compositor, IInspectable& diagnostics)
+    Compositor const& compositor,
+    IInspectable& diagnostics)
 {
     const auto _ = EnsureThemeProperties(compositor);
     diagnostics = nullptr;
 
     if (AnimatedChevronUpDownSmallVisualSource_AnimatedVisual::IsRuntimeCompatible())
     {
-        return winrt::make<AnimatedChevronUpDownSmallVisualSource_AnimatedVisual>(compositor, _themeProperties);
+        return winrt::make<AnimatedChevronUpDownSmallVisualSource_AnimatedVisual>(
+            compositor,
+            _themeProperties);
     }
 
     return nullptr;
@@ -767,7 +780,7 @@ double AnimatedChevronUpDownSmallVisualSource::Framerate()
 
 TimeSpan AnimatedChevronUpDownSmallVisualSource::Duration()
 {
-    return TimeSpan{43333333L};
+    return TimeSpan{ 43333333L };
 }
 
 double AnimatedChevronUpDownSmallVisualSource::FrameToProgress(double frameNumber)
@@ -777,45 +790,47 @@ double AnimatedChevronUpDownSmallVisualSource::FrameToProgress(double frameNumbe
 
 winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedChevronUpDownSmallVisualSource::Markers()
 {
-    return winrt::single_threaded_map<winrt::hstring, double>(std::map<winrt::hstring, double>{
-                                                                  {L"NormalOnToNormalOff_Start", 0.0},
-                                                                  {L"NormalOnToNormalOff_End", 0.111730769230769},
-                                                                  {L"NormalOnToPointerOverOn_Start", 0.115576923076923},
-                                                                  {L"NormalOnToPointerOverOn_End", 0.150192307692308},
-                                                                  {L"NormalOnToPressedOn_Start", 0.154038461538462},
-                                                                  {L"NormalOnToPressedOn_End", 0.188653846153846},
-                                                                  {L"NormalOffToNormalOn_Start", 0.1925},
-                                                                  {L"NormalOffToNormalOn_End", 0.304038461538462},
-                                                                  {L"NormalOffToPointerOverOff_Start", 0.307884615384615},
-                                                                  {L"NormalOffToPointerOverOff_End", 0.3425},
-                                                                  {L"NormalOffToPressedOff_Start", 0.346346153846154},
-                                                                  {L"NormalOffToPressedOff_End", 0.380961538461538},
-                                                                  {L"PointerOverOnToPointerOverOff_Start", 0.384807692307692},
-                                                                  {L"PointerOverOnToPointerOverOff_End", 0.419423076923077},
-                                                                  {L"PointerOverOnToNormalOn_Start", 0.423269230769231},
-                                                                  {L"PointerOverOnToNormalOn_End", 0.457884615384615},
-                                                                  {L"PointerOverOnToPressedOn_Start", 0.461730769230769},
-                                                                  {L"PointerOverOnToPressedOn_End", 0.496346153846154},
-                                                                  {L"PointerOverOffToPointerOverOn_Start", 0.500192307692308},
-                                                                  {L"PointerOverOffToPointerOverOn_End", 0.534807692307692},
-                                                                  {L"PointerOverOffToNormalOff_Start", 0.538653846153846},
-                                                                  {L"PointerOverOffToNormalOff_End", 0.573269230769231},
-                                                                  {L"PointerOverOffToPressedOff_Start", 0.577115384615385},
-                                                                  {L"PointerOverOffToPressedOff_End", 0.611730769230769},
-                                                                  {L"PressedOnToPressedOff_Start", 0.615576923076923},
-                                                                  {L"PressedOnToPressedOff_End", 0.650192307692308},
-                                                                  {L"PressedOnToPointerOverOff_Start", 0.654038461538462},
-                                                                  {L"PressedOnToPointerOverOff_End", 0.727115384615385},
-                                                                  {L"PressedOnToNormalOff_Start", 0.730961538461539},
-                                                                  {L"PressedOnToNormalOff_End", 0.804038461538462},
-                                                                  {L"PressedOffToPressedOn_Start", 0.807884615384615},
-                                                                  {L"PressedOffToPressedOn_End", 0.8425},
-                                                                  {L"PressedOffToPointerOverOn_Start", 0.846346153846154},
-                                                                  {L"PressedOffToPointerOverOn_End", 0.919423076923077},
-                                                                  {L"PressedOffToNormalOn_Start", 0.923269230769231},
-                                                                  {L"PressedOffToNormalOn_End", 0.996346153846154},
-                                                              })
-        .GetView();
+    return winrt::single_threaded_map<winrt::hstring, double>(
+        std::map<winrt::hstring, double>
+        {
+            { L"NormalOnToNormalOff_Start", 0.0 },
+            { L"NormalOnToNormalOff_End", 0.111730769230769 },
+            { L"NormalOnToPointerOverOn_Start", 0.115576923076923 },
+            { L"NormalOnToPointerOverOn_End", 0.150192307692308 },
+            { L"NormalOnToPressedOn_Start", 0.154038461538462 },
+            { L"NormalOnToPressedOn_End", 0.188653846153846 },
+            { L"NormalOffToNormalOn_Start", 0.1925 },
+            { L"NormalOffToNormalOn_End", 0.304038461538462 },
+            { L"NormalOffToPointerOverOff_Start", 0.307884615384615 },
+            { L"NormalOffToPointerOverOff_End", 0.3425 },
+            { L"NormalOffToPressedOff_Start", 0.346346153846154 },
+            { L"NormalOffToPressedOff_End", 0.380961538461538 },
+            { L"PointerOverOnToPointerOverOff_Start", 0.384807692307692 },
+            { L"PointerOverOnToPointerOverOff_End", 0.419423076923077 },
+            { L"PointerOverOnToNormalOn_Start", 0.423269230769231 },
+            { L"PointerOverOnToNormalOn_End", 0.457884615384615 },
+            { L"PointerOverOnToPressedOn_Start", 0.461730769230769 },
+            { L"PointerOverOnToPressedOn_End", 0.496346153846154 },
+            { L"PointerOverOffToPointerOverOn_Start", 0.500192307692308 },
+            { L"PointerOverOffToPointerOverOn_End", 0.534807692307692 },
+            { L"PointerOverOffToNormalOff_Start", 0.538653846153846 },
+            { L"PointerOverOffToNormalOff_End", 0.573269230769231 },
+            { L"PointerOverOffToPressedOff_Start", 0.577115384615385 },
+            { L"PointerOverOffToPressedOff_End", 0.611730769230769 },
+            { L"PressedOnToPressedOff_Start", 0.615576923076923 },
+            { L"PressedOnToPressedOff_End", 0.650192307692308 },
+            { L"PressedOnToPointerOverOff_Start", 0.654038461538462 },
+            { L"PressedOnToPointerOverOff_End", 0.727115384615385 },
+            { L"PressedOnToNormalOff_Start", 0.730961538461539 },
+            { L"PressedOnToNormalOff_End", 0.804038461538462 },
+            { L"PressedOffToPressedOn_Start", 0.807884615384615 },
+            { L"PressedOffToPressedOn_End", 0.8425 },
+            { L"PressedOffToPointerOverOn_Start", 0.846346153846154 },
+            { L"PressedOffToPointerOverOn_End", 0.919423076923077 },
+            { L"PressedOffToNormalOn_Start", 0.923269230769231 },
+            { L"PressedOffToNormalOn_End", 0.996346153846154 },
+        }
+    ).GetView();
 }
 
 void AnimatedChevronUpDownSmallVisualSource::SetColorProperty(hstring const& propertyName, Color value)

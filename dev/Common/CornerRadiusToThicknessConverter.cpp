@@ -5,8 +5,9 @@
 #include <common.h>
 #include "CornerRadiusToThicknessConverter.h"
 
-winrt::Thickness CornerRadiusToThicknessConverter::Convert(
-    winrt::CornerRadius const& radius, winrt::CornerRadiusToThicknessConverterKind const& filterKind, double multiplier)
+winrt::Thickness CornerRadiusToThicknessConverter::Convert(winrt::CornerRadius const& radius,
+    winrt::CornerRadiusToThicknessConverterKind const& filterKind,
+    double multiplier)
 {
     auto result = winrt::Thickness{};
 
@@ -90,15 +91,22 @@ winrt::Thickness CornerRadiusToThicknessConverter::Convert(
 }
 
 winrt::IInspectable CornerRadiusToThicknessConverter::Convert(
-    winrt::IInspectable const& value, winrt::TypeName const& targetType, winrt::IInspectable const& parameter, winrt::hstring const& language)
+    winrt::IInspectable const& value,
+    winrt::TypeName const& targetType,
+    winrt::IInspectable const& parameter,
+    winrt::hstring const& language)
 {
     auto radius = unbox_value<winrt::CornerRadius>(value);
     const auto multiplier = Multiplier();
-    return box_value(Convert(radius, ConversionKind(), multiplier));
+    return box_value(Convert(radius, ConversionKind(),multiplier));
 }
 
 winrt::IInspectable CornerRadiusToThicknessConverter::ConvertBack(
-    winrt::IInspectable const& value, winrt::TypeName const& targetType, winrt::IInspectable const& parameter, winrt::hstring const& language)
+    winrt::IInspectable const& value,
+    winrt::TypeName const& targetType,
+    winrt::IInspectable const& parameter,
+    winrt::hstring const& language)
 {
     winrt::throw_hresult(E_NOTIMPL);
+
 }

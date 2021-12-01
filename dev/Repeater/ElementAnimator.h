@@ -12,44 +12,74 @@
 // is correct (hide -> bounds change -> show).
 // It's possible to customize the animations by inheriting from ElementAnimator
 // and overriding virtual/abstract members.
-class ElementAnimator : public ReferenceTracker<ElementAnimator, winrt::implementation::ElementAnimatorT, winrt::composing>, public ElementAnimatorProperties
-{
+class ElementAnimator :
+    public ReferenceTracker<ElementAnimator, winrt::implementation::ElementAnimatorT, winrt::composing>,
+    public ElementAnimatorProperties
+{    
     struct ElementInfo;
 
 public:
 #pragma region IElementAnimator
 
-    void OnElementShown(winrt::UIElement const& element, winrt::AnimationContext const& context);
+    void OnElementShown(
+        winrt::UIElement const& element,
+        winrt::AnimationContext const& context);
 
-    void OnElementHidden(winrt::UIElement const& element, winrt::AnimationContext const& context);
+    void OnElementHidden(
+        winrt::UIElement const& element,
+        winrt::AnimationContext const& context);
 
     void OnElementBoundsChanged(
-        winrt::UIElement const& element, winrt::AnimationContext const& context, winrt::Rect const& oldBounds, winrt::Rect const& newBounds);
+        winrt::UIElement const& element,
+        winrt::AnimationContext const& context,
+        winrt::Rect const& oldBounds,
+        winrt::Rect const& newBounds);
 
-    bool HasShowAnimation(winrt::UIElement const& element, winrt::AnimationContext const& context);
+    bool HasShowAnimation(
+        winrt::UIElement const& element,
+        winrt::AnimationContext const& context);
 
-    bool HasHideAnimation(winrt::UIElement const& element, winrt::AnimationContext const& context);
+    bool HasHideAnimation(
+        winrt::UIElement const& element,
+        winrt::AnimationContext const& context);
 
     bool HasBoundsChangeAnimation(
-        winrt::UIElement const& element, winrt::AnimationContext const& context, winrt::Rect const& oldBounds, winrt::Rect const& newBounds);
+        winrt::UIElement const& element,
+        winrt::AnimationContext const& context,
+        winrt::Rect const& oldBounds,
+        winrt::Rect const& newBounds);
 
 #pragma endregion
 
 #pragma region IElementAnimatorOverrides
 
-    bool HasShowAnimationCore(winrt::UIElement const& element, winrt::AnimationContext const& context);
+    bool HasShowAnimationCore(
+        winrt::UIElement const& element,
+        winrt::AnimationContext const& context);
 
-    bool HasHideAnimationCore(winrt::UIElement const& element, winrt::AnimationContext const& context);
+    bool HasHideAnimationCore(
+        winrt::UIElement const& element,
+        winrt::AnimationContext const& context);
 
     bool HasBoundsChangeAnimationCore(
-        winrt::UIElement const& element, winrt::AnimationContext const& context, winrt::Rect const& oldBounds, winrt::Rect const& newBounds);
+        winrt::UIElement const& element,
+        winrt::AnimationContext const& context,
+        winrt::Rect const& oldBounds,
+        winrt::Rect const& newBounds);
 
-    void StartShowAnimation(winrt::UIElement const& element, winrt::AnimationContext const& context);
+    void StartShowAnimation(
+        winrt::UIElement const& element,
+        winrt::AnimationContext const& context);
 
-    void StartHideAnimation(winrt::UIElement const& element, winrt::AnimationContext const& context);
+    void StartHideAnimation(
+        winrt::UIElement const& element,
+        winrt::AnimationContext const& context);
 
     void StartBoundsChangeAnimation(
-        winrt::UIElement const& element, winrt::AnimationContext const& context, winrt::Rect const& oldBounds, winrt::Rect const& newBounds);
+        winrt::UIElement const& element,
+        winrt::AnimationContext const& context,
+        winrt::Rect const& oldBounds,
+        winrt::Rect const& newBounds);
 
 #pragma endregion
 
@@ -85,8 +115,14 @@ private:
 
     struct ElementInfo
     {
-        ElementInfo(const ITrackerHandleManager* owner, const winrt::UIElement& element, AnimationTrigger trigger, winrt::AnimationContext context) :
-            m_element(owner, element), m_trigger(trigger), m_context(context)
+        ElementInfo(
+            const ITrackerHandleManager* owner,
+            const winrt::UIElement& element,
+            AnimationTrigger trigger,
+            winrt::AnimationContext context) :
+            m_element(owner, element),
+            m_trigger(trigger),
+            m_context(context)
         {
             MUX_ASSERT(trigger != AnimationTrigger::BoundsChange);
         }
@@ -98,31 +134,20 @@ private:
             winrt::AnimationContext context,
             winrt::Rect oldBounds,
             winrt::Rect newBounds) :
-            m_element(owner, element), m_trigger(trigger), m_context(context), m_oldBounds(oldBounds), m_newBounds(newBounds)
+            m_element(owner, element),
+            m_trigger(trigger),
+            m_context(context),
+            m_oldBounds(oldBounds),
+            m_newBounds(newBounds)
         {
             MUX_ASSERT(trigger == AnimationTrigger::BoundsChange);
         }
 
-        winrt::UIElement Element() const
-        {
-            return m_element.get();
-        }
-        AnimationTrigger Trigger() const
-        {
-            return m_trigger;
-        }
-        winrt::AnimationContext Context() const
-        {
-            return m_context;
-        }
-        winrt::Rect OldBounds() const
-        {
-            return m_oldBounds;
-        }
-        winrt::Rect NewBounds() const
-        {
-            return m_newBounds;
-        }
+        winrt::UIElement Element() const { return m_element.get(); }
+        AnimationTrigger Trigger() const { return m_trigger; }
+        winrt::AnimationContext Context() const { return m_context; }
+        winrt::Rect OldBounds() const { return m_oldBounds; }
+        winrt::Rect NewBounds() const { return m_newBounds; }
 
     private:
         tracker_ref<winrt::UIElement> m_element;

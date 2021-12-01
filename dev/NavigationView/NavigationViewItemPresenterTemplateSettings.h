@@ -6,8 +6,8 @@
 #include "NavigationViewItemPresenterTemplateSettings.g.h"
 #include "NavigationViewItemPresenterTemplateSettings.properties.h"
 
-class NavigationViewItemPresenterTemplateSettings
-    : public winrt::implementation::NavigationViewItemPresenterTemplateSettingsT<NavigationViewItemPresenterTemplateSettings>,
-      public NavigationViewItemPresenterTemplateSettingsProperties
+class NavigationViewItemPresenterTemplateSettings :
+    public winrt::implementation::NavigationViewItemPresenterTemplateSettingsT<NavigationViewItemPresenterTemplateSettings>,
+    public NavigationViewItemPresenterTemplateSettingsProperties
 {
 };

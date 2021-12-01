@@ -7,13 +7,16 @@
 
 #include "NavigationViewItemAutomationPeer.g.h"
 
-class NavigationViewItemAutomationPeer
-    : public ReferenceTracker<NavigationViewItemAutomationPeer, winrt::implementation::NavigationViewItemAutomationPeerT, winrt::IInvokeProvider, winrt::ISelectionItemProvider>
+class NavigationViewItemAutomationPeer :
+    public ReferenceTracker<
+        NavigationViewItemAutomationPeer,
+        winrt::implementation::NavigationViewItemAutomationPeerT,
+        winrt::IInvokeProvider, winrt::ISelectionItemProvider>
 {
 public:
     NavigationViewItemAutomationPeer(winrt::NavigationViewItem const& owner);
 
-    // IAutomationPeerOverrides
+    // IAutomationPeerOverrides 
     winrt::hstring GetNameCore();
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     winrt::AutomationControlType GetAutomationControlTypeCore();
@@ -41,6 +44,7 @@ public:
     void RaiseExpandCollapseAutomationEvent(winrt::ExpandCollapseState newState);
 
 private:
+
     enum class AutomationOutput
     {
         Position,

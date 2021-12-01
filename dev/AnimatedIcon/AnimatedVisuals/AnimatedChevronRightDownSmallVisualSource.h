@@ -5,13 +5,13 @@
 //
 //       LottieGen version:
 //           7.1.0+ge1fa92580f
-//
+//       
 //       Command:
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedChevronRightDownSmallVisualSource.json
-//
+//       
 //       Input file:
 //           AnimatedChevronRightDownSmallVisualSource.json (27906 bytes created 23:37-07:00 Oct 5 2021)
-//
+//       
 //       LottieGen source:
 //           http://aka.ms/Lottie
 //
@@ -21,6 +21,7 @@
 //------------------------------------------------------------------------------
 #include "common.h"
 #include "AnimatedVisuals\AnimatedChevronRightDownSmallVisualSource.g.h"
+
 
 // Name:        Controls_08_SideChevron_TreeViewExpand
 // Frame rate:  60 fps
@@ -74,134 +75,136 @@
 class AnimatedChevronRightDownSmallVisualSource
     : public winrt::implementation::AnimatedChevronRightDownSmallVisualSourceT<AnimatedChevronRightDownSmallVisualSource>
 {
-    winrt::Windows::UI::Composition::CompositionPropertySet _themeProperties{nullptr};
-    winrt::Windows::UI::Color _themeForeground{0xFF, 0x06, 0x08, 0x08};
+    winrt::Windows::UI::Composition::CompositionPropertySet _themeProperties{ nullptr };
+    winrt::Windows::UI::Color _themeForeground{ 0xFF, 0x06, 0x08, 0x08 };
     winrt::Windows::UI::Composition::CompositionPropertySet EnsureThemeProperties(winrt::Windows::UI::Composition::Compositor compositor);
 
     static winrt::Windows::Foundation::Numerics::float4 ColorAsVector4(winrt::Windows::UI::Color color);
-
 public:
     // Animation duration: 3.667 seconds.
-    static constexpr int64_t c_durationTicks{36666666L};
+    static constexpr int64_t c_durationTicks{ 36666666L };
 
     // Marker: NormalOnToNormalOff_Start.
-    static constexpr float M_NormalOnToNormalOff_Start{0.0F};
+    static constexpr float M_NormalOnToNormalOff_Start{ 0.0F };
 
     // Marker: NormalOnToNormalOff_End.
-    static constexpr float M_NormalOnToNormalOff_End{0.0411363654F};
+    static constexpr float M_NormalOnToNormalOff_End{ 0.0411363654F };
 
     // Marker: NormalOnToPointerOverOn_Start.
-    static constexpr float M_NormalOnToPointerOverOn_Start{0.0456818193F};
+    static constexpr float M_NormalOnToPointerOverOn_Start{ 0.0456818193F };
 
     // Marker: NormalOnToPointerOverOn_End.
-    static constexpr float M_NormalOnToPointerOverOn_End{0.0865909085F};
+    static constexpr float M_NormalOnToPointerOverOn_End{ 0.0865909085F };
 
     // Marker: NormalOnToPressedOn_Start.
-    static constexpr float M_NormalOnToPressedOn_Start{0.0911363661F};
+    static constexpr float M_NormalOnToPressedOn_Start{ 0.0911363661F };
 
     // Marker: NormalOnToPressedOn_End.
-    static constexpr float M_NormalOnToPressedOn_End{0.132045448F};
+    static constexpr float M_NormalOnToPressedOn_End{ 0.132045448F };
 
     // Marker: NormalOffToNormalOn_Start.
-    static constexpr float M_NormalOffToNormalOn_Start{0.136590913F};
+    static constexpr float M_NormalOffToNormalOn_Start{ 0.136590913F };
 
     // Marker: NormalOffToNormalOn_End.
-    static constexpr float M_NormalOffToNormalOn_End{0.268409103F};
+    static constexpr float M_NormalOffToNormalOn_End{ 0.268409103F };
 
     // Marker: NormalOffToPointerOverOff_Start.
-    static constexpr float M_NormalOffToPointerOverOff_Start{0.272954553F};
+    static constexpr float M_NormalOffToPointerOverOff_Start{ 0.272954553F };
 
     // Marker: NormalOffToPointerOverOff_End.
-    static constexpr float M_NormalOffToPointerOverOff_End{0.313863635F};
+    static constexpr float M_NormalOffToPointerOverOff_End{ 0.313863635F };
 
     // Marker: NormalOffToPressedOff_Start.
-    static constexpr float M_NormalOffToPressedOff_Start{0.318409085F};
+    static constexpr float M_NormalOffToPressedOff_Start{ 0.318409085F };
 
     // Marker: NormalOffToPressedOff_End.
-    static constexpr float M_NormalOffToPressedOff_End{0.359318167F};
+    static constexpr float M_NormalOffToPressedOff_End{ 0.359318167F };
 
     // Marker: PointerOverOnToPointerOverOff_Start.
-    static constexpr float M_PointerOverOnToPointerOverOff_Start{0.363863647F};
+    static constexpr float M_PointerOverOnToPointerOverOff_Start{ 0.363863647F };
 
     // Marker: PointerOverOnToPointerOverOff_End.
-    static constexpr float M_PointerOverOnToPointerOverOff_End{0.404772729F};
+    static constexpr float M_PointerOverOnToPointerOverOff_End{ 0.404772729F };
 
     // Marker: PointerOverOnToNormalOn_Start.
-    static constexpr float M_PointerOverOnToNormalOn_Start{0.409318179F};
+    static constexpr float M_PointerOverOnToNormalOn_Start{ 0.409318179F };
 
     // Marker: PointerOverOnToNormalOn_End.
-    static constexpr float M_PointerOverOnToNormalOn_End{0.450227261F};
+    static constexpr float M_PointerOverOnToNormalOn_End{ 0.450227261F };
 
     // Marker: PointerOverOnToPressedOn_Start.
-    static constexpr float M_PointerOverOnToPressedOn_Start{0.454772741F};
+    static constexpr float M_PointerOverOnToPressedOn_Start{ 0.454772741F };
 
     // Marker: PointerOverOnToPressedOn_End.
-    static constexpr float M_PointerOverOnToPressedOn_End{0.495681822F};
+    static constexpr float M_PointerOverOnToPressedOn_End{ 0.495681822F };
 
     // Marker: PointerOverOffToPointerOverOn_Start.
-    static constexpr float M_PointerOverOffToPointerOverOn_Start{0.500227273F};
+    static constexpr float M_PointerOverOffToPointerOverOn_Start{ 0.500227273F };
 
     // Marker: PointerOverOffToPointerOverOn_End.
-    static constexpr float M_PointerOverOffToPointerOverOn_End{0.541136384F};
+    static constexpr float M_PointerOverOffToPointerOverOn_End{ 0.541136384F };
 
     // Marker: PointerOverOffToNormalOff_Start.
-    static constexpr float M_PointerOverOffToNormalOff_Start{0.545681834F};
+    static constexpr float M_PointerOverOffToNormalOff_Start{ 0.545681834F };
 
     // Marker: PointerOverOffToNormalOff_End.
-    static constexpr float M_PointerOverOffToNormalOff_End{0.586590886F};
+    static constexpr float M_PointerOverOffToNormalOff_End{ 0.586590886F };
 
     // Marker: PointerOverOffToPressedOff_Start.
-    static constexpr float M_PointerOverOffToPressedOff_Start{0.591136336F};
+    static constexpr float M_PointerOverOffToPressedOff_Start{ 0.591136336F };
 
     // Marker: PointerOverOffToPressedOff_End.
-    static constexpr float M_PointerOverOffToPressedOff_End{0.632045448F};
+    static constexpr float M_PointerOverOffToPressedOff_End{ 0.632045448F };
 
     // Marker: PressedOnToPressedOff_Start.
-    static constexpr float M_PressedOnToPressedOff_Start{0.636590898F};
+    static constexpr float M_PressedOnToPressedOff_Start{ 0.636590898F };
 
     // Marker: PressedOnToPressedOff_End.
-    static constexpr float M_PressedOnToPressedOff_End{0.67750001F};
+    static constexpr float M_PressedOnToPressedOff_End{ 0.67750001F };
 
     // Marker: PressedOnToPointerOverOff_Start.
-    static constexpr float M_PressedOnToPointerOverOff_Start{0.68204546F};
+    static constexpr float M_PressedOnToPointerOverOff_Start{ 0.68204546F };
 
     // Marker: PressedOnToPointerOverOff_End.
-    static constexpr float M_PressedOnToPointerOverOff_End{0.722954571F};
+    static constexpr float M_PressedOnToPointerOverOff_End{ 0.722954571F };
 
     // Marker: PressedOnToNormalOff_Start.
-    static constexpr float M_PressedOnToNormalOff_Start{0.727500021F};
+    static constexpr float M_PressedOnToNormalOff_Start{ 0.727500021F };
 
     // Marker: PressedOnToNormalOff_End.
-    static constexpr float M_PressedOnToNormalOff_End{0.768409073F};
+    static constexpr float M_PressedOnToNormalOff_End{ 0.768409073F };
 
     // Marker: PressedOffToPressedOn_Start.
-    static constexpr float M_PressedOffToPressedOn_Start{0.772954524F};
+    static constexpr float M_PressedOffToPressedOn_Start{ 0.772954524F };
 
     // Marker: PressedOffToPressedOn_End.
-    static constexpr float M_PressedOffToPressedOn_End{0.813863635F};
+    static constexpr float M_PressedOffToPressedOn_End{ 0.813863635F };
 
     // Marker: PressedOffToPointerOverOn_Start.
-    static constexpr float M_PressedOffToPointerOverOn_Start{0.818409085F};
+    static constexpr float M_PressedOffToPointerOverOn_Start{ 0.818409085F };
 
     // Marker: PressedOffToPointerOverOn_End.
-    static constexpr float M_PressedOffToPointerOverOn_End{0.904772699F};
+    static constexpr float M_PressedOffToPointerOverOn_End{ 0.904772699F };
 
     // Marker: PressedOffToNormalOn_Start.
-    static constexpr float M_PressedOffToNormalOn_Start{0.909318209F};
+    static constexpr float M_PressedOffToNormalOn_Start{ 0.909318209F };
 
     // Marker: PressedOffToNormalOn_End.
-    static constexpr float M_PressedOffToNormalOn_End{0.995681822F};
+    static constexpr float M_PressedOffToNormalOn_End{ 0.995681822F };
 
     // Theme property: Foreground.
-    static inline const winrt::Windows::UI::Color c_themeForeground{0xFF, 0x06, 0x08, 0x08};
+    static inline const winrt::Windows::UI::Color c_themeForeground{ 0xFF, 0x06, 0x08, 0x08 };
+
 
     winrt::Windows::UI::Color Foreground();
     void Foreground(winrt::Windows::UI::Color value);
 
-    winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(winrt::Windows::UI::Composition::Compositor const& compositor);
+    winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(
+        winrt::Windows::UI::Composition::Compositor const& compositor);
 
     winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(
-        winrt::Windows::UI::Composition::Compositor const& compositor, winrt::Windows::Foundation::IInspectable& diagnostics);
+        winrt::Windows::UI::Composition::Compositor const& compositor,
+        winrt::Windows::Foundation::IInspectable& diagnostics);
 
     // Gets the number of frames in the animation.
     double FrameCount();

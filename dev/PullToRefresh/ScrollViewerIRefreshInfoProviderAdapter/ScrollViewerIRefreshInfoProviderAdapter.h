@@ -7,8 +7,8 @@
 
 #include "ScrollViewerIRefreshInfoProviderAdapter.g.h"
 
-class ScrollViewerIRefreshInfoProviderAdapter
-    : public ReferenceTracker<ScrollViewerIRefreshInfoProviderAdapter, winrt::implementation::ScrollViewerIRefreshInfoProviderAdapterT, winrt::composable, winrt::composing>
+class ScrollViewerIRefreshInfoProviderAdapter :
+    public ReferenceTracker<ScrollViewerIRefreshInfoProviderAdapter, winrt::implementation::ScrollViewerIRefreshInfoProviderAdapterT, winrt::composable, winrt::composing>
 {
 public:
     ScrollViewerIRefreshInfoProviderAdapter(winrt::RefreshPullDirection const& refreshPullDirection, winrt::IAdapterAnimationHandler const& animationHandler);
@@ -35,13 +35,13 @@ private:
     winrt::FxScrollViewer AdaptFromTreeRecursiveHelper(const winrt::DependencyObject&, int depth);
     void MakeInteractionSource(const winrt::UIElement& contentParent);
 
-    tracker_com_ref<RefreshInfoProviderImpl> m_infoProvider{this};
-    tracker_ref<winrt::IAdapterAnimationHandler> m_animationHandler{this};
-    tracker_ref<winrt::FxScrollViewer> m_scrollViewer{this};
-    winrt::RefreshPullDirection m_refreshPullDirection{winrt::RefreshPullDirection::TopToBottom};
-    tracker_ref<winrt::InteractionTracker> m_interactionTracker{this};
-    tracker_ref<winrt::VisualInteractionSource> m_visualInteractionSource{this};
-    bool m_visualInteractionSourceIsAttached{false};
+    tracker_com_ref<RefreshInfoProviderImpl> m_infoProvider{ this };
+    tracker_ref<winrt::IAdapterAnimationHandler> m_animationHandler{ this };
+    tracker_ref<winrt::FxScrollViewer> m_scrollViewer{ this };
+    winrt::RefreshPullDirection m_refreshPullDirection{ winrt::RefreshPullDirection::TopToBottom };
+    tracker_ref<winrt::InteractionTracker> m_interactionTracker{ this };
+    tracker_ref<winrt::VisualInteractionSource> m_visualInteractionSource{ this };
+    bool m_visualInteractionSourceIsAttached{ false };
 
     winrt::event_token m_scrollViewer_LoadedToken{};
     winrt::event_token m_scrollViewer_PointerPressedToken{};
@@ -50,5 +50,6 @@ private:
     winrt::event_token m_infoProvider_RefreshStartedToken{};
     winrt::event_token m_infoProvider_RefreshCompletedToken{};
 
-    tracker_ref<winrt::IInspectable> m_boxedPointerPressedEventHandler{this};
+    tracker_ref<winrt::IInspectable> m_boxedPointerPressedEventHandler{ this };
 };
+

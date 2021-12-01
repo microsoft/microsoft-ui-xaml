@@ -9,10 +9,10 @@
 #include "RadioMenuFlyoutItem.g.h"
 #include "RadioMenuFlyoutItem.properties.h"
 
+
 // This type exists for RadioMenuFlyoutItem to derive publically from MenuFlyoutItem, but secretly from ToggleMenuFlyoutItem.
-template <typename D, typename T, typename... I>
-struct __declspec(empty_bases) DeriveFromToggleMenuFlyoutItemHelper_base
-    : winrt::Windows::UI::Xaml::Controls::ToggleMenuFlyoutItemT<D, winrt::default_interface<T>, winrt::composable, I...>
+template <typename D, typename T, typename ... I>
+struct __declspec(empty_bases) DeriveFromToggleMenuFlyoutItemHelper_base : winrt::Windows::UI::Xaml::Controls::ToggleMenuFlyoutItemT<D, winrt::default_interface<T>, winrt::composable, I...>
 {
     using composable = T;
     using class_type = typename T;
@@ -24,7 +24,7 @@ struct __declspec(empty_bases) DeriveFromToggleMenuFlyoutItemHelper_base
 
     hstring GetRuntimeClassName() const
     {
-        return hstring{winrt::name_of<T>()};
+        return hstring{ winrt::name_of<T>() };
     }
 
     bool InternalIsChecked()
@@ -38,9 +38,9 @@ struct __declspec(empty_bases) DeriveFromToggleMenuFlyoutItemHelper_base
     }
 };
 
-class RadioMenuFlyoutItem
-    : public ReferenceTracker<RadioMenuFlyoutItem, DeriveFromToggleMenuFlyoutItemHelper_base, winrt::RadioMenuFlyoutItem>,
-      public RadioMenuFlyoutItemProperties
+class RadioMenuFlyoutItem :
+    public ReferenceTracker<RadioMenuFlyoutItem, DeriveFromToggleMenuFlyoutItemHelper_base, winrt::RadioMenuFlyoutItem>,
+    public RadioMenuFlyoutItemProperties
 {
 
 public:
@@ -60,10 +60,10 @@ private:
     void UpdateCheckedItemInGroup();
 
     // Copies of IsChecked & GroupName to avoid using those dependency properties in the ~RadioMenuFlyoutItem() destructor which would lead to crashes.
-    bool m_isChecked{false};
-    winrt::hstring m_groupName{L""};
+    bool m_isChecked{ false };
+    winrt::hstring m_groupName{ L"" };
 
-    bool m_isSafeUncheck{false};
+    bool m_isSafeUncheck{ false };
 
     PropertyChanged_revoker m_InternalIsCheckedChangedRevoker{};
 

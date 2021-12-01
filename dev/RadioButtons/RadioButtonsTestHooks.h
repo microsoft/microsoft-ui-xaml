@@ -4,7 +4,8 @@
 
 #include "RadioButtonsTestHooks.g.h"
 
-class RadioButtonsTestHooks : public winrt::implementation::RadioButtonsTestHooksT<RadioButtonsTestHooks>
+class RadioButtonsTestHooks :
+    public winrt::implementation::RadioButtonsTestHooksT<RadioButtonsTestHooks>
 {
 public:
     static com_ptr<RadioButtonsTestHooks> GetGlobalTestHooks()

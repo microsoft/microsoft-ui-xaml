@@ -4,13 +4,13 @@
 //
 //       LottieGen version:
 //           7.0.2+gebbbdfc697
-//
+//       
 //       Command:
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedAcceptVisualSource.json
-//
+//       
 //       Input file:
 //           AnimatedAcceptVisualSource.json (22496 bytes created 11:36-07:00 May 14 2021)
-//
+//       
 //       LottieGen source:
 //           http://aka.ms/Lottie
 //
@@ -53,7 +53,8 @@
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
 #ifdef BUILD_WINDOWS
-namespace ABI {
+namespace ABI
+{
 #include <Windows.Graphics.Effects.Interop.h>
 }
 #else
@@ -69,25 +70,26 @@ using namespace winrt::Windows::UI;
 using namespace winrt::Windows::UI::Composition;
 using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
-namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals {
-CppWinRTActivatableClassWithBasicFactory(AnimatedAcceptVisualSource)
+namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
+{
+    CppWinRTActivatableClassWithBasicFactory(AnimatedAcceptVisualSource)
 }
 #include "AnimatedVisuals\AnimatedAcceptVisualSource.g.cpp"
 
-class CanvasGeometry : public winrt::implements<CanvasGeometry, IGeometrySource2D, ::ABI::Windows::Graphics::IGeometrySource2DInterop>
+
+class CanvasGeometry : public winrt::implements<CanvasGeometry,
+    IGeometrySource2D,
+    ::ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
-    winrt::com_ptr<ID2D1Geometry> _geometry{nullptr};
+    winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 
 public:
-    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry) : _geometry{geometry}
-    {
-    }
+    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry)
+        : _geometry{ geometry }
+    { }
 
     // IGeometrySource2D.
-    winrt::com_ptr<ID2D1Geometry> Geometry()
-    {
-        return _geometry;
-    }
+    winrt::com_ptr<ID2D1Geometry> Geometry() { return _geometry; }
 
     // IGeometrySource2DInterop.
     IFACEMETHODIMP GetGeometry(ID2D1Geometry** value) override
@@ -102,26 +104,31 @@ public:
         return E_NOTIMPL;
     }
 };
-class AnimatedAcceptVisualSource_AnimatedVisual
-    : public winrt::implements<AnimatedAcceptVisualSource_AnimatedVisual, winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual, IClosable>
+class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<AnimatedAcceptVisualSource_AnimatedVisual,
+        winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
+        IClosable>
 {
-    winrt::com_ptr<ID2D1Factory> _d2dFactory{nullptr};
-    static constexpr int64_t c_durationTicks{26666666L};
-    Compositor const _c{nullptr};
-    ExpressionAnimation const _reusableExpressionAnimation{nullptr};
-    CompositionPropertySet const _themeProperties{nullptr};
-    CompositionColorBrush _themeColor_Foreground{nullptr};
-    CompositionPath _path{nullptr};
-    CompositionPathGeometry _pathGeometry_09{nullptr};
-    ContainerVisual _root{nullptr};
-    CubicBezierEasingFunction _cubicBezierEasingFunction_0{nullptr};
-    CubicBezierEasingFunction _cubicBezierEasingFunction_1{nullptr};
-    ExpressionAnimation _rootProgress{nullptr};
-    InsetClip _insetClip_0{nullptr};
-    StepEasingFunction _holdThenStepEasingFunction{nullptr};
-    StepEasingFunction _stepThenHoldEasingFunction{nullptr};
+    winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
+    static constexpr int64_t c_durationTicks{ 26666666L };
+    Compositor const _c{ nullptr };
+    ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
+    CompositionPropertySet const _themeProperties{ nullptr };
+    CompositionColorBrush _themeColor_Foreground{ nullptr };
+    CompositionPath _path{ nullptr };
+    CompositionPathGeometry _pathGeometry_09{ nullptr };
+    ContainerVisual _root{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_0{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_1{ nullptr };
+    ExpressionAnimation _rootProgress{ nullptr };
+    InsetClip _insetClip_0{ nullptr };
+    StepEasingFunction _holdThenStepEasingFunction{ nullptr };
+    StepEasingFunction _stepThenHoldEasingFunction{ nullptr };
 
-    static void StartProgressBoundAnimation(CompositionObject target, winrt::hstring animatedPropertyName, CompositionAnimation animation, ExpressionAnimation controllerProgressExpression)
+    static void StartProgressBoundAnimation(
+        CompositionObject target,
+        winrt::hstring animatedPropertyName,
+        CompositionAnimation animation,
+        ExpressionAnimation controllerProgressExpression)
     {
         target.StartAnimation(animatedPropertyName, animation);
         const auto controller = target.TryGetAnimationController(animatedPropertyName);
@@ -129,7 +136,12 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         controller.StartAnimation(L"Progress", controllerProgressExpression);
     }
 
-    void BindProperty(CompositionObject target, winrt::hstring animatedPropertyName, winrt::hstring expression, winrt::hstring referenceParameterName, CompositionObject referencedObject)
+    void BindProperty(
+        CompositionObject target,
+        winrt::hstring animatedPropertyName,
+        winrt::hstring expression,
+        winrt::hstring referenceParameterName,
+        CompositionObject referencedObject)
     {
         _reusableExpressionAnimation.ClearAllParameters();
         _reusableExpressionAnimation.Expression(expression);
@@ -140,7 +152,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     BooleanKeyFrameAnimation CreateBooleanKeyFrameAnimation(float initialProgress, bool initialValue)
     {
         const auto result = _c.CreateBooleanKeyFrameAnimation();
-        result.Duration(TimeSpan{c_durationTicks});
+        result.Duration(TimeSpan{ c_durationTicks });
         result.InsertKeyFrame(initialProgress, initialValue);
         return result;
     }
@@ -148,7 +160,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     ScalarKeyFrameAnimation CreateScalarKeyFrameAnimation(float initialProgress, float initialValue, CompositionEasingFunction initialEasingFunction)
     {
         const auto result = _c.CreateScalarKeyFrameAnimation();
-        result.Duration(TimeSpan{c_durationTicks});
+        result.Duration(TimeSpan{ c_durationTicks });
         result.InsertKeyFrame(initialProgress, initialValue, initialEasingFunction);
         return result;
     }
@@ -352,12 +364,12 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     // - -  Scale:0.7,0.7, Offset:<24, 24>
     winrt::com_ptr<CanvasGeometry> Geometry_0()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
+        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
+        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
-        sink->BeginFigure({-11.75F, -0.125F}, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({11.875F, -0.125F});
+        sink->BeginFigure({ -11.75F, -0.125F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ 11.875F, -0.125F });
         sink->EndFigure(D2D1_FIGURE_END_OPEN);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -366,13 +378,13 @@ class AnimatedAcceptVisualSource_AnimatedVisual
 
     winrt::com_ptr<CanvasGeometry> Geometry_1()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
+        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
+        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
-        sink->BeginFigure({-15.1719999F, 0.0160000008F}, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({-5.0F, 10.1879997F});
-        sink->AddLine({15.3369999F, -10.3369999F});
+        sink->BeginFigure({ -15.1719999F, 0.0160000008F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ -5.0F, 10.1879997F });
+        sink->AddLine({ 15.3369999F, -10.3369999F });
         sink->EndFigure(D2D1_FIGURE_END_OPEN);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -386,13 +398,13 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     // - -  Scale:0.7,0.7, Offset:<24, 23>
     winrt::com_ptr<CanvasGeometry> Geometry_2()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
+        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
+        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
         winrt::check_hresult(path->Open(sink.put()));
-        sink->BeginFigure({-15.1719999F, 0.0160000008F}, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({-5.0F, 10.1879997F});
-        sink->AddLine({15.3369999F, -10.2810001F});
+        sink->BeginFigure({ -15.1719999F, 0.0160000008F }, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({ -5.0F, 10.1879997F });
+        sink->AddLine({ 15.3369999F, -10.2810001F });
         sink->EndFigure(D2D1_FIGURE_END_OPEN);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -403,12 +415,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     CompositionColorBrush ThemeColor_Foreground()
     {
         const auto result = _themeColor_Foreground = _c.CreateColorBrush();
-        BindProperty(
-            result,
-            L"Color",
-            L"ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)",
-            L"_theme",
-            _themeProperties);
+        BindProperty(result, L"Color", L"ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties);
         return result;
     }
 
@@ -560,7 +567,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_00()
     {
         // Offset:<24, 24>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(PathGeometry_00(), {0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 24.0F});
+        const auto result = CreateSpriteShape(PathGeometry_00(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 24.0F });
         result.StrokeBrush(ThemeColor_Foreground());
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -577,7 +584,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_01()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(PathGeometry_01(), {0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F});
+        const auto result = CreateSpriteShape(PathGeometry_01(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -595,7 +602,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_02()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(PathGeometry_02(), {0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F});
+        const auto result = CreateSpriteShape(PathGeometry_02(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -613,7 +620,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_03()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(PathGeometry_03(), {0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F});
+        const auto result = CreateSpriteShape(PathGeometry_03(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -631,7 +638,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_04()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(PathGeometry_04(), {0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F});
+        const auto result = CreateSpriteShape(PathGeometry_04(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -649,7 +656,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_05()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(PathGeometry_05(), {0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F});
+        const auto result = CreateSpriteShape(PathGeometry_05(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -667,7 +674,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_06()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(PathGeometry_06(), {0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F});
+        const auto result = CreateSpriteShape(PathGeometry_06(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -686,7 +693,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_07()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(PathGeometry_07(), {0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F});
+        const auto result = CreateSpriteShape(PathGeometry_07(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -704,7 +711,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_08()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(PathGeometry_08(), {0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F});
+        const auto result = CreateSpriteShape(PathGeometry_08(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -722,7 +729,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_09()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(PathGeometry_09(), {0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F});
+        const auto result = CreateSpriteShape(PathGeometry_09(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -741,7 +748,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_10()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(PathGeometry_10(), {0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F});
+        const auto result = CreateSpriteShape(PathGeometry_10(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -759,7 +766,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_11()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(PathGeometry_11(), {0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F});
+        const auto result = CreateSpriteShape(PathGeometry_11(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -777,7 +784,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_12()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(_pathGeometry_09, {0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F});
+        const auto result = CreateSpriteShape(_pathGeometry_09, { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -795,7 +802,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_13()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(_pathGeometry_09, {0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F});
+        const auto result = CreateSpriteShape(_pathGeometry_09, { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -813,7 +820,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     CompositionSpriteShape SpriteShape_14()
     {
         // Offset:<24, 23>, Scale:<0.7, 0.7>
-        const auto result = CreateSpriteShape(PathGeometry_12(), {0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F});
+        const auto result = CreateSpriteShape(PathGeometry_12(), { 0.699999988F, 0.0F, 0.0F, 0.699999988F, 24.0F, 23.0F });
         result.StrokeBrush(_themeColor_Foreground);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
@@ -830,7 +837,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_01());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_00(), RootProgress());
@@ -843,9 +850,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(InsetClip_0());
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         // Shape tree root for layer: Shape Layer 1
         result.Children().InsertAtTop(ShapeVisual_00());
         return result;
@@ -857,7 +864,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_03());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_01(), _rootProgress);
@@ -871,9 +878,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         // Shape tree root for layer: Shape Layer 1
         result.Children().InsertAtTop(ShapeVisual_01());
         return result;
@@ -885,7 +892,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_05());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_02(), _rootProgress);
@@ -899,9 +906,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         // Shape tree root for layer: Shape Layer 1
         result.Children().InsertAtTop(ShapeVisual_02());
         return result;
@@ -913,7 +920,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_07());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_03(), _rootProgress);
@@ -927,9 +934,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         // Shape tree root for layer: Shape Layer 2
         result.Children().InsertAtTop(ShapeVisual_03());
         return result;
@@ -941,7 +948,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_09());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_04(), _rootProgress);
@@ -955,9 +962,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         // Shape tree root for layer: Shape Layer 1
         result.Children().InsertAtTop(ShapeVisual_04());
         return result;
@@ -969,7 +976,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_11());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_05(), _rootProgress);
@@ -983,9 +990,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         // Shape tree root for layer: Shape Layer 1
         result.Children().InsertAtTop(ShapeVisual_05());
         return result;
@@ -997,7 +1004,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_13());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_06(), _rootProgress);
@@ -1011,9 +1018,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         // Shape tree root for layer: Shape Layer 1
         result.Children().InsertAtTop(ShapeVisual_06());
         return result;
@@ -1025,7 +1032,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_15());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_07(), _rootProgress);
@@ -1039,9 +1046,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         result.Children().InsertAtTop(ContainerVisual_16());
         return result;
     }
@@ -1052,7 +1059,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         return result;
     }
 
@@ -1062,7 +1069,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_18());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_08(), _rootProgress);
@@ -1076,9 +1083,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         result.Children().InsertAtTop(ContainerVisual_19());
         return result;
     }
@@ -1089,7 +1096,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         return result;
     }
 
@@ -1099,7 +1106,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_21());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_09(), _rootProgress);
@@ -1113,9 +1120,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         // Shape tree root for layer: Shape Layer 1
         result.Children().InsertAtTop(ShapeVisual_07());
         return result;
@@ -1127,7 +1134,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_23());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_10(), _rootProgress);
@@ -1141,9 +1148,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         // Shape tree root for layer: Shape Layer 1
         result.Children().InsertAtTop(ShapeVisual_08());
         return result;
@@ -1155,7 +1162,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_25());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_11(), _rootProgress);
@@ -1169,9 +1176,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         // Shape tree root for layer: Shape Layer 1
         result.Children().InsertAtTop(ShapeVisual_09());
         return result;
@@ -1183,7 +1190,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_27());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_12(), _rootProgress);
@@ -1197,9 +1204,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         // Shape tree root for layer: Shape Layer 1
         result.Children().InsertAtTop(ShapeVisual_10());
         return result;
@@ -1211,7 +1218,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_29());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_13(), _rootProgress);
@@ -1225,9 +1232,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         result.Children().InsertAtTop(ContainerVisual_30());
         return result;
     }
@@ -1238,7 +1245,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         return result;
     }
 
@@ -1248,7 +1255,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_32());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_14(), _rootProgress);
@@ -1262,9 +1269,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         result.Children().InsertAtTop(ContainerVisual_33());
         return result;
     }
@@ -1275,7 +1282,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         return result;
     }
 
@@ -1285,7 +1292,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_35());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_15(), _rootProgress);
@@ -1299,9 +1306,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         // Shape tree root for layer: Shape Layer 1
         result.Children().InsertAtTop(ShapeVisual_11());
         return result;
@@ -1313,7 +1320,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_37());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_16(), _rootProgress);
@@ -1327,9 +1334,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         // Shape tree root for layer: Check
         result.Children().InsertAtTop(ShapeVisual_12());
         return result;
@@ -1341,7 +1348,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_39());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_17(), _rootProgress);
@@ -1355,9 +1362,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         // Shape tree root for layer: Check
         result.Children().InsertAtTop(ShapeVisual_13());
         return result;
@@ -1368,7 +1375,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_41());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_18(), _rootProgress);
@@ -1382,9 +1389,9 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Offset:<-24, -24>, Scale:<1, 1>
-        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F});
+        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -24.0F, -24.0F, 0.0F, 1.0F });
         // Shape tree root for layer: Shape Layer 1
         result.Children().InsertAtTop(ShapeVisual_14());
         return result;
@@ -1440,13 +1447,12 @@ class AnimatedAcceptVisualSource_AnimatedVisual
 
     CubicBezierEasingFunction CubicBezierEasingFunction_0()
     {
-        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({0.550000012F, 0.0F}, {0.0F, 1.0F});
+        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.550000012F, 0.0F }, { 0.0F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_1()
     {
-        return _cubicBezierEasingFunction_1 =
-                   _c.CreateCubicBezierEasingFunction({0.166999996F, 0.166999996F}, {0.833000004F, 0.833000004F});
+        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.833000004F, 0.833000004F });
     }
 
     ExpressionAnimation RootProgress()
@@ -1630,7 +1636,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_00()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:0.7,0.7, Offset:<24, 24>
         result.Shapes().Append(SpriteShape_00());
         return result;
@@ -1642,7 +1648,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_01()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:0.7,0.7, Offset:<24, 23>
         result.Shapes().Append(SpriteShape_01());
         return result;
@@ -1654,7 +1660,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_02()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:0.7,0.7, Offset:<24, 23>
         result.Shapes().Append(SpriteShape_02());
         return result;
@@ -1666,7 +1672,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_03()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:0.7,0.7, Offset:<24, 23>
         result.Shapes().Append(SpriteShape_03());
         return result;
@@ -1678,7 +1684,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_04()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:0.7,0.7, Offset:<24, 23>
         result.Shapes().Append(SpriteShape_04());
         return result;
@@ -1690,7 +1696,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_05()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:0.7,0.7, Offset:<24, 23>
         result.Shapes().Append(SpriteShape_05());
         return result;
@@ -1702,7 +1708,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_06()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:0.7,0.7, Offset:<24, 23>
         result.Shapes().Append(SpriteShape_06());
         return result;
@@ -1714,7 +1720,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_07()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:0.7,0.7, Offset:<24, 23>
         result.Shapes().Append(SpriteShape_07());
         return result;
@@ -1726,7 +1732,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_08()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:0.7,0.7, Offset:<24, 23>
         result.Shapes().Append(SpriteShape_08());
         return result;
@@ -1738,7 +1744,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_09()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:0.7,0.7, Offset:<24, 23>
         result.Shapes().Append(SpriteShape_09());
         return result;
@@ -1750,7 +1756,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_10()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:0.7,0.7, Offset:<24, 23>
         result.Shapes().Append(SpriteShape_10());
         return result;
@@ -1762,7 +1768,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_11()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:0.7,0.7, Offset:<24, 23>
         result.Shapes().Append(SpriteShape_11());
         return result;
@@ -1774,7 +1780,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_12()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:0.7,0.7, Offset:<24, 23>
         result.Shapes().Append(SpriteShape_12());
         return result;
@@ -1786,7 +1792,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_13()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:0.7,0.7, Offset:<24, 23>
         result.Shapes().Append(SpriteShape_13());
         return result;
@@ -1798,7 +1804,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     ShapeVisual ShapeVisual_14()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({48.0F, 48.0F});
+        result.Size({ 48.0F, 48.0F });
         // Scale:0.7,0.7, Offset:<24, 23>
         result.Shapes().Append(SpriteShape_14());
         return result;
@@ -1824,8 +1830,12 @@ class AnimatedAcceptVisualSource_AnimatedVisual
     }
 
 public:
-    AnimatedAcceptVisualSource_AnimatedVisual(Compositor compositor, CompositionPropertySet themeProperties) :
-        _c{compositor}, _themeProperties{themeProperties}, _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
+    AnimatedAcceptVisualSource_AnimatedVisual(
+        Compositor compositor,
+        CompositionPropertySet themeProperties)
+        : _c{compositor}
+        , _themeProperties{themeProperties}
+        , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
     {
         winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.put()));
         const auto _ = Root();
@@ -1841,7 +1851,7 @@ public:
 
     TimeSpan Duration() const
     {
-        return TimeSpan{c_durationTicks};
+        return TimeSpan{ c_durationTicks };
     }
 
     Visual RootVisual() const
@@ -1851,19 +1861,18 @@ public:
 
     winrt::float2 Size() const
     {
-        return {48.0F, 48.0F};
+        return { 48.0F, 48.0F };
     }
 
     static bool IsRuntimeCompatible()
     {
-        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(
-            L"Windows.Foundation.UniversalApiContract", 7);
+        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 7);
     }
 };
 
 winrt::float4 AnimatedAcceptVisualSource::ColorAsVector4(Color color)
 {
-    return {static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A)};
+    return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
 }
 
 CompositionPropertySet AnimatedAcceptVisualSource::EnsureThemeProperties(Compositor compositor)
@@ -1891,20 +1900,25 @@ void AnimatedAcceptVisualSource::Foreground(Color value)
     }
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedAcceptVisualSource::TryCreateAnimatedVisual(Compositor const& compositor)
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedAcceptVisualSource::TryCreateAnimatedVisual(
+    Compositor const& compositor)
 {
     IInspectable diagnostics = nullptr;
     return TryCreateAnimatedVisual(compositor, diagnostics);
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedAcceptVisualSource::TryCreateAnimatedVisual(Compositor const& compositor, IInspectable& diagnostics)
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedAcceptVisualSource::TryCreateAnimatedVisual(
+    Compositor const& compositor,
+    IInspectable& diagnostics)
 {
     const auto _ = EnsureThemeProperties(compositor);
     diagnostics = nullptr;
 
     if (AnimatedAcceptVisualSource_AnimatedVisual::IsRuntimeCompatible())
     {
-        return winrt::make<AnimatedAcceptVisualSource_AnimatedVisual>(compositor, _themeProperties);
+        return winrt::make<AnimatedAcceptVisualSource_AnimatedVisual>(
+            compositor,
+            _themeProperties);
     }
 
     return nullptr;
@@ -1922,7 +1936,7 @@ double AnimatedAcceptVisualSource::Framerate()
 
 TimeSpan AnimatedAcceptVisualSource::Duration()
 {
-    return TimeSpan{26666666L};
+    return TimeSpan{ 26666666L };
 }
 
 double AnimatedAcceptVisualSource::FrameToProgress(double frameNumber)
@@ -1932,48 +1946,50 @@ double AnimatedAcceptVisualSource::FrameToProgress(double frameNumber)
 
 winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedAcceptVisualSource::Markers()
 {
-    return winrt::single_threaded_map<winrt::hstring, double>(std::map<winrt::hstring, double>{
-                                                                  {L"NormalOnToNormalOff_Start", 0.0},
-                                                                  {L"NormalOnToNormalOff_End", 0.0253125},
-                                                                  {L"NormalOnToPointerOverOn_Start", 0.0315625},
-                                                                  {L"NormalOnToPointerOverOn_End", 0.0565625},
-                                                                  {L"NormalOnToPressedOn_Start", 0.0628125},
-                                                                  {L"NormalOnToPressedOn_End", 0.0878125},
-                                                                  {L"NormalOffToNormalOn_Start", 0.0940625},
-                                                                  {L"NormalOffToNormalOn_End", 0.2128125},
-                                                                  {L"NormalOffToPointerOverOff_Start", 0.2190625},
-                                                                  {L"NormalOffToPointerOverOff_End", 0.2440625},
-                                                                  {L"NormalOffToPressedOff_Start", 0.2503125},
-                                                                  {L"NormalOffToPressedOff_End", 0.2753125},
-                                                                  {L"PointerOverOnToPointerOverOff_Start", 0.2815625},
-                                                                  {L"PointerOverOnToPointerOverOff_End", 0.3065625},
-                                                                  {L"PointerOverOnToNormalOn_Start", 0.3128125},
-                                                                  {L"PointerOverOnToNormalOn_End", 0.3378125},
-                                                                  {L"PointerOverOnToPressedOn_Start", 0.3440625},
-                                                                  {L"PointerOverOnToPressedOn_End", 0.3690625},
-                                                                  {L"PointerOverOffToPointerOverOn_Start", 0.3753125},
-                                                                  {L"PointerOverOffToPointerOverOn_End", 0.4940625},
-                                                                  {L"PointerOverOffToNormalOff_Start", 0.5003125},
-                                                                  {L"PointerOverOffToNormalOff_End", 0.5253125},
-                                                                  {L"PointerOverOffToPressedOff_Start", 0.5315625},
-                                                                  {L"PointerOverOffToPressedOff_End", 0.5565625},
-                                                                  {L"PressedOnToPressedOff_Start", 0.5628125},
-                                                                  {L"PressedOnToPressedOff_End", 0.5878125},
-                                                                  {L"PressedOnToPointerOverOff_Start", 0.5940625},
-                                                                  {L"PressedOnToPointerOverOff_End", 0.6190625},
-                                                                  {L"PressedOnToNormalOff_Start", 0.6253125},
-                                                                  {L"PressedOnToNormalOff_End", 0.6503125},
-                                                                  {L"PressedOffToPressedOn_Start", 0.6565625},
-                                                                  {L"PressedOffToPressedOn_End", 0.7128125},
-                                                                  {L"PressedOffToPointerOverOn_Start", 0.7190625},
-                                                                  {L"PressedOffToPointerOverOn_End", 0.8378125},
-                                                                  {L"PressedOffToNormalOn_Start", 0.8440625},
-                                                                  {L"PressedOffToNormalOn_End", 0.9628125},
-                                                                  {L"NormalIndeterminate", 0.9690625},
-                                                                  {L"PointerOverIndeterminate", 0.9815625},
-                                                                  {L"PressedIndeterminate", 0.9940625},
-                                                              })
-        .GetView();
+    return winrt::single_threaded_map<winrt::hstring, double>(
+        std::map<winrt::hstring, double>
+        {
+            { L"NormalOnToNormalOff_Start", 0.0 },
+            { L"NormalOnToNormalOff_End", 0.0253125 },
+            { L"NormalOnToPointerOverOn_Start", 0.0315625 },
+            { L"NormalOnToPointerOverOn_End", 0.0565625 },
+            { L"NormalOnToPressedOn_Start", 0.0628125 },
+            { L"NormalOnToPressedOn_End", 0.0878125 },
+            { L"NormalOffToNormalOn_Start", 0.0940625 },
+            { L"NormalOffToNormalOn_End", 0.2128125 },
+            { L"NormalOffToPointerOverOff_Start", 0.2190625 },
+            { L"NormalOffToPointerOverOff_End", 0.2440625 },
+            { L"NormalOffToPressedOff_Start", 0.2503125 },
+            { L"NormalOffToPressedOff_End", 0.2753125 },
+            { L"PointerOverOnToPointerOverOff_Start", 0.2815625 },
+            { L"PointerOverOnToPointerOverOff_End", 0.3065625 },
+            { L"PointerOverOnToNormalOn_Start", 0.3128125 },
+            { L"PointerOverOnToNormalOn_End", 0.3378125 },
+            { L"PointerOverOnToPressedOn_Start", 0.3440625 },
+            { L"PointerOverOnToPressedOn_End", 0.3690625 },
+            { L"PointerOverOffToPointerOverOn_Start", 0.3753125 },
+            { L"PointerOverOffToPointerOverOn_End", 0.4940625 },
+            { L"PointerOverOffToNormalOff_Start", 0.5003125 },
+            { L"PointerOverOffToNormalOff_End", 0.5253125 },
+            { L"PointerOverOffToPressedOff_Start", 0.5315625 },
+            { L"PointerOverOffToPressedOff_End", 0.5565625 },
+            { L"PressedOnToPressedOff_Start", 0.5628125 },
+            { L"PressedOnToPressedOff_End", 0.5878125 },
+            { L"PressedOnToPointerOverOff_Start", 0.5940625 },
+            { L"PressedOnToPointerOverOff_End", 0.6190625 },
+            { L"PressedOnToNormalOff_Start", 0.6253125 },
+            { L"PressedOnToNormalOff_End", 0.6503125 },
+            { L"PressedOffToPressedOn_Start", 0.6565625 },
+            { L"PressedOffToPressedOn_End", 0.7128125 },
+            { L"PressedOffToPointerOverOn_Start", 0.7190625 },
+            { L"PressedOffToPointerOverOn_End", 0.8378125 },
+            { L"PressedOffToNormalOn_Start", 0.8440625 },
+            { L"PressedOffToNormalOn_End", 0.9628125 },
+            { L"NormalIndeterminate", 0.9690625 },
+            { L"PointerOverIndeterminate", 0.9815625 },
+            { L"PressedIndeterminate", 0.9940625 },
+        }
+    ).GetView();
 }
 
 void AnimatedAcceptVisualSource::SetColorProperty(hstring const& propertyName, Color value)

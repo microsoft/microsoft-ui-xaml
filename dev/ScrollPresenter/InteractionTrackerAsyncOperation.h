@@ -30,8 +30,8 @@ enum class InteractionTrackerAsyncOperationTrigger
     MouseWheel = 0x08,
 };
 
-// Used as a workaround for InteractionTracker bug "12465209 - InteractionTracker remains silent when calling TryUpdatePosition
-// with the current position": Maximum number of UI thread ticks processed while waiting for non-animated operations to complete.
+// Used as a workaround for InteractionTracker bug "12465209 - InteractionTracker remains silent when calling TryUpdatePosition with the current position":
+// Maximum number of UI thread ticks processed while waiting for non-animated operations to complete.
 const int c_maxNonAnimatedOperationTicks = 10;
 
 // Number of UI thread ticks elapsed before a queued operation gets processed to allow any pending size
@@ -62,10 +62,10 @@ public:
     {
         switch (m_operationType)
         {
-        case InteractionTrackerAsyncOperationType::TryUpdatePosition:
-        case InteractionTrackerAsyncOperationType::TryUpdatePositionBy:
-        case InteractionTrackerAsyncOperationType::TryUpdateScale:
-            return false;
+            case InteractionTrackerAsyncOperationType::TryUpdatePosition:
+            case InteractionTrackerAsyncOperationType::TryUpdatePositionBy:
+            case InteractionTrackerAsyncOperationType::TryUpdateScale:
+                return false;
         }
         return true;
     }
@@ -137,8 +137,7 @@ public:
     // Returns True when the operation fulfills a horizontal IScrollController request.
     bool IsHorizontalScrollControllerRequest() const
     {
-        return static_cast<int>(m_operationTrigger) &
-               static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest);
+        return static_cast<int>(m_operationTrigger) & static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest);
     }
 
     // Returns True when the operation fulfills a vertical IScrollController request.
@@ -152,13 +151,11 @@ public:
         SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isFromHorizontalScrollController);
 
         if (isFromHorizontalScrollController)
-            m_operationTrigger = static_cast<InteractionTrackerAsyncOperationTrigger>(
-                static_cast<int>(m_operationTrigger) |
-                static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest));
+            m_operationTrigger = static_cast<InteractionTrackerAsyncOperationTrigger>(static_cast<int>(m_operationTrigger) | 
+                                 static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest));
         else
-            m_operationTrigger = static_cast<InteractionTrackerAsyncOperationTrigger>(
-                static_cast<int>(m_operationTrigger) |
-                static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest));
+            m_operationTrigger = static_cast<InteractionTrackerAsyncOperationTrigger>(static_cast<int>(m_operationTrigger) |
+                                 static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest));
     }
 
     // Returns True when the post-processing ticks count has reached 0
@@ -168,7 +165,7 @@ public:
         MUX_ASSERT(m_postProcessingTicksCountdown > 0);
 
         m_postProcessingTicksCountdown--;
-
+        
         SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, m_postProcessingTicksCountdown);
         return m_postProcessingTicksCountdown == 0;
     }
@@ -178,7 +175,7 @@ public:
     {
         MUX_ASSERT(m_preProcessingTicksCountdown > 0);
 
-        m_preProcessingTicksCountdown--;
+        m_preProcessingTicksCountdown--;        
 
         SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, m_preProcessingTicksCountdown);
         return m_preProcessingTicksCountdown == 0;
@@ -220,41 +217,42 @@ public:
 
 private:
     // Identifies the InteractionTracker request type for this operation.
-    InteractionTrackerAsyncOperationType m_operationType{InteractionTrackerAsyncOperationType::None};
+    InteractionTrackerAsyncOperationType m_operationType{ InteractionTrackerAsyncOperationType::None };
 
     // Identifies the InteractionTracker trigger type for this operation.
-    InteractionTrackerAsyncOperationTrigger m_operationTrigger{InteractionTrackerAsyncOperationTrigger::DirectViewChange};
+    InteractionTrackerAsyncOperationTrigger m_operationTrigger{ InteractionTrackerAsyncOperationTrigger::DirectViewChange };
 
     // Number of UI thread ticks remaining before a non-animated InteractionTracker request is declared completed
     // in case no ValuesChanged or status change notification is raised.
-    int m_postProcessingTicksCountdown{0};
+    int m_postProcessingTicksCountdown{ 0 };
 
     // Number of UI thread ticks remaining before this queued operation gets processed.
     // Positive between the time the operation is queued in ScrollPresenter::ScrollTo/By/From, ScrollPresenter::ZoomTo/By/From or
     // ScrollPresenter::OnCompositionTargetRendering and the time it is processed in ScrollPresenter::ProcessOffsetsChange or ScrollPresenter::ProcessZoomFactorChange.
-    int m_preProcessingTicksCountdown{c_queuedOperationTicks};
+    int m_preProcessingTicksCountdown{ c_queuedOperationTicks };
 
     // Initial value of m_preProcessingTicksCountdown when this operation is queued up.
-    int m_queuedOperationTicks{c_queuedOperationTicks};
+    int m_queuedOperationTicks{ c_queuedOperationTicks };
 
     // InteractionTracker RequestId associated with this operation.
-    int m_requestId{-1};
+    int m_requestId{ -1 };
 
     // Set to True when the operation was canceled early enough to take effect.
-    bool m_isCanceled{false};
+    bool m_isCanceled{ false };
 
     // Set to True when the operation is delayed until the scrollPresenter is loaded.
-    bool m_isDelayed{false};
+    bool m_isDelayed{ false };
 
     // Set to True when the operation completed and was assigned a final ScrollPresenterViewChangeResult result.
-    bool m_isCompleted{false};
+    bool m_isCompleted{ false };
 
     // OffsetsChange or ZoomFactorChange instance associated with this operation.
     std::shared_ptr<ViewChangeBase> m_viewChangeBase;
 
     // ViewChangeCorrelationId associated with this operation.
-    int32_t m_viewChangeCorrelationId{-1};
+    int32_t m_viewChangeCorrelationId{ -1 };
 
     // Null by default and optionally set to a prior operation that needs to complete before this one can start.
-    std::shared_ptr<InteractionTrackerAsyncOperation> m_requiredOperation{nullptr};
+    std::shared_ptr<InteractionTrackerAsyncOperation> m_requiredOperation{ nullptr };
 };
+

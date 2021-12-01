@@ -9,7 +9,8 @@
 
 #include "MicaController.h"
 
-class BackdropMaterial : public winrt::implementation::BackdropMaterialT<BackdropMaterial>, public BackdropMaterialProperties
+class BackdropMaterial : public winrt::implementation::BackdropMaterialT<BackdropMaterial>,
+    public BackdropMaterialProperties
 {
 public:
     static void ClearProperties();
@@ -20,12 +21,10 @@ public:
     static void OnApplyToRootOrPageBackgroundChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
 
     // Test helper
-    static com_ptr<MicaController> GetMicaController()
-    {
-        return m_micaController;
-    }
+    static com_ptr<MicaController> GetMicaController() { return m_micaController; }
 
 private:
+
     // This object gets attached to the target of the ApplyToRootOrPageBackground property to track additional
     // state that needs to be cleaned up if that target ever goes away.
     struct BackdropMaterialState : winrt::DependencyObjectT<BackdropMaterialState, winrt::IBackdropMaterialState>
@@ -41,11 +40,11 @@ private:
         }
 
         void Dispose();
-
     private:
+
         void UpdateFallbackBrush();
 
-        DispatcherHelper m_dispatcherHelper{*this};
+        DispatcherHelper m_dispatcherHelper{ *this };
         winrt::weak_ref<winrt::Control> m_target;
         winrt::FrameworkElement::ActualThemeChanged_revoker m_themeChangedRevoker;
         winrt::UISettings::ColorValuesChanged_revoker m_colorValuesChangedRevoker;
