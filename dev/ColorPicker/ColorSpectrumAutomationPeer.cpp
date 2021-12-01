@@ -10,8 +10,7 @@
 
 #include "ColorSpectrumAutomationPeer.properties.cpp"
 
-ColorSpectrumAutomationPeer::ColorSpectrumAutomationPeer(winrt::ColorSpectrum const& owner) :
-    ReferenceTracker(owner)
+ColorSpectrumAutomationPeer::ColorSpectrumAutomationPeer(winrt::ColorSpectrum const& owner) : ReferenceTracker(owner)
 {
 }
 
@@ -69,7 +68,7 @@ winrt::Point ColorSpectrumAutomationPeer::GetClickablePointCore()
 {
     const auto boundingRect = GetBoundingRectangleCore(); // Call potentially overridden method
 
-    return winrt::Point{ boundingRect.X + boundingRect.Width / 2, boundingRect.Y + boundingRect.Height / 2 };
+    return winrt::Point{boundingRect.X + boundingRect.Width / 2, boundingRect.Y + boundingRect.Height / 2};
 }
 
 bool ColorSpectrumAutomationPeer::IsReadOnly()
@@ -89,7 +88,8 @@ winrt::hstring ColorSpectrumAutomationPeer::Value()
 void ColorSpectrumAutomationPeer::SetValue(winrt::hstring const& value)
 {
     winrt::ColorSpectrum colorSpectrumOwner = Owner().as<winrt::ColorSpectrum>();
-    winrt::Color color = unbox_value<winrt::Color>(winrt::XamlBindingHelper::ConvertValue({ winrt::hstring_name_of<winrt::Color>(), winrt::TypeKind::Metadata }, box_value(value)));
+    winrt::Color color = unbox_value<winrt::Color>(
+        winrt::XamlBindingHelper::ConvertValue({winrt::hstring_name_of<winrt::Color>(), winrt::TypeKind::Metadata}, box_value(value)));
 
     colorSpectrumOwner.Color(color);
 
@@ -118,12 +118,13 @@ winrt::hstring ColorSpectrumAutomationPeer::GetValueString(winrt::Color color, w
         return StringUtil::FormatString(
             ResourceAccessor::GetLocalizedStringResource(SR_ValueStringColorSpectrumWithColorName),
             winrt::ColorHelper::ToDisplayName(color).data(),
-            hue, saturation, value);
+            hue,
+            saturation,
+            value);
     }
     else
     {
         return StringUtil::FormatString(
-            ResourceAccessor::GetLocalizedStringResource(SR_ValueStringColorSpectrumWithoutColorName),
-            hue, saturation, value);
+            ResourceAccessor::GetLocalizedStringResource(SR_ValueStringColorSpectrumWithoutColorName), hue, saturation, value);
     }
 }

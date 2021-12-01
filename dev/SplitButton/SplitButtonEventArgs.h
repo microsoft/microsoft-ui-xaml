@@ -6,11 +6,11 @@
 #include "SplitButtonClickEventArgs.g.h"
 #include "ToggleSplitButtonIsCheckedChangedEventArgs.g.h"
 
-class SplitButtonClickEventArgs :
-    public winrt::implementation::SplitButtonClickEventArgsT<SplitButtonClickEventArgs>
-{};
+class SplitButtonClickEventArgs : public winrt::implementation::SplitButtonClickEventArgsT<SplitButtonClickEventArgs>
+{
+};
 
-class ToggleSplitButtonIsCheckedChangedEventArgs :
-    public winrt::implementation::ToggleSplitButtonIsCheckedChangedEventArgsT<ToggleSplitButtonIsCheckedChangedEventArgs>
-{};
-
+class ToggleSplitButtonIsCheckedChangedEventArgs
+    : public winrt::implementation::ToggleSplitButtonIsCheckedChangedEventArgsT<ToggleSplitButtonIsCheckedChangedEventArgs>
+{
+};

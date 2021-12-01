@@ -15,7 +15,7 @@ MicaController::~MicaController()
             if (auto xamlWindow = target.try_as<winrt::Windows::UI::Xaml::Window>())
             {
                 // Workaround for null ref exception in Window::get_SystemBackdrop when the Window is shutting down.
-                // GenerateRawElementProviderRuntimeId will trigger an exception caught below and thus prevent the 
+                // GenerateRawElementProviderRuntimeId will trigger an exception caught below and thus prevent the
                 // crashing target.SystemBackdrop() call.
                 auto const runtimeId = winrt::Automation::Peers::AutomationPeer::GenerateRawElementProviderRuntimeId();
             }
@@ -32,7 +32,6 @@ MicaController::~MicaController()
         }
     }
 }
-
 
 bool MicaController::SetTarget(winrt::Windows::UI::Xaml::Window const& xamlWindow)
 {
@@ -94,7 +93,7 @@ void MicaController::LuminosityOpacity(float value)
         Update();
     }
 }
-    
+
 void MicaController::FallbackColor(winrt::Windows::UI::Color const& value)
 {
     if (m_fallbackColor != value)
@@ -122,7 +121,8 @@ void MicaController::Activate()
         return;
     }
 
-    const winrt::CompositionBrush& newBrush = SystemBackdropComponentInternal::BuildMicaEffectBrush(m_compositor, m_tintColor, m_tintOpacity, m_luminosityOpacity);
+    const winrt::CompositionBrush& newBrush =
+        SystemBackdropComponentInternal::BuildMicaEffectBrush(m_compositor, m_tintColor, m_tintOpacity, m_luminosityOpacity);
 
     Crossfade(newBrush);
 
@@ -179,7 +179,8 @@ bool MicaController::IsMicaSupported() const
 {
     WINRT_ASSERT(m_compositor);
 
-    if (auto blurredWallpaperBackdropBrush = m_compositor.try_as<winrt::Microsoft::UI::Private::Controls::ICompositorWithBlurredWallpaperBackdropBrush>())
+    if (auto blurredWallpaperBackdropBrush =
+            m_compositor.try_as<winrt::Microsoft::UI::Private::Controls::ICompositorWithBlurredWallpaperBackdropBrush>())
     {
         return m_target && blurredWallpaperBackdropBrush.TryCreateBlurredWallpaperBackdropBrush();
     }
@@ -195,16 +196,16 @@ void MicaController::Crossfade(const winrt::Windows::UI::Composition::Compositio
     // 1) We don't have an old brush
     // 2) There was a cross fade happening, just jump to the new brush
     // 3) Both brushes are solid color (theme change or startup scenario), this doesn't need an animation
-    if (  !oldBrush
-        || (oldBrush.Comment() == L"Crossfade")
-        || (oldBrush.try_as<winrt::ICompositionColorBrush>() && newBrush.try_as<winrt::ICompositionColorBrush>()))
+    if (!oldBrush || (oldBrush.Comment() == L"Crossfade") ||
+        (oldBrush.try_as<winrt::ICompositionColorBrush>() && newBrush.try_as<winrt::ICompositionColorBrush>()))
     {
         UpdateSystemBackdropBrush(newBrush);
     }
     else
     {
 
-        const winrt::CompositionBrush crossFadeBrush = SystemBackdropComponentInternal::CreateCrossFadeEffectBrush(m_compositor, oldBrush, newBrush);
+        const winrt::CompositionBrush crossFadeBrush =
+            SystemBackdropComponentInternal::CreateCrossFadeEffectBrush(m_compositor, oldBrush, newBrush);
         winrt::ScalarKeyFrameAnimation animation = SystemBackdropComponentInternal::CreateCrossFadeAnimation(m_compositor);
         UpdateSystemBackdropBrush(crossFadeBrush);
 
@@ -212,8 +213,7 @@ void MicaController::Crossfade(const winrt::Windows::UI::Composition::Compositio
         crossFadeBrush.StartAnimation(L"Crossfade.Weight", animation);
         crossFadeAnimationBatch.End();
 
-        crossFadeAnimationBatch.Completed([weakThis = get_weak(), newBrush](auto&&, auto&&)
-        {
+        crossFadeAnimationBatch.Completed([weakThis = get_weak(), newBrush](auto&&, auto&&) {
             if (auto self = weakThis.get())
             {
                 self->UpdateSystemBackdropBrush(newBrush);

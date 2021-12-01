@@ -6,11 +6,9 @@
 #include "LayoutContext.h"
 #include "VirtualizingLayoutContext.g.h"
 
-class VirtualizingLayoutContext :
-    public winrt::implementation::VirtualizingLayoutContextT<VirtualizingLayoutContext, LayoutContext>
+class VirtualizingLayoutContext : public winrt::implementation::VirtualizingLayoutContextT<VirtualizingLayoutContext, LayoutContext>
 {
 public:
-
 #pragma region IVirtualizingLayoutContext
     int32_t ItemCount();
     winrt::IInspectable GetItemAt(int index);
@@ -43,5 +41,5 @@ public:
     winrt::NonVirtualizingLayoutContext GetNonVirtualizingContextAdapter();
 
 private:
-    winrt::NonVirtualizingLayoutContext m_contextAdapter{ nullptr };
+    winrt::NonVirtualizingLayoutContext m_contextAdapter{nullptr};
 };

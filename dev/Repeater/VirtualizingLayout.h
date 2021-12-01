@@ -6,8 +6,7 @@
 #include "Layout.h"
 #include "VirtualizingLayout.g.h"
 
-class VirtualizingLayout :
-    public winrt::implementation::VirtualizingLayoutT<VirtualizingLayout, Layout>
+class VirtualizingLayout : public winrt::implementation::VirtualizingLayoutT<VirtualizingLayout, Layout>
 {
 public:
     VirtualizingLayout();
@@ -19,6 +18,7 @@ public:
     virtual winrt::Size MeasureOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& availableSize);
     virtual winrt::Size ArrangeOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& finalSize);
 
-    virtual void OnItemsChangedCore(winrt::VirtualizingLayoutContext const& context, winrt::IInspectable const& source, winrt::NotifyCollectionChangedEventArgs const& args);
+    virtual void OnItemsChangedCore(
+        winrt::VirtualizingLayoutContext const& context, winrt::IInspectable const& source, winrt::NotifyCollectionChangedEventArgs const& args);
 #pragma endregion
 };

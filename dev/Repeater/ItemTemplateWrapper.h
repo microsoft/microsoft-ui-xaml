@@ -5,8 +5,7 @@
 
 #include "common.h"
 
-class ItemTemplateWrapper :
-    public winrt::implements<ItemTemplateWrapper, winrt::IElementFactoryShim>
+class ItemTemplateWrapper : public winrt::implements<ItemTemplateWrapper, winrt::IElementFactoryShim>
 {
 public:
     ItemTemplateWrapper(winrt::DataTemplate const& dataTemplate);
@@ -24,6 +23,6 @@ public:
 #pragma endregion
 
 private:
-    winrt::DataTemplate m_dataTemplate{ nullptr };
-    winrt::DataTemplateSelector m_dataTemplateSelector{ nullptr };
+    winrt::DataTemplate m_dataTemplate{nullptr};
+    winrt::DataTemplateSelector m_dataTemplateSelector{nullptr};
 };

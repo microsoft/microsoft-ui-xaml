@@ -11,8 +11,7 @@
 
 #include "TabViewItemAutomationPeer.properties.cpp"
 
-TabViewItemAutomationPeer::TabViewItemAutomationPeer(winrt::TabViewItem const& owner)
-    : ReferenceTracker(owner)
+TabViewItemAutomationPeer::TabViewItemAutomationPeer(winrt::TabViewItem const& owner) : ReferenceTracker(owner)
 {
 }
 
@@ -51,7 +50,6 @@ winrt::hstring TabViewItemAutomationPeer::GetNameCore()
 
     return returnHString;
 }
-
 
 bool TabViewItemAutomationPeer::IsSelected()
 {
@@ -94,7 +92,7 @@ void TabViewItemAutomationPeer::Select()
 
 winrt::TabView TabViewItemAutomationPeer::GetParentTabView()
 {
-    winrt::TabView parentTabView{ nullptr };
+    winrt::TabView parentTabView{nullptr};
 
     winrt::TabViewItem tabViewItem = Owner().try_as<winrt::TabViewItem>();
     if (tabViewItem)

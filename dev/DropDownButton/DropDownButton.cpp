@@ -19,7 +19,8 @@ DropDownButton::DropDownButton()
 
 void DropDownButton::OnApplyTemplate()
 {
-    m_flyoutPropertyChangedRevoker = RegisterPropertyChanged(*this, winrt::Button::FlyoutProperty(), { this, &DropDownButton::OnFlyoutPropertyChanged });
+    m_flyoutPropertyChangedRevoker =
+        RegisterPropertyChanged(*this, winrt::Button::FlyoutProperty(), {this, &DropDownButton::OnFlyoutPropertyChanged});
 
     RegisterFlyoutEvents();
 }
@@ -31,8 +32,8 @@ void DropDownButton::RegisterFlyoutEvents()
 
     if (Flyout())
     {
-        m_flyoutOpenedRevoker = Flyout().Opened(winrt::auto_revoke, { this, &DropDownButton::OnFlyoutOpened });
-        m_flyoutClosedRevoker = Flyout().Closed(winrt::auto_revoke, { this, &DropDownButton::OnFlyoutClosed });
+        m_flyoutOpenedRevoker = Flyout().Opened(winrt::auto_revoke, {this, &DropDownButton::OnFlyoutOpened});
+        m_flyoutClosedRevoker = Flyout().Closed(winrt::auto_revoke, {this, &DropDownButton::OnFlyoutClosed});
     }
 }
 

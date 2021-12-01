@@ -9,8 +9,8 @@
 #include "DoubleUtil.h"
 #include "ScrollPresenterTestHooks.h"
 
-// Used when ScrollPresenter.HorizontalAnchorRatio or ScrollPresenter.VerticalAnchorRatio is 0.0 or 1.0 to determine whether the Content is scrolled to an edge.
-// It is declared at an edge if it's within 1/10th of a pixel.
+// Used when ScrollPresenter.HorizontalAnchorRatio or ScrollPresenter.VerticalAnchorRatio is 0.0 or 1.0 to determine whether the
+// Content is scrolled to an edge. It is declared at an edge if it's within 1/10th of a pixel.
 const double c_edgeDetectionTolerance = 0.1;
 
 void ScrollPresenter::RaiseConfigurationChanged()
@@ -51,10 +51,12 @@ void ScrollPresenter::RaiseAnchorRequested()
 
         if (!m_anchorRequestedEventArgs)
         {
-            m_anchorRequestedEventArgs = tracker_ref<winrt::ScrollingAnchorRequestedEventArgs>(this, winrt::make<ScrollingAnchorRequestedEventArgs>(*this));
+            m_anchorRequestedEventArgs =
+                tracker_ref<winrt::ScrollingAnchorRequestedEventArgs>(this, winrt::make<ScrollingAnchorRequestedEventArgs>(*this));
         }
 
-        com_ptr<ScrollingAnchorRequestedEventArgs> anchorRequestedEventArgs = winrt::get_self<ScrollingAnchorRequestedEventArgs>(m_anchorRequestedEventArgs.get())->get_strong();
+        com_ptr<ScrollingAnchorRequestedEventArgs> anchorRequestedEventArgs =
+            winrt::get_self<ScrollingAnchorRequestedEventArgs>(m_anchorRequestedEventArgs.get())->get_strong();
 
         anchorRequestedEventArgs->SetAnchorElement(nullptr);
         anchorRequestedEventArgs->SetAnchorCandidates(m_anchorCandidates);
@@ -62,7 +64,7 @@ void ScrollPresenter::RaiseAnchorRequested()
     }
 }
 
-// Computes the type of anchoring to perform, if any, based on ScrollPresenter.HorizontalAnchorRatio, ScrollPresenter.VerticalAnchorRatio, 
+// Computes the type of anchoring to perform, if any, based on ScrollPresenter.HorizontalAnchorRatio, ScrollPresenter.VerticalAnchorRatio,
 // the current offsets, zoomFactor, viewport size, content size and state.
 // When all 4 returned booleans are False, no element anchoring is performed, no far edge anchoring is performed. There may still be anchoring at near edges.
 void ScrollPresenter::IsAnchoring(
@@ -82,9 +84,9 @@ void ScrollPresenter::IsAnchoring(
         *isAnchoringFarEdgeVertically = false;
     }
 
-    // Mouse wheel comes in as a custom animation, and we are currently not 
+    // Mouse wheel comes in as a custom animation, and we are currently not
     // anchoring because of the check below. Unfortunately, I cannot validate that
-    // removing the check is the correct fix due to dcomp bug 17523225. I filed a 
+    // removing the check is the correct fix due to dcomp bug 17523225. I filed a
     // tracking bug to follow up once the dcomp bug is fixed.
     // Bug 17523266: ScrollPresenter is not anchoring during mouse wheel
     if (!m_interactionTracker || m_state == winrt::ScrollingInteractionState::Animation)
@@ -97,7 +99,7 @@ void ScrollPresenter::IsAnchoring(
     const double horizontalAnchorRatio = HorizontalAnchorRatio();
     const double verticalAnchorRatio = VerticalAnchorRatio();
 
-    // For edge anchoring, the near edge is considered when HorizontalAnchorRatio or VerticalAnchorRatio is 0.0. 
+    // For edge anchoring, the near edge is considered when HorizontalAnchorRatio or VerticalAnchorRatio is 0.0.
     // When the property is 1.0, the far edge is considered.
     if (!isnan(horizontalAnchorRatio))
     {
@@ -154,10 +156,7 @@ void ScrollPresenter::IsAnchoring(
 // - viewportAnchorPointHorizontalOffset: unzoomed horizontal offset of the anchor point within the ScrollPresenter.Content. NaN if there is no horizontal anchoring.
 // - viewportAnchorPointVerticalOffset: unzoomed vertical offset of the anchor point within the ScrollPresenter.Content. NaN if there is no vertical anchoring.
 void ScrollPresenter::ComputeViewportAnchorPoint(
-    double viewportWidth,
-    double viewportHeight,
-    _Out_ double* viewportAnchorPointHorizontalOffset,
-    _Out_ double* viewportAnchorPointVerticalOffset)
+    double viewportWidth, double viewportHeight, _Out_ double* viewportAnchorPointHorizontalOffset, _Out_ double* viewportAnchorPointVerticalOffset)
 {
     *viewportAnchorPointHorizontalOffset = DoubleUtil::NaN;
     *viewportAnchorPointVerticalOffset = DoubleUtil::NaN;
@@ -166,21 +165,18 @@ void ScrollPresenter::ComputeViewportAnchorPoint(
         static_cast<float>(m_zoomedHorizontalOffset / m_zoomFactor),
         static_cast<float>(m_zoomedVerticalOffset / m_zoomFactor),
         static_cast<float>(viewportWidth / m_zoomFactor),
-        static_cast<float>(viewportHeight / m_zoomFactor)
-    };
+        static_cast<float>(viewportHeight / m_zoomFactor)};
 
     ComputeAnchorPoint(viewportAnchorBounds, viewportAnchorPointHorizontalOffset, viewportAnchorPointVerticalOffset);
 
-    SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, *viewportAnchorPointHorizontalOffset, *viewportAnchorPointVerticalOffset);
+    SCROLLPRESENTER_TRACE_VERBOSE(
+        *this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, *viewportAnchorPointHorizontalOffset, *viewportAnchorPointVerticalOffset);
 }
 
 // Returns:
 // - elementAnchorPointHorizontalOffset: unzoomed horizontal offset of the anchor element's anchor point within the ScrollPresenter.Content. NaN if there is no horizontal anchoring.
 // - elementAnchorPointVerticalOffset: unzoomed vertical offset of the anchor element's point within the ScrollPresenter.Content. NaN if there is no vertical anchoring.
-void ScrollPresenter::ComputeElementAnchorPoint(
-    bool isForPreArrange,
-    _Out_ double* elementAnchorPointHorizontalOffset,
-    _Out_ double* elementAnchorPointVerticalOffset)
+void ScrollPresenter::ComputeElementAnchorPoint(bool isForPreArrange, _Out_ double* elementAnchorPointHorizontalOffset, _Out_ double* elementAnchorPointVerticalOffset)
 {
     *elementAnchorPointHorizontalOffset = DoubleUtil::NaN;
     *elementAnchorPointVerticalOffset = DoubleUtil::NaN;
@@ -193,14 +189,12 @@ void ScrollPresenter::ComputeElementAnchorPoint(
 
         ComputeAnchorPoint(anchorElementBounds, elementAnchorPointHorizontalOffset, elementAnchorPointVerticalOffset);
 
-        SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, *elementAnchorPointHorizontalOffset, *elementAnchorPointVerticalOffset);
+        SCROLLPRESENTER_TRACE_VERBOSE(
+            *this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, *elementAnchorPointHorizontalOffset, *elementAnchorPointVerticalOffset);
     }
 }
 
-void ScrollPresenter::ComputeAnchorPoint(
-    const winrt::Rect& anchorBounds,
-    _Out_ double* anchorPointX,
-    _Out_ double* anchorPointY)
+void ScrollPresenter::ComputeAnchorPoint(const winrt::Rect& anchorBounds, _Out_ double* anchorPointX, _Out_ double* anchorPointY)
 {
     if (isnan(HorizontalAnchorRatio()))
     {
@@ -228,10 +222,7 @@ void ScrollPresenter::ComputeAnchorPoint(
 }
 
 // Computes the distance between the viewport's anchor point and the anchor element's anchor point.
-winrt::Size ScrollPresenter::ComputeViewportToElementAnchorPointsDistance(
-    double viewportWidth,
-    double viewportHeight,
-    bool isForPreArrange)
+winrt::Size ScrollPresenter::ComputeViewportToElementAnchorPointsDistance(double viewportWidth, double viewportHeight, bool isForPreArrange)
 {
     if (m_anchorElement.get())
     {
@@ -239,23 +230,16 @@ winrt::Size ScrollPresenter::ComputeViewportToElementAnchorPointsDistance(
 
         if (!isForPreArrange && !IsElementValidAnchor(m_anchorElement.get()))
         {
-            return winrt::Size{ FloatUtil::NaN, FloatUtil::NaN };
+            return winrt::Size{FloatUtil::NaN, FloatUtil::NaN};
         }
 
-        double elementAnchorPointHorizontalOffset{ 0.0 };
-        double elementAnchorPointVerticalOffset{ 0.0 };
-        double viewportAnchorPointHorizontalOffset{ 0.0 };
-        double viewportAnchorPointVerticalOffset{ 0.0 };
+        double elementAnchorPointHorizontalOffset{0.0};
+        double elementAnchorPointVerticalOffset{0.0};
+        double viewportAnchorPointHorizontalOffset{0.0};
+        double viewportAnchorPointVerticalOffset{0.0};
 
-        ComputeElementAnchorPoint(
-            isForPreArrange,
-            &elementAnchorPointHorizontalOffset,
-            &elementAnchorPointVerticalOffset);
-        ComputeViewportAnchorPoint(
-            viewportWidth,
-            viewportHeight,
-            &viewportAnchorPointHorizontalOffset,
-            &viewportAnchorPointVerticalOffset);
+        ComputeElementAnchorPoint(isForPreArrange, &elementAnchorPointHorizontalOffset, &elementAnchorPointVerticalOffset);
+        ComputeViewportAnchorPoint(viewportWidth, viewportHeight, &viewportAnchorPointHorizontalOffset, &viewportAnchorPointVerticalOffset);
 
         MUX_ASSERT(!isnan(viewportAnchorPointHorizontalOffset) || !isnan(viewportAnchorPointVerticalOffset));
         MUX_ASSERT(isnan(viewportAnchorPointHorizontalOffset) == isnan(elementAnchorPointHorizontalOffset));
@@ -263,19 +247,26 @@ winrt::Size ScrollPresenter::ComputeViewportToElementAnchorPointsDistance(
 
         // Rounding the distance to 6 precision digits to avoid layout cycles due to float/double conversions.
         const winrt::Size viewportToElementAnchorPointsDistance = winrt::Size{
-            isnan(viewportAnchorPointHorizontalOffset) ?
-                FloatUtil::NaN : static_cast<float>(round((elementAnchorPointHorizontalOffset - viewportAnchorPointHorizontalOffset) * 1000000) / 1000000),
-            isnan(viewportAnchorPointVerticalOffset) ?
-                FloatUtil::NaN : static_cast<float>(round((elementAnchorPointVerticalOffset - viewportAnchorPointVerticalOffset) * 1000000) / 1000000)
-        };
+            isnan(viewportAnchorPointHorizontalOffset)
+                ? FloatUtil::NaN
+                : static_cast<float>(round((elementAnchorPointHorizontalOffset - viewportAnchorPointHorizontalOffset) * 1000000) / 1000000),
+            isnan(viewportAnchorPointVerticalOffset)
+                ? FloatUtil::NaN
+                : static_cast<float>(round((elementAnchorPointVerticalOffset - viewportAnchorPointVerticalOffset) * 1000000) / 1000000)};
 
-        SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, viewportToElementAnchorPointsDistance.Width, viewportToElementAnchorPointsDistance.Height);
+        SCROLLPRESENTER_TRACE_VERBOSE(
+            *this,
+            TRACE_MSG_METH_FLT_FLT,
+            METH_NAME,
+            this,
+            viewportToElementAnchorPointsDistance.Width,
+            viewportToElementAnchorPointsDistance.Height);
 
         return viewportToElementAnchorPointsDistance;
     }
     else
     {
-        return winrt::Size{ FloatUtil::NaN, FloatUtil::NaN };
+        return winrt::Size{FloatUtil::NaN, FloatUtil::NaN};
     }
 }
 
@@ -301,13 +292,14 @@ void ScrollPresenter::ResetAnchorElement()
 
         if (globalTestHooks && globalTestHooks->AreAnchorNotificationsRaised())
         {
-            globalTestHooks->NotifyAnchorEvaluated(*this, nullptr /*anchorElement*/, DoubleUtil::NaN /*viewportAnchorPointHorizontalOffset*/, DoubleUtil::NaN /*viewportAnchorPointVerticalOffset*/);
+            globalTestHooks->NotifyAnchorEvaluated(
+                *this, nullptr /*anchorElement*/, DoubleUtil::NaN /*viewportAnchorPointHorizontalOffset*/, DoubleUtil::NaN /*viewportAnchorPointVerticalOffset*/);
         }
     }
 }
 
-// Raises the ScrollPresenter.AnchorRequested event. If no anchor element was specified, selects an anchor among the candidates vector that may have been altered 
-// in the AnchorRequested event handler.
+// Raises the ScrollPresenter.AnchorRequested event. If no anchor element was specified, selects an anchor among the candidates
+// vector that may have been altered in the AnchorRequested event handler.
 void ScrollPresenter::EnsureAnchorElementSelection()
 {
     if (!m_isAnchorElementDirty)
@@ -320,22 +312,18 @@ void ScrollPresenter::EnsureAnchorElementSelection()
     m_isAnchorElementDirty = false;
 
     com_ptr<ScrollPresenterTestHooks> globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks();
-    double viewportAnchorPointHorizontalOffset{ 0.0 };
-    double viewportAnchorPointVerticalOffset{ 0.0 };
+    double viewportAnchorPointHorizontalOffset{0.0};
+    double viewportAnchorPointVerticalOffset{0.0};
 
-    ComputeViewportAnchorPoint(
-        m_viewportWidth,
-        m_viewportHeight,
-        &viewportAnchorPointHorizontalOffset,
-        &viewportAnchorPointVerticalOffset);
+    ComputeViewportAnchorPoint(m_viewportWidth, m_viewportHeight, &viewportAnchorPointHorizontalOffset, &viewportAnchorPointVerticalOffset);
 
     MUX_ASSERT(!isnan(viewportAnchorPointHorizontalOffset) || !isnan(viewportAnchorPointVerticalOffset));
 
     RaiseAnchorRequested();
 
     auto anchorRequestedEventArgs = winrt::get_self<ScrollingAnchorRequestedEventArgs>(m_anchorRequestedEventArgs.get());
-    winrt::UIElement requestedAnchorElement{ nullptr };
-    winrt::IVector<winrt::UIElement> anchorCandidates{ nullptr };
+    winrt::UIElement requestedAnchorElement{nullptr};
+    winrt::IVector<winrt::UIElement> anchorCandidates{nullptr};
     const winrt::UIElement content = Content();
 
     if (anchorRequestedEventArgs)
@@ -360,14 +348,13 @@ void ScrollPresenter::EnsureAnchorElementSelection()
     }
 
     winrt::Rect bestAnchorCandidateBounds{};
-    winrt::UIElement bestAnchorCandidate{ nullptr };
+    winrt::UIElement bestAnchorCandidate{nullptr};
     double bestAnchorCandidateDistance = std::numeric_limits<float>::max();
     const winrt::Rect viewportAnchorBounds{
         static_cast<float>(m_zoomedHorizontalOffset / m_zoomFactor),
         static_cast<float>(m_zoomedVerticalOffset / m_zoomFactor),
         static_cast<float>(m_viewportWidth / m_zoomFactor),
-        static_cast<float>(m_viewportHeight / m_zoomFactor)
-    };
+        static_cast<float>(m_viewportHeight / m_zoomFactor)};
 
     MUX_ASSERT(content);
 
@@ -435,7 +422,7 @@ void ScrollPresenter::ProcessAnchorCandidate(
 
     if (!IsElementValidAnchor(anchorCandidate, content))
     {
-        // Ignore candidates that are collapsed or do not belong to the Content element and are not the Content itself. 
+        // Ignore candidates that are collapsed or do not belong to the Content element and are not the Content itself.
         return;
     }
 
@@ -448,18 +435,20 @@ void ScrollPresenter::ProcessAnchorCandidate(
     }
 
     // Using the distances from the viewport anchor point to the four corners of the anchor candidate.
-    double anchorCandidateDistance{ 0.0 };
+    double anchorCandidateDistance{0.0};
 
     if (!isnan(viewportAnchorPointHorizontalOffset))
     {
         anchorCandidateDistance += std::pow(viewportAnchorPointHorizontalOffset - anchorCandidateBounds.X, 2);
-        anchorCandidateDistance += std::pow(viewportAnchorPointHorizontalOffset - (anchorCandidateBounds.X + anchorCandidateBounds.Width), 2);
+        anchorCandidateDistance +=
+            std::pow(viewportAnchorPointHorizontalOffset - (anchorCandidateBounds.X + anchorCandidateBounds.Width), 2);
     }
 
     if (!isnan(viewportAnchorPointVerticalOffset))
     {
         anchorCandidateDistance += std::pow(viewportAnchorPointVerticalOffset - anchorCandidateBounds.Y, 2);
-        anchorCandidateDistance += std::pow(viewportAnchorPointVerticalOffset - (anchorCandidateBounds.Y + anchorCandidateBounds.Height), 2);
+        anchorCandidateDistance +=
+            std::pow(viewportAnchorPointVerticalOffset - (anchorCandidateBounds.Y + anchorCandidateBounds.Height), 2);
     }
 
     if (anchorCandidateDistance <= *bestAnchorCandidateDistance)
@@ -471,9 +460,7 @@ void ScrollPresenter::ProcessAnchorCandidate(
 }
 
 // Returns the bounds of a ScrollPresenter.Content descendant in respect to that content.
-winrt::Rect ScrollPresenter::GetDescendantBounds(
-    const winrt::UIElement& content,
-    const winrt::UIElement& descendant)
+winrt::Rect ScrollPresenter::GetDescendantBounds(const winrt::UIElement& content, const winrt::UIElement& descendant)
 {
     MUX_ASSERT(content);
     MUX_ASSERT(IsElementValidAnchor(descendant, content));
@@ -483,8 +470,7 @@ winrt::Rect ScrollPresenter::GetDescendantBounds(
         0.0f,
         0.0f,
         descendantAsFE ? static_cast<float>(descendantAsFE.ActualWidth()) : 0.0f,
-        descendantAsFE ? static_cast<float>(descendantAsFE.ActualHeight()) : 0.0f
-    };
+        descendantAsFE ? static_cast<float>(descendantAsFE.ActualHeight()) : 0.0f};
 
     return GetDescendantBounds(content, descendant, descendantRect);
 }

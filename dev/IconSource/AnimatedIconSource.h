@@ -7,13 +7,12 @@
 #include "AnimatedIconSource.g.h"
 #include "AnimatedIconSource.properties.h"
 
-class AnimatedIconSource :
-    public ReferenceTracker<AnimatedIconSource, winrt::implementation::AnimatedIconSourceT, IconSource>,
-    public AnimatedIconSourceProperties
+class AnimatedIconSource : public ReferenceTracker<AnimatedIconSource, winrt::implementation::AnimatedIconSourceT, IconSource>,
+                           public AnimatedIconSourceProperties
 {
 public:
-    using AnimatedIconSourceProperties::EnsureProperties;
     using AnimatedIconSourceProperties::ClearProperties;
+    using AnimatedIconSourceProperties::EnsureProperties;
 
     winrt::DependencyProperty GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty);
     winrt::IconElement CreateIconElementCore();

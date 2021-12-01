@@ -22,9 +22,8 @@ public:
     void RecommendedNavigationTransitionInfo(winrt::NavigationTransitionInfo const& value);
 
 private:
-    bool m_isSettingsInvoked{ false };
-    tracker_ref<winrt::IInspectable> m_invokedItem{ this };
-    tracker_ref<winrt::NavigationViewItemBase> m_invokedItemContainer{ this };
-    tracker_ref<winrt::NavigationTransitionInfo> m_recommendedNavigationTransitionInfo{ this };
+    bool m_isSettingsInvoked{false};
+    tracker_ref<winrt::IInspectable> m_invokedItem{this};
+    tracker_ref<winrt::NavigationViewItemBase> m_invokedItemContainer{this};
+    tracker_ref<winrt::NavigationTransitionInfo> m_recommendedNavigationTransitionInfo{this};
 };
-

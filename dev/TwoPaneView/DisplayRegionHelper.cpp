@@ -42,11 +42,14 @@ DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
     else
     {
         // ApplicationView::GetForCurrentView throws on failure; in that case we just won't do anything.
-        winrt::ApplicationView view{ nullptr };
+        winrt::ApplicationView view{nullptr};
         try
         {
             view = winrt::ApplicationView::GetForCurrentView();
-        } catch(...) {}
+        }
+        catch (...)
+        {
+        }
 
         if (view && view.ViewMode() == (winrt::Windows::UI::ViewManagement::ApplicationViewMode)c_ApplicationViewModeSpanning)
         {
@@ -110,10 +113,7 @@ winrt::Rect DisplayRegionHelper::WindowRect()
     {
         // Return the bounds of the simulated window
         winrt::FrameworkElement window = DisplayRegionHelper::WindowElement().as<winrt::FrameworkElement>();
-        const winrt::Rect rc = {
-            0, 0,
-            (float)window.ActualWidth(),
-            (float)window.ActualHeight() };
+        const winrt::Rect rc = {0, 0, (float)window.ActualWidth(), (float)window.ActualHeight()};
         return rc;
     }
     else
@@ -149,4 +149,3 @@ winrt::TwoPaneViewMode DisplayRegionHelper::SimulateMode()
     auto instance = LifetimeHandler::GetDisplayRegionHelperInstance();
     return instance->m_simulateMode;
 }
-

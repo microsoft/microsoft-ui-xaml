@@ -36,10 +36,7 @@ winrt::UIElement ViewportManagerDownLevel::SuggestedAnchor() const
         // We only care about what the first scrollable scroller is tracking (i.e. inner most).
         // A scroller is considered scrollable if IRepeaterScrollingSurface.IsHorizontallyScrollable
         // or IsVerticallyScroller is true.
-        const auto anchorElement =
-            m_innerScrollableScroller ?
-            m_innerScrollableScroller.get().AnchorElement() :
-            nullptr;
+        const auto anchorElement = m_innerScrollableScroller ? m_innerScrollableScroller.get().AnchorElement() : nullptr;
 
         if (anchorElement)
         {
@@ -99,8 +96,8 @@ winrt::Rect ViewportManagerDownLevel::GetLayoutVisibleWindow() const
 
         // Also, we only want to mess with the realization rect iff the anchor is not inside it.
         // If we fiddle with an anchor that is already inside the realization rect,
-        // shifting the realization rect results in repeater, layout and scroller thinking that it needs to act upon StartBringIntoView.
-        // We do NOT want that!
+        // shifting the realization rect results in repeater, layout and scroller thinking that it needs to act upon
+        // StartBringIntoView. We do NOT want that!
         visibleWindow.X = 0.0f;
         visibleWindow.Y = 0.0f;
     }
@@ -135,8 +132,11 @@ void ViewportManagerDownLevel::SetLayoutExtent(winrt::Rect extent)
     // We tolerate viewport imprecisions up to 1 pixel to avoid invaliding layout too much.
     if (std::abs(m_expectedViewportShift.X) > 1.f || std::abs(m_expectedViewportShift.Y) > 1.f)
     {
-        REPEATER_TRACE_INFO(L"%ls: \tExpecting viewport shift of (%.0f,%.0f) \n",
-            GetLayoutId().data(), m_expectedViewportShift.X, m_expectedViewportShift.Y);
+        REPEATER_TRACE_INFO(
+            L"%ls: \tExpecting viewport shift of (%.0f,%.0f) \n",
+            GetLayoutId().data(),
+            m_expectedViewportShift.X,
+            m_expectedViewportShift.Y);
     }
 
     m_layoutExtent = extent;
@@ -144,9 +144,18 @@ void ViewportManagerDownLevel::SetLayoutExtent(winrt::Rect extent)
     // We just finished a measure pass and have a new extent.
     // Let's make sure the scrollers will run its arrange so that they track the anchor.
     const auto outerScroller = GetOuterScroller();
-    if (outerScroller) { outerScroller.as<winrt::UIElement>().InvalidateArrange(); }
-    if (m_horizontalScroller && m_horizontalScroller != outerScroller) { m_horizontalScroller.as<winrt::UIElement>().InvalidateArrange(); }
-    if (m_verticalScroller && m_verticalScroller != outerScroller) { m_verticalScroller.as<winrt::UIElement>().InvalidateArrange(); }
+    if (outerScroller)
+    {
+        outerScroller.as<winrt::UIElement>().InvalidateArrange();
+    }
+    if (m_horizontalScroller && m_horizontalScroller != outerScroller)
+    {
+        m_horizontalScroller.as<winrt::UIElement>().InvalidateArrange();
+    }
+    if (m_verticalScroller && m_verticalScroller != outerScroller)
+    {
+        m_verticalScroller.as<winrt::UIElement>().InvalidateArrange();
+    }
 }
 
 void ViewportManagerDownLevel::OnLayoutChanged(bool isVirtualizing)
@@ -186,9 +195,8 @@ void ViewportManagerDownLevel::OnOwnerArranged()
         const double maximumHorizontalCacheBufferPerSide = m_maximumHorizontalCacheLength * m_visibleWindow.Width / 2.0;
         const double maximumVerticalCacheBufferPerSide = m_maximumVerticalCacheLength * m_visibleWindow.Height / 2.0;
 
-        const bool continueBuildingCache =
-            m_horizontalCacheBufferPerSide < maximumHorizontalCacheBufferPerSide ||
-            m_verticalCacheBufferPerSide < maximumVerticalCacheBufferPerSide;
+        const bool continueBuildingCache = m_horizontalCacheBufferPerSide < maximumHorizontalCacheBufferPerSide ||
+                                           m_verticalCacheBufferPerSide < maximumVerticalCacheBufferPerSide;
 
         if (continueBuildingCache)
         {
@@ -328,7 +336,8 @@ void ViewportManagerDownLevel::EnsureScrollers()
         else
         {
             auto& outerScrollerInfo = m_parentScrollers.back();
-            outerScrollerInfo.PostArrangeToken = outerScrollerInfo.Scroller().PostArrange(winrt::auto_revoke, { this, &ViewportManagerDownLevel::OnPostArrange });
+            outerScrollerInfo.PostArrangeToken =
+                outerScrollerInfo.Scroller().PostArrange(winrt::auto_revoke, {this, &ViewportManagerDownLevel::OnPostArrange});
         }
 
         m_ensuredScrollers = true;
@@ -346,18 +355,27 @@ bool ViewportManagerDownLevel::AddScroller(const winrt::IRepeaterScrollingSurfac
     const bool setVerticalScroller = !m_verticalScroller && isVerticallyScrollable;
     const bool setInnerScrollableScroller = !m_innerScrollableScroller && (setHorizontalScroller || setVerticalScroller);
 
-    if (setHorizontalScroller) { m_horizontalScroller.set(scroller); }
-    if (setVerticalScroller) { m_verticalScroller.set(scroller); }
-    if (setInnerScrollableScroller) { m_innerScrollableScroller.set(scroller); }
+    if (setHorizontalScroller)
+    {
+        m_horizontalScroller.set(scroller);
+    }
+    if (setVerticalScroller)
+    {
+        m_verticalScroller.set(scroller);
+    }
+    if (setInnerScrollableScroller)
+    {
+        m_innerScrollableScroller.set(scroller);
+    }
 
-    auto scrollerInfo = ScrollerInfo(
-        m_owner,
-        scroller);
+    auto scrollerInfo = ScrollerInfo(m_owner, scroller);
 
-    scrollerInfo.ConfigurationChangedToken = scroller.ConfigurationChanged(winrt::auto_revoke, { this, &ViewportManagerDownLevel::OnConfigurationChanged });
+    scrollerInfo.ConfigurationChangedToken =
+        scroller.ConfigurationChanged(winrt::auto_revoke, {this, &ViewportManagerDownLevel::OnConfigurationChanged});
     if (setHorizontalScroller || setVerticalScroller)
     {
-        scrollerInfo.ViewportChangedToken = scroller.ViewportChanged(winrt::auto_revoke, { this, &ViewportManagerDownLevel::OnViewportChanged });
+        scrollerInfo.ViewportChangedToken =
+            scroller.ViewportChanged(winrt::auto_revoke, {this, &ViewportManagerDownLevel::OnViewportChanged});
     }
 
     m_parentScrollers.push_back(std::move(scrollerInfo));
@@ -369,16 +387,11 @@ void ViewportManagerDownLevel::UpdateViewport()
     assert(!m_managingViewportDisabled);
 
     const auto previousVisibleWindow = m_visibleWindow;
-    const auto horizontalVisibleWindow =
-        m_horizontalScroller ?
-        m_horizontalScroller.get().GetRelativeViewport(*m_owner) :
-        winrt::Rect();
-    const auto verticalVisibleWindow =
-        m_verticalScroller ?
-        (m_verticalScroller.get() == m_horizontalScroller.get() ?
-            horizontalVisibleWindow :
-            m_verticalScroller.get().GetRelativeViewport(*m_owner)) :
-        winrt::Rect();
+    const auto horizontalVisibleWindow = m_horizontalScroller ? m_horizontalScroller.get().GetRelativeViewport(*m_owner) : winrt::Rect();
+    const auto verticalVisibleWindow = m_verticalScroller ? (m_verticalScroller.get() == m_horizontalScroller.get()
+                                                                 ? horizontalVisibleWindow
+                                                                 : m_verticalScroller.get().GetRelativeViewport(*m_owner))
+                                                          : winrt::Rect();
     const auto currentVisibleWindow = 
         HasScrollers() ?
         winrt::Rect
@@ -398,18 +411,23 @@ void ViewportManagerDownLevel::UpdateViewport()
     }
     else
     {
-        REPEATER_TRACE_INFO(L"%ls: \tViewport: (%.0f,%.0f,%.0f,%.0f)->(%.0f,%.0f,%.0f,%.0f). \n",
+        REPEATER_TRACE_INFO(
+            L"%ls: \tViewport: (%.0f,%.0f,%.0f,%.0f)->(%.0f,%.0f,%.0f,%.0f). \n",
             GetLayoutId().data(),
-            previousVisibleWindow.X, previousVisibleWindow.Y, previousVisibleWindow.Width, previousVisibleWindow.Height,
-            currentVisibleWindow.X, currentVisibleWindow.Y, currentVisibleWindow.Width, currentVisibleWindow.Height);
+            previousVisibleWindow.X,
+            previousVisibleWindow.Y,
+            previousVisibleWindow.Width,
+            previousVisibleWindow.Height,
+            currentVisibleWindow.X,
+            currentVisibleWindow.Y,
+            currentVisibleWindow.Width,
+            currentVisibleWindow.Height);
         m_visibleWindow = currentVisibleWindow;
     }
 
     const bool viewportChanged =
-        std::abs(m_visibleWindow.X - previousVisibleWindow.X) > 1 ||
-        std::abs(m_visibleWindow.Y - previousVisibleWindow.Y) > 1 ||
-        m_visibleWindow.Width != previousVisibleWindow.Width ||
-        m_visibleWindow.Height != previousVisibleWindow.Height;
+        std::abs(m_visibleWindow.X - previousVisibleWindow.X) > 1 || std::abs(m_visibleWindow.Y - previousVisibleWindow.Y) > 1 ||
+        m_visibleWindow.Width != previousVisibleWindow.Width || m_visibleWindow.Height != previousVisibleWindow.Height;
 
     if (viewportChanged)
     {
@@ -439,21 +457,18 @@ void ViewportManagerDownLevel::ValidateCacheLength(double cacheLength)
 
 void ViewportManagerDownLevel::RegisterCacheBuildWork()
 {
-    if (m_owner->Layout() &&
-        !m_cacheBuildAction)
+    if (m_owner->Layout() && !m_cacheBuildAction)
     {
         auto strongOwner = m_owner->get_strong();
-        m_cacheBuildAction.set(m_owner
-            ->Dispatcher()
-            // We capture 'owner' (a strong refernce on ItemsRepeater) to make sure ItemsRepeater is still around
-            // when the async action completes. By protecting ItemsRepeater, we also ensure that this instance
-            // of ViewportManager (referenced by 'this' pointer) is valid because the lifetime of ItemsRepeater
-            // and ViewportManager is the same (see ItemsRepeater::m_viewportManager).
-            // We can't simply hold a strong reference on ViewportManager because it's not a COM object.
-            .RunIdleAsync([this, strongOwner](const winrt::IdleDispatchedHandlerArgs&)
-            {
-                OnCacheBuildActionCompleted();
-            }));
+        m_cacheBuildAction.set(
+            m_owner
+                ->Dispatcher()
+                // We capture 'owner' (a strong refernce on ItemsRepeater) to make sure ItemsRepeater is still around
+                // when the async action completes. By protecting ItemsRepeater, we also ensure that this instance
+                // of ViewportManager (referenced by 'this' pointer) is valid because the lifetime of ItemsRepeater
+                // and ViewportManager is the same (see ItemsRepeater::m_viewportManager).
+                // We can't simply hold a strong reference on ViewportManager because it's not a COM object.
+                .RunIdleAsync([this, strongOwner](const winrt::IdleDispatchedHandlerArgs&) { OnCacheBuildActionCompleted(); }));
     }
 }
 

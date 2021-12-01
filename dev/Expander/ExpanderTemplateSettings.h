@@ -6,9 +6,7 @@
 #include "ExpanderTemplateSettings.g.h"
 #include "ExpanderTemplateSettings.properties.h"
 
-class ExpanderTemplateSettings :
-    public winrt::implementation::ExpanderTemplateSettingsT<ExpanderTemplateSettings>,
-    public ExpanderTemplateSettingsProperties
+class ExpanderTemplateSettings : public winrt::implementation::ExpanderTemplateSettingsT<ExpanderTemplateSettings>, public ExpanderTemplateSettingsProperties
 {
 public:
     ExpanderTemplateSettings();

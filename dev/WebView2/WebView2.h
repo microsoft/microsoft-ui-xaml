@@ -8,22 +8,21 @@
 
 #include <winrt\Microsoft.Web.WebView2.Core.h>
 
-namespace winrt
-{
-    using namespace Microsoft::Web::WebView2::Core;
+namespace winrt {
+using namespace Microsoft::Web::WebView2::Core;
 }
 
 #include "CoreWebView2InitializedEventArgs.g.h"
 
 #include "WebView2.g.h"
 #include "WebView2.properties.h"
-#pragma warning( push )
-#pragma warning( disable : 28251 26812)   // warning C28251: Inconsistent annotation for function: this instance has an error
+#pragma warning(push)
+#pragma warning(disable : 28251 26812) // warning C28251: Inconsistent annotation for function: this instance has an error
 #include <webview2.h>
 #include <WebView2EnvironmentOptions.h>
-#pragma warning( pop ) 
+#pragma warning(pop)
 
- // for making async/await possible
+// for making async/await possible
 struct AsyncWebViewOperations final : public Awaitable
 {
     AsyncWebViewOperations() = default;
@@ -35,20 +34,27 @@ struct AsyncWebViewOperations final : public Awaitable
     }
 };
 
-class CoreWebView2InitializedEventArgs :
-    public winrt::implementation::CoreWebView2InitializedEventArgsT<CoreWebView2InitializedEventArgs>
+class CoreWebView2InitializedEventArgs : public winrt::implementation::CoreWebView2InitializedEventArgsT<CoreWebView2InitializedEventArgs>
 {
 public:
-    CoreWebView2InitializedEventArgs(winrt::hresult Exception) : m_exception(Exception) {};
+    CoreWebView2InitializedEventArgs(winrt::hresult Exception) : m_exception(Exception){};
 
-    void Exception(winrt::hresult exception) { m_exception = exception; };
-    winrt::hresult Exception() { return m_exception; }
+    void Exception(winrt::hresult exception)
+    {
+        m_exception = exception;
+    };
+    winrt::hresult Exception()
+    {
+        return m_exception;
+    }
+
 private:
     winrt::hresult m_exception{};
 };
 
-template <typename D, typename T, typename ... I>
-struct __declspec(empty_bases) DeriveFromContentControlHelper_base : winrt::Windows::UI::Xaml::Controls::ContentControlT<D, winrt::default_interface<T>, winrt::composable, I...>
+template <typename D, typename T, typename... I>
+struct __declspec(empty_bases) DeriveFromContentControlHelper_base
+    : winrt::Windows::UI::Xaml::Controls::ContentControlT<D, winrt::default_interface<T>, winrt::composable, I...>
 {
     using composable = T;
     using class_type = typename T;
@@ -60,17 +66,14 @@ struct __declspec(empty_bases) DeriveFromContentControlHelper_base : winrt::Wind
 
     hstring GetRuntimeClassName() const
     {
-        return hstring{ winrt::name_of<T>() };
+        return hstring{winrt::name_of<T>()};
     }
 };
 
-class WebView2 :
-    public ReferenceTracker<WebView2, DeriveFromContentControlHelper_base, winrt::WebView2>,
-    public WebView2Properties
+class WebView2 : public ReferenceTracker<WebView2, DeriveFromContentControlHelper_base, winrt::WebView2>, public WebView2Properties
 {
 
 public:
-
     WebView2();
     virtual ~WebView2();
 
@@ -97,7 +100,7 @@ public:
     void GoForward();
     void Close();
 
-    winrt::CoreWebView2 CoreWebView2();     // Getter for CoreWebView2 property (read-only)
+    winrt::CoreWebView2 CoreWebView2(); // Getter for CoreWebView2 property (read-only)
 
 private:
     bool ShouldNavigate(const winrt::Uri& uri);
@@ -182,11 +185,11 @@ private:
         bool m_isPending{};
     };
 
-    winrt::CoreWebView2EnvironmentOptions m_options{ nullptr };
-    winrt::CoreWebView2Environment m_coreWebViewEnvironment{ nullptr };
-    winrt::CoreWebView2Controller m_coreWebViewController{ nullptr };
-    winrt::CoreWebView2CompositionController m_coreWebViewCompositionController{ nullptr };
-    winrt::CoreWebView2 m_coreWebView{ nullptr };
+    winrt::CoreWebView2EnvironmentOptions m_options{nullptr};
+    winrt::CoreWebView2Environment m_coreWebViewEnvironment{nullptr};
+    winrt::CoreWebView2Controller m_coreWebViewController{nullptr};
+    winrt::CoreWebView2CompositionController m_coreWebViewCompositionController{nullptr};
+    winrt::CoreWebView2 m_coreWebView{nullptr};
     bool m_everHadCoreWebView{};
 
     bool m_isLeftMouseButtonPressed{};
@@ -197,15 +200,15 @@ private:
     bool m_hasMouseCapture{};
     std::map<int32_t, bool> m_hasTouchCapture{};
     bool m_hasPenCapture{};
-    HWND m_xamlHostHwnd{ nullptr };
-    HWND m_tempHostHwnd{ nullptr };
-    HWND m_inputWindowHwnd{ nullptr };
+    HWND m_xamlHostHwnd{nullptr};
+    HWND m_tempHostHwnd{nullptr};
+    HWND m_inputWindowHwnd{nullptr};
     winrt::hstring m_stopNavigateOnUriChanged{};
     bool m_canGoPropSetInternally{};
 #if WINUI3
     winrt::IExpSystemVisualBridge m_systemVisualBridge;
 #endif
-    winrt::Windows::UI::Composition::SpriteVisual m_visual{ nullptr };
+    winrt::Windows::UI::Composition::SpriteVisual m_visual{nullptr};
 
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker;
     winrt::UIElement::GotFocus_revoker m_gotFocusRevoker;
@@ -244,8 +247,8 @@ private:
 
     // Pointer handling for CoreWindow
     bool m_isPointerOver{};
-    winrt::CoreCursor m_oldCursor{ nullptr };
-    winrt::CoreCursor m_requestedCursor{ nullptr };
+    winrt::CoreCursor m_oldCursor{nullptr};
+    winrt::CoreCursor m_requestedCursor{nullptr};
 
     XamlFocusChangeInfo m_xamlFocusChangeInfo{};
 
@@ -261,12 +264,13 @@ private:
 
     bool m_loaded{};
 
-    bool m_isCoreFailure_BrowserExited_State{};    // True after Anaheim ProcessFailed event w/ CORE_WEBVIEW2_PROCESS_FAILED_KIND_BROWSER_PROCESS_EXITED
-    bool m_isClosed{};    // True after WebView2::Close() has been called - no core objects can be created
+    bool m_isCoreFailure_BrowserExited_State{}; // True after Anaheim ProcessFailed event w/ CORE_WEBVIEW2_PROCESS_FAILED_KIND_BROWSER_PROCESS_EXITED
+    bool m_isClosed{};                          // True after WebView2::Close() has been called - no core objects can be created
 
-    bool m_isImplicitCreationInProgress{};    // True while we are creating CWV2 due to Source property being set
-    bool m_isExplicitCreationInProgress{};    // True while we are creating CWV2 due to EnsureCoreWebView2Async() being called
-    std::unique_ptr<AsyncWebViewOperations> m_creationInProgressAsync{ nullptr };      // Awaitable object for any currently active creation. There should be only one active operation at a time.
+    bool m_isImplicitCreationInProgress{}; // True while we are creating CWV2 due to Source property being set
+    bool m_isExplicitCreationInProgress{}; // True while we are creating CWV2 due to EnsureCoreWebView2Async() being called
+    std::unique_ptr<AsyncWebViewOperations> m_creationInProgressAsync{
+        nullptr}; // Awaitable object for any currently active creation. There should be only one active operation at a time.
 
     float m_rasterizationScale{};
     // The last known WebView rect position, scaled for DPI

@@ -6,9 +6,7 @@
 #include "ColorPickerSlider.g.h"
 #include "ColorPickerSlider.properties.h"
 
-class ColorPickerSlider :
-    public ReferenceTracker<ColorPickerSlider, winrt::implementation::ColorPickerSliderT>,
-    public ColorPickerSliderProperties
+class ColorPickerSlider : public ReferenceTracker<ColorPickerSlider, winrt::implementation::ColorPickerSliderT>, public ColorPickerSliderProperties
 {
 public:
     ColorPickerSlider();
@@ -30,5 +28,5 @@ private:
     winrt::ColorPicker GetParentColorPicker();
     winrt::hstring GetToolTipString();
 
-    tracker_ref<winrt::ToolTip> m_toolTip{ this };
+    tracker_ref<winrt::ToolTip> m_toolTip{this};
 };

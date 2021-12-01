@@ -10,8 +10,7 @@
 
 #include "TabViewAutomationPeer.properties.cpp"
 
-TabViewAutomationPeer::TabViewAutomationPeer(winrt::TabView const& owner)
-    : ReferenceTracker(owner)
+TabViewAutomationPeer::TabViewAutomationPeer(winrt::TabView const& owner) : ReferenceTracker(owner)
 {
 }
 
@@ -53,7 +52,7 @@ winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProv
         {
             if (auto peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(tabViewItem))
             {
-                return { ProviderFromPeer(peer) };
+                return {ProviderFromPeer(peer)};
             }
         }
     }

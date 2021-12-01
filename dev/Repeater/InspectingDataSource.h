@@ -5,13 +5,12 @@
 
 #include "ItemsSourceView.h"
 
-class InspectingDataSource : 
-	public winrt::implements<InspectingDataSource, ItemsSourceView>
+class InspectingDataSource : public winrt::implements<InspectingDataSource, ItemsSourceView>
 {
 public:
     ForwardRefToBaseReferenceTracker(ItemsSourceView)
 
-    InspectingDataSource(const winrt::IInspectable& source);
+        InspectingDataSource(const winrt::IInspectable& source);
     ~InspectingDataSource();
 
 #pragma region ItemsSourceViewOverrides
@@ -25,31 +24,24 @@ public:
 #pragma endregion
 
 private:
-    winrt::Collections::IVector<winrt::IInspectable>
-    WrapIterable(const winrt::Collections::IIterable<winrt::IInspectable>& iterable);
+    winrt::Collections::IVector<winrt::IInspectable> WrapIterable(const winrt::Collections::IIterable<winrt::IInspectable>& iterable);
 
     void UnListenToCollectionChanges();
     void ListenToCollectionChanges();
 
-    void OnCollectionChanged(
-        const winrt::IInspectable& sender,
-        const winrt::NotifyCollectionChangedEventArgs& e);
+    void OnCollectionChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& e);
 
-    void OnBindableVectorChanged(
-        const winrt::IBindableObservableVector& sender,
-        const winrt::IInspectable& e);
+    void OnBindableVectorChanged(const winrt::IBindableObservableVector& sender, const winrt::IInspectable& e);
 
-    void OnVectorChanged(
-        const winrt::Collections::IObservableVector<winrt::IInspectable>& sender,
-        const winrt::Collections::IVectorChangedEventArgs& e);
+    void OnVectorChanged(const winrt::Collections::IObservableVector<winrt::IInspectable>& sender, const winrt::Collections::IVectorChangedEventArgs& e);
 
-    tracker_ref<winrt::Collections::IVector<winrt::IInspectable>> m_vector{ this };
-    tracker_ref<winrt::Collections::IVectorView<winrt::IInspectable>> m_vectorView{ this };
+    tracker_ref<winrt::Collections::IVector<winrt::IInspectable>> m_vector{this};
+    tracker_ref<winrt::Collections::IVectorView<winrt::IInspectable>> m_vectorView{this};
 
     // To unhook event from data source
-    tracker_ref<winrt::INotifyCollectionChanged> m_notifyCollectionChanged{ this };
-    tracker_ref<winrt::IObservableVector<winrt::IInspectable>> m_observableVector{ this };
-    tracker_ref<winrt::IBindableObservableVector> m_bindableObservableVector{ this };
-    winrt::event_token m_eventToken{ };
-    winrt::IKeyIndexMapping m_uniqueIdMaping{ nullptr };
+    tracker_ref<winrt::INotifyCollectionChanged> m_notifyCollectionChanged{this};
+    tracker_ref<winrt::IObservableVector<winrt::IInspectable>> m_observableVector{this};
+    tracker_ref<winrt::IBindableObservableVector> m_bindableObservableVector{this};
+    winrt::event_token m_eventToken{};
+    winrt::IKeyIndexMapping m_uniqueIdMaping{nullptr};
 };

@@ -31,7 +31,8 @@ RefreshInfoProviderImpl::~RefreshInfoProviderImpl()
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 }
 
-RefreshInfoProviderImpl::RefreshInfoProviderImpl(const winrt::RefreshPullDirection& refreshPullDirection, const winrt::Size& refreshVisualizerSize, const winrt::Compositor& compositor)
+RefreshInfoProviderImpl::RefreshInfoProviderImpl(
+    const winrt::RefreshPullDirection& refreshPullDirection, const winrt::Size& refreshVisualizerSize, const winrt::Compositor& compositor)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     m_refreshPullDirection = refreshPullDirection;
@@ -59,16 +60,20 @@ void RefreshInfoProviderImpl::ValuesChanged(const winrt::InteractionTracker& /*s
     switch (m_refreshPullDirection)
     {
     case winrt::RefreshPullDirection::TopToBottom:
-        RaiseInteractionRatioChanged(m_refreshVisualizerSize.Height == 0 ? 1.0 : std::min(1.0, (double)-args.Position().y / m_refreshVisualizerSize.Height));
+        RaiseInteractionRatioChanged(
+            m_refreshVisualizerSize.Height == 0 ? 1.0 : std::min(1.0, (double)-args.Position().y / m_refreshVisualizerSize.Height));
         break;
     case winrt::RefreshPullDirection::BottomToTop:
-        RaiseInteractionRatioChanged(m_refreshVisualizerSize.Height == 0 ? 1.0f : std::min(1.0, (double)args.Position().y / m_refreshVisualizerSize.Height));
+        RaiseInteractionRatioChanged(
+            m_refreshVisualizerSize.Height == 0 ? 1.0f : std::min(1.0, (double)args.Position().y / m_refreshVisualizerSize.Height));
         break;
     case winrt::RefreshPullDirection::LeftToRight:
-        RaiseInteractionRatioChanged(m_refreshVisualizerSize.Width == 0 ? 1.0f : std::min(1.0, (double)-args.Position().x / m_refreshVisualizerSize.Width));
+        RaiseInteractionRatioChanged(
+            m_refreshVisualizerSize.Width == 0 ? 1.0f : std::min(1.0, (double)-args.Position().x / m_refreshVisualizerSize.Width));
         break;
     case winrt::RefreshPullDirection::RightToLeft:
-        RaiseInteractionRatioChanged(m_refreshVisualizerSize.Width == 0 ? 1.0f : std::min(1.0, (double)args.Position().x / m_refreshVisualizerSize.Width));
+        RaiseInteractionRatioChanged(
+            m_refreshVisualizerSize.Width == 0 ? 1.0f : std::min(1.0, (double)args.Position().x / m_refreshVisualizerSize.Width));
         break;
     default:
         MUX_ASSERT(false);
@@ -82,7 +87,7 @@ void RefreshInfoProviderImpl::RequestIgnored(const winrt::InteractionTracker& /*
 
 void RefreshInfoProviderImpl::InteractingStateEntered(const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerInteractingStateEnteredArgs& args)
 {
-    PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, args.RequestId()); 
+    PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, args.RequestId());
     UpdateIsInteractingForRefresh(true);
 }
 
@@ -117,7 +122,8 @@ void RefreshInfoProviderImpl::OnRefreshCompleted()
     RaiseRefreshCompleted();
 }
 
-winrt::event_token RefreshInfoProviderImpl::InteractionRatioChanged(const winrt::TypedEventHandler<winrt::IRefreshInfoProvider, winrt::RefreshInteractionRatioChangedEventArgs>& handler)
+winrt::event_token RefreshInfoProviderImpl::InteractionRatioChanged(
+    const winrt::TypedEventHandler<winrt::IRefreshInfoProvider, winrt::RefreshInteractionRatioChangedEventArgs>& handler)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, L"Add Handler");
     return m_InteractionRatioChangedEventSource.add(handler);
@@ -129,7 +135,8 @@ void RefreshInfoProviderImpl::InteractionRatioChanged(const winrt::event_token& 
     m_InteractionRatioChangedEventSource.remove(token);
 }
 
-winrt::event_token RefreshInfoProviderImpl::IsInteractingForRefreshChanged(const winrt::TypedEventHandler<winrt::IRefreshInfoProvider, winrt::IInspectable>& handler)
+winrt::event_token RefreshInfoProviderImpl::IsInteractingForRefreshChanged(
+    const winrt::TypedEventHandler<winrt::IRefreshInfoProvider, winrt::IInspectable>& handler)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, L"Add Handler");
     return m_IsInteractingForRefreshChangedEventSource.add(handler);

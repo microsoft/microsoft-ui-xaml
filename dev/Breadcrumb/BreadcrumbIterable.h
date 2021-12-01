@@ -7,8 +7,8 @@
 
 #include "Vector.h"
 
-class BreadcrumbIterable :
-    public ReferenceTracker<BreadcrumbIterable, reference_tracker_implements_t<winrt::IIterable<winrt::IInspectable>>::type>
+class BreadcrumbIterable
+    : public ReferenceTracker<BreadcrumbIterable, reference_tracker_implements_t<winrt::IIterable<winrt::IInspectable>>::type>
 {
 public:
     BreadcrumbIterable();
@@ -17,5 +17,5 @@ public:
     winrt::IIterator<winrt::IInspectable> First();
 
 private:
-    tracker_ref<winrt::IInspectable> m_itemsSource{ this };
+    tracker_ref<winrt::IInspectable> m_itemsSource{this};
 };

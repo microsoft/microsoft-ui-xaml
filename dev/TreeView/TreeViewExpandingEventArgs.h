@@ -6,12 +6,8 @@
 
 #include "TreeViewExpandingEventArgs.g.h"
 
-class TreeViewExpandingEventArgs :
-    public ReferenceTracker<
-        TreeViewExpandingEventArgs,
-        winrt::implementation::TreeViewExpandingEventArgsT,
-        winrt::composing,
-        winrt::composable>
+class TreeViewExpandingEventArgs
+    : public ReferenceTracker<TreeViewExpandingEventArgs, winrt::implementation::TreeViewExpandingEventArgsT, winrt::composing, winrt::composable>
 {
 public:
     winrt::TreeViewNode Node();
@@ -19,5 +15,5 @@ public:
     winrt::IInspectable Item();
 
 private:
-    tracker_ref<winrt::TreeViewNode> m_node{ this };
+    tracker_ref<winrt::TreeViewNode> m_node{this};
 };

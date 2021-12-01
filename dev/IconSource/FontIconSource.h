@@ -7,15 +7,13 @@
 #include "FontIconSource.g.h"
 #include "FontIconSource.properties.h"
 
-static constexpr auto c_fontIconSourceDefaultFontFamily{ L"Segoe MDL2 Assets"sv };
+static constexpr auto c_fontIconSourceDefaultFontFamily{L"Segoe MDL2 Assets"sv};
 
-class FontIconSource :
-    public ReferenceTracker<FontIconSource, winrt::implementation::FontIconSourceT, IconSource>,
-    public FontIconSourceProperties
+class FontIconSource : public ReferenceTracker<FontIconSource, winrt::implementation::FontIconSourceT, IconSource>, public FontIconSourceProperties
 {
 public:
-    using FontIconSourceProperties::EnsureProperties;
     using FontIconSourceProperties::ClearProperties;
+    using FontIconSourceProperties::EnsureProperties;
 
     winrt::DependencyProperty GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty);
     winrt::IconElement CreateIconElementCore();

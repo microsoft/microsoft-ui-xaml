@@ -4,13 +4,13 @@
 //
 //       LottieGen version:
 //           7.1.0+ge1fa92580f
-//       
+//
 //       Command:
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedGlobalNavigationButtonVisualSource.json
-//       
+//
 //       Input file:
 //           AnimatedGlobalNavigationButtonVisualSource.json (37639 bytes created 23:37-07:00 Oct 5 2021)
-//       
+//
 //       LottieGen source:
 //           http://aka.ms/Lottie
 //
@@ -53,8 +53,7 @@
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
 #ifdef BUILD_WINDOWS
-namespace ABI
-{
+namespace ABI {
 #include <Windows.Graphics.Effects.Interop.h>
 }
 #else
@@ -70,25 +69,24 @@ using namespace winrt::Windows::UI;
 using namespace winrt::Windows::UI::Composition;
 using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
-
-namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
-{
+namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals {
 CppWinRTActivatableClassWithBasicFactory(AnimatedGlobalNavigationButtonVisualSource)
 }
 #include "AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.g.cpp"
-class CanvasGeometry : public winrt::implements<CanvasGeometry,
-    IGeometrySource2D,
-    ::ABI::Windows::Graphics::IGeometrySource2DInterop>
+class CanvasGeometry : public winrt::implements<CanvasGeometry, IGeometrySource2D, ::ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
-    winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
+    winrt::com_ptr<ID2D1Geometry> _geometry{nullptr};
 
 public:
-    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry)
-        : _geometry{ geometry }
-    { }
+    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry) : _geometry{geometry}
+    {
+    }
 
     // IGeometrySource2D.
-    winrt::com_ptr<ID2D1Geometry> Geometry() { return _geometry; }
+    winrt::com_ptr<ID2D1Geometry> Geometry()
+    {
+        return _geometry;
+    }
 
     // IGeometrySource2DInterop.
     IFACEMETHODIMP GetGeometry(ID2D1Geometry** value) override
@@ -103,37 +101,32 @@ public:
         return E_NOTIMPL;
     }
 };
-class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::implements<AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual,
-        winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
-        IClosable>
+class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual
+    : public winrt::implements<AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual, winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual, IClosable>
 {
-    winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
-    static constexpr int64_t c_durationTicks{ 13333333L };
-    Compositor const _c{ nullptr };
-    ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
-    CompositionPropertySet const _themeProperties{ nullptr };
-    CompositionColorBrush _themeColor_Foreground{ nullptr };
-    CompositionPathGeometry _pathGeometry_00{ nullptr };
-    CompositionPathGeometry _pathGeometry_01{ nullptr };
-    CompositionPathGeometry _pathGeometry_02{ nullptr };
-    CompositionPathGeometry _pathGeometry_03{ nullptr };
-    CompositionPathGeometry _pathGeometry_04{ nullptr };
-    CompositionPathGeometry _pathGeometry_05{ nullptr };
-    ContainerVisual _root{ nullptr };
-    CubicBezierEasingFunction _cubicBezierEasingFunction_0{ nullptr };
-    CubicBezierEasingFunction _cubicBezierEasingFunction_1{ nullptr };
-    CubicBezierEasingFunction _cubicBezierEasingFunction_2{ nullptr };
-    CubicBezierEasingFunction _cubicBezierEasingFunction_3{ nullptr };
-    ExpressionAnimation _rootProgress{ nullptr };
-    InsetClip _insetClip_0{ nullptr };
-    StepEasingFunction _holdThenStepEasingFunction{ nullptr };
-    StepEasingFunction _stepThenHoldEasingFunction{ nullptr };
+    winrt::com_ptr<ID2D1Factory> _d2dFactory{nullptr};
+    static constexpr int64_t c_durationTicks{13333333L};
+    Compositor const _c{nullptr};
+    ExpressionAnimation const _reusableExpressionAnimation{nullptr};
+    CompositionPropertySet const _themeProperties{nullptr};
+    CompositionColorBrush _themeColor_Foreground{nullptr};
+    CompositionPathGeometry _pathGeometry_00{nullptr};
+    CompositionPathGeometry _pathGeometry_01{nullptr};
+    CompositionPathGeometry _pathGeometry_02{nullptr};
+    CompositionPathGeometry _pathGeometry_03{nullptr};
+    CompositionPathGeometry _pathGeometry_04{nullptr};
+    CompositionPathGeometry _pathGeometry_05{nullptr};
+    ContainerVisual _root{nullptr};
+    CubicBezierEasingFunction _cubicBezierEasingFunction_0{nullptr};
+    CubicBezierEasingFunction _cubicBezierEasingFunction_1{nullptr};
+    CubicBezierEasingFunction _cubicBezierEasingFunction_2{nullptr};
+    CubicBezierEasingFunction _cubicBezierEasingFunction_3{nullptr};
+    ExpressionAnimation _rootProgress{nullptr};
+    InsetClip _insetClip_0{nullptr};
+    StepEasingFunction _holdThenStepEasingFunction{nullptr};
+    StepEasingFunction _stepThenHoldEasingFunction{nullptr};
 
-    static void StartProgressBoundAnimation(
-        CompositionObject target,
-        winrt::hstring animatedPropertyName,
-        CompositionAnimation animation,
-        ExpressionAnimation controllerProgressExpression)
+    static void StartProgressBoundAnimation(CompositionObject target, winrt::hstring animatedPropertyName, CompositionAnimation animation, ExpressionAnimation controllerProgressExpression)
     {
         target.StartAnimation(animatedPropertyName, animation);
         const auto controller = target.TryGetAnimationController(animatedPropertyName);
@@ -141,12 +134,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         controller.StartAnimation(L"Progress", controllerProgressExpression);
     }
 
-    void BindProperty(
-        CompositionObject target,
-        winrt::hstring animatedPropertyName,
-        winrt::hstring expression,
-        winrt::hstring referenceParameterName,
-        CompositionObject referencedObject)
+    void BindProperty(CompositionObject target, winrt::hstring animatedPropertyName, winrt::hstring expression, winrt::hstring referenceParameterName, CompositionObject referencedObject)
     {
         _reusableExpressionAnimation.ClearAllParameters();
         _reusableExpressionAnimation.Expression(expression);
@@ -157,7 +145,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     BooleanKeyFrameAnimation CreateBooleanKeyFrameAnimation(float initialProgress, bool initialValue)
     {
         const auto result = _c.CreateBooleanKeyFrameAnimation();
-        result.Duration(TimeSpan{ c_durationTicks });
+        result.Duration(TimeSpan{c_durationTicks});
         result.InsertKeyFrame(initialProgress, initialValue);
         return result;
     }
@@ -165,7 +153,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     ScalarKeyFrameAnimation CreateScalarKeyFrameAnimation(float initialProgress, float initialValue, CompositionEasingFunction initialEasingFunction)
     {
         const auto result = _c.CreateScalarKeyFrameAnimation();
-        result.Duration(TimeSpan{ c_durationTicks });
+        result.Duration(TimeSpan{c_durationTicks});
         result.InsertKeyFrame(initialProgress, initialValue, initialEasingFunction);
         return result;
     }
@@ -173,7 +161,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     Vector2KeyFrameAnimation CreateVector2KeyFrameAnimation(float initialProgress, winrt::float2 initialValue, CompositionEasingFunction initialEasingFunction)
     {
         const auto result = _c.CreateVector2KeyFrameAnimation();
-        result.Duration(TimeSpan{ c_durationTicks });
+        result.Duration(TimeSpan{c_durationTicks});
         result.InsertKeyFrame(initialProgress, initialValue, initialEasingFunction);
         return result;
     }
@@ -207,17 +195,17 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
 
     winrt::com_ptr<CanvasGeometry> Geometry_00()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
+        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
+        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ 7.5F, 0.5F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddBezier({ { 7.63500023F, 0.5F }, { 7.75299978F, 0.451000005F }, { 7.85200024F, 0.351999998F } });
-        sink->AddBezier({ { 7.95100021F, 0.252999991F }, { 8.0F, 0.135000005F }, { 8.0F, 0.0F } });
-        sink->AddBezier({ { 8.0F, -0.135000005F }, { 7.95100021F, -0.252999991F }, { 7.85200024F, -0.351999998F } });
-        sink->AddBezier({ { 7.75299978F, -0.451000005F }, { 7.63500023F, -0.5F }, { 7.5F, -0.5F } });
-        sink->AddLine({ 7.5F, 0.5F });
+        sink->BeginFigure({7.5F, 0.5F}, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddBezier({{7.63500023F, 0.5F}, {7.75299978F, 0.451000005F}, {7.85200024F, 0.351999998F}});
+        sink->AddBezier({{7.95100021F, 0.252999991F}, {8.0F, 0.135000005F}, {8.0F, 0.0F}});
+        sink->AddBezier({{8.0F, -0.135000005F}, {7.95100021F, -0.252999991F}, {7.85200024F, -0.351999998F}});
+        sink->AddBezier({{7.75299978F, -0.451000005F}, {7.63500023F, -0.5F}, {7.5F, -0.5F}});
+        sink->AddLine({7.5F, 0.5F});
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -226,17 +214,17 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
 
     winrt::com_ptr<CanvasGeometry> Geometry_01()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
+        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
+        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ 7.5F, -0.486999989F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ 7.5F, 0.513000011F });
-        sink->AddBezier({ { 7.63500023F, 0.513000011F }, { 7.75299978F, 0.463F }, { 7.85200024F, 0.363999993F } });
-        sink->AddBezier({ { 7.95100021F, 0.264999986F }, { 8.0F, 0.148000002F }, { 8.0F, 0.0130000003F } });
-        sink->AddBezier({ { 8.0F, -0.122000001F }, { 7.95100021F, -0.239999995F }, { 7.85200024F, -0.338999987F } });
-        sink->AddBezier({ { 7.75299978F, -0.437999994F }, { 7.63500023F, -0.486999989F }, { 7.5F, -0.486999989F } });
+        sink->BeginFigure({7.5F, -0.486999989F}, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({7.5F, 0.513000011F});
+        sink->AddBezier({{7.63500023F, 0.513000011F}, {7.75299978F, 0.463F}, {7.85200024F, 0.363999993F}});
+        sink->AddBezier({{7.95100021F, 0.264999986F}, {8.0F, 0.148000002F}, {8.0F, 0.0130000003F}});
+        sink->AddBezier({{8.0F, -0.122000001F}, {7.95100021F, -0.239999995F}, {7.85200024F, -0.338999987F}});
+        sink->AddBezier({{7.75299978F, -0.437999994F}, {7.63500023F, -0.486999989F}, {7.5F, -0.486999989F}});
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -245,17 +233,17 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
 
     winrt::com_ptr<CanvasGeometry> Geometry_02()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
+        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
+        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ 7.5F, -0.5F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ 7.5F, 0.5F });
-        sink->AddBezier({ { 7.63500023F, 0.5F }, { 7.75299978F, 0.451000005F }, { 7.85200024F, 0.351999998F } });
-        sink->AddBezier({ { 7.95100021F, 0.252999991F }, { 8.0F, 0.135000005F }, { 8.0F, 0.0F } });
-        sink->AddBezier({ { 8.0F, -0.135000005F }, { 7.95100021F, -0.252999991F }, { 7.85200024F, -0.351999998F } });
-        sink->AddBezier({ { 7.75299978F, -0.451000005F }, { 7.63500023F, -0.5F }, { 7.5F, -0.5F } });
+        sink->BeginFigure({7.5F, -0.5F}, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({7.5F, 0.5F});
+        sink->AddBezier({{7.63500023F, 0.5F}, {7.75299978F, 0.451000005F}, {7.85200024F, 0.351999998F}});
+        sink->AddBezier({{7.95100021F, 0.252999991F}, {8.0F, 0.135000005F}, {8.0F, 0.0F}});
+        sink->AddBezier({{8.0F, -0.135000005F}, {7.95100021F, -0.252999991F}, {7.85200024F, -0.351999998F}});
+        sink->AddBezier({{7.75299978F, -0.451000005F}, {7.63500023F, -0.5F}, {7.5F, -0.5F}});
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -264,17 +252,17 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
 
     winrt::com_ptr<CanvasGeometry> Geometry_03()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
+        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
+        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ -7.5F, 0.5F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ -7.5F, -0.5F });
-        sink->AddBezier({ { -7.63500023F, -0.5F }, { -7.75299978F, -0.451000005F }, { -7.85200024F, -0.351999998F } });
-        sink->AddBezier({ { -7.95100021F, -0.252999991F }, { -8.0F, -0.135000005F }, { -8.0F, 0.0F } });
-        sink->AddBezier({ { -8.0F, 0.135000005F }, { -7.95100021F, 0.252999991F }, { -7.85200024F, 0.351999998F } });
-        sink->AddBezier({ { -7.75299978F, 0.451000005F }, { -7.63500023F, 0.5F }, { -7.5F, 0.5F } });
+        sink->BeginFigure({-7.5F, 0.5F}, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({-7.5F, -0.5F});
+        sink->AddBezier({{-7.63500023F, -0.5F}, {-7.75299978F, -0.451000005F}, {-7.85200024F, -0.351999998F}});
+        sink->AddBezier({{-7.95100021F, -0.252999991F}, {-8.0F, -0.135000005F}, {-8.0F, 0.0F}});
+        sink->AddBezier({{-8.0F, 0.135000005F}, {-7.95100021F, 0.252999991F}, {-7.85200024F, 0.351999998F}});
+        sink->AddBezier({{-7.75299978F, 0.451000005F}, {-7.63500023F, 0.5F}, {-7.5F, 0.5F}});
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -283,17 +271,17 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
 
     winrt::com_ptr<CanvasGeometry> Geometry_04()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
+        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
+        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ -7.5F, -0.486999989F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddBezier({ { -7.63500023F, -0.486999989F }, { -7.75299978F, -0.437999994F }, { -7.85200024F, -0.338999987F } });
-        sink->AddBezier({ { -7.95100021F, -0.239999995F }, { -8.0F, -0.122000001F }, { -8.0F, 0.0130000003F } });
-        sink->AddBezier({ { -8.0F, 0.148000002F }, { -7.95100021F, 0.264999986F }, { -7.85200024F, 0.363999993F } });
-        sink->AddBezier({ { -7.75299978F, 0.463F }, { -7.63500023F, 0.513000011F }, { -7.5F, 0.513000011F } });
-        sink->AddLine({ -7.5F, -0.486999989F });
+        sink->BeginFigure({-7.5F, -0.486999989F}, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddBezier({{-7.63500023F, -0.486999989F}, {-7.75299978F, -0.437999994F}, {-7.85200024F, -0.338999987F}});
+        sink->AddBezier({{-7.95100021F, -0.239999995F}, {-8.0F, -0.122000001F}, {-8.0F, 0.0130000003F}});
+        sink->AddBezier({{-8.0F, 0.148000002F}, {-7.95100021F, 0.264999986F}, {-7.85200024F, 0.363999993F}});
+        sink->AddBezier({{-7.75299978F, 0.463F}, {-7.63500023F, 0.513000011F}, {-7.5F, 0.513000011F}});
+        sink->AddLine({-7.5F, -0.486999989F});
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -302,17 +290,17 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
 
     winrt::com_ptr<CanvasGeometry> Geometry_05()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
+        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
+        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ -7.5F, -0.5F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddBezier({ { -7.63500023F, -0.5F }, { -7.75299978F, -0.451000005F }, { -7.85200024F, -0.351999998F } });
-        sink->AddBezier({ { -7.95100021F, -0.252999991F }, { -8.0F, -0.135000005F }, { -8.0F, 0.0F } });
-        sink->AddBezier({ { -8.0F, 0.135000005F }, { -7.95100021F, 0.252999991F }, { -7.85200024F, 0.351999998F } });
-        sink->AddBezier({ { -7.75299978F, 0.451000005F }, { -7.63500023F, 0.5F }, { -7.5F, 0.5F } });
-        sink->AddLine({ -7.5F, -0.5F });
+        sink->BeginFigure({-7.5F, -0.5F}, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddBezier({{-7.63500023F, -0.5F}, {-7.75299978F, -0.451000005F}, {-7.85200024F, -0.351999998F}});
+        sink->AddBezier({{-7.95100021F, -0.252999991F}, {-8.0F, -0.135000005F}, {-8.0F, 0.0F}});
+        sink->AddBezier({{-8.0F, 0.135000005F}, {-7.95100021F, 0.252999991F}, {-7.85200024F, 0.351999998F}});
+        sink->AddBezier({{-7.75299978F, 0.451000005F}, {-7.63500023F, 0.5F}, {-7.5F, 0.5F}});
+        sink->AddLine({-7.5F, -0.5F});
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -329,16 +317,16 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // - - ShapeGroup: Group 3 Group 3 Group 3 Group 3 Offset:<0, -10>
     winrt::com_ptr<CanvasGeometry> Geometry_06()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
+        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
+        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ -7.60599995F, 0.5F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ 7.70100021F, 0.5F });
-        sink->AddLine({ 7.70100021F, -0.5F });
-        sink->AddLine({ -7.60599995F, -0.5F });
-        sink->AddLine({ -7.60599995F, 0.5F });
+        sink->BeginFigure({-7.60599995F, 0.5F}, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({7.70100021F, 0.5F});
+        sink->AddLine({7.70100021F, -0.5F});
+        sink->AddLine({-7.60599995F, -0.5F});
+        sink->AddLine({-7.60599995F, 0.5F});
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -355,16 +343,16 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // - - ShapeGroup: Group 2 Group 2 Group 2 Group 2 Offset:<0, -4.85>
     winrt::com_ptr<CanvasGeometry> Geometry_07()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
+        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
+        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ 7.70100021F, -0.486999989F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ -7.60599995F, -0.486999989F });
-        sink->AddLine({ -7.60599995F, 0.513000011F });
-        sink->AddLine({ 7.70100021F, 0.513000011F });
-        sink->AddLine({ 7.70100021F, -0.486999989F });
+        sink->BeginFigure({7.70100021F, -0.486999989F}, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({-7.60599995F, -0.486999989F});
+        sink->AddLine({-7.60599995F, 0.513000011F});
+        sink->AddLine({7.70100021F, 0.513000011F});
+        sink->AddLine({7.70100021F, -0.486999989F});
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -381,16 +369,16 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // - - ShapeGroup: Group 1 Group 1 Group 1 Group 1
     winrt::com_ptr<CanvasGeometry> Geometry_08()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
+        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
+        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ 7.70100021F, -0.5F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ -7.60500002F, -0.5F });
-        sink->AddLine({ -7.60500002F, 0.5F });
-        sink->AddLine({ 7.70100021F, 0.5F });
-        sink->AddLine({ 7.70100021F, -0.5F });
+        sink->BeginFigure({7.70100021F, -0.5F}, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({-7.60500002F, -0.5F});
+        sink->AddLine({-7.60500002F, 0.5F});
+        sink->AddLine({7.70100021F, 0.5F});
+        sink->AddLine({7.70100021F, -0.5F});
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -404,16 +392,16 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // - - Layer: Right Caps 2 Right Caps 2
     winrt::com_ptr<CanvasGeometry> Geometry_09()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
+        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
+        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ -7.5999999F, 0.5F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ 7.6960001F, 0.5F });
-        sink->AddLine({ 7.6960001F, -0.5F });
-        sink->AddLine({ -7.5999999F, -0.5F });
-        sink->AddLine({ -7.5999999F, 0.5F });
+        sink->BeginFigure({-7.5999999F, 0.5F}, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({7.6960001F, 0.5F});
+        sink->AddLine({7.6960001F, -0.5F});
+        sink->AddLine({-7.5999999F, -0.5F});
+        sink->AddLine({-7.5999999F, 0.5F});
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -427,16 +415,16 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // - - Layer: Right Caps 2 Right Caps 2
     winrt::com_ptr<CanvasGeometry> Geometry_10()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
+        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
+        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ 7.6960001F, -0.486999989F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ -7.5999999F, -0.486999989F });
-        sink->AddLine({ -7.5999999F, 0.513000011F });
-        sink->AddLine({ 7.6960001F, 0.513000011F });
-        sink->AddLine({ 7.6960001F, -0.486999989F });
+        sink->BeginFigure({7.6960001F, -0.486999989F}, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({-7.5999999F, -0.486999989F});
+        sink->AddLine({-7.5999999F, 0.513000011F});
+        sink->AddLine({7.6960001F, 0.513000011F});
+        sink->AddLine({7.6960001F, -0.486999989F});
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -450,16 +438,16 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // - - Layer: Right Caps 2 Right Caps 2
     winrt::com_ptr<CanvasGeometry> Geometry_11()
     {
-        winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
+        winrt::com_ptr<ID2D1PathGeometry> path{nullptr};
         winrt::check_hresult(_d2dFactory->CreatePathGeometry(path.put()));
-        winrt::com_ptr<ID2D1GeometrySink> sink{ nullptr };
+        winrt::com_ptr<ID2D1GeometrySink> sink{nullptr};
         winrt::check_hresult(path->Open(sink.put()));
         sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        sink->BeginFigure({ 7.6960001F, -0.5F }, D2D1_FIGURE_BEGIN_FILLED);
-        sink->AddLine({ -7.59899998F, -0.5F });
-        sink->AddLine({ -7.59899998F, 0.5F });
-        sink->AddLine({ 7.6960001F, 0.5F });
-        sink->AddLine({ 7.6960001F, -0.5F });
+        sink->BeginFigure({7.6960001F, -0.5F}, D2D1_FIGURE_BEGIN_FILLED);
+        sink->AddLine({-7.59899998F, -0.5F});
+        sink->AddLine({-7.59899998F, 0.5F});
+        sink->AddLine({7.6960001F, 0.5F});
+        sink->AddLine({7.6960001F, -0.5F});
         sink->EndFigure(D2D1_FIGURE_END_CLOSED);
         winrt::check_hresult(sink->Close());
         auto result = winrt::make_self<CanvasGeometry>(path);
@@ -470,7 +458,12 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     CompositionColorBrush ThemeColor_Foreground()
     {
         const auto result = _themeColor_Foreground = _c.CreateColorBrush();
-        BindProperty(result, L"Color", L"ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties);
+        BindProperty(
+            result,
+            L"Color",
+            L"ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)",
+            L"_theme",
+            _themeProperties);
         return result;
     }
 
@@ -484,8 +477,8 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     CompositionContainerShape ContainerShape_0()
     {
         const auto result = _c.CreateContainerShape();
-        result.CenterPoint({ 7.5F, -5.0F });
-        result.Scale({ 2.75F, 2.75F });
+        result.CenterPoint({7.5F, -5.0F});
+        result.Scale({2.75F, 2.75F});
         const auto shapes = result.Shapes();
         // ShapeGroup: Group 3 Group 3 Group 3 Group 3 Offset:<0, -10>
         shapes.Append(SpriteShape_00());
@@ -507,8 +500,8 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     CompositionContainerShape ContainerShape_1()
     {
         const auto result = _c.CreateContainerShape();
-        result.CenterPoint({ -7.5F, -5.0F });
-        result.Scale({ 2.75F, 2.75F });
+        result.CenterPoint({-7.5F, -5.0F});
+        result.Scale({2.75F, 2.75F});
         const auto shapes = result.Shapes();
         // ShapeGroup: Group 3 Group 3 Group 3 Group 3 Offset:<0, -10>
         shapes.Append(SpriteShape_03());
@@ -530,8 +523,8 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     CompositionContainerShape ContainerShape_2()
     {
         const auto result = _c.CreateContainerShape();
-        result.CenterPoint({ 0.0480000004F, -5.0F });
-        result.Offset({ 23.9559994F, 29.0F });
+        result.CenterPoint({0.0480000004F, -5.0F});
+        result.Offset({23.9559994F, 29.0F});
         const auto shapes = result.Shapes();
         // ShapeGroup: Group 3 Group 3 Group 3 Group 3 Offset:<0, -10>
         shapes.Append(SpriteShape_06());
@@ -655,7 +648,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         // Offset:<0, -10>
         const auto geometry = PathGeometry_00();
-        const auto result = CreateSpriteShape(geometry, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, ThemeColor_Foreground());
+        const auto result = CreateSpriteShape(geometry, {1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F}, ThemeColor_Foreground());
         return result;
     }
 
@@ -671,7 +664,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         // Offset:<0, -4.85>
         const auto geometry = PathGeometry_01();
-        const auto result = CreateSpriteShape(geometry, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, {1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F}, _themeColor_Foreground);
         return result;
     }
 
@@ -702,7 +695,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         // Offset:<0, -10>
         const auto geometry = PathGeometry_03();
-        const auto result = CreateSpriteShape(geometry, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, {1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F}, _themeColor_Foreground);
         return result;
     }
 
@@ -718,7 +711,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         // Offset:<0, -4.85>
         const auto geometry = PathGeometry_04();
-        const auto result = CreateSpriteShape(geometry, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, {1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F}, _themeColor_Foreground);
         return result;
     }
 
@@ -749,7 +742,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         // Offset:<0, -10>
         const auto geometry = PathGeometry_06();
-        const auto result = CreateSpriteShape(geometry, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, {1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -10.0F}, _themeColor_Foreground);
         return result;
     }
 
@@ -765,7 +758,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         // Offset:<0, -4.85>
         const auto geometry = PathGeometry_07();
-        const auto result = CreateSpriteShape(geometry, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, {1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F}, _themeColor_Foreground);
         return result;
     }
 
@@ -793,7 +786,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         // Offset:<24.383, 10.25>, Scale:<2.75, 2.75>
         const auto geometry = _pathGeometry_00;
-        const auto result = CreateSpriteShape(geometry, { 2.75F, 0.0F, 0.0F, 2.75F, 24.3829994F, 10.25F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, {2.75F, 0.0F, 0.0F, 2.75F, 24.3829994F, 10.25F}, _themeColor_Foreground);
         return result;
     }
 
@@ -806,7 +799,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         // Offset:<24.383, 24.4125>, Scale:<2.75, 2.75>
         const auto geometry = _pathGeometry_01;
-        const auto result = CreateSpriteShape(geometry, { 2.75F, 0.0F, 0.0F, 2.75F, 24.3829994F, 24.4125004F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, {2.75F, 0.0F, 0.0F, 2.75F, 24.3829994F, 24.4125004F}, _themeColor_Foreground);
         return result;
     }
 
@@ -819,7 +812,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         // Offset:<24.383, 37.75>, Scale:<2.75, 2.75>
         const auto geometry = _pathGeometry_02;
-        const auto result = CreateSpriteShape(geometry, { 2.75F, 0.0F, 0.0F, 2.75F, 24.3829994F, 37.75F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, {2.75F, 0.0F, 0.0F, 2.75F, 24.3829994F, 37.75F}, _themeColor_Foreground);
         return result;
     }
 
@@ -832,7 +825,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         // Offset:<23.629, 10.25>, Scale:<2.75, 2.75>
         const auto geometry = _pathGeometry_03;
-        const auto result = CreateSpriteShape(geometry, { 2.75F, 0.0F, 0.0F, 2.75F, 23.6289997F, 10.25F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, {2.75F, 0.0F, 0.0F, 2.75F, 23.6289997F, 10.25F}, _themeColor_Foreground);
         return result;
     }
 
@@ -845,7 +838,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         // Offset:<23.629, 24.4125>, Scale:<2.75, 2.75>
         const auto geometry = _pathGeometry_04;
-        const auto result = CreateSpriteShape(geometry, { 2.75F, 0.0F, 0.0F, 2.75F, 23.6289997F, 24.4125004F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, {2.75F, 0.0F, 0.0F, 2.75F, 23.6289997F, 24.4125004F}, _themeColor_Foreground);
         return result;
     }
 
@@ -858,7 +851,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         // Offset:<23.629, 37.75>, Scale:<2.75, 2.75>
         const auto geometry = _pathGeometry_05;
-        const auto result = CreateSpriteShape(geometry, { 2.75F, 0.0F, 0.0F, 2.75F, 23.6289997F, 37.75F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, {2.75F, 0.0F, 0.0F, 2.75F, 23.6289997F, 37.75F}, _themeColor_Foreground);
         return result;
     }
 
@@ -872,7 +865,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         // Offset:<23.872047, 10.25>, Rotation:-0.009138340298435101 degrees,
         // Scale:<2.749, 2.75>
         const auto geometry = PathGeometry_09();
-        const auto result = CreateSpriteShape(geometry, { 2.74900007F, 0.0F, 0.0F, 2.75F, 23.8720474F, 10.25F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, {2.74900007F, 0.0F, 0.0F, 2.75F, 23.8720474F, 10.25F}, _themeColor_Foreground);
         return result;
     }
 
@@ -886,7 +879,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         // Offset:<23.872047, 24.4125>, Rotation:-0.009138340298435101 degrees,
         // Scale:<2.749, 2.75>
         const auto geometry = PathGeometry_10();
-        const auto result = CreateSpriteShape(geometry, { 2.74900007F, 0.0F, 0.0F, 2.75F, 23.8720474F, 24.4125004F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, {2.74900007F, 0.0F, 0.0F, 2.75F, 23.8720474F, 24.4125004F}, _themeColor_Foreground);
         return result;
     }
 
@@ -900,7 +893,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         // Offset:<23.872047, 37.75>, Rotation:-0.009138340298435101 degrees,
         // Scale:<2.749, 2.75>
         const auto geometry = PathGeometry_11();
-        const auto result = CreateSpriteShape(geometry, { 2.74900007F, 0.0F, 0.0F, 2.75F, 23.8720474F, 37.75F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, {2.74900007F, 0.0F, 0.0F, 2.75F, 23.8720474F, 37.75F}, _themeColor_Foreground);
         return result;
     }
 
@@ -912,9 +905,9 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         const auto result = _c.CreateContainerVisual();
         result.Clip(InsetClip_0());
         result.IsVisible(false);
-        result.Size({ 48.0F, 48.0F });
+        result.Size({48.0F, 48.0F});
         // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
+        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F});
         // Opacity for layer: Controls - 02 - Hamburger - 02 - NormalToPressed Controls - 02 -
         // Hamburger - 04 - PointerOverToPressed Controls - 02 - Hamburger - 05 -
         // PressedToNormal Controls - 02 - Hamburger - 06 - PressedToPointerOver
@@ -930,9 +923,9 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.Size({ 48.0F, 48.0F });
+        result.Size({48.0F, 48.0F});
         // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
+        result.TransformMatrix({1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F});
         // Opacity for layer: Controls - 02 - Hamburger - 01 - NormalToPointerOver Controls -
         // 02 - Hamburger - 03 - PointerOverToNormal
         result.Children().InsertAtTop(ShapeVisual_1());
@@ -960,22 +953,22 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
 
     CubicBezierEasingFunction CubicBezierEasingFunction_0()
     {
-        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
+        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({0.166999996F, 0.166999996F}, {0.0F, 1.0F});
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_1()
     {
-        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.0F }, { 0.75F, 1.0F });
+        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({0.850000024F, 0.0F}, {0.75F, 1.0F});
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_2()
     {
-        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F });
+        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({0.349999994F, 0.0F}, {0.0F, 1.0F});
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_3()
     {
-        return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.0F }, { 0.0F, 1.0F });
+        return _cubicBezierEasingFunction_3 = _c.CreateCubicBezierEasingFunction({0.166999996F, 0.0F}, {0.0F, 1.0F});
     }
 
     ExpressionAnimation RootProgress()
@@ -1099,7 +1092,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     ShapeVisual ShapeVisual_0()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({ 48.0F, 48.0F });
+        result.Size({48.0F, 48.0F});
         const auto shapes = result.Shapes();
         // Layer: Right Caps 2 Right Caps 2 Right Caps 2 Right Caps 2
         shapes.Append(ContainerShape_0());
@@ -1116,7 +1109,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     ShapeVisual ShapeVisual_1()
     {
         const auto result = _c.CreateShapeVisual();
-        result.Size({ 48.0F, 48.0F });
+        result.Size({48.0F, 48.0F});
         const auto shapes = result.Shapes();
         // Layer: Right Caps 2 Right Caps 2
         shapes.Append(SpriteShape_09());
@@ -1164,27 +1157,27 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     Vector2KeyFrameAnimation OffsetVector2Animation_0()
     {
         // Frame 0.
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 37.5079994F, 29.0F }, StepThenHoldEasingFunction());
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, {37.5079994F, 29.0F}, StepThenHoldEasingFunction());
         // Frame 10.
-        result.InsertKeyFrame(0.125F, { 37.5079994F, 29.0F }, HoldThenStepEasingFunction());
+        result.InsertKeyFrame(0.125F, {37.5079994F, 29.0F}, HoldThenStepEasingFunction());
         // Frame 19.
-        result.InsertKeyFrame(0.237499997F, { 27.5079994F, 29.0F }, CubicBezierEasingFunction_0());
+        result.InsertKeyFrame(0.237499997F, {27.5079994F, 29.0F}, CubicBezierEasingFunction_0());
         // Frame 30.
-        result.InsertKeyFrame(0.375F, { 37.5079994F, 29.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.375F, {37.5079994F, 29.0F}, _holdThenStepEasingFunction);
         // Frame 39.
-        result.InsertKeyFrame(0.487500012F, { 27.5079994F, 29.0F }, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.487500012F, {27.5079994F, 29.0F}, _cubicBezierEasingFunction_0);
         // Frame 40.
-        result.InsertKeyFrame(0.5F, { 27.5079994F, 29.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.5F, {27.5079994F, 29.0F}, _holdThenStepEasingFunction);
         // Frame 48.
-        result.InsertKeyFrame(0.600000024F, { 38.5040016F, 29.0F }, CubicBezierEasingFunction_1());
+        result.InsertKeyFrame(0.600000024F, {38.5040016F, 29.0F}, CubicBezierEasingFunction_1());
         // Frame 59.
-        result.InsertKeyFrame(0.737500012F, { 37.5079994F, 29.0F }, CubicBezierEasingFunction_2());
+        result.InsertKeyFrame(0.737500012F, {37.5079994F, 29.0F}, CubicBezierEasingFunction_2());
         // Frame 60.
-        result.InsertKeyFrame(0.75F, { 27.5079994F, 29.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.75F, {27.5079994F, 29.0F}, _holdThenStepEasingFunction);
         // Frame 68.
-        result.InsertKeyFrame(0.850000024F, { 38.5040016F, 29.0F }, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.850000024F, {38.5040016F, 29.0F}, _cubicBezierEasingFunction_1);
         // Frame 79.
-        result.InsertKeyFrame(0.987500012F, { 37.5079994F, 29.0F }, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.987500012F, {37.5079994F, 29.0F}, _cubicBezierEasingFunction_2);
         return result;
     }
 
@@ -1199,27 +1192,27 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     Vector2KeyFrameAnimation OffsetVector2Animation_1()
     {
         // Frame 0.
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 10.5039997F, 29.0F }, _stepThenHoldEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, {10.5039997F, 29.0F}, _stepThenHoldEasingFunction);
         // Frame 10.
-        result.InsertKeyFrame(0.125F, { 10.5039997F, 29.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.125F, {10.5039997F, 29.0F}, _holdThenStepEasingFunction);
         // Frame 19.
-        result.InsertKeyFrame(0.237499997F, { 20.5079994F, 29.0F }, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.237499997F, {20.5079994F, 29.0F}, _cubicBezierEasingFunction_0);
         // Frame 30.
-        result.InsertKeyFrame(0.375F, { 10.5039997F, 29.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.375F, {10.5039997F, 29.0F}, _holdThenStepEasingFunction);
         // Frame 39.
-        result.InsertKeyFrame(0.487500012F, { 20.5079994F, 29.0F }, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.487500012F, {20.5079994F, 29.0F}, _cubicBezierEasingFunction_0);
         // Frame 40.
-        result.InsertKeyFrame(0.5F, { 20.5079994F, 29.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.5F, {20.5079994F, 29.0F}, _holdThenStepEasingFunction);
         // Frame 48.
-        result.InsertKeyFrame(0.600000024F, { 9.50800037F, 29.0F }, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.600000024F, {9.50800037F, 29.0F}, _cubicBezierEasingFunction_1);
         // Frame 59.
-        result.InsertKeyFrame(0.737500012F, { 10.5039997F, 29.0F }, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.737500012F, {10.5039997F, 29.0F}, _cubicBezierEasingFunction_2);
         // Frame 60.
-        result.InsertKeyFrame(0.75F, { 20.5079994F, 29.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.75F, {20.5079994F, 29.0F}, _holdThenStepEasingFunction);
         // Frame 68.
-        result.InsertKeyFrame(0.850000024F, { 9.50800037F, 29.0F }, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.850000024F, {9.50800037F, 29.0F}, _cubicBezierEasingFunction_1);
         // Frame 79.
-        result.InsertKeyFrame(0.987500012F, { 10.5039997F, 29.0F }, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.987500012F, {10.5039997F, 29.0F}, _cubicBezierEasingFunction_2);
         return result;
     }
 
@@ -1229,12 +1222,8 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     }
 
 public:
-    AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual(
-        Compositor compositor,
-        CompositionPropertySet themeProperties)
-        : _c{compositor}
-        , _themeProperties{themeProperties}
-        , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
+    AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual(Compositor compositor, CompositionPropertySet themeProperties) :
+        _c{compositor}, _themeProperties{themeProperties}, _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
     {
         winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.put()));
         const auto _ = Root();
@@ -1250,7 +1239,7 @@ public:
 
     TimeSpan Duration() const
     {
-        return TimeSpan{ c_durationTicks };
+        return TimeSpan{c_durationTicks};
     }
 
     Visual RootVisual() const
@@ -1260,18 +1249,19 @@ public:
 
     winrt::float2 Size() const
     {
-        return { 48.0F, 48.0F };
+        return {48.0F, 48.0F};
     }
 
     static bool IsRuntimeCompatible()
     {
-        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 7);
+        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(
+            L"Windows.Foundation.UniversalApiContract", 7);
     }
 };
 
 winrt::float4 AnimatedGlobalNavigationButtonVisualSource::ColorAsVector4(Color color)
 {
-    return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
+    return {static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A)};
 }
 
 CompositionPropertySet AnimatedGlobalNavigationButtonVisualSource::EnsureThemeProperties(Compositor compositor)
@@ -1299,25 +1289,21 @@ void AnimatedGlobalNavigationButtonVisualSource::Foreground(Color value)
     }
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedGlobalNavigationButtonVisualSource::TryCreateAnimatedVisual(
-    Compositor const& compositor)
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedGlobalNavigationButtonVisualSource::TryCreateAnimatedVisual(Compositor const& compositor)
 {
     IInspectable diagnostics = nullptr;
     return TryCreateAnimatedVisual(compositor, diagnostics);
 }
 
 winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedGlobalNavigationButtonVisualSource::TryCreateAnimatedVisual(
-    Compositor const& compositor,
-    IInspectable& diagnostics)
+    Compositor const& compositor, IInspectable& diagnostics)
 {
     const auto _ = EnsureThemeProperties(compositor);
     diagnostics = nullptr;
 
     if (AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual::IsRuntimeCompatible())
     {
-        return winrt::make<AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual>(
-            compositor,
-            _themeProperties);
+        return winrt::make<AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual>(compositor, _themeProperties);
     }
 
     return nullptr;
@@ -1335,7 +1321,7 @@ double AnimatedGlobalNavigationButtonVisualSource::Framerate()
 
 TimeSpan AnimatedGlobalNavigationButtonVisualSource::Duration()
 {
-    return TimeSpan{ 13333333L };
+    return TimeSpan{13333333L};
 }
 
 double AnimatedGlobalNavigationButtonVisualSource::FrameToProgress(double frameNumber)
@@ -1345,23 +1331,21 @@ double AnimatedGlobalNavigationButtonVisualSource::FrameToProgress(double frameN
 
 winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedGlobalNavigationButtonVisualSource::Markers()
 {
-    return winrt::single_threaded_map<winrt::hstring, double>(
-        std::map<winrt::hstring, double>
-        {
-            { L"NormalToPointerOver_Start", 0.0 },
-            { L"NormalToPointerOver_End", 0.113125 },
-            { L"NormalToPressed_Start", 0.125625 },
-            { L"NormalToPressed_End", 0.238125 },
-            { L"PointerOverToNormal_Start", 0.250625 },
-            { L"PointerOverToNormal_End", 0.363125 },
-            { L"PointerOverToPressed_Start", 0.375625 },
-            { L"PointerOverToPressed_End", 0.488125 },
-            { L"PressedToNormal_Start", 0.500625 },
-            { L"PressedToNormal_End", 0.738125 },
-            { L"PressedToPointerOver_Start", 0.750625 },
-            { L"PressedToPointerOver_End", 0.988125 },
-        }
-    ).GetView();
+    return winrt::single_threaded_map<winrt::hstring, double>(std::map<winrt::hstring, double>{
+                                                                  {L"NormalToPointerOver_Start", 0.0},
+                                                                  {L"NormalToPointerOver_End", 0.113125},
+                                                                  {L"NormalToPressed_Start", 0.125625},
+                                                                  {L"NormalToPressed_End", 0.238125},
+                                                                  {L"PointerOverToNormal_Start", 0.250625},
+                                                                  {L"PointerOverToNormal_End", 0.363125},
+                                                                  {L"PointerOverToPressed_Start", 0.375625},
+                                                                  {L"PointerOverToPressed_End", 0.488125},
+                                                                  {L"PressedToNormal_Start", 0.500625},
+                                                                  {L"PressedToNormal_End", 0.738125},
+                                                                  {L"PressedToPointerOver_Start", 0.750625},
+                                                                  {L"PressedToPointerOver_End", 0.988125},
+                                                              })
+        .GetView();
 }
 
 void AnimatedGlobalNavigationButtonVisualSource::SetColorProperty(hstring const& propertyName, Color value)

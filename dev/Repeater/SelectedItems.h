@@ -6,18 +6,15 @@
 struct SelectedItemInfo;
 
 template <typename T>
-class SelectedItems:
-    public ReferenceTracker<SelectedItems<T>,
-        typename reference_tracker_implements_t<typename winrt::IVectorView<T>>::type,
-        typename winrt::IIterable<T>>
+class SelectedItems
+    : public ReferenceTracker<SelectedItems<T>, typename reference_tracker_implements_t<typename winrt::IVectorView<T>>::type, typename winrt::IIterable<T>>
 {
 public:
-    SelectedItems(const std::vector<SelectedItemInfo>& infos, 
-        std::function<T(const std::vector<SelectedItemInfo>& infos, unsigned int index)> getAtImpl)
+    SelectedItems(const std::vector<SelectedItemInfo>& infos, std::function<T(const std::vector<SelectedItemInfo>& infos, unsigned int index)> getAtImpl)
     {
         m_infos = infos;
         m_getAtImpl = getAtImpl;
-        for (auto& info: infos)
+        for (auto& info : infos)
         {
             if (auto node = info.Node.lock())
             {
@@ -35,7 +32,7 @@ public:
         m_infos.clear();
     }
 
-#pragma region IVectorView<T>
+#pragma region IVectorView < T>
     uint32_t Size()
     {
         return m_totalCount;
@@ -46,7 +43,7 @@ public:
         return m_getAtImpl(m_infos, index);
     }
 
-    bool IndexOf(T const& value, uint32_t &index) noexcept
+    bool IndexOf(T const& value, uint32_t& index) noexcept
     {
         winrt::throw_hresult(E_NOTIMPL);
     }
@@ -58,7 +55,7 @@ public:
 
 #pragma endregion
 
-#pragma region winrt::IIterable<T>
+#pragma region winrt::IIterable < T>
     winrt::IIterator<T> First()
     {
         return winrt::make<SelectedItems<T>::Iterator>(*this);
@@ -66,8 +63,7 @@ public:
 #pragma endregion
 
 private:
-    class Iterator :
-        public ReferenceTracker<Iterator, reference_tracker_implements_t<winrt::IIterator<T>>::type>
+    class Iterator : public ReferenceTracker<Iterator, reference_tracker_implements_t<winrt::IIterator<T>>::type>
     {
     public:
         Iterator(const winrt::IVectorView<T>& selectedItems)
@@ -77,13 +73,12 @@ private:
 
         ~Iterator()
         {
-
         }
 
         T Current()
         {
             auto items = m_selectedItems;
-            if(m_currentIndex < items.Size())
+            if (m_currentIndex < items.Size())
             {
                 return items.GetAt(m_currentIndex);
             }
@@ -118,7 +113,8 @@ private:
             {
                 do
                 {
-                    if (howMany >= values.size()) break;
+                    if (howMany >= values.size())
+                        break;
 
                     values[howMany] = Current();
                     howMany++;
@@ -129,11 +125,11 @@ private:
         }
 
     private:
-        winrt::IVectorView<T> m_selectedItems{ nullptr };
+        winrt::IVectorView<T> m_selectedItems{nullptr};
         unsigned int m_currentIndex = 0;
     };
 
     std::vector<SelectedItemInfo> m_infos;
-    unsigned int m_totalCount{ 0 };
+    unsigned int m_totalCount{0};
     std::function<T(const std::vector<SelectedItemInfo>& infos, int /*index*/)> m_getAtImpl;
 };

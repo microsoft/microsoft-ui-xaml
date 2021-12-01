@@ -15,49 +15,78 @@
 #include "DispatcherHelper.h"
 
 static constexpr double c_tabShadowDepth = 16.0;
-static constexpr wstring_view c_tabViewShadowDepthName{ L"TabViewShadowDepth"sv };
+static constexpr wstring_view c_tabViewShadowDepthName{L"TabViewShadowDepth"sv};
 
-
-class TabViewTabCloseRequestedEventArgs :
-    public winrt::implementation::TabViewTabCloseRequestedEventArgsT<TabViewTabCloseRequestedEventArgs>
+class TabViewTabCloseRequestedEventArgs : public winrt::implementation::TabViewTabCloseRequestedEventArgsT<TabViewTabCloseRequestedEventArgs>
 {
 public:
-    TabViewTabCloseRequestedEventArgs(winrt::IInspectable const& item, winrt::TabViewItem tab) : m_item(item), m_tab(tab) {}
+    TabViewTabCloseRequestedEventArgs(winrt::IInspectable const& item, winrt::TabViewItem tab) : m_item(item), m_tab(tab)
+    {
+    }
 
-    winrt::IInspectable Item() { return m_item; }
-    winrt::TabViewItem Tab() { return m_tab; }
+    winrt::IInspectable Item()
+    {
+        return m_item;
+    }
+    winrt::TabViewItem Tab()
+    {
+        return m_tab;
+    }
 
 private:
     winrt::IInspectable m_item{};
     winrt::TabViewItem m_tab{};
 };
 
-
-class TabViewTabDroppedOutsideEventArgs :
-    public winrt::implementation::TabViewTabDroppedOutsideEventArgsT<TabViewTabDroppedOutsideEventArgs>
+class TabViewTabDroppedOutsideEventArgs : public winrt::implementation::TabViewTabDroppedOutsideEventArgsT<TabViewTabDroppedOutsideEventArgs>
 {
 public:
-    TabViewTabDroppedOutsideEventArgs(winrt::IInspectable const& item, winrt::TabViewItem tab) : m_item(item), m_tab(tab) {}
+    TabViewTabDroppedOutsideEventArgs(winrt::IInspectable const& item, winrt::TabViewItem tab) : m_item(item), m_tab(tab)
+    {
+    }
 
-    winrt::IInspectable Item() { return m_item; }
-    winrt::TabViewItem Tab() { return m_tab; }
+    winrt::IInspectable Item()
+    {
+        return m_item;
+    }
+    winrt::TabViewItem Tab()
+    {
+        return m_tab;
+    }
 
 private:
     winrt::IInspectable m_item{};
     winrt::TabViewItem m_tab{};
 };
 
-class TabViewTabDragStartingEventArgs :
-    public winrt::implementation::TabViewTabDragStartingEventArgsT<TabViewTabDragStartingEventArgs>
+class TabViewTabDragStartingEventArgs : public winrt::implementation::TabViewTabDragStartingEventArgsT<TabViewTabDragStartingEventArgs>
 {
 public:
-    TabViewTabDragStartingEventArgs(winrt::DragItemsStartingEventArgs const& args, winrt::IInspectable const& item, winrt::TabViewItem tab) : m_args(args), m_item(item), m_tab(tab) {}
+    TabViewTabDragStartingEventArgs(winrt::DragItemsStartingEventArgs const& args, winrt::IInspectable const& item, winrt::TabViewItem tab) :
+        m_args(args), m_item(item), m_tab(tab)
+    {
+    }
 
-    bool Cancel() { return m_args.Cancel(); }
-    void Cancel(bool value) { m_args.Cancel(value); }
-    winrt::DataPackage Data() { return m_args.Data(); }
-    winrt::IInspectable Item() { return m_item; }
-    winrt::TabViewItem Tab() { return m_tab; }
+    bool Cancel()
+    {
+        return m_args.Cancel();
+    }
+    void Cancel(bool value)
+    {
+        m_args.Cancel(value);
+    }
+    winrt::DataPackage Data()
+    {
+        return m_args.Data();
+    }
+    winrt::IInspectable Item()
+    {
+        return m_item;
+    }
+    winrt::TabViewItem Tab()
+    {
+        return m_tab;
+    }
 
 private:
     winrt::DragItemsStartingEventArgs m_args{};
@@ -65,25 +94,34 @@ private:
     winrt::TabViewItem m_tab{};
 };
 
-class TabViewTabDragCompletedEventArgs :
-    public winrt::implementation::TabViewTabDragCompletedEventArgsT<TabViewTabDragCompletedEventArgs>
+class TabViewTabDragCompletedEventArgs : public winrt::implementation::TabViewTabDragCompletedEventArgsT<TabViewTabDragCompletedEventArgs>
 {
 public:
-    TabViewTabDragCompletedEventArgs(winrt::DragItemsCompletedEventArgs const& args, winrt::IInspectable const& item, winrt::TabViewItem tab) : m_args(args), m_item(item), m_tab(tab) {}
+    TabViewTabDragCompletedEventArgs(winrt::DragItemsCompletedEventArgs const& args, winrt::IInspectable const& item, winrt::TabViewItem tab) :
+        m_args(args), m_item(item), m_tab(tab)
+    {
+    }
 
-    winrt::DataPackageOperation DropResult() { return m_args.DropResult(); }
-    winrt::IInspectable Item() { return m_item; }
-    winrt::TabViewItem Tab() { return m_tab; }
+    winrt::DataPackageOperation DropResult()
+    {
+        return m_args.DropResult();
+    }
+    winrt::IInspectable Item()
+    {
+        return m_item;
+    }
+    winrt::TabViewItem Tab()
+    {
+        return m_tab;
+    }
 
 private:
-    winrt::DragItemsCompletedEventArgs m_args{ nullptr };
+    winrt::DragItemsCompletedEventArgs m_args{nullptr};
     winrt::IInspectable m_item{};
     winrt::TabViewItem m_tab{};
 };
 
-class TabView :
-    public ReferenceTracker<TabView, winrt::implementation::TabViewT>,
-    public TabViewProperties
+class TabView : public ReferenceTracker<TabView, winrt::implementation::TabViewT>, public TabViewProperties
 {
 
 public:
@@ -115,11 +153,17 @@ public:
     void OnItemsChanged(winrt::IInspectable const& item);
     void UpdateTabContent();
 
-    void RequestCloseTab(winrt::TabViewItem const& item,bool updateTabWidths);
+    void RequestCloseTab(winrt::TabViewItem const& item, bool updateTabWidths);
 
-    winrt::UIElement GetShadowReceiver() { return m_shadowReceiver.get(); }
+    winrt::UIElement GetShadowReceiver()
+    {
+        return m_shadowReceiver.get();
+    }
 
-    winrt::hstring GetTabCloseButtonTooltipText() { return m_tabCloseButtonTooltipText; }
+    winrt::hstring GetTabCloseButtonTooltipText()
+    {
+        return m_tabCloseButtonTooltipText;
+    }
     void SetTabSeparatorOpacity(int index, int opacityValue);
     void SetTabSeparatorOpacity(int index);
 
@@ -169,25 +213,25 @@ private:
 
     winrt::TabViewItem FindTabViewItemFromDragItem(const winrt::IInspectable& item);
 
-    bool m_updateTabWidthOnPointerLeave{ false };
-    bool m_pointerInTabstrip{ false };
+    bool m_updateTabWidthOnPointerLeave{false};
+    bool m_pointerInTabstrip{false};
 
-    tracker_ref<winrt::ColumnDefinition> m_leftContentColumn{ this };
-    tracker_ref<winrt::ColumnDefinition> m_tabColumn{ this };
-    tracker_ref<winrt::ColumnDefinition> m_addButtonColumn{ this };
-    tracker_ref<winrt::ColumnDefinition> m_rightContentColumn{ this };
+    tracker_ref<winrt::ColumnDefinition> m_leftContentColumn{this};
+    tracker_ref<winrt::ColumnDefinition> m_tabColumn{this};
+    tracker_ref<winrt::ColumnDefinition> m_addButtonColumn{this};
+    tracker_ref<winrt::ColumnDefinition> m_rightContentColumn{this};
 
-    tracker_ref<winrt::ListView> m_listView{ this };
-    tracker_ref<winrt::ContentPresenter> m_tabContentPresenter{ this };
-    tracker_ref<winrt::ContentPresenter> m_rightContentPresenter{ this };
-    tracker_ref<winrt::Grid> m_tabContainerGrid{ this };
-    tracker_ref<winrt::FxScrollViewer> m_scrollViewer{ this };
-    tracker_ref<winrt::RepeatButton> m_scrollDecreaseButton{ this };
-    tracker_ref<winrt::RepeatButton> m_scrollIncreaseButton{ this };
-    tracker_ref<winrt::Button> m_addButton{ this };
-    tracker_ref<winrt::ItemsPresenter> m_itemsPresenter{ this };
+    tracker_ref<winrt::ListView> m_listView{this};
+    tracker_ref<winrt::ContentPresenter> m_tabContentPresenter{this};
+    tracker_ref<winrt::ContentPresenter> m_rightContentPresenter{this};
+    tracker_ref<winrt::Grid> m_tabContainerGrid{this};
+    tracker_ref<winrt::FxScrollViewer> m_scrollViewer{this};
+    tracker_ref<winrt::RepeatButton> m_scrollDecreaseButton{this};
+    tracker_ref<winrt::RepeatButton> m_scrollIncreaseButton{this};
+    tracker_ref<winrt::Button> m_addButton{this};
+    tracker_ref<winrt::ItemsPresenter> m_itemsPresenter{this};
 
-    tracker_ref<winrt::Grid> m_shadowReceiver{ this };
+    tracker_ref<winrt::Grid> m_shadowReceiver{this};
 
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::ListView::PointerExited_revoker m_tabStripPointerExitedRevoker{};
@@ -213,11 +257,11 @@ private:
 
     winrt::ItemsPresenter::SizeChanged_revoker m_itemsPresenterSizeChangedRevoker{};
 
-    DispatcherHelper m_dispatcherHelper{ *this };
+    DispatcherHelper m_dispatcherHelper{*this};
 
     winrt::hstring m_tabCloseButtonTooltipText{};
 
     winrt::Size previousAvailableSize{};
 
-    bool m_isDragging{ false };
+    bool m_isDragging{false};
 };

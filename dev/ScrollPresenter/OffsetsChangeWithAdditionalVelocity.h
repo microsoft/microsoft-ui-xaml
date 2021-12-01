@@ -8,10 +8,7 @@
 class OffsetsChangeWithAdditionalVelocity : public ViewChangeBase
 {
 public:
-    OffsetsChangeWithAdditionalVelocity(
-        winrt::float2 offsetsVelocity,
-        winrt::float2 anticipatedOffsetsChange,
-        winrt::IReference<winrt::float2> inertiaDecayRate);
+    OffsetsChangeWithAdditionalVelocity(winrt::float2 offsetsVelocity, winrt::float2 anticipatedOffsetsChange, winrt::IReference<winrt::float2> inertiaDecayRate);
     ~OffsetsChangeWithAdditionalVelocity();
 
     winrt::float2 OffsetsVelocity() const
@@ -40,4 +37,3 @@ private:
     winrt::float2 m_anticipatedOffsetsChange{};
     winrt::IReference<winrt::float2> m_inertiaDecayRate{};
 };
-

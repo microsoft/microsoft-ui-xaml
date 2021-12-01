@@ -6,29 +6,30 @@
 #include "VectorChangedEventArgs.h"
 #include <algorithm>
 
-// Nearly all Vector need to set DependencyObjectBase flag 
+// Nearly all Vector need to set DependencyObjectBase flag
 // to make DependencyObject as ComposableBase
 // Otherwise we may hit memory leak when interact with .net.
 // One exception is AcrylicBrush::CreateAcrylicBrushWorker
 // because we know we don't have memory leak.
-enum class VectorFlag {
+enum class VectorFlag
+{
     None = 0, // not Observable, not Bindable and not DependencyObjectBase
-    Observable = 1, 
-    DependencyObjectBase = 2, 
+    Observable = 1,
+    DependencyObjectBase = 2,
     Bindable = 4,
     NoTrackerRef = 8
 };
 
-template <VectorFlag ...all>
+template <VectorFlag... all>
 constexpr int MakeVectorParam();
 
-template <VectorFlag first, VectorFlag ...others>
-constexpr int  MakeVectorParamImpl()
+template <VectorFlag first, VectorFlag... others>
+constexpr int MakeVectorParamImpl()
 {
     return static_cast<int>(first) | MakeVectorParam<others...>();
 };
 
-template <VectorFlag ...all>
+template <VectorFlag... all>
 constexpr int MakeVectorParam()
 {
     return MakeVectorParamImpl<all...>();
@@ -40,7 +41,8 @@ constexpr int MakeVectorParam()
     return 0;
 };
 
-template <int flag> struct VectorFlagHelper
+template <int flag>
+struct VectorFlagHelper
 {
     static constexpr bool isObservable = !!(flag & static_cast<int>(VectorFlag::Observable));
     static constexpr bool isDependencyObjectBase = !!(flag & static_cast<int>(VectorFlag::DependencyObjectBase));
@@ -52,14 +54,16 @@ template <int flag> struct VectorFlagHelper
 // isNoTrackerRef = true :T <-> T
 // isNoTrackerRef = false  : T <-> tracker_ref<T>
 
-template <typename T, bool isNoTrackerRef = false> struct TStorageWrapperImpl;
-template <typename T, bool isNoTrackerRef> struct TStorageWrapperImpl
+template <typename T, bool isNoTrackerRef = false>
+struct TStorageWrapperImpl;
+template <typename T, bool isNoTrackerRef>
+struct TStorageWrapperImpl
 {
     using Holder = typename tracker_ref<T>;
 
     static Holder wrap(const T& value, const ITrackerHandleManager* trackerHandleManager)
     {
-        Holder holder{ trackerHandleManager };
+        Holder holder{trackerHandleManager};
         holder.set(value);
         return holder;
     }
@@ -69,7 +73,8 @@ template <typename T, bool isNoTrackerRef> struct TStorageWrapperImpl
         return holder.safe_get(useSafeGet);
     }
 };
-template <typename T> struct TStorageWrapperImpl<T, true>
+template <typename T>
+struct TStorageWrapperImpl<T, true>
 {
     using Holder = typename T;
 
@@ -89,39 +94,37 @@ template <typename T> struct TStorageWrapperImpl<T, true>
 template <class T, bool isObservable, bool isBindable>
 struct ObservableTraits
 {
-    typedef struct Dummy { Dummy(ITrackerHandleManager*) {} } EventSource;
-    using EventHandler = typename std::conditional<isBindable,
-        winrt::BindableVectorChangedEventHandler,
-        winrt::VectorChangedEventHandler<T>
-    >::type;
-    typedef typename std::conditional<isBindable,
-        winrt::IBindableObservableVector,
-        winrt::IObservableVector<winrt::IInspectable>>::type SenderType;
+    typedef struct Dummy
+    {
+        Dummy(ITrackerHandleManager*)
+        {
+        }
+    } EventSource;
+    using EventHandler =
+        typename std::conditional<isBindable, winrt::BindableVectorChangedEventHandler, winrt::VectorChangedEventHandler<T>>::type;
+    typedef typename std::conditional<isBindable, winrt::IBindableObservableVector, winrt::IObservableVector<winrt::IInspectable>>::type SenderType;
     using EventToken = typename winrt::event_token;
 
-    static void RaiseEvent(...) { };
-    static winrt::event_token AddEventHandler(...) { return {}; };
-    static void RemoveEventHandler(...) { };
+    static void RaiseEvent(...){};
+    static winrt::event_token AddEventHandler(...)
+    {
+        return {};
+    };
+    static void RemoveEventHandler(...){};
 };
 
 // IsObservable = true;
 template <class T, bool isBindable>
 struct ObservableTraits<T, true, isBindable>
 {
-    using SenderType = typename std::conditional<isBindable,
-        winrt::IBindableObservableVector,
-        winrt::IObservableVector<T>>::type;
+    using SenderType = typename std::conditional<isBindable, winrt::IBindableObservableVector, winrt::IObservableVector<T>>::type;
 
-    using EventSource = typename std::conditional<isBindable,
-        event_source<winrt::BindableVectorChangedEventHandler>,
-        event_source<winrt::VectorChangedEventHandler<T>>
-    >::type;
+    using EventSource =
+        typename std::conditional<isBindable, event_source<winrt::BindableVectorChangedEventHandler>, event_source<winrt::VectorChangedEventHandler<T>>>::type;
 
-    using EventHandler = typename std::conditional<isBindable,
-        winrt::BindableVectorChangedEventHandler,
-        winrt::VectorChangedEventHandler<T>
-    >::type;
-    
+    using EventHandler =
+        typename std::conditional<isBindable, winrt::BindableVectorChangedEventHandler, winrt::VectorChangedEventHandler<T>>::type;
+
     using EventToken = typename winrt::event_token;
 
     static void RaiseEvent(EventSource* e, SenderType sender, winrt::CollectionChange collectionChange, uint32_t index)
@@ -148,7 +151,10 @@ struct IVectorOwner
     virtual ITrackerHandleManager* GetExternalTrackerHandleManager() = 0;
     virtual winrt::IInspectable GetVectorEventSender() = 0;
     virtual EventSource* GetVectorEventSource() = 0;
-    virtual std::function<bool(T const& value, uint32_t& index)> GetCustomIndexOfFunction() { return nullptr; };
+    virtual std::function<bool(T const& value, uint32_t& index)> GetCustomIndexOfFunction()
+    {
+        return nullptr;
+    };
 };
 
 // Vector Inner Implementation without Observable function
@@ -255,7 +261,6 @@ public:
         {
             throw winrt::hresult_out_of_bounds();
         }
-        
     }
 
     void RemoveAt(uint32_t const index)
@@ -295,13 +300,20 @@ public:
         }
     }
 
-    virtual void RaiseChildrenChanged(winrt::CollectionChange collectionChange, unsigned int index) {};
+    virtual void RaiseChildrenChanged(winrt::CollectionChange collectionChange, unsigned int index){};
 
-    void reserve(unsigned int n) { m_vector.reserve(n); }
+    void reserve(unsigned int n)
+    {
+        m_vector.reserve(n);
+    }
+
 protected:
     using T_Storage = typename Wrapper::Holder;
 
-    inline ITrackerHandleManager* GetTrackerHandlerManager() { return m_trackerHandleManager; }
+    inline ITrackerHandleManager* GetTrackerHandlerManager()
+    {
+        return m_trackerHandleManager;
+    }
     inline T_Storage wrap(typename T_type value)
     {
         return Wrapper::wrap(value, GetTrackerHandlerManager());
@@ -312,13 +324,12 @@ protected:
     }
 
     std::vector<T_Storage> m_vector;
-    ITrackerHandleManager* m_trackerHandleManager{ nullptr };
+    ITrackerHandleManager* m_trackerHandleManager{nullptr};
 };
 
 // Vector Inner implementation with Observable function
 template <typename VectorOptions, typename Wrapper = TStorageWrapperImpl<typename VectorOptions::T_type, VectorOptions::NoTrackRef>>
-struct ObservableVectorInnerImpl:
-    VectorInnerImpl<VectorOptions, Wrapper>
+struct ObservableVectorInnerImpl : VectorInnerImpl<VectorOptions, Wrapper>
 {
 private:
     using T_type = typename VectorOptions::T_type;
@@ -330,18 +341,18 @@ private:
 
 public:
     ObservableVectorInnerImpl(IVectorOwner<EventSource, T_type>* pIVectorExternal) :
-        VectorInnerImpl<VectorOptions, Wrapper>(pIVectorExternal->GetExternalTrackerHandleManager()),
-        m_pIVectorExternal(pIVectorExternal)
+        VectorInnerImpl<VectorOptions, Wrapper>(pIVectorExternal->GetExternalTrackerHandleManager()), m_pIVectorExternal(pIVectorExternal)
     {
     }
 
     void RaiseChildrenChanged(winrt::CollectionChange collectionChange, unsigned int index) override
     {
-        if (auto sender = m_pIVectorExternal->GetVectorEventSender().try_as< SenderType>()) {
+        if (auto sender = m_pIVectorExternal->GetVectorEventSender().try_as<SenderType>())
+        {
             Traits::RaiseEvent(m_pIVectorExternal->GetVectorEventSource(), sender, collectionChange, index);
         }
     }
-    
+
     winrt::event_token AddEventHandler(EventHandler const& handler)
     {
         return Traits::AddEventHandler(m_pIVectorExternal->GetVectorEventSource(), handler);
@@ -349,17 +360,17 @@ public:
 
     void RemoveEventHandler(winrt::event_token const& token)
     {
-       Traits::RemoveEventHandler(m_pIVectorExternal->GetVectorEventSource(), token);
+        Traits::RemoveEventHandler(m_pIVectorExternal->GetVectorEventSource(), token);
     };
 
 private:
-    IVectorOwner<EventSource, T_type>* m_pIVectorExternal{ nullptr };
+    IVectorOwner<EventSource, T_type>* m_pIVectorExternal{nullptr};
 };
-
 
 // VectorInterfaceHelper hold all the variable data types which depends on bindable flag
 // isBindable = false
-template <typename T, bool isBindable> struct VectorInterfaceHelper
+template <typename T, bool isBindable>
+struct VectorInterfaceHelper
 {
     using VectorType = winrt::IVector<T>;
     using IteratorType = winrt::IIterator<T>;
@@ -369,7 +380,8 @@ template <typename T, bool isBindable> struct VectorInterfaceHelper
 };
 
 // isBindable = true
-template <typename T> struct VectorInterfaceHelper<T, true>
+template <typename T>
+struct VectorInterfaceHelper<T, true>
 {
     using VectorType = winrt::IBindableVector;
     using IteratorType = winrt::IBindableIterator;
@@ -389,7 +401,7 @@ struct ComposableBasePointersImplTType
     using WinRTBaseFactoryInterface = typename winrt::IDependencyObjectFactory;
 };
 
-template <> 
+template <>
 struct ComposableBasePointersImplTType<false>
 {
     using WinRTBase = typename winrt::IInspectable;
@@ -398,14 +410,14 @@ struct ComposableBasePointersImplTType<false>
 
 // VectorOptions hold all dynamic information which is used for Vector implementation and Observable implementation.
 template <typename T, bool isObservable, bool isBindable, bool isDependencyObjectBase, bool isNoTrackerRef = false>
-struct VectorOptionsBase: VectorInterfaceHelper<T, isBindable>, ComposableBasePointersImplTType<isDependencyObjectBase>
+struct VectorOptionsBase : VectorInterfaceHelper<T, isBindable>, ComposableBasePointersImplTType<isDependencyObjectBase>
 {
     static constexpr bool Bindable = isBindable;
     static constexpr bool Observable = isObservable;
     static constexpr bool DependencyObjectBase = isDependencyObjectBase;
     static constexpr bool NoTrackRef = isNoTrackerRef;
 
-    //using type = typename VectorOptions<T, isObservable, isBindable, isDependencyObjectBase>;
+    // using type = typename VectorOptions<T, isObservable, isBindable, isDependencyObjectBase>;
     using T_type = typename T;
     using Traits = typename ObservableTraits<T, isObservable, isBindable>;
     using SenderType = typename Traits::SenderType;
@@ -416,173 +428,182 @@ struct VectorOptionsBase: VectorInterfaceHelper<T, isBindable>, ComposableBasePo
 };
 
 template <typename T, bool isObservable, bool isBindable, bool isDependencyObjectBase, bool isNoTrackerRef>
-struct VectorOptions: VectorOptionsBase<T, isObservable, isBindable, isDependencyObjectBase, isNoTrackerRef>
-{ 
+struct VectorOptions : VectorOptionsBase<T, isObservable, isBindable, isDependencyObjectBase, isNoTrackerRef>
+{
 };
 
 template <typename T, bool isObservable, bool isDependencyObjectBase, bool isNoTrackerRef>
-struct VectorOptions<T, isObservable, true, isDependencyObjectBase, isNoTrackerRef>:
-    VectorOptionsBase<winrt::IInspectable, isObservable, true, isDependencyObjectBase, isNoTrackerRef>
+struct VectorOptions<T, isObservable, true, isDependencyObjectBase, isNoTrackerRef>
+    : VectorOptionsBase<winrt::IInspectable, isObservable, true, isDependencyObjectBase, isNoTrackerRef>
 {
 };
 
 template <typename T, int flag, typename Helper = VectorFlagHelper<flag>>
-struct VectorOptionsFromFlag :
-    VectorOptions<T, Helper::isObservable, Helper::isBindable, Helper::isDependencyObjectBase, Helper::isNoTrackerRef>
+struct VectorOptionsFromFlag
+    : VectorOptions<T, Helper::isObservable, Helper::isBindable, Helper::isDependencyObjectBase, Helper::isNoTrackerRef>
 {
 };
 
 // Implement IObservable or IBindableObservable Interface
 #define Implement_IObservable(Options) \
-    public: \
-        winrt::event_token VectorChanged(typename Options##::EventHandler const& value) \
-        { \
-            auto inner = this->GetVectorInnerImpl(); \
-            return inner->AddEventHandler(value); \
-        } \
-        void VectorChanged(typename Options##::EventToken const& token) \
-        { \
-            auto inner = this->GetVectorInnerImpl(); \
-            inner->RemoveEventHandler(token); \
-        } \
-    private:
+public: \
+    winrt::event_token VectorChanged(typename Options## ::EventHandler const& value) \
+    { \
+        auto inner = this->GetVectorInnerImpl(); \
+        return inner->AddEventHandler(value); \
+    } \
+    void VectorChanged(typename Options## ::EventToken const& token) \
+    { \
+        auto inner = this->GetVectorInnerImpl(); \
+        inner->RemoveEventHandler(token); \
+    } \
+\
+private:
 
 // Implement IVector or IBindableVector Interface which will not modify the data
 #define Implement_IVector_Read_Functions(Options) \
-    public: \
-        typename Options##::VectorViewType GetView() \
+public: \
+    typename Options## ::VectorViewType GetView() \
+    { \
+        throw winrt::hresult_not_implemented(); \
+    } \
+    uint32_t Size() \
+    { \
+        auto inner = this->GetVectorInnerImpl(); \
+        return inner->Size(); \
+    } \
+    typename Options## ::T_type GetAt(uint32_t index) \
+    { \
+        auto inner = this->GetVectorInnerImpl(); \
+        return inner->GetAt(index); \
+    } \
+    bool IndexOf(typename Options## ::T_type const& value, uint32_t& index) \
+    { \
+        if (auto indexOfFunction = GetCustomIndexOfFunction()) \
         { \
-            throw winrt::hresult_not_implemented(); \
+            return indexOfFunction(value, index); \
         } \
-        uint32_t Size() \
-        { \
-            auto inner = this->GetVectorInnerImpl(); \
-            return inner->Size(); \
-        } \
-        typename Options##::T_type GetAt(uint32_t index) \
-        { \
-            auto inner = this->GetVectorInnerImpl(); \
-            return inner->GetAt(index); \
-        } \
-        bool IndexOf(typename Options##::T_type const& value, uint32_t& index) \
-        { \
-            if (auto indexOfFunction = GetCustomIndexOfFunction()) \
-            { \
-                return indexOfFunction(value, index); \
-            } \
-            else \
-            { \
-                auto inner = this->GetVectorInnerImpl(); \
-                return inner->IndexOf(value, index); \
-            } \
-        } \
-        uint32_t GetMany(uint32_t const startIndex, winrt::array_view<typename Options##::T_type> values) \
+        else \
         { \
             auto inner = this->GetVectorInnerImpl(); \
-            return inner->GetMany(startIndex, values); \
+            return inner->IndexOf(value, index); \
         } \
-    private:
+    } \
+    uint32_t GetMany(uint32_t const startIndex, winrt::array_view<typename Options## ::T_type> values) \
+    { \
+        auto inner = this->GetVectorInnerImpl(); \
+        return inner->GetMany(startIndex, values); \
+    } \
+\
+private:
 
 // Implement IVector or IBindableVector Interface which will modify the data
 #define Implement_IVector_Modify_Functions(Options) \
-    public: \
-        void SetAt(uint32_t const index, typename Options##::T_type const& value) \
-        { \
-            auto inner = this->GetVectorInnerImpl(); \
-            inner->SetAt(index, value); \
-        } \
-        void Append(typename Options##::T_type const& value) \
-        { \
-            auto inner = this->GetVectorInnerImpl(); \
-            return inner->Append(value); \
-        } \
-        void InsertAt(uint32_t index, typename Options##::T_type const& value) \
-        { \
-            auto inner = this->GetVectorInnerImpl(); \
-            return inner->InsertAt(index, value); \
-        } \
-        void RemoveAt(uint32_t index) \
-        { \
-            auto inner = this->GetVectorInnerImpl(); \
-            return inner->RemoveAt(index); \
-        } \
-        void RemoveAtEnd() \
-        { \
-            auto inner = this->GetVectorInnerImpl(); \
-            return inner->RemoveAtEnd(); \
-        } \
-        void Clear() \
-        { \
-            auto inner = this->GetVectorInnerImpl(); \
-            return inner->Clear(); \
-        } \
-        void ReplaceAll(winrt::array_view<typename Options##::T_type const> value) \
-        { \
-            auto inner = this->GetVectorInnerImpl(); \
-            return inner->ReplaceAll(value); \
-        } \
-        private:
+public: \
+    void SetAt(uint32_t const index, typename Options## ::T_type const& value) \
+    { \
+        auto inner = this->GetVectorInnerImpl(); \
+        inner->SetAt(index, value); \
+    } \
+    void Append(typename Options## ::T_type const& value) \
+    { \
+        auto inner = this->GetVectorInnerImpl(); \
+        return inner->Append(value); \
+    } \
+    void InsertAt(uint32_t index, typename Options## ::T_type const& value) \
+    { \
+        auto inner = this->GetVectorInnerImpl(); \
+        return inner->InsertAt(index, value); \
+    } \
+    void RemoveAt(uint32_t index) \
+    { \
+        auto inner = this->GetVectorInnerImpl(); \
+        return inner->RemoveAt(index); \
+    } \
+    void RemoveAtEnd() \
+    { \
+        auto inner = this->GetVectorInnerImpl(); \
+        return inner->RemoveAtEnd(); \
+    } \
+    void Clear() \
+    { \
+        auto inner = this->GetVectorInnerImpl(); \
+        return inner->Clear(); \
+    } \
+    void ReplaceAll(winrt::array_view<typename Options## ::T_type const> value) \
+    { \
+        auto inner = this->GetVectorInnerImpl(); \
+        return inner->ReplaceAll(value); \
+    } \
+\
+private:
 
 // Implement IIterator or IBindableIterator Interface
 #define Implement_IIterator(Options) \
-    public: \
-        typename Options##::IteratorType First() \
-        { \
-            return winrt::make<VectorIterator<typename Options##::T_type, Options##::Bindable, Options::DependencyObjectBase>>(*this); \
-        } \
-    private:
+public: \
+    typename Options## ::IteratorType First() \
+    { \
+        return winrt::make<VectorIterator<typename Options## ::T_type, Options## ::Bindable, Options::DependencyObjectBase>>(*this); \
+    } \
+\
+private:
 
-// Implement IVectorOwner, also define the Inner Vector and Event Source 
+// Implement IVectorOwner, also define the Inner Vector and Event Source
 #define Implement_Vector_External(Options) \
-    private: \
-        using VectorInnerType = ObservableVectorInnerImpl<##Options##>; \
-    protected: \
-        typename VectorInnerType *GetVectorInnerImpl() { return &m_vectorInnerImpl; } \
-        ITrackerHandleManager* GetExternalTrackerHandleManager() { return this; }; \
-        winrt::IInspectable GetVectorEventSender() { return *this; }; \
-        typename Options##::EventSource *GetVectorEventSource() { return &m_vectorEventSource; }; \
-    private: \
-        typename VectorInnerType m_vectorInnerImpl{ this }; \
-        typename Options##::EventSource m_vectorEventSource{ this }; \
-    private:
+private: \
+    using VectorInnerType = ObservableVectorInnerImpl<##Options##>; \
+\
+protected: \
+    typename VectorInnerType* GetVectorInnerImpl() \
+    { \
+        return &m_vectorInnerImpl; \
+    } \
+    ITrackerHandleManager* GetExternalTrackerHandleManager() \
+    { \
+        return this; \
+    }; \
+    winrt::IInspectable GetVectorEventSender() \
+    { \
+        return *this; \
+    }; \
+    typename Options## ::EventSource* GetVectorEventSource() \
+    { \
+        return &m_vectorEventSource; \
+    }; \
+\
+private: \
+    typename VectorInnerType m_vectorInnerImpl{this}; \
+    typename Options## ::EventSource m_vectorEventSource{this}; \
+\
+private:
 
 // Implement all interfaces for IXXVector/IXXIterator/IXXObservable
 #define Implement_Vector(Options) \
-    Implement_IVector_Read_Functions(##Options##) \
-    Implement_IVector_Modify_Functions(##Options##) \
-    Implement_IIterator(##Options##) \
-    Implement_IObservable(##Options##) \
-    Implement_Vector_External(##Options##) 
+    Implement_IVector_Read_Functions(##Options##) Implement_IVector_Modify_Functions(##Options##) \
+        Implement_IIterator(##Options##) Implement_IObservable(##Options##) Implement_Vector_External(##Options##)
 
 // Implement all interfaces for IXXVector/IXXIterator/IXXObservable except those which will modify the vector
 // Like TreeViewNode, we need do additional work before Add/Remove/Modify the vector
 #define Implement_Vector_Read(Options) \
-    Implement_IVector_Read_Functions(##Options##) \
-    Implement_IIterator(##Options##) \
-    Implement_IObservable(##Options##) \
-    Implement_Vector_External(##Options##) 
+    Implement_IVector_Read_Functions(##Options##) Implement_IIterator(##Options##) Implement_IObservable(##Options##) \
+        Implement_Vector_External(##Options##)
 
 // Implement all interfaces for IXXVector/IXXIterator/IXXObservable except those which will modify the vector
 // Like TreeViewNode, we need do additional work before Add/Remove/Modify the vector
 #define Implement_Vector_Read_NoObservable(Options) \
-    Implement_IVector_Read_Functions(##Options##) \
-    Implement_IIterator(##Options##) \
-    Implement_Vector_External(##Options##) 
-
+    Implement_IVector_Read_Functions(##Options##) Implement_IIterator(##Options##) Implement_Vector_External(##Options##)
 
 template <typename T, bool isObservable, bool isBindable, bool isDependencyObjectBase, bool isNoTrackerRef, typename Options = VectorOptions<T, isObservable, isBindable, isDependencyObjectBase, isNoTrackerRef>>
-class VectorBase :
-    public ReferenceTracker<
-    VectorBase<T, isObservable, isBindable, isDependencyObjectBase, isNoTrackerRef, Options>,
-    reference_tracker_implements_t<typename Options::VectorType>::type,
-    typename Options::IterableType,
-    std::conditional_t<isObservable, typename Options::ObservableVectorType, void>>,
-    public Options::IVectorOwner
+class VectorBase : public ReferenceTracker<
+                       VectorBase<T, isObservable, isBindable, isDependencyObjectBase, isNoTrackerRef, Options>,
+                       reference_tracker_implements_t<typename Options::VectorType>::type,
+                       typename Options::IterableType,
+                       std::conditional_t<isObservable, typename Options::ObservableVectorType, void>>,
+                   public Options::IVectorOwner
 {
     Implement_Vector(Options)
 
-public:
-    VectorBase()
+        public : VectorBase()
     {
     }
 
@@ -596,43 +617,45 @@ protected:
     {
         m_indexOfFunction = indexOfFunction;
     }
-    virtual std::function<bool(T const& value, uint32_t& index)> GetCustomIndexOfFunction() { return m_indexOfFunction; };
+    virtual std::function<bool(T const& value, uint32_t& index)> GetCustomIndexOfFunction()
+    {
+        return m_indexOfFunction;
+    };
+
 private:
-    std::function<bool(T const& value, uint32_t& index)> m_indexOfFunction{ };
+    std::function<bool(T const& value, uint32_t& index)> m_indexOfFunction{};
 };
 
-
-template<typename T, 
-    int flags = MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>(), 
-    typename Helper = VectorFlagHelper<flags>>
-class Vector :
-    public VectorBase<T, Helper::isObservable, Helper::isBindable, Helper::isDependencyObjectBase, Helper::isNoTrackerRef>
+template <typename T, int flags = MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>(), typename Helper = VectorFlagHelper<flags>>
+class Vector : public VectorBase<T, Helper::isObservable, Helper::isBindable, Helper::isDependencyObjectBase, Helper::isNoTrackerRef>
 {
 public:
-    Vector() {}
-    Vector(uint32_t capacity) : VectorBase<T, Helper::isObservable, Helper::isBindable, Helper::isDependencyObjectBase, Helper::isNoTrackerRef>(capacity) {}
+    Vector()
+    {
+    }
+    Vector(uint32_t capacity) :
+        VectorBase<T, Helper::isObservable, Helper::isBindable, Helper::isDependencyObjectBase, Helper::isNoTrackerRef>(capacity)
+    {
+    }
 
-    // The same copy of data for NavigationView split into two parts in top navigationview. So two or more vectors are created to provide multiple datasource for controls.
-    // InspectingDataSource is converting C# collections to Vector<winrt::IInspectable>. When GetAt(index) for things like string, a new IInspectable is always returned by C# projection. 
-    // ListView use indexOf for selection, so a copied/filtered view of C# collection doesn't work for SelectedItem(s) anymore because IInspectable comparsion always return false.
-    // As a workaround, the copied/filtered vector requires others help to IndexOf the orignial C# collection. 
-    // So the comparison is done by C# vector other than Inspectable directly comparision. Here is an example:
-    // Raw data A is: Home-Apps-Music-Sports 
-    // data is splitted two vectors: B and C. B includes Homes, and C includes Apps-Music-Sports
-    // Music is the selected item. SplitDataSource is the class help to manage the raw data and provides splitted vectors to ListViews
-    // ListView call C.indexOf("Music")
+    // The same copy of data for NavigationView split into two parts in top navigationview. So two or more vectors are created to
+    // provide multiple datasource for controls. InspectingDataSource is converting C# collections to Vector<winrt::IInspectable>.
+    // When GetAt(index) for things like string, a new IInspectable is always returned by C# projection. ListView use indexOf for
+    // selection, so a copied/filtered view of C# collection doesn't work for SelectedItem(s) anymore because IInspectable
+    // comparsion always return false. As a workaround, the copied/filtered vector requires others help to IndexOf the orignial C#
+    // collection. So the comparison is done by C# vector other than Inspectable directly comparision. Here is an example: Raw
+    // data A is: Home-Apps-Music-Sports data is splitted two vectors: B and C. B includes Homes, and C includes Apps-Music-Sports
+    // Music is the selected item. SplitDataSource is the class help to manage the raw data and provides splitted vectors to
+    // ListViews ListView call C.indexOf("Music")
     //                  C ask SplitDataSource.IndexOf
     //                      SplitDataSource calls A.IndexOf (C# provided it)
     //                      SpiltDataSource help to convert the indexInRawData to indexInC
-    //                  return index in C    
+    //                  return index in C
     Vector(std::function<int(typename T const& value)> indexOfFunction) : m_indexOfFunction(indexOfFunction)
     {
         if (m_indexOfFunction)
         {
-            this->SetCustomIndexOfFunction(
-                [this](T const& value, uint32_t& index) {
-                return CustomIndexOf(value, index);
-            });
+            this->SetCustomIndexOfFunction([this](T const& value, uint32_t& index) { return CustomIndexOf(value, index); });
         }
     }
 
@@ -655,17 +678,11 @@ private:
     std::function<int(T const& value)> m_indexOfFunction{};
 };
 
-
 // This type implements IObservableVector<T> *and* IObservableVector<IInspectable> so that the collection can be bound into an ItemsControl
 // This implementation currently only supports a reference type for T (e.g. int and string are not yet supported for T).
 template <typename T>
-struct ObservableVector :
-    public winrt::implements<ObservableVector<T>,
-    Vector<T>,
-    winrt::IObservableVector<winrt::IInspectable>,
-    winrt::IVector<winrt::IInspectable>,
-    winrt::IVectorView<winrt::IInspectable>,
-    winrt::IIterable<winrt::IInspectable>>
+struct ObservableVector
+    : public winrt::implements<ObservableVector<T>, Vector<T>, winrt::IObservableVector<winrt::IInspectable>, winrt::IVector<winrt::IInspectable>, winrt::IVectorView<winrt::IInspectable>, winrt::IIterable<winrt::IInspectable>>
 {
     winrt::event_token VectorChanged(winrt::VectorChangedEventHandler<winrt::IInspectable> const& handler)
     {
@@ -673,11 +690,8 @@ struct ObservableVector :
         // is IObservableVector<IInspectable> so we have to re-raise. Luckily we can reuse the args.
         if (!m_innerChangedRevoker)
         {
-            m_innerChangedRevoker = static_cast<winrt::IObservableVector<T>>(*this).VectorChanged(winrt::auto_revoke,
-                [this](auto&& sender, auto &&args)
-                {
-                    m_changed(*this, args);
-                });
+            m_innerChangedRevoker = static_cast<winrt::IObservableVector<T>>(*this).VectorChanged(
+                winrt::auto_revoke, [this](auto&& sender, auto&& args) { m_changed(*this, args); });
         }
         return m_changed.add(handler);
     }
@@ -758,8 +772,7 @@ struct ObservableVector :
 private:
     struct Iterator : winrt::implements<Iterator, winrt::IIterator<winrt::IInspectable>>
     {
-        explicit Iterator(winrt::IIterator<T>&& inner) noexcept :
-            m_inner(std::move(inner))
+        explicit Iterator(winrt::IIterator<T>&& inner) noexcept : m_inner(std::move(inner))
         {
         }
 

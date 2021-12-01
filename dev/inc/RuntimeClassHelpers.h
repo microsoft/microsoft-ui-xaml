@@ -9,9 +9,8 @@
 #include <winrt\Windows.UI.Xaml.h>
 
 // This type is a helper to make ReferenceTracker work with winrt::implements intead of a concrete implementation type
-template <typename D, typename WinRTClassType, template <typename, typename ...> class ImplT, typename ... I>
-struct reference_tracker_implements : 
-    public ImplT<D, WinRTClassType, I ..., winrt::composable, winrt::composing>
+template <typename D, typename WinRTClassType, template <typename, typename...> class ImplT, typename... I>
+struct reference_tracker_implements : public ImplT<D, WinRTClassType, I..., winrt::composable, winrt::composing>
 {
     using class_type = typename WinRTClassType;
 
@@ -23,24 +22,24 @@ struct reference_tracker_implements :
 template <typename WinRTClassType>
 struct reference_tracker_implements_t
 {
-    template <typename D, typename ... I>
-    using type = reference_tracker_implements<D, WinRTClassType, winrt::implements, I ...>;
+    template <typename D, typename... I>
+    using type = reference_tracker_implements<D, WinRTClassType, winrt::implements, I...>;
 };
 
-template <typename WinRTClassType, template <typename, typename ...> class ImplT>
+template <typename WinRTClassType, template <typename, typename...> class ImplT>
 struct reference_tracker_custom_implements_t
 {
-    template <typename D, typename ... I>
-    using type = reference_tracker_implements<D, WinRTClassType, ImplT, I ...>;
+    template <typename D, typename... I>
+    using type = reference_tracker_implements<D, WinRTClassType, ImplT, I...>;
 };
 
-template <typename D, template <typename, typename ...> class ImplT, typename ... I>
-struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, public ITrackerHandleManager
+template <typename D, template <typename, typename...> class ImplT, typename... I>
+struct ReferenceTracker : public ImplT<D, I..., ::IReferenceTrackerExtension>, public ITrackerHandleManager
 {
-    using impl_type = typename ImplT<D, I ..., ::IReferenceTrackerExtension>;
+    using impl_type = typename ImplT<D, I..., ::IReferenceTrackerExtension>;
 
     template <typename... Args>
-    ReferenceTracker(Args&&... args) : impl_type(std::forward<Args>(args) ...)
+    ReferenceTracker(Args&&... args) : impl_type(std::forward<Args>(args)...)
     {
         m_owningThreadId = ::GetCurrentThreadId();
 
@@ -51,7 +50,6 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
     {
         CheckThread();
     }
-
 
     bool IsOnThread()
     {
@@ -101,7 +99,7 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
                 static_cast<IUnknown*>(*value)->AddRef();
             }
             else
-            {               
+            {
                 return impl_type::NonDelegatingQueryInterface(riid, value);
             }
         }
@@ -123,7 +121,7 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
         return NonDelegatingQueryInterface(id, object);
     }
 
-    // TEMP-END    
+    // TEMP-END
 
     static void final_release(std::unique_ptr<D>&& self)
     {
@@ -135,21 +133,16 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
     static void DeleteInstanceOnUIThread(std::unique_ptr<D>&& self) noexcept
     {
         bool queued = false;
-        
+
         // See if we're on the UI thread
-        if(!self->IsOnThread())
+        if (!self->IsOnThread())
         {
             // We're not on the UI thread
-            static_cast<ReferenceTracker<D, ImplT, I...>*>(self.get())->m_dispatcherHelper.RunAsync(
-                [instance = self.release()]()
-                {
-                    delete instance;
-                },
-                true /*fallbackToThisThread*/);
+            static_cast<ReferenceTracker<D, ImplT, I...>*>(self.get())
+                ->m_dispatcherHelper.RunAsync([instance = self.release()]() { delete instance; }, true /*fallbackToThisThread*/);
 
             queued = true;
         }
-        
 
         if (!queued)
         {
@@ -168,8 +161,9 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
 #pragma warning(push)
 #pragma warning(disable : 26444) // Disable es.84, there is sometimes a return value that needs to be assigned and ignored
             // Internally derive from DependencyObject to get ReferenceTracker behavior.
-            winrt::impl::call_factory<winrt::DependencyObject, winrt::IDependencyObjectFactory>([&](auto&& f) { f.CreateInstance(*this, this->m_inner); });
-            //winrt::get_activation_factory<winrt::DependencyObject, winrt::IDependencyObjectFactory>().CreateInstance(*this, this->m_inner);
+            winrt::impl::call_factory<winrt::DependencyObject, winrt::IDependencyObjectFactory>(
+                [&](auto&& f) { f.CreateInstance(*this, this->m_inner); });
+            // winrt::get_activation_factory<winrt::DependencyObject, winrt::IDependencyObjectFactory>().CreateInstance(*this, this->m_inner);
 #pragma warning(pop)
         }
         if (this->m_inner)
@@ -192,22 +186,36 @@ private:
 };
 
 #define CppWinRTActivatableClassWithFactory(className, factory) \
-    namespace factory_implementation { using className = factory; }; \
-    namespace implementation { using className = ::className; }; \
+    namespace factory_implementation { \
+        using className = factory; \
+    }; \
+    namespace implementation { \
+        using className = ::className; \
+    };
 
-#define CppWinRTActivatableClass(className) \
-    CppWinRTActivatableClassWithFactory(className, className##Factory)
+#define CppWinRTActivatableClass(className) CppWinRTActivatableClassWithFactory(className, className##Factory)
 
 #define CppWinRTActivatableClassWithBasicFactory(className) \
-    struct className##Factory : public winrt::factory_implementation::className##T<className##Factory, ::className> {}; \
+    struct className##Factory : public winrt::factory_implementation::className##T<className##Factory, ::className> \
+    { \
+    }; \
     CppWinRTActivatableClassWithFactory(className, className##Factory)
 
 #define CppWinRTActivatableClassWithDPFactory(className) \
     struct className##Factory : public winrt::factory_implementation::className##T<className##Factory, ::className> \
     { \
-        className##Factory() { EnsureProperties(); } \
-        static void ClearProperties() { ::className::ClearProperties(); }\
-        static void EnsureProperties() { ::className::EnsureProperties(); }\
+        className##Factory() \
+        { \
+            EnsureProperties(); \
+        } \
+        static void ClearProperties() \
+        { \
+            ::className::ClearProperties(); \
+        } \
+        static void EnsureProperties() \
+        { \
+            ::className::EnsureProperties(); \
+        } \
     }; \
     CppWinRTActivatableClassWithFactory(className, className##Factory)
 
@@ -219,5 +227,5 @@ private:
 #define ForwardRefToBaseReferenceTracker(baseClass) \
     HRESULT __stdcall QueryInterface(GUID const& id, void** object) noexcept override \
     { \
-        return baseClass##::QueryInterface(id, object); \
-    } \
+        return baseClass## ::QueryInterface(id, object); \
+    }\

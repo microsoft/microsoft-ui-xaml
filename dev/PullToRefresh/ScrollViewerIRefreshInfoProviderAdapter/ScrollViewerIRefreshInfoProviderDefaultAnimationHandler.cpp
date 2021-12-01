@@ -13,17 +13,18 @@
 #define REFRESH_VISUALIZER_OVERPAN_RATIO 0.4
 
 // Implementors of the IAdapterAnimationHandler interface are responsible for implementing the
-// 3 well defined component level animations in a PTR scenario. The three animations involved 
-// in PTR include the expression animation used to have the RefreshVisualizer and its 
+// 3 well defined component level animations in a PTR scenario. The three animations involved
+// in PTR include the expression animation used to have the RefreshVisualizer and its
 // InfoProvider follow the users finger, the animation used to show the RefreshVisualizer
-// when a refresh is requested, and the animation used to hide the refreshVisualizer when the 
+// when a refresh is requested, and the animation used to hide the refreshVisualizer when the
 // refresh is completed.
 
-// The interaction tracker set up by the Adapter has to be assembled in a very particular way. 
+// The interaction tracker set up by the Adapter has to be assembled in a very particular way.
 // Factoring out this functionality is a way to expose the animation for
 // Alteration without having to expose the "delicate" interaction tracker.
 
-ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::ScrollViewerIRefreshInfoProviderDefaultAnimationHandler(const winrt::UIElement&  container, const winrt::RefreshPullDirection& refreshPullDirection)
+ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::ScrollViewerIRefreshInfoProviderDefaultAnimationHandler(
+    const winrt::UIElement& container, const winrt::RefreshPullDirection& refreshPullDirection)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     if (container)
@@ -44,7 +45,8 @@ ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::~ScrollViewerIRefreshIn
     }
 }
 
-void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::InteractionTrackerAnimation(const winrt::UIElement& refreshVisualizer, const winrt::UIElement& infoProvider, const winrt::InteractionTracker& interactionTracker)
+void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::InteractionTrackerAnimation(
+    const winrt::UIElement& refreshVisualizer, const winrt::UIElement& infoProvider, const winrt::InteractionTracker& interactionTracker)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     ValidateAndStoreParameters(refreshVisualizer, infoProvider, interactionTracker);
@@ -64,7 +66,8 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::InteractionTracker
                 L"-refreshVisualizerVisual.Size.Y + min(refreshVisualizerVisual.Size.Y, -interactionTracker.Position.Y)");
 
             m_infoProviderOffsetAnimation = m_compositor.CreateExpressionAnimation(
-                L"min(refreshVisualizerVisual.Size.Y, max(-interactionTracker.Position.Y, -refreshVisualizerVisual.Size.Y * 0.4))");
+                L"min(refreshVisualizerVisual.Size.Y, max(-interactionTracker.Position.Y, -refreshVisualizerVisual.Size.Y * "
+                L"0.4))");
 
             break;
         case winrt::RefreshPullDirection::BottomToTop:
@@ -72,7 +75,8 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::InteractionTracker
                 L"refreshVisualizerVisual.Size.Y - min(refreshVisualizerVisual.Size.Y, interactionTracker.Position.Y)");
 
             m_infoProviderOffsetAnimation = m_compositor.CreateExpressionAnimation(
-                L"max(-refreshVisualizerVisual.Size.Y, min(-interactionTracker.Position.Y, refreshVisualizerVisual.Size.Y * 0.4))");
+                L"max(-refreshVisualizerVisual.Size.Y, min(-interactionTracker.Position.Y, refreshVisualizerVisual.Size.Y * "
+                L"0.4))");
 
             break;
         case winrt::RefreshPullDirection::LeftToRight:
@@ -80,7 +84,8 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::InteractionTracker
                 L"-refreshVisualizerVisual.Size.X + min(refreshVisualizerVisual.Size.X, -interactionTracker.Position.X)");
 
             m_infoProviderOffsetAnimation = m_compositor.CreateExpressionAnimation(
-                L"min(refreshVisualizerVisual.Size.X, max(-interactionTracker.Position.X, -refreshVisualizerVisual.Size.X * 0.4))");
+                L"min(refreshVisualizerVisual.Size.X, max(-interactionTracker.Position.X, -refreshVisualizerVisual.Size.X * "
+                L"0.4))");
 
             break;
         case winrt::RefreshPullDirection::RightToLeft:
@@ -88,7 +93,8 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::InteractionTracker
                 L"refreshVisualizerVisual.Size.X - min(refreshVisualizerVisual.Size.X, interactionTracker.Position.X)");
 
             m_infoProviderOffsetAnimation = m_compositor.CreateExpressionAnimation(
-                L"max(-refreshVisualizerVisual.Size.X, min(-interactionTracker.Position.X, refreshVisualizerVisual.Size.X * 0.4))");
+                L"max(-refreshVisualizerVisual.Size.X, min(-interactionTracker.Position.X, refreshVisualizerVisual.Size.X * "
+                L"0.4))");
 
             break;
         default:
@@ -111,8 +117,8 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::InteractionTracker
         m_infoProviderVisual.Offset(winrt::float3(0.0f));
         if (SharedHelpers::IsRS2OrHigher())
         {
-            m_refreshVisualizerVisual.Properties().InsertVector3(L"Translation", { 0.0f, 0.0f, 0.0f });
-            m_infoProviderVisual.Properties().InsertVector3(L"Translation", { 0.0f, 0.0f, 0.0f });
+            m_refreshVisualizerVisual.Properties().InsertVector3(L"Translation", {0.0f, 0.0f, 0.0f});
+            m_infoProviderVisual.Properties().InsertVector3(L"Translation", {0.0f, 0.0f, 0.0f});
         }
 
         winrt::hstring animatedProperty = getAnimatedPropertyName();
@@ -122,7 +128,8 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::InteractionTracker
     }
 }
 
-void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::RefreshRequestedAnimation(const winrt::UIElement& refreshVisualizer, const winrt::UIElement& infoProvider, double executionRatio)
+void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::RefreshRequestedAnimation(
+    const winrt::UIElement& refreshVisualizer, const winrt::UIElement& infoProvider, double executionRatio)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     ValidateAndStoreParameters(refreshVisualizer, infoProvider, nullptr);
@@ -136,7 +143,8 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::RefreshRequestedAn
         switch (m_refreshPullDirection)
         {
         case winrt::RefreshPullDirection::TopToBottom:
-            m_refreshVisualizerRefreshRequestedAnimation.InsertKeyFrame(1.0f, -(m_refreshVisualizerVisual.Size().y * (1 - (float)executionRatio)));
+            m_refreshVisualizerRefreshRequestedAnimation.InsertKeyFrame(
+                1.0f, -(m_refreshVisualizerVisual.Size().y * (1 - (float)executionRatio)));
             m_infoProviderRefreshRequestedAnimation.InsertKeyFrame(1.0f, m_refreshVisualizerVisual.Size().y * (float)executionRatio);
             break;
         case winrt::RefreshPullDirection::BottomToTop:
@@ -144,7 +152,8 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::RefreshRequestedAn
             m_infoProviderRefreshRequestedAnimation.InsertKeyFrame(1.0f, -m_refreshVisualizerVisual.Size().y * (float)executionRatio);
             break;
         case winrt::RefreshPullDirection::LeftToRight:
-            m_refreshVisualizerRefreshRequestedAnimation.InsertKeyFrame(1.0f, -(m_refreshVisualizerVisual.Size().x * (1 - (float)executionRatio)));
+            m_refreshVisualizerRefreshRequestedAnimation.InsertKeyFrame(
+                1.0f, -(m_refreshVisualizerVisual.Size().x * (1 - (float)executionRatio)));
             m_infoProviderRefreshRequestedAnimation.InsertKeyFrame(1.0f, m_refreshVisualizerVisual.Size().x * (float)executionRatio);
             break;
         case winrt::RefreshPullDirection::RightToLeft:
@@ -202,7 +211,8 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::RefreshCompletedAn
     if (m_compositor)
     {
         m_refreshCompletedScopedBatch = m_compositor.CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
-        m_compositionScopedBatchCompletedEventToken = m_refreshCompletedScopedBatch.Completed({ this, &ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::RefreshCompletedBatchCompleted });
+        m_compositionScopedBatchCompletedEventToken = m_refreshCompletedScopedBatch.Completed(
+            {this, &ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::RefreshCompletedBatchCompleted});
     }
 
     if (m_refreshVisualizerRefreshCompletedAnimation && m_infoProviderRefreshCompletedAnimation)
@@ -219,8 +229,9 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::RefreshCompletedAn
     }
 }
 
-//PrivateHelpers
-void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::ValidateAndStoreParameters(const winrt::UIElement& refreshVisualizer, const winrt::UIElement& infoProvider, const winrt::InteractionTracker& interactionTracker)
+// PrivateHelpers
+void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::ValidateAndStoreParameters(
+    const winrt::UIElement& refreshVisualizer, const winrt::UIElement& infoProvider, const winrt::InteractionTracker& interactionTracker)
 {
     if (refreshVisualizer && m_refreshVisualizer.get() != refreshVisualizer)
     {
@@ -234,7 +245,7 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::ValidateAndStorePa
         if (SharedHelpers::IsRS2OrHigher())
         {
             winrt::ElementCompositionPreview::SetIsTranslationEnabled(refreshVisualizer, true);
-            m_refreshVisualizerVisual.Properties().InsertVector3(L"Translation", { 0.0f, 0.0f, 0.0f });
+            m_refreshVisualizerVisual.Properties().InsertVector3(L"Translation", {0.0f, 0.0f, 0.0f});
         }
 
         if (!m_compositor)
@@ -254,7 +265,7 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::ValidateAndStorePa
         if (SharedHelpers::IsRS2OrHigher())
         {
             winrt::ElementCompositionPreview::SetIsTranslationEnabled(infoProvider, true);
-            m_infoProviderVisual.Properties().InsertVector3(L"Translation", { 0.0f, 0.0f, 0.0f });
+            m_infoProviderVisual.Properties().InsertVector3(L"Translation", {0.0f, 0.0f, 0.0f});
         }
 
         if (!m_compositor)
@@ -272,7 +283,8 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::ValidateAndStorePa
     }
 }
 
-void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::RefreshCompletedBatchCompleted(const winrt::IInspectable& /*sender*/, const winrt::CompositionBatchCompletedEventArgs& /*args*/)
+void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::RefreshCompletedBatchCompleted(
+    const winrt::IInspectable& /*sender*/, const winrt::CompositionBatchCompletedEventArgs& /*args*/)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     m_refreshCompletedScopedBatch.Completed(m_compositionScopedBatchCompletedEventToken);

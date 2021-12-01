@@ -6,10 +6,12 @@
 #include "TabViewItemTemplateSettings.g.h"
 #include "TabViewItemTemplateSettings.properties.h"
 
-class TabViewItemTemplateSettings :
-    public winrt::implementation::TabViewItemTemplateSettingsT<TabViewItemTemplateSettings>,
-    public TabViewItemTemplateSettingsProperties
+class TabViewItemTemplateSettings : public winrt::implementation::TabViewItemTemplateSettingsT<TabViewItemTemplateSettings>,
+                                    public TabViewItemTemplateSettingsProperties
 {
 public:
-    TabViewItemTemplateSettings() { EnsureProperties();  }
+    TabViewItemTemplateSettings()
+    {
+        EnsureProperties();
+    }
 };

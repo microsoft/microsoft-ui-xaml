@@ -10,9 +10,7 @@
 #include "SharedHelpers.h"
 #include "NavigationViewAutomationPeer.properties.cpp"
 
-
-NavigationViewAutomationPeer::NavigationViewAutomationPeer(winrt::NavigationView const& owner) :
-    ReferenceTracker(owner)
+NavigationViewAutomationPeer::NavigationViewAutomationPeer(winrt::NavigationView const& owner) : ReferenceTracker(owner)
 {
 }
 
@@ -44,7 +42,7 @@ winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProv
         {
             if (auto peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(nvi))
             {
-                return { ProviderFromPeer(peer) };
+                return {ProviderFromPeer(peer)};
             }
         }
     }

@@ -19,8 +19,8 @@ public:
     template <typename Factory>
     static Factory GetFactory(_In_ PCWSTR typeName)
     {
-        winrt::IActivationFactory _activationFactory{ nullptr };
-        winrt::hstring activatableClassId{ typeName };
+        winrt::IActivationFactory _activationFactory{nullptr};
+        winrt::hstring activatableClassId{typeName};
 
         if (FAILED(WINRT_GetActivationFactory(winrt::get_abi(activatableClassId), winrt::put_abi(_activationFactory))))
         {
@@ -34,8 +34,8 @@ public:
 
     static winrt::IInspectable ActivateInstance(_In_ PCWSTR typeName)
     {
-        winrt::IActivationFactory _activationFactory{ nullptr };
-        winrt::hstring activatableClassId{ typeName };
+        winrt::IActivationFactory _activationFactory{nullptr};
+        winrt::hstring activatableClassId{typeName};
         winrt::check_hresult(WINRT_GetActivationFactory(winrt::get_abi(activatableClassId), winrt::put_abi(_activationFactory)));
 
         return _activationFactory.ActivateInstance<winrt::IInspectable>();

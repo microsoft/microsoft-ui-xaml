@@ -6,8 +6,8 @@
 #include "PipsPager.h"
 #include "PipsPagerAutomationPeer.g.h"
 
-class PipsPagerAutomationPeer :
-    public ReferenceTracker<PipsPagerAutomationPeer, winrt::implementation::PipsPagerAutomationPeerT, winrt::ISelectionProvider>
+class PipsPagerAutomationPeer
+    : public ReferenceTracker<PipsPagerAutomationPeer, winrt::implementation::PipsPagerAutomationPeerT, winrt::ISelectionProvider>
 {
 
 public:
@@ -20,8 +20,14 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore();
 
     // ISelectionProvider
-    bool CanSelectMultiple() { return false; };
-    bool IsSelectionRequired() { return true; };
+    bool CanSelectMultiple()
+    {
+        return false;
+    };
+    bool IsSelectionRequired()
+    {
+        return true;
+    };
     winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProviderSimple> GetSelection();
 
     void RaiseSelectionChanged(double oldIndex, double newIndex);
@@ -29,4 +35,3 @@ public:
 private:
     com_ptr<PipsPager> GetImpl();
 };
-

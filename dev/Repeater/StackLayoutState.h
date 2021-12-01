@@ -6,24 +6,33 @@
 #include "StackLayoutState.g.h"
 #include "FlowLayoutAlgorithm.h"
 
-class StackLayoutState :
-    public ReferenceTracker<StackLayoutState, winrt::implementation::StackLayoutStateT, winrt::composing>
+class StackLayoutState : public ReferenceTracker<StackLayoutState, winrt::implementation::StackLayoutStateT, winrt::composing>
 {
 public:
-    void InitializeForContext(
-        const winrt::VirtualizingLayoutContext& context,
-        IFlowLayoutAlgorithmDelegates* callbacks);
+    void InitializeForContext(const winrt::VirtualizingLayoutContext& context, IFlowLayoutAlgorithmDelegates* callbacks);
     void UninitializeForContext(const winrt::VirtualizingLayoutContext& context);
     void OnElementMeasured(int elementIndex, double majorSize, double minorSize);
     void OnMeasureStart();
 
-    ::FlowLayoutAlgorithm& FlowAlgorithm() { return m_flowAlgorithm; }
-    double TotalElementSize() const { return m_totalElementSize; }
-    double MaxArrangeBounds() const { return m_maxArrangeBounds; }
-    int TotalElementsMeasured() const { return m_totalElementsMeasured; }
+    ::FlowLayoutAlgorithm& FlowAlgorithm()
+    {
+        return m_flowAlgorithm;
+    }
+    double TotalElementSize() const
+    {
+        return m_totalElementSize;
+    }
+    double MaxArrangeBounds() const
+    {
+        return m_maxArrangeBounds;
+    }
+    int TotalElementsMeasured() const
+    {
+        return m_totalElementsMeasured;
+    }
 
 private:
-    ::FlowLayoutAlgorithm m_flowAlgorithm{ this };
+    ::FlowLayoutAlgorithm m_flowAlgorithm{this};
     std::vector<double> m_estimationBuffer{};
     double m_totalElementSize{};
     // During the measure pass, as we measure the elements, we will keep track

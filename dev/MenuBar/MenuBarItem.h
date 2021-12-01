@@ -12,16 +12,13 @@ enum class FlyoutLocation
     Right
 };
 
-class MenuBarItem :
-    public ReferenceTracker<MenuBarItem, winrt::implementation::MenuBarItemT>,
-    public MenuBarItemProperties
+class MenuBarItem : public ReferenceTracker<MenuBarItem, winrt::implementation::MenuBarItemT>, public MenuBarItemProperties
 {
 public:
     MenuBarItem();
     virtual ~MenuBarItem();
 
     void OnApplyTemplate();
-
 
     void AddPassThroughElement(const winrt::DependencyObject& element);
     void ShowMenuFlyout();
@@ -34,7 +31,6 @@ public:
     winrt::AutomationPeer OnCreateAutomationPeer();
 
 private:
-
     void PopulateContent();
     void AttachEventHandlers();
     void DetachEventHandlers(bool useSafeGet = false);
@@ -56,11 +52,11 @@ private:
     void OnFlyoutOpening(winrt::IInspectable const& sender, winrt::IInspectable const& args);
 
     // Variables
-    tracker_ref<winrt::Button> m_button{ this };
-    tracker_ref<winrt::MenuBarItemFlyout> m_flyout{ this };
+    tracker_ref<winrt::Button> m_button{this};
+    tracker_ref<winrt::MenuBarItemFlyout> m_flyout{this};
     weak_ref<winrt::DependencyObject> m_passThroughElement;
     weak_ref<winrt::MenuBar> m_menuBar;
-    bool m_isFlyoutOpen{ false };
+    bool m_isFlyoutOpen{false};
 
     // Event tokens and handlers
     winrt::UIElement::KeyDown_revoker m_presenterKeyDownRevoker{};

@@ -7,9 +7,7 @@
 
 #include "BreadcrumbIterable.h"
 
-
-class BreadcrumbIterator :
-    public winrt::implements<BreadcrumbIterator, winrt::IIterator<winrt::IInspectable>>
+class BreadcrumbIterator : public winrt::implements<BreadcrumbIterator, winrt::IIterator<winrt::IInspectable>>
 {
 public:
     BreadcrumbIterator(const winrt::IInspectable& itemsSource);
@@ -20,7 +18,6 @@ public:
     bool MoveNext();
 
 private:
-
     uint32_t m_currentIndex{};
     uint32_t m_size{};
     winrt::ItemsSourceView m_breadcrumbItemsSourceView{nullptr};

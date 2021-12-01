@@ -7,14 +7,11 @@
 #include "Utils.h"
 #include "ColumnMajorUniformToLargestGridLayout.h"
 
-winrt::Size ColumnMajorUniformToLargestGridLayout::MeasureOverride(
-    winrt::NonVirtualizingLayoutContext const& context,
-    winrt::Size const& availableSize)
+winrt::Size ColumnMajorUniformToLargestGridLayout::MeasureOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& availableSize)
 {
     if (auto const children = context.Children())
     {
-        m_largestChildSize = [children, availableSize]()
-        {
+        m_largestChildSize = [children, availableSize]() {
             auto largestChildWidth = 0.0f;
             auto largestChildHeight = 0.0f;
             for (auto const child : children)
@@ -34,20 +31,16 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::MeasureOverride(
         }();
 
         m_actualColumnCount = CalculateColumns(children.Size(), m_largestChildSize.Width, availableSize.Width);
-        auto const maxItemsPerColumn = static_cast<int>(std::ceil(static_cast<double>(children.Size()) / static_cast<double>(m_actualColumnCount)));
+        auto const maxItemsPerColumn =
+            static_cast<int>(std::ceil(static_cast<double>(children.Size()) / static_cast<double>(m_actualColumnCount)));
         return winrt::Size(
-            (m_largestChildSize.Width * m_actualColumnCount) +
-            (static_cast<float>(ColumnSpacing()) * (m_actualColumnCount - 1)),
-            (m_largestChildSize.Height * maxItemsPerColumn) +
-            (static_cast<float>(RowSpacing()) * (maxItemsPerColumn - 1))
-        );
+            (m_largestChildSize.Width * m_actualColumnCount) + (static_cast<float>(ColumnSpacing()) * (m_actualColumnCount - 1)),
+            (m_largestChildSize.Height * maxItemsPerColumn) + (static_cast<float>(RowSpacing()) * (maxItemsPerColumn - 1)));
     }
     return winrt::Size(0, 0);
 }
 
-winrt::Size ColumnMajorUniformToLargestGridLayout::ArrangeOverride(
-    winrt::NonVirtualizingLayoutContext const& context,
-    winrt::Size const& finalSize)
+winrt::Size ColumnMajorUniformToLargestGridLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& finalSize)
 {
     if (auto const children = context.Children())
     {
@@ -65,7 +58,7 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::ArrangeOverride(
         for (auto const child : children)
         {
             auto const desiredSize = child.DesiredSize();
-            child.Arrange(winrt::Rect{ horizontalOffset, verticalOffset, desiredSize.Width, desiredSize.Height });
+            child.Arrange(winrt::Rect{horizontalOffset, verticalOffset, desiredSize.Width, desiredSize.Height});
             if (column < numberOfColumnsWithExtraElements)
             {
                 if (index % (minitemsPerColumn + 1) == minitemsPerColumn)
@@ -98,10 +91,8 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::ArrangeOverride(
 
         if (m_testHooksEnabled)
         {
-            //Testhooks setup
-            if (m_largerColumns != numberOfColumnsWithExtraElements ||
-                m_columns != column ||
-                m_rows != minitemsPerColumn)
+            // Testhooks setup
+            if (m_largerColumns != numberOfColumnsWithExtraElements || m_columns != column || m_rows != minitemsPerColumn)
             {
                 m_largerColumns = numberOfColumnsWithExtraElements;
                 m_columns = column;
@@ -170,7 +161,7 @@ void ColumnMajorUniformToLargestGridLayout::ValidateGreaterThanZero(int value)
     }
 }
 
-//Testhooks helpers, only function while m_testHooksEnabled == true
+// Testhooks helpers, only function while m_testHooksEnabled == true
 void ColumnMajorUniformToLargestGridLayout::SetTestHooksEnabled(bool enabled)
 {
     m_testHooksEnabled = enabled;
@@ -191,7 +182,8 @@ int ColumnMajorUniformToLargestGridLayout::GetLargerColumns()
     return m_largerColumns;
 }
 
-winrt::event_token ColumnMajorUniformToLargestGridLayout::LayoutChanged(winrt::TypedEventHandler<winrt::ColumnMajorUniformToLargestGridLayout, winrt::IInspectable> const& value)
+winrt::event_token ColumnMajorUniformToLargestGridLayout::LayoutChanged(
+    winrt::TypedEventHandler<winrt::ColumnMajorUniformToLargestGridLayout, winrt::IInspectable> const& value)
 {
     return m_layoutChangedEventSource.add(value);
 }

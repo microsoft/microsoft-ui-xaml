@@ -9,14 +9,14 @@
 #include "TitleBar.g.h"
 #include "TitleBar.properties.h"
 
-class TitleBar :
-    public ReferenceTracker<TitleBar, winrt::implementation::TitleBarT>,
-    public TitleBarProperties
+class TitleBar : public ReferenceTracker<TitleBar, winrt::implementation::TitleBarT>, public TitleBarProperties
 {
 
 public:
     TitleBar();
-    ~TitleBar() {}
+    ~TitleBar()
+    {
+    }
 
     // IFrameworkElement
     void OnApplyTemplate();
@@ -50,11 +50,11 @@ private:
     winrt::FrameworkElement::ActualThemeChanged_revoker m_actualThemeChangedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_customContentChangedRevoker{};
 
-    tracker_ref<winrt::ColumnDefinition> m_leftPaddingColumn{ this };
-    tracker_ref<winrt::ColumnDefinition> m_rightPaddingColumn{ this };
-    tracker_ref<winrt::Grid> m_layoutRoot{ this };
-    tracker_ref<winrt::TextBlock> m_titleTextBlock{ this };
-    tracker_ref<winrt::FrameworkElement> m_customArea{ this };
+    tracker_ref<winrt::ColumnDefinition> m_leftPaddingColumn{this};
+    tracker_ref<winrt::ColumnDefinition> m_rightPaddingColumn{this};
+    tracker_ref<winrt::Grid> m_layoutRoot{this};
+    tracker_ref<winrt::TextBlock> m_titleTextBlock{this};
+    tracker_ref<winrt::FrameworkElement> m_customArea{this};
 
-    bool m_isTitleSquished{ false };
+    bool m_isTitleSquished{false};
 };

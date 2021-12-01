@@ -5,8 +5,7 @@
 
 #include "common.h"
 
-class CustomProperty :
-    public winrt::implements<CustomProperty, winrt::ICustomProperty>
+class CustomProperty : public winrt::implements<CustomProperty, winrt::ICustomProperty>
 {
 public:
     CustomProperty(

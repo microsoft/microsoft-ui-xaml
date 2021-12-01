@@ -30,7 +30,7 @@ winrt::AutomationPeer Expander::OnCreateAutomationPeer()
 
 void Expander::OnApplyTemplate()
 {
-    winrt::IControlProtected controlProtected{ *this };
+    winrt::IControlProtected controlProtected{*this};
 
     if (auto toggleButton = GetTemplateChildT<winrt::Control>(c_expanderHeader, *this))
     {
@@ -49,17 +49,14 @@ void Expander::OnApplyTemplate()
             // 1. Set the events source of the toggle button peer to the expander's.
             if (winrt::AutomationPeer expanderPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
             {
-                auto expanderEventsSource = expanderPeer.EventsSource() != nullptr ?
-                    expanderPeer.EventsSource() :
-                    expanderPeer;
+                auto expanderEventsSource = expanderPeer.EventsSource() != nullptr ? expanderPeer.EventsSource() : expanderPeer;
                 toggleButtonPeer.EventsSource(expanderEventsSource);
             }
 
             // 2. If the expander doesn't have any AutomationProperties.Name set,
             // we will try setting one based on the header. This is how
             // WPF's expanders work.
-            if (winrt::AutomationProperties::GetName(*this).empty()
-                && !toggleButtonPeer.GetNameCore().empty())
+            if (winrt::AutomationProperties::GetName(*this).empty() && !toggleButtonPeer.GetNameCore().empty())
             {
                 winrt::AutomationProperties::SetName(*this, toggleButtonPeer.GetNameCore());
             }
@@ -74,7 +71,7 @@ void Expander::OnApplyTemplate()
 
     if (auto expanderContent = GetTemplateChildT<winrt::Border>(c_expanderContent, *this))
     {
-        m_expanderContentSizeChangedRevoker = expanderContent.SizeChanged(winrt::auto_revoke, { this, &Expander::OnContentSizeChanged });
+        m_expanderContentSizeChangedRevoker = expanderContent.SizeChanged(winrt::auto_revoke, {this, &Expander::OnContentSizeChanged});
     }
 
     UpdateExpandState(false);
@@ -89,7 +86,6 @@ void Expander::OnContentSizeChanged(const winrt::IInspectable&, const winrt::Siz
     templateSettings->ContentHeight(height);
     templateSettings->NegativeContentHeight(-1 * height);
 }
-
 
 void Expander::RaiseExpandingEvent(const winrt::Expander& container)
 {
@@ -176,10 +172,6 @@ void Expander::UpdateExpandState(bool useTransitions)
     if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
     {
         auto expanderPeer = peer.as<ExpanderAutomationPeer>();
-        expanderPeer->RaiseExpandCollapseAutomationEvent(
-            isExpanded ?
-            winrt::ExpandCollapseState::Expanded :
-            winrt::ExpandCollapseState::Collapsed
-        );
+        expanderPeer->RaiseExpandCollapseAutomationEvent(isExpanded ? winrt::ExpandCollapseState::Expanded : winrt::ExpandCollapseState::Collapsed);
     }
 }

@@ -5,8 +5,7 @@
 
 #include "SliderInteraction.g.h"
 
-class SliderInteraction :
-    public ReferenceTracker<SliderInteraction, winrt::implementation::SliderInteractionT>
+class SliderInteraction : public ReferenceTracker<SliderInteraction, winrt::implementation::SliderInteractionT>
 {
 public:
     // ISliderInteraction
@@ -46,19 +45,19 @@ private:
     void UpdatePosition(double delta);
     void UpdateTransform();
 
-    winrt::Orientation m_orientation{ winrt::Orientation::Horizontal };
+    winrt::Orientation m_orientation{winrt::Orientation::Horizontal};
 
-    double m_minimum{ 0.0 };
-    double m_maximum{ 100.0 };
-    double m_position{ 0.0 };
+    double m_minimum{0.0};
+    double m_maximum{100.0};
+    double m_position{0.0};
 
-    double m_smallChange{ 1.0 };
-    double m_largeChange{ 10.0 };
+    double m_smallChange{1.0};
+    double m_largeChange{10.0};
 
-    bool m_hasPointerCapture{ false };
+    bool m_hasPointerCapture{false};
     winrt::Point m_capturePosition{};
 
-    tracker_ref<winrt::TranslateTransform> m_translateTransform{ this };
+    tracker_ref<winrt::TranslateTransform> m_translateTransform{this};
 
-    event_source<winrt::PropertyChangedEventHandler> m_propertyChangedEventSource{ this };
+    event_source<winrt::PropertyChangedEventHandler> m_propertyChangedEventSource{this};
 };

@@ -6,13 +6,12 @@
 #include "NavigationViewItemBase.h"
 #include "NavigationViewItemHeader.g.h"
 
-class NavigationViewItemHeader :
-    public winrt::implementation::NavigationViewItemHeaderT<NavigationViewItemHeader, NavigationViewItemBase>
+class NavigationViewItemHeader : public winrt::implementation::NavigationViewItemHeaderT<NavigationViewItemHeader, NavigationViewItemBase>
 {
 public:
     ForwardRefToBaseReferenceTracker(NavigationViewItemBase)
 
-    NavigationViewItemHeader();
+        NavigationViewItemHeader();
 
     // IFrameworkElementOverrides
     void OnApplyTemplate() override;
@@ -25,11 +24,10 @@ private:
 
     void UpdateVisualState(bool useTransitions);
 
-    bool m_isClosedCompact{ false };
+    bool m_isClosedCompact{false};
 
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
 
-    tracker_ref<winrt::Grid> m_rootGrid{ this };
-
+    tracker_ref<winrt::Grid> m_rootGrid{this};
 };

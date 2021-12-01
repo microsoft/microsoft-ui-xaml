@@ -181,7 +181,8 @@ void MUXControlsTestHooks::SetLoggingLevelForInstanceImpl(const winrt::IInspecta
 
 void MUXControlsTestHooks::LogMessage(const winrt::IInspectable& sender, const wstring_view& message, bool isVerboseLevel)
 {
-    com_ptr<MUXControlsTestHooksLoggingMessageEventArgs> loggingMessageEventArgs = winrt::make_self<MUXControlsTestHooksLoggingMessageEventArgs>();
+    com_ptr<MUXControlsTestHooksLoggingMessageEventArgs> loggingMessageEventArgs =
+        winrt::make_self<MUXControlsTestHooksLoggingMessageEventArgs>();
 
     loggingMessageEventArgs->SetMessage(message);
     loggingMessageEventArgs->SetIsVerboseLevel(isVerboseLevel);

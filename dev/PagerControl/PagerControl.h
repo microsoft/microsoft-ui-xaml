@@ -9,9 +9,7 @@
 #include "PagerControl.g.h"
 #include "PagerControl.properties.h"
 
-class PagerControl :
-    public ReferenceTracker<PagerControl, winrt::implementation::PagerControlT>,
-    public PagerControlProperties
+class PagerControl : public ReferenceTracker<PagerControl, winrt::implementation::PagerControlT>, public PagerControlProperties
 {
 
 public:
@@ -23,20 +21,20 @@ public:
     void OnApplyTemplate();
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     winrt::AutomationPeer OnCreateAutomationPeer();
-    
+
     /* Property changed handlers */
     void OnDisplayModeChanged();
     void UpdateDisplayModeAutoState();
     void OnNumberOfPagesChanged(const int oldValue);
     void OnSelectedPageIndexChange(const int oldValue);
-    void OnButtonVisibilityChanged(const winrt::PagerControlButtonVisibility visibility,
+    void OnButtonVisibilityChanged(
+        const winrt::PagerControlButtonVisibility visibility,
         const wstring_view visibleStateName,
         const wstring_view collapsedStateName,
         const wstring_view hiddenStateName,
         const int hiddenOnEdgePageCriteria);
 
 private:
-
     /* UI updating */
     void UpdateTemplateSettingElementLists();
     void FillComboBoxCollectionToSize(const int numberOfPages);
@@ -65,14 +63,13 @@ private:
     void NextButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
     void LastButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
 
-
     int m_lastSelectedPageIndex = -1;
     int m_lastNumberOfPagesCount = 0;
 
-    tracker_ref<winrt::ComboBox> m_comboBox{ this };
-    tracker_ref<winrt::NumberBox> m_numberBox{ this };
-    tracker_ref<winrt::ItemsRepeater> m_numberPanelRepeater{ this };
-    tracker_ref<winrt::FrameworkElement> m_selectedPageIndicator{ this };
+    tracker_ref<winrt::ComboBox> m_comboBox{this};
+    tracker_ref<winrt::NumberBox> m_numberBox{this};
+    tracker_ref<winrt::ItemsRepeater> m_numberPanelRepeater{this};
+    tracker_ref<winrt::FrameworkElement> m_selectedPageIndicator{this};
 
     winrt::FrameworkElement::KeyDown_revoker m_rootGridKeyDownRevoker{};
     winrt::ComboBox::SelectionChanged_revoker m_comboBoxSelectionChangedRevoker{};
@@ -84,6 +81,4 @@ private:
 
     winrt::IObservableVector<IInspectable> m_comboBoxEntries{};
     winrt::IObservableVector<IInspectable> m_numberPanelElements{};
-
 };
-

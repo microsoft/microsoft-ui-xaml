@@ -15,7 +15,8 @@ winrt::RefreshInteractionRatioChangedEventArgs PullToRefreshHelperTestApi::Creat
     return winrt::make<RefreshInteractionRatioChangedEventArgs>(value);
 }
 
-winrt::RefreshStateChangedEventArgs PullToRefreshHelperTestApi::CreateRefreshStateChangedEventArgsInstance(winrt::RefreshVisualizerState const& oldValue, winrt::RefreshVisualizerState const& newValue)
+winrt::RefreshStateChangedEventArgs PullToRefreshHelperTestApi::CreateRefreshStateChangedEventArgsInstance(
+    winrt::RefreshVisualizerState const& oldValue, winrt::RefreshVisualizerState const& newValue)
 {
     return winrt::make<RefreshStateChangedEventArgs>(oldValue, newValue);
 }

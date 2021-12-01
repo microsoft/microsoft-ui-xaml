@@ -64,7 +64,6 @@ winrt::UIElement LayoutContextAdapter::GetOrCreateElementAtCore(int index, winrt
 
 void LayoutContextAdapter::RecycleElementCore(winrt::UIElement const& element)
 {
-
 }
 
 int32_t LayoutContextAdapter::GetElementIndexCore(winrt::UIElement const& element)
@@ -80,13 +79,13 @@ int32_t LayoutContextAdapter::GetElementIndexCore(winrt::UIElement const& elemen
             }
         }
     }
-    
+
     return -1;
 }
 
 winrt::Rect LayoutContextAdapter::RealizationRectCore()
 {
-    return winrt::Rect{ 0, 0, std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
+    return winrt::Rect{0, 0, std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()};
 }
 
 int LayoutContextAdapter::RecommendedAnchorIndexCore()

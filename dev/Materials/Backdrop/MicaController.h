@@ -12,12 +12,23 @@ struct MicaController : winrt::implementation::MicaControllerT<MicaController>, 
 
     bool SetTarget(winrt::Windows::UI::Xaml::Window const& xamlWindow);
 
-
     // Property getters.
-    winrt::Windows::UI::Color TintColor() { return m_tintColor; }
-    float TintOpacity() { return m_tintOpacity; }
-    float LuminosityOpacity() { return m_luminosityOpacity; }
-    winrt::Windows::UI::Color FallbackColor() { return m_fallbackColor; }
+    winrt::Windows::UI::Color TintColor()
+    {
+        return m_tintColor;
+    }
+    float TintOpacity()
+    {
+        return m_tintOpacity;
+    }
+    float LuminosityOpacity()
+    {
+        return m_luminosityOpacity;
+    }
+    winrt::Windows::UI::Color FallbackColor()
+    {
+        return m_fallbackColor;
+    }
 
     // Property setters.
     void TintColor(winrt::Windows::UI::Color const& value);
@@ -28,13 +39,16 @@ struct MicaController : winrt::implementation::MicaControllerT<MicaController>, 
     // SystemBackdropComponent::ISystemBackdropController methods.
     void Activate() override;
     void Deactivate() override;
-    void SetHighContrast(bool isHighContrast) override { m_isHighContrast = isHighContrast; }
+    void SetHighContrast(bool isHighContrast) override
+    {
+        m_isHighContrast = isHighContrast;
+    }
     void UpdateTheme(winrt::Windows::UI::Xaml::ElementTheme theme) override;
 
-    static constexpr auto sc_darkThemeColor = winrt::Color{ 255, 32, 32, 32 };
+    static constexpr auto sc_darkThemeColor = winrt::Color{255, 32, 32, 32};
     static constexpr auto sc_darkThemeTintOpacity = 0.8f;
 
-    static constexpr auto sc_lightThemeColor = winrt::Color{ 255, 243, 243, 243 };
+    static constexpr auto sc_lightThemeColor = winrt::Color{255, 243, 243, 243};
     static constexpr auto sc_lightThemeTintOpacity = 0.5f;
 
 private:
@@ -43,33 +57,36 @@ private:
     void Update();
     void UpdateSystemBackdropBrush(const winrt::CompositionBrush& brush);
 
-    winrt::Windows::UI::Color m_tintColor{ winrt::Windows::UI::Colors::Teal() };
-    float m_tintOpacity{ 0.05f };
-    float m_luminosityOpacity{ 0.15f };
-    winrt::Windows::UI::Color m_fallbackColor{ m_tintColor };
+    winrt::Windows::UI::Color m_tintColor{winrt::Windows::UI::Colors::Teal()};
+    float m_tintOpacity{0.05f};
+    float m_luminosityOpacity{0.15f};
+    winrt::Windows::UI::Color m_fallbackColor{m_tintColor};
 
-    winrt::CompositionBrush m_currentBrush{ nullptr };
-    winrt::Windows::UI::Composition::Compositor m_compositor{ nullptr };
-    winrt::weak_ref<winrt::Microsoft::UI::Private::Controls::ICompositionSupportsSystemBackdrop> m_target{ nullptr };
-    com_ptr<SystemBackdropComponentInternal::BaseWindowHandler> m_windowHandler{ nullptr };
+    winrt::CompositionBrush m_currentBrush{nullptr};
+    winrt::Windows::UI::Composition::Compositor m_compositor{nullptr};
+    winrt::weak_ref<winrt::Microsoft::UI::Private::Controls::ICompositionSupportsSystemBackdrop> m_target{nullptr};
+    com_ptr<SystemBackdropComponentInternal::BaseWindowHandler> m_windowHandler{nullptr};
 
-    bool m_isActive{ false };
-    bool m_isExplicitFallbackColorSet{ false };
-    bool m_isFirstRun{ true };
-    bool m_isHighContrast{ false };
-    bool m_isMicaSupported{ false };
-    bool m_customColors{ false };
-    bool m_currentlyUpdatingProperty{ false };
-    bool m_propertyUpdated{ false };
-    bool m_wasHighContrastOnLastDeactivation{ false };
+    bool m_isActive{false};
+    bool m_isExplicitFallbackColorSet{false};
+    bool m_isFirstRun{true};
+    bool m_isHighContrast{false};
+    bool m_isMicaSupported{false};
+    bool m_customColors{false};
+    bool m_currentlyUpdatingProperty{false};
+    bool m_propertyUpdated{false};
+    bool m_wasHighContrastOnLastDeactivation{false};
 };
 
 struct MicaControllerFactory : winrt::factory_implementation::MicaControllerT<MicaControllerFactory, MicaController>
 {
 };
 
-namespace winrt::Microsoft::UI::Private::Controls
-{
-    namespace factory_implementation { using MicaController = ::MicaControllerFactory; };
-    namespace implementation { using MicaController = ::MicaController; };
-}
+namespace winrt::Microsoft::UI::Private::Controls {
+namespace factory_implementation {
+    using MicaController = ::MicaControllerFactory;
+};
+namespace implementation {
+    using MicaController = ::MicaController;
+};
+} // namespace winrt::Microsoft::UI::Private::Controls

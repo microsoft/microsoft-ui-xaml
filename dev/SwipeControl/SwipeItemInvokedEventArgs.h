@@ -5,10 +5,9 @@
 
 #include "SwipeItemInvokedEventArgs.g.h"
 
-class SwipeItemInvokedEventArgs
-    : public winrt::implementation::SwipeItemInvokedEventArgsT<SwipeItemInvokedEventArgs>
+class SwipeItemInvokedEventArgs : public winrt::implementation::SwipeItemInvokedEventArgsT<SwipeItemInvokedEventArgs>
 {
-public:    
+public:
 #pragma region ISwipeItemInvokedEventArgs
     winrt::SwipeControl SwipeControl();
 #pragma endregion
@@ -17,4 +16,3 @@ public:
 private:
     winrt::SwipeControl m_swipeControl;
 };
-

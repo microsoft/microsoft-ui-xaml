@@ -7,12 +7,11 @@ const uint32_t c_maxRegions = 2;
 
 struct DisplayRegionHelperInfo
 {
-    winrt::TwoPaneViewMode Mode{ winrt::TwoPaneViewMode::SinglePane };
+    winrt::TwoPaneViewMode Mode{winrt::TwoPaneViewMode::SinglePane};
     std::array<winrt::Rect, c_maxRegions> Regions{};
 };
 
-class DisplayRegionHelper:
-    public winrt::implements<DisplayRegionHelper, winrt::IInspectable>
+class DisplayRegionHelper : public winrt::implements<DisplayRegionHelper, winrt::IInspectable>
 {
 public:
     static DisplayRegionHelperInfo GetRegionInfo();
@@ -27,14 +26,13 @@ public:
     static winrt::TwoPaneViewMode SimulateMode();
 
 private:
-
     void OnDisplayModeChanged(const winrt::IInspectable& sender, const winrt::IInspectable& args);
 
-    bool m_simulateDisplayRegions{ false };
-    winrt::TwoPaneViewMode m_simulateMode{ winrt::TwoPaneViewMode::SinglePane };
-    
-    static constexpr winrt::Rect m_simulateWide0{ 0, 0, 300, 400 };
-    static constexpr winrt::Rect m_simulateWide1{ 312, 0, 300, 400 };
-    static constexpr winrt::Rect m_simulateTall0{ 0, 0, 400, 300 };
-    static constexpr winrt::Rect m_simulateTall1{ 0, 312, 400, 300 };
+    bool m_simulateDisplayRegions{false};
+    winrt::TwoPaneViewMode m_simulateMode{winrt::TwoPaneViewMode::SinglePane};
+
+    static constexpr winrt::Rect m_simulateWide0{0, 0, 300, 400};
+    static constexpr winrt::Rect m_simulateWide1{312, 0, 300, 400};
+    static constexpr winrt::Rect m_simulateTall0{0, 0, 400, 300};
+    static constexpr winrt::Rect m_simulateTall1{0, 312, 400, 300};
 };

@@ -8,8 +8,7 @@
 #include "BreadcrumbBarItemAutomationPeer.h"
 #include "BreadcrumbBarItemAutomationPeer.properties.cpp"
 
-BreadcrumbBarItemAutomationPeer::BreadcrumbBarItemAutomationPeer(winrt::BreadcrumbBarItem const& owner)
-    : ReferenceTracker(owner)
+BreadcrumbBarItemAutomationPeer::BreadcrumbBarItemAutomationPeer(winrt::BreadcrumbBarItem const& owner) : ReferenceTracker(owner)
 {
 }
 
@@ -42,7 +41,7 @@ winrt::AutomationControlType BreadcrumbBarItemAutomationPeer::GetAutomationContr
 com_ptr<BreadcrumbBarItem> BreadcrumbBarItemAutomationPeer::GetImpl()
 {
     com_ptr<BreadcrumbBarItem> impl = nullptr;
-    
+
     if (auto breadcrumbItem = Owner().try_as<winrt::BreadcrumbBarItem>())
     {
         impl = winrt::get_self<BreadcrumbBarItem>(breadcrumbItem)->get_strong();

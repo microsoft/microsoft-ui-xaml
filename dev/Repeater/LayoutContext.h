@@ -5,8 +5,7 @@
 
 #include "LayoutContext.g.h"
 
-class LayoutContext :
-    public winrt::implementation::LayoutContextT<LayoutContext, winrt::composable>
+class LayoutContext : public winrt::implementation::LayoutContextT<LayoutContext, winrt::composable>
 {
 public:
 #pragma region ILayoutContext
@@ -31,7 +30,7 @@ public:
     }
 
 private:
-    int m_indent{ 0 };
+    int m_indent{0};
 #else
     int Indent()
     {

@@ -8,7 +8,7 @@
 // The same copy of .Net Collections like C# ObservableCollection<string> data is splitted into multiple Vectors.
 // For example, the raw data is:  Homes Apps Music | Microsoft Development
 // raw Data SplitDataSource is splitted into 3 ObservableVector which is owned by SplitVector:
-//  A: Home 
+//  A: Home
 //  B: Apps Music Microsoft Development
 //  C: |
 // A flag vector is used to indicate which Vector the item belongs to and the flag vector is the same length with raw data.
@@ -17,26 +17,28 @@
 //  We never Add/Delete A,B and C Vector directly, but change the flag.
 //  If flag for Homes is changed from A to B, it asks A to remove it by indexInRawData first, then insert the new data to B vector with indexInRawData
 // SplitVector itself maintained the mapping between indexInRawData and indexInSplitVector.
-template<typename T, typename SplitVectorID>
+template <typename T, typename SplitVectorID>
 class SplitVector
 {
 public:
-    SplitVector(const ITrackerHandleManager* owner, typename SplitVectorID id, std::function<int(typename T const& value)> indexOfFunction) 
-        :m_vectorID(id)
-        , m_vector(owner)
+    SplitVector(const ITrackerHandleManager* owner, typename SplitVectorID id, std::function<int(typename T const& value)> indexOfFunction) :
+        m_vectorID(id), m_vector(owner)
     {
         m_indexFunctionFromDataSource = indexOfFunction;
 
         m_vector.set(winrt::make<Vector<T, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()>>(
-            [this](const T& value)
-               {
-                    return IndexOf(value);
-               }));
+            [this](const T& value) { return IndexOf(value); }));
     }
 
-    SplitVectorID GetVectorIDForItem() { return m_vectorID; }
+    SplitVectorID GetVectorIDForItem()
+    {
+        return m_vectorID;
+    }
 
-    winrt::IVector<winrt::IInspectable> GetVector() { return m_vector.get(); }
+    winrt::IVector<winrt::IInspectable> GetVector()
+    {
+        return m_vector.get();
+    }
 
     void OnRawDataRemove(int indexInOriginalVector, SplitVectorID vectorID)
     {
@@ -52,7 +54,6 @@ public:
                 v--;
             }
         };
-
     }
 
     void OnRawDataInsert(int preferIndex, int indexInOriginalVector, typename T const& value, SplitVectorID vectorID)
@@ -76,7 +77,7 @@ public:
         MUX_ASSERT(preferIndex >= 0);
         MUX_ASSERT(indexInOriginalVector >= 0);
         m_vector.get().InsertAt(preferIndex, value);
-        m_indexesInOriginalVector.insert(m_indexesInOriginalVector.begin()+preferIndex, indexInOriginalVector);
+        m_indexesInOriginalVector.insert(m_indexesInOriginalVector.begin() + preferIndex, indexInOriginalVector);
     }
 
     void Replace(int indexInOriginalVector, typename T const& value)
@@ -97,7 +98,7 @@ public:
 
     void RemoveAt(int indexInOriginalVector)
     {
-        MUX_ASSERT(indexInOriginalVector >= 0);        
+        MUX_ASSERT(indexInOriginalVector >= 0);
         const auto index = static_cast<uint32_t>(IndexFromIndexInOriginalVector(indexInOriginalVector));
         MUX_ASSERT(index < m_indexesInOriginalVector.size());
         m_vector.get().RemoveAt(index);
@@ -125,21 +126,26 @@ public:
         }
         return -1;
     }
+
 private:
-    int Size() { return  static_cast<int>(m_indexesInOriginalVector.size()); }
+    int Size()
+    {
+        return static_cast<int>(m_indexesInOriginalVector.size());
+    }
 
 private:
     SplitVectorID m_vectorID;
     tracker_ref<winrt::IVector<typename T>> m_vector;
-    std::vector<int> m_indexesInOriginalVector{ };
-    std::function<int(typename T const& value)> m_indexFunctionFromDataSource{ };
+    std::vector<int> m_indexesInOriginalVector{};
+    std::function<int(typename T const& value)> m_indexFunctionFromDataSource{};
 };
 
-template<typename T, typename SplitVectorID, typename AttachedDataType, int SplitVectorSize = static_cast<int>(SplitVectorID::Size)>
+template <typename T, typename SplitVectorID, typename AttachedDataType, int SplitVectorSize = static_cast<int>(SplitVectorID::Size)>
 class SplitDataSourceBase
 {
     using SplitVectorType = SplitVector<typename T, typename SplitVectorID>;
-public:  
+
+public:
     typename SplitVectorID GetVectorIDForItem(int index)
     {
         MUX_ASSERT(index >= 0 && index < RawDataSize());
@@ -210,7 +216,7 @@ public:
             m_flags[index] = newVectorID;
 
             // insert item to vector which matches with the newVectorID
-            if (auto &toVector = m_splitVectors[static_cast<int>(newVectorID)])
+            if (auto& toVector = m_splitVectors[static_cast<int>(newVectorID)])
             {
                 const int pos = GetPreferIndex(index, newVectorID);
 
@@ -244,7 +250,7 @@ protected:
 
     void InitializeSplitVectors(std::vector<std::shared_ptr<SplitVectorType>> vectors)
     {
-        for (auto &vector: vectors)
+        for (auto& vector : vectors)
         {
             m_splitVectors[static_cast<int>(vector->GetVectorIDForItem())] = vector;
         }
@@ -255,11 +261,10 @@ protected:
         return m_splitVectors[static_cast<int>(vectorID)];
     }
 
-
     void OnClear()
     {
         // Clear all vectors
-        for (auto &vector: m_splitVectors)
+        for (auto& vector : m_splitVectors)
         {
             if (vector)
             {
@@ -273,7 +278,7 @@ protected:
 
     void OnRemoveAt(int startIndex, int count)
     {
-        for (int i = startIndex + count-1; i >= startIndex; i--)
+        for (int i = startIndex + count - 1; i >= startIndex; i--)
         {
             OnRemoveAt(i);
         }
@@ -313,14 +318,14 @@ private:
         auto vectorID = m_flags[index];
 
         // Update mapping on all Vectors and Remove Item on vectorID vector;
-        for (auto &vector : m_splitVectors)
+        for (auto& vector : m_splitVectors)
         {
             if (vector)
             {
                 vector->OnRawDataRemove(index, vectorID);
             }
         }
-        
+
         m_flags.erase(m_flags.begin() + index);
         m_attachedData.erase(m_attachedData.begin() + index);
     }
@@ -342,7 +347,7 @@ private:
         const auto data = GetAt(index);
 
         // Update mapping on all Vectors and Insert Item on vectorID vector;
-        for (auto &vector: m_splitVectors)
+        for (auto& vector : m_splitVectors)
         {
             if (vector)
             {
@@ -371,9 +376,10 @@ private:
         }
         return count;
     }
+
 private:
     // length is the same as data source, and used to identify which SplitVector it belongs to.
-    std::vector<typename SplitVectorID> m_flags{ };
-    std::vector<typename AttachedDataType> m_attachedData{ };
+    std::vector<typename SplitVectorID> m_flags{};
+    std::vector<typename AttachedDataType> m_attachedData{};
     std::array<std::shared_ptr<SplitVectorType>, SplitVectorSize> m_splitVectors{};
 };

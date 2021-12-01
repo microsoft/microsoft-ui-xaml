@@ -10,10 +10,8 @@ PCWSTR ScrollInputHelper::s_horizontalOffsetPropertyName = L"TranslationX";
 PCWSTR ScrollInputHelper::s_verticalOffsetPropertyName = L"TranslationY";
 PCWSTR ScrollInputHelper::s_scalePropertyName = L"Scale";
 
-ScrollInputHelper::ScrollInputHelper(
-    const ITrackerHandleManager* owner,
-    std::function<void(bool, bool)> infoChangedFunction)
-    :m_owner(owner)
+ScrollInputHelper::ScrollInputHelper(const ITrackerHandleManager* owner, std::function<void(bool, bool)> infoChangedFunction) :
+    m_owner(owner)
 {
     m_infoChangedFunction = infoChangedFunction;
 }
@@ -135,7 +133,7 @@ void ScrollInputHelper::SetScrollViewer(const winrt::FxScrollViewer& scrollViewe
 
         if (scrollViewer)
         {
-            // Check if the ScrollViewer belongs to a RichEditBox so content size changes can be detected 
+            // Check if the ScrollViewer belongs to a RichEditBox so content size changes can be detected
             // via its TextChanged event.
             m_richEditBox.set(ScrollInputHelper::GetRichEditBoxParent(scrollViewer));
 
@@ -193,9 +191,7 @@ winrt::RichEditBox ScrollInputHelper::GetRichEditBoxParent(const winrt::Dependen
 
 // Returns the inner ScrollViewer or ScrollPresenter if any.
 void ScrollInputHelper::GetChildScrollPresenterOrScrollViewer(
-    const winrt::DependencyObject& rootElement,
-    _Out_ winrt::ScrollPresenter* scrollPresenter,
-    _Out_ winrt::FxScrollViewer* scrollViewer)
+    const winrt::DependencyObject& rootElement, _Out_ winrt::ScrollPresenter* scrollPresenter, _Out_ winrt::FxScrollViewer* scrollViewer)
 {
     *scrollPresenter = nullptr;
     *scrollViewer = nullptr;
@@ -221,10 +217,7 @@ void ScrollInputHelper::GetChildScrollPresenterOrScrollViewer(
         for (int i = 0; i < childCount; i++)
         {
             winrt::DependencyObject current = winrt::VisualTreeHelper::GetChild(rootElement, i);
-            ScrollInputHelper::GetChildScrollPresenterOrScrollViewer(
-                current,
-                scrollPresenter,
-                scrollViewer);
+            ScrollInputHelper::GetChildScrollPresenterOrScrollViewer(current, scrollPresenter, scrollViewer);
             if (*scrollPresenter)
             {
                 return;
@@ -344,7 +337,8 @@ void ScrollInputHelper::UpdateContentSize()
         winrt::CompositionPropertySet scrollPresenterPropertySet = scrollPresenter.ExpressionAnimationSources();
         winrt::float2 extent{};
 
-        const winrt::CompositionGetValueStatus status = scrollPresenterPropertySet.TryGetVector2(ScrollPresenter::s_extentSourcePropertyName, extent);
+        const winrt::CompositionGetValueStatus status =
+            scrollPresenterPropertySet.TryGetVector2(ScrollPresenter::s_extentSourcePropertyName, extent);
         if (status == winrt::CompositionGetValueStatus::Succeeded)
         {
             m_contentSize.Width = extent.x;
@@ -386,13 +380,15 @@ void ScrollInputHelper::UpdateContentSize()
 
                 if (virtualizingStackPanel.Orientation() == winrt::Orientation::Horizontal)
                 {
-                    virtualizingSize = virtualizingStackPanel.ExtentWidth() * virtualizingStackPanel.ActualWidth() / virtualizingStackPanel.ViewportWidth() +
-                        vspMargin.Left + vspMargin.Right + itMargin.Left + itMargin.Right;
+                    virtualizingSize = virtualizingStackPanel.ExtentWidth() * virtualizingStackPanel.ActualWidth() /
+                                           virtualizingStackPanel.ViewportWidth() +
+                                       vspMargin.Left + vspMargin.Right + itMargin.Left + itMargin.Right;
                 }
                 else
                 {
-                    virtualizingSize = virtualizingStackPanel.ExtentHeight() * virtualizingStackPanel.ActualHeight() / virtualizingStackPanel.ViewportHeight() +
-                        vspMargin.Top + vspMargin.Bottom + itMargin.Top + itMargin.Bottom;
+                    virtualizingSize = virtualizingStackPanel.ExtentHeight() * virtualizingStackPanel.ActualHeight() /
+                                           virtualizingStackPanel.ViewportHeight() +
+                                       vspMargin.Top + vspMargin.Bottom + itMargin.Top + itMargin.Bottom;
                 }
 
                 if (childrenCount > 1)
@@ -405,7 +401,9 @@ void ScrollInputHelper::UpdateContentSize()
 
                         if (headerChild)
                         {
-                            virtualizingSize += virtualizingStackPanel.Orientation() == winrt::Orientation::Horizontal ? headerChild.ActualWidth() : headerChild.ActualHeight();
+                            virtualizingSize += virtualizingStackPanel.Orientation() == winrt::Orientation::Horizontal
+                                                    ? headerChild.ActualWidth()
+                                                    : headerChild.ActualHeight();
                         }
                     }
                 }
@@ -420,7 +418,9 @@ void ScrollInputHelper::UpdateContentSize()
 
                         if (footerChild)
                         {
-                            virtualizingSize += virtualizingStackPanel.Orientation() == winrt::Orientation::Horizontal ? footerChild.ActualWidth() : footerChild.ActualHeight();
+                            virtualizingSize += virtualizingStackPanel.Orientation() == winrt::Orientation::Horizontal
+                                                    ? footerChild.ActualWidth()
+                                                    : footerChild.ActualHeight();
                         }
                     }
                 }
@@ -454,7 +454,8 @@ void ScrollInputHelper::UpdateViewportSize()
         winrt::CompositionPropertySet scrollPresenterPropertySet = scrollPresenter.ExpressionAnimationSources();
         winrt::float2 viewport{};
 
-        const winrt::CompositionGetValueStatus status = scrollPresenterPropertySet.TryGetVector2(ScrollPresenter::s_viewportSourcePropertyName, viewport);
+        const winrt::CompositionGetValueStatus status =
+            scrollPresenterPropertySet.TryGetVector2(ScrollPresenter::s_viewportSourcePropertyName, viewport);
         if (status == winrt::CompositionGetValueStatus::Succeeded)
         {
             m_viewportSize.Width = viewport.x;
@@ -535,10 +536,7 @@ void ScrollInputHelper::UpdateSource(bool allowSourceElementLoadedHookup)
     }
     else if (sourceElement)
     {
-        ScrollInputHelper::GetChildScrollPresenterOrScrollViewer(
-            sourceElement,
-            &scrollPresenter,
-            &scrollViewer);
+        ScrollInputHelper::GetChildScrollPresenterOrScrollViewer(sourceElement, &scrollPresenter, &scrollViewer);
         SetScrollPresenter(scrollPresenter);
         SetScrollViewer(scrollViewer);
     }
@@ -548,9 +546,7 @@ void ScrollInputHelper::UpdateSource(bool allowSourceElementLoadedHookup)
         SetScrollViewer(nullptr);
     }
 
-    if (allowSourceElementLoadedHookup &&
-        !scrollPresenter &&
-        !m_scrollViewer)
+    if (allowSourceElementLoadedHookup && !scrollPresenter && !m_scrollViewer)
     {
         HookSourceElementLoaded();
     }
@@ -638,8 +634,8 @@ void ScrollInputHelper::UpdateManipulationAlignments()
     }
 }
 
-// Updates the internal composition animations that account for the alignment portions in the ScrollViewer's manipulation property set (m_scrollViewerPropertySet).
-// The offsets exposed by m_sourcePropertySet exclude those alignment portions.
+// Updates the internal composition animations that account for the alignment portions in the ScrollViewer's manipulation property
+// set (m_scrollViewerPropertySet). The offsets exposed by m_sourcePropertySet exclude those alignment portions.
 void ScrollInputHelper::UpdateInternalExpressionAnimations(bool horizontalInfoChanged, bool verticalInfoChanged, bool zoomInfoChanged)
 {
     bool restartAnimations = false;
@@ -657,15 +653,22 @@ void ScrollInputHelper::UpdateInternalExpressionAnimations(bool horizontalInfoCh
             case winrt::HorizontalAlignment::Stretch:
             case winrt::HorizontalAlignment::Center:
                 m_internalTranslationXExpressionAnimation.Expression(
-                    L"source.Translation.X + ((contentWidth * source.Scale.X - viewportWidth) < 0.0f ? (contentWidth * source.Scale.X - viewportWidth) / 2.0f : 0.0f)");
-                m_internalTranslationXExpressionAnimation.SetScalarParameter(L"contentWidth", static_cast<float>(GetContentSize(winrt::Orientation::Horizontal)));
-                m_internalTranslationXExpressionAnimation.SetScalarParameter(L"viewportWidth", static_cast<float>(GetViewportSize(winrt::Orientation::Horizontal)));
+                    L"source.Translation.X + ((contentWidth * source.Scale.X - viewportWidth) < 0.0f ? (contentWidth * "
+                    L"source.Scale.X - viewportWidth) / 2.0f : 0.0f)");
+                m_internalTranslationXExpressionAnimation.SetScalarParameter(
+                    L"contentWidth", static_cast<float>(GetContentSize(winrt::Orientation::Horizontal)));
+                m_internalTranslationXExpressionAnimation.SetScalarParameter(
+                    L"viewportWidth", static_cast<float>(GetViewportSize(winrt::Orientation::Horizontal)));
                 break;
 
             case winrt::HorizontalAlignment::Right:
-                m_internalTranslationXExpressionAnimation.Expression(L"source.Translation.X + ((contentWidth * source.Scale.X - viewportWidth) < 0.0f ? (contentWidth * source.Scale.X - viewportWidth) : 0.0f)");
-                m_internalTranslationXExpressionAnimation.SetScalarParameter(L"contentWidth", static_cast<float>(GetContentSize(winrt::Orientation::Horizontal)));
-                m_internalTranslationXExpressionAnimation.SetScalarParameter(L"viewportWidth", static_cast<float>(GetViewportSize(winrt::Orientation::Horizontal)));
+                m_internalTranslationXExpressionAnimation.Expression(
+                    L"source.Translation.X + ((contentWidth * source.Scale.X - viewportWidth) < 0.0f ? (contentWidth * "
+                    L"source.Scale.X - viewportWidth) : 0.0f)");
+                m_internalTranslationXExpressionAnimation.SetScalarParameter(
+                    L"contentWidth", static_cast<float>(GetContentSize(winrt::Orientation::Horizontal)));
+                m_internalTranslationXExpressionAnimation.SetScalarParameter(
+                    L"viewportWidth", static_cast<float>(GetViewportSize(winrt::Orientation::Horizontal)));
                 break;
             }
             restartAnimations = true;
@@ -682,16 +685,22 @@ void ScrollInputHelper::UpdateInternalExpressionAnimations(bool horizontalInfoCh
             case winrt::VerticalAlignment::Stretch:
             case winrt::VerticalAlignment::Center:
                 m_internalTranslationYExpressionAnimation.Expression(
-                    L"source.Translation.Y + ((contentWidth * source.Scale.Y - viewportWidth) < 0.0f ? (contentWidth * source.Scale.Y - viewportWidth) / 2.0f : 0.0f)");
-                m_internalTranslationYExpressionAnimation.SetScalarParameter(L"contentWidth", static_cast<float>(GetContentSize(winrt::Orientation::Vertical)));
-                m_internalTranslationYExpressionAnimation.SetScalarParameter(L"viewportWidth", static_cast<float>(GetViewportSize(winrt::Orientation::Vertical)));
+                    L"source.Translation.Y + ((contentWidth * source.Scale.Y - viewportWidth) < 0.0f ? (contentWidth * "
+                    L"source.Scale.Y - viewportWidth) / 2.0f : 0.0f)");
+                m_internalTranslationYExpressionAnimation.SetScalarParameter(
+                    L"contentWidth", static_cast<float>(GetContentSize(winrt::Orientation::Vertical)));
+                m_internalTranslationYExpressionAnimation.SetScalarParameter(
+                    L"viewportWidth", static_cast<float>(GetViewportSize(winrt::Orientation::Vertical)));
                 break;
 
             case winrt::VerticalAlignment::Bottom:
                 m_internalTranslationYExpressionAnimation.Expression(
-                    L"source.Translation.Y + ((contentWidth * source.Scale.Y - viewportWidth) < 0.0f ? (contentWidth * source.Scale.Y - viewportWidth) : 0.0f)");
-                m_internalTranslationYExpressionAnimation.SetScalarParameter(L"contentWidth", static_cast<float>(GetContentSize(winrt::Orientation::Vertical)));
-                m_internalTranslationYExpressionAnimation.SetScalarParameter(L"viewportWidth", static_cast<float>(GetViewportSize(winrt::Orientation::Vertical)));
+                    L"source.Translation.Y + ((contentWidth * source.Scale.Y - viewportWidth) < 0.0f ? (contentWidth * "
+                    L"source.Scale.Y - viewportWidth) : 0.0f)");
+                m_internalTranslationYExpressionAnimation.SetScalarParameter(
+                    L"contentWidth", static_cast<float>(GetContentSize(winrt::Orientation::Vertical)));
+                m_internalTranslationYExpressionAnimation.SetScalarParameter(
+                    L"viewportWidth", static_cast<float>(GetViewportSize(winrt::Orientation::Vertical)));
                 break;
             }
             restartAnimations = true;
@@ -828,7 +837,8 @@ bool ScrollInputHelper::IsScrollContentPresenterIScrollInfoProvider() const
 
                     if (child)
                     {
-                        winrt::OrientedVirtualizingPanel itemsPanelAsOrientedVirtualizingPanel = child.try_as<winrt::OrientedVirtualizingPanel>();
+                        winrt::OrientedVirtualizingPanel itemsPanelAsOrientedVirtualizingPanel =
+                            child.try_as<winrt::OrientedVirtualizingPanel>();
                         winrt::CarouselPanel itemsPanelAsCarouselPanel = child.try_as<winrt::CarouselPanel>();
 
                         if (itemsPanelAsOrientedVirtualizingPanel || itemsPanelAsCarouselPanel)
@@ -859,8 +869,10 @@ void ScrollInputHelper::EnsureInternalSourcePropertySetAndExpressionAnimations()
         m_internalSourcePropertySet.InsertScalar(s_scalePropertyName, 1.0f);
 
         auto scrollViewer = m_scrollViewer.get();
-        m_internalTranslationXExpressionAnimation = compositor.CreateExpressionAnimation(scrollViewer ? L"source.Translation.X" : L"source.MinPosition.X - source.Position.X");
-        m_internalTranslationYExpressionAnimation = compositor.CreateExpressionAnimation(scrollViewer ? L"source.Translation.Y" : L"source.MinPosition.Y - source.Position.Y");
+        m_internalTranslationXExpressionAnimation =
+            compositor.CreateExpressionAnimation(scrollViewer ? L"source.Translation.X" : L"source.MinPosition.X - source.Position.X");
+        m_internalTranslationYExpressionAnimation =
+            compositor.CreateExpressionAnimation(scrollViewer ? L"source.Translation.Y" : L"source.MinPosition.Y - source.Position.Y");
         m_internalScaleExpressionAnimation = compositor.CreateExpressionAnimation(scrollViewer ? L"source.Scale.X" : L"source.ZoomFactor");
     }
 }
@@ -916,24 +928,21 @@ void ScrollInputHelper::ProcessSourceElementChange(bool allowSourceElementLoaded
 
     UpdateSource(allowSourceElementLoadedHookup);
 
-    if (m_sourcePropertySet != oldSourcePropertySet ||
-        m_isTargetElementInSource != oldIsTargetElementInSource)
+    if (m_sourcePropertySet != oldSourcePropertySet || m_isTargetElementInSource != oldIsTargetElementInSource)
     {
         OnSourceInfoChanged(true /*horizontalInfoChanged*/, true /*verticalInfoChanged*/, true /*zoomInfoChanged*/);
     }
     else
     {
-        const bool horizontalInfoChanged =
-            oldViewportWidth != GetViewportSize(winrt::Orientation::Horizontal) ||
-            oldContentWidth != GetContentSize(winrt::Orientation::Horizontal) ||
-            oldUnderpanWidth != GetMaxUnderpanOffset(winrt::Orientation::Horizontal) ||
-            oldOverpanWidth != GetMaxOverpanOffset(winrt::Orientation::Horizontal);
+        const bool horizontalInfoChanged = oldViewportWidth != GetViewportSize(winrt::Orientation::Horizontal) ||
+                                           oldContentWidth != GetContentSize(winrt::Orientation::Horizontal) ||
+                                           oldUnderpanWidth != GetMaxUnderpanOffset(winrt::Orientation::Horizontal) ||
+                                           oldOverpanWidth != GetMaxOverpanOffset(winrt::Orientation::Horizontal);
 
-        const bool verticalInfoChanged =
-            oldViewportHeight != GetViewportSize(winrt::Orientation::Vertical) ||
-            oldContentHeight != GetContentSize(winrt::Orientation::Vertical) ||
-            oldUnderpanHeight != GetMaxUnderpanOffset(winrt::Orientation::Vertical) ||
-            oldOverpanHeight != GetMaxOverpanOffset(winrt::Orientation::Vertical);
+        const bool verticalInfoChanged = oldViewportHeight != GetViewportSize(winrt::Orientation::Vertical) ||
+                                         oldContentHeight != GetContentSize(winrt::Orientation::Vertical) ||
+                                         oldUnderpanHeight != GetMaxUnderpanOffset(winrt::Orientation::Vertical) ||
+                                         oldOverpanHeight != GetMaxOverpanOffset(winrt::Orientation::Vertical);
 
         if (horizontalInfoChanged || verticalInfoChanged)
         {
@@ -1137,15 +1146,13 @@ void ScrollInputHelper::OnSourceSizeChanged(const winrt::IInspectable& /*sender*
     UpdateViewportSize();
     UpdateOutOfBoundsPanSize();
 
-    const bool horizontalInfoChanged =
-        oldViewportWidth != GetViewportSize(winrt::Orientation::Horizontal) ||
-        oldUnderpanWidth != GetMaxUnderpanOffset(winrt::Orientation::Horizontal) ||
-        oldOverpanWidth != GetMaxOverpanOffset(winrt::Orientation::Horizontal);
+    const bool horizontalInfoChanged = oldViewportWidth != GetViewportSize(winrt::Orientation::Horizontal) ||
+                                       oldUnderpanWidth != GetMaxUnderpanOffset(winrt::Orientation::Horizontal) ||
+                                       oldOverpanWidth != GetMaxOverpanOffset(winrt::Orientation::Horizontal);
 
-    const bool verticalInfoChanged =
-        oldViewportHeight != GetViewportSize(winrt::Orientation::Vertical) ||
-        oldUnderpanHeight != GetMaxUnderpanOffset(winrt::Orientation::Vertical) ||
-        oldOverpanHeight != GetMaxOverpanOffset(winrt::Orientation::Vertical);
+    const bool verticalInfoChanged = oldViewportHeight != GetViewportSize(winrt::Orientation::Vertical) ||
+                                     oldUnderpanHeight != GetMaxUnderpanOffset(winrt::Orientation::Vertical) ||
+                                     oldOverpanHeight != GetMaxOverpanOffset(winrt::Orientation::Vertical);
 
     if (horizontalInfoChanged || verticalInfoChanged)
     {
@@ -1286,7 +1293,7 @@ void ScrollInputHelper::HookSourceElementLoaded()
 
         if (sourceElementAsFrameworkElement)
         {
-            m_sourceElementLoadedToken = sourceElementAsFrameworkElement.Loaded({ this, &ScrollInputHelper::OnSourceElementLoaded });
+            m_sourceElementLoadedToken = sourceElementAsFrameworkElement.Loaded({this, &ScrollInputHelper::OnSourceElementLoaded});
         }
     }
 }
@@ -1312,7 +1319,7 @@ void ScrollInputHelper::HookSourceControlTemplateChanged()
     if (sourceElement && m_sourceControlTemplateChangedToken.value == 0)
     {
         m_sourceControlTemplateChangedToken.value = sourceElement.RegisterPropertyChangedCallback(
-            winrt::Control::TemplateProperty(), { this, &ScrollInputHelper::OnSourceElementPropertyChanged });
+            winrt::Control::TemplateProperty(), {this, &ScrollInputHelper::OnSourceElementPropertyChanged});
     }
 }
 
@@ -1336,7 +1343,7 @@ void ScrollInputHelper::HookTargetElementLoaded()
 
         if (targetElementAsFrameworkElement)
         {
-            m_targetElementLoadedToken = targetElementAsFrameworkElement.Loaded({ this, &ScrollInputHelper::OnTargetElementLoaded });
+            m_targetElementLoadedToken = targetElementAsFrameworkElement.Loaded({this, &ScrollInputHelper::OnTargetElementLoaded});
         }
     }
 }
@@ -1368,14 +1375,14 @@ void ScrollInputHelper::HookScrollViewerPropertyChanged()
         MUX_ASSERT(m_sourceSizeChangedToken.value == 0);
 
         m_scrollViewerContentChangedToken.value = scrollViewer.RegisterPropertyChangedCallback(
-            winrt::ContentControl::ContentProperty(), { this, &ScrollInputHelper::OnScrollViewerPropertyChanged });
+            winrt::ContentControl::ContentProperty(), {this, &ScrollInputHelper::OnScrollViewerPropertyChanged});
         m_scrollViewerHorizontalContentAlignmentChangedToken.value = scrollViewer.RegisterPropertyChangedCallback(
-            winrt::Control::HorizontalContentAlignmentProperty(), { this, &ScrollInputHelper::OnScrollViewerPropertyChanged });
+            winrt::Control::HorizontalContentAlignmentProperty(), {this, &ScrollInputHelper::OnScrollViewerPropertyChanged});
         m_scrollViewerVerticalContentAlignmentChangedToken.value = scrollViewer.RegisterPropertyChangedCallback(
-            winrt::Control::VerticalContentAlignmentProperty(), { this, &ScrollInputHelper::OnScrollViewerPropertyChanged });
+            winrt::Control::VerticalContentAlignmentProperty(), {this, &ScrollInputHelper::OnScrollViewerPropertyChanged});
         m_scrollViewerZoomModeChangedToken.value = scrollViewer.RegisterPropertyChangedCallback(
-            winrt::FxScrollViewer::ZoomModeProperty(), { this, &ScrollInputHelper::OnScrollViewerPropertyChanged });
-        m_sourceSizeChangedToken = scrollViewer.SizeChanged({ this, &ScrollInputHelper::OnSourceSizeChanged });
+            winrt::FxScrollViewer::ZoomModeProperty(), {this, &ScrollInputHelper::OnScrollViewerPropertyChanged});
+        m_sourceSizeChangedToken = scrollViewer.SizeChanged({this, &ScrollInputHelper::OnSourceSizeChanged});
     }
 }
 
@@ -1389,8 +1396,8 @@ void ScrollInputHelper::HookScrollPresenterPropertyChanged()
         MUX_ASSERT(m_sourceSizeChangedToken.value == 0);
 
         m_scrollPresenterContentChangedToken.value = scrollPresenter.RegisterPropertyChangedCallback(
-            winrt::ScrollPresenter::ContentProperty(), { this, &ScrollInputHelper::OnScrollPresenterPropertyChanged });
-        m_sourceSizeChangedToken = scrollPresenter.SizeChanged({ this, &ScrollInputHelper::OnSourceSizeChanged });
+            winrt::ScrollPresenter::ContentProperty(), {this, &ScrollInputHelper::OnScrollPresenterPropertyChanged});
+        m_sourceSizeChangedToken = scrollPresenter.SizeChanged({this, &ScrollInputHelper::OnSourceSizeChanged});
     }
 }
 
@@ -1401,22 +1408,26 @@ void ScrollInputHelper::UnhookScrollViewerPropertyChanged()
     {
         if (m_scrollViewerContentChangedToken.value != 0)
         {
-            scrollViewer.UnregisterPropertyChangedCallback(winrt::ContentControl::ContentProperty(), m_scrollViewerContentChangedToken.value);
+            scrollViewer.UnregisterPropertyChangedCallback(
+                winrt::ContentControl::ContentProperty(), m_scrollViewerContentChangedToken.value);
             m_scrollViewerContentChangedToken.value = 0;
         }
         if (m_scrollViewerHorizontalContentAlignmentChangedToken.value != 0)
         {
-            scrollViewer.UnregisterPropertyChangedCallback(winrt::Control::HorizontalContentAlignmentProperty(), m_scrollViewerHorizontalContentAlignmentChangedToken.value);
+            scrollViewer.UnregisterPropertyChangedCallback(
+                winrt::Control::HorizontalContentAlignmentProperty(), m_scrollViewerHorizontalContentAlignmentChangedToken.value);
             m_scrollViewerHorizontalContentAlignmentChangedToken.value = 0;
         }
         if (m_scrollViewerVerticalContentAlignmentChangedToken.value != 0)
         {
-            scrollViewer.UnregisterPropertyChangedCallback(winrt::Control::VerticalContentAlignmentProperty(), m_scrollViewerVerticalContentAlignmentChangedToken.value);
+            scrollViewer.UnregisterPropertyChangedCallback(
+                winrt::Control::VerticalContentAlignmentProperty(), m_scrollViewerVerticalContentAlignmentChangedToken.value);
             m_scrollViewerVerticalContentAlignmentChangedToken.value = 0;
         }
         if (m_scrollViewerZoomModeChangedToken.value != 0)
         {
-            scrollViewer.UnregisterPropertyChangedCallback(winrt::FxScrollViewer::ZoomModeProperty(), m_scrollViewerZoomModeChangedToken.value);
+            scrollViewer.UnregisterPropertyChangedCallback(
+                winrt::FxScrollViewer::ZoomModeProperty(), m_scrollViewerZoomModeChangedToken.value);
             m_scrollViewerZoomModeChangedToken.value = 0;
         }
         if (m_sourceSizeChangedToken.value != 0)
@@ -1435,7 +1446,8 @@ void ScrollInputHelper::UnhookScrollPresenterPropertyChanged()
     {
         if (m_scrollPresenterContentChangedToken.value != 0)
         {
-            scrollPresenter.UnregisterPropertyChangedCallback(winrt::ScrollPresenter::ContentProperty(), m_scrollPresenterContentChangedToken.value);
+            scrollPresenter.UnregisterPropertyChangedCallback(
+                winrt::ScrollPresenter::ContentProperty(), m_scrollPresenterContentChangedToken.value);
             m_scrollPresenterContentChangedToken.value = 0;
         }
         if (m_sourceSizeChangedToken.value != 0)
@@ -1454,16 +1466,16 @@ void ScrollInputHelper::HookScrollViewerContentPropertyChanged()
         if (m_scrollViewerContentHorizontalAlignmentChangedToken.value == 0)
         {
             m_scrollViewerContentHorizontalAlignmentChangedToken.value = sourceContent.RegisterPropertyChangedCallback(
-                winrt::FrameworkElement::HorizontalAlignmentProperty(), { this, &ScrollInputHelper::OnScrollViewerContentPropertyChanged });
+                winrt::FrameworkElement::HorizontalAlignmentProperty(), {this, &ScrollInputHelper::OnScrollViewerContentPropertyChanged});
         }
         if (m_scrollViewerContentVerticalAlignmentChangedToken.value == 0)
         {
             m_scrollViewerContentVerticalAlignmentChangedToken.value = sourceContent.RegisterPropertyChangedCallback(
-                winrt::FrameworkElement::VerticalAlignmentProperty(), { this, &ScrollInputHelper::OnScrollViewerContentPropertyChanged });
+                winrt::FrameworkElement::VerticalAlignmentProperty(), {this, &ScrollInputHelper::OnScrollViewerContentPropertyChanged});
         }
         if (m_sourceContentSizeChangedToken.value == 0)
         {
-            m_sourceContentSizeChangedToken = sourceContent.SizeChanged({ this, &ScrollInputHelper::OnSourceContentSizeChanged });
+            m_sourceContentSizeChangedToken = sourceContent.SizeChanged({this, &ScrollInputHelper::OnSourceContentSizeChanged});
         }
     }
 }
@@ -1476,7 +1488,7 @@ void ScrollInputHelper::HookScrollPresenterContentPropertyChanged()
     {
         if (m_sourceContentSizeChangedToken.value == 0)
         {
-            m_sourceContentSizeChangedToken = sourceContent.SizeChanged({ this, &ScrollInputHelper::OnSourceContentSizeChanged });
+            m_sourceContentSizeChangedToken = sourceContent.SizeChanged({this, &ScrollInputHelper::OnSourceContentSizeChanged});
         }
     }
 }
@@ -1489,12 +1501,14 @@ void ScrollInputHelper::UnhookScrollViewerContentPropertyChanged()
     {
         if (m_scrollViewerContentHorizontalAlignmentChangedToken.value != 0)
         {
-            sourceContent.UnregisterPropertyChangedCallback(winrt::FrameworkElement::HorizontalAlignmentProperty(), m_scrollViewerContentHorizontalAlignmentChangedToken.value);
+            sourceContent.UnregisterPropertyChangedCallback(
+                winrt::FrameworkElement::HorizontalAlignmentProperty(), m_scrollViewerContentHorizontalAlignmentChangedToken.value);
             m_scrollViewerContentHorizontalAlignmentChangedToken.value = 0;
         }
         if (m_scrollViewerContentVerticalAlignmentChangedToken.value != 0)
         {
-            sourceContent.UnregisterPropertyChangedCallback(winrt::FrameworkElement::VerticalAlignmentProperty(), m_scrollViewerContentVerticalAlignmentChangedToken.value);
+            sourceContent.UnregisterPropertyChangedCallback(
+                winrt::FrameworkElement::VerticalAlignmentProperty(), m_scrollViewerContentVerticalAlignmentChangedToken.value);
             m_scrollViewerContentVerticalAlignmentChangedToken.value = 0;
         }
         if (m_sourceContentSizeChangedToken.value != 0)
@@ -1530,7 +1544,8 @@ void ScrollInputHelper::HookScrollViewerDirectManipulationStarted()
     {
         MUX_ASSERT(m_scrollViewerDirectManipulationStartedToken.value == 0);
 
-        m_scrollViewerDirectManipulationStartedToken = scrollViewer.DirectManipulationStarted({ this, &ScrollInputHelper::OnScrollViewerDirectManipulationStarted });
+        m_scrollViewerDirectManipulationStartedToken =
+            scrollViewer.DirectManipulationStarted({this, &ScrollInputHelper::OnScrollViewerDirectManipulationStarted});
     }
 }
 
@@ -1551,7 +1566,8 @@ void ScrollInputHelper::HookScrollViewerDirectManipulationCompleted()
     {
         MUX_ASSERT(m_scrollViewerDirectManipulationCompletedToken.value == 0);
 
-        m_scrollViewerDirectManipulationCompletedToken = scrollViewer.DirectManipulationCompleted({ this, &ScrollInputHelper::OnScrollViewerDirectManipulationCompleted });
+        m_scrollViewerDirectManipulationCompletedToken =
+            scrollViewer.DirectManipulationCompleted({this, &ScrollInputHelper::OnScrollViewerDirectManipulationCompleted});
     }
 }
 
@@ -1572,7 +1588,7 @@ void ScrollInputHelper::HookRichEditBoxTextChanged()
     {
         MUX_ASSERT(m_richEditBoxTextChangedToken.value == 0);
 
-        m_richEditBoxTextChangedToken = richEditBox.TextChanged({ this, &ScrollInputHelper::OnRichEditBoxTextChanged });
+        m_richEditBoxTextChangedToken = richEditBox.TextChanged({this, &ScrollInputHelper::OnRichEditBoxTextChanged});
     }
 }
 
@@ -1590,9 +1606,9 @@ void ScrollInputHelper::HookCompositionTargetRendering()
 {
     if (m_renderingToken.value == 0)
     {
-        winrt::Windows::UI::Xaml::Media::CompositionTarget compositionTarget{ nullptr };
+        winrt::Windows::UI::Xaml::Media::CompositionTarget compositionTarget{nullptr};
 
-        m_renderingToken = compositionTarget.Rendering({ this, &ScrollInputHelper::OnCompositionTargetRendering });
+        m_renderingToken = compositionTarget.Rendering({this, &ScrollInputHelper::OnCompositionTargetRendering});
     }
 }
 
@@ -1600,7 +1616,7 @@ void ScrollInputHelper::UnhookCompositionTargetRendering()
 {
     if (m_renderingToken.value != 0)
     {
-        winrt::Windows::UI::Xaml::Media::CompositionTarget compositionTarget{ nullptr };
+        winrt::Windows::UI::Xaml::Media::CompositionTarget compositionTarget{nullptr};
 
         compositionTarget.Rendering(m_renderingToken);
         m_renderingToken.value = 0;

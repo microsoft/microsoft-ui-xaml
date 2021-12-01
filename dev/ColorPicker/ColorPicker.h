@@ -11,9 +11,7 @@
 
 #include "ColorPicker.properties.h"
 
-class ColorPicker : 
-    public ReferenceTracker<ColorPicker, winrt::implementation::ColorPickerT>,
-    public ColorPickerProperties
+class ColorPicker : public ReferenceTracker<ColorPicker, winrt::implementation::ColorPickerT>, public ColorPickerProperties
 {
 public:
     ColorPicker();
@@ -24,7 +22,10 @@ public:
     // Property changed handler.
     void OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
-    Hsv & GetCurrentHsv() { return m_currentHsv; }
+    Hsv& GetCurrentHsv()
+    {
+        return m_currentHsv;
+    }
 
 private:
     // DependencyProperty changed event handlers
@@ -101,8 +102,8 @@ private:
     };
 
     void InitializeColor();
-    void UpdateColor(const Rgb &rgb, ColorUpdateReason reason);
-    void UpdateColor(const Hsv &hsv, ColorUpdateReason reason);
+    void UpdateColor(const Rgb& rgb, ColorUpdateReason reason);
+    void UpdateColor(const Hsv& hsv, ColorUpdateReason reason);
     void UpdateColor(double alpha, ColorUpdateReason reason);
     void SetColorAndUpdateControls(ColorUpdateReason reason);
 
@@ -121,66 +122,66 @@ private:
     Hsv GetHsvColorFromTextBoxes();
     winrt::hstring GetCurrentHexValue();
 
-    Rgb ApplyConstraintsToRgbColor(const Rgb &rgb);
+    Rgb ApplyConstraintsToRgbColor(const Rgb& rgb);
 
     void UpdateMoreButton();
 
-    bool m_updatingColor{ false };
-    bool m_updatingControls{ false };
-    Rgb m_currentRgb{ 1.0, 1.0, 1.0 };
-    Hsv m_currentHsv{ 0.0, 1.0, 1.0 };
-    winrt::hstring m_currentHex{ L"#FFFFFFFF" };
-    double m_currentAlpha{ 1.0 };
+    bool m_updatingColor{false};
+    bool m_updatingControls{false};
+    Rgb m_currentRgb{1.0, 1.0, 1.0};
+    Hsv m_currentHsv{0.0, 1.0, 1.0};
+    winrt::hstring m_currentHex{L"#FFFFFFFF"};
+    double m_currentAlpha{1.0};
 
-    winrt::hstring m_previousString{ L"" };
-    bool m_isFocusedTextBoxValid{ false };
+    winrt::hstring m_previousString{L""};
+    bool m_isFocusedTextBoxValid{false};
 
-    bool m_textEntryGridOpened{ false };
+    bool m_textEntryGridOpened{false};
 
     // Template parts
-    tracker_ref<winrt::ColorSpectrum> m_colorSpectrum{ this };
+    tracker_ref<winrt::ColorSpectrum> m_colorSpectrum{this};
 
-    tracker_ref<winrt::Grid> m_colorPreviewRectangleGrid{ this };
-    tracker_ref<winrt::Rectangle> m_colorPreviewRectangle{ this };
-    tracker_ref<winrt::Rectangle> m_previousColorRectangle{ this };
-    tracker_ref<winrt::ImageBrush> m_colorPreviewRectangleCheckeredBackgroundImageBrush{ this };
+    tracker_ref<winrt::Grid> m_colorPreviewRectangleGrid{this};
+    tracker_ref<winrt::Rectangle> m_colorPreviewRectangle{this};
+    tracker_ref<winrt::Rectangle> m_previousColorRectangle{this};
+    tracker_ref<winrt::ImageBrush> m_colorPreviewRectangleCheckeredBackgroundImageBrush{this};
 
-    winrt::IAsyncAction m_createColorPreviewRectangleCheckeredBackgroundBitmapAction{ nullptr };
+    winrt::IAsyncAction m_createColorPreviewRectangleCheckeredBackgroundBitmapAction{nullptr};
 
-    tracker_ref<winrt::ColorPickerSlider> m_thirdDimensionSlider{ this };
-    tracker_ref<winrt::LinearGradientBrush> m_thirdDimensionSliderGradientBrush{ this };
+    tracker_ref<winrt::ColorPickerSlider> m_thirdDimensionSlider{this};
+    tracker_ref<winrt::LinearGradientBrush> m_thirdDimensionSliderGradientBrush{this};
 
-    tracker_ref<winrt::ColorPickerSlider> m_alphaSlider{ this };
-    tracker_ref<winrt::LinearGradientBrush> m_alphaSliderGradientBrush{ this };
-    tracker_ref<winrt::Rectangle> m_alphaSliderBackgroundRectangle{ this };
-    tracker_ref<winrt::ImageBrush> m_alphaSliderCheckeredBackgroundImageBrush{ this };
+    tracker_ref<winrt::ColorPickerSlider> m_alphaSlider{this};
+    tracker_ref<winrt::LinearGradientBrush> m_alphaSliderGradientBrush{this};
+    tracker_ref<winrt::Rectangle> m_alphaSliderBackgroundRectangle{this};
+    tracker_ref<winrt::ImageBrush> m_alphaSliderCheckeredBackgroundImageBrush{this};
 
-    winrt::IAsyncAction m_alphaSliderCheckeredBackgroundBitmapAction{ nullptr };
+    winrt::IAsyncAction m_alphaSliderCheckeredBackgroundBitmapAction{nullptr};
 
-    tracker_ref<winrt::ButtonBase> m_moreButton{ this };
-    tracker_ref<winrt::TextBlock> m_moreButtonLabel{ this };
-    
-    tracker_ref<winrt::ComboBox> m_colorRepresentationComboBox{ this };
-    tracker_ref<winrt::TextBox> m_redTextBox{ this };
-    tracker_ref<winrt::TextBox> m_greenTextBox{ this };
-    tracker_ref<winrt::TextBox> m_blueTextBox{ this };
-    tracker_ref<winrt::TextBox> m_hueTextBox{ this };
-    tracker_ref<winrt::TextBox> m_saturationTextBox{ this };
-    tracker_ref<winrt::TextBox> m_valueTextBox{ this };
-    tracker_ref<winrt::TextBox> m_alphaTextBox{ this };
-    tracker_ref<winrt::TextBox> m_hexTextBox{ this };
+    tracker_ref<winrt::ButtonBase> m_moreButton{this};
+    tracker_ref<winrt::TextBlock> m_moreButtonLabel{this};
 
-    tracker_ref<winrt::ComboBoxItem> m_RgbComboBoxItem{ this };
-    tracker_ref<winrt::ComboBoxItem> m_HsvComboBoxItem{ this };
-    tracker_ref<winrt::TextBlock> m_redLabel{ this };
-    tracker_ref<winrt::TextBlock> m_greenLabel{ this };
-    tracker_ref<winrt::TextBlock> m_blueLabel{ this };
-    tracker_ref<winrt::TextBlock> m_hueLabel{ this };
-    tracker_ref<winrt::TextBlock> m_saturationLabel{ this };
-    tracker_ref<winrt::TextBlock> m_valueLabel{ this };
-    tracker_ref<winrt::TextBlock> m_alphaLabel{ this };
+    tracker_ref<winrt::ComboBox> m_colorRepresentationComboBox{this};
+    tracker_ref<winrt::TextBox> m_redTextBox{this};
+    tracker_ref<winrt::TextBox> m_greenTextBox{this};
+    tracker_ref<winrt::TextBox> m_blueTextBox{this};
+    tracker_ref<winrt::TextBox> m_hueTextBox{this};
+    tracker_ref<winrt::TextBox> m_saturationTextBox{this};
+    tracker_ref<winrt::TextBox> m_valueTextBox{this};
+    tracker_ref<winrt::TextBox> m_alphaTextBox{this};
+    tracker_ref<winrt::TextBox> m_hexTextBox{this};
 
-    tracker_ref<winrt::SolidColorBrush> m_checkerColorBrush{ this };
+    tracker_ref<winrt::ComboBoxItem> m_RgbComboBoxItem{this};
+    tracker_ref<winrt::ComboBoxItem> m_HsvComboBoxItem{this};
+    tracker_ref<winrt::TextBlock> m_redLabel{this};
+    tracker_ref<winrt::TextBlock> m_greenLabel{this};
+    tracker_ref<winrt::TextBlock> m_blueLabel{this};
+    tracker_ref<winrt::TextBlock> m_hueLabel{this};
+    tracker_ref<winrt::TextBlock> m_saturationLabel{this};
+    tracker_ref<winrt::TextBlock> m_valueLabel{this};
+    tracker_ref<winrt::TextBlock> m_alphaLabel{this};
 
-    DispatcherHelper m_dispatcherHelper{ *this };
+    tracker_ref<winrt::SolidColorBrush> m_checkerColorBrush{this};
+
+    DispatcherHelper m_dispatcherHelper{*this};
 };

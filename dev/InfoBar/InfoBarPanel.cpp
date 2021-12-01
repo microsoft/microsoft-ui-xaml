@@ -31,16 +31,14 @@ winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
             // Add up the width of all items if they were laid out horizontally
             const auto horizontalMargin = winrt::InfoBarPanel::GetHorizontalOrientationMargin(child);
             // Ignore left margin of first and right margin of last child
-            totalWidth += childDesiredSize.Width +
-                (nItems > 0 ? (float)horizontalMargin.Left : 0) +
-                (nItems < childCount -1 ? (float)horizontalMargin.Right : 0);
+            totalWidth += childDesiredSize.Width + (nItems > 0 ? (float)horizontalMargin.Left : 0) +
+                          (nItems < childCount - 1 ? (float)horizontalMargin.Right : 0);
 
             // Add up the height of all items if they were laid out vertically
             const auto verticalMargin = winrt::InfoBarPanel::GetVerticalOrientationMargin(child);
             // Ignore top margin of first and bottom margin of last child
-            totalHeight += childDesiredSize.Height +
-                (nItems > 0 ? (float)verticalMargin.Top : 0) +
-                (nItems < childCount -1 ? (float)verticalMargin.Bottom: 0);
+            totalHeight += childDesiredSize.Height + (nItems > 0 ? (float)verticalMargin.Top : 0) +
+                           (nItems < childCount - 1 ? (float)verticalMargin.Bottom : 0);
 
             if (childDesiredSize.Width > widthOfWidest)
             {
@@ -80,7 +78,7 @@ winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
         const auto horizontalPadding = HorizontalOrientationPadding();
 
         desiredSize.Width = totalWidth + (float)horizontalPadding.Left + (float)horizontalPadding.Right;
-        desiredSize.Height = heightOfTallest + (float)horizontalPadding.Top + (float)horizontalPadding.Bottom ;
+        desiredSize.Height = heightOfTallest + (float)horizontalPadding.Top + (float)horizontalPadding.Bottom;
     }
 
     return desiredSize;
@@ -107,7 +105,11 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
                     const auto verticalMargin = winrt::InfoBarPanel::GetVerticalOrientationMargin(child);
 
                     verticalOffset += hasPreviousElement ? (float)verticalMargin.Top : 0;
-                    child.Arrange(winrt::Rect{ (float)verticalOrientationPadding.Left + (float)verticalMargin.Left, verticalOffset, desiredSize.Width, desiredSize.Height });
+                    child.Arrange(winrt::Rect{
+                        (float)verticalOrientationPadding.Left + (float)verticalMargin.Left,
+                        verticalOffset,
+                        desiredSize.Width,
+                        desiredSize.Height});
                     verticalOffset += desiredSize.Height + (float)verticalMargin.Bottom;
 
                     hasPreviousElement = true;
@@ -124,7 +126,7 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
 
         const auto children = Children();
         const auto childCount = children.Size();
-        for (unsigned int i=0; i< childCount; i++)
+        for (unsigned int i = 0; i < childCount; i++)
         {
             const auto child = children.GetAt(i);
             if (auto childAsFe = child.try_as<winrt::FrameworkElement>())
@@ -137,13 +139,20 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
                     horizontalOffset += hasPreviousElement ? (float)horizontalMargin.Left : 0;
                     if (i < childCount - 1)
                     {
-                        child.Arrange(winrt::Rect{ horizontalOffset, (float)horizontalOrientationPadding.Top + (float)horizontalMargin.Top, desiredSize.Width, desiredSize.Height });
+                        child.Arrange(winrt::Rect{
+                            horizontalOffset,
+                            (float)horizontalOrientationPadding.Top + (float)horizontalMargin.Top,
+                            desiredSize.Width,
+                            desiredSize.Height});
                     }
                     else
                     {
                         // Give the rest of the horizontal space to the last child.
-                        child.Arrange(winrt::Rect{ horizontalOffset, (float)horizontalOrientationPadding.Top + (float)horizontalMargin.Top,
-                            std::max(desiredSize.Width, finalSize.Width - horizontalOffset), desiredSize.Height });
+                        child.Arrange(winrt::Rect{
+                            horizontalOffset,
+                            (float)horizontalOrientationPadding.Top + (float)horizontalMargin.Top,
+                            std::max(desiredSize.Width, finalSize.Width - horizontalOffset),
+                            desiredSize.Height});
                     }
 
                     horizontalOffset += desiredSize.Width + (float)horizontalMargin.Right;
@@ -156,4 +165,3 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
 
     return result;
 }
-

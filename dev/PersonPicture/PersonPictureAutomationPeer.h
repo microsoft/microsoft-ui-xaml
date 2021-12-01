@@ -7,13 +7,12 @@
 
 #include "PersonPictureAutomationPeer.g.h"
 
-class PersonPictureAutomationPeer :
-    public ReferenceTracker<PersonPictureAutomationPeer, winrt::implementation::PersonPictureAutomationPeerT>
+class PersonPictureAutomationPeer : public ReferenceTracker<PersonPictureAutomationPeer, winrt::implementation::PersonPictureAutomationPeerT>
 {
 public:
     PersonPictureAutomationPeer(winrt::PersonPicture const& owner);
 
-    // IAutomationPeerOverrides 
+    // IAutomationPeerOverrides
     winrt::AutomationControlType GetAutomationControlTypeCore();
     winrt::hstring GetClassNameCore();
 };

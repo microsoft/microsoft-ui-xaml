@@ -5,8 +5,8 @@
 
 #include "ScrollControllerInteractionRequestedEventArgs.g.h"
 
-class ScrollControllerInteractionRequestedEventArgs :
-    public winrt::implementation::ScrollControllerInteractionRequestedEventArgsT<ScrollControllerInteractionRequestedEventArgs>
+class ScrollControllerInteractionRequestedEventArgs
+    : public winrt::implementation::ScrollControllerInteractionRequestedEventArgsT<ScrollControllerInteractionRequestedEventArgs>
 {
 public:
     ~ScrollControllerInteractionRequestedEventArgs()
@@ -14,14 +14,13 @@ public:
         SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ScrollControllerInteractionRequestedEventArgs(
-        const winrt::PointerPoint& pointerPoint);
+    ScrollControllerInteractionRequestedEventArgs(const winrt::PointerPoint& pointerPoint);
 
     winrt::PointerPoint PointerPoint() const;
     bool Handled() const;
-    void Handled(bool handled); 
+    void Handled(bool handled);
 
 private:
-    winrt::PointerPoint m_pointerPoint{ nullptr };
-    bool m_handled{ false };
+    winrt::PointerPoint m_pointerPoint{nullptr};
+    bool m_handled{false};
 };

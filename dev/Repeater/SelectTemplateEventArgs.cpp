@@ -6,7 +6,6 @@
 #include "ItemsRepeater.common.h"
 #include "SelectTemplateEventArgs.h"
 
-
 #pragma region ISelectTemplateEventArgs
 
 winrt::hstring SelectTemplateEventArgs::TemplateKey()

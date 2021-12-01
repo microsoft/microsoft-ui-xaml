@@ -10,18 +10,16 @@ struct bringintoview_event_revoker;
 #include "NavigationViewItemPresenter.h"
 #include "NavigationViewItem.properties.h"
 
-class NavigationViewItem :
-    public winrt::implementation::NavigationViewItemT<NavigationViewItem, NavigationViewItemBase>,
-    public NavigationViewItemProperties
+class NavigationViewItem : public winrt::implementation::NavigationViewItemT<NavigationViewItem, NavigationViewItemBase>, public NavigationViewItemProperties
 {
 public:
     ForwardRefToBaseReferenceTracker(NavigationViewItemBase)
 
-    NavigationViewItem();
+        NavigationViewItem();
 
-    // These functions are ambiguous with NavigationViewItemBase, disambiguate 
-    using NavigationViewItemProperties::EnsureProperties;
+    // These functions are ambiguous with NavigationViewItemBase, disambiguate
     using NavigationViewItemProperties::ClearProperties;
+    using NavigationViewItemProperties::EnsureProperties;
 
     // IFrameworkElementOverrides
     void OnApplyTemplate() override;
@@ -48,15 +46,18 @@ public:
     void OnGotFocus(winrt::RoutedEventArgs const& e) override;
     void OnLostFocus(winrt::RoutedEventArgs const& e) override;
 
-    // VisualState is maintained by NavigationViewItem. but actual state should be apply to 
-    // NavigationViewItemPresenter. But NavigationViewItemPresenter is created after NavigationViewItem. 
+    // VisualState is maintained by NavigationViewItem. but actual state should be apply to
+    // NavigationViewItemPresenter. But NavigationViewItemPresenter is created after NavigationViewItem.
     // It provides a chance for NavigationViewItemPresenter to request visualstate refresh
     void UpdateVisualStateNoTransition();
 
     void ShowHideChildren();
     bool ShouldRepeaterShowInFlyout() const;
 
-    winrt::ItemsRepeater GetRepeater() const { return m_repeater.get(); };
+    winrt::ItemsRepeater GetRepeater() const
+    {
+        return m_repeater.get();
+    };
 
     void OnExpandCollapseChevronTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args);
     void RotateExpandCollapseChevron(bool isExpanded);
@@ -140,24 +141,24 @@ private:
     winrt::FlyoutBase::Closing_revoker m_flyoutClosingRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
 
-    tracker_ref<winrt::ToolTip> m_toolTip{ this };
-    NavigationViewItemHelper<NavigationViewItem> m_helper{ this };
-    tracker_ref<winrt::NavigationViewItemPresenter> m_navigationViewItemPresenter{ this };
-    tracker_ref<winrt::IInspectable> m_suggestedToolTipContent{ this };
-    tracker_ref<winrt::ItemsRepeater> m_repeater{ this };
-    tracker_ref<winrt::Grid> m_flyoutContentGrid{ this };
-    tracker_ref<winrt::Grid> m_rootGrid{ this };
+    tracker_ref<winrt::ToolTip> m_toolTip{this};
+    NavigationViewItemHelper<NavigationViewItem> m_helper{this};
+    tracker_ref<winrt::NavigationViewItemPresenter> m_navigationViewItemPresenter{this};
+    tracker_ref<winrt::IInspectable> m_suggestedToolTipContent{this};
+    tracker_ref<winrt::ItemsRepeater> m_repeater{this};
+    tracker_ref<winrt::Grid> m_flyoutContentGrid{this};
+    tracker_ref<winrt::Grid> m_rootGrid{this};
 
-    bool m_isClosedCompact{ false };
+    bool m_isClosedCompact{false};
 
-    bool m_appliedTemplate{ false };
-    bool m_hasKeyboardFocus{ false };
+    bool m_appliedTemplate{false};
+    bool m_hasKeyboardFocus{false};
 
     // Visual state tracking
-    winrt::Pointer m_capturedPointer{ nullptr };
-    uint32_t m_trackedPointerId{ 0 };
-    bool m_isPressed{ false };
-    bool m_isPointerOver{ false };
+    winrt::Pointer m_capturedPointer{nullptr};
+    uint32_t m_trackedPointerId{0};
+    bool m_isPressed{false};
+    bool m_isPointerOver{false};
 
-    bool m_isRepeaterParentedToFlyout{ false };
+    bool m_isRepeaterParentedToFlyout{false};
 };

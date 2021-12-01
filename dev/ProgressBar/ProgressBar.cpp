@@ -14,14 +14,14 @@ ProgressBar::ProgressBar()
 
     SetDefaultStyleKey(this);
 
-    SizeChanged({ this, &ProgressBar::OnSizeChanged });
+    SizeChanged({this, &ProgressBar::OnSizeChanged});
 
     // NOTE: This is necessary only because Value isn't one of OUR properties, it's implemented in RangeBase.
     // If it was one of ProgressBar's properties, defined in the IDL, you'd do it differently (see IsIndeterminate).
-    RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressBar::OnIndicatorWidthComponentChanged });
-    RegisterPropertyChangedCallback(winrt::RangeBase::MinimumProperty(), { this, &ProgressBar::OnIndicatorWidthComponentChanged });
-    RegisterPropertyChangedCallback(winrt::RangeBase::MaximumProperty(), { this, &ProgressBar::OnIndicatorWidthComponentChanged });
-    RegisterPropertyChangedCallback(winrt::Control::PaddingProperty(), { this, &ProgressBar::OnIndicatorWidthComponentChanged });
+    RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), {this, &ProgressBar::OnIndicatorWidthComponentChanged});
+    RegisterPropertyChangedCallback(winrt::RangeBase::MinimumProperty(), {this, &ProgressBar::OnIndicatorWidthComponentChanged});
+    RegisterPropertyChangedCallback(winrt::RangeBase::MaximumProperty(), {this, &ProgressBar::OnIndicatorWidthComponentChanged});
+    RegisterPropertyChangedCallback(winrt::Control::PaddingProperty(), {this, &ProgressBar::OnIndicatorWidthComponentChanged});
 
     SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressBarTemplateSettings>());
 }
@@ -31,10 +31,9 @@ winrt::AutomationPeer ProgressBar::OnCreateAutomationPeer()
     return winrt::make<ProgressBarAutomationPeer>(*this);
 }
 
-
 void ProgressBar::OnApplyTemplate()
 {
-    winrt::IControlProtected controlProtected{ *this };
+    winrt::IControlProtected controlProtected{*this};
 
     // NOTE: Example of how named parts are loaded from the template. Important to remember that it's possible for
     // any of them not to be found, since devs can replace the template with their own.
@@ -102,7 +101,7 @@ void ProgressBar::UpdateStates()
         {
             winrt::VisualStateManager::GoToState(*this, s_ErrorStateName, true);
         }
-        else if(ShowPaused())
+        else if (ShowPaused())
         {
             winrt::VisualStateManager::GoToState(*this, s_PausedStateName, true);
         }
@@ -111,7 +110,6 @@ void ProgressBar::UpdateStates()
             winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
         }
     }
-
 }
 
 void ProgressBar::SetProgressBarIndicatorWidth()
@@ -158,7 +156,6 @@ void ProgressBar::SetProgressBarIndicatorWidth()
                     {
                         indeterminateProgressBarIndicator2.Width(progressBarWidth * 0.6); // 60% of ProgressBar Width
                     }
-                    
                 }
             }
             else if (std::abs(maximum - minimum) > DBL_EPSILON)
@@ -184,8 +181,7 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
 {
     const auto templateSettings = winrt::get_self<::ProgressBarTemplateSettings>(TemplateSettings());
 
-    const auto [width, height] = [progressBar = m_layoutRoot.get()]()
-    {
+    const auto [width, height] = [progressBar = m_layoutRoot.get()]() {
         if (progressBar)
         {
             const float width = static_cast<float>(progressBar.ActualWidth());
@@ -195,26 +191,24 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
         return std::make_tuple(0.0f, 0.0f);
     }();
 
-    const double indeterminateProgressBarIndicatorWidth = width * 0.4; // Indicator width at 40% of ProgressBar
+    const double indeterminateProgressBarIndicatorWidth = width * 0.4;  // Indicator width at 40% of ProgressBar
     const double indeterminateProgressBarIndicatorWidth2 = width * 0.6; // Indicator width at 60% of ProgressBar
 
     templateSettings->ContainerAnimationStartPosition(indeterminateProgressBarIndicatorWidth * -1.0); // Position at -100%
-    templateSettings->ContainerAnimationEndPosition(indeterminateProgressBarIndicatorWidth * 3.0); // Position at 300%
+    templateSettings->ContainerAnimationEndPosition(indeterminateProgressBarIndicatorWidth * 3.0);    // Position at 300%
 
     templateSettings->Container2AnimationStartPosition(indeterminateProgressBarIndicatorWidth2 * -1.5); // Position at -150%
-    templateSettings->Container2AnimationEndPosition(indeterminateProgressBarIndicatorWidth2 * 1.66); // Position at 166%
+    templateSettings->Container2AnimationEndPosition(indeterminateProgressBarIndicatorWidth2 * 1.66);   // Position at 166%
 
     templateSettings->ContainerAnimationMidPosition(0);
 
-    const auto rectangle = [width, height, padding = Padding()]()
-    {
+    const auto rectangle = [width, height, padding = Padding()]() {
         const auto returnValue = winrt::RectangleGeometry();
-        returnValue.Rect({
-            static_cast<float>(padding.Left),
-            static_cast<float>(padding.Top),
-            width - static_cast<float>(padding.Right + padding.Left),
-            height - static_cast<float>(padding.Bottom + padding.Top)
-            });
+        returnValue.Rect(
+            {static_cast<float>(padding.Left),
+             static_cast<float>(padding.Top),
+             width - static_cast<float>(padding.Right + padding.Left),
+             height - static_cast<float>(padding.Bottom + padding.Top)});
         return returnValue;
     }();
 

@@ -6,8 +6,8 @@
 
 #include "TeachingTipClosingEventArgs.g.h"
 
-class TeachingTipClosingEventArgs :
-    public ReferenceTracker<TeachingTipClosingEventArgs, winrt::implementation::TeachingTipClosingEventArgsT, winrt::composable, winrt::composing>
+class TeachingTipClosingEventArgs
+    : public ReferenceTracker<TeachingTipClosingEventArgs, winrt::implementation::TeachingTipClosingEventArgsT, winrt::composable, winrt::composing>
 {
 public:
     winrt::TeachingTipCloseReason Reason();
@@ -20,10 +20,10 @@ public:
 
     void DecrementDeferralCount();
     void IncrementDeferralCount();
-private:
 
-    winrt::TeachingTipCloseReason m_reason{ winrt::TeachingTipCloseReason::CloseButton };
-    bool m_cancel{ false };
-    tracker_ref<winrt::Deferral> m_deferral{ this };
-    int m_deferralCount{ 0 };
+private:
+    winrt::TeachingTipCloseReason m_reason{winrt::TeachingTipCloseReason::CloseButton};
+    bool m_cancel{false};
+    tracker_ref<winrt::Deferral> m_deferral{this};
+    int m_deferralCount{0};
 };

@@ -10,12 +10,7 @@
 #include "ElementFactoryRecycleArgs.h"
 
 ViewManager::ViewManager(ItemsRepeater* owner) :
-    m_owner(owner),
-    m_resetPool(owner),
-    m_lastFocusedElement(owner),
-    m_phaser(owner),
-    m_ElementFactoryGetArgs(owner),
-    m_ElementFactoryRecycleArgs(owner)
+    m_owner(owner), m_resetPool(owner), m_lastFocusedElement(owner), m_phaser(owner), m_ElementFactoryGetArgs(owner), m_ElementFactoryRecycleArgs(owner)
 {
     // ItemsRepeater is not fully constructed yet. Don't interact with it.
 }
@@ -25,7 +20,7 @@ winrt::UIElement ViewManager::GetElement(int index, bool forceCreate, bool suppr
     winrt::UIElement element = forceCreate ? nullptr : GetElementIfAlreadyHeldByLayout(index);
     if (!element)
     {
-        // check if this is the anchor made through repeater in preparation 
+        // check if this is the anchor made through repeater in preparation
         // for a bring into view.
         if (auto madeAnchor = m_owner->MadeAnchor())
         {
@@ -36,9 +31,18 @@ winrt::UIElement ViewManager::GetElement(int index, bool forceCreate, bool suppr
             }
         }
     }
-    if (!element) { element = GetElementFromUniqueIdResetPool(index); };
-    if (!element) { element = GetElementFromPinnedElements(index); }
-    if (!element) { element = GetElementFromElementFactory(index); }
+    if (!element)
+    {
+        element = GetElementFromUniqueIdResetPool(index);
+    };
+    if (!element)
+    {
+        element = GetElementFromPinnedElements(index);
+    }
+    if (!element)
+    {
+        element = GetElementFromElementFactory(index);
+    }
 
     auto virtInfo = ItemsRepeater::TryGetVirtualizationInfo(element);
     if (suppressAutoRecycle)
@@ -60,10 +64,8 @@ void ViewManager::ClearElement(const winrt::UIElement& element, bool isClearedDu
 {
     const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
     const int index = virtInfo->Index();
-    const bool cleared =
-        ClearElementToUniqueIdResetPool(element, virtInfo) ||
-        ClearElementToAnimator(element, virtInfo) ||
-        ClearElementToPinnedPool(element, virtInfo, isClearedDueToCollectionChange);
+    const bool cleared = ClearElementToUniqueIdResetPool(element, virtInfo) || ClearElementToAnimator(element, virtInfo) ||
+                         ClearElementToPinnedPool(element, virtInfo, isClearedDueToCollectionChange);
 
     if (!cleared)
     {
@@ -71,8 +73,11 @@ void ViewManager::ClearElement(const winrt::UIElement& element, bool isClearedDu
     }
 
     // Both First and Last indices need to be valid or default.
-    MUX_ASSERT((m_firstRealizedElementIndexHeldByLayout == FirstRealizedElementIndexDefault && m_lastRealizedElementIndexHeldByLayout == LastRealizedElementIndexDefault) ||
-        (m_firstRealizedElementIndexHeldByLayout != FirstRealizedElementIndexDefault && m_lastRealizedElementIndexHeldByLayout != LastRealizedElementIndexDefault));
+    MUX_ASSERT(
+        (m_firstRealizedElementIndexHeldByLayout == FirstRealizedElementIndexDefault &&
+         m_lastRealizedElementIndexHeldByLayout == LastRealizedElementIndexDefault) ||
+        (m_firstRealizedElementIndexHeldByLayout != FirstRealizedElementIndexDefault &&
+         m_lastRealizedElementIndexHeldByLayout != LastRealizedElementIndexDefault));
 
     if (index == m_firstRealizedElementIndexHeldByLayout && index == m_lastRealizedElementIndexHeldByLayout)
     {
@@ -92,7 +97,7 @@ void ViewManager::ClearElement(const winrt::UIElement& element, bool isClearedDu
     else
     {
         // Index is either outside the range we are keeping track of or inside the range.
-        // In both these cases, we just keep the range we have. If this clear was due to 
+        // In both these cases, we just keep the range we have. If this clear was due to
         // a collection change, then in the CollectionChanged event, we will invalidate these guys.
     }
 }
@@ -127,7 +132,8 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
         if (!m_ElementFactoryRecycleArgs)
         {
             // Create one.
-            m_ElementFactoryRecycleArgs = tracker_ref<winrt::ElementFactoryRecycleArgs>(m_owner, *winrt::make_self<ElementFactoryRecycleArgs>());
+            m_ElementFactoryRecycleArgs =
+                tracker_ref<winrt::ElementFactoryRecycleArgs>(m_owner, *winrt::make_self<ElementFactoryRecycleArgs>());
         }
 
         auto context = m_ElementFactoryRecycleArgs.get();
@@ -157,7 +163,7 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     if (m_lastFocusedElement == element)
     {
         // Focused element is going away. Remove the tracked last focused element
-        // and pick a reasonable next focus if we can find one within the layout 
+        // and pick a reasonable next focus if we can find one within the layout
         // realized elements.
         const int clearedIndex = virtInfo->Index();
         MoveFocusFromClearedIndex(clearedIndex);
@@ -221,7 +227,7 @@ winrt::Control ViewManager::FindFocusCandidate(int clearedIndex, winrt::UIElemen
             }
             else if (currentIndex >= clearedIndex)
             {
-                // Note that we use >= above because if we deleted the focused element, 
+                // Note that we use >= above because if we deleted the focused element,
                 // the next element would have the same index now.
                 if (currentIndex < nextIndex)
                 {
@@ -268,7 +274,7 @@ int ViewManager::GetElementIndex(const winrt::com_ptr<VirtualizationInfo>& virtI
 {
     if (!virtInfo)
     {
-        //Element is not a child of this ItemsRepeater.
+        // Element is not a child of this ItemsRepeater.
         return -1;
     }
 
@@ -384,8 +390,8 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
     {
         // Requirement: oldStartIndex == newStartIndex. It is not a replace if this is not true.
         // Two cases here
-        // case 1: oldCount == newCount 
-        //         indices are not affected. nothing to do here.  
+        // case 1: oldCount == newCount
+        //         indices are not affected. nothing to do here.
         // case 2: oldCount != newCount
         //         Replaced with less or more items. This is like an insert or remove
         //         depending on the counts.
@@ -400,12 +406,14 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
 
         if (oldCount == 0)
         {
-            throw winrt::hresult_error(E_FAIL, L"Replace notification with args.OldItemsCount value of 0 is not allowed. Use Insert action instead.");
+            throw winrt::hresult_error(
+                E_FAIL, L"Replace notification with args.OldItemsCount value of 0 is not allowed. Use Insert action instead.");
         }
 
         if (newCount == 0)
         {
-            throw winrt::hresult_error(E_FAIL, L"Replace notification with args.NewItemCount value of 0 is not allowed. Use Remove action instead.");
+            throw winrt::hresult_error(
+                E_FAIL, L"Replace notification with args.NewItemCount value of 0 is not allowed. Use Remove action instead.");
         }
 
         const int countChange = newCount - oldCount;
@@ -466,7 +474,7 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
 
     case winrt::NotifyCollectionChangedAction::Reset:
         // If we get multiple resets back to back before
-        // running layout, we dont have to clear all the elements again.         
+        // running layout, we dont have to clear all the elements again.
         if (!m_isDataSourceStableResetPending)
         {
             // There should be no elements in the reset pool at this time.
@@ -508,8 +516,7 @@ void ViewManager::EnsureFirstLastRealizedIndices()
 
 void ViewManager::OnLayoutChanging()
 {
-    if (m_owner->ItemsSourceView() &&
-        m_owner->ItemsSourceView().HasKeyIndexMapping())
+    if (m_owner->ItemsSourceView() && m_owner->ItemsSourceView().HasKeyIndexMapping())
     {
         m_isDataSourceStableResetPending = true;
     }
@@ -550,13 +557,17 @@ winrt::UIElement ViewManager::GetElementIfAlreadyHeldByLayout(int index)
     const bool cachedFirstLastIndicesInvalid = m_firstRealizedElementIndexHeldByLayout == FirstRealizedElementIndexDefault;
     MUX_ASSERT(!cachedFirstLastIndicesInvalid || m_lastRealizedElementIndexHeldByLayout == LastRealizedElementIndexDefault);
 
-    const bool isRequestedIndexInRealizedRange = (m_firstRealizedElementIndexHeldByLayout <= index && index <= m_lastRealizedElementIndexHeldByLayout);
+    const bool isRequestedIndexInRealizedRange =
+        (m_firstRealizedElementIndexHeldByLayout <= index && index <= m_lastRealizedElementIndexHeldByLayout);
 
     if (cachedFirstLastIndicesInvalid || isRequestedIndexInRealizedRange)
     {
         // Both First and Last indices need to be valid or default.
-        MUX_ASSERT((m_firstRealizedElementIndexHeldByLayout == FirstRealizedElementIndexDefault && m_lastRealizedElementIndexHeldByLayout == LastRealizedElementIndexDefault) ||
-            (m_firstRealizedElementIndexHeldByLayout != FirstRealizedElementIndexDefault && m_lastRealizedElementIndexHeldByLayout != LastRealizedElementIndexDefault));
+        MUX_ASSERT(
+            (m_firstRealizedElementIndexHeldByLayout == FirstRealizedElementIndexDefault &&
+             m_lastRealizedElementIndexHeldByLayout == LastRealizedElementIndexDefault) ||
+            (m_firstRealizedElementIndexHeldByLayout != FirstRealizedElementIndexDefault &&
+             m_lastRealizedElementIndexHeldByLayout != LastRealizedElementIndexDefault));
 
         auto children = m_owner->Children();
         for (unsigned i = 0u; i < children.Size(); ++i)
@@ -572,7 +583,7 @@ winrt::UIElement ViewManager::GetElementIfAlreadyHeldByLayout(int index)
                 if (virtInfo->Index() == index)
                 {
                     element = child;
-                    // If we have valid first/last indices, we don't have to walk the rest, but if we 
+                    // If we have valid first/last indices, we don't have to walk the rest, but if we
                     // do not, then we keep walking through the entire children collection to get accurate
                     // indices once.
                     if (!cachedFirstLastIndicesInvalid)
@@ -656,8 +667,7 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
     // The view generator is the provider of last resort.
     auto const data = m_owner->ItemsSourceView().GetAt(index);
 
-    auto const element = [this, data, index, providedElementFactory = m_owner->ItemTemplateShim()]()
-    {
+    auto const element = [this, data, index, providedElementFactory = m_owner->ItemTemplateShim()]() {
         if (!providedElementFactory)
         {
             if (auto const dataAsElement = data.try_as<winrt::UIElement>())
@@ -666,20 +676,22 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
             }
         }
 
-        auto const elementFactory = [this, providedElementFactory]()
-        {
+        auto const elementFactory = [this, providedElementFactory]() {
             if (!providedElementFactory)
             {
                 // If no ItemTemplate was provided, use a default
-                auto const factory = winrt::XamlReader::Load(L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock Text='{Binding}'/></DataTemplate>").as<winrt::DataTemplate>();
+                auto const factory =
+                    winrt::XamlReader::Load(
+                        L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock "
+                        L"Text='{Binding}'/></DataTemplate>")
+                        .as<winrt::DataTemplate>();
                 m_owner->ItemTemplate(factory);
                 return m_owner->ItemTemplateShim();
             }
             return providedElementFactory;
         }();
 
-        auto const args = [this]()
-        {
+        auto const args = [this]() {
             if (!m_ElementFactoryGetArgs)
             {
                 m_ElementFactoryGetArgs = tracker_ref<winrt::ElementFactoryGetArgs>(m_owner, *winrt::make_self<ElementFactoryGetArgs>());
@@ -687,11 +699,10 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
             return m_ElementFactoryGetArgs.get();
         }();
 
-        auto scopeGuard = gsl::finally([args]()
-            {
-                args.Data(nullptr);
-                args.Parent(nullptr);
-            });
+        auto scopeGuard = gsl::finally([args]() {
+            args.Data(nullptr);
+            args.Parent(nullptr);
+        });
 
         args.Data(data);
         args.Parent(*m_owner);
@@ -718,12 +729,12 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
     if (data != element)
     {
         // Prepare the element
-        // If we are phasing, run phase 0 before setting DataContext. If phase 0 is not 
+        // If we are phasing, run phase 0 before setting DataContext. If phase 0 is not
         // run before setting DataContext, when setting DataContext all the phases will be
         // run in the OnDataContextChanged handler in code generated by the xaml compiler (code-gen).
         if (auto extension = CachedVisualTreeHelpers::GetDataTemplateComponent(element))
         {
-            // Clear out old data. 
+            // Clear out old data.
             extension.Recycle();
             int nextPhase = VirtualizationInfo::PhaseReachedEnd;
             // Run Phase 0
@@ -736,11 +747,10 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
         else if (auto elementAsFE = element.try_as<winrt::FrameworkElement>())
         {
             // Set data context only if no x:Bind was used. ie. No data template component on the root.
-            // If the passed in data is a UIElement and is different from the element returned by 
+            // If the passed in data is a UIElement and is different from the element returned by
             // the template factory then we need to propagate the DataContext.
             // Otherwise just set the DataContext on the element as the data.
-            auto const elementDataContext = [this, data]()
-            {
+            auto const elementDataContext = [this, data]() {
                 if (auto const dataAsElement = data.try_as<winrt::FrameworkElement>())
                 {
                     if (auto const dataDataContext = dataAsElement.DataContext())
@@ -763,22 +773,20 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
     virtInfo->MoveOwnershipToLayoutFromElementFactory(
         index,
         /* uniqueId: */
-        m_owner->ItemsSourceView().HasKeyIndexMapping() ?
-        m_owner->ItemsSourceView().KeyFromIndex(index) :
-        winrt::hstring{});
+        m_owner->ItemsSourceView().HasKeyIndexMapping() ? m_owner->ItemsSourceView().KeyFromIndex(index) : winrt::hstring{});
 
     // The view generator is the only provider that prepares the element.
     auto repeater = m_owner;
 
-    // Add the element to the children collection here before raising OnElementPrepared so 
-    // that handlers can walk up the tree in case they want to find their IndexPath in the 
+    // Add the element to the children collection here before raising OnElementPrepared so
+    // that handlers can walk up the tree in case they want to find their IndexPath in the
     // nested case.
     auto children = repeater->Children();
     if (CachedVisualTreeHelpers::GetParent(element) != static_cast<winrt::DependencyObject>(*repeater))
     {
         children.Append(element);
     }
-    
+
     repeater->AnimationManager().OnElementPrepared(element);
 
     repeater->OnElementPrepared(element, index);
@@ -820,19 +828,17 @@ bool ViewManager::ClearElementToAnimator(const winrt::UIElement& element, const 
         if (m_lastFocusedElement == element)
         {
             // Focused element is going away. Remove the tracked last focused element
-            // and pick a reasonable next focus if we can find one within the layout 
+            // and pick a reasonable next focus if we can find one within the layout
             // realized elements.
             MoveFocusFromClearedIndex(clearedIndex);
         }
-
     }
     return cleared;
 }
 
 bool ViewManager::ClearElementToPinnedPool(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo, bool isClearedDueToCollectionChange)
 {
-    const bool moveToPinnedPool =
-        !isClearedDueToCollectionChange && virtInfo->IsPinned();
+    const bool moveToPinnedPool = !isClearedDueToCollectionChange && virtInfo->IsPinned();
 
     if (moveToPinnedPool)
     {
@@ -911,8 +917,8 @@ void ViewManager::EnsureEventSubscriptions()
     if (!m_gotFocus)
     {
         MUX_ASSERT(!m_lostFocus);
-        m_gotFocus = m_owner->GotFocus(winrt::auto_revoke, { this, &ViewManager::OnFocusChanged });
-        m_lostFocus = m_owner->LostFocus(winrt::auto_revoke, { this, &ViewManager::OnFocusChanged });
+        m_gotFocus = m_owner->GotFocus(winrt::auto_revoke, {this, &ViewManager::OnFocusChanged});
+        m_lostFocus = m_owner->LostFocus(winrt::auto_revoke, {this, &ViewManager::OnFocusChanged});
     }
 }
 
@@ -933,6 +939,6 @@ void ViewManager::InvalidateRealizedIndicesHeldByLayout()
 }
 
 ViewManager::PinnedElementInfo::PinnedElementInfo(const ITrackerHandleManager* owner, const winrt::UIElement& element) :
-    m_pinnedElement(owner, element),
-    m_virtInfo(owner, ItemsRepeater::GetVirtualizationInfo(element))
-{ }
+    m_pinnedElement(owner, element), m_virtInfo(owner, ItemsRepeater::GetVirtualizationInfo(element))
+{
+}

@@ -5,5 +5,4 @@
 #include "common.h"
 #include "BackdropMaterialTestApi.h"
 
-
 #include "BackdropMaterialTestApi.g.cpp"

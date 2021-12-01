@@ -86,7 +86,7 @@ winrt::IndexPath SelectionNode::IndexPath()
     while (parent != nullptr)
     {
         auto childNodes = parent->m_childrenNodes;
-        auto it = std::find_if(childNodes.cbegin(), childNodes.cend(), [&child](const auto& item) {return item.get() == child;});
+        auto it = std::find_if(childNodes.cbegin(), childNodes.cend(), [&child](const auto& item) { return item.get() == child; });
         const auto index = static_cast<int>(distance(childNodes.cbegin(), it));
         assert(index >= 0);
         // we are walking up to the parent, so the path will be backwards
@@ -98,10 +98,10 @@ winrt::IndexPath SelectionNode::IndexPath()
     return winrt::make<::IndexPath>(path);
 }
 
-// For a genuine tree view, we dont know which node is leaf until we 
-// actually walk to it, so currently the tree builds up to the leaf. I don't 
-// create a bunch of leaf node instances - instead i use the same instance m_leafNode to avoid 
-// an explosion of node objects. However, I'm still creating the m_childrenNodes 
+// For a genuine tree view, we dont know which node is leaf until we
+// actually walk to it, so currently the tree builds up to the leaf. I don't
+// create a bunch of leaf node instances - instead i use the same instance m_leafNode to avoid
+// an explosion of node objects. However, I'm still creating the m_childrenNodes
 // collection unfortunately.
 std::shared_ptr<SelectionNode> SelectionNode::GetAt(int index, bool realizeChild)
 {
@@ -192,7 +192,9 @@ winrt::IReference<bool> SelectionNode::IsSelectedWithPartial()
     if (m_parent)
     {
         auto parentsChildren = m_parent->m_childrenNodes;
-        const auto it = std::find_if(parentsChildren.cbegin(), parentsChildren.cend(), [this](const std::shared_ptr<SelectionNode>& node) { return node.get() == this; });
+        const auto it = std::find_if(parentsChildren.cbegin(), parentsChildren.cend(), [this](const std::shared_ptr<SelectionNode>& node) {
+            return node.get() == this;
+        });
         if (it != parentsChildren.end())
         {
             const auto myIndexInParent = static_cast<int>(it - parentsChildren.begin());
@@ -211,18 +213,18 @@ winrt::IReference<bool> SelectionNode::IsSelectedWithPartial(int index)
     SelectionState selectionState = SelectionState::NotSelected;
     MUX_ASSERT(index >= 0);
 
-    if (m_childrenNodes.size() == 0 || // no nodes realized
-        static_cast<int>(m_childrenNodes.size()) <= index || // target node is not realized 
-        !m_childrenNodes[index] || // target node is not realized
-        m_childrenNodes[index] == m_manager->SharedLeafNode())  // target node is a leaf node.
+    if (m_childrenNodes.size() == 0 ||                         // no nodes realized
+        static_cast<int>(m_childrenNodes.size()) <= index ||   // target node is not realized
+        !m_childrenNodes[index] ||                             // target node is not realized
+        m_childrenNodes[index] == m_manager->SharedLeafNode()) // target node is a leaf node.
     {
         // Ask parent if the target node is selected.
         selectionState = IsSelected(index) ? SelectionState::Selected : SelectionState::NotSelected;
     }
     else
     {
-        // targetNode is the node representing the index. This node is the parent. 
-        // targetNode is a non-leaf node, containing one or many children nodes. Evaluate 
+        // targetNode is the node representing the index. This node is the parent.
+        // targetNode is a non-leaf node, containing one or many children nodes. Evaluate
         // based on children of targetNode.
         auto targetNode = m_childrenNodes[index];
         selectionState = targetNode->EvaluateIsSelectedBasedOnChildrenNodes();
@@ -323,13 +325,13 @@ void SelectionNode::HookupCollectionChangedHandler()
 {
     if (m_dataSource)
     {
-        m_itemsSourceViewChanged = m_dataSource.get().CollectionChanged(winrt::auto_revoke, { this, &SelectionNode::OnSourceListChanged });
+        m_itemsSourceViewChanged = m_dataSource.get().CollectionChanged(winrt::auto_revoke, {this, &SelectionNode::OnSourceListChanged});
     }
 }
 
 void SelectionNode::UnhookCollectionChangedHandler()
 {
-        m_itemsSourceViewChanged.revoke();
+    m_itemsSourceViewChanged.revoke();
 }
 
 bool SelectionNode::IsValidIndex(int index)
@@ -492,31 +494,31 @@ void SelectionNode::OnSourceListChanged(const winrt::IInspectable& dataSource, c
     bool selectionInvalidated = false;
     switch (args.Action())
     {
-        case winrt::NotifyCollectionChangedAction::Add:
-        {
-            selectionInvalidated = OnItemsAdded(args.NewStartingIndex(), args.NewItems().Size());
-            break;
-        }
+    case winrt::NotifyCollectionChangedAction::Add:
+    {
+        selectionInvalidated = OnItemsAdded(args.NewStartingIndex(), args.NewItems().Size());
+        break;
+    }
 
-        case winrt::NotifyCollectionChangedAction::Remove:
-        {
-            selectionInvalidated = OnItemsRemoved(args.OldStartingIndex(), args.OldItems().Size());
-            break;
-        }
+    case winrt::NotifyCollectionChangedAction::Remove:
+    {
+        selectionInvalidated = OnItemsRemoved(args.OldStartingIndex(), args.OldItems().Size());
+        break;
+    }
 
-        case winrt::NotifyCollectionChangedAction::Reset:
-        {
-            ClearSelection();
-            selectionInvalidated = true;
-            break;
-        }
+    case winrt::NotifyCollectionChangedAction::Reset:
+    {
+        ClearSelection();
+        selectionInvalidated = true;
+        break;
+    }
 
-        case winrt::NotifyCollectionChangedAction::Replace:
-        {
-            selectionInvalidated = OnItemsRemoved(args.OldStartingIndex(), args.OldItems().Size());
-            selectionInvalidated |= OnItemsAdded(args.NewStartingIndex(), args.NewItems().Size());
-            break;
-        }
+    case winrt::NotifyCollectionChangedAction::Replace:
+    {
+        selectionInvalidated = OnItemsRemoved(args.OldStartingIndex(), args.OldItems().Size());
+        selectionInvalidated |= OnItemsAdded(args.NewStartingIndex(), args.NewItems().Size());
+        break;
+    }
     }
 
     if (selectionInvalidated)
@@ -574,7 +576,7 @@ bool SelectionNode::OnItemsAdded(int index, int count)
         }
     }
 
-    //Adjust the anchor
+    // Adjust the anchor
     if (AnchorIndex() >= index)
     {
         AnchorIndex(AnchorIndex() + count);
@@ -655,7 +657,7 @@ bool SelectionNode::OnItemsRemoved(int index, int count)
             }
         }
 
-        //Adjust the anchor
+        // Adjust the anchor
         if (AnchorIndex() >= index)
         {
             AnchorIndex(AnchorIndex() - count);
@@ -729,9 +731,9 @@ SelectionState SelectionNode::EvaluateIsSelectedBasedOnChildrenNodes()
         {
             // All nodes are leaves under it - we didn't create children nodes as an optimization.
             // See if all/some or none of the leaves are selected.
-            selectionState = dataCount != selectedCount ?
-                SelectionState::PartiallySelected :
-                dataCount == selectedCount ? SelectionState::Selected : SelectionState::NotSelected;
+            selectionState = dataCount != selectedCount   ? SelectionState::PartiallySelected
+                             : dataCount == selectedCount ? SelectionState::Selected
+                                                          : SelectionState::NotSelected;
         }
         else
         {

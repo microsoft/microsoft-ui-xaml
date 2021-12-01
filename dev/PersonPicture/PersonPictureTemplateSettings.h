@@ -6,8 +6,7 @@
 #include "PersonPictureTemplateSettings.g.h"
 #include "PersonPictureTemplateSettings.properties.h"
 
-class PersonPictureTemplateSettings :
-    public winrt::implementation::PersonPictureTemplateSettingsT<PersonPictureTemplateSettings>,
-    public PersonPictureTemplateSettingsProperties
+class PersonPictureTemplateSettings : public winrt::implementation::PersonPictureTemplateSettingsT<PersonPictureTemplateSettings>,
+                                      public PersonPictureTemplateSettingsProperties
 {
 };

@@ -5,8 +5,7 @@
 #include "common.h"
 #include "ElementFactory.h"
 
-class RadioButtonsElementFactory :
-    public winrt::implements<RadioButtonsElementFactory, ElementFactory>
+class RadioButtonsElementFactory : public winrt::implements<RadioButtonsElementFactory, ElementFactory>
 {
 public:
     RadioButtonsElementFactory();
@@ -16,6 +15,5 @@ public:
     void RecycleElementCore(const winrt::ElementFactoryRecycleArgs& args) override;
 
 private:
-    winrt::IElementFactoryShim m_itemTemplateWrapper{ nullptr };
+    winrt::IElementFactoryShim m_itemTemplateWrapper{nullptr};
 };
-

@@ -10,9 +10,7 @@
 #include "ColorSpectrum.g.h"
 #include "ColorSpectrum.properties.h"
 
-class ColorSpectrum :
-    public ReferenceTracker<ColorSpectrum, winrt::implementation::ColorSpectrumT>,
-    public ColorSpectrumProperties
+class ColorSpectrum : public ReferenceTracker<ColorSpectrum, winrt::implementation::ColorSpectrumT>, public ColorSpectrumProperties
 {
 public:
     ColorSpectrum();
@@ -35,7 +33,6 @@ public:
     void RaiseColorChanged();
 
 private:
-
     // DependencyProperty changed event handlers
     void OnColorChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void OnHsvColorChanged(winrt::DependencyPropertyChangedEventArgs const& args);
@@ -74,7 +71,7 @@ private:
     static void FillPixelForBox(
         double x,
         double y,
-        const Hsv &baseHsv,
+        const Hsv& baseHsv,
         double minDimension,
         winrt::ColorSpectrumComponents components,
         double minHue,
@@ -94,7 +91,7 @@ private:
         double x,
         double y,
         double radius,
-        const Hsv &baseHsv,
+        const Hsv& baseHsv,
         winrt::ColorSpectrumComponents components,
         double minHue,
         double maxHue,
@@ -118,66 +115,66 @@ private:
     std::vector<Hsv> m_hsvValues;
 
     // XAML elements
-    tracker_ref<winrt::Grid> m_layoutRoot{ this };
-    tracker_ref<winrt::Grid> m_sizingGrid{ this };
+    tracker_ref<winrt::Grid> m_layoutRoot{this};
+    tracker_ref<winrt::Grid> m_sizingGrid{this};
 
-    tracker_ref<winrt::Rectangle> m_spectrumRectangle{ this };
-    tracker_ref<winrt::Ellipse> m_spectrumEllipse{ this };
-    tracker_ref<winrt::Rectangle> m_spectrumOverlayRectangle{ this };
-    tracker_ref<winrt::Ellipse> m_spectrumOverlayEllipse{ this };
+    tracker_ref<winrt::Rectangle> m_spectrumRectangle{this};
+    tracker_ref<winrt::Ellipse> m_spectrumEllipse{this};
+    tracker_ref<winrt::Rectangle> m_spectrumOverlayRectangle{this};
+    tracker_ref<winrt::Ellipse> m_spectrumOverlayEllipse{this};
 
-    tracker_ref<winrt::FrameworkElement> m_inputTarget{ this };
-    tracker_ref<winrt::Panel> m_selectionEllipsePanel{ this };
+    tracker_ref<winrt::FrameworkElement> m_inputTarget{this};
+    tracker_ref<winrt::Panel> m_selectionEllipsePanel{this};
 
-    tracker_ref<winrt::ToolTip> m_colorNameToolTip{ this };
+    tracker_ref<winrt::ToolTip> m_colorNameToolTip{this};
 
-    winrt::IAsyncAction m_createImageBitmapAction{ nullptr };
+    winrt::IAsyncAction m_createImageBitmapAction{nullptr};
 
     // On RS1 and before, we put the spectrum images in a bitmap,
     // which we then give to an ImageBrush.
-    winrt::WriteableBitmap m_hueRedBitmap{ nullptr };
-    winrt::WriteableBitmap m_hueYellowBitmap{ nullptr };
-    winrt::WriteableBitmap m_hueGreenBitmap{ nullptr };
-    winrt::WriteableBitmap m_hueCyanBitmap{ nullptr };
-    winrt::WriteableBitmap m_hueBlueBitmap{ nullptr };
-    winrt::WriteableBitmap m_huePurpleBitmap{ nullptr };
+    winrt::WriteableBitmap m_hueRedBitmap{nullptr};
+    winrt::WriteableBitmap m_hueYellowBitmap{nullptr};
+    winrt::WriteableBitmap m_hueGreenBitmap{nullptr};
+    winrt::WriteableBitmap m_hueCyanBitmap{nullptr};
+    winrt::WriteableBitmap m_hueBlueBitmap{nullptr};
+    winrt::WriteableBitmap m_huePurpleBitmap{nullptr};
 
-    winrt::WriteableBitmap m_saturationMinimumBitmap{ nullptr };
-    winrt::WriteableBitmap m_saturationMaximumBitmap{ nullptr };
+    winrt::WriteableBitmap m_saturationMinimumBitmap{nullptr};
+    winrt::WriteableBitmap m_saturationMaximumBitmap{nullptr};
 
-    winrt::WriteableBitmap m_valueBitmap{ nullptr };
+    winrt::WriteableBitmap m_valueBitmap{nullptr};
 
     // On RS2 and later, we put the spectrum images in a loaded image surface,
     // which we then put into a SpectrumBrush.
-    winrt::LoadedImageSurface m_hueRedSurface{ nullptr };
-    winrt::LoadedImageSurface m_hueYellowSurface{ nullptr };
-    winrt::LoadedImageSurface m_hueGreenSurface{ nullptr };
-    winrt::LoadedImageSurface m_hueCyanSurface{ nullptr };
-    winrt::LoadedImageSurface m_hueBlueSurface{ nullptr };
-    winrt::LoadedImageSurface m_huePurpleSurface{ nullptr };
+    winrt::LoadedImageSurface m_hueRedSurface{nullptr};
+    winrt::LoadedImageSurface m_hueYellowSurface{nullptr};
+    winrt::LoadedImageSurface m_hueGreenSurface{nullptr};
+    winrt::LoadedImageSurface m_hueCyanSurface{nullptr};
+    winrt::LoadedImageSurface m_hueBlueSurface{nullptr};
+    winrt::LoadedImageSurface m_huePurpleSurface{nullptr};
 
-    winrt::LoadedImageSurface m_saturationMinimumSurface{ nullptr };
-    winrt::LoadedImageSurface m_saturationMaximumSurface{ nullptr };
+    winrt::LoadedImageSurface m_saturationMinimumSurface{nullptr};
+    winrt::LoadedImageSurface m_saturationMaximumSurface{nullptr};
 
-    winrt::LoadedImageSurface m_valueSurface{ nullptr };
+    winrt::LoadedImageSurface m_valueSurface{nullptr};
 
     // Fields used by UpdateEllipse() to ensure that it's using the data
     // associated with the last call to CreateBitmapsAndColorMap(),
     // in order to function properly while the asynchronous bitmap creation
     // is in progress.
-    winrt::ColorSpectrumShape m_shapeFromLastBitmapCreation{ winrt::ColorSpectrumShape::Box };
-    winrt::ColorSpectrumComponents m_componentsFromLastBitmapCreation{ winrt::ColorSpectrumComponents::HueSaturation };
-    double m_imageWidthFromLastBitmapCreation{ 0.0 };
-    double m_imageHeightFromLastBitmapCreation{ 0.0 };
-    int m_minHueFromLastBitmapCreation{ 0 };
-    int m_maxHueFromLastBitmapCreation{ 0 };
-    int m_minSaturationFromLastBitmapCreation{ 0 };
-    int m_maxSaturationFromLastBitmapCreation{ 0 };
-    int m_minValueFromLastBitmapCreation{ 0 };
-    int m_maxValueFromLastBitmapCreation{ 0 };
+    winrt::ColorSpectrumShape m_shapeFromLastBitmapCreation{winrt::ColorSpectrumShape::Box};
+    winrt::ColorSpectrumComponents m_componentsFromLastBitmapCreation{winrt::ColorSpectrumComponents::HueSaturation};
+    double m_imageWidthFromLastBitmapCreation{0.0};
+    double m_imageHeightFromLastBitmapCreation{0.0};
+    int m_minHueFromLastBitmapCreation{0};
+    int m_maxHueFromLastBitmapCreation{0};
+    int m_minSaturationFromLastBitmapCreation{0};
+    int m_maxSaturationFromLastBitmapCreation{0};
+    int m_minValueFromLastBitmapCreation{0};
+    int m_maxValueFromLastBitmapCreation{0};
 
-    winrt::Color m_oldColor{ 255, 255, 255, 255 };
-    winrt::float4 m_oldHsvColor{ 0.0, 0.0, 1.0, 1.0 };
+    winrt::Color m_oldColor{255, 255, 255, 255};
+    winrt::float4 m_oldHsvColor{0.0, 0.0, 1.0, 1.0};
 
-    DispatcherHelper m_dispatcherHelper{ *this };
+    DispatcherHelper m_dispatcherHelper{*this};
 };

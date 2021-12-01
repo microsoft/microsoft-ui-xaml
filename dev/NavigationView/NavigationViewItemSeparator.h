@@ -6,13 +6,12 @@
 #include "NavigationViewItemBase.h"
 #include "NavigationViewItemSeparator.g.h"
 
-class NavigationViewItemSeparator :
-    public winrt::implementation::NavigationViewItemSeparatorT<NavigationViewItemSeparator, NavigationViewItemBase>
+class NavigationViewItemSeparator : public winrt::implementation::NavigationViewItemSeparatorT<NavigationViewItemSeparator, NavigationViewItemBase>
 {
 public:
     ForwardRefToBaseReferenceTracker(NavigationViewItemBase)
 
-    NavigationViewItemSeparator();
+        NavigationViewItemSeparator();
     void OnApplyTemplate() override;
 
 private:
@@ -24,10 +23,10 @@ private:
     void OnSplitViewPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
     void UpdateIsClosedCompact(bool updateVisualState);
 
-    bool m_appliedTemplate{ false };
-    bool m_isClosedCompact{ false };
+    bool m_appliedTemplate{false};
+    bool m_isClosedCompact{false};
 
-    tracker_ref<winrt::Grid> m_rootGrid{ this };
+    tracker_ref<winrt::Grid> m_rootGrid{this};
 
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};

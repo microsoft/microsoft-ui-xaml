@@ -2,19 +2,18 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
-using winrt::com_ptr;
-using winrt::weak_ref;
-using winrt::hstring;
 using std::wstring_view;
+using winrt::com_ptr;
+using winrt::hstring;
+using winrt::weak_ref;
 
-namespace winrt
+namespace winrt {
+template <typename T>
+inline hstring hstring_name_of() noexcept
 {
-    template <typename T>
-    inline hstring hstring_name_of() noexcept
-    {
-        return hstring(winrt::name_of<T>());
-    }
+    return hstring(winrt::name_of<T>());
 }
+} // namespace winrt
 
 inline winrt::IInspectable& to_winrt(::IInspectable*& instance)
 {
@@ -56,8 +55,8 @@ struct ValueHelper
     static T GetDefaultValue()
     {
 #pragma warning(push)
-#pragma warning(disable : 26444) 
-        return T{};    
+#pragma warning(disable : 26444)
+        return T{};
 #pragma warning(pop)
     }
 
@@ -82,7 +81,7 @@ struct ValueHelper<T, std::enable_if_t<std::is_base_of_v<winrt::Windows::Foundat
 {
     static T GetDefaultValue()
     {
-        return T{ nullptr };
+        return T{nullptr};
     }
 
     static winrt::IInspectable BoxValueIfNecessary(T const& value)
@@ -106,7 +105,7 @@ struct ValueHelper<winrt::hstring, void>
 {
     static winrt::hstring GetDefaultValue()
     {
-        return winrt::hstring{ L"" };
+        return winrt::hstring{L""};
     }
 
     static winrt::IInspectable BoxValueIfNecessary(winrt::hstring const& value)
@@ -128,12 +127,12 @@ struct ValueHelper<winrt::hstring, void>
 void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, std::wstring_view const& className);
 
 template <typename TThis>
-void SetDefaultStyleKey(TThis *pThis)
+void SetDefaultStyleKey(TThis* pThis)
 {
     SetDefaultStyleKeyWorker(*pThis, pThis->GetRuntimeClassName());
 }
 
-template<typename WinRTReturn>
+template <typename WinRTReturn>
 WinRTReturn GetTemplateChildT(std::wstring_view const& childName, const winrt::IControlProtected& controlProtected)
 {
     winrt::DependencyObject childAsDO(controlProtected.GetTemplateChild(childName));
@@ -162,9 +161,9 @@ struct ScopedBatchCompleted_revoker
     }
 
     ScopedBatchCompleted_revoker(winrt::CompositionScopedBatch const& batch, winrt::event_token token) :
-        m_batch(batch),
-        m_token(token)
-    {}
+        m_batch(batch), m_token(token)
+    {
+    }
 
     ~ScopedBatchCompleted_revoker() noexcept
     {
@@ -186,6 +185,7 @@ struct ScopedBatchCompleted_revoker
     {
         return static_cast<bool>(m_batch);
     }
+
 private:
     void move_from(ScopedBatchCompleted_revoker& other)
     {
@@ -203,10 +203,12 @@ private:
     winrt::event_token m_token{};
 };
 
-inline ScopedBatchCompleted_revoker RegisterScopedBatchCompleted(winrt::CompositionScopedBatch const& object, winrt::TypedEventHandler<winrt::IInspectable, winrt::CompositionBatchCompletedEventArgs> const& handler)
+inline ScopedBatchCompleted_revoker RegisterScopedBatchCompleted(
+    winrt::CompositionScopedBatch const& object,
+    winrt::TypedEventHandler<winrt::IInspectable, winrt::CompositionBatchCompletedEventArgs> const& handler)
 {
     const auto value = object.Completed(handler);
-    return { object, value };
+    return {object, value};
 }
 
 // Hold a strong ref to the xamlRoot while we're registered so that the changed revoker works.
@@ -227,10 +229,9 @@ struct XamlRootChanged_revoker
         return *this;
     }
 
-    XamlRootChanged_revoker(winrt::XamlRoot const& object, winrt::event_token token) :
-        m_object(object),
-        m_token(token)
-    {}
+    XamlRootChanged_revoker(winrt::XamlRoot const& object, winrt::event_token token) : m_object(object), m_token(token)
+    {
+    }
 
     ~XamlRootChanged_revoker() noexcept
     {
@@ -252,6 +253,7 @@ struct XamlRootChanged_revoker
     {
         return static_cast<bool>(m_object);
     }
+
 private:
     void move_from(XamlRootChanged_revoker& other)
     {
@@ -265,37 +267,37 @@ private:
         }
     }
 
-    winrt::XamlRoot m_object{ nullptr };
+    winrt::XamlRoot m_object{nullptr};
     winrt::event_token m_token{};
 };
 
-inline XamlRootChanged_revoker RegisterXamlRootChanged(winrt::XamlRoot const& object, winrt::TypedEventHandler<winrt::XamlRoot, winrt::XamlRootChangedEventArgs> const& handler)
+inline XamlRootChanged_revoker RegisterXamlRootChanged(
+    winrt::XamlRoot const& object, winrt::TypedEventHandler<winrt::XamlRoot, winrt::XamlRootChangedEventArgs> const& handler)
 {
     const auto value = object.Changed(handler);
-    return { object, value };
+    return {object, value};
 }
 
 struct PropertyChanged_revoker
 {
-   PropertyChanged_revoker() noexcept = default;
-   PropertyChanged_revoker(PropertyChanged_revoker const&) = delete;
-   PropertyChanged_revoker& operator=(PropertyChanged_revoker const&) = delete;
-   PropertyChanged_revoker(PropertyChanged_revoker&& other) noexcept
-   {
-       move_from(other);
-   }
+    PropertyChanged_revoker() noexcept = default;
+    PropertyChanged_revoker(PropertyChanged_revoker const&) = delete;
+    PropertyChanged_revoker& operator=(PropertyChanged_revoker const&) = delete;
+    PropertyChanged_revoker(PropertyChanged_revoker&& other) noexcept
+    {
+        move_from(other);
+    }
 
-   PropertyChanged_revoker& operator=(PropertyChanged_revoker&& other) noexcept
-   {
-       move_from(other);
-       return *this;
-   }
+    PropertyChanged_revoker& operator=(PropertyChanged_revoker&& other) noexcept
+    {
+        move_from(other);
+        return *this;
+    }
 
-   PropertyChanged_revoker(winrt::DependencyObject const& object, const winrt::DependencyProperty&  dp, int64_t token) :
-        m_object(object),
-        m_property(dp),
-        m_token(token)
-    {}
+    PropertyChanged_revoker(winrt::DependencyObject const& object, const winrt::DependencyProperty& dp, int64_t token) :
+        m_object(object), m_property(dp), m_token(token)
+    {
+    }
 
     ~PropertyChanged_revoker() noexcept
     {
@@ -321,6 +323,7 @@ struct PropertyChanged_revoker
     {
         return static_cast<bool>(m_object);
     }
+
 private:
     void move_from(PropertyChanged_revoker& other)
     {
@@ -337,25 +340,24 @@ private:
     }
 
     weak_ref<winrt::DependencyObject> m_object;
-    winrt::DependencyProperty m_property{ nullptr };
+    winrt::DependencyProperty m_property{nullptr};
     int64_t m_token{};
 };
 
-
-
-inline PropertyChanged_revoker RegisterPropertyChanged(winrt::DependencyObject const& object, winrt::DependencyProperty const& dp, winrt::DependencyPropertyChangedCallback const& callback)
+inline PropertyChanged_revoker RegisterPropertyChanged(
+    winrt::DependencyObject const& object, winrt::DependencyProperty const& dp, winrt::DependencyPropertyChangedCallback const& callback)
 {
     const auto value = object.RegisterPropertyChangedCallback(dp, callback);
-    return { object, dp, value };
+    return {object, dp, value};
 }
-
 
 inline bool SetFocus(winrt::DependencyObject const& object, winrt::FocusState focusState)
 {
     if (object)
     {
         // Use TryFocusAsync if it's available.
-        if (auto focusManager5 = winrt::get_activation_factory<winrt::FocusManager, winrt::IFocusManagerStatics>().try_as<winrt::IFocusManagerStatics5>())
+        if (auto focusManager5 =
+                winrt::get_activation_factory<winrt::FocusManager, winrt::IFocusManagerStatics>().try_as<winrt::IFocusManagerStatics5>())
         {
             auto result = focusManager5.TryFocusAsync(object, focusState);
             if (result.Status() == winrt::AsyncStatus::Completed)
@@ -392,8 +394,9 @@ inline bool SetFocus(winrt::DependencyObject const& object, winrt::FocusState fo
 // Using it is just like any other winrt::implementation::FooT type *except* that you must pass an additional parameter
 // which is the winrt::Foo type. Most times you will be using ReferenceTracker too so that pattern would look like:
 // class YourType : ReferenceTracker<YourType, DeriveFromPanelHelper_base, winrt::YourType>  <--- note the extra winrt::YourType here that's normally not needed.
-template <typename D, typename T, typename ... I>
-struct __declspec(empty_bases) DeriveFromPanelHelper_base : winrt::Windows::UI::Xaml::Controls::PanelT<D, winrt::default_interface<T>, winrt::composable, I...>
+template <typename D, typename T, typename... I>
+struct __declspec(empty_bases) DeriveFromPanelHelper_base
+    : winrt::Windows::UI::Xaml::Controls::PanelT<D, winrt::default_interface<T>, winrt::composable, I...>
 {
     using composable = T;
     using class_type = typename T;
@@ -405,12 +408,13 @@ struct __declspec(empty_bases) DeriveFromPanelHelper_base : winrt::Windows::UI::
 
     hstring GetRuntimeClassName() const
     {
-        return hstring{ winrt::name_of<T>() };
+        return hstring{winrt::name_of<T>()};
     }
 };
 
-template <typename D, typename T, typename ... I>
-struct __declspec(empty_bases)DeriveFromBitmapIconHelper_base : winrt::Windows::UI::Xaml::Controls::BitmapIconT<D, winrt::default_interface<T>, winrt::composable, I...>
+template <typename D, typename T, typename... I>
+struct __declspec(empty_bases) DeriveFromBitmapIconHelper_base
+    : winrt::Windows::UI::Xaml::Controls::BitmapIconT<D, winrt::default_interface<T>, winrt::composable, I...>
 {
     using composable = T;
     using class_type = typename T;
@@ -422,12 +426,13 @@ struct __declspec(empty_bases)DeriveFromBitmapIconHelper_base : winrt::Windows::
 
     hstring GetRuntimeClassName() const
     {
-        return hstring{ winrt::name_of<T>() };
+        return hstring{winrt::name_of<T>()};
     }
 };
 
-template <typename D, typename T, typename ... I>
-struct __declspec(empty_bases)DeriveFromPathIconHelper_base : winrt::Windows::UI::Xaml::Controls::PathIconT<D, winrt::default_interface<T>, winrt::composable, I...>
+template <typename D, typename T, typename... I>
+struct __declspec(empty_bases) DeriveFromPathIconHelper_base
+    : winrt::Windows::UI::Xaml::Controls::PathIconT<D, winrt::default_interface<T>, winrt::composable, I...>
 {
     using composable = T;
     using class_type = typename T;
@@ -439,7 +444,7 @@ struct __declspec(empty_bases)DeriveFromPathIconHelper_base : winrt::Windows::UI
 
     hstring GetRuntimeClassName() const
     {
-        return hstring{ winrt::name_of<T>() };
+        return hstring{winrt::name_of<T>()};
     }
 };
 
@@ -464,17 +469,15 @@ struct Awaitable
     // Registers a callback that will be called when the awaitable is completed.
     void await_suspend(std::experimental::coroutine_handle<> resume)
     {
-        m_wait.attach(
-            winrt::check_pointer(
-                ::CreateThreadpoolWait(CoroutineCompletedCallback, resume.address(), nullptr)
-            )
-        );
+        m_wait.attach(winrt::check_pointer(::CreateThreadpoolWait(CoroutineCompletedCallback, resume.address(), nullptr)));
         ::SetThreadpoolWait(m_wait.get(), m_signal.get(), nullptr);
     }
 
-    // Called to get the value of the awaitable. 
+    // Called to get the value of the awaitable.
     // This awaitable has no value, so nothing to do.
-    void await_resume() const noexcept { }
+    void await_resume() const noexcept
+    {
+    }
 
 protected:
     void CompleteAwaits() const noexcept

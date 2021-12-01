@@ -104,7 +104,7 @@ hstring IndexPath::ToString()
         result = result + std::to_wstring(index);
     }
 
-    return hstring{ result };
+    return hstring{result};
 }
 
 #pragma endregion

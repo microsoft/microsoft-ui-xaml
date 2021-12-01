@@ -5,13 +5,11 @@
 
 #include "ItemsRepeaterElementPreparedEventArgs.g.h"
 
-class ItemsRepeaterElementPreparedEventArgs :
-    public ReferenceTracker<ItemsRepeaterElementPreparedEventArgs, winrt::implementation::ItemsRepeaterElementPreparedEventArgsT, winrt::composable, winrt::composing>
+class ItemsRepeaterElementPreparedEventArgs
+    : public ReferenceTracker<ItemsRepeaterElementPreparedEventArgs, winrt::implementation::ItemsRepeaterElementPreparedEventArgsT, winrt::composable, winrt::composing>
 {
 public:
-    ItemsRepeaterElementPreparedEventArgs(
-        const winrt::UIElement& element,
-        int index);
+    ItemsRepeaterElementPreparedEventArgs(const winrt::UIElement& element, int index);
 
 #pragma region IElementPreparedEventArgs
     winrt::UIElement Element();
@@ -21,7 +19,7 @@ public:
     void Update(const winrt::UIElement& element, int index);
 
 private:
-    tracker_ref<winrt::UIElement> m_element{ this };
+    tracker_ref<winrt::UIElement> m_element{this};
     int m_index;
     winrt::hstring m_viewType;
 };

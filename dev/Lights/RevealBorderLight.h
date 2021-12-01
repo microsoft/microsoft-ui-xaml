@@ -10,18 +10,24 @@
 class PointerHoverWindowHelper;
 class SoftLightSwitch;
 
-class RevealBorderLight :
-    public ReferenceTracker<RevealBorderLight, winrt::implementation::RevealBorderLightT>
+class RevealBorderLight : public ReferenceTracker<RevealBorderLight, winrt::implementation::RevealBorderLightT>
 {
     friend RevealTestApi;
     friend MaterialHelperBase;
     friend MaterialHelper;
+
 public:
     static winrt::hstring& GetLightThemeIdStatic();
     static winrt::hstring& GetDarkThemeIdStatic();
 
-    void SetIsWideLight(bool isWideLight) { m_isWideLight = isWideLight; }
-    void SetIsLightTheme(bool isLightTheme) { m_isLightTheme = isLightTheme; }
+    void SetIsWideLight(bool isWideLight)
+    {
+        m_isWideLight = isWideLight;
+    }
+    void SetIsLightTheme(bool isLightTheme)
+    {
+        m_isLightTheme = isLightTheme;
+    }
 
     // IXamlLightOverrides
     winrt::hstring GetId();
@@ -35,7 +41,10 @@ public:
 #endif
 
 private:
-    winrt::SpotLight GetLight() { return m_compositionSpotLight; } // For test APIs
+    winrt::SpotLight GetLight()
+    {
+        return m_compositionSpotLight;
+    } // For test APIs
     void HookupWindowPointerHandlers();
     void UnhookWindowPointerHandlers();
     void EnsureCompositionResources();
@@ -46,18 +55,18 @@ private:
     void EnsureLocalLight();
     void ReleaseLocalLight();
 
-    winrt::weak_ref<winrt::UIElement> m_targetElement{ nullptr };
-    winrt::ExpressionAnimation m_offsetAnimation{ nullptr };
-    winrt::CompositionPropertySet m_pointer{ nullptr };
-    winrt::SpotLight m_compositionSpotLight{ nullptr };
-    winrt::CompositionPropertySet m_colorsProxy{ nullptr };
-    winrt::CompositionPropertySet m_offsetProps{ nullptr };
+    winrt::weak_ref<winrt::UIElement> m_targetElement{nullptr};
+    winrt::ExpressionAnimation m_offsetAnimation{nullptr};
+    winrt::CompositionPropertySet m_pointer{nullptr};
+    winrt::SpotLight m_compositionSpotLight{nullptr};
+    winrt::CompositionPropertySet m_colorsProxy{nullptr};
+    winrt::CompositionPropertySet m_offsetProps{nullptr};
 
 #if BUILD_WINDOWS
-    winrt::SharedLight m_sharedLight{ nullptr };
+    winrt::SharedLight m_sharedLight{nullptr};
 
     //  Flag initialized as false so Reveal starts using the Global Shared Light.
-    bool m_fallbackToLocalLight{ false };
+    bool m_fallbackToLocalLight{false};
 
     bool GetFallbackToLocalLight();
     winrt::SharedLight GetSharedLight();
@@ -78,8 +87,8 @@ private:
     bool m_isDisabledByMaterialPolicy{};
 
 #if BUILD_WINDOWS
-    winrt::DispatcherQueue m_dispatcherQueue{ nullptr };
-    winrt::MaterialProperties m_materialProperties{ nullptr };
+    winrt::DispatcherQueue m_dispatcherQueue{nullptr};
+    winrt::MaterialProperties m_materialProperties{nullptr};
     winrt::MaterialProperties::TransparencyPolicyChanged_revoker m_transparencyPolicyChangedRevoker{};
     winrt::event_token m_additionalMaterialPolicyChangedToken{};
 #else
@@ -87,7 +96,7 @@ private:
 #endif
 
     bool m_shouldLightBeOn{};
-    bool m_setLightDisabledAfterTurnOffAnimation{ true };
+    bool m_setLightDisabledAfterTurnOffAnimation{true};
 
-    winrt::CoreWindow m_coreWindow{ nullptr };
+    winrt::CoreWindow m_coreWindow{nullptr};
 };

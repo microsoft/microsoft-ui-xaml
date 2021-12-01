@@ -10,8 +10,7 @@
 #include "ScrollPresenterTestHooks.g.h"
 #include "RegUtil.h"
 
-class ScrollPresenterTestHooks :
-    public winrt::implementation::ScrollPresenterTestHooksT<ScrollPresenterTestHooks>
+class ScrollPresenterTestHooks : public winrt::implementation::ScrollPresenterTestHooksT<ScrollPresenterTestHooks>
 {
 public:
     ScrollPresenterTestHooks();
@@ -55,16 +54,22 @@ public:
     static winrt::ScrollPresenterViewChangeResult GetScrollCompletedResult(const winrt::ScrollingScrollCompletedEventArgs& scrollCompletedEventArgs);
     static winrt::ScrollPresenterViewChangeResult GetZoomCompletedResult(const winrt::ScrollingZoomCompletedEventArgs& zoomCompletedEventArgs);
 
-    static void NotifyAnchorEvaluated(const winrt::ScrollPresenter& sender, const winrt::UIElement& anchorElement, double viewportAnchorPointHorizontalOffset, double viewportAnchorPointVerticalOffset);
-    static winrt::event_token AnchorEvaluated(winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollPresenterTestHooksAnchorEvaluatedEventArgs> const& value);
+    static void NotifyAnchorEvaluated(
+        const winrt::ScrollPresenter& sender, const winrt::UIElement& anchorElement, double viewportAnchorPointHorizontalOffset, double viewportAnchorPointVerticalOffset);
+    static winrt::event_token AnchorEvaluated(
+        winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollPresenterTestHooksAnchorEvaluatedEventArgs> const& value);
     static void AnchorEvaluated(winrt::event_token const& token);
 
-    static void NotifyInteractionSourcesChanged(const winrt::ScrollPresenter& sender, const winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources);
-    static winrt::event_token InteractionSourcesChanged(winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollPresenterTestHooksInteractionSourcesChangedEventArgs> const& value);
+    static void NotifyInteractionSourcesChanged(
+        const winrt::ScrollPresenter& sender,
+        const winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources);
+    static winrt::event_token InteractionSourcesChanged(
+        winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollPresenterTestHooksInteractionSourcesChangedEventArgs> const& value);
     static void InteractionSourcesChanged(winrt::event_token const& token);
 
     static void NotifyExpressionAnimationStatusChanged(const winrt::ScrollPresenter& sender, bool isExpressionAnimationStarted, wstring_view const& propertyName);
-    static winrt::event_token ExpressionAnimationStatusChanged(winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs> const& value);
+    static winrt::event_token ExpressionAnimationStatusChanged(
+        winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs> const& value);
     static void ExpressionAnimationStatusChanged(winrt::event_token const& token);
 
     static void NotifyContentLayoutOffsetXChanged(const winrt::ScrollPresenter& sender);
@@ -78,24 +83,12 @@ public:
     static winrt::IVector<winrt::ScrollSnapPointBase> GetConsolidatedHorizontalScrollSnapPoints(const winrt::ScrollPresenter& scrollPresenter);
     static winrt::IVector<winrt::ScrollSnapPointBase> GetConsolidatedVerticalScrollSnapPoints(const winrt::ScrollPresenter& scrollPresenter);
     static winrt::IVector<winrt::ZoomSnapPointBase> GetConsolidatedZoomSnapPoints(const winrt::ScrollPresenter& scrollPresenter);
-    static winrt::float2 GetHorizontalSnapPointActualApplicableZone(
-        const winrt::ScrollPresenter& scrollPresenter,
-        const winrt::ScrollSnapPointBase& scrollSnapPoint);
-    static winrt::float2 GetVerticalSnapPointActualApplicableZone(
-        const winrt::ScrollPresenter& scrollPresenter,
-        const winrt::ScrollSnapPointBase& scrollSnapPoint);
-    static winrt::float2 GetZoomSnapPointActualApplicableZone(
-        const winrt::ScrollPresenter& scrollPresenter,
-        const winrt::ZoomSnapPointBase& zoomSnapPoint);
-    static int GetHorizontalSnapPointCombinationCount(
-        const winrt::ScrollPresenter& scrollPresenter,
-        const winrt::ScrollSnapPointBase& scrollSnapPoint);
-    static int GetVerticalSnapPointCombinationCount(
-        const winrt::ScrollPresenter& scrollPresenter,
-        const winrt::ScrollSnapPointBase& scrollSnapPoint);
-    static int GetZoomSnapPointCombinationCount(
-        const winrt::ScrollPresenter& scrollPresenter,
-        const winrt::ZoomSnapPointBase& zoomSnapPoint);
+    static winrt::float2 GetHorizontalSnapPointActualApplicableZone(const winrt::ScrollPresenter& scrollPresenter, const winrt::ScrollSnapPointBase& scrollSnapPoint);
+    static winrt::float2 GetVerticalSnapPointActualApplicableZone(const winrt::ScrollPresenter& scrollPresenter, const winrt::ScrollSnapPointBase& scrollSnapPoint);
+    static winrt::float2 GetZoomSnapPointActualApplicableZone(const winrt::ScrollPresenter& scrollPresenter, const winrt::ZoomSnapPointBase& zoomSnapPoint);
+    static int GetHorizontalSnapPointCombinationCount(const winrt::ScrollPresenter& scrollPresenter, const winrt::ScrollSnapPointBase& scrollSnapPoint);
+    static int GetVerticalSnapPointCombinationCount(const winrt::ScrollPresenter& scrollPresenter, const winrt::ScrollSnapPointBase& scrollSnapPoint);
+    static int GetZoomSnapPointCombinationCount(const winrt::ScrollPresenter& scrollPresenter, const winrt::ZoomSnapPointBase& zoomSnapPoint);
     static winrt::Color GetSnapPointVisualizationColor(const winrt::SnapPointBase& snapPoint);
     static void SetSnapPointVisualizationColor(const winrt::SnapPointBase& snapPoint, const winrt::Color& color);
 
@@ -108,19 +101,19 @@ private:
     winrt::event<winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs>> m_expressionAnimationStatusChangedEventSource;
     winrt::event<winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::IInspectable>> m_contentLayoutOffsetXChangedEventSource;
     winrt::event<winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::IInspectable>> m_contentLayoutOffsetYChangedEventSource;
-    bool m_areAnchorNotificationsRaised{ false };
-    bool m_areInteractionSourcesNotificationsRaised{ false };
-    bool m_areExpressionAnimationStatusNotificationsRaised{ false };
-    bool m_isInteractionTrackerPointerWheelRedirectionEnabled{ true };
-    winrt::IReference<bool> m_isAnimationsEnabledOverride{ nullptr };
-    int m_offsetsChangeMsPerUnit{ ScrollPresenter::s_offsetsChangeMsPerUnit };
-    int m_offsetsChangeMinMs{ ScrollPresenter::s_offsetsChangeMinMs };
-    int m_offsetsChangeMaxMs{ ScrollPresenter::s_offsetsChangeMaxMs };
-    int m_zoomFactorChangeMsPerUnit{ ScrollPresenter::s_zoomFactorChangeMsPerUnit };
-    int m_zoomFactorChangeMinMs{ ScrollPresenter::s_zoomFactorChangeMinMs };
-    int m_zoomFactorChangeMaxMs{ ScrollPresenter::s_zoomFactorChangeMaxMs };
-    int m_mouseWheelDeltaForVelocityUnit{ ScrollPresenter::s_mouseWheelDeltaForVelocityUnit };
-    int m_mouseWheelScrollLines{ RegUtil::s_defaultMouseWheelScrollLines };
-    int m_mouseWheelScrollChars{ RegUtil::s_defaultMouseWheelScrollChars };
-    float m_mouseWheelInertiaDecayRate{ 0.0f };
+    bool m_areAnchorNotificationsRaised{false};
+    bool m_areInteractionSourcesNotificationsRaised{false};
+    bool m_areExpressionAnimationStatusNotificationsRaised{false};
+    bool m_isInteractionTrackerPointerWheelRedirectionEnabled{true};
+    winrt::IReference<bool> m_isAnimationsEnabledOverride{nullptr};
+    int m_offsetsChangeMsPerUnit{ScrollPresenter::s_offsetsChangeMsPerUnit};
+    int m_offsetsChangeMinMs{ScrollPresenter::s_offsetsChangeMinMs};
+    int m_offsetsChangeMaxMs{ScrollPresenter::s_offsetsChangeMaxMs};
+    int m_zoomFactorChangeMsPerUnit{ScrollPresenter::s_zoomFactorChangeMsPerUnit};
+    int m_zoomFactorChangeMinMs{ScrollPresenter::s_zoomFactorChangeMinMs};
+    int m_zoomFactorChangeMaxMs{ScrollPresenter::s_zoomFactorChangeMaxMs};
+    int m_mouseWheelDeltaForVelocityUnit{ScrollPresenter::s_mouseWheelDeltaForVelocityUnit};
+    int m_mouseWheelScrollLines{RegUtil::s_defaultMouseWheelScrollLines};
+    int m_mouseWheelScrollChars{RegUtil::s_defaultMouseWheelScrollChars};
+    float m_mouseWheelInertiaDecayRate{0.0f};
 };

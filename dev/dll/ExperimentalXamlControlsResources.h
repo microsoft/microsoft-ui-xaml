@@ -5,11 +5,12 @@
 
 #include "ExperimentalXamlControlsResources.g.h"
 
-class ExperimentalXamlControlsResources :
-    public ReferenceTracker<ExperimentalXamlControlsResources, winrt::implementation::ExperimentalXamlControlsResourcesT, winrt::composable>
+class ExperimentalXamlControlsResources
+    : public ReferenceTracker<ExperimentalXamlControlsResources, winrt::implementation::ExperimentalXamlControlsResourcesT, winrt::composable>
 {
 public:
     ExperimentalXamlControlsResources();
+
 private:
     void UpdateSource();
 };

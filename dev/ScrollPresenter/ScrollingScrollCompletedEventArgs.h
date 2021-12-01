@@ -6,8 +6,7 @@
 #include "ScrollPresenter.h"
 #include "ScrollingScrollCompletedEventArgs.g.h"
 
-class ScrollingScrollCompletedEventArgs :
-    public winrt::implementation::ScrollingScrollCompletedEventArgsT<ScrollingScrollCompletedEventArgs>
+class ScrollingScrollCompletedEventArgs : public winrt::implementation::ScrollingScrollCompletedEventArgsT<ScrollingScrollCompletedEventArgs>
 {
 public:
     ScrollingScrollCompletedEventArgs()
@@ -28,6 +27,6 @@ public:
     void Result(ScrollPresenterViewChangeResult result);
 
 private:
-    int32_t m_offsetsChangeCorrelationId{ -1 };
-    ScrollPresenterViewChangeResult m_result{ ScrollPresenterViewChangeResult::Completed };
+    int32_t m_offsetsChangeCorrelationId{-1};
+    ScrollPresenterViewChangeResult m_result{ScrollPresenterViewChangeResult::Completed};
 };

@@ -6,10 +6,8 @@
 #include "TabView.h"
 #include "TabViewAutomationPeer.g.h"
 
-class TabViewAutomationPeer :
-    public ReferenceTracker<TabViewAutomationPeer,
-    winrt::implementation::TabViewAutomationPeerT,
-    winrt::ISelectionProvider>
+class TabViewAutomationPeer
+    : public ReferenceTracker<TabViewAutomationPeer, winrt::implementation::TabViewAutomationPeerT, winrt::ISelectionProvider>
 {
 
 public:

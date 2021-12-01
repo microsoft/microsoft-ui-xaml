@@ -27,8 +27,7 @@ void BreadcrumbElementFactory::UserElementFactory(const winrt::IInspectable& new
 
 winrt::UIElement BreadcrumbElementFactory::GetElementCore(const winrt::ElementFactoryGetArgs& args)
 {
-    auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, args]()
-    {
+    auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, args]() {
         if (args.Data().try_as<winrt::BreadcrumbBarItem>())
         {
             return args.Data();
@@ -40,7 +39,7 @@ winrt::UIElement BreadcrumbElementFactory::GetElementCore(const winrt::ElementFa
         }
         return args.Data();
     }();
-  
+
     // Element is already a BreadcrumbBarItem, so we just return it.
     if (auto const breadcrumbItem = newContent.try_as<winrt::BreadcrumbBarItem>())
     {
@@ -59,7 +58,7 @@ winrt::UIElement BreadcrumbElementFactory::GetElementCore(const winrt::ElementFa
     {
         newBreadcrumbBarItem.ContentTemplate(itemTemplateWrapper->Template());
     }
-    
+
     return newBreadcrumbBarItem;
 }
 

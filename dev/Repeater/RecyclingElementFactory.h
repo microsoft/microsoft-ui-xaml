@@ -7,9 +7,9 @@
 #include "RecyclingElementFactory.g.h"
 #include "RecyclingElementFactory.properties.h"
 
-class RecyclingElementFactory :
-    public ReferenceTracker<RecyclingElementFactory, winrt::implementation::RecyclingElementFactoryT, ElementFactory>,
-    public RecyclingElementFactoryProperties
+class RecyclingElementFactory
+    : public ReferenceTracker<RecyclingElementFactory, winrt::implementation::RecyclingElementFactoryT, ElementFactory>,
+      public RecyclingElementFactoryProperties
 {
 public:
     RecyclingElementFactory();
@@ -33,7 +33,7 @@ public:
 #pragma endregion
 
 private:
-    tracker_ref<winrt::RecyclePool> m_recyclePool{ this };
-    tracker_ref<winrt::IMap<winrt::hstring, winrt::DataTemplate>> m_templates{ this };
-    tracker_ref<winrt::SelectTemplateEventArgs> m_args{ this };
+    tracker_ref<winrt::RecyclePool> m_recyclePool{this};
+    tracker_ref<winrt::IMap<winrt::hstring, winrt::DataTemplate>> m_templates{this};
+    tracker_ref<winrt::SelectTemplateEventArgs> m_args{this};
 };

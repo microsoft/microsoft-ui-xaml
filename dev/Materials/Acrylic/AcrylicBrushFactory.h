@@ -12,10 +12,7 @@ public:
     AcrylicBrushFactory();
 
     winrt::CompositionEffectBrush CreateBackdropAcrylicEffectBrush(
-        winrt::Compositor const& compositor,
-        winrt::Color const& initialTintColor,
-        winrt::Color const& initialFallbackColor,
-        bool willTintColorAlwaysBeOpaque);
+        winrt::Compositor const& compositor, winrt::Color const& initialTintColor, winrt::Color const& initialFallbackColor, bool willTintColorAlwaysBeOpaque);
 
     winrt::CompositionEffectBrush CreateBackdropAcrylicEffectBrushWithLuminosity(
         winrt::Compositor const& compositor,
@@ -25,8 +22,11 @@ public:
         bool willTintColorAlwaysBeOpaque);
 };
 
-namespace winrt::Microsoft::UI::Xaml::Media
-{
-    namespace factory_implementation { using AcrylicBrush = ::AcrylicBrushFactory; };
-    namespace implementation { using AcrylicBrush = ::AcrylicBrush; };
-}
+namespace winrt::Microsoft::UI::Xaml::Media {
+namespace factory_implementation {
+    using AcrylicBrush = ::AcrylicBrushFactory;
+};
+namespace implementation {
+    using AcrylicBrush = ::AcrylicBrush;
+};
+} // namespace winrt::Microsoft::UI::Xaml::Media

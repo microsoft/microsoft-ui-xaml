@@ -20,7 +20,7 @@ winrt::IconElement FontIconSource::CreateIconElementCore()
 
     if (!FontFamily())
     {
-        FontFamily(winrt::FontFamily{ c_fontIconSourceDefaultFontFamily });
+        FontFamily(winrt::FontFamily{c_fontIconSourceDefaultFontFamily});
     }
     fontIcon.FontFamily(FontFamily());
 

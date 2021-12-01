@@ -7,9 +7,7 @@
 #include "RatingItemImageInfo.g.h"
 #include "RatingItemImageInfo.properties.h"
 
-class RatingItemImageInfo :
-    public winrt::implementation::RatingItemImageInfoT<RatingItemImageInfo, RatingItemInfo>,
-    public RatingItemImageInfoProperties
+class RatingItemImageInfo : public winrt::implementation::RatingItemImageInfoT<RatingItemImageInfo, RatingItemInfo>, public RatingItemImageInfoProperties
 {
 public:
     ForwardRefToBaseReferenceTracker(RatingItemInfo)

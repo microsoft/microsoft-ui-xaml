@@ -8,11 +8,9 @@
 #include "DropDownButtonAutomationPeer.h"
 #include "Utils.h"
 
-
 #include "DropDownButtonAutomationPeer.properties.cpp"
 
-DropDownButtonAutomationPeer::DropDownButtonAutomationPeer(winrt::DropDownButton const& owner)
-    : ReferenceTracker(owner)
+DropDownButtonAutomationPeer::DropDownButtonAutomationPeer(winrt::DropDownButton const& owner) : ReferenceTracker(owner)
 {
 }
 
@@ -44,7 +42,7 @@ com_ptr<DropDownButton> DropDownButtonAutomationPeer::GetImpl()
     return impl;
 }
 
-// IExpandCollapseProvider 
+// IExpandCollapseProvider
 winrt::ExpandCollapseState DropDownButtonAutomationPeer::ExpandCollapseState()
 {
     winrt::ExpandCollapseState currentState = winrt::ExpandCollapseState::Collapsed;
@@ -75,4 +73,3 @@ void DropDownButtonAutomationPeer::Collapse()
         dropDownButton->CloseFlyout();
     }
 }
-

@@ -5,8 +5,8 @@
 
 #include "NavigationViewPaneClosingEventArgs.g.h"
 
-class NavigationViewPaneClosingEventArgs :
-    public ReferenceTracker<NavigationViewPaneClosingEventArgs, winrt::implementation::NavigationViewPaneClosingEventArgsT, winrt::composing, winrt::composable>
+class NavigationViewPaneClosingEventArgs
+    : public ReferenceTracker<NavigationViewPaneClosingEventArgs, winrt::implementation::NavigationViewPaneClosingEventArgsT, winrt::composing, winrt::composable>
 {
 public:
     bool Cancel();
@@ -15,7 +15,7 @@ public:
     void SplitViewClosingArgs(winrt::SplitViewPaneClosingEventArgs const& value);
 
 private:
-    tracker_ref<winrt::SplitViewPaneClosingEventArgs> m_splitViewClosingArgs{ this };
+    tracker_ref<winrt::SplitViewPaneClosingEventArgs> m_splitViewClosingArgs{this};
 
     bool m_cancelled{};
 };

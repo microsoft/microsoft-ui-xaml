@@ -6,9 +6,7 @@
 #include "ButtonInteraction.g.h"
 #include "ButtonInteraction.properties.h"
 
-class ButtonInteraction :
-    public ReferenceTracker<ButtonInteraction, winrt::implementation::ButtonInteractionT>,
-    public ButtonInteractionProperties
+class ButtonInteraction : public ReferenceTracker<ButtonInteraction, winrt::implementation::ButtonInteractionT>, public ButtonInteractionProperties
 {
 public:
     // IButtonInteraction
@@ -39,11 +37,11 @@ private:
     void UpdateIsHovering(bool isHovering);
     void UpdateIsPressing(bool isPressing);
 
-    winrt::ButtonInteractionInvokeMode m_invokeMode{ winrt::ButtonInteractionInvokeMode::Release };
+    winrt::ButtonInteractionInvokeMode m_invokeMode{winrt::ButtonInteractionInvokeMode::Release};
 
-    bool m_isHovering{ false };
-    bool m_isPressing{ false };
-    bool m_hasPointerCapture{ false };
+    bool m_isHovering{false};
+    bool m_isPressing{false};
+    bool m_hasPointerCapture{false};
 
-    event_source<winrt::PropertyChangedEventHandler> m_propertyChangedEventSource{ this };
+    event_source<winrt::PropertyChangedEventHandler> m_propertyChangedEventSource{this};
 };

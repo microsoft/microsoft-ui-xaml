@@ -3,15 +3,10 @@
 
 #pragma once
 
-class XamlTypeBase :
-    public winrt::implements<XamlTypeBase, winrt::IXamlType>
+class XamlTypeBase : public winrt::implements<XamlTypeBase, winrt::IXamlType>
 {
 public:
-    void AddDPMember(
-        wstring_view const& name,
-        wstring_view const& baseTypeName,
-        winrt::DependencyProperty const& dp,
-        bool isContent);
+    void AddDPMember(wstring_view const& name, wstring_view const& baseTypeName, winrt::DependencyProperty const& dp, bool isContent);
 
     void AddMember(
         wstring_view const& name,
@@ -46,7 +41,6 @@ private:
     void EnsureProperties();
 
 protected:
-
     hstring m_typeName;
     hstring m_baseTypeName;
 
@@ -69,8 +63,7 @@ public:
         wstring_view const& typeName,
         wstring_view const& baseTypeName,
         std::function<winrt::IInspectable()> activator,
-        std::function<void(XamlTypeBase&)> populatePropertiesFunc
-    );
+        std::function<void(XamlTypeBase&)> populatePropertiesFunc);
 
     void SetCollectionAddFunc(std::function<void(winrt::IInspectable const&, winrt::IInspectable const&)> collectionAdd);
     void SetAddToMapFunc(std::function<void(winrt::IInspectable const&, winrt::IInspectable const&, winrt::IInspectable const&)> addToMap);
@@ -79,10 +72,7 @@ public:
 class EnumXamlType : public XamlTypeBase
 {
 public:
-    EnumXamlType(
-        wstring_view const& typeName,
-        std::function<winrt::IInspectable(hstring)> createFromString
-    );
+    EnumXamlType(wstring_view const& typeName, std::function<winrt::IInspectable(hstring)> createFromString);
 };
 
 class PrimitiveXamlType : public XamlTypeBase

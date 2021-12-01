@@ -10,33 +10,31 @@
 
 inline bool IsRepeaterTracingEnabled()
 {
-    return g_IsLoggingProviderEnabled &&
-        g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_LoggingProviderMatchAnyKeyword & KEYWORD_REPEATER || g_LoggingProviderMatchAnyKeyword == 0);
+    return g_IsLoggingProviderEnabled && g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
+           (g_LoggingProviderMatchAnyKeyword & KEYWORD_REPEATER || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsRepeaterPerfTracingEnabled()
 {
-    return g_IsPerfProviderEnabled &&
-        g_PerfProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_PerfProviderMatchAnyKeyword & KEYWORD_REPEATER || g_PerfProviderMatchAnyKeyword == 0);
+    return g_IsPerfProviderEnabled && g_PerfProviderLevel >= WINEVENT_LEVEL_INFO &&
+           (g_PerfProviderMatchAnyKeyword & KEYWORD_REPEATER || g_PerfProviderMatchAnyKeyword == 0);
 }
 
 #define REPEATER_TRACE_INFO(message, ...) \
-if (IsRepeaterTracingEnabled()) \
-{ \
-    RepeaterTrace::TraceInfo(true /*includeTraceLogging*/, message, __VA_ARGS__); \
-} \
-else if (RepeaterTrace::s_IsDebugOutputEnabled) \
-{ \
-    RepeaterTrace::TraceInfo(false /*includeTraceLogging*/, message, __VA_ARGS__); \
-} \
+    if (IsRepeaterTracingEnabled()) \
+    { \
+        RepeaterTrace::TraceInfo(true /*includeTraceLogging*/, message, __VA_ARGS__); \
+    } \
+    else if (RepeaterTrace::s_IsDebugOutputEnabled) \
+    { \
+        RepeaterTrace::TraceInfo(false /*includeTraceLogging*/, message, __VA_ARGS__); \
+    }
 
 #define REPEATER_TRACE_PERF(info) \
-if(IsRepeaterPerfTracingEnabled()) \
-{ \
-    RepeaterTrace::TracePerfInfo(info); \
-} \
+    if (IsRepeaterPerfTracingEnabled()) \
+    { \
+        RepeaterTrace::TracePerfInfo(info); \
+    }
 
 class RepeaterTrace
 {
@@ -54,7 +52,7 @@ public:
             if (includeTraceLogging)
             {
                 // TraceViewers
-                // http://toolbox/pef 
+                // http://toolbox/pef
                 // http://fastetw/index.aspx
                 // GUID for Microsoft.UI.Xaml.Controls.Debug : {afe0ae07-66a7-55bb-12ff-01116bc08c1a}
                 // GUID for Windows.UI.Xaml.Controls.Debug :{afe0ae07-66a7-55bb-12ff-01116bc08c1b}
@@ -84,13 +82,13 @@ public:
     static void TracePerfInfo(PCWSTR info) noexcept
     {
         // TraceViewers
-        // http://toolbox/pef 
+        // http://toolbox/pef
         // http://fastetw/index.aspx
         TraceLoggingWrite(
             g_hPerfProvider,
             "RepeaterPerf" /* eventName */,
             TraceLoggingLevel(WINEVENT_LEVEL_INFO),
-            TraceLoggingKeyword(KEYWORD_REPEATER), 
+            TraceLoggingKeyword(KEYWORD_REPEATER),
             TraceLoggingWideString(info, "Info"));
     }
 };

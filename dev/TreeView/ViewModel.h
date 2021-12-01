@@ -6,22 +6,17 @@
 #include "TreeViewNode.h"
 
 using TreeNodeSelectionState = TreeViewNode::TreeNodeSelectionState;
-using ViewModelVectorOptions = typename VectorOptionsFromFlag<winrt::IInspectable, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()>;
+using ViewModelVectorOptions =
+    typename VectorOptionsFromFlag<winrt::IInspectable, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()>;
 
-class ViewModel : 
-    public ReferenceTracker<
-        ViewModel,
-        reference_tracker_implements_t<typename ViewModelVectorOptions::VectorType>::type,
-            typename ViewModelVectorOptions::IterableType,
-            typename ViewModelVectorOptions::ObservableVectorType>,
-    public ViewModelVectorOptions::IVectorOwner
+class ViewModel
+    : public ReferenceTracker<ViewModel, reference_tracker_implements_t<typename ViewModelVectorOptions::VectorType>::type, typename ViewModelVectorOptions::IterableType, typename ViewModelVectorOptions::ObservableVectorType>,
+      public ViewModelVectorOptions::IVectorOwner
 {
-    Implement_IObservable(ViewModelVectorOptions)
-    Implement_Vector_External(ViewModelVectorOptions)
-    Implement_IIterator(ViewModelVectorOptions)
+    Implement_IObservable(ViewModelVectorOptions) Implement_Vector_External(ViewModelVectorOptions)
+        Implement_IIterator(ViewModelVectorOptions)
 
-public:
-    ViewModel();
+            public : ViewModel();
     ~ViewModel();
 
     void ExpandNode(const winrt::TreeViewNode& value);
@@ -40,7 +35,6 @@ public:
     bool IsContentMode();
 
 public:
-
     // IVector functions
     uint32_t Size();
     winrt::IInspectable GetAt(uint32_t index);
@@ -79,22 +73,22 @@ public:
     winrt::TreeViewNode GetAssociatedNode(winrt::IInspectable item);
 
 private:
-    tracker_ref<winrt::IVector<winrt::TreeViewNode>> m_selectedNodes{ this };
-    event_source<winrt::TypedEventHandler<winrt::TreeViewNode, winrt::IInspectable>> m_nodeExpandingEventSource{ this };
-    event_source<winrt::TypedEventHandler<winrt::TreeViewNode, winrt::IInspectable>> m_nodeCollapsedEventSource{ this };
+    tracker_ref<winrt::IVector<winrt::TreeViewNode>> m_selectedNodes{this};
+    event_source<winrt::TypedEventHandler<winrt::TreeViewNode, winrt::IInspectable>> m_nodeExpandingEventSource{this};
+    event_source<winrt::TypedEventHandler<winrt::TreeViewNode, winrt::IInspectable>> m_nodeCollapsedEventSource{this};
     std::vector<winrt::event_token> m_collectionChangedEventTokenVector;
     std::vector<winrt::event_token> m_selectedNodeChildrenChangedEventTokenVector;
     std::vector<winrt::event_token> m_IsExpandedChangedEventTokenVector;
     winrt::event_token m_rootNodeChildrenChangedEventToken;
-    winrt::weak_ref<winrt::TreeViewList> m_TreeViewList{ nullptr };
-    winrt::weak_ref<winrt::TreeView> m_TreeView{ nullptr };
-    tracker_ref<winrt::TreeViewNode> m_originNode{ this };
-    bool m_isContentMode{ false };
-    tracker_ref<winrt::IVector<winrt::IInspectable>> m_selectedItems{ this };
+    winrt::weak_ref<winrt::TreeViewList> m_TreeViewList{nullptr};
+    winrt::weak_ref<winrt::TreeView> m_TreeView{nullptr};
+    tracker_ref<winrt::TreeViewNode> m_originNode{this};
+    bool m_isContentMode{false};
+    tracker_ref<winrt::IVector<winrt::IInspectable>> m_selectedItems{this};
     std::vector<winrt::weak_ref<winrt::IInspectable>> m_addedSelectedItems;
     std::vector<winrt::IInspectable> m_removedSelectedItems;
-    tracker_ref<winrt::IMap<winrt::IInspectable, winrt::TreeViewNode>> m_itemToNodeMap{ this };
-    uint32_t m_selectionTrackingCounter{ 0 };
+    tracker_ref<winrt::IMap<winrt::IInspectable, winrt::TreeViewNode>> m_itemToNodeMap{this};
+    uint32_t m_selectionTrackingCounter{0};
 
     // Methods
     winrt::TreeViewNode GetRemovedChildTreeViewNodeByIndex(winrt::TreeViewNode const& node, unsigned int childIndex);

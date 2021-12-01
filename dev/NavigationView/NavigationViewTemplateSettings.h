@@ -6,8 +6,7 @@
 #include "NavigationViewTemplateSettings.g.h"
 #include "NavigationViewTemplateSettings.properties.h"
 
-class NavigationViewTemplateSettings :
-    public winrt::implementation::NavigationViewTemplateSettingsT<NavigationViewTemplateSettings>,
-    public NavigationViewTemplateSettingsProperties
+class NavigationViewTemplateSettings : public winrt::implementation::NavigationViewTemplateSettingsT<NavigationViewTemplateSettings>,
+                                       public NavigationViewTemplateSettingsProperties
 {
 };

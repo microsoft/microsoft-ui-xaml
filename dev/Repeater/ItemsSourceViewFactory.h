@@ -6,14 +6,12 @@
 #include "ItemsSourceView.h"
 #include "InspectingDataSource.h"
 
-class ItemsSourceViewFactory :
-    public winrt::implements<ItemsSourceViewFactory, winrt::IActivationFactory, winrt::IItemsSourceViewFactory>
+class ItemsSourceViewFactory : public winrt::implements<ItemsSourceViewFactory, winrt::IActivationFactory, winrt::IItemsSourceViewFactory>
 {
 public:
-
     hstring GetRuntimeClassName() const
     {
-        return hstring{ winrt::name_of<winrt::ItemsSourceView>() };
+        return hstring{winrt::name_of<winrt::ItemsSourceView>()};
     }
 
     winrt::IInspectable ActivateInstance() const
@@ -29,4 +27,3 @@ public:
         return winrt::make<InspectingDataSource>(source);
     }
 };
-

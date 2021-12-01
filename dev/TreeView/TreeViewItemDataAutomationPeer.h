@@ -5,9 +5,8 @@
 
 #include "TreeViewItemDataAutomationPeer.g.h"
 
-class TreeViewItemDataAutomationPeer :
-    public ReferenceTracker<TreeViewItemDataAutomationPeer,
-        winrt::implementation::TreeViewItemDataAutomationPeerT>
+class TreeViewItemDataAutomationPeer
+    : public ReferenceTracker<TreeViewItemDataAutomationPeer, winrt::implementation::TreeViewItemDataAutomationPeerT>
 {
 public:
     TreeViewItemDataAutomationPeer(winrt::IInspectable const& item, winrt::TreeViewListAutomationPeer const& parent);
@@ -23,4 +22,3 @@ public:
 private:
     winrt::TreeViewItemAutomationPeer GetTreeViewItemAutomationPeer();
 };
-

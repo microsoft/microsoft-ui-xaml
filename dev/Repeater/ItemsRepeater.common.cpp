@@ -46,4 +46,3 @@ winrt::IDataTemplateComponent CachedVisualTreeHelpers::GetDataTemplateComponent(
 
     return instance->m_xamlBindingHelperStatics.GetDataTemplateComponent(element);
 }
-

@@ -9,9 +9,7 @@
 #include "SplitButton.g.h"
 #include "SplitButton.properties.h"
 
-class SplitButton :
-    public ReferenceTracker<SplitButton, winrt::implementation::SplitButtonT>,
-    public SplitButtonProperties
+class SplitButton : public ReferenceTracker<SplitButton, winrt::implementation::SplitButtonT>, public SplitButtonProperties
 {
 
 public:
@@ -24,18 +22,24 @@ public:
     virtual winrt::AutomationPeer OnCreateAutomationPeer();
 
     // Internal
-    bool IsFlyoutOpen() { return m_isFlyoutOpen; };
+    bool IsFlyoutOpen()
+    {
+        return m_isFlyoutOpen;
+    };
     void OpenFlyout();
     void CloseFlyout();
     virtual void OnClickPrimary(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    virtual bool InternalIsChecked() { return false; }
+    virtual bool InternalIsChecked()
+    {
+        return false;
+    }
 
     void UpdateVisualStates(bool useTransitions = true);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 protected:
-    bool m_hasLoaded{ false };
+    bool m_hasLoaded{false};
 
 private:
     void ExecuteCommand();
@@ -56,12 +60,12 @@ private:
     void OnSplitButtonKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnSplitButtonKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
 
-    tracker_ref<winrt::Button> m_primaryButton{ this };
-    tracker_ref<winrt::Button> m_secondaryButton{ this };
+    tracker_ref<winrt::Button> m_primaryButton{this};
+    tracker_ref<winrt::Button> m_secondaryButton{this};
 
-    bool m_isFlyoutOpen{ false };
-    winrt::PointerDeviceType m_lastPointerDeviceType{ winrt::PointerDeviceType::Mouse };
-    bool m_isKeyDown{ false };
+    bool m_isFlyoutOpen{false};
+    winrt::PointerDeviceType m_lastPointerDeviceType{winrt::PointerDeviceType::Mouse};
+    bool m_isKeyDown{false};
 
     winrt::UIElement::KeyDown_revoker m_keyDownRevoker{};
     winrt::UIElement::KeyUp_revoker m_keyUpRevoker{};

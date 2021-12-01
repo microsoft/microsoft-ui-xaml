@@ -6,7 +6,8 @@
 #include "Vector.h"
 #include "TreeViewSelectionChangedEventArgs.h"
 
-TreeViewSelectionChangedEventArgs::TreeViewSelectionChangedEventArgs(const winrt::IVector<winrt::IInspectable> addedItems, const winrt::IVector<winrt::IInspectable> removedItems)
+TreeViewSelectionChangedEventArgs::TreeViewSelectionChangedEventArgs(
+    const winrt::IVector<winrt::IInspectable> addedItems, const winrt::IVector<winrt::IInspectable> removedItems)
 {
     m_addedItems.set(addedItems);
     m_removedItems.set(removedItems);

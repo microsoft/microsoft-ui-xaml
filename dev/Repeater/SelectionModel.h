@@ -12,9 +12,9 @@ struct SelectedItemInfo
     winrt::IndexPath Path;
 };
 
-class SelectionModel :
-    public ReferenceTracker<SelectionModel, winrt::implementation::SelectionModelT, winrt::Windows::UI::Xaml::Data::ICustomPropertyProvider, winrt::composing>,
-    public SelectionModelProperties
+class SelectionModel
+    : public ReferenceTracker<SelectionModel, winrt::implementation::SelectionModelT, winrt::Windows::UI::Xaml::Data::ICustomPropertyProvider, winrt::composing>,
+      public SelectionModelProperties
 {
 public:
     SelectionModel();
@@ -25,7 +25,7 @@ public:
     void Source(winrt::IInspectable const& value);
 
     bool SingleSelect();
-    void SingleSelect(bool value); 
+    void SingleSelect(bool value);
 
     winrt::IndexPath AnchorIndex();
     void AnchorIndex(winrt::IndexPath const& value);
@@ -86,7 +86,10 @@ public:
 
     winrt::IInspectable ResolvePath(const winrt::IInspectable& data, const winrt::IndexPath& dataIndexPath);
     void OnSelectionInvalidatedDueToCollectionChange();
-    std::shared_ptr<SelectionNode> SharedLeafNode() { return m_leafNode; }
+    std::shared_ptr<SelectionNode> SharedLeafNode()
+    {
+        return m_leafNode;
+    }
 
 private:
     void RaisePropertyChanged(std::wstring_view const& name);
@@ -100,17 +103,17 @@ private:
     void SelectRangeFromAnchorWithGroupImpl(int groupIndex, int itemIndex, bool select);
     void SelectRangeImpl(const winrt::IndexPath& start, const winrt::IndexPath& end, bool select);
 
-    std::shared_ptr<SelectionNode> m_rootNode{ nullptr };
-    bool m_singleSelect{ false };
+    std::shared_ptr<SelectionNode> m_rootNode{nullptr};
+    bool m_singleSelect{false};
 
-    winrt::IVectorView<winrt::IndexPath> m_selectedIndicesCached{ nullptr };
-    winrt::IVectorView<winrt::IInspectable> m_selectedItemsCached{ nullptr };
+    winrt::IVectorView<winrt::IndexPath> m_selectedIndicesCached{nullptr};
+    winrt::IVectorView<winrt::IInspectable> m_selectedItemsCached{nullptr};
 
-    event_source<winrt::PropertyChangedEventHandler> m_propertyChangedEventSource{ this };
+    event_source<winrt::PropertyChangedEventHandler> m_propertyChangedEventSource{this};
 
     // Cached Event args to avoid creation cost every time
-    tracker_ref<winrt::SelectionModelChildrenRequestedEventArgs> m_childrenRequestedEventArgs{ this };
-    tracker_ref<winrt::SelectionModelSelectionChangedEventArgs> m_selectionChangedEventArgs{ this };
+    tracker_ref<winrt::SelectionModelChildrenRequestedEventArgs> m_childrenRequestedEventArgs{this};
+    tracker_ref<winrt::SelectionModelSelectionChangedEventArgs> m_selectionChangedEventArgs{this};
 
     // use just one instance of a leaf node to avoid creating a bunch of these.
     std::shared_ptr<SelectionNode> m_leafNode;

@@ -46,7 +46,6 @@ void LayoutPanel::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs co
     }
 }
 
-
 winrt::Size LayoutPanel::MeasureOverride(winrt::Size const& availableSize)
 {
     winrt::Size desiredSize{};
@@ -54,7 +53,8 @@ winrt::Size LayoutPanel::MeasureOverride(winrt::Size const& availableSize)
     // We adjust availableSize based on our Padding and BorderThickness:
     const auto padding = Padding();
     const auto borderThickness = BorderThickness();
-    const auto effectiveHorizontalPadding = static_cast<float>(padding.Left + padding.Right + borderThickness.Left + borderThickness.Right);
+    const auto effectiveHorizontalPadding =
+        static_cast<float>(padding.Left + padding.Right + borderThickness.Left + borderThickness.Right);
     const auto effectiveVerticalPadding = static_cast<float>(padding.Top + padding.Bottom + borderThickness.Top + borderThickness.Bottom);
 
     auto adjustedSize = availableSize;
@@ -95,7 +95,8 @@ winrt::Size LayoutPanel::ArrangeOverride(winrt::Size const& finalSize)
     const auto padding = Padding();
     const auto borderThickness = BorderThickness();
 
-    const auto effectiveHorizontalPadding = static_cast<float>(padding.Left + padding.Right + borderThickness.Left + borderThickness.Right);
+    const auto effectiveHorizontalPadding =
+        static_cast<float>(padding.Left + padding.Right + borderThickness.Left + borderThickness.Right);
     const auto effectiveVerticalPadding = static_cast<float>(padding.Top + padding.Bottom + borderThickness.Top + borderThickness.Bottom);
     const auto leftAdjustment = static_cast<float>(padding.Left + borderThickness.Left);
     const auto topAdjustment = static_cast<float>(padding.Top + borderThickness.Top);
@@ -106,7 +107,7 @@ winrt::Size LayoutPanel::ArrangeOverride(winrt::Size const& finalSize)
 
     adjustedSize.Width = std::max(0.0f, adjustedSize.Width);
     adjustedSize.Height = std::max(0.0f, adjustedSize.Height);
-    
+
     if (auto layout = Layout())
     {
         auto layoutSize = layout.Arrange(m_layoutContext, adjustedSize);
@@ -116,7 +117,7 @@ winrt::Size LayoutPanel::ArrangeOverride(winrt::Size const& finalSize)
         // We need to reposition the child elements if we have top or left padding:
         if (leftAdjustment != 0 || topAdjustment != 0)
         {
-            for (winrt::UIElement const& child: Children())
+            for (winrt::UIElement const& child : Children())
             {
                 if (auto childAsFe = child.try_as<winrt::FrameworkElement>())
                 {
@@ -132,7 +133,7 @@ winrt::Size LayoutPanel::ArrangeOverride(winrt::Size const& finalSize)
     }
     else
     {
-        const winrt::Rect arrangeRect = { leftAdjustment, topAdjustment, adjustedSize.Width, adjustedSize.Height };
+        const winrt::Rect arrangeRect = {leftAdjustment, topAdjustment, adjustedSize.Width, adjustedSize.Height};
         for (winrt::UIElement const& child : Children())
         {
             child.Arrange(arrangeRect);
@@ -161,8 +162,8 @@ void LayoutPanel::OnLayoutChanged(winrt::Layout const& oldValue, winrt::Layout c
     if (newValue)
     {
         newValue.InitializeForContext(m_layoutContext);
-        m_measureInvalidated = newValue.MeasureInvalidated(winrt::auto_revoke, { this, &LayoutPanel::InvalidateMeasureForLayout });
-        m_arrangeInvalidated = newValue.ArrangeInvalidated(winrt::auto_revoke, { this, &LayoutPanel::InvalidateArrangeForLayout });
+        m_measureInvalidated = newValue.MeasureInvalidated(winrt::auto_revoke, {this, &LayoutPanel::InvalidateMeasureForLayout});
+        m_arrangeInvalidated = newValue.ArrangeInvalidated(winrt::auto_revoke, {this, &LayoutPanel::InvalidateArrangeForLayout});
     }
 
     InvalidateMeasure();

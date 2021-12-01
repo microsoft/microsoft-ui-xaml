@@ -5,11 +5,12 @@
 
 #include "ScrollPresenterTestHooksAnchorEvaluatedEventArgs.g.h"
 
-class ScrollPresenterTestHooksAnchorEvaluatedEventArgs :
-    public winrt::implementation::ScrollPresenterTestHooksAnchorEvaluatedEventArgsT<ScrollPresenterTestHooksAnchorEvaluatedEventArgs>
+class ScrollPresenterTestHooksAnchorEvaluatedEventArgs
+    : public winrt::implementation::ScrollPresenterTestHooksAnchorEvaluatedEventArgsT<ScrollPresenterTestHooksAnchorEvaluatedEventArgs>
 {
 public:
-    ScrollPresenterTestHooksAnchorEvaluatedEventArgs(const winrt::UIElement& anchorElement, double viewportAnchorPointHorizontalOffset, double viewportAanchorPointVerticalOffset);
+    ScrollPresenterTestHooksAnchorEvaluatedEventArgs(
+        const winrt::UIElement& anchorElement, double viewportAnchorPointHorizontalOffset, double viewportAanchorPointVerticalOffset);
 
     // IScrollPresenterTestHooksAnchorEvaluatedEventArgs overrides
     winrt::UIElement AnchorElement();
@@ -18,6 +19,6 @@ public:
 
 private:
     winrt::weak_ref<winrt::UIElement> m_anchorElement;
-    double m_viewportAnchorPointHorizontalOffset{ 0.0 };
-    double m_viewportAnchorPointVerticalOffset{ 0.0 };
+    double m_viewportAnchorPointHorizontalOffset{0.0};
+    double m_viewportAnchorPointVerticalOffset{0.0};
 };

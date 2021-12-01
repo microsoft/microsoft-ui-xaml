@@ -9,9 +9,8 @@
 #include "BreadcrumbBar.h"
 #include "BreadcrumbBarItemAutomationPeer.h"
 
-namespace winrt::Microsoft::UI::Xaml::Controls
-{
-    CppWinRTActivatableClassWithBasicFactory(BreadcrumbBarItem)
+namespace winrt::Microsoft::UI::Xaml::Controls {
+CppWinRTActivatableClassWithBasicFactory(BreadcrumbBarItem)
 }
 
 #include "BreadcrumbBarItem.g.cpp"
@@ -34,16 +33,15 @@ void BreadcrumbBarItem::HookListeners(bool forEllipsisDropDownItem)
     {
         if (!m_childPreviewKeyDownToken.value)
         {
-            m_childPreviewKeyDownToken = thisAsIUIElement7.PreviewKeyDown({ this, &BreadcrumbBarItem::OnChildPreviewKeyDown });
+            m_childPreviewKeyDownToken = thisAsIUIElement7.PreviewKeyDown({this, &BreadcrumbBarItem::OnChildPreviewKeyDown});
         }
     }
     else if (auto const& thisAsUIElement = this->try_as<winrt::UIElement>())
     {
         if (!m_keyDownRevoker)
         {
-            m_keyDownRevoker = AddRoutedEventHandler<RoutedEventType::KeyDown>(thisAsUIElement,
-                { this, &BreadcrumbBarItem::OnChildPreviewKeyDown },
-                true /*handledEventsToo*/);
+            m_keyDownRevoker = AddRoutedEventHandler<RoutedEventType::KeyDown>(
+                thisAsUIElement, {this, &BreadcrumbBarItem::OnChildPreviewKeyDown}, true /*handledEventsToo*/);
         }
     }
 
@@ -51,12 +49,13 @@ void BreadcrumbBarItem::HookListeners(bool forEllipsisDropDownItem)
     {
         if (!m_isEnabledChangedRevoker)
         {
-            m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this,  &BreadcrumbBarItem::OnIsEnabledChanged });
+            m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, {this, &BreadcrumbBarItem::OnIsEnabledChanged});
         }
     }
     else if (!m_flowDirectionChangedToken.value)
     {
-        m_flowDirectionChangedToken.value = RegisterPropertyChangedCallback(winrt::FrameworkElement::FlowDirectionProperty(), { this, &BreadcrumbBarItem::OnFlowDirectionChanged });
+        m_flowDirectionChangedToken.value = RegisterPropertyChangedCallback(
+            winrt::FrameworkElement::FlowDirectionProperty(), {this, &BreadcrumbBarItem::OnFlowDirectionChanged});
     }
 }
 
@@ -102,7 +101,7 @@ void BreadcrumbBarItem::OnApplyTemplate()
     else
     {
         RevokePartsListeners();
-        winrt::IControlProtected controlProtected{ *this };
+        winrt::IControlProtected controlProtected{*this};
 
         if (m_isEllipsisItem)
         {
@@ -113,11 +112,14 @@ void BreadcrumbBarItem::OnApplyTemplate()
 
         if (const auto& button = m_button.get())
         {
-            m_buttonLoadedRevoker = button.Loaded(winrt::auto_revoke, { this, &BreadcrumbBarItem::OnLoadedEvent });
+            m_buttonLoadedRevoker = button.Loaded(winrt::auto_revoke, {this, &BreadcrumbBarItem::OnLoadedEvent});
 
-            m_isPressedButtonRevoker = RegisterPropertyChanged(button, winrt::ButtonBase::IsPressedProperty(), { this, &BreadcrumbBarItem::OnVisualPropertyChanged });
-            m_isPointerOverButtonRevoker = RegisterPropertyChanged(button, winrt::ButtonBase::IsPointerOverProperty(), { this, &BreadcrumbBarItem::OnVisualPropertyChanged });
-            m_isEnabledButtonRevoker = RegisterPropertyChanged(button, winrt::Control::IsEnabledProperty(), { this, &BreadcrumbBarItem::OnVisualPropertyChanged });
+            m_isPressedButtonRevoker = RegisterPropertyChanged(
+                button, winrt::ButtonBase::IsPressedProperty(), {this, &BreadcrumbBarItem::OnVisualPropertyChanged});
+            m_isPointerOverButtonRevoker = RegisterPropertyChanged(
+                button, winrt::ButtonBase::IsPointerOverProperty(), {this, &BreadcrumbBarItem::OnVisualPropertyChanged});
+            m_isEnabledButtonRevoker =
+                RegisterPropertyChanged(button, winrt::Control::IsEnabledProperty(), {this, &BreadcrumbBarItem::OnVisualPropertyChanged});
         }
 
         UpdateButtonCommonVisualState(false /*useTransitions*/);
@@ -138,11 +140,11 @@ void BreadcrumbBarItem::OnLoadedEvent(const winrt::IInspectable&, const winrt::R
         m_buttonClickRevoker.revoke();
         if (m_isEllipsisItem)
         {
-            m_buttonClickRevoker = button.Click(winrt::auto_revoke, { this, &BreadcrumbBarItem::OnEllipsisItemClick });
+            m_buttonClickRevoker = button.Click(winrt::auto_revoke, {this, &BreadcrumbBarItem::OnEllipsisItemClick});
         }
         else
         {
-            m_buttonClickRevoker = button.Click(winrt::auto_revoke, { this, &BreadcrumbBarItem::OnBreadcrumbBarItemClick });
+            m_buttonClickRevoker = button.Click(winrt::auto_revoke, {this, &BreadcrumbBarItem::OnBreadcrumbBarItemClick});
         }
     }
 
@@ -273,9 +275,7 @@ void BreadcrumbBarItem::OnChildPreviewKeyDown(const winrt::IInspectable& sender,
     }
 }
 
-void BreadcrumbBarItem::OnIsEnabledChanged(
-    const winrt::IInspectable&,
-    const winrt::DependencyPropertyChangedEventArgs&)
+void BreadcrumbBarItem::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&)
 {
     MUX_ASSERT(m_isEllipsisDropDownItem);
 
@@ -531,7 +531,7 @@ void BreadcrumbBarItem::InstantiateFlyout()
     {
         if (const auto& ellipsisFlyout = m_ellipsisFlyout.get())
         {
-            // Create ItemsRepeater and set the DataTemplate 
+            // Create ItemsRepeater and set the DataTemplate
             const auto& ellipsisItemsRepeater = winrt::ItemsRepeater();
             ellipsisItemsRepeater.Name(s_ellipsisItemsRepeaterPartName);
             winrt::AutomationProperties::SetName(ellipsisItemsRepeater, s_ellipsisItemsRepeaterAutomationName);
@@ -545,8 +545,10 @@ void BreadcrumbBarItem::InstantiateFlyout()
                 m_ellipsisElementFactory->UserElementFactory(dataTemplate);
             }
 
-            m_ellipsisRepeaterElementPreparedRevoker = ellipsisItemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &BreadcrumbBarItem::OnFlyoutElementPreparedEvent });
-            m_ellipsisRepeaterElementIndexChangedRevoker = ellipsisItemsRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &BreadcrumbBarItem::OnFlyoutElementIndexChangedEvent });
+            m_ellipsisRepeaterElementPreparedRevoker =
+                ellipsisItemsRepeater.ElementPrepared(winrt::auto_revoke, {this, &BreadcrumbBarItem::OnFlyoutElementPreparedEvent});
+            m_ellipsisRepeaterElementIndexChangedRevoker =
+                ellipsisItemsRepeater.ElementIndexChanged(winrt::auto_revoke, {this, &BreadcrumbBarItem::OnFlyoutElementIndexChangedEvent});
 
             m_ellipsisItemsRepeater.set(ellipsisItemsRepeater);
 

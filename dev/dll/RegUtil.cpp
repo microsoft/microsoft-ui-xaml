@@ -4,11 +4,11 @@
 #include <pch.h>
 #include "RegUtil.h"
 
-bool RegUtil::s_hasMouseWheelScrollLinesCache{ false };
-bool RegUtil::s_hasMouseWheelScrollCharsCache{ false };
+bool RegUtil::s_hasMouseWheelScrollLinesCache{false};
+bool RegUtil::s_hasMouseWheelScrollCharsCache{false};
 
-int32_t RegUtil::s_mouseWheelScrollLines{ RegUtil::s_defaultMouseWheelScrollLines };
-int32_t RegUtil::s_mouseWheelScrollChars{ RegUtil::s_defaultMouseWheelScrollChars };
+int32_t RegUtil::s_mouseWheelScrollLines{RegUtil::s_defaultMouseWheelScrollLines};
+int32_t RegUtil::s_mouseWheelScrollChars{RegUtil::s_defaultMouseWheelScrollChars};
 
 // Used on RS4 and RS5 to indicate whether ScrollBars must auto-hide or not.
 bool RegUtil::UseDynamicScrollbars() noexcept

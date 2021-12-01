@@ -7,8 +7,7 @@
 #include "VirtualizingLayoutContext.h"
 #include "NonvirtualizingLayoutContext.h"
 
-class VirtualLayoutContextAdapter :
-    public winrt::implements<VirtualLayoutContextAdapter, NonVirtualizingLayoutContext>
+class VirtualLayoutContextAdapter : public winrt::implements<VirtualLayoutContextAdapter, NonVirtualizingLayoutContext>
 {
 public:
     VirtualLayoutContextAdapter(winrt::VirtualizingLayoutContext const& virtualizingContext);
@@ -23,14 +22,12 @@ public:
 #pragma endregion
 
 private:
-    winrt::weak_ref<winrt::VirtualizingLayoutContext> m_virtualizingContext{ nullptr };
-    winrt::IVectorView<winrt::UIElement> m_children{ nullptr };
+    winrt::weak_ref<winrt::VirtualizingLayoutContext> m_virtualizingContext{nullptr};
+    winrt::IVectorView<winrt::UIElement> m_children{nullptr};
 
     template <typename T>
-    class ChildrenCollection :
-        public ReferenceTracker<ChildrenCollection<T>,
-        typename reference_tracker_implements_t<typename winrt::IVectorView<T>>::type,
-        typename winrt::IIterable<T>>
+    class ChildrenCollection
+        : public ReferenceTracker<ChildrenCollection<T>, typename reference_tracker_implements_t<typename winrt::IVectorView<T>>::type, typename winrt::IIterable<T>>
     {
     public:
         ChildrenCollection(winrt::VirtualizingLayoutContext const& context)
@@ -38,7 +35,7 @@ private:
             m_context = context;
         }
 
-#pragma region IVectorView<T>
+#pragma region IVectorView < T>
         uint32_t Size()
         {
             return m_context.ItemCount();
@@ -49,7 +46,7 @@ private:
             return m_context.GetOrCreateElementAt(index, winrt::ElementRealizationOptions::None);
         }
 
-        bool IndexOf(T const& value, uint32_t &index) noexcept
+        bool IndexOf(T const& value, uint32_t& index) noexcept
         {
             winrt::throw_hresult(E_NOTIMPL);
         }
@@ -61,7 +58,7 @@ private:
 
 #pragma endregion
 
-#pragma region winrt::IIterable<T>
+#pragma region winrt::IIterable < T>
         winrt::IIterator<T> First()
         {
             return winrt::make<ChildrenCollection<T>::Iterator>(*this);
@@ -69,8 +66,7 @@ private:
 #pragma endregion
 
     private:
-        class Iterator :
-            public ReferenceTracker<Iterator, reference_tracker_implements_t<winrt::IIterator<T>>::type>
+        class Iterator : public ReferenceTracker<Iterator, reference_tracker_implements_t<winrt::IIterator<T>>::type>
         {
         public:
             Iterator(const winrt::IVectorView<T>& childCollection)
@@ -80,7 +76,6 @@ private:
 
             ~Iterator()
             {
-
             }
 
             T Current()
@@ -120,7 +115,8 @@ private:
                 {
                     do
                     {
-                        if (howMany >= values.size()) break;
+                        if (howMany >= values.size())
+                            break;
                         values[howMany] = Current();
                         howMany++;
                     } while (MoveNext());
@@ -130,7 +126,7 @@ private:
             }
 
         private:
-            winrt::IVectorView<T> m_childCollection{ nullptr };
+            winrt::IVectorView<T> m_childCollection{nullptr};
             unsigned int m_currentIndex = 0;
         };
 

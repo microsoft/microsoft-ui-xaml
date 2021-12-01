@@ -5,12 +5,11 @@
 
 #include "ItemsRepeaterElementClearingEventArgs.g.h"
 
-class ItemsRepeaterElementClearingEventArgs :
-    public ReferenceTracker<ItemsRepeaterElementClearingEventArgs, winrt::implementation::ItemsRepeaterElementClearingEventArgsT, winrt::composable, winrt::composing>
+class ItemsRepeaterElementClearingEventArgs
+    : public ReferenceTracker<ItemsRepeaterElementClearingEventArgs, winrt::implementation::ItemsRepeaterElementClearingEventArgsT, winrt::composable, winrt::composing>
 {
 public:
-    ItemsRepeaterElementClearingEventArgs(
-        const winrt::UIElement& element);
+    ItemsRepeaterElementClearingEventArgs(const winrt::UIElement& element);
 
 #pragma region IElementClearingEventArgs
     winrt::UIElement Element();
@@ -19,5 +18,5 @@ public:
     void Update(const winrt::UIElement& element);
 
 private:
-    tracker_ref<winrt::UIElement> m_element{ this };
+    tracker_ref<winrt::UIElement> m_element{this};
 };

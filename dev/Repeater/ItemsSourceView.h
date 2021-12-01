@@ -5,11 +5,9 @@
 
 #include "ItemsSourceView.g.h"
 
-class ItemsSourceView :
-    public ReferenceTracker<ItemsSourceView, winrt::implementation::ItemsSourceViewT, winrt::composing>
+class ItemsSourceView : public ReferenceTracker<ItemsSourceView, winrt::implementation::ItemsSourceViewT, winrt::composing>
 {
 public:
-
 #pragma region ItemsSourceView
     int32_t Count();
     winrt::IInspectable GetAt(int index);
@@ -22,7 +20,6 @@ public:
     winrt::event_token CollectionChanged(winrt::NotifyCollectionChangedEventHandler const& value);
     void CollectionChanged(winrt::event_token const& token);
 #pragma endregion
-
 
 #pragma region Consume API for internal use only.
     void OnItemsSourceChanged(winrt::NotifyCollectionChangedEventArgs const& args);
@@ -37,6 +34,6 @@ public:
 #pragma endregion
 
 private:
-    event_source<winrt::NotifyCollectionChangedEventHandler> m_collectionChangedEventSource{ this };
-    int m_cachedSize{ -1 };
+    event_source<winrt::NotifyCollectionChangedEventHandler> m_collectionChangedEventSource{this};
+    int m_cachedSize{-1};
 };

@@ -3,8 +3,7 @@
 
 #pragma once
 
-class SplitButtonTestHelper :
-    public winrt::implements<SplitButtonTestHelper, winrt::IInspectable>
+class SplitButtonTestHelper : public winrt::implements<SplitButtonTestHelper, winrt::IInspectable>
 {
 public:
     static void SimulateTouch(bool value);
@@ -13,7 +12,7 @@ public:
 private:
     static com_ptr<SplitButtonTestHelper> EnsureInstance();
 
-    bool m_simulateTouch{ false };
+    bool m_simulateTouch{false};
 
     static thread_local com_ptr<SplitButtonTestHelper> s_instance;
 };

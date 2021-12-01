@@ -15,10 +15,7 @@
 constexpr double CacheBufferPerSideInflationPixelDelta = 40.0;
 
 ViewportManagerWithPlatformFeatures::ViewportManagerWithPlatformFeatures(ItemsRepeater* owner) :
-    m_owner(owner),
-    m_scroller(owner),
-    m_makeAnchorElement(owner),
-    m_cacheBuildAction(owner)
+    m_owner(owner), m_scroller(owner), m_makeAnchorElement(owner), m_cacheBuildAction(owner)
 {
     // ItemsRepeater is not fully constructed yet. Don't interact with it.
 }
@@ -31,10 +28,7 @@ winrt::UIElement ViewportManagerWithPlatformFeatures::SuggestedAnchor() const
 
     if (!suggestedAnchor)
     {
-        const auto anchorElement =
-            m_scroller ?
-            m_scroller.get().CurrentAnchor() :
-            nullptr;
+        const auto anchorElement = m_scroller ? m_scroller.get().CurrentAnchor() : nullptr;
 
         if (anchorElement)
         {
@@ -106,8 +100,8 @@ winrt::Rect ViewportManagerWithPlatformFeatures::GetLayoutVisibleWindow() const
 
         // Also, we only want to mess with the realization rect iff the anchor is not inside it.
         // If we fiddle with an anchor that is already inside the realization rect,
-        // shifting the realization rect results in repeater, layout and scroller thinking that it needs to act upon StartBringIntoView.
-        // We do NOT want that!
+        // shifting the realization rect results in repeater, layout and scroller thinking that it needs to act upon
+        // StartBringIntoView. We do NOT want that!
 
         visibleWindow.X = 0.0f;
         visibleWindow.Y = 0.0f;
@@ -143,21 +137,25 @@ void ViewportManagerWithPlatformFeatures::SetLayoutExtent(winrt::Rect extent)
     // We tolerate viewport imprecisions up to 1 pixel to avoid invaliding layout too much.
     if (std::abs(m_expectedViewportShift.X) > 1.f || std::abs(m_expectedViewportShift.Y) > 1.f)
     {
-        REPEATER_TRACE_INFO(L"%ls: \tExpecting viewport shift of (%.0f,%.0f) \n",
-            GetLayoutId().data(), m_expectedViewportShift.X, m_expectedViewportShift.Y);
+        REPEATER_TRACE_INFO(
+            L"%ls: \tExpecting viewport shift of (%.0f,%.0f) \n",
+            GetLayoutId().data(),
+            m_expectedViewportShift.X,
+            m_expectedViewportShift.Y);
 
         // There are cases where we might be expecting a shift but not get it. We will
         // be waiting for the effective viewport event but if the scroll viewer is not able
         // to perform the shift (perhaps because it cannot scroll in negative offset),
-        // then we will end up not realizing elements in the visible 
-        // window. To avoid this, we register to layout updated for this layout pass. If we 
+        // then we will end up not realizing elements in the visible
+        // window. To avoid this, we register to layout updated for this layout pass. If we
         // get an effective viewport, we know we have a new viewport and we unregister from
-        // layout updated. If we get the layout updated handler, then we know that the 
+        // layout updated. If we get the layout updated handler, then we know that the
         // scroller was unable to perform the shift and we invalidate measure and unregister
         // from the layout updated event.
         if (!m_layoutUpdatedRevoker)
         {
-            m_layoutUpdatedRevoker = m_owner->LayoutUpdated(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnLayoutUpdated });
+            m_layoutUpdatedRevoker =
+                m_owner->LayoutUpdated(winrt::auto_revoke, {this, &ViewportManagerWithPlatformFeatures::OnLayoutUpdated});
         }
     }
 
@@ -167,8 +165,8 @@ void ViewportManagerWithPlatformFeatures::SetLayoutExtent(winrt::Rect extent)
     // We just finished a measure pass and have a new extent.
     // Let's make sure the scrollers will run its arrange so that they track the anchor.
     if (m_scroller)
-    { 
-        m_scroller.as<winrt::UIElement>().InvalidateArrange(); 
+    {
+        m_scroller.as<winrt::UIElement>().InvalidateArrange();
     }
 }
 
@@ -186,7 +184,8 @@ void ViewportManagerWithPlatformFeatures::OnLayoutChanged(bool isVirtualizing)
     }
     else if (!m_effectiveViewportChangedRevoker)
     {
-        m_effectiveViewportChangedRevoker = m_owner->EffectiveViewportChanged(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged });
+        m_effectiveViewportChangedRevoker =
+            m_owner->EffectiveViewportChanged(winrt::auto_revoke, {this, &ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged});
     }
 
     m_unshiftableShift = {};
@@ -207,7 +206,7 @@ void ViewportManagerWithPlatformFeatures::OnElementCleared(const winrt::UIElemen
 
 void ViewportManagerWithPlatformFeatures::OnOwnerMeasuring()
 {
-    // This is because of a bug that causes effective viewport to not 
+    // This is because of a bug that causes effective viewport to not
     // fire if you register during arrange.
     // Bug 17411076: EffectiveViewport: registering for effective viewport in arrange should invalidate viewport
     EnsureScroller();
@@ -219,7 +218,7 @@ void ViewportManagerWithPlatformFeatures::OnOwnerArranged()
 
     if (!m_managingViewportDisabled)
     {
-        // This is because of a bug that causes effective viewport to not 
+        // This is because of a bug that causes effective viewport to not
         // fire if you register during arrange.
         // Bug 17411076: EffectiveViewport: registering for effective viewport in arrange should invalidate viewport
         // EnsureScroller();
@@ -229,9 +228,8 @@ void ViewportManagerWithPlatformFeatures::OnOwnerArranged()
             const double maximumHorizontalCacheBufferPerSide = m_maximumHorizontalCacheLength * m_visibleWindow.Width / 2.0;
             const double maximumVerticalCacheBufferPerSide = m_maximumVerticalCacheLength * m_visibleWindow.Height / 2.0;
 
-            const bool continueBuildingCache =
-                m_horizontalCacheBufferPerSide < maximumHorizontalCacheBufferPerSide ||
-                m_verticalCacheBufferPerSide < maximumVerticalCacheBufferPerSide;
+            const bool continueBuildingCache = m_horizontalCacheBufferPerSide < maximumHorizontalCacheBufferPerSide ||
+                                               m_verticalCacheBufferPerSide < maximumVerticalCacheBufferPerSide;
 
             if (continueBuildingCache)
             {
@@ -263,7 +261,8 @@ void ViewportManagerWithPlatformFeatures::OnLayoutUpdated(winrt::IInspectable co
     // that can scroll in the direction where the shift is expected.
     if (m_pendingViewportShift.X != 0 || m_pendingViewportShift.Y != 0)
     {
-        REPEATER_TRACE_INFO(L"%ls: \tLayout Updated with pending shift %.0f %.0f- invalidating measure \n",
+        REPEATER_TRACE_INFO(
+            L"%ls: \tLayout Updated with pending shift %.0f %.0f- invalidating measure \n",
             GetLayoutId().data(),
             m_pendingViewportShift.X,
             m_pendingViewportShift.Y);
@@ -320,8 +319,9 @@ void ViewportManagerWithPlatformFeatures::OnBringIntoViewRequested(const winrt::
         m_isBringIntoViewInProgress = true;
         if (!m_renderingToken)
         {
-            winrt::Windows::UI::Xaml::Media::CompositionTarget compositionTarget{ nullptr };
-            m_renderingToken = compositionTarget.Rendering(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnCompositionTargetRendering });
+            winrt::Windows::UI::Xaml::Media::CompositionTarget compositionTarget{nullptr};
+            m_renderingToken =
+                compositionTarget.Rendering(winrt::auto_revoke, {this, &ViewportManagerWithPlatformFeatures::OnCompositionTargetRendering});
         }
     }
 }
@@ -338,7 +338,9 @@ winrt::UIElement ViewportManagerWithPlatformFeatures::GetImmediateChildOfRepeate
 
     if (!parent)
     {
-        throw winrt::hresult_error(E_FAIL, L"OnBringIntoViewRequested called with args.target element not under the ItemsRepeater that recieved the call");
+        throw winrt::hresult_error(
+            E_FAIL,
+            L"OnBringIntoViewRequested called with args.target element not under the ItemsRepeater that recieved the call");
     }
 
     return targetChild;
@@ -397,7 +399,7 @@ void ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged(winrt::Fram
         m_layoutExtent = {};
     }
 
-    // We got a new viewport, we dont need to wait for layout updated anymore to 
+    // We got a new viewport, we dont need to wait for layout updated anymore to
     // see if our request for a pending shift was handled.
     m_layoutUpdatedRevoker.revoke();
 }
@@ -424,13 +426,14 @@ void ViewportManagerWithPlatformFeatures::EnsureScroller()
         {
             if (!m_scroller)
             {
-                // We usually update the viewport in the post arrange handler. 
+                // We usually update the viewport in the post arrange handler.
                 // But, since we don't have a scroller, let's do it now.
                 UpdateViewport(winrt::Rect{});
             }
             else
             {
-                m_effectiveViewportChangedRevoker = m_owner->EffectiveViewportChanged(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged });
+                m_effectiveViewportChangedRevoker = m_owner->EffectiveViewportChanged(
+                    winrt::auto_revoke, {this, &ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged});
             }
         }
 
@@ -442,10 +445,17 @@ void ViewportManagerWithPlatformFeatures::UpdateViewport(winrt::Rect const& view
 {
     assert(!m_managingViewportDisabled);
     const auto previousVisibleWindow = m_visibleWindow;
-    REPEATER_TRACE_INFO(L"%ls: \tEffective Viewport: (%.0f,%.0f,%.0f,%.0f)->(%.0f,%.0f,%.0f,%.0f). \n",
+    REPEATER_TRACE_INFO(
+        L"%ls: \tEffective Viewport: (%.0f,%.0f,%.0f,%.0f)->(%.0f,%.0f,%.0f,%.0f). \n",
         GetLayoutId().data(),
-        previousVisibleWindow.X, previousVisibleWindow.Y, previousVisibleWindow.Width, previousVisibleWindow.Height,
-        viewport.X, viewport.Y, viewport.Width, viewport.Height);
+        previousVisibleWindow.X,
+        previousVisibleWindow.Y,
+        previousVisibleWindow.Width,
+        previousVisibleWindow.Height,
+        viewport.X,
+        viewport.Y,
+        viewport.Width,
+        viewport.Height);
 
     const auto& currentVisibleWindow = viewport;
 
@@ -458,10 +468,17 @@ void ViewportManagerWithPlatformFeatures::UpdateViewport(winrt::Rect const& view
     }
     else
     {
-        REPEATER_TRACE_INFO(L"%ls: \tUsed Viewport: (%.0f,%.0f,%.0f,%.0f)->(%.0f,%.0f,%.0f,%.0f). \n",
+        REPEATER_TRACE_INFO(
+            L"%ls: \tUsed Viewport: (%.0f,%.0f,%.0f,%.0f)->(%.0f,%.0f,%.0f,%.0f). \n",
             GetLayoutId().data(),
-            previousVisibleWindow.X, previousVisibleWindow.Y, previousVisibleWindow.Width, previousVisibleWindow.Height,
-            currentVisibleWindow.X, currentVisibleWindow.Y, currentVisibleWindow.Width, currentVisibleWindow.Height);
+            previousVisibleWindow.X,
+            previousVisibleWindow.Y,
+            previousVisibleWindow.Width,
+            previousVisibleWindow.Height,
+            currentVisibleWindow.X,
+            currentVisibleWindow.Y,
+            currentVisibleWindow.Width,
+            currentVisibleWindow.Height);
         m_visibleWindow = currentVisibleWindow;
     }
 
@@ -491,8 +508,7 @@ void ViewportManagerWithPlatformFeatures::ValidateCacheLength(double cacheLength
 void ViewportManagerWithPlatformFeatures::RegisterCacheBuildWork()
 {
     assert(!m_managingViewportDisabled);
-    if (m_owner->Layout() &&
-        !m_cacheBuildAction)
+    if (m_owner->Layout() && !m_cacheBuildAction)
     {
         // We capture 'owner' (a strong refernce on ItemsRepeater) to make sure ItemsRepeater is still around
         // when the async action completes. By protecting ItemsRepeater, we also ensure that this instance
@@ -500,11 +516,8 @@ void ViewportManagerWithPlatformFeatures::RegisterCacheBuildWork()
         // and ViewportManager is the same (see ItemsRepeater::m_viewportManager).
         // We can't simply hold a strong reference on ViewportManager because it's not a COM object.
         auto strongOwner = m_owner->get_strong();
-        m_cacheBuildAction.set(
-            m_owner->Dispatcher().RunIdleAsync([this, strongOwner](const winrt::IdleDispatchedHandlerArgs&)
-            {
-                OnCacheBuildActionCompleted();
-            }));
+        m_cacheBuildAction.set(m_owner->Dispatcher().RunIdleAsync(
+            [this, strongOwner](const winrt::IdleDispatchedHandlerArgs&) { OnCacheBuildActionCompleted(); }));
     }
 }
 

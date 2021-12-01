@@ -21,14 +21,15 @@ public:
         SpaceEvenly
     };
 
-    FlowLayoutAlgorithm(const ITrackerHandleManager* owner) :
-        m_owner(owner),
-        m_elementManager(owner),
-        m_context(owner)
-    { }
+    FlowLayoutAlgorithm(const ITrackerHandleManager* owner) : m_owner(owner), m_elementManager(owner), m_context(owner)
+    {
+    }
 
     // Methods
-    winrt::Rect LastExtent() const { return m_lastExtent; }
+    winrt::Rect LastExtent() const
+    {
+        return m_lastExtent;
+    }
 
     void InitializeForContext(const winrt::VirtualizingLayoutContext& context, IFlowLayoutAlgorithmDelegates* callbacks);
     void UninitializeForContext(const winrt::VirtualizingLayoutContext& context);
@@ -49,16 +50,9 @@ public:
         bool isWrapping,
         FlowLayoutAlgorithm::LineAlignment lineAlignment,
         const wstring_view& layoutId);
-    void OnItemsSourceChanged(
-        const winrt::IInspectable& source,
-        winrt::NotifyCollectionChangedEventArgs const& args,
-        const winrt::IVirtualizingLayoutContext& context);
+    void OnItemsSourceChanged(const winrt::IInspectable& source, winrt::NotifyCollectionChangedEventArgs const& args, const winrt::IVirtualizingLayoutContext& context);
 
-    winrt::Size MeasureElement(
-        const winrt::UIElement& element,
-        int index,
-        const winrt::Size& availableSize,
-        const winrt::VirtualizingLayoutContext& context);
+    winrt::Size MeasureElement(const winrt::UIElement& element, int index, const winrt::Size& availableSize, const winrt::VirtualizingLayoutContext& context);
 
     winrt::UIElement GetElementIfRealized(int dataindex);
     bool TryAddElement0(winrt::UIElement const& element);
@@ -73,11 +67,7 @@ private:
 
     // Methods
 #pragma region Measure related private methods
-    int GetAnchorIndex(
-        const winrt::Size& availableSize,
-        bool isWrapping,
-        double minItemSpacing,
-        const wstring_view& layoutId);
+    int GetAnchorIndex(const winrt::Size& availableSize, bool isWrapping, double minItemSpacing, const wstring_view& layoutId);
     void Generate(
         GenerateDirection direction,
         int anchorIndex,
@@ -87,24 +77,15 @@ private:
         unsigned int maxItemsPerLine,
         const bool disableVirtualization,
         const wstring_view& layoutId);
-    void MakeAnchor(
-        const winrt::VirtualizingLayoutContext& context,
-        int index,
-        const winrt::Size& availableSize);
+    void MakeAnchor(const winrt::VirtualizingLayoutContext& context, int index, const winrt::Size& availableSize);
     bool IsReflowRequired() const;
-    bool ShouldContinueFillingUpSpace(
-        int index,
-        GenerateDirection direction);
+    bool ShouldContinueFillingUpSpace(int index, GenerateDirection direction);
     winrt::Rect EstimateExtent(const winrt::Size& availableSize, const wstring_view& layoutId);
     void RaiseLineArranged();
 #pragma endregion
 
 #pragma region Arrange related private methods
-    void ArrangeVirtualizingLayout(
-        const winrt::Size& finalSize,
-        FlowLayoutAlgorithm::LineAlignment lineAlignment,
-        bool isWrapping,
-        const wstring_view& layoutId);
+    void ArrangeVirtualizingLayout(const winrt::Size& finalSize, FlowLayoutAlgorithm::LineAlignment lineAlignment, bool isWrapping, const wstring_view& layoutId);
     void PerformLineAlignment(
         int lineStartIndex,
         int countInLine,
@@ -131,10 +112,10 @@ private:
     double m_lastItemSpacing{};
     bool m_collectionChangePending{};
     tracker_ref<winrt::VirtualizingLayoutContext> m_context;
-    IFlowLayoutAlgorithmDelegates* m_algorithmCallbacks{ nullptr };
+    IFlowLayoutAlgorithmDelegates* m_algorithmCallbacks{nullptr};
     winrt::Rect m_lastExtent{};
-    int m_firstRealizedDataIndexInsideRealizationWindow{ -1 };
-    int m_lastRealizedDataIndexInsideRealizationWindow{ -1 };
+    int m_firstRealizedDataIndexInsideRealizationWindow{-1};
+    int m_lastRealizedDataIndexInsideRealizationWindow{-1};
 
     // If the scroll orientation is the same as the folow orientation
     // we will only have one line since we will never wrap. In that case
@@ -142,5 +123,5 @@ private:
     // meaning of line alignment in this case, but I'll hold off on that
     // feature until someone asks for it - This is not a common scenario
     // anyway.
-    bool m_scrollOrientationSameAsFlow{ false };
+    bool m_scrollOrientationSameAsFlow{false};
 };

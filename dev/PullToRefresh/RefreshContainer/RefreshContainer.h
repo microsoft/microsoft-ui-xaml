@@ -6,9 +6,9 @@
 #include "RefreshContainer.g.h"
 #include "RefreshContainer.properties.h"
 
-class RefreshContainer :
-    public ReferenceTracker<RefreshContainer, winrt::implementation::RefreshContainerT, winrt::IRefreshContainerPrivate>,
-    public RefreshContainerProperties
+class RefreshContainer
+    : public ReferenceTracker<RefreshContainer, winrt::implementation::RefreshContainerT, winrt::IRefreshContainerPrivate>,
+      public RefreshContainerProperties
 {
 public:
     RefreshContainer();
@@ -29,7 +29,7 @@ private:
     // Property changed event handler.
     static void OnPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
 
-    winrt::IRefreshInfoProvider SearchTreeForIRefreshInfoProvider(); 
+    winrt::IRefreshInfoProvider SearchTreeForIRefreshInfoProvider();
     winrt::IRefreshInfoProvider SearchTreeForIRefreshInfoProviderRecursiveHelper(winrt::DependencyObject root, int depth);
 
     void OnRefreshVisualizerChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -46,14 +46,14 @@ private:
     void RaiseRefreshRequested();
     void RefreshCompleted();
 
-    tracker_ref<winrt::Panel> m_root{ this };
-    tracker_ref<winrt::Panel> m_refreshVisualizerPresenter{ this };
-    tracker_ref<winrt::RefreshVisualizer> m_refreshVisualizer{ this };
-    tracker_ref<winrt::Deferral> m_visualizerRefreshCompletedDeferral{ this };
-    winrt::RefreshPullDirection m_refreshPullDirection{ winrt::RefreshPullDirection::TopToBottom };
-    tracker_ref<winrt::IRefreshInfoProviderAdapter> m_refreshInfoProviderAdapter{ this };
-    winrt::event_token m_refreshVisualizerSizeChangedToken{ 0 };
+    tracker_ref<winrt::Panel> m_root{this};
+    tracker_ref<winrt::Panel> m_refreshVisualizerPresenter{this};
+    tracker_ref<winrt::RefreshVisualizer> m_refreshVisualizer{this};
+    tracker_ref<winrt::Deferral> m_visualizerRefreshCompletedDeferral{this};
+    winrt::RefreshPullDirection m_refreshPullDirection{winrt::RefreshPullDirection::TopToBottom};
+    tracker_ref<winrt::IRefreshInfoProviderAdapter> m_refreshInfoProviderAdapter{this};
+    winrt::event_token m_refreshVisualizerSizeChangedToken{0};
 
-    bool m_hasDefaultRefreshVisualizer{ false };
-    bool m_hasDefaultRefreshInfoProviderAdapter{ false };
+    bool m_hasDefaultRefreshVisualizer{false};
+    bool m_hasDefaultRefreshInfoProviderAdapter{false};
 };

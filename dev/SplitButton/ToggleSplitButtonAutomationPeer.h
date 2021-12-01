@@ -6,8 +6,8 @@
 #include "ToggleSplitButton.h"
 #include "ToggleSplitButtonAutomationPeer.g.h"
 
-class ToggleSplitButtonAutomationPeer :
-    public ReferenceTracker<ToggleSplitButtonAutomationPeer, winrt::implementation::ToggleSplitButtonAutomationPeerT>
+class ToggleSplitButtonAutomationPeer
+    : public ReferenceTracker<ToggleSplitButtonAutomationPeer, winrt::implementation::ToggleSplitButtonAutomationPeerT>
 {
 
 public:

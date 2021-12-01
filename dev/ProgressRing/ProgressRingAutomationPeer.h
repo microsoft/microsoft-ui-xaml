@@ -6,8 +6,7 @@
 #include "ProgressRing.h"
 #include "ProgressRingAutomationPeer.g.h"
 
-class ProgressRingAutomationPeer :
-    public ReferenceTracker<ProgressRingAutomationPeer, winrt::implementation::ProgressRingAutomationPeerT>
+class ProgressRingAutomationPeer : public ReferenceTracker<ProgressRingAutomationPeer, winrt::implementation::ProgressRingAutomationPeerT>
 {
 
 public:
@@ -20,7 +19,10 @@ public:
     winrt::hstring GetLocalizedControlTypeCore();
 
     // IRangeValueProvider
-    bool IsReadOnly() { return true; }
+    bool IsReadOnly()
+    {
+        return true;
+    }
     double Minimum();
     double Maximum();
     double Value();
@@ -31,4 +33,3 @@ public:
 private:
     com_ptr<ProgressRing> GetImpl();
 };
-

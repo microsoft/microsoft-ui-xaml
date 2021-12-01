@@ -7,15 +7,11 @@
 #include "ScrollPresenterTypeLogging.h"
 #include "ViewChange.h"
 
-ViewChange::ViewChange(
-    ScrollPresenterViewKind viewKind,
-    winrt::IInspectable const& options)
-    : m_viewKind(viewKind)
-    , m_options(options)
+ViewChange::ViewChange(ScrollPresenterViewKind viewKind, winrt::IInspectable const& options) :
+    m_viewKind(viewKind), m_options(options)
 {
-    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR_STR, METH_NAME, this,
-        options,
-        TypeLogging::ScrollPresenterViewKindToString(viewKind).c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(
+        nullptr, TRACE_MSG_METH_PTR_STR, METH_NAME, this, options, TypeLogging::ScrollPresenterViewKindToString(viewKind).c_str());
 }
 
 ViewChange::~ViewChange()

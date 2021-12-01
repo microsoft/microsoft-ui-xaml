@@ -8,22 +8,16 @@
 #include "TopNavigationViewDataProvider.h"
 #include "NavigationViewItem.h"
 
-TopNavigationViewDataProvider::TopNavigationViewDataProvider(const ITrackerHandleManager* m_owner)
-    :SplitDataSourceT()
-    , m_rawDataSource(m_owner)
-    , m_dataSource(m_owner)
+TopNavigationViewDataProvider::TopNavigationViewDataProvider(const ITrackerHandleManager* m_owner) :
+    SplitDataSourceT(), m_rawDataSource(m_owner), m_dataSource(m_owner)
 {
-    auto lambda = [this](const winrt::IInspectable& value)
-    {
-        return IndexOf(value);
-    };
+    auto lambda = [this](const winrt::IInspectable& value) { return IndexOf(value); };
 
     auto primaryVector = std::make_shared<SplitVectorT>(m_owner, NavigationViewSplitVectorID::PrimaryList, lambda);
     auto overflowVector = std::make_shared<SplitVectorT>(m_owner, NavigationViewSplitVectorID::OverflowList, lambda);
-    
-    InitializeSplitVectors({ primaryVector, overflowVector });
-}
 
+    InitializeSplitVectors({primaryVector, overflowVector});
+}
 
 winrt::IVector<winrt::IInspectable> TopNavigationViewDataProvider::GetPrimaryItems()
 {
@@ -39,7 +33,7 @@ winrt::IVector<winrt::IInspectable> TopNavigationViewDataProvider::GetOverflowIt
 void TopNavigationViewDataProvider::SetDataSource(const winrt::IInspectable& rawData)
 {
     if (ShouldChangeDataSource(rawData)) // avoid to create multiple of datasource for the same raw data
-    {        
+    {
         winrt::ItemsSourceView dataSource = nullptr;
         if (rawData)
         {
@@ -56,7 +50,7 @@ void TopNavigationViewDataProvider::SetDataSource(const winrt::IInspectable& raw
 
 bool TopNavigationViewDataProvider::ShouldChangeDataSource(winrt::IInspectable const& rawData)
 {
-    return rawData != m_rawDataSource.get();    
+    return rawData != m_rawDataSource.get();
 }
 
 void TopNavigationViewDataProvider::OnRawDataChanged(std::function<void(winrt::NotifyCollectionChangedEventArgs const& args)> const& dataChangeCallback)
@@ -118,9 +112,7 @@ std::vector<int> TopNavigationViewDataProvider::ConvertPrimaryIndexToIndex(std::
         if (vector)
         {
             // transform PrimaryList index to OrignalVector index
-            std::transform(indexesInPrimary.begin(), indexesInPrimary.end(), std::back_inserter(indexes),
-                [&vector](int index) -> int
-            {
+            std::transform(indexesInPrimary.begin(), indexesInPrimary.end(), std::back_inserter(indexes), [&vector](int index) -> int {
                 return vector->IndexToIndexInOriginalVector(index);
             });
         }
@@ -130,7 +122,8 @@ std::vector<int> TopNavigationViewDataProvider::ConvertPrimaryIndexToIndex(std::
 
 int TopNavigationViewDataProvider::ConvertOriginalIndexToIndex(int originalIndex)
 {
-    auto const vector = GetVector(IsItemInPrimaryList(originalIndex) ? NavigationViewSplitVectorID::PrimaryList : NavigationViewSplitVectorID::OverflowList);
+    auto const vector =
+        GetVector(IsItemInPrimaryList(originalIndex) ? NavigationViewSplitVectorID::PrimaryList : NavigationViewSplitVectorID::OverflowList);
     return vector->IndexFromIndexInOriginalVector(originalIndex);
 }
 
@@ -146,7 +139,7 @@ void TopNavigationViewDataProvider::MoveItemsToPrimaryList(std::vector<int> cons
 
 void TopNavigationViewDataProvider::MoveItemsToList(std::vector<int> const& indexes, NavigationViewSplitVectorID vectorID)
 {
-    for (auto &index : indexes)
+    for (auto& index : indexes)
     {
         MoveItemToVector(index, vectorID);
     };
@@ -196,7 +189,7 @@ void TopNavigationViewDataProvider::UpdateWidthForPrimaryItem(int indexInPrimary
 float TopNavigationViewDataProvider::WidthRequiredToRecoveryAllItemsToPrimary()
 {
     auto width = 0.f;
-    for (int i=0; i<Size(); i++)
+    for (int i = 0; i < Size(); i++)
     {
         if (!IsItemInPrimaryList(i))
         {
@@ -207,10 +200,10 @@ float TopNavigationViewDataProvider::WidthRequiredToRecoveryAllItemsToPrimary()
     return std::max(0.f, width);
 }
 
-bool TopNavigationViewDataProvider::HasInvalidWidth(std::vector<int> & items)
+bool TopNavigationViewDataProvider::HasInvalidWidth(std::vector<int>& items)
 {
     bool hasInvalidWidth = false;
-    for (auto &index : items)
+    for (auto& index : items)
     {
         if (!IsValidWidthForItem(index))
         {
@@ -231,10 +224,10 @@ float TopNavigationViewDataProvider::GetWidthForItem(int index)
     return width;
 }
 
-float TopNavigationViewDataProvider::CalculateWidthForItems(std::vector<int> &items)
+float TopNavigationViewDataProvider::CalculateWidthForItems(std::vector<int>& items)
 {
     float width = 0.f;
-    for (auto &index : items)
+    for (auto& index : items)
     {
         width += GetWidthForItem(index);
     }
@@ -271,30 +264,30 @@ void TopNavigationViewDataProvider::OnDataSourceChanged(const winrt::IInspectabl
 {
     switch (args.Action())
     {
-        case winrt::NotifyCollectionChangedAction::Add:
-        {   
-            OnInsertAt(args.NewStartingIndex(), args.NewItems().Size());
-            break;
-        }
+    case winrt::NotifyCollectionChangedAction::Add:
+    {
+        OnInsertAt(args.NewStartingIndex(), args.NewItems().Size());
+        break;
+    }
 
-        case winrt::NotifyCollectionChangedAction::Remove:
-        {
-            OnRemoveAt(args.OldStartingIndex(), args.OldItems().Size());
-            break;
-        }
+    case winrt::NotifyCollectionChangedAction::Remove:
+    {
+        OnRemoveAt(args.OldStartingIndex(), args.OldItems().Size());
+        break;
+    }
 
-        case winrt::NotifyCollectionChangedAction::Reset:
-        {
-            OnClear();
-            break;
-        }
+    case winrt::NotifyCollectionChangedAction::Reset:
+    {
+        OnClear();
+        break;
+    }
 
-        case winrt::NotifyCollectionChangedAction::Replace:
-        {
-            OnRemoveAt(args.OldStartingIndex(), args.OldItems().Size());
-            OnInsertAt(args.NewStartingIndex(), args.NewItems().Size());
-            break;
-        }
+    case winrt::NotifyCollectionChangedAction::Replace:
+    {
+        OnRemoveAt(args.OldStartingIndex(), args.OldItems().Size());
+        OnInsertAt(args.NewStartingIndex(), args.NewItems().Size());
+        break;
+    }
     }
     if (m_dataChangeCallback)
     {
@@ -340,7 +333,7 @@ void TopNavigationViewDataProvider::ChangeDataSource(winrt::ItemsSourceView newV
 
         if (newValue)
         {
-            m_dataSourceChanged = newValue.CollectionChanged({ this, &TopNavigationViewDataProvider::OnDataSourceChanged });
+            m_dataSourceChanged = newValue.CollectionChanged({this, &TopNavigationViewDataProvider::OnDataSourceChanged});
         }
     }
 

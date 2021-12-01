@@ -43,13 +43,12 @@ void ElementManager::OnBeginMeasure(const ScrollOrientation& orientation)
 
 int ElementManager::GetRealizedElementCount() const
 {
-    return IsVirtualizingContext() ?
-        static_cast<int>(m_realizedElements.size()) : m_context.ItemCount();
+    return IsVirtualizingContext() ? static_cast<int>(m_realizedElements.size()) : m_context.ItemCount();
 }
 
 winrt::UIElement ElementManager::GetAt(int realizedIndex)
 {
-    winrt::UIElement element{ nullptr };
+    winrt::UIElement element{nullptr};
     if (IsVirtualizingContext())
     {
         if (!m_realizedElements[realizedIndex])
@@ -57,8 +56,9 @@ winrt::UIElement ElementManager::GetAt(int realizedIndex)
             // Sentinel. Create the element now since we need it.
             const int dataIndex = GetDataIndexFromRealizedRangeIndex(realizedIndex);
             REPEATER_TRACE_INFO(L"Creating element for sentinal with data index %d. \n", dataIndex);
-            element = m_context.GetOrCreateElementAt(dataIndex, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle);
-            m_realizedElements[realizedIndex] = tracker_ref<winrt::UIElement>{ m_owner, element };
+            element = m_context.GetOrCreateElementAt(
+                dataIndex, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle);
+            m_realizedElements[realizedIndex] = tracker_ref<winrt::UIElement>{m_owner, element};
         }
         else
         {
@@ -68,7 +68,8 @@ winrt::UIElement ElementManager::GetAt(int realizedIndex)
     else
     {
         // realizedIndex and dataIndex are the same (everything is realized)
-        element = m_context.GetOrCreateElementAt(realizedIndex, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle);
+        element = m_context.GetOrCreateElementAt(
+            realizedIndex, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle);
     }
 
     return element;
@@ -83,7 +84,7 @@ void ElementManager::Add(const winrt::UIElement& element, int dataIndex)
         m_firstRealizedDataIndex = dataIndex;
     }
 
-    m_realizedElements.emplace_back(tracker_ref<winrt::UIElement>{ m_owner, element });
+    m_realizedElements.emplace_back(tracker_ref<winrt::UIElement>{m_owner, element});
     m_realizedElementLayoutBounds.emplace_back(winrt::Rect());
 }
 
@@ -95,9 +96,9 @@ void ElementManager::Insert(int realizedIndex, int dataIndex, const winrt::UIEle
         m_firstRealizedDataIndex = dataIndex;
     }
 
-    m_realizedElements.insert(m_realizedElements.begin() + realizedIndex, tracker_ref<winrt::UIElement>{ m_owner, element });
+    m_realizedElements.insert(m_realizedElements.begin() + realizedIndex, tracker_ref<winrt::UIElement>{m_owner, element});
     // Set bounds to an invalid rect since we do not know it yet.
-    m_realizedElementLayoutBounds.insert(m_realizedElementLayoutBounds.begin() + realizedIndex, winrt::Rect{ -1.f, -1.f, -1.f, -1.f });
+    m_realizedElementLayoutBounds.insert(m_realizedElementLayoutBounds.begin() + realizedIndex, winrt::Rect{-1.f, -1.f, -1.f, -1.f});
 }
 
 void ElementManager::ClearRealizedRange(int realizedIndex, int count)
@@ -105,7 +106,7 @@ void ElementManager::ClearRealizedRange(int realizedIndex, int count)
     MUX_ASSERT(IsVirtualizingContext());
     for (int i = 0; i < count; i++)
     {
-        // Clear from the edges so that ItemsRepeater can optimize on maintaining 
+        // Clear from the edges so that ItemsRepeater can optimize on maintaining
         // realized indices without walking through all the children every time.
         const int index = realizedIndex == 0 ? realizedIndex + i : (realizedIndex + count - 1) - i;
         if (auto elementRef = m_realizedElements[index])
@@ -120,10 +121,7 @@ void ElementManager::ClearRealizedRange(int realizedIndex, int count)
 
     if (realizedIndex == 0)
     {
-        m_firstRealizedDataIndex =
-            m_realizedElements.size() == 0 ?
-            -1 :
-            m_firstRealizedDataIndex + count;
+        m_firstRealizedDataIndex = m_realizedElements.size() == 0 ? -1 : m_firstRealizedDataIndex + count;
     }
 }
 
@@ -152,7 +150,6 @@ void ElementManager::ClearRealizedRange()
     ClearRealizedRange(0, GetRealizedElementCount());
 }
 
-
 winrt::Rect ElementManager::GetLayoutBoundsForDataIndex(int dataIndex) const
 {
     const int realizedIndex = GetRealizedRangeIndexFromDataIndex(dataIndex);
@@ -165,7 +162,6 @@ void ElementManager::SetLayoutBoundsForDataIndex(int dataIndex, const winrt::Rec
     m_realizedElementLayoutBounds[realizedIndex] = bounds;
 }
 
-
 winrt::Rect ElementManager::GetLayoutBoundsForRealizedIndex(int realizedIndex) const
 {
     return m_realizedElementLayoutBounds[realizedIndex];
@@ -176,16 +172,13 @@ void ElementManager::SetLayoutBoundsForRealizedIndex(int realizedIndex, const wi
     m_realizedElementLayoutBounds[realizedIndex] = bounds;
 }
 
-
 bool ElementManager::IsDataIndexRealized(int index) const
 {
     if (IsVirtualizingContext())
     {
         const int realizedCount = GetRealizedElementCount();
-        return
-            realizedCount > 0 &&
-            GetDataIndexFromRealizedRangeIndex(0) <= index &&
-            GetDataIndexFromRealizedRangeIndex(realizedCount - 1) >= index;
+        return realizedCount > 0 && GetDataIndexFromRealizedRangeIndex(0) <= index &&
+               GetDataIndexFromRealizedRangeIndex(realizedCount - 1) >= index;
     }
     else
     {
@@ -199,19 +192,21 @@ bool ElementManager::IsIndexValidInData(int currentIndex) const
     return currentIndex >= 0 && currentIndex < m_context.ItemCount();
 }
 
-
 winrt::UIElement ElementManager::GetRealizedElement(int dataIndex)
 {
     MUX_ASSERT(IsDataIndexRealized(dataIndex));
-    return IsVirtualizingContext() ?
-        GetAt(GetRealizedRangeIndexFromDataIndex(dataIndex)) : m_context.GetOrCreateElementAt(dataIndex, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle);
+    return IsVirtualizingContext()
+               ? GetAt(GetRealizedRangeIndexFromDataIndex(dataIndex))
+               : m_context.GetOrCreateElementAt(
+                     dataIndex, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle);
 }
 
 void ElementManager::EnsureElementRealized(bool forward, int dataIndex, const wstring_view& layoutId)
 {
     if (IsDataIndexRealized(dataIndex) == false)
     {
-        auto element = m_context.GetOrCreateElementAt(dataIndex, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle);
+        auto element = m_context.GetOrCreateElementAt(
+            dataIndex, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle);
 
         if (forward)
         {
@@ -237,19 +232,19 @@ bool ElementManager::IsWindowConnected(const winrt::Rect& window, const ScrollOr
         const auto firstElementBounds = GetLayoutBoundsForRealizedIndex(0);
         const auto lastElementBounds = GetLayoutBoundsForRealizedIndex(GetRealizedElementCount() - 1);
 
-        const auto effectiveOrientation = scrollOrientationSameAsFlow ?
-            (orientation == ScrollOrientation::Vertical ? ScrollOrientation::Horizontal : ScrollOrientation::Vertical) :
-            orientation;
-
+        const auto effectiveOrientation =
+            scrollOrientationSameAsFlow
+                ? (orientation == ScrollOrientation::Vertical ? ScrollOrientation::Horizontal : ScrollOrientation::Vertical)
+                : orientation;
 
         const auto windowStart = effectiveOrientation == ScrollOrientation::Vertical ? window.Y : window.X;
         const auto windowEnd = effectiveOrientation == ScrollOrientation::Vertical ? window.Y + window.Height : window.X + window.Width;
-        const auto firstElementStart = effectiveOrientation == ScrollOrientation::Vertical ? firstElementBounds.Y : firstElementBounds.X;
-        const auto lastElementEnd = effectiveOrientation == ScrollOrientation::Vertical ? lastElementBounds.Y + lastElementBounds.Height : lastElementBounds.X + lastElementBounds.Width;
+        const auto firstElementStart =
+            effectiveOrientation == ScrollOrientation::Vertical ? firstElementBounds.Y : firstElementBounds.X;
+        const auto lastElementEnd = effectiveOrientation == ScrollOrientation::Vertical ? lastElementBounds.Y + lastElementBounds.Height
+                                                                                        : lastElementBounds.X + lastElementBounds.Width;
 
-        intersects =
-            firstElementStart <= windowEnd &&
-            lastElementEnd >= windowStart;
+        intersects = firstElementStart <= windowEnd && lastElementEnd >= windowStart;
     }
 
     return intersects;
@@ -275,9 +270,7 @@ void ElementManager::DataSourceChanged(const winrt::IInspectable& /*source*/, wi
             const int oldStartIndex = args.OldStartingIndex();
             const int newStartIndex = args.NewStartingIndex();
 
-            if (oldSize == newSize &&
-                oldStartIndex == newStartIndex &&
-                IsDataIndexRealized(oldStartIndex) &&
+            if (oldSize == newSize && oldStartIndex == newStartIndex && IsDataIndexRealized(oldStartIndex) &&
                 IsDataIndexRealized(oldStartIndex + oldSize - 1))
             {
                 // Straight up replace of n items within the realization window.
@@ -291,7 +284,7 @@ void ElementManager::DataSourceChanged(const winrt::IInspectable& /*source*/, wi
                     if (auto elementRef = m_realizedElements[realizedIndex])
                     {
                         m_context.RecycleElement(elementRef.get());
-                        m_realizedElements[realizedIndex] = tracker_ref<winrt::UIElement>{ m_owner, nullptr };
+                        m_realizedElements[realizedIndex] = tracker_ref<winrt::UIElement>{m_owner, nullptr};
                     }
                 }
             }
@@ -326,24 +319,21 @@ int ElementManager::GetElementDataIndex(const winrt::UIElement& suggestedAnchor)
 {
     MUX_ASSERT(suggestedAnchor);
     auto it = std::find(m_realizedElements.cbegin(), m_realizedElements.cend(), suggestedAnchor);
-    return
-        it != m_realizedElements.cend() ?
-        GetDataIndexFromRealizedRangeIndex(static_cast<int>(std::distance(m_realizedElements.cbegin(), it))) :
-        -1;
+    return it != m_realizedElements.cend()
+               ? GetDataIndexFromRealizedRangeIndex(static_cast<int>(std::distance(m_realizedElements.cbegin(), it)))
+               : -1;
 }
 
 int ElementManager::GetDataIndexFromRealizedRangeIndex(int rangeIndex) const
 {
     MUX_ASSERT(rangeIndex >= 0 && rangeIndex < GetRealizedElementCount());
-    return IsVirtualizingContext() ?
-        rangeIndex + m_firstRealizedDataIndex : rangeIndex;
+    return IsVirtualizingContext() ? rangeIndex + m_firstRealizedDataIndex : rangeIndex;
 }
 
 int ElementManager::GetRealizedRangeIndexFromDataIndex(int dataIndex) const
 {
     MUX_ASSERT(IsDataIndexRealized(dataIndex));
-    return IsVirtualizingContext() ?
-        dataIndex - m_firstRealizedDataIndex : dataIndex;
+    return IsVirtualizingContext() ? dataIndex - m_firstRealizedDataIndex : dataIndex;
 }
 
 void ElementManager::DiscardElementsOutsideWindow(const winrt::Rect& window, const ScrollOrientation& orientation)
@@ -377,18 +367,12 @@ void ElementManager::DiscardElementsOutsideWindow(const winrt::Rect& window, con
     int frontCutoffIndex = -1;
     int backCutoffIndex = realizedRangeSize;
 
-    for (int i = 0;
-        i < realizedRangeSize &&
-        !Intersects(window, m_realizedElementLayoutBounds[i], orientation);
-        ++i)
+    for (int i = 0; i < realizedRangeSize && !Intersects(window, m_realizedElementLayoutBounds[i], orientation); ++i)
     {
         ++frontCutoffIndex;
     }
 
-    for (int i = realizedRangeSize - 1;
-        i >= 0 &&
-        !Intersects(window, m_realizedElementLayoutBounds[i], orientation);
-        --i)
+    for (int i = realizedRangeSize - 1; i >= 0 && !Intersects(window, m_realizedElementLayoutBounds[i], orientation); --i)
     {
         --backCutoffIndex;
     }
@@ -422,14 +406,13 @@ void ElementManager::OnItemsAdded(int index, int count)
     // to insert items.
     const int lastRealizedDataIndex = m_firstRealizedDataIndex + GetRealizedElementCount() - 1;
     const int newStartingIndex = index;
-    if (newStartingIndex >= m_firstRealizedDataIndex &&
-        newStartingIndex <= lastRealizedDataIndex)
+    if (newStartingIndex >= m_firstRealizedDataIndex && newStartingIndex <= lastRealizedDataIndex)
     {
         // Inserted within the realized range
         const int insertRangeStartIndex = newStartingIndex - m_firstRealizedDataIndex;
         for (int i = 0; i < count; i++)
         {
-            // Insert null (sentinel) here instead of an element, that way we dont 
+            // Insert null (sentinel) here instead of an element, that way we dont
             // end up creating a lot of elements only to be thrown out in the next layout.
             const int insertRangeIndex = insertRangeStartIndex + i;
             const int dataIndex = newStartingIndex + i;
@@ -457,20 +440,19 @@ void ElementManager::OnItemsRemoved(int index, int count)
         ClearRealizedRange(GetRealizedRangeIndexFromDataIndex(startIndex), endIndex - startIndex + 1);
     }
 
-    if (removeAffectsFirstRealizedDataIndex &&
-        m_firstRealizedDataIndex != -1)
+    if (removeAffectsFirstRealizedDataIndex && m_firstRealizedDataIndex != -1)
     {
         m_firstRealizedDataIndex -= count;
     }
 }
-
 
 bool ElementManager::IsVirtualizingContext() const
 {
     if (m_context)
     {
         const auto rect = m_context.RealizationRect();
-        const bool hasInfiniteSize = (rect.Height == std::numeric_limits<float>::infinity() || rect.Width == std::numeric_limits<float>::infinity());
+        const bool hasInfiniteSize =
+            (rect.Height == std::numeric_limits<float>::infinity() || rect.Width == std::numeric_limits<float>::infinity());
         return !hasInfiniteSize;
     }
     return false;

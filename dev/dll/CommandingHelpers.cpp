@@ -12,14 +12,11 @@
 #include "IconSource.h"
 
 winrt::IInspectable CommandingHelpers::IconSourceToIconSourceElementConverter::Convert(
-    winrt::IInspectable const& value,
-    winrt::TypeName const& targetType,
-    winrt::IInspectable const& parameter,
-    winrt::hstring const& language)
+    winrt::IInspectable const& value, winrt::TypeName const& targetType, winrt::IInspectable const& parameter, winrt::hstring const& language)
 {
     if (value)
     {
-        winrt::IconSource iconSource{ value.as<winrt::IconSource>() };
+        winrt::IconSource iconSource{value.as<winrt::IconSource>()};
         winrt::Windows::UI::Xaml::Controls::IconSource wuxIconSource = iconSource.try_as<winrt::Windows::UI::Xaml::Controls::IconSource>();
 
         if (SharedHelpers::IsIconSourceElementAvailable() && wuxIconSource)
@@ -38,19 +35,13 @@ winrt::IInspectable CommandingHelpers::IconSourceToIconSourceElementConverter::C
 }
 
 winrt::IInspectable CommandingHelpers::IconSourceToIconSourceElementConverter::ConvertBack(
-    winrt::IInspectable const& value,
-    winrt::TypeName const& targetType,
-    winrt::IInspectable const& parameter,
-    winrt::hstring const& language) noexcept
+    winrt::IInspectable const& value, winrt::TypeName const& targetType, winrt::IInspectable const& parameter, winrt::hstring const& language) noexcept
 {
     winrt::throw_hresult(E_NOTIMPL);
 }
 
 winrt::IInspectable CommandingHelpers::WUXIconSourceToMUXIconSourceConverter::Convert(
-    winrt::IInspectable const& value,
-    winrt::TypeName const& targetType,
-    winrt::IInspectable const& parameter,
-    winrt::hstring const& language)
+    winrt::IInspectable const& value, winrt::TypeName const& targetType, winrt::IInspectable const& parameter, winrt::hstring const& language)
 {
     if (auto bitmapIconSource = value.try_as<winrt::Windows::UI::Xaml::Controls::BitmapIconSource>())
     {
@@ -101,18 +92,13 @@ winrt::IInspectable CommandingHelpers::WUXIconSourceToMUXIconSourceConverter::Co
 }
 
 winrt::IInspectable CommandingHelpers::WUXIconSourceToMUXIconSourceConverter::ConvertBack(
-    winrt::IInspectable const& value,
-    winrt::TypeName const& targetType,
-    winrt::IInspectable const& parameter,
-    winrt::hstring const& language) noexcept
+    winrt::IInspectable const& value, winrt::TypeName const& targetType, winrt::IInspectable const& parameter, winrt::hstring const& language) noexcept
 {
     winrt::throw_hresult(E_NOTIMPL);
 }
 
 void CommandingHelpers::BindToIconSourcePropertyIfUnset(
-    winrt::XamlUICommand const& uiCommand,
-    winrt::DependencyObject const& target,
-    winrt::DependencyProperty const& iconSourceProperty)
+    winrt::XamlUICommand const& uiCommand, winrt::DependencyObject const& target, winrt::DependencyProperty const& iconSourceProperty)
 {
     winrt::IconSource localIconSource = target.ReadLocalValue(iconSourceProperty).try_as<winrt::IconSource>();
 
@@ -123,9 +109,7 @@ void CommandingHelpers::BindToIconSourcePropertyIfUnset(
 }
 
 void CommandingHelpers::BindToIconPropertyIfUnset(
-    winrt::XamlUICommand const& uiCommand,
-    winrt::DependencyObject const& target,
-    winrt::DependencyProperty const& iconProperty)
+    winrt::XamlUICommand const& uiCommand, winrt::DependencyObject const& target, winrt::DependencyProperty const& iconProperty)
 {
     if (!target.ReadLocalValue(iconProperty).try_as<winrt::IconElement>())
     {
@@ -136,9 +120,7 @@ void CommandingHelpers::BindToIconPropertyIfUnset(
 #endif
 
 void CommandingHelpers::BindToLabelPropertyIfUnset(
-    winrt::XamlUICommand const& uiCommand,
-    winrt::DependencyObject const& target,
-    winrt::DependencyProperty const& labelProperty)
+    winrt::XamlUICommand const& uiCommand, winrt::DependencyObject const& target, winrt::DependencyProperty const& labelProperty)
 {
     auto labelReference = target.ReadLocalValue(labelProperty).try_as<winrt::IReference<winrt::hstring>>();
 
@@ -148,11 +130,7 @@ void CommandingHelpers::BindToLabelPropertyIfUnset(
     }
 }
 
-
-
-void CommandingHelpers::BindToKeyboardAcceleratorsIfUnset(
-    winrt::XamlUICommand const& uiCommand,
-    winrt::UIElement const& target)
+void CommandingHelpers::BindToKeyboardAcceleratorsIfUnset(winrt::XamlUICommand const& uiCommand, winrt::UIElement const& target)
 {
     if (target.KeyboardAccelerators().Size() == 0)
     {
@@ -164,18 +142,19 @@ void CommandingHelpers::BindToKeyboardAcceleratorsIfUnset(
         {
             winrt::KeyboardAccelerator keyboardAcceleratorCopy;
 
-            SharedHelpers::SetBinding(keyboardAccelerator, L"IsEnabled", keyboardAcceleratorCopy, winrt::KeyboardAccelerator::IsEnabledProperty());
+            SharedHelpers::SetBinding(
+                keyboardAccelerator, L"IsEnabled", keyboardAcceleratorCopy, winrt::KeyboardAccelerator::IsEnabledProperty());
             SharedHelpers::SetBinding(keyboardAccelerator, L"Key", keyboardAcceleratorCopy, winrt::KeyboardAccelerator::KeyProperty());
-            SharedHelpers::SetBinding(keyboardAccelerator, L"Modifiers", keyboardAcceleratorCopy, winrt::KeyboardAccelerator::ModifiersProperty());
-            SharedHelpers::SetBinding(keyboardAccelerator, L"ScopeOwner", keyboardAcceleratorCopy, winrt::KeyboardAccelerator::ScopeOwnerProperty());
+            SharedHelpers::SetBinding(
+                keyboardAccelerator, L"Modifiers", keyboardAcceleratorCopy, winrt::KeyboardAccelerator::ModifiersProperty());
+            SharedHelpers::SetBinding(
+                keyboardAccelerator, L"ScopeOwner", keyboardAcceleratorCopy, winrt::KeyboardAccelerator::ScopeOwnerProperty());
             target.KeyboardAccelerators().Append(keyboardAcceleratorCopy);
         }
     }
 }
 
-void CommandingHelpers::BindToAccessKeyIfUnset(
-    winrt::XamlUICommand const& uiCommand,
-    winrt::UIElement const& target)
+void CommandingHelpers::BindToAccessKeyIfUnset(winrt::XamlUICommand const& uiCommand, winrt::UIElement const& target)
 {
     if (target.AccessKey().empty())
     {
@@ -183,9 +162,7 @@ void CommandingHelpers::BindToAccessKeyIfUnset(
     }
 }
 
-void CommandingHelpers::BindToDescriptionPropertiesIfUnset(
-    winrt::XamlUICommand const& uiCommand,
-    winrt::DependencyObject const& target)
+void CommandingHelpers::BindToDescriptionPropertiesIfUnset(winrt::XamlUICommand const& uiCommand, winrt::DependencyObject const& target)
 {
     if (winrt::AutomationProperties::GetHelpText(target).empty())
     {
@@ -201,10 +178,7 @@ void CommandingHelpers::BindToDescriptionPropertiesIfUnset(
     }
 }
 
-void CommandingHelpers::ClearBindingIfSet(
-    winrt::XamlUICommand const& uiCommand,
-    winrt::FrameworkElement const& target,
-    winrt::DependencyProperty const& targetProperty)
+void CommandingHelpers::ClearBindingIfSet(winrt::XamlUICommand const& uiCommand, winrt::FrameworkElement const& target, winrt::DependencyProperty const& targetProperty)
 {
     if (auto bindingExpression = target.GetBindingExpression(targetProperty))
     {

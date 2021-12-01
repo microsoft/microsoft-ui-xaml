@@ -15,12 +15,14 @@
 // {
 //     ...
 //     CATCH_RETURN
-// } 
+// }
 //
 
 #define CATCH_RETURN \
-        return S_OK; \
-    } catch (...) { \
+    return S_OK; \
+    } \
+    catch (...) \
+    { \
         auto hr = winrt::to_hresult(); \
         __analysis_assume(FAILED(hr)); \
-        return hr; 
+        return hr;

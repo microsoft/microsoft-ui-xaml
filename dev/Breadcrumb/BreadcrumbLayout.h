@@ -8,8 +8,7 @@
 #include "Vector.h"
 #include "NonVirtualizingLayout.h"
 
-class BreadcrumbLayout :
-    public winrt::implements<BreadcrumbLayout, NonVirtualizingLayout>
+class BreadcrumbLayout : public winrt::implements<BreadcrumbLayout, NonVirtualizingLayout>
 {
 public:
     BreadcrumbLayout();
@@ -17,12 +16,8 @@ public:
 
     ~BreadcrumbLayout();
 
-    winrt::Size MeasureOverride(
-        winrt::NonVirtualizingLayoutContext const& context,
-        winrt::Size const& availableSize);
-    winrt::Size ArrangeOverride(
-        winrt::NonVirtualizingLayoutContext const& context,
-        winrt::Size const& finalSize);
+    winrt::Size MeasureOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& availableSize);
+    winrt::Size ArrangeOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& finalSize);
 
     bool EllipsisIsRendered();
     uint32_t FirstRenderedItemIndexAfterEllipsis();
@@ -41,7 +36,7 @@ private:
 
     winrt::Size m_availableSize{};
     winrt::BreadcrumbBarItem m_ellipsisButton{nullptr};
-    winrt::BreadcrumbBar m_breadcrumb{ nullptr };
+    winrt::BreadcrumbBar m_breadcrumb{nullptr};
 
     bool m_ellipsisIsRendered{};
     uint32_t m_firstRenderedItemIndexAfterEllipsis{};

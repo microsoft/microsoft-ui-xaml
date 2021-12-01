@@ -47,21 +47,20 @@ void ScrollPresenter::ConfigurationChanged(winrt::event_token const& token)
     m_configurationChanged.remove(token);
 }
 
-winrt::Rect ScrollPresenter::GetRelativeViewport(
-    winrt::UIElement const& child)
+winrt::Rect ScrollPresenter::GetRelativeViewport(winrt::UIElement const& child)
 {
     // The commented out code is expected to work but somehow the child.TransformToVisual(*this)
     // transform returns unexpected values shortly after a ScrollPresenter.Content layout offset change.
     // Bug 14999031 is tracking this issue. For now the m_contentLayoutOffsetX/Y, m_zoomedHorizontalOffset,
     // m_zoomedVerticalOffset usage below mitigates the problem.
 
-    //const winrt::GeneralTransform transform = child.TransformToVisual(*this);
+    // const winrt::GeneralTransform transform = child.TransformToVisual(*this);
     const winrt::GeneralTransform transform = child.TransformToVisual(Content());
     const winrt::Point elementOffset = transform.TransformPoint(winrt::Point{});
     const float viewportWidth = static_cast<float>(m_viewportWidth / m_zoomFactor);
     const float viewportHeight = static_cast<float>(m_viewportHeight / m_zoomFactor);
 
-    //winrt::Rect result = { -elementOffset.X / m_zoomFactor,
+    // winrt::Rect result = { -elementOffset.X / m_zoomFactor,
     //                       -elementOffset.Y / m_zoomFactor,
     //                       viewportWidth, viewportHeight };
 
@@ -69,9 +68,11 @@ winrt::Rect ScrollPresenter::GetRelativeViewport(
 
     ComputeMinMaxPositions(m_zoomFactor, &minPosition, nullptr);
 
-    const winrt::Rect result = { (minPosition.x - m_contentLayoutOffsetX + static_cast<float>(m_zoomedHorizontalOffset) - elementOffset.X) / m_zoomFactor,
+    const winrt::Rect result = {
+        (minPosition.x - m_contentLayoutOffsetX + static_cast<float>(m_zoomedHorizontalOffset) - elementOffset.X) / m_zoomFactor,
         (minPosition.y - m_contentLayoutOffsetY + static_cast<float>(m_zoomedVerticalOffset) - elementOffset.Y) / m_zoomFactor,
-        viewportWidth, viewportHeight };
+        viewportWidth,
+        viewportHeight};
 
     SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, child, TypeLogging::RectToString(result).c_str());
 
@@ -118,14 +119,17 @@ void ScrollPresenter::RegisterAnchorCandidate(winrt::UIElement const& element)
         // However checking if an element is already in the list every time a new element is registered is worse for perf.
         // So, I'm leaving an assert here to catch regression in our code but in release builds we run without the check.
         const winrt::UIElement anchorCandidate = element;
-        const auto it = std::find_if(m_anchorCandidates.cbegin(), m_anchorCandidates.cend(), [&anchorCandidate](const tracker_ref<winrt::UIElement>& a) { return a.get() == anchorCandidate; });
+        const auto it = std::find_if(
+            m_anchorCandidates.cbegin(), m_anchorCandidates.cend(), [&anchorCandidate](const tracker_ref<winrt::UIElement>& a) {
+                return a.get() == anchorCandidate;
+            });
         if (it != m_anchorCandidates.cend())
         {
             MUX_ASSERT(false);
         }
 #endif // _DEBUG
 
-        m_anchorCandidates.push_back(tracker_ref<winrt::UIElement>{ this, element });
+        m_anchorCandidates.push_back(tracker_ref<winrt::UIElement>{this, element});
         m_isAnchorElementDirty = true;
     }
 }
@@ -140,7 +144,10 @@ void ScrollPresenter::UnregisterAnchorCandidate(winrt::UIElement const& element)
     }
 
     const winrt::UIElement anchorCandidate = element;
-    const auto it = std::find_if(m_anchorCandidates.cbegin(), m_anchorCandidates.cend(), [&anchorCandidate](const tracker_ref<winrt::UIElement>& a) { return a.get() == anchorCandidate; });
+    const auto it =
+        std::find_if(m_anchorCandidates.cbegin(), m_anchorCandidates.cend(), [&anchorCandidate](const tracker_ref<winrt::UIElement>& a) {
+            return a.get() == anchorCandidate;
+        });
     if (it != m_anchorCandidates.cend())
     {
         m_anchorCandidates.erase(it);

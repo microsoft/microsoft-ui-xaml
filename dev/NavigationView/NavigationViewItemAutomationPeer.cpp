@@ -10,7 +10,6 @@
 #include "SharedHelpers.h"
 #include "NavigationViewHelper.h"
 
-
 #include "NavigationViewItemAutomationPeer.properties.cpp"
 
 NavigationViewItemAutomationPeer::NavigationViewItemAutomationPeer(winrt::NavigationViewItem const& owner) :
@@ -18,7 +17,7 @@ NavigationViewItemAutomationPeer::NavigationViewItemAutomationPeer(winrt::Naviga
 {
 }
 
-//IAutomationPeerOverrides
+// IAutomationPeerOverrides
 
 winrt::hstring NavigationViewItemAutomationPeer::GetNameCore()
 {
@@ -56,7 +55,7 @@ winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::Patt
     return __super::GetPatternCore(pattern);
 }
 
-winrt::hstring  NavigationViewItemAutomationPeer::GetClassNameCore()
+winrt::hstring NavigationViewItemAutomationPeer::GetClassNameCore()
 {
     return winrt::hstring_name_of<winrt::NavigationViewItem>();
 }
@@ -76,7 +75,6 @@ winrt::AutomationControlType NavigationViewItemAutomationPeer::GetAutomationCont
         return winrt::AutomationControlType::ListItem;
     }
 }
-
 
 int32_t NavigationViewItemAutomationPeer::GetPositionInSetCore()
 {
@@ -103,7 +101,6 @@ int32_t NavigationViewItemAutomationPeer::GetSizeOfSetCore()
         if (auto navview = GetParentNavigationView())
         {
             sizeOfSet = GetPositionOrSetCountInTopNavHelper(AutomationOutput::Size);
-
         }
     }
     else
@@ -157,15 +154,14 @@ void NavigationViewItemAutomationPeer::Invoke()
     }
 }
 
-// IExpandCollapseProvider 
+// IExpandCollapseProvider
 winrt::ExpandCollapseState NavigationViewItemAutomationPeer::ExpandCollapseState()
 {
     auto state = winrt::ExpandCollapseState::LeafNode;
     if (winrt::NavigationViewItem navigationViewItem = Owner().try_as<winrt::NavigationViewItem>())
     {
-        state = winrt::get_self<NavigationViewItem>(navigationViewItem)->IsExpanded() ?
-            winrt::ExpandCollapseState::Expanded :
-            winrt::ExpandCollapseState::Collapsed;
+        state = winrt::get_self<NavigationViewItem>(navigationViewItem)->IsExpanded() ? winrt::ExpandCollapseState::Expanded
+                                                                                      : winrt::ExpandCollapseState::Collapsed;
     }
 
     return state;
@@ -199,22 +195,19 @@ void NavigationViewItemAutomationPeer::RaiseExpandCollapseAutomationEvent(winrt:
 {
     if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
-        const winrt::ExpandCollapseState oldState = (newState == winrt::ExpandCollapseState::Expanded) ?
-            winrt::ExpandCollapseState::Collapsed :
-            winrt::ExpandCollapseState::Expanded;
+        const winrt::ExpandCollapseState oldState = (newState == winrt::ExpandCollapseState::Expanded)
+                                                        ? winrt::ExpandCollapseState::Collapsed
+                                                        : winrt::ExpandCollapseState::Expanded;
 
         // box_value(oldState) doesn't work here, use ReferenceWithABIRuntimeClassName to make Narrator can unbox it.
-        RaisePropertyChangedEvent(winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty(),
-            box_value(oldState),
-            box_value(newState));
+        RaisePropertyChangedEvent(
+            winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty(), box_value(oldState), box_value(newState));
     }
 }
 
-
-
 winrt::NavigationView NavigationViewItemAutomationPeer::GetParentNavigationView()
 {
-    winrt::NavigationView navigationView{ nullptr };
+    winrt::NavigationView navigationView{nullptr};
 
     winrt::NavigationViewItemBase navigationViewItem = Owner().try_as<winrt::NavigationViewItemBase>();
     if (navigationViewItem)
@@ -296,8 +289,7 @@ winrt::ItemsRepeater NavigationViewItemAutomationPeer::GetParentItemsRepeater()
     return nullptr;
 }
 
-
-// Get either the position or the size of the set for this particular item in the case of left nav. 
+// Get either the position or the size of the set for this particular item in the case of left nav.
 // We go through all the items and then we determine if the listviewitem from the left listview can be a navigation view item header
 // or a navigation view item. If it's the former, we just reset the count. If it's the latter, we increment the counter.
 // In case of calculating the position, if this is the NavigationViewItemAutomationPeer we're iterating through we break the loop.
@@ -335,7 +327,8 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
                             {
                                 returnValue++;
 
-                                if (winrt::FrameworkElementAutomationPeer::FromElement(navviewItem) == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
+                                if (winrt::FrameworkElementAutomationPeer::FromElement(navviewItem) ==
+                                    static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
                                 {
                                     if (automationOutput == AutomationOutput::Position)
                                     {
@@ -358,10 +351,10 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
     return returnValue;
 }
 
-// Get either the position or the size of the set for this particular item in the case of top nav (primary/overflow items). 
-// Basically, we do the same here as GetPositionOrSetCountInLeftNavHelper without dealing with the listview directly, because 
-// TopDataProvider provcides two methods: GetOverflowItems() and GetPrimaryItems(), so we can break the loop (in case of position) by 
-// comparing the value of the FrameworkElementAutomationPeer we can get from the item we're iterating through to this object.
+// Get either the position or the size of the set for this particular item in the case of top nav (primary/overflow items).
+// Basically, we do the same here as GetPositionOrSetCountInLeftNavHelper without dealing with the listview directly, because
+// TopDataProvider provcides two methods: GetOverflowItems() and GetPrimaryItems(), so we can break the loop (in case of position)
+// by comparing the value of the FrameworkElementAutomationPeer we can get from the item we're iterating through to this object.
 int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(AutomationOutput automationOutput)
 {
     int32_t returnValue = 0;
@@ -394,7 +387,8 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(Au
                         {
                             returnValue++;
 
-                            if (winrt::FrameworkElementAutomationPeer::FromElement(navviewitem) == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
+                            if (winrt::FrameworkElementAutomationPeer::FromElement(navviewitem) ==
+                                static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
                             {
                                 if (automationOutput == AutomationOutput::Position)
                                 {

@@ -19,7 +19,7 @@ ColorPickerSlider::ColorPickerSlider()
     auto propertyValue = box_value(L"Windows.UI.Xaml.Controls.Slider");
     controlProtected.DefaultStyleKey(propertyValue);
 
-    ValueChanged({ this, &ColorPickerSlider::OnValueChangedEvent });
+    ValueChanged({this, &ColorPickerSlider::OnValueChangedEvent});
 }
 
 winrt::AutomationPeer ColorPickerSlider::OnCreateAutomationPeer()
@@ -43,9 +43,7 @@ void ColorPickerSlider::OnApplyTemplate()
 
 void ColorPickerSlider::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 {
-    if (args.Key() != winrt::VirtualKey::Left &&
-        args.Key() != winrt::VirtualKey::Right &&
-        args.Key() != winrt::VirtualKey::Up &&
+    if (args.Key() != winrt::VirtualKey::Left && args.Key() != winrt::VirtualKey::Right && args.Key() != winrt::VirtualKey::Up &&
         args.Key() != winrt::VirtualKey::Down)
     {
         __super::OnKeyDown(args);
@@ -59,7 +57,8 @@ void ColorPickerSlider::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
         return;
     }
 
-    bool isControlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    bool isControlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
+                          winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
     double minBound = 0;
     double maxBound = 0;
@@ -100,11 +99,10 @@ void ColorPickerSlider::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
     const bool shouldInvertHorizontalDirection = FlowDirection() == winrt::FlowDirection::RightToLeft && !IsDirectionReversed();
 
     const IncrementDirection direction =
-        ((args.Key() == winrt::VirtualKey::Left && !shouldInvertHorizontalDirection)    ||
-            (args.Key() == winrt::VirtualKey::Right && shouldInvertHorizontalDirection) ||
-             args.Key() == winrt::VirtualKey::Down) ?
-        IncrementDirection::Lower :
-        IncrementDirection::Higher;
+        ((args.Key() == winrt::VirtualKey::Left && !shouldInvertHorizontalDirection) ||
+         (args.Key() == winrt::VirtualKey::Right && shouldInvertHorizontalDirection) || args.Key() == winrt::VirtualKey::Down)
+            ? IncrementDirection::Lower
+            : IncrementDirection::Higher;
 
     const IncrementAmount amount = isControlDown ? IncrementAmount::Large : IncrementAmount::Small;
 
@@ -173,7 +171,7 @@ void ColorPickerSlider::OnValueChangedEvent(winrt::IInspectable const& /*sender*
     }
 
     winrt::DependencyObject currentObject = *this;
-    winrt::ColorPicker owningColorPicker{ nullptr };
+    winrt::ColorPicker owningColorPicker{nullptr};
 
     while (currentObject && (owningColorPicker = currentObject.try_as<winrt::ColorPicker>()) == nullptr)
     {
@@ -187,14 +185,16 @@ void ColorPickerSlider::OnValueChangedEvent(winrt::IInspectable const& /*sender*
         hsv.v = args.NewValue() / 100.0;
         const winrt::Color newColor = ColorFromRgba(HsvToRgb(hsv));
 
-        winrt::ColorPickerSliderAutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).as<winrt::ColorPickerSliderAutomationPeer>();
-        winrt::get_self<ColorPickerSliderAutomationPeer>(peer)->RaisePropertyChangedEvent(oldColor, newColor, static_cast<int>(round(args.OldValue())), static_cast<int>(round(args.NewValue())));
+        winrt::ColorPickerSliderAutomationPeer peer =
+            winrt::FrameworkElementAutomationPeer::FromElement(*this).as<winrt::ColorPickerSliderAutomationPeer>();
+        winrt::get_self<ColorPickerSliderAutomationPeer>(peer)->RaisePropertyChangedEvent(
+            oldColor, newColor, static_cast<int>(round(args.OldValue())), static_cast<int>(round(args.NewValue())));
     }
 }
 
 winrt::ColorPicker ColorPickerSlider::GetParentColorPicker()
 {
-    winrt::ColorPicker parentColorPicker{ nullptr };
+    winrt::ColorPicker parentColorPicker{nullptr};
     winrt::DependencyObject currentObject = *this;
 
     while (currentObject && !(parentColorPicker = currentObject.try_as<winrt::ColorPicker>()))
@@ -211,9 +211,7 @@ winrt::hstring ColorPickerSlider::GetToolTipString()
 
     if (ColorChannel() == winrt::ColorPickerHsvChannel::Alpha)
     {
-        return StringUtil::FormatString(
-            ResourceAccessor::GetLocalizedStringResource(SR_ToolTipStringAlphaSlider),
-            sliderValue);
+        return StringUtil::FormatString(ResourceAccessor::GetLocalizedStringResource(SR_ToolTipStringAlphaSlider), sliderValue);
     }
     else
     {
@@ -244,9 +242,7 @@ winrt::hstring ColorPickerSlider::GetToolTipString()
             }
 
             return StringUtil::FormatString(
-                localizedString,
-                sliderValue,
-                winrt::ColorHelper::ToDisplayName(ColorFromRgba(HsvToRgb(currentHsv))).data());
+                localizedString, sliderValue, winrt::ColorHelper::ToDisplayName(ColorFromRgba(HsvToRgb(currentHsv))).data());
         }
         else
         {
@@ -266,9 +262,7 @@ winrt::hstring ColorPickerSlider::GetToolTipString()
                 throw winrt::hresult_error(E_FAIL);
             }
 
-            return StringUtil::FormatString(
-                localizedString,
-                sliderValue);
+            return StringUtil::FormatString(localizedString, sliderValue);
         }
     }
 }

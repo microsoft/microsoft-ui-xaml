@@ -6,8 +6,7 @@
 #include "ScrollPresenter.h"
 #include "ScrollingZoomCompletedEventArgs.g.h"
 
-class ScrollingZoomCompletedEventArgs :
-    public winrt::implementation::ScrollingZoomCompletedEventArgsT<ScrollingZoomCompletedEventArgs>
+class ScrollingZoomCompletedEventArgs : public winrt::implementation::ScrollingZoomCompletedEventArgsT<ScrollingZoomCompletedEventArgs>
 {
 public:
     ScrollingZoomCompletedEventArgs()
@@ -28,6 +27,6 @@ public:
     void Result(ScrollPresenterViewChangeResult result);
 
 private:
-    int32_t m_zoomFactorChangeCorrelationId{ -1 };
-    ScrollPresenterViewChangeResult m_result{ ScrollPresenterViewChangeResult::Completed };
+    int32_t m_zoomFactorChangeCorrelationId{-1};
+    ScrollPresenterViewChangeResult m_result{ScrollPresenterViewChangeResult::Completed};
 };

@@ -18,12 +18,10 @@ VirtualizingLayout::VirtualizingLayout()
 
 void VirtualizingLayout::InitializeForContextCore(winrt::VirtualizingLayoutContext const& context)
 {
-
 }
 
 void VirtualizingLayout::UninitializeForContextCore(winrt::VirtualizingLayoutContext const& context)
 {
-
 }
 
 winrt::Size VirtualizingLayout::MeasureOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& availableSize)
@@ -38,7 +36,8 @@ winrt::Size VirtualizingLayout::ArrangeOverride(winrt::VirtualizingLayoutContext
     return finalSize;
 }
 
-void VirtualizingLayout::OnItemsChangedCore(winrt::VirtualizingLayoutContext const& context, winrt::IInspectable const& source, winrt::NotifyCollectionChangedEventArgs const& args)
+void VirtualizingLayout::OnItemsChangedCore(
+    winrt::VirtualizingLayoutContext const& context, winrt::IInspectable const& source, winrt::NotifyCollectionChangedEventArgs const& args)
 {
     InvalidateMeasure();
 }

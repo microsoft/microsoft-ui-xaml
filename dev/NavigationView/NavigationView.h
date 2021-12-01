@@ -23,14 +23,12 @@ enum class TopNavigationViewLayoutState
 enum class NavigationRecommendedTransitionDirection
 {
     FromOverflow, // mapping to SlideNavigationTransitionInfo FromLeft
-    FromLeft, // SlideNavigationTransitionInfo
-    FromRight, // SlideNavigationTransitionInfo
-    Default // Currently it's mapping to EntranceNavigationTransitionInfo and is subject to change.
+    FromLeft,     // SlideNavigationTransitionInfo
+    FromRight,    // SlideNavigationTransitionInfo
+    Default       // Currently it's mapping to EntranceNavigationTransitionInfo and is subject to change.
 };
 
-class NavigationView :
-    public ReferenceTracker<NavigationView, winrt::implementation::NavigationViewT>,
-    public NavigationViewProperties
+class NavigationView : public ReferenceTracker<NavigationView, winrt::implementation::NavigationViewT>, public NavigationViewProperties
 {
 public:
     NavigationView();
@@ -50,7 +48,7 @@ public:
     winrt::IInspectable MenuItemFromContainer(winrt::DependencyObject const& container);
     winrt::DependencyObject ContainerFromMenuItem(winrt::IInspectable const& item);
 
-    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&  args);
+    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
@@ -71,7 +69,10 @@ public:
     int GetNavigationViewItemCountInPrimaryList();
     int GetNavigationViewItemCountInTopNav();
     winrt::SplitView GetSplitView();
-    TopNavigationViewDataProvider& GetTopDataProvider() { return m_topDataProvider; };
+    TopNavigationViewDataProvider& GetTopDataProvider()
+    {
+        return m_topDataProvider;
+    };
     void TopNavigationViewItemContentChanged();
 
     void CoerceToGreaterThanZero(double& value);
@@ -79,13 +80,16 @@ public:
     void OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
     void OnRepeaterElementClearing(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementClearingEventArgs& args);
 
-    com_ptr<NavigationViewItemsFactory> GetNavigationViewItemsFactory() { return m_navigationViewItemsFactory; };
+    com_ptr<NavigationViewItemsFactory> GetNavigationViewItemsFactory()
+    {
+        return m_navigationViewItemsFactory;
+    };
 
     // Used in AutomationPeer
     winrt::ItemsRepeater LeftNavRepeater();
     winrt::NavigationViewItem GetSelectedContainer();
     winrt::ItemsRepeater GetParentItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
-    winrt::ItemsRepeater GetParentRootItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib); 
+    winrt::ItemsRepeater GetParentRootItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
     winrt::IndexPath GetIndexPathForContainer(const winrt::NavigationViewItemBase& nvib);
 
     // Hierarchical related functions
@@ -96,7 +100,6 @@ public:
     void OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi);
 
 private:
-
     // Selection handling functions
     void OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e);
@@ -116,7 +119,8 @@ private:
     winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool forceRealize = false);
     winrt::UIElement SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data);
     winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data, bool isFooterRepeater);
-    winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::NavigationViewItem& parentContainer, const winrt::IInspectable& data, const winrt::IndexPath& ip);
+    winrt::IndexPath SearchEntireTreeForIndexPath(
+        const winrt::NavigationViewItem& parentContainer, const winrt::IInspectable& data, const winrt::IndexPath& ip);
 
     winrt::ItemsRepeater GetChildRepeaterForIndexPath(const winrt::IndexPath& ip);
     winrt::NavigationViewItem GetParentNavigationViewItemForContainer(const winrt::NavigationViewItemBase& nvib);
@@ -157,7 +161,7 @@ private:
     inline bool IsNavigationViewListSingleSelectionFollowsFocus();
     inline void UpdateSingleSelectionFollowsFocusTemplateSetting();
     void OnMenuItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
-    void OnFooterItemsSourceCollectionChanged(const winrt::IInspectable &, const winrt::IInspectable &);
+    void OnFooterItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnOverflowItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(winrt::IInspectable const& item);
     void ChangeSelectStatusForItem(winrt::IInspectable const& item, bool selected);
@@ -173,7 +177,8 @@ private:
     void SyncItemTemplates();
     bool IsRootGridOfFlyout(const winrt::DependencyObject& element);
     bool IsRootItemsRepeater(const winrt::DependencyObject& element);
-    void RaiseItemInvoked(winrt::IInspectable const& item,
+    void RaiseItemInvoked(
+        winrt::IInspectable const& item,
         bool isSettings,
         winrt::NavigationViewItemBase const& container = nullptr,
         NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default);
@@ -184,7 +189,7 @@ private:
     // displayed by the repeaters in this control. It is used to keep track of the
     // revokers for NavigationViewItem events and allows them to get revoked when
     // the item gets cleaned up
-    GlobalDependencyProperty s_NavigationViewItemRevokersProperty{ nullptr };
+    GlobalDependencyProperty s_NavigationViewItemRevokersProperty{nullptr};
     void SetNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
     void ClearNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
     void ClearAllNavigationViewItemRevokers();
@@ -192,15 +197,15 @@ private:
     std::once_flag s_NavigationViewItemRevokersPropertySet;
 
     void InvalidateTopNavPrimaryLayout();
-    // Measure functions for top navigation   
+    // Measure functions for top navigation
     float MeasureTopNavigationViewDesiredWidth(winrt::Size const& availableSize);
     float MeasureTopNavMenuItemsHostDesiredWidth(winrt::Size const& availableSize);
     float GetTopNavigationViewActualWidth();
 
     bool HasTopNavigationViewItemNotInPrimaryList();
     void HandleTopNavigationMeasureOverride(winrt::Size const& availableSize);
-    void HandleTopNavigationMeasureOverrideNormal(const winrt::Windows::Foundation::Size & availableSize);
-    void HandleTopNavigationMeasureOverrideOverflow(const winrt::Windows::Foundation::Size & availableSize);
+    void HandleTopNavigationMeasureOverrideNormal(const winrt::Windows::Foundation::Size& availableSize);
+    void HandleTopNavigationMeasureOverrideOverflow(const winrt::Windows::Foundation::Size& availableSize);
     void SetOverflowButtonVisibility(winrt::Visibility const& visibility);
     void SelectOverflowItem(winrt::IInspectable const& item, winrt::IndexPath const& ip);
     void SelectandMoveOverflowItem(winrt::IInspectable const& selectedItem, winrt::IndexPath const& selectedIndex, bool closeFlyout);
@@ -247,7 +252,7 @@ private:
     static void UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& listView, const winrt::IInspectable& itemsSource);
     void UpdateSelectionForMenuItems();
     bool UpdateSelectedItemFromMenuItems(const winrt::impl::com_ref<winrt::IVector<winrt::IInspectable>>& menuItems, bool foundFirstSelected = false);
-    bool m_InitialNonForcedModeUpdate{ true };
+    bool m_InitialNonForcedModeUpdate{true};
 
     void UpdateRepeaterItemsSource(bool forceSelectionModelUpdate);
     void UpdateFooterRepeaterItemsSource(bool sourceCollectionReseted, bool sourceCollectionChanged);
@@ -259,7 +264,7 @@ private:
     void UpdateOpenPaneWidth(double width);
     void UpdatePaneLayout();
     void SetDisplayMode(const winrt::NavigationViewDisplayMode& displayMode, bool forceSetDisplayMode = false);
-   
+
     NavigationViewVisualStateDisplayMode GetVisualStateDisplayMode(const winrt::NavigationViewDisplayMode& displayMode);
     void UpdateVisualStateForDisplayModeGroup(const winrt::NavigationViewDisplayMode& displayMode);
 
@@ -274,7 +279,8 @@ private:
     void OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& e);
     void OnNavigationViewItemExpandedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
-    void RaiseSelectionChangedEvent(winrt::IInspectable const& nextItem, 
+    void RaiseSelectionChangedEvent(
+        winrt::IInspectable const& nextItem,
         bool isSettingsItem,
         NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default);
 
@@ -296,10 +302,11 @@ private:
     winrt::NavigationViewItemBase NavigationViewItemBaseOrSettingsContentFromData(const winrt::IInspectable& data);
 
     // Cache these objects for the view as they are expensive to query via GetForCurrentView() calls.
-    winrt::ViewManagement::ApplicationView m_applicationView{ nullptr };
-    winrt::ViewManagement::UIViewSettings m_uiViewSettings{ nullptr };
+    winrt::ViewManagement::ApplicationView m_applicationView{nullptr};
+    winrt::ViewManagement::UIViewSettings m_uiViewSettings{nullptr};
 
-    template<typename T> T GetContainerForData(const winrt::IInspectable& data);
+    template <typename T>
+    T GetContainerForData(const winrt::IInspectable& data);
 
     void OpenPane();
     void ClosePane();
@@ -308,7 +315,7 @@ private:
     void SwapPaneHeaderContent(tracker_ref<winrt::ContentControl> newParent, tracker_ref<winrt::ContentControl> oldParent, winrt::hstring const& propertyPathName);
     void UpdateSettingsItemToolTip();
     void UpdatePaneTitleFrameworkElementParents();
-    std::function<void ()> SetPaneTitleFrameworkElementParent(const winrt::ContentControl& parent, const winrt::FrameworkElement& paneTitle, bool shouldNotContainPaneTitle);
+    std::function<void()> SetPaneTitleFrameworkElementParent(const winrt::ContentControl& parent, const winrt::FrameworkElement& paneTitle, bool shouldNotContainPaneTitle);
 
     void OnSplitViewClosedCompactChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnSplitViewPaneClosed(const winrt::DependencyObject& sender, const winrt::IInspectable& obj);
@@ -326,7 +333,7 @@ private:
     bool ShouldShowBackOrCloseButton();
 
     void UnhookEventsAndClearFields(bool isFromDestructor = false);
-    
+
     bool ShouldPreserveNavigationViewRS4Behavior();
     bool ShouldPreserveNavigationViewRS3Behavior();
 
@@ -341,64 +348,64 @@ private:
     void UnsetDropShadow();
     void ShadowCasterEaseOutStoryboard_Completed(const winrt::Grid& shadowCaster);
 
-    com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
+    com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{nullptr};
 
     // Visual components
-    tracker_ref<winrt::Button> m_paneToggleButton{ this };
-    tracker_ref<winrt::SplitView> m_rootSplitView{ this };
-    tracker_ref<winrt::NavigationViewItem> m_settingsItem{ this };
-    tracker_ref<winrt::RowDefinition> m_itemsContainerRow{ this };
-    tracker_ref<winrt::FrameworkElement> m_menuItemsScrollViewer{ this };
-    tracker_ref<winrt::FrameworkElement> m_footerItemsScrollViewer{ this };
-    tracker_ref<winrt::UIElement> m_paneContentGrid{ this };
-    tracker_ref<winrt::ColumnDefinition> m_paneToggleButtonIconGridColumn{ this };
-    tracker_ref<winrt::FrameworkElement> m_paneTitleHolderFrameworkElement{ this };
-    tracker_ref<winrt::FrameworkElement> m_paneTitleFrameworkElement{ this };
-    tracker_ref<winrt::Button> m_paneSearchButton{ this };
-    tracker_ref<winrt::Button> m_backButton{ this };
-    tracker_ref<winrt::Button> m_closeButton{ this };
-    tracker_ref<winrt::ItemsRepeater> m_leftNavRepeater{ this };
-    tracker_ref<winrt::ItemsRepeater> m_topNavRepeater{ this };
-    tracker_ref<winrt::ItemsRepeater> m_leftNavFooterMenuRepeater{ this };
-    tracker_ref<winrt::ItemsRepeater> m_topNavFooterMenuRepeater{ this };
-    tracker_ref<winrt::Button> m_topNavOverflowButton{ this };
-    tracker_ref<winrt::ItemsRepeater> m_topNavRepeaterOverflowView{ this };
-    tracker_ref<winrt::Grid> m_topNavGrid{ this };
-    tracker_ref<winrt::Border> m_topNavContentOverlayAreaGrid{ this };
-    tracker_ref<winrt::Grid> m_shadowCaster{ this };
-    tracker_ref<winrt::Storyboard> m_shadowCasterEaseOutStoryboard{ this };
+    tracker_ref<winrt::Button> m_paneToggleButton{this};
+    tracker_ref<winrt::SplitView> m_rootSplitView{this};
+    tracker_ref<winrt::NavigationViewItem> m_settingsItem{this};
+    tracker_ref<winrt::RowDefinition> m_itemsContainerRow{this};
+    tracker_ref<winrt::FrameworkElement> m_menuItemsScrollViewer{this};
+    tracker_ref<winrt::FrameworkElement> m_footerItemsScrollViewer{this};
+    tracker_ref<winrt::UIElement> m_paneContentGrid{this};
+    tracker_ref<winrt::ColumnDefinition> m_paneToggleButtonIconGridColumn{this};
+    tracker_ref<winrt::FrameworkElement> m_paneTitleHolderFrameworkElement{this};
+    tracker_ref<winrt::FrameworkElement> m_paneTitleFrameworkElement{this};
+    tracker_ref<winrt::Button> m_paneSearchButton{this};
+    tracker_ref<winrt::Button> m_backButton{this};
+    tracker_ref<winrt::Button> m_closeButton{this};
+    tracker_ref<winrt::ItemsRepeater> m_leftNavRepeater{this};
+    tracker_ref<winrt::ItemsRepeater> m_topNavRepeater{this};
+    tracker_ref<winrt::ItemsRepeater> m_leftNavFooterMenuRepeater{this};
+    tracker_ref<winrt::ItemsRepeater> m_topNavFooterMenuRepeater{this};
+    tracker_ref<winrt::Button> m_topNavOverflowButton{this};
+    tracker_ref<winrt::ItemsRepeater> m_topNavRepeaterOverflowView{this};
+    tracker_ref<winrt::Grid> m_topNavGrid{this};
+    tracker_ref<winrt::Border> m_topNavContentOverlayAreaGrid{this};
+    tracker_ref<winrt::Grid> m_shadowCaster{this};
+    tracker_ref<winrt::Storyboard> m_shadowCasterEaseOutStoryboard{this};
 
     // Indicator animations
-    tracker_ref<winrt::UIElement> m_prevIndicator{ this };
-    tracker_ref<winrt::UIElement> m_nextIndicator{ this };
-    tracker_ref<winrt::UIElement> m_activeIndicator{ this };
-    tracker_ref<winrt::IInspectable> m_lastSelectedItemPendingAnimationInTopNav{ this };
+    tracker_ref<winrt::UIElement> m_prevIndicator{this};
+    tracker_ref<winrt::UIElement> m_nextIndicator{this};
+    tracker_ref<winrt::UIElement> m_activeIndicator{this};
+    tracker_ref<winrt::IInspectable> m_lastSelectedItemPendingAnimationInTopNav{this};
 
-    tracker_ref<winrt::FrameworkElement> m_togglePaneTopPadding{ this };
-    tracker_ref<winrt::FrameworkElement> m_contentPaneTopPadding{ this };
-    tracker_ref<winrt::FrameworkElement> m_contentLeftPadding{ this };
+    tracker_ref<winrt::FrameworkElement> m_togglePaneTopPadding{this};
+    tracker_ref<winrt::FrameworkElement> m_contentPaneTopPadding{this};
+    tracker_ref<winrt::FrameworkElement> m_contentLeftPadding{this};
 
-    tracker_ref<winrt::CoreApplicationViewTitleBar> m_coreTitleBar{ this };
+    tracker_ref<winrt::CoreApplicationViewTitleBar> m_coreTitleBar{this};
 
-    tracker_ref<winrt::ContentControl> m_leftNavPaneAutoSuggestBoxPresenter{ this };
-    tracker_ref<winrt::ContentControl> m_topNavPaneAutoSuggestBoxPresenter{ this };
+    tracker_ref<winrt::ContentControl> m_leftNavPaneAutoSuggestBoxPresenter{this};
+    tracker_ref<winrt::ContentControl> m_topNavPaneAutoSuggestBoxPresenter{this};
 
-    tracker_ref<winrt::ContentControl> m_leftNavPaneHeaderContentBorder{ this };
-    tracker_ref<winrt::ContentControl> m_leftNavPaneCustomContentBorder{ this };
-    tracker_ref<winrt::ContentControl> m_leftNavFooterContentBorder{ this };
+    tracker_ref<winrt::ContentControl> m_leftNavPaneHeaderContentBorder{this};
+    tracker_ref<winrt::ContentControl> m_leftNavPaneCustomContentBorder{this};
+    tracker_ref<winrt::ContentControl> m_leftNavFooterContentBorder{this};
 
-    tracker_ref<winrt::ContentControl> m_paneHeaderOnTopPane{ this };
-    tracker_ref<winrt::ContentControl> m_paneTitleOnTopPane{ this };
-    tracker_ref<winrt::ContentControl> m_paneCustomContentOnTopPane{ this };
-    tracker_ref<winrt::ContentControl> m_paneFooterOnTopPane{ this };
-    tracker_ref<winrt::ContentControl> m_paneTitlePresenter{ this };
+    tracker_ref<winrt::ContentControl> m_paneHeaderOnTopPane{this};
+    tracker_ref<winrt::ContentControl> m_paneTitleOnTopPane{this};
+    tracker_ref<winrt::ContentControl> m_paneCustomContentOnTopPane{this};
+    tracker_ref<winrt::ContentControl> m_paneFooterOnTopPane{this};
+    tracker_ref<winrt::ContentControl> m_paneTitlePresenter{this};
 
-    tracker_ref<winrt::ColumnDefinition> m_paneHeaderCloseButtonColumn{ this };
-    tracker_ref<winrt::ColumnDefinition> m_paneHeaderToggleButtonColumn{ this };
-    tracker_ref<winrt::RowDefinition> m_paneHeaderContentBorderRow{ this };
-    tracker_ref<winrt::FrameworkElement> m_itemsContainer{ this };
+    tracker_ref<winrt::ColumnDefinition> m_paneHeaderCloseButtonColumn{this};
+    tracker_ref<winrt::ColumnDefinition> m_paneHeaderToggleButtonColumn{this};
+    tracker_ref<winrt::RowDefinition> m_paneHeaderContentBorderRow{this};
+    tracker_ref<winrt::FrameworkElement> m_itemsContainer{this};
 
-    tracker_ref<winrt::NavigationViewItem> m_lastItemExpandedIntoFlyout{ this };
+    tracker_ref<winrt::NavigationViewItem> m_lastItemExpandedIntoFlyout{this};
 
     // Event Tokens
     winrt::Button::Click_revoker m_paneToggleButtonClickRevoker{};
@@ -454,58 +461,57 @@ private:
 
     winrt::Storyboard::Completed_revoker m_shadowCasterEaseOutStoryboardRevoker{};
 
-    bool m_wasForceClosed{ false };
-    bool m_isClosedCompact{ false };
-    bool m_blockNextClosingEvent{ false };
-    bool m_initialListSizeStateSet{ false };
+    bool m_wasForceClosed{false};
+    bool m_isClosedCompact{false};
+    bool m_blockNextClosingEvent{false};
+    bool m_initialListSizeStateSet{false};
 
-    TopNavigationViewDataProvider m_topDataProvider{ this };
+    TopNavigationViewDataProvider m_topDataProvider{this};
 
     winrt::SelectionModel m_selectionModel{};
     winrt::IVector<winrt::IInspectable> m_selectionModelSource{};
 
-    winrt::ItemsSourceView m_menuItemsSource{ nullptr };
-    winrt::ItemsSourceView m_footerItemsSource{ nullptr };
+    winrt::ItemsSourceView m_menuItemsSource{nullptr};
+    winrt::ItemsSourceView m_footerItemsSource{nullptr};
 
-    bool m_appliedTemplate{ false };
+    bool m_appliedTemplate{false};
 
     // Identifies whenever a call is the result of OnApplyTemplate
-    bool m_fromOnApplyTemplate{ false };
+    bool m_fromOnApplyTemplate{false};
 
     // Used to defer updating the SplitView displaymode property
-    bool m_updateVisualStateForDisplayModeFromOnLoaded{ false };
+    bool m_updateVisualStateForDisplayModeFromOnLoaded{false};
 
     // flag is used to stop recursive call. eg:
     // Customer select an item from SelectedItem property->ChangeSelection update ListView->LIstView raise OnSelectChange(we want stop here)->change property do do animation again.
     // Customer clicked listview->listview raised OnSelectChange->SelectedItem property changed->ChangeSelection->Undo the selection by SelectedItem(prevItem) (we want it stop here)->ChangeSelection again ->...
-    bool m_shouldIgnoreNextSelectionChange{ false };
+    bool m_shouldIgnoreNextSelectionChange{false};
     // A flag to track that the selectionchange is caused by selection a item in topnav overflow menu
-    bool m_selectionChangeFromOverflowMenu{ false };
+    bool m_selectionChangeFromOverflowMenu{false};
     // Flag indicating whether selection change should raise item invoked. This is needed to be able to raise ItemInvoked before SelectionChanged while SelectedItem should point to the clicked item
-    bool m_shouldRaiseItemInvokedAfterSelection{ false };
+    bool m_shouldRaiseItemInvokedAfterSelection{false};
 
-    TopNavigationViewLayoutState m_topNavigationMode{ TopNavigationViewLayoutState::Uninitialized };
+    TopNavigationViewLayoutState m_topNavigationMode{TopNavigationViewLayoutState::Uninitialized};
 
     // A threshold to stop recovery from overflow to normal happens immediately on resize.
-    float m_topNavigationRecoveryGracePeriodWidth{ 5.f };
+    float m_topNavigationRecoveryGracePeriodWidth{5.f};
 
     // There are three ways to change IsPaneOpen:
     // 1, customer call IsPaneOpen=true/false directly or nav.IsPaneOpen is binding with a variable and the value is changed.
     // 2, customer click ToggleButton or splitView.IsPaneOpen->nav.IsPaneOpen changed because of window resize
     // 3, customer changed PaneDisplayMode.
     // 2 and 3 are internal implementation and will call by ClosePane/OpenPane. the flag is to indicate 1 if it's false
-    bool m_isOpenPaneForInteraction{ false };
+    bool m_isOpenPaneForInteraction{false};
 
-    bool m_moveTopNavOverflowItemOnFlyoutClose{ false };
+    bool m_moveTopNavOverflowItemOnFlyoutClose{false};
 
-    bool m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise{ false };
+    bool m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise{false};
 
-    bool m_OrientationChangedPendingAnimation{ false };
+    bool m_OrientationChangedPendingAnimation{false};
 
-    bool m_TabKeyPrecedesFocusChange{ false };
+    bool m_TabKeyPrecedesFocusChange{false};
 
-    bool m_isLeftPaneTitleEmpty{ false };
+    bool m_isLeftPaneTitleEmpty{false};
 
-    double m_openPaneWidth{ 320.0 };
+    double m_openPaneWidth{320.0};
 };
-

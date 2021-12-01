@@ -8,11 +8,11 @@
 #include "TwoPaneView.g.h"
 #include "TwoPaneView.properties.h"
 
-static constexpr double c_defaultMinWideModeWidth{ 641.0 };
-static constexpr double c_defaultMinTallModeHeight{ 641.0 };
+static constexpr double c_defaultMinWideModeWidth{641.0};
+static constexpr double c_defaultMinTallModeHeight{641.0};
 
-static constexpr winrt::GridLength c_pane1LengthDefault{ 1, winrt::GridUnitType::Auto };
-static constexpr winrt::GridLength c_pane2LengthDefault{ 1, winrt::GridUnitType::Star };
+static constexpr winrt::GridLength c_pane1LengthDefault{1, winrt::GridUnitType::Auto};
+static constexpr winrt::GridLength c_pane2LengthDefault{1, winrt::GridUnitType::Star};
 
 enum class ViewMode
 {
@@ -25,16 +25,13 @@ enum class ViewMode
     None
 };
 
-class TwoPaneView :
-    public ReferenceTracker<TwoPaneView, winrt::implementation::TwoPaneViewT>,
-    public TwoPaneViewProperties
+class TwoPaneView : public ReferenceTracker<TwoPaneView, winrt::implementation::TwoPaneViewT>, public TwoPaneViewProperties
 {
 public:
     TwoPaneView();
 
     // IFrameworkElement
     void OnApplyTemplate();
-
 
     void OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
@@ -51,19 +48,18 @@ private:
     winrt::Rect GetControlRect();
     bool IsInMultipleRegions(DisplayRegionHelperInfo info, winrt::Rect rcControl);
 
-    ViewMode m_currentMode { ViewMode::None } ;
+    ViewMode m_currentMode{ViewMode::None};
 
-    bool m_loaded { false };
+    bool m_loaded{false};
 
     winrt::Control::Loaded_revoker m_pane1LoadedRevoker{};
     winrt::Control::Loaded_revoker m_pane2LoadedRevoker{};
 
-    tracker_ref<winrt::ColumnDefinition> m_columnLeft{ this };
-    tracker_ref<winrt::ColumnDefinition> m_columnMiddle{ this };
-    tracker_ref<winrt::ColumnDefinition> m_columnRight{ this };
-    tracker_ref<winrt::RowDefinition> m_rowTop{ this };
-    tracker_ref<winrt::RowDefinition> m_rowMiddle{ this };
-    tracker_ref<winrt::RowDefinition> m_rowBottom{ this };
+    tracker_ref<winrt::ColumnDefinition> m_columnLeft{this};
+    tracker_ref<winrt::ColumnDefinition> m_columnMiddle{this};
+    tracker_ref<winrt::ColumnDefinition> m_columnRight{this};
+    tracker_ref<winrt::RowDefinition> m_rowTop{this};
+    tracker_ref<winrt::RowDefinition> m_rowMiddle{this};
+    tracker_ref<winrt::RowDefinition> m_rowBottom{this};
     winrt::IWindow::SizeChanged_revoker m_windowSizeChangedRevoker{};
-
 };
