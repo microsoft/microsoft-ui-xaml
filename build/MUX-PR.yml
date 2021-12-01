@@ -12,6 +12,14 @@ jobs:
         targetType: filePath
         filePath: build\ShouldSkipPRBuild.ps1
 
+- task: PowerShell@2
+  inputs:
+    targetType: 'filePath'
+    filePath: tools\FormatSource.ps1
+    arguments: '-ModifiedOnly $false -Verify $True -Path dev'
+  displayName: 'Clang-format check'
+  # condition: failed() # this job is disabled
+
 - job: Build
   dependsOn: Setup
   condition: |

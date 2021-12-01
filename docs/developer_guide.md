@@ -107,6 +107,34 @@ Example usage (running from the root of the repository folder):
 > ```
 > to allow building of .pri files in debug mode, which are needed for the NuGet package.
 
+## Code format
+
+We require the C++ code inside this project to follow the clang-format. If you change them, please make sure your changed files are formatted correctly.
+
+### Setup Git hooks
+This is a one time setup. When you `git commit`, it will automatically do the format check and ask you to correct it if format error detected.
+```
+tools\SetupClangFormat.bat
+```
+
+### Two ways to format the files
+
+### 1) Use script to format files before you submit the change 
+
+`PowerShell.exe -ExecutionPolicy Bypass tools\FormatSource.ps1 -ModifiedOnly $False`
+
+or
+
+`PowerShell.exe -ExecutionPolicy Bypass tools\FormatSource.ps1 -ModifiedOnly $False -Path yourfolder`
+
+#### 2) clang-format and IDE integration, and use the IDE to format it
+- Use Visual Studio:
+1. Configure your [clang-format tools](https://devblogs.microsoft.com/cppblog/clangformat-support-in-visual-studio-2017-15-7-preview-1/).
+2. Open the modified file.
+3. Use shortcut keys Ctrl+K, Ctrl+D to format the current file.
+
+- Use Visual Studio Code and other IDE
+Check the IDE integration in https://clang.llvm.org/docs/ClangFormat.html
 
 ## Testing
 
