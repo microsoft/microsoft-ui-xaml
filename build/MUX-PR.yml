@@ -4,6 +4,9 @@ variables:
   rerunPassesRequiredToAvoidFailure: 5
 jobs:
 - job: Setup
+  pool:
+    name: Azure Pipelines
+    vmImage: windows-2019
   steps:
     - task: powershell@2
       name: checkPayload
@@ -19,6 +22,11 @@ jobs:
         arguments: '-ModifiedOnly $false -Verify $True -Path dev'
       displayName: 'Clang-format check'
       # condition: failed() # this job is disabled
+
+    - powershell: |
+      Write-Host "##vso[task.setvariable variable=shouldSkipPRBuild;isOutput=true]$True"        
+      displayName: checkEditedFiles
+      condition: failed()
 
 - job: Build
   dependsOn: Setup
