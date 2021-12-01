@@ -24,7 +24,7 @@ jobs:
       # condition: failed() # this job is disabled
 
     - task: PowerShell@2
-      name: checkPayload
+      name: checkClangFormat
       displayName: 'Skip the build if clang-format failed'
       inputs:
         targetType: filePath
