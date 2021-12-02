@@ -251,7 +251,7 @@ function Format-Directory
             if ($Verify)
             {
                 Write-Host "[clang-format] Checking formatting: $_"
-                & $ClangFormat --style=file -Werror --dry-run $_
+                & $ClangFormat --style=file -Werror --dry-run --ferror-limit=10 $_
             }
             else
             {
