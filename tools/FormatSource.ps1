@@ -44,7 +44,7 @@ $FilePatterns = "\.(h|cpp|hpp|c)$"
 #PerfApp is C++/Cx project and not supported
 $IgnoreFolders = "(Generated Files|GeneratedExperimental|test|Generated|nodejs|vscode|community|dotnet|node_modules|BuildOutput|out|.git|.vs|.vscode|bin|CMakeFiles|generated|debug|x64)$"
 
-$RepoRoot = (Resolve-Path "$PSScriptRoot\..")
+$RepoRoot = (Resolve-Path "$PSScriptRoot\..\dev")
 
 <#
 .SYNOPSIS

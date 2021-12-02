@@ -2,7 +2,7 @@
 
 # run only on Windows
 if [[ "$OSTYPE" == "msys" ]]; then
-	exec powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ".\scripts\FormatSource.ps1" -Staged \$true -Verify \$true -UseVS2019 \$true -NoFail \$true
+	exec powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ".\tools\FormatSource.ps1" -Staged \$true -Verify \$true -UseVS2019 \$true -NoFail \$true
 fi
 
 exit 0

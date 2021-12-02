@@ -2,7 +2,7 @@
 # We skip the build if the only files changed are .md files.
 
 param (
-    [string]$ClangFormatFailed = $false,
+    [boolean]$ClangFormatFailed = $false
 )
 
 function AllChangedFilesAreSkippable
