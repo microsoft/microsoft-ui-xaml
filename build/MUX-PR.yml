@@ -28,7 +28,8 @@ jobs:
       displayName: 'Skip the build if clang-format failed'
       inputs:
         targetType: filePath
-        filePath: build\ShouldSkipPRBuild.ps1 -ClangFormatFailed $True
+        filePath: build\ShouldSkipPRBuild.ps1
+        arguments: '-ClangFormatFailed $True'
       condition: failed()
 
 - job: Build
