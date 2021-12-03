@@ -8,7 +8,7 @@
     <SDKVersionRS5>10.0.17763.0</SDKVersionRS5>
     <SDKVersion19H1>10.0.18362.0</SDKVersion19H1>
     <SDKVersion21H1>10.0.22000.0</SDKVersion21H1>
-    <!-- <SDKVersionInsider>10.0.DONOTUSE.0</SDKVersionInsider> -->
+    <SDKVersionInsider>10.0.22000.0</SDKVersionInsider> <!-- Matches SDKVersion21H1 -->
   </PropertyGroup>
   <PropertyGroup>
     <!-- By default we use the publicly shipped SDK version which is 21H1 now -->
