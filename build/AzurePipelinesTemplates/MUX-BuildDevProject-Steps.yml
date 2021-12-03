@@ -58,3 +58,4 @@ steps:
   - template: MUX-MakeFrameworkPackages-Steps.yml
     parameters:
       buildOutputDir: $(buildOutputDir)
+      signOutput: ${{parameters.signOutput}}
