@@ -10,18 +10,24 @@
 class PointerHoverWindowHelper;
 class SoftLightSwitch;
 
-class RevealBorderLight :
-    public ReferenceTracker<RevealBorderLight, winrt::implementation::RevealBorderLightT>
+class RevealBorderLight : public ReferenceTracker<RevealBorderLight, winrt::implementation::RevealBorderLightT>
 {
     friend RevealTestApi;
     friend MaterialHelperBase;
     friend MaterialHelper;
+
 public:
     static winrt::hstring& GetLightThemeIdStatic();
     static winrt::hstring& GetDarkThemeIdStatic();
 
-    void SetIsWideLight(bool isWideLight) { m_isWideLight = isWideLight; }
-    void SetIsLightTheme(bool isLightTheme) { m_isLightTheme = isLightTheme; }
+    void SetIsWideLight(bool isWideLight)
+    {
+        m_isWideLight = isWideLight;
+    }
+    void SetIsLightTheme(bool isLightTheme)
+    {
+        m_isLightTheme = isLightTheme;
+    }
 
     // IXamlLightOverrides
     winrt::hstring GetId();
@@ -35,7 +41,10 @@ public:
 #endif
 
 private:
-    winrt::SpotLight GetLight() { return m_compositionSpotLight; } // For test APIs
+    winrt::SpotLight GetLight()
+    {
+        return m_compositionSpotLight;
+    } // For test APIs
     void HookupWindowPointerHandlers();
     void UnhookWindowPointerHandlers();
     void EnsureCompositionResources();

@@ -12,28 +12,26 @@
 /////////        RefreshStateChanged        /////////////
 //////////////////////////////////////////////////////////
 
-class RefreshStateChangedEventArgs : 
-    public winrt::implementation::RefreshStateChangedEventArgsT<RefreshStateChangedEventArgs>
+class RefreshStateChangedEventArgs : public winrt::implementation::RefreshStateChangedEventArgsT<RefreshStateChangedEventArgs>
 {
 public:
     RefreshStateChangedEventArgs(winrt::RefreshVisualizerState oldValue, winrt::RefreshVisualizerState newValue);
 
-    //IRefreshStatusChangedEventArgs overrides
+    // IRefreshStatusChangedEventArgs overrides
     winrt::RefreshVisualizerState OldState();
     winrt::RefreshVisualizerState NewState();
 
 private:
-    winrt::RefreshVisualizerState m_oldState { };
-    winrt::RefreshVisualizerState m_newState { };
+    winrt::RefreshVisualizerState m_oldState{};
+    winrt::RefreshVisualizerState m_newState{};
 };
-
 
 //////////////////////////////////////////////////////////
 /////////          RefreshRequested          /////////////
 //////////////////////////////////////////////////////////
 
-class RefreshRequestedEventArgs :
-    public ReferenceTracker<RefreshRequestedEventArgs, winrt::implementation::RefreshRequestedEventArgsT, winrt::composing, winrt::composable>
+class RefreshRequestedEventArgs
+    : public ReferenceTracker<RefreshRequestedEventArgs, winrt::implementation::RefreshRequestedEventArgsT, winrt::composing, winrt::composable>
 {
 public:
     RefreshRequestedEventArgs(const winrt::Deferral& handler);

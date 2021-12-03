@@ -117,10 +117,7 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
     m_viewportManager->OnOwnerMeasuring();
 
     m_isLayoutInProgress = true;
-    auto layoutInProgress = gsl::finally([this]()
-    {
-        m_isLayoutInProgress = false;
-    });
+    auto layoutInProgress = gsl::finally([this]() { m_isLayoutInProgress = false; });
 
     m_viewManager.PrunePinnedElements();
     winrt::Rect extent{};
@@ -137,11 +134,13 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
 #endif
 
         // Checking if we have an data template and it is empty
-        if (m_isItemTemplateEmpty) {
+        if (m_isItemTemplateEmpty)
+        {
             // Has no content, so we will draw nothing and request zero space
             extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, 0, 0 };
         }
-        else {
+        else
+        {
             desiredSize = layout.Measure(layoutContext, availableSize);
             extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, desiredSize.Width, desiredSize.Height };
         }
@@ -154,9 +153,7 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
             auto element = children.GetAt(i);
             auto virtInfo = GetVirtualizationInfo(element);
 
-            if (virtInfo->Owner() == ElementOwner::Layout &&
-                virtInfo->AutoRecycleCandidate() &&
-                !virtInfo->KeepAlive())
+            if (virtInfo->Owner() == ElementOwner::Layout && virtInfo->AutoRecycleCandidate() && !virtInfo->KeepAlive())
             {
                 REPEATER_TRACE_INFO(L"AutoClear - %d \n", virtInfo->Index());
                 ClearElementImpl(element);
@@ -182,10 +179,7 @@ winrt::Size ItemsRepeater::ArrangeOverride(winrt::Size const& finalSize)
     }
 
     m_isLayoutInProgress = true;
-    auto layoutInProgress = gsl::finally([this]()
-    {
-        m_isLayoutInProgress = false;
-    });
+    auto layoutInProgress = gsl::finally([this]() { m_isLayoutInProgress = false; });
 
     winrt::Size arrangeSize{};
 
@@ -206,22 +200,19 @@ winrt::Size ItemsRepeater::ArrangeOverride(winrt::Size const& finalSize)
         auto virtInfo = GetVirtualizationInfo(element);
         virtInfo->KeepAlive(false);
 
-        if (virtInfo->Owner() == ElementOwner::ElementFactory ||
-            virtInfo->Owner() == ElementOwner::PinnedPool)
+        if (virtInfo->Owner() == ElementOwner::ElementFactory || virtInfo->Owner() == ElementOwner::PinnedPool)
         {
             // Toss it away. And arrange it with size 0 so that XYFocus won't use it.
-            element.Arrange(winrt::Rect{
-                ClearedElementsArrangePosition.X - static_cast<float>(element.DesiredSize().Width),
-                ClearedElementsArrangePosition.Y - static_cast<float>(element.DesiredSize().Height),
-                0.0f,
-                0.0f });
+            element.Arrange(winrt::Rect{ ClearedElementsArrangePosition.X - static_cast<float>(element.DesiredSize().Width),
+                                         ClearedElementsArrangePosition.Y - static_cast<float>(element.DesiredSize().Height),
+                                         0.0f,
+                                         0.0f });
         }
         else
         {
             const auto newBounds = CachedVisualTreeHelpers::GetLayoutSlot(element.as<winrt::FrameworkElement>());
 
-            if (virtInfo->ArrangeBounds() != ItemsRepeater::InvalidRect &&
-                newBounds != virtInfo->ArrangeBounds())
+            if (virtInfo->ArrangeBounds() != ItemsRepeater::InvalidRect && newBounds != virtInfo->ArrangeBounds())
             {
                 m_animationManager.OnElementBoundsChanged(element, virtInfo->ArrangeBounds(), newBounds);
             }
@@ -286,8 +277,8 @@ void ItemsRepeater::ClearElementImpl(const winrt::UIElement& element)
     const bool isClearedDueToCollectionChange =
         IsProcessingCollectionChange() &&
         (m_processingItemsSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Remove ||
-            m_processingItemsSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Replace ||
-            m_processingItemsSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Reset);
+         m_processingItemsSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Replace ||
+         m_processingItemsSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Reset);
 
     m_viewManager.ClearElement(element, isClearedDueToCollectionChange);
     m_viewportManager->OnElementCleared(element);
@@ -327,7 +318,7 @@ winrt::UIElement ItemsRepeater::GetOrCreateElementImpl(int index)
 {
     if (ItemsSourceView() == nullptr)
     {
-       throw winrt::hresult_error(E_FAIL, L"ItemSource doesn't have a value");
+        throw winrt::hresult_error(E_FAIL, L"ItemSource doesn't have a value");
     }
 
     if (index >= 0 && index >= ItemsSourceView().Count())
@@ -436,7 +427,8 @@ void ItemsRepeater::OnElementPrepared(const winrt::UIElement& element, int index
     {
         if (!m_elementPreparedArgs)
         {
-            m_elementPreparedArgs = tracker_ref<winrt::ItemsRepeaterElementPreparedEventArgs>(this, winrt::make<ItemsRepeaterElementPreparedEventArgs>(element, index));
+            m_elementPreparedArgs = tracker_ref<winrt::ItemsRepeaterElementPreparedEventArgs>(
+                this, winrt::make<ItemsRepeaterElementPreparedEventArgs>(element, index));
         }
         else
         {
@@ -453,7 +445,8 @@ void ItemsRepeater::OnElementClearing(const winrt::UIElement& element)
     {
         if (!m_elementClearingArgs)
         {
-            m_elementClearingArgs = tracker_ref<winrt::ItemsRepeaterElementClearingEventArgs>(this, winrt::make<ItemsRepeaterElementClearingEventArgs>(element));
+            m_elementClearingArgs = tracker_ref<winrt::ItemsRepeaterElementClearingEventArgs>(
+                this, winrt::make<ItemsRepeaterElementClearingEventArgs>(element));
         }
         else
         {
@@ -470,7 +463,8 @@ void ItemsRepeater::OnElementIndexChanged(const winrt::UIElement& element, int o
     {
         if (!m_elementIndexChangedArgs)
         {
-            m_elementIndexChangedArgs = tracker_ref<winrt::ItemsRepeaterElementIndexChangedEventArgs>(this, winrt::make<ItemsRepeaterElementIndexChangedEventArgs>(element, oldIndex, newIndex));
+            m_elementIndexChangedArgs = tracker_ref<winrt::ItemsRepeaterElementIndexChangedEventArgs>(
+                this, winrt::make<ItemsRepeaterElementIndexChangedEventArgs>(element, oldIndex, newIndex));
         }
         else
         {
@@ -555,16 +549,9 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
     if (auto const layout = Layout())
     {
         auto const args = winrt::NotifyCollectionChangedEventArgs(
-            winrt::NotifyCollectionChangedAction::Reset,
-            nullptr /* newItems */,
-            nullptr /* oldItems */,
-            -1 /* newIndex */,
-            -1 /* oldIndex */);
+            winrt::NotifyCollectionChangedAction::Reset, nullptr /* newItems */, nullptr /* oldItems */, -1 /* newIndex */, -1 /* oldIndex */);
         args.Action();
-        auto const processingChange = gsl::finally([this]()
-            {
-                m_processingItemsSourceChange.set(nullptr);
-            });
+        auto const processingChange = gsl::finally([this]() { m_processingItemsSourceChange.set(nullptr); });
         m_processingItemsSourceChange.set(args);
 
         if (auto const virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
@@ -575,7 +562,7 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
         {
             // Walk through all the elements and make sure they are cleared for
             // non-virtualizing layouts.
-            for (const auto& element: Children())
+            for (const auto& element : Children())
             {
                 if (GetVirtualizationInfo(element)->IsRealized())
                 {
@@ -604,16 +591,9 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
     if (auto const layout = Layout())
     {
         auto const args = winrt::NotifyCollectionChangedEventArgs(
-            winrt::NotifyCollectionChangedAction::Reset,
-            nullptr /* newItems */,
-            nullptr /* oldItems */,
-            -1 /* newIndex */,
-            -1 /* oldIndex */);
+            winrt::NotifyCollectionChangedAction::Reset, nullptr /* newItems */, nullptr /* oldItems */, -1 /* newIndex */, -1 /* oldIndex */);
         args.Action();
-        auto const processingChange = gsl::finally([this]()
-            {
-                m_processingItemsSourceChange.set(nullptr);
-            });
+        auto const processingChange = gsl::finally([this]() { m_processingItemsSourceChange.set(nullptr); });
         m_processingItemsSourceChange.set(args);
 
         if (auto const virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
@@ -645,7 +625,7 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
     m_itemTemplateWrapper = newValue.try_as<winrt::IElementFactoryShim>();
     if (!m_itemTemplateWrapper)
     {
-        // ItemTemplate set does not implement IElementFactoryShim. We also 
+        // ItemTemplate set does not implement IElementFactoryShim. We also
         // want to support DataTemplate and DataTemplateSelectors automagically.
         if (auto dataTemplate = newValue.try_as<winrt::DataTemplate>())
         {
@@ -694,7 +674,7 @@ void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::
         m_measureInvalidated.revoke();
         m_arrangeInvalidated.revoke();
         m_stackLayoutMeasureCounter = 0u;
-        
+
         // Walk through all the elements and make sure they are cleared
         auto children = Children();
         for (unsigned i = 0u; i < children.Size(); ++i)
@@ -749,14 +729,12 @@ void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, 
 
     if (IsProcessingCollectionChange())
     {
-        throw winrt::hresult_error(E_FAIL, L"Changes in the data source are not allowed during another change in the data source.");
+        throw winrt::hresult_error(
+            E_FAIL, L"Changes in the data source are not allowed during another change in the data source.");
     }
 
     m_processingItemsSourceChange.set(args);
-    auto processingChange = gsl::finally([this]()
-    {
-        m_processingItemsSourceChange.set(nullptr);
-    });
+    auto processingChange = gsl::finally([this]() { m_processingItemsSourceChange.set(nullptr); });
 
     m_animationManager.OnItemsSourceChanged(sender, args);
     m_viewManager.OnItemsSourceChanged(sender, args);

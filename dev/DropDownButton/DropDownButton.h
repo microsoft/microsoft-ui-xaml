@@ -8,8 +8,7 @@
 
 #include "DropDownButton.g.h"
 
-class DropDownButton :
-    public ReferenceTracker<DropDownButton, winrt::implementation::DropDownButtonT>
+class DropDownButton : public ReferenceTracker<DropDownButton, winrt::implementation::DropDownButtonT>
 {
 
 public:
@@ -17,7 +16,7 @@ public:
 
     // IFrameworkElement
     void OnApplyTemplate();
-    
+
     // IUIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
 
@@ -39,4 +38,3 @@ private:
     winrt::FlyoutBase::Opened_revoker m_flyoutOpenedRevoker{};
     winrt::FlyoutBase::Closed_revoker m_flyoutClosedRevoker{};
 };
-

@@ -5,12 +5,8 @@
 
 #define DEFAULT_EXECUTION_RATIO 0.8
 
-
 class RefreshInfoProviderImpl
-    : public ReferenceTracker<
-        RefreshInfoProviderImpl,
-        reference_tracker_implements_t<winrt::IRefreshInfoProvider>::type,
-        winrt::IInteractionTrackerOwner>
+    : public ReferenceTracker<RefreshInfoProviderImpl, reference_tracker_implements_t<winrt::IRefreshInfoProvider>::type, winrt::IInteractionTrackerOwner>
 {
 public:
     RefreshInfoProviderImpl();
@@ -18,7 +14,7 @@ public:
     RefreshInfoProviderImpl(const winrt::RefreshPullDirection& refreshPullDirection, const winrt::Size& refreshVisualizerSize, const winrt::Compositor& compositor);
     void UpdateIsInteractingForRefresh(bool value);
 
-    //IInteractionTrackerOwner;
+    // IInteractionTrackerOwner;
     void ValuesChanged(const winrt::InteractionTracker& sender, const winrt::InteractionTrackerValuesChangedArgs& args);
     void RequestIgnored(const winrt::InteractionTracker& sender, const winrt::InteractionTrackerRequestIgnoredArgs& args);
     void InteractingStateEntered(const winrt::InteractionTracker& sender, const winrt::InteractionTrackerInteractingStateEnteredArgs& args);
@@ -26,10 +22,11 @@ public:
     void IdleStateEntered(const winrt::InteractionTracker& sender, const winrt::InteractionTrackerIdleStateEnteredArgs& args);
     void CustomAnimationStateEntered(const winrt::InteractionTracker& sender, const winrt::InteractionTrackerCustomAnimationStateEnteredArgs& args);
 
-    //IRefreshInfoProvider
+    // IRefreshInfoProvider
     void OnRefreshStarted();
     void OnRefreshCompleted();
-    winrt::event_token InteractionRatioChanged(const winrt::TypedEventHandler<winrt::IRefreshInfoProvider, winrt::RefreshInteractionRatioChangedEventArgs>& handler);
+    winrt::event_token InteractionRatioChanged(
+        const winrt::TypedEventHandler<winrt::IRefreshInfoProvider, winrt::RefreshInteractionRatioChangedEventArgs>& handler);
     void InteractionRatioChanged(const winrt::event_token& token);
     winrt::event_token IsInteractingForRefreshChanged(const winrt::TypedEventHandler<winrt::IRefreshInfoProvider, winrt::IInspectable>& handler);
     void IsInteractingForRefreshChanged(const winrt::event_token& token);
@@ -42,7 +39,7 @@ public:
     winrt::CompositionPropertySet CompositionProperties();
     bool IsInteractingForRefresh();
 
-    //private helpers
+    // private helpers
     void RaiseInteractionRatioChanged(double interactionRatio);
     void RaiseIsInteractingForRefreshChanged();
     void RaiseRefreshStarted();

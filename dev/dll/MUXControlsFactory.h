@@ -6,11 +6,9 @@
 #include "XamlMetadataProvider.h"
 #include "XamlControlsXamlMetaDataProvider.g.h"
 
-class MUXControlsFactory :
-    public winrt::factory_implementation::XamlControlsXamlMetaDataProviderT<MUXControlsFactory, XamlMetadataProvider>
+class MUXControlsFactory : public winrt::factory_implementation::XamlControlsXamlMetaDataProviderT<MUXControlsFactory, XamlMetadataProvider>
 {
 public:
-
     static void EnsureInitialized();
 
     static void VerifyInitialized();
@@ -25,15 +23,21 @@ private:
 };
 
 #ifndef MUX_EXPERIMENTAL
-namespace winrt::Microsoft::UI::Xaml::XamlTypeInfo
-{
-    namespace factory_implementation { using XamlControlsXamlMetaDataProvider = MUXControlsFactory; }
-    namespace implementation { using XamlControlsXamlMetaDataProvider = XamlMetadataProvider; }
+namespace winrt::Microsoft::UI::Xaml::XamlTypeInfo {
+namespace factory_implementation {
+    using XamlControlsXamlMetaDataProvider = MUXControlsFactory;
 }
+namespace implementation {
+    using XamlControlsXamlMetaDataProvider = XamlMetadataProvider;
+}
+} // namespace winrt::Microsoft::UI::Xaml::XamlTypeInfo
 #else
-namespace winrt::Microsoft::Experimental::UI::Xaml::XamlTypeInfo
-{
-    namespace factory_implementation { using XamlControlsXamlMetaDataProvider = MUXControlsFactory; }
-    namespace implementation { using XamlControlsXamlMetaDataProvider = XamlMetadataProvider; }
+namespace winrt::Microsoft::Experimental::UI::Xaml::XamlTypeInfo {
+namespace factory_implementation {
+    using XamlControlsXamlMetaDataProvider = MUXControlsFactory;
 }
+namespace implementation {
+    using XamlControlsXamlMetaDataProvider = XamlMetadataProvider;
+}
+} // namespace winrt::Microsoft::Experimental::UI::Xaml::XamlTypeInfo
 #endif

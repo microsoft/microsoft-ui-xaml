@@ -5,8 +5,7 @@
 
 #include "RepeaterAutomationPeer.g.h"
 
-class RepeaterAutomationPeer :
-    public ReferenceTracker<RepeaterAutomationPeer, winrt::implementation::RepeaterAutomationPeerT>
+class RepeaterAutomationPeer : public ReferenceTracker<RepeaterAutomationPeer, winrt::implementation::RepeaterAutomationPeerT>
 {
 public:
     RepeaterAutomationPeer(winrt::ItemsRepeater const& owner);

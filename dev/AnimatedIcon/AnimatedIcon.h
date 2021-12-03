@@ -10,14 +10,14 @@
 #include "AnimatedIcon.properties.h"
 #include <queue>
 
-class AnimatedIcon :
-    public ReferenceTracker<AnimatedIcon, DeriveFromPathIconHelper_base, winrt::AnimatedIcon>,
-    public AnimatedIconProperties
+class AnimatedIcon : public ReferenceTracker<AnimatedIcon, DeriveFromPathIconHelper_base, winrt::AnimatedIcon>, public AnimatedIconProperties
 {
 
 public:
     AnimatedIcon();
-    ~AnimatedIcon() {}
+    ~AnimatedIcon()
+    {
+    }
 
     // IFrameworkElement
     void OnApplyTemplate();
@@ -31,15 +31,14 @@ public:
     void OnSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&);
     void OnFallbackIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&);
     void OnMirroredWhenRightToLeftPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&);
-    static void OnAnimatedIconStatePropertyChanged(
-        const winrt::DependencyObject& sender,
-        const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnAncestorAnimatedIconStatePropertyChanged(
-        const winrt::DependencyObject& sender,
-        const winrt::DependencyProperty& args);
+    static void OnAnimatedIconStatePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnAncestorAnimatedIconStatePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnStatePropertyChanged();
 
-    static winrt::DependencyProperty AnimatedIconStateProperty() { return s_StateProperty; }
+    static winrt::DependencyProperty AnimatedIconStateProperty()
+    {
+        return s_StateProperty;
+    }
 
     // TestHooks
     void SetAnimationQueueBehavior(winrt::AnimatedIconAnimationQueueBehavior behavior);
@@ -49,6 +48,7 @@ public:
     winrt::hstring GetLastAnimationSegment();
     winrt::hstring GetLastAnimationSegmentStart();
     winrt::hstring GetLastAnimationSegmentEnd();
+
 private:
     winrt::Visual ConstructVisual();
     bool InsertVisual(winrt::Visual visual);
@@ -83,11 +83,10 @@ private:
     float m_speedUpMultiplier{ 7.0f };
     bool m_isSpeedUp{ false };
 
-
     winrt::Composition::CompositionPropertySet m_progressPropertySet{ nullptr };
     winrt::Composition::CompositionScopedBatch m_batch{ nullptr };
 
-    ScopedBatchCompleted_revoker m_batchCompletedRevoker{ };
+    ScopedBatchCompleted_revoker m_batchCompletedRevoker{};
     PropertyChanged_revoker m_ancestorStatePropertyChangedRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedRevoker{};
     PropertyChanged_revoker m_foregroundColorPropertyChangedRevoker{};

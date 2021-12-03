@@ -18,41 +18,54 @@ struct __declspec(novtable) ITrackerHandleManager
     // ITrackerPtrWrapperManager interface
     //
 
-    void NewTrackerHandle(::TrackerHandle &handle)  const try
+    void NewTrackerHandle(::TrackerHandle& handle) const
+    try
     {
 #ifdef _DEBUG
         MUX_ASSERT_NOASSUME(m_wasEnsureCalled);
 #endif
         winrt::check_hresult(m_trackerOwnerInnerNoRef->CreateTrackerHandle(&handle));
     }
-    catch (...) {}
+    catch (...)
+    {
+    }
 
-    void DeleteTrackerHandle(::TrackerHandle handle) const try
+    void DeleteTrackerHandle(::TrackerHandle handle) const
+    try
     {
 #ifdef _DEBUG
         MUX_ASSERT_NOASSUME(m_wasEnsureCalled);
 #endif
         winrt::check_hresult(m_trackerOwnerInnerNoRef->DeleteTrackerHandle(handle));
     }
-    catch (...) {}
+    catch (...)
+    {
+    }
 
-    void SetTrackerValue(::TrackerHandle handle, IUnknown* value) const try
+    void SetTrackerValue(::TrackerHandle handle, IUnknown* value) const
+    try
     {
 #ifdef _DEBUG
         MUX_ASSERT_NOASSUME(m_wasEnsureCalled);
 #endif
         winrt::check_hresult(m_trackerOwnerInnerNoRef->SetTrackerValue(handle, value));
     }
-    catch (...) {}
+    catch (...)
+    {
+    }
 
-    bool GetTrackerValue(::TrackerHandle handle, _Outptr_result_maybenull_ IUnknown** value) const try
+    bool GetTrackerValue(::TrackerHandle handle, _Outptr_result_maybenull_ IUnknown** value) const
+    try
     {
 #ifdef _DEBUG
         MUX_ASSERT_NOASSUME(m_wasEnsureCalled);
 #endif
         return !!m_trackerOwnerInnerNoRef->TryGetSafeTrackerValue(handle, value);
     }
-    catch (...) { return false; }
+    catch (...)
+    {
+        return false;
+    }
 
     bool ShouldFallbackToComPointers() const
     {
@@ -123,10 +136,11 @@ enum class TrackerRefFallback
     FallbackToComPtrBeforeRS4
 };
 
-template<typename T, TrackerRefFallback fallback = TrackerRefFallback::None, typename RawStorageT = ::IUnknown*>
+template <typename T, TrackerRefFallback fallback = TrackerRefFallback::None, typename RawStorageT = ::IUnknown*>
 class tracker_ref sealed
 {
     using IUnknownAccessorT = typename IUnknownAccessor<T>;
+
 public:
     explicit tracker_ref(const ITrackerHandleManager* owner)
     {
@@ -141,7 +155,10 @@ public:
 
     explicit tracker_ref(nullptr_t)
     {
-        static_assert(false, "tracker_ref should only be used in ReferenceRuntimeClass-derived field members and 'this' should be passed for the owner");
+        static_assert(
+            false,
+            "tracker_ref should only be used in ReferenceRuntimeClass-derived field members and 'this' should be passed for the "
+            "owner");
     }
 
     ~tracker_ref()
@@ -179,10 +196,8 @@ public:
     // carefully so that we don't end up with two tracker_ref instances
     // with the same data.
     // Move constructor.
-    tracker_ref(tracker_ref&& other) noexcept
-        : m_owner(std::move(other.m_owner))
-        , m_handle(std::move(other.m_handle))
-        , m_valueNoRef(std::move(other.m_valueNoRef))
+    tracker_ref(tracker_ref&& other) noexcept :
+        m_owner(std::move(other.m_owner)), m_handle(std::move(other.m_handle)), m_valueNoRef(std::move(other.m_valueNoRef))
     {
         other.m_owner = nullptr;
         other.m_handle = nullptr;
@@ -211,7 +226,8 @@ public:
         }
         else
         {
-            MUX_ASSERT_MSG(m_owner == other.m_owner, "When assigning, tracker_ref needs to either have its owner not set or same owner");
+            MUX_ASSERT_MSG(
+                m_owner == other.m_owner, "When assigning, tracker_ref needs to either have its owner not set or same owner");
         }
         set(other.get());
         return *this;
@@ -256,7 +272,7 @@ public:
 #if _DEBUG
         // Do some debug validation to make sure that m_valueNoRef and the GetTrackerValue result don't
         // get out of sync. Also if GetTrackerValue returns false it means that the caller should have been
-        // using safe_get instead because we're being called during finalization and the target already got 
+        // using safe_get instead because we're being called during finalization and the target already got
         // collected.
         auto succeeded = false;
 
@@ -267,14 +283,13 @@ public:
             MUX_ASSERT_MSG(succeeded, "GetTrackerValue returned false, should have called safe_get instead?");
 
             // Check if the pointers are identical or, if not, that their IUnknowns QI to the same thing
-            MUX_ASSERT(
-                unknown.as<winrt::IUnknown>() == (reinterpret_cast<const T&>(m_valueNoRef)).as<winrt::IUnknown>());
+            MUX_ASSERT(unknown.as<winrt::IUnknown>() == (reinterpret_cast<const T&>(m_valueNoRef)).as<winrt::IUnknown>());
         }
 #endif
-        return reinterpret_cast<const T &>(m_valueNoRef);
+        return reinterpret_cast<const T&>(m_valueNoRef);
     }
 
-    template<typename V = T>
+    template <typename V = T>
     V safe_get(bool useSafeGet = true) const
     {
         if (m_valueNoRef == nullptr)
@@ -297,7 +312,7 @@ public:
             else
             {
                 // Always safe to use values in fallback mode or "!useSafeGet".
-                // useSafeGet is an optimization for callers who mostly want to use the faster get() version but the 
+                // useSafeGet is an optimization for callers who mostly want to use the faster get() version but the
                 // call site may be called during the destructor path.
                 return get().as<V>();
             }
@@ -359,7 +374,8 @@ private:
         // On pre-RS4 builds we sometimes hit a crash when using tracker ref:
         // Bug 13904947: AV during ResetReferencesFromSparcePropertyValues in QUIAffinityReleaseQueue::DoCleanup
         // In these cases, we fallback to using a standard com pointer.
-        return (fallback == TrackerRefFallback::FallbackToComPtrBeforeRS4 && !SharedHelpers::IsRS4OrHigher()) || m_owner->ShouldFallbackToComPointers();
+        return (fallback == TrackerRefFallback::FallbackToComPtrBeforeRS4 && !SharedHelpers::IsRS4OrHigher()) ||
+               m_owner->ShouldFallbackToComPointers();
     }
 
 private:
@@ -374,13 +390,13 @@ bool operator<(const tracker_ref<T>& lhs, const tracker_ref<T>& rhs)
     return lhs.get() < rhs.get();
 }
 
-template<typename T>
+template <typename T>
 using tracker_com_ref = tracker_ref<com_ptr<T>, TrackerRefFallback::None, T*>;
 
 // Specialization of tracker_ptr for hstring just so containers don't have to do something special.
 // HSTRING doesn't need to be tracked but without this specialization it's hard for something like Vector<T>
 // to always use tracker_ref<T> as its storage type.
-template<>
+template <>
 struct tracker_ref<winrt::hstring, TrackerRefFallback::None, IUnknown*> : public winrt::hstring
 {
     explicit tracker_ref(const ITrackerHandleManager* /*owner*/)
@@ -412,14 +428,12 @@ struct tracker_ref<winrt::hstring, TrackerRefFallback::None, IUnknown*> : public
 class ReferenceTrackerContainerBase
 {
 public:
-    ReferenceTrackerContainerBase(ITrackerHandleManager* owner)
-        : m_owner{ owner }
+    ReferenceTrackerContainerBase(ITrackerHandleManager* owner) : m_owner{ owner }
     {
 #if _DEBUG
         m_owner->DEBUG_NotifyTrackerActive();
 #endif
     }
-
 
     ~ReferenceTrackerContainerBase()
     {
@@ -437,7 +451,6 @@ private:
     ITrackerHandleManager* m_owner;
 };
 
-
 template <typename ImplT, typename T>
 struct ReferenceTrackerStorageHelper
 {
@@ -454,7 +467,10 @@ struct ReferenceTrackerStorageHelper
     }
 
 private:
-    const ImplT* Impl() const { return static_cast<const ImplT*>(this); }
+    const ImplT* Impl() const
+    {
+        return static_cast<const ImplT*>(this);
+    }
 };
 
 template <typename T>

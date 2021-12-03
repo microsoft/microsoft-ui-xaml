@@ -4,14 +4,12 @@
 #pragma once
 
 // We do some fakery here to make this work downlevel.
-// Windows::UI::Xaml:ElementFactoryRecycleArgs type has been added to WUX in RS5. However, we want Repeater to use it downlevel. 
+// Windows::UI::Xaml:ElementFactoryRecycleArgs type has been added to WUX in RS5. However, we want Repeater to use it downlevel.
 // The way we achieve this is by implementing the Window::UI::Xaml::IElementFactoryRecycleArgs
 // interface here on our own type and 'lie' that our runtime class name is Windows.UI.Xaml.ElementFactoryRecycleArgs !
 
 class ElementFactoryRecycleArgsDownlevel
-    : public ReferenceTracker<
-        ElementFactoryRecycleArgsDownlevel,
-        reference_tracker_implements_t<winrt::Windows::UI::Xaml::IElementFactoryRecycleArgs>::type>
+    : public ReferenceTracker<ElementFactoryRecycleArgsDownlevel, reference_tracker_implements_t<winrt::Windows::UI::Xaml::IElementFactoryRecycleArgs>::type>
 {
 public:
     using class_type = winrt::ElementFactoryRecycleArgs;

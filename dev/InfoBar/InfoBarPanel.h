@@ -5,9 +5,7 @@
 #include "InfoBarPanel.g.h"
 #include "InfoBarPanel.properties.h"
 
-class InfoBarPanel :
-    public ReferenceTracker<InfoBarPanel, winrt::implementation::InfoBarPanelT>,
-    public InfoBarPanelProperties
+class InfoBarPanel : public ReferenceTracker<InfoBarPanel, winrt::implementation::InfoBarPanelT>, public InfoBarPanelProperties
 {
 public:
     winrt::Size MeasureOverride(winrt::Size const& availableSize);

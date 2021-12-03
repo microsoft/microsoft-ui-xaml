@@ -84,7 +84,6 @@ void TeachingTipAutomationPeer::Close()
 
 void TeachingTipAutomationPeer::SetVisualState(winrt::WindowVisualState state)
 {
-    
 }
 
 bool TeachingTipAutomationPeer::WaitForInputIdle(int32_t milliseconds)
@@ -106,7 +105,8 @@ void TeachingTipAutomationPeer::RaiseWindowOpenedEvent(wstring_view const& displ
 {
     if (winrt::IAutomationPeer7 automationPeer7 = *this)
     {
-        automationPeer7.RaiseNotificationEvent(winrt::Automation::Peers::AutomationNotificationKind::Other,
+        automationPeer7.RaiseNotificationEvent(
+            winrt::Automation::Peers::AutomationNotificationKind::Other,
             winrt::Peers::AutomationNotificationProcessing::CurrentThenMostRecent,
             displayString,
             L"TeachingTipOpenedActivityId");

@@ -43,7 +43,10 @@ AcrylicBrush::~AcrylicBrush()
 void AcrylicBrush::OnElementConnected(winrt::DependencyObject element) noexcept
 {
     // XCBB will use Fallback rendering, so do not run derived Brush code.
-    if (SharedHelpers::IsInDesignMode()) { return; }
+    if (SharedHelpers::IsInDesignMode())
+    {
+        return;
+    }
 
     bool hasNewMaterialPolicy = false;
     winrt::XamlIsland xamlIsland = winrt::XamlIsland::GetIslandFromElement(element.try_as<winrt::UIElement>());
@@ -91,7 +94,6 @@ void AcrylicBrush::OnElementConnected(winrt::DependencyObject element) noexcept
     }
     WI_ASSERT_MSG_NOASSUME(m_materialProperties, "No MaterialProperties available in AcrylicBrush::OnElementConnected");
 
-
     // DispatcherQueue needed as TransparencyPolicyChanged is raised off thread
     if (!m_dispatcherQueue)
     {
@@ -108,26 +110,25 @@ void AcrylicBrush::OnElementConnected(winrt::DependencyObject element) noexcept
             // TransparencyPolicyCHanged is called on a worker thread. To ensure correct handler execution, make sure to:
             // (1) Capture weak ref to this to ensure brush still exists when the handler is scheduled to the UI thread.
             // (2) Capture DispatcherQueue so we don't need to access the brush off-thread.
-            m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(winrt::auto_revoke, {
-                [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue] (const winrt::IMaterialProperties& sender, const winrt::IInspectable& args)
-                {
-                    dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler([weakThis]()
-                    {
+            m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(
+                winrt::auto_revoke,
+                { [weakThis = get_weak(),
+                   dispatcherQueue = m_dispatcherQueue](const winrt::IMaterialProperties& sender, const winrt::IInspectable& args) {
+                    dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler([weakThis]() {
                         auto target = weakThis.get();
                         if (target)
                         {
                             // Note HostBackdropTransparencyPolicy also incorporates the IsFullScreenOrTabletMode status tracked by legacy MaterialHelper implementation
                             target->PolicyStatusChangedHelper(
                                 MaterialHelper::BrushTemplates<AcrylicBrush>::IsDisabledByInAppTransparencyPolicy(target.get()),
-                                MaterialHelper::BrushTemplates<AcrylicBrush>::IsDisabledByHostBackdropTransparencyPolicy(target.get())
-                                );
+                                MaterialHelper::BrushTemplates<AcrylicBrush>::IsDisabledByHostBackdropTransparencyPolicy(target.get()));
                         }
                     }));
-                }
-                });
+                } });
         }
 
-        m_additionalMaterialPolicyChangedToken = MaterialHelper::AdditionalPolicyChanged([this](auto sender) { OnAdditionalMaterialPolicyChanged(sender); });
+        m_additionalMaterialPolicyChangedToken =
+            MaterialHelper::AdditionalPolicyChanged([this](auto sender) { OnAdditionalMaterialPolicyChanged(sender); });
     }
 
     m_isConnected = true;
@@ -135,22 +136,25 @@ void AcrylicBrush::OnElementConnected(winrt::DependencyObject element) noexcept
     // Apply initial policy state
     PolicyStatusChangedHelper(
         MaterialHelper::BrushTemplates<AcrylicBrush>::IsDisabledByInAppTransparencyPolicy(this),
-        MaterialHelper::BrushTemplates<AcrylicBrush>::IsDisabledByHostBackdropTransparencyPolicy(this)
-    );
+        MaterialHelper::BrushTemplates<AcrylicBrush>::IsDisabledByHostBackdropTransparencyPolicy(this));
 }
 #endif
 
 void AcrylicBrush::OnConnected()
 {
     // XCBB will use Fallback rendering, so do not run derived Brush code.
-    if (SharedHelpers::IsInDesignMode()) { return; }
+    if (SharedHelpers::IsInDesignMode())
+    {
+        return;
+    }
 
     m_fallbackColorChangedToken.value = RegisterPropertyChangedCallback(
         winrt::XamlCompositionBrushBase::FallbackColorProperty(), { this, &AcrylicBrush::OnFallbackColorChanged });
 
 #ifndef BUILD_WINDOWS
     // NOTE: This will call back the status changed callback so do it before setting isConnected = true so we don't run UpdateAcrylicStatus again.
-    m_materialPolicyChangedToken = MaterialHelper::PolicyChanged([this](auto sender, auto args) { OnMaterialPolicyStatusChanged(sender, args); });
+    m_materialPolicyChangedToken =
+        MaterialHelper::PolicyChanged([this](auto sender, auto args) { OnMaterialPolicyStatusChanged(sender, args); });
 
     // Stay subscribed to NoiseChanged events when brush disconnected so that it gets marked to pick up new noise when (and if) it gets reconnected.
     if (!m_noiseChangedToken.value)
@@ -162,7 +166,8 @@ void AcrylicBrush::OnConnected()
     m_currentWindow.set(currentWindow);
     m_windowActivatedToken = currentWindow.Activated({ this, &AcrylicBrush::OnCurrentWindowActivated });
 
-    m_windowSizeChangedToken = MaterialHelper::WindowSizeChanged([this](auto sender, auto args) { OnWindowSizeChanged(sender, args); });
+    m_windowSizeChangedToken =
+        MaterialHelper::WindowSizeChanged([this](auto sender, auto args) { OnWindowSizeChanged(sender, args); });
     UpdateWindowActivationStatus();
 
     m_isConnected = true;
@@ -172,7 +177,10 @@ void AcrylicBrush::OnConnected()
 
 void AcrylicBrush::OnDisconnected()
 {
-    if (SharedHelpers::IsInDesignMode()) { return; }
+    if (SharedHelpers::IsInDesignMode())
+    {
+        return;
+    }
 
     m_isConnected = false;
     m_isUsingAcrylicBrush = false;
@@ -234,16 +242,12 @@ winrt::CompositionAnimation AcrylicBrush::MakeColorAnimation(const winrt::Color&
 {
     auto animation = compositor.CreateColorKeyFrameAnimation();
     animation.InsertKeyFrame(1.0, color);
-    animation.Duration(duration.count() == 0 ? winrt::TimeSpan::duration(1 * 10000) : duration);     // Zero duration KeyFrameAnimations not supported, use 1ms duration in that case.
+    animation.Duration(duration.count() == 0 ? winrt::TimeSpan::duration(1 * 10000) : duration); // Zero duration KeyFrameAnimations not supported, use 1ms duration in that case.
     return animation;
 }
 
 winrt::CompositionAnimation AcrylicBrush::MakeFloatAnimation(
-    float fromValue,
-    float toValue,
-    const winrt::TimeSpan& duration,
-    const winrt::CompositionEasingFunction& easing,
-    const winrt::Compositor& compositor)
+    float fromValue, float toValue, const winrt::TimeSpan& duration, const winrt::CompositionEasingFunction& easing, const winrt::Compositor& compositor)
 {
     auto animation = compositor.CreateScalarKeyFrameAnimation();
     animation.InsertKeyFrame(0.0, fromValue);
@@ -269,7 +273,7 @@ void AcrylicBrush::OnFallbackColorChanged(const winrt::DependencyObject& /*sende
     {
         if (m_isUsingAcrylicBrush && !m_isWaitingForFallbackAnimationComplete)
         {
-            // It's AcrylicBrush but not crossfading effect, then do nothing because effect doesn't includes FallbackColor.Color 
+            // It's AcrylicBrush but not crossfading effect, then do nothing because effect doesn't includes FallbackColor.Color
         }
         else
         {
@@ -288,9 +292,7 @@ void AcrylicBrush::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
     {
         UpdateAcrylicBrush();
     }
-    else if (property == s_TintColorProperty ||
-        property == s_TintOpacityProperty ||
-        property == s_TintLuminosityOpacityProperty)
+    else if (property == s_TintColorProperty || property == s_TintOpacityProperty || property == s_TintLuminosityOpacityProperty)
     {
         const bool shouldUseOpaqueBrush = GetEffectiveTintColor().A == 255;
 
@@ -313,7 +315,8 @@ void AcrylicBrush::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
             {
                 // Update luminosity any time any of the three properties change
                 const auto newLuminosityColor = GetEffectiveLuminosityColor();
-                m_brush.StartAnimation(LuminosityColorColor, MakeColorAnimation(newLuminosityColor, TintTransitionDuration(), m_brush.Compositor()));
+                m_brush.StartAnimation(
+                    LuminosityColorColor, MakeColorAnimation(newLuminosityColor, TintTransitionDuration(), m_brush.Compositor()));
             }
         }
 
@@ -357,17 +360,17 @@ double GetTintOpacityModifier(winrt::Color tintColor)
         return 1.0;
     }
 
-    // This method supresses the maximum allowable tint opacity depending on the luminosity and saturation of a color by 
-    // compressing the range of allowable values - for example, a user-defined value of 100% will be mapped to 45% for pure 
-    // white (100% luminosity), 85% for pure black (0% luminosity), and 90% for pure gray (50% luminosity).  The intensity of 
+    // This method supresses the maximum allowable tint opacity depending on the luminosity and saturation of a color by
+    // compressing the range of allowable values - for example, a user-defined value of 100% will be mapped to 45% for pure
+    // white (100% luminosity), 85% for pure black (0% luminosity), and 90% for pure gray (50% luminosity).  The intensity of
     // the effect increases linearly as luminosity deviates from 50%.  After this effect is calculated, we cancel it out
     // linearly as saturation increases from zero.
 
     const double midPoint = 0.50; // Mid point of HsvV range that these calculations are based on. This is here for easy tuning.
 
-    const double whiteMaxOpacity = 0.45; // 100% luminosity
+    const double whiteMaxOpacity = 0.45;    // 100% luminosity
     const double midPointMaxOpacity = 0.90; // 50% luminosity
-    const double blackMaxOpacity = 0.85; // 0% luminosity
+    const double blackMaxOpacity = 0.85;    // 0% luminosity
 
     const Rgb rgb = RgbFromColor(tintColor);
     const Hsv hsv = RgbToHsv(rgb);
@@ -459,7 +462,6 @@ winrt::Color GetLuminosityColor(winrt::Color tintColor, winrt::IReference<double
         // Finally, combine the luminosity opacity and the HsvV-clamped tint color
         return ColorFromRgba(rgbLuminosityColor, std::min(mappedTintOpacity, 1.0));
     }
-
 }
 
 void AcrylicBrush::EnsureNoiseBrush()
@@ -498,8 +500,7 @@ void AcrylicBrush::OnAdditionalMaterialPolicyChanged(const com_ptr<MaterialHelpe
 {
     PolicyStatusChangedHelper(
         MaterialHelper::BrushTemplates<AcrylicBrush>::IsDisabledByInAppTransparencyPolicy(this),
-        MaterialHelper::BrushTemplates<AcrylicBrush>::IsDisabledByHostBackdropTransparencyPolicy(this)
-    );
+        MaterialHelper::BrushTemplates<AcrylicBrush>::IsDisabledByHostBackdropTransparencyPolicy(this));
 }
 #else
 
@@ -548,13 +549,13 @@ bool AcrylicBrush::IsWindowActive(const winrt::CoreWindow& coreWindow)
     const winrt::CoreWindowActivationMode activationMode = coreWindow.ActivationMode();
 
     return activationMode == winrt::CoreWindowActivationMode::ActivatedNotForeground ||
-        activationMode == winrt::CoreWindowActivationMode::ActivatedInForeground;
+           activationMode == winrt::CoreWindowActivationMode::ActivatedInForeground;
 }
 
 void AcrylicBrush::UpdateWindowActivationStatus()
 {
-    // With the new RS3 API CoreWindow.ActivationMode we can set the right activation in case brush is connected while inactive (Bug 11657917).
-    // Unfortunately we can't fix this for RS2 or older RS3 builds. 
+    // With the new RS3 API CoreWindow.ActivationMode we can set the right activation in case brush is connected while inactive
+    // (Bug 11657917). Unfortunately we can't fix this for RS2 or older RS3 builds.
     if (SharedHelpers::IsCoreWindowActivationModeAvailable())
     {
         auto coreWindow = winrt::Window::Current().CoreWindow();
@@ -596,8 +597,7 @@ winrt::CompositionEffectBrush AcrylicBrush::CreateAcrylicBrushWorker(
     bool useCache)
 {
     auto effectFactory = GetOrCreateAcrylicBrushCompositionEffectFactory(
-        compositor, shouldBrushBeOpaque, useWindowAcrylic, useCrossFadeEffect,
-        initialTintColor, initialLuminosityColor, initialFallbackColor, useCache);
+        compositor, shouldBrushBeOpaque, useWindowAcrylic, useCrossFadeEffect, initialTintColor, initialLuminosityColor, initialFallbackColor, useCache);
 
     // Create the Comp effect Brush
     winrt::CompositionEffectBrush acrylicBrush = effectFactory.CreateBrush();
@@ -628,8 +628,7 @@ winrt::CompositionEffectBrush AcrylicBrush::CreateAcrylicBrushWorker(
 }
 
 winrt::IGraphicsEffect AcrylicBrush::CombineNoiseWithTintEffect_Legacy(
-    const winrt::IGraphicsEffectSource& blurredSource,
-    const winrt::Microsoft::UI::Private::Composition::Effects::ColorSourceEffect& tintColorEffect)
+    const winrt::IGraphicsEffectSource& blurredSource, const winrt::Microsoft::UI::Private::Composition::Effects::ColorSourceEffect& tintColorEffect)
 {
     // Apply saturation
     auto saturationEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::SaturationEffect>();
@@ -661,8 +660,7 @@ winrt::IGraphicsEffect AcrylicBrush::CombineNoiseWithTintEffect_Luminosity(
     const winrt::IGraphicsEffectSource& blurredSource,
     const winrt::Microsoft::UI::Private::Composition::Effects::ColorSourceEffect& tintColorEffect,
     const winrt::Color initialLuminosityColor,
-    std::vector<winrt::hstring>& animatedProperties
-)
+    std::vector<winrt::hstring>& animatedProperties)
 {
     animatedProperties.push_back(winrt::hstring(LuminosityColorColor));
 
@@ -696,17 +694,17 @@ winrt::IGraphicsEffect AcrylicBrush::CombineNoiseWithTintEffect_Luminosity(
 
 // ******************************About the Luminosity-based Acrylic Recipe *****************************
 //
-// In 19H1, the Acryic recipe was altered to improve integration of Acrylic surfaces with Shadows using 
-// a Luminosity effect. Without this a ThemeShadow cast by an Acrylic surface was visible through it 
+// In 19H1, the Acryic recipe was altered to improve integration of Acrylic surfaces with Shadows using
+// a Luminosity effect. Without this a ThemeShadow cast by an Acrylic surface was visible through it
 // as a dark blur, resulting in a muddied appearence that did not match the Acrylic exppectations.
-// A Luminosity effect is now used to reduce contrast in the Acrylic source and minimize the 
+// A Luminosity effect is now used to reduce contrast in the Acrylic source and minimize the
 // shadow's contribution to Acrylic output. See comment on Luminosity in recipe description below for details.
 //
 // Since ThemeShadow is only present in 19H1+ OS, the new recipe is only needed when when targeting this.
-// In addition, RS2 did not have the needed Luminosity blend mode, so the legacy acrylic path needed to be 
+// In addition, RS2 did not have the needed Luminosity blend mode, so the legacy acrylic path needed to be
 // maintained. For consistency, keep the legacy recipe afor all MUX downlevel configs (i.e. targeting RS5 and lower).
 //
-// CreateAcrylicBrushCompositionEffectFactory() is structured to avoid duplicated code, however 
+// CreateAcrylicBrushCompositionEffectFactory() is structured to avoid duplicated code, however
 // the comment below represents the original and new recipe in full as this is more clear.
 //
 // For perf reason, CrossFadeEffect is only used in animation transition between Acrylic<->Fallback
@@ -734,7 +732,7 @@ winrt::IGraphicsEffect AcrylicBrush::CombineNoiseWithTintEffect_Luminosity(
 //                                                            backdrop, but gets the lightness (Luminosity) value from a solid color layer. The color
 //                                                            we use is made up of the RGB values of the Tint color, and the A value is set to "luminosity opacity".
 //                                                            The purpose is to reduce contrast - allowing colors to come through, but blocking sharp differences
-//                                                            in brightness (such as those caused by shadows).                    
+//                                                            in brightness (such as those caused by shadows).
 //                                                            More on luminosity blend here:
 //                                                            https://www.photoshopessentials.com/photo-editing/layer-blend-modes/luminosity/ -->
 //                  <ColorSourceEffect />   <!-- Luminosity color -->
@@ -806,8 +804,8 @@ winrt::CompositionEffectFactory AcrylicBrush::CreateAcrylicBrushCompositionEffec
 {
     winrt::CompositionEffectFactory effectFactory{ nullptr };
 
-    // The part of the effect graph below the noise layer. This is either a semi-transparent tint (common) or an opaque tint (uncommon).
-    // Opaque tint may be used by apps wishing add the complexity of noise to their brand color, for example.
+    // The part of the effect graph below the noise layer. This is either a semi-transparent tint (common) or an opaque tint
+    // (uncommon). Opaque tint may be used by apps wishing add the complexity of noise to their brand color, for example.
     winrt::IGraphicsEffect tintOutput;
 
     // Tint Color - either used directly or in a Color blend over a blurred backdrop
@@ -845,9 +843,9 @@ winrt::CompositionEffectFactory AcrylicBrush::CreateAcrylicBrushCompositionEffec
             blurredSource = *gaussianBlurEffect;
         }
 
-        tintOutput = SharedHelpers::Is19H1OrHigher() ?
-            CombineNoiseWithTintEffect_Luminosity(blurredSource, *tintColorEffect, initialLuminosityColor, animatedProperties) :
-            CombineNoiseWithTintEffect_Legacy(blurredSource, *tintColorEffect);
+        tintOutput = SharedHelpers::Is19H1OrHigher()
+                         ? CombineNoiseWithTintEffect_Luminosity(blurredSource, *tintColorEffect, initialLuminosityColor, animatedProperties)
+                         : CombineNoiseWithTintEffect_Legacy(blurredSource, *tintColorEffect);
     }
 
     // Create noise with alpha and wrap:
@@ -911,18 +909,10 @@ winrt::CompositionEffectFactory AcrylicBrush::GetOrCreateAcrylicBrushComposition
         useWindowAcrylic,
         useCrossFadeEffect,
         useCache,
-        [&compositor, shouldBrushBeOpaque, useWindowAcrylic,
-        useCrossFadeEffect, initialTintColor, initialLuminosityColor,
-        initialFallbackColor]() {
+        [&compositor, shouldBrushBeOpaque, useWindowAcrylic, useCrossFadeEffect, initialTintColor, initialLuminosityColor, initialFallbackColor]() {
             return CreateAcrylicBrushCompositionEffectFactory(
-                compositor,
-                shouldBrushBeOpaque,
-                useWindowAcrylic,
-                useCrossFadeEffect,
-                initialTintColor,
-                initialLuminosityColor,
-                initialFallbackColor); }
-    );
+                compositor, shouldBrushBeOpaque, useWindowAcrylic, useCrossFadeEffect, initialTintColor, initialLuminosityColor, initialFallbackColor);
+        });
 }
 
 void AcrylicBrush::CreateAcrylicBrush(bool useCrossFadeEffect, bool forceCreateAcrylicBrush)
@@ -933,7 +923,7 @@ void AcrylicBrush::CreateAcrylicBrush(bool useCrossFadeEffect, bool forceCreateA
     const auto compositor = winrt::Window::Current().Compositor();
 
     const auto fallbackColor = FallbackColor();
-    //if forceCreateAcrylicBrush=true, m_isUsingAcrylicBrush is ignored.
+    // if forceCreateAcrylicBrush=true, m_isUsingAcrylicBrush is ignored.
     if (forceCreateAcrylicBrush || m_isUsingAcrylicBrush)
     {
         EnsureNoiseBrush();
@@ -945,15 +935,7 @@ void AcrylicBrush::CreateAcrylicBrush(bool useCrossFadeEffect, bool forceCreateA
 
         // use cache for AcrylicBrushEffectFactory
         const auto acrylicBrush = CreateAcrylicBrushWorker(
-            compositor,
-            m_isUsingWindowAcrylic,
-            useCrossFadeEffect,
-            tintColor,
-            luminosityColor,
-            fallbackColor,
-            m_isUsingOpaqueBrush,
-            true /* useCache */);
-
+            compositor, m_isUsingWindowAcrylic, useCrossFadeEffect, tintColor, luminosityColor, fallbackColor, m_isUsingOpaqueBrush, true /* useCache */);
 
         // Set noise image source
 #if BUILD_WINDOWS
@@ -1007,7 +989,7 @@ void AcrylicBrush::UpdateAcrylicBrush()
 
     if (m_isConnected)
     {
-        // 
+        //
         // In-app acrylic should be enabled unless materials are disabled.
         // The spec for window acrylic is that it should be disabled on desktop when:
         // * The window is full screen.
@@ -1021,27 +1003,25 @@ void AcrylicBrush::UpdateAcrylicBrush()
         const bool shouldUseOpaqueBrush = GetEffectiveTintColor().A == 255;
 
 #if BUILD_WINDOWS
-        // TODO_FluentIslands: For now the IgnoreAreEffectsFast test hook will override all MaterialProperties policy 
-        //                     and enable fluent effects, since MP aggregates all policy compoenents and does not allow 
+        // TODO_FluentIslands: For now the IgnoreAreEffectsFast test hook will override all MaterialProperties policy
+        //                     and enable fluent effects, since MP aggregates all policy compoenents and does not allow
         //                     us to ignore AreEffectsFast piece only.
-        const bool isDisabledByMaterialPropertiesPolicy = (!isUsingWindowAcrylic && m_isDisabledByBackdropPolicy) ||
-            (isUsingWindowAcrylic && m_isDisabledByHostBackdropPolicy);
+        const bool isDisabledByMaterialPropertiesPolicy =
+            (!isUsingWindowAcrylic && m_isDisabledByBackdropPolicy) || (isUsingWindowAcrylic && m_isDisabledByHostBackdropPolicy);
 
         if (isDisabledByMaterialPropertiesPolicy || alwaysUseFallback || m_isInterIsland)
 #else
-        if (m_isDisabledByMaterialPolicy ||
-            (isUsingWindowAcrylic && (m_isFullScreenOrTabletMode || !m_isActivated)) ||
-            alwaysUseFallback)
+        if (m_isDisabledByMaterialPolicy || (isUsingWindowAcrylic && (m_isFullScreenOrTabletMode || !m_isActivated)) || alwaysUseFallback)
 #endif
         {
             isUsingAcrylicBrush = false;
         }
 
         // Covers cases where we need a new brush (no animations)
-        if (!m_brush ||                                         // Create brush for the first time
-            m_noiseChanged ||                                   // Recreate brush with new noise
-            (m_isUsingOpaqueBrush != shouldUseOpaqueBrush) ||   // Recreate the brush with (or without) the opaque tint optimization
-            (m_isUsingWindowAcrylic != isUsingWindowAcrylic))   // Recreate brush with new type of transparency (Backdrop vs HostBackdrop)
+        if (!m_brush ||                                       // Create brush for the first time
+            m_noiseChanged ||                                 // Recreate brush with new noise
+            (m_isUsingOpaqueBrush != shouldUseOpaqueBrush) || // Recreate the brush with (or without) the opaque tint optimization
+            (m_isUsingWindowAcrylic != isUsingWindowAcrylic)) // Recreate brush with new type of transparency (Backdrop vs HostBackdrop)
         {
             m_isUsingWindowAcrylic = isUsingWindowAcrylic;
             m_isUsingAcrylicBrush = isUsingAcrylicBrush;
@@ -1084,13 +1064,13 @@ void AcrylicBrush::UpdateAcrylicBrush()
                     acrylicStart = 1.0f;
                 }
 
-                CreateAnimation(m_brush,
+                CreateAnimation(
+                    m_brush,
                     m_waitingForFallbackAnimationCompleteBatch,
                     m_waitingForFallbackAnimationCompleteToken,
                     acrylicStart,
                     acrylicEnd,
-                    [strongThis](auto sender, auto args)
-                    {
+                    [strongThis](auto sender, auto args) {
                         strongThis->CancelFallbackAnimationCompleteWait();
 
                         // When the animation completes, go create the non crossfading acrylic brush.

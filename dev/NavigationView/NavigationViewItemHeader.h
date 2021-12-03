@@ -6,13 +6,12 @@
 #include "NavigationViewItemBase.h"
 #include "NavigationViewItemHeader.g.h"
 
-class NavigationViewItemHeader :
-    public winrt::implementation::NavigationViewItemHeaderT<NavigationViewItemHeader, NavigationViewItemBase>
+class NavigationViewItemHeader : public winrt::implementation::NavigationViewItemHeaderT<NavigationViewItemHeader, NavigationViewItemBase>
 {
 public:
     ForwardRefToBaseReferenceTracker(NavigationViewItemBase)
 
-    NavigationViewItemHeader();
+        NavigationViewItemHeader();
 
     // IFrameworkElementOverrides
     void OnApplyTemplate() override;
@@ -31,5 +30,4 @@ private:
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
 
     tracker_ref<winrt::Grid> m_rootGrid{ this };
-
 };

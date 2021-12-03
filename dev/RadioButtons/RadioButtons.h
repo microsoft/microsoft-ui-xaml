@@ -22,9 +22,7 @@ public:
     winrt::ToggleButton::Unchecked_revoker uncheckedRevoker;
 };
 
-class RadioButtons :
-    public ReferenceTracker<RadioButtons, winrt::implementation::RadioButtonsT>,
-    public RadioButtonsProperties
+class RadioButtons : public ReferenceTracker<RadioButtons, winrt::implementation::RadioButtonsT>, public RadioButtonsProperties
 {
 
 public:
@@ -42,7 +40,7 @@ public:
 
     GlobalDependencyProperty s_childHandlersProperty{ nullptr };
 
-    //Test hooks helpers, only function while m_testHooksEnabled = true
+    // Test hooks helpers, only function while m_testHooksEnabled = true
     void SetTestHooksEnabled(bool enabled);
     ~RadioButtons();
     int GetRows();
@@ -50,7 +48,6 @@ public:
     int GetLargerColumns();
 
 private:
-
     void OnGettingFocus(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args);
     void OnRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnRepeaterElementPrepared(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
@@ -101,7 +98,7 @@ private:
     winrt::ItemsRepeater::ElementClearing_revoker m_repeaterElementClearingRevoker{};
     winrt::ItemsRepeater::ElementIndexChanged_revoker m_repeaterElementIndexChangedRevoker{};
 
-    //Test hooks helpers, only function while m_testHooksEnabled == true
+    // Test hooks helpers, only function while m_testHooksEnabled == true
     bool m_testHooksEnabled{ false };
     void OnLayoutChanged(const winrt::ColumnMajorUniformToLargestGridLayout&, const winrt::IInspectable&);
     winrt::event_token m_layoutChangedToken{};

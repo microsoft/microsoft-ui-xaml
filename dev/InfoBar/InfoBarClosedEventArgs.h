@@ -2,8 +2,7 @@
 
 #include "InfoBarClosedEventArgs.g.h"
 
-class InfoBarClosedEventArgs :
-    public winrt::implementation::InfoBarClosedEventArgsT<InfoBarClosedEventArgs>
+class InfoBarClosedEventArgs : public winrt::implementation::InfoBarClosedEventArgsT<InfoBarClosedEventArgs>
 {
 public:
     winrt::InfoBarCloseReason Reason();

@@ -47,9 +47,7 @@ void FlowLayout::UninitializeForContextCore(winrt::VirtualizingLayoutContext con
     flowState->UninitializeForContext(context);
 }
 
-winrt::Size FlowLayout::MeasureOverride(
-    winrt::VirtualizingLayoutContext const& context,
-    winrt::Size const& availableSize)
+winrt::Size FlowLayout::MeasureOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& availableSize)
 {
     auto desiredSize = GetFlowAlgorithm(context).Measure(
         availableSize,
@@ -64,24 +62,19 @@ winrt::Size FlowLayout::MeasureOverride(
     return desiredSize;
 }
 
-winrt::Size FlowLayout::ArrangeOverride(
-    winrt::VirtualizingLayoutContext const& context,
-    winrt::Size const& finalSize)
+winrt::Size FlowLayout::ArrangeOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& finalSize)
 {
     auto value = GetFlowAlgorithm(context).Arrange(
         finalSize,
         context,
         true, /* isWrapping */
-        static_cast<FlowLayoutAlgorithm::LineAlignment>(m_lineAlignment),        
+        static_cast<FlowLayoutAlgorithm::LineAlignment>(m_lineAlignment),
         LayoutId());
     return value;
 }
 
-
 void FlowLayout::OnItemsChangedCore(
-    winrt::VirtualizingLayoutContext const& context,
-    winrt::IInspectable const& source,
-    winrt::NotifyCollectionChangedEventArgs const& args)
+    winrt::VirtualizingLayoutContext const& context, winrt::IInspectable const& source, winrt::NotifyCollectionChangedEventArgs const& args)
 {
     GetFlowAlgorithm(context).OnItemsSourceChanged(source, args, context);
     // Always invalidate layout to keep the view accurate.
@@ -92,31 +85,22 @@ void FlowLayout::OnItemsChangedCore(
 
 #pragma region IFlowLayoutOverrides
 
-winrt::Size FlowLayout::GetMeasureSize(
-    int /*index*/,
-    winrt::Size const& availableSize)
+winrt::Size FlowLayout::GetMeasureSize(int /*index*/, winrt::Size const& availableSize)
 {
     return availableSize;
 }
 
-winrt::Size FlowLayout::GetProvisionalArrangeSize(
-    int /*index*/,
-    winrt::Size const& /*measureSize*/,
-    winrt::Size const& desiredSize)
+winrt::Size FlowLayout::GetProvisionalArrangeSize(int /*index*/, winrt::Size const& /*measureSize*/, winrt::Size const& desiredSize)
 {
     return desiredSize;
 }
 
-bool FlowLayout::ShouldBreakLine(
-    int /*index*/,
-    double remainingSpace)
+bool FlowLayout::ShouldBreakLine(int /*index*/, double remainingSpace)
 {
     return remainingSpace < 0;
 }
 
-winrt::FlowLayoutAnchorInfo FlowLayout::GetAnchorForRealizationRect(
-    winrt::Size const& availableSize,
-    winrt::VirtualizingLayoutContext const& context)
+winrt::FlowLayoutAnchorInfo FlowLayout::GetAnchorForRealizationRect(winrt::Size const& availableSize, winrt::VirtualizingLayoutContext const& context)
 {
     int anchorIndex = -1;
     double offset = DoubleUtil::NaN;
@@ -134,10 +118,12 @@ winrt::FlowLayoutAnchorInfo FlowLayout::GetAnchorForRealizationRect(
         const double averageLineSize = GetAverageLineInfo(availableSize, context, flowState, averageItemsPerLine) + LineSpacing();
         MUX_ASSERT(averageItemsPerLine != 0);
 
-        const double extentMajorSize = MajorSize(lastExtent) == 0 ? (itemsCount / averageItemsPerLine) * averageLineSize : MajorSize(lastExtent);
-        if (itemsCount > 0 &&
-            MajorSize(realizationRect) > 0 &&
-            DoesRealizationWindowOverlapExtent(realizationRect, MinorMajorRect(MinorStart(lastExtent), MajorStart(lastExtent), Minor(availableSize), static_cast<float>(extentMajorSize))))
+        const double extentMajorSize =
+            MajorSize(lastExtent) == 0 ? (itemsCount / averageItemsPerLine) * averageLineSize : MajorSize(lastExtent);
+        if (itemsCount > 0 && MajorSize(realizationRect) > 0 &&
+            DoesRealizationWindowOverlapExtent(
+                realizationRect,
+                MinorMajorRect(MinorStart(lastExtent), MajorStart(lastExtent), Minor(availableSize), static_cast<float>(extentMajorSize))))
         {
             const double realizationWindowStartWithinExtent = MajorStart(realizationRect) - MajorStart(lastExtent);
             const int lineIndex = std::max(0, (int)(realizationWindowStartWithinExtent / averageLineSize));
@@ -152,10 +138,7 @@ winrt::FlowLayoutAnchorInfo FlowLayout::GetAnchorForRealizationRect(
     return { anchorIndex, offset };
 }
 
-winrt::FlowLayoutAnchorInfo FlowLayout::GetAnchorForTargetElement(
-    int targetIndex,
-    winrt::Size const& availableSize,
-    winrt::VirtualizingLayoutContext const& context)
+winrt::FlowLayoutAnchorInfo FlowLayout::GetAnchorForTargetElement(int targetIndex, winrt::Size const& availableSize, winrt::VirtualizingLayoutContext const& context)
 {
     double offset = DoubleUtil::NaN;
     int index = -1;
@@ -214,10 +197,7 @@ winrt::Rect FlowLayout::GetExtent(
             // If the available size is infinite, we will have realized all the items in one line.
             // In that case, the extent in the non virtualizing direction should be based on the
             // right/bottom of the last realized element.
-            MinorSize(extent) =
-                std::isfinite(availableSizeMinor) ?
-                availableSizeMinor :
-                std::max(0.0f, MinorEnd(lastRealizedLayoutBounds));
+            MinorSize(extent) = std::isfinite(availableSizeMinor) ? availableSizeMinor : std::max(0.0f, MinorEnd(lastRealizedLayoutBounds));
         }
         else
         {
@@ -226,26 +206,39 @@ winrt::Rect FlowLayout::GetExtent(
             // We dont have anything realized. make an educated guess.
             const int numLines = (int)std::ceil(itemsCount / averageItemsPerLine);
             extent =
-                std::isfinite(availableSizeMinor) ?
-                MinorMajorRect(0, 0, availableSizeMinor, std::max(0.0f, static_cast<float>(numLines * averageLineSize - lineSpacing))) :
-                MinorMajorRect(
-                    0,
-                    0,
-                    std::max(0.0f, static_cast<float>((Minor(flowState->SpecialElementDesiredSize()) + minItemSpacing) * itemsCount - minItemSpacing)),
-                    std::max(0.0f, static_cast<float>(averageLineSize - lineSpacing)));
-            REPEATER_TRACE_INFO(L"%*s: \tEstimating extent with no realized elements. \n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), LayoutId().data());
+                std::isfinite(availableSizeMinor)
+                    ? MinorMajorRect(0, 0, availableSizeMinor, std::max(0.0f, static_cast<float>(numLines * averageLineSize - lineSpacing)))
+                    : MinorMajorRect(
+                          0,
+                          0,
+                          std::max(0.0f, static_cast<float>((Minor(flowState->SpecialElementDesiredSize()) + minItemSpacing) * itemsCount - minItemSpacing)),
+                          std::max(0.0f, static_cast<float>(averageLineSize - lineSpacing)));
+            REPEATER_TRACE_INFO(
+                L"%*s: \tEstimating extent with no realized elements. \n",
+                winrt::get_self<VirtualizingLayoutContext>(context)->Indent(),
+                LayoutId().data());
         }
 
-        REPEATER_TRACE_INFO(L"%*s: \tExtent is {%.0f,%.0f}. Based on average line size {%.0f} and average items per line {%.0f}. \n",
-            winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), LayoutId().data(), extent.Width, extent.Height, averageLineSize, averageItemsPerLine);
+        REPEATER_TRACE_INFO(
+            L"%*s: \tExtent is {%.0f,%.0f}. Based on average line size {%.0f} and average items per line {%.0f}. \n",
+            winrt::get_self<VirtualizingLayoutContext>(context)->Indent(),
+            LayoutId().data(),
+            extent.Width,
+            extent.Height,
+            averageLineSize,
+            averageItemsPerLine);
     }
     else
     {
         MUX_ASSERT(firstRealizedItemIndex == -1);
         MUX_ASSERT(lastRealizedItemIndex == -1);
 
-        REPEATER_TRACE_INFO(L"%*s: \tExtent is {%.0f,%.0f}. ItemCount is 0 \n",
-            winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), LayoutId().data(), extent.Width, extent.Height);
+        REPEATER_TRACE_INFO(
+            L"%*s: \tExtent is {%.0f,%.0f}. ItemCount is 0 \n",
+            winrt::get_self<VirtualizingLayoutContext>(context)->Indent(),
+            LayoutId().data(),
+            extent.Width,
+            extent.Height);
     }
 
     return extent;
@@ -262,15 +255,16 @@ void FlowLayout::OnElementMeasured(
 {
 }
 
-void FlowLayout::OnLineArranged(
-    int startIndex,
-    int countInLine,
-    double lineSize,
-    winrt::VirtualizingLayoutContext const& context)
+void FlowLayout::OnLineArranged(int startIndex, int countInLine, double lineSize, winrt::VirtualizingLayoutContext const& context)
 {
 
-    REPEATER_TRACE_INFO(L"%*s: \tOnLineArranged startIndex:%d Count:%d LineHeight:%d \n",
-        winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), LayoutId().data(), startIndex, countInLine, lineSize);
+    REPEATER_TRACE_INFO(
+        L"%*s: \tOnLineArranged startIndex:%d Count:%d LineHeight:%d \n",
+        winrt::get_self<VirtualizingLayoutContext>(context)->Indent(),
+        LayoutId().data(),
+        startIndex,
+        countInLine,
+        lineSize);
 
     const auto flowState = GetAsFlowState(context.LayoutState());
     flowState->OnLineArranged(startIndex, countInLine, lineSize, context);
@@ -280,12 +274,13 @@ void FlowLayout::OnLineArranged(
 
 #pragma region IFlowLayoutAlgorithmDelegates
 
-winrt::Size FlowLayout::Algorithm_GetMeasureSize(int index, const winrt::Size & availableSize, const winrt::VirtualizingLayoutContext& /*context*/)
+winrt::Size FlowLayout::Algorithm_GetMeasureSize(int index, const winrt::Size& availableSize, const winrt::VirtualizingLayoutContext& /*context*/)
 {
     return overridable().GetMeasureSize(index, availableSize);
 }
 
-winrt::Size FlowLayout::Algorithm_GetProvisionalArrangeSize(int index, const winrt::Size & measureSize, winrt::Size const& desiredSize, const winrt::VirtualizingLayoutContext& /*context*/)
+winrt::Size FlowLayout::Algorithm_GetProvisionalArrangeSize(
+    int index, const winrt::Size& measureSize, winrt::Size const& desiredSize, const winrt::VirtualizingLayoutContext& /*context*/)
 {
     return overridable().GetProvisionalArrangeSize(index, measureSize, desiredSize);
 }
@@ -295,72 +290,46 @@ bool FlowLayout::Algorithm_ShouldBreakLine(int index, double remainingSpace)
     return overridable().ShouldBreakLine(index, remainingSpace);
 }
 
-winrt::FlowLayoutAnchorInfo FlowLayout::Algorithm_GetAnchorForRealizationRect(
-    const winrt::Size & availableSize,
-    const winrt::VirtualizingLayoutContext & context)
+winrt::FlowLayoutAnchorInfo FlowLayout::Algorithm_GetAnchorForRealizationRect(const winrt::Size& availableSize, const winrt::VirtualizingLayoutContext& context)
 {
     return overridable().GetAnchorForRealizationRect(availableSize, context);
 }
 
 winrt::FlowLayoutAnchorInfo FlowLayout::Algorithm_GetAnchorForTargetElement(
-    int targetIndex,
-    const winrt::Size & availableSize,
-    const winrt::VirtualizingLayoutContext & context)
+    int targetIndex, const winrt::Size& availableSize, const winrt::VirtualizingLayoutContext& context)
 {
     return overridable().GetAnchorForTargetElement(targetIndex, availableSize, context);
 }
 
 winrt::Rect FlowLayout::Algorithm_GetExtent(
-    const winrt::Size & availableSize,
-    const winrt::VirtualizingLayoutContext & context,
-    const winrt::UIElement & firstRealized,
+    const winrt::Size& availableSize,
+    const winrt::VirtualizingLayoutContext& context,
+    const winrt::UIElement& firstRealized,
     int firstRealizedItemIndex,
-    const winrt::Rect & firstRealizedLayoutBounds,
-    const winrt::UIElement & lastRealized,
+    const winrt::Rect& firstRealizedLayoutBounds,
+    const winrt::UIElement& lastRealized,
     int lastRealizedItemIndex,
-    const winrt::Rect & lastRealizedLayoutBounds)
+    const winrt::Rect& lastRealizedLayoutBounds)
 {
     return overridable().GetExtent(
-        availableSize,
-        context,
-        firstRealized,
-        firstRealizedItemIndex,
-        firstRealizedLayoutBounds,
-        lastRealized,
-        lastRealizedItemIndex,
-        lastRealizedLayoutBounds);
+        availableSize, context, firstRealized, firstRealizedItemIndex, firstRealizedLayoutBounds, lastRealized, lastRealizedItemIndex, lastRealizedLayoutBounds);
 }
 
 void FlowLayout::Algorithm_OnElementMeasured(
-    const winrt::UIElement & element,
+    const winrt::UIElement& element,
     const int index,
-    const winrt::Size & availableSize,
-    const winrt::Size & measureSize,
-    const winrt::Size & desiredSize,
-    const winrt::Size & provisionalArrangeSize,
-    const winrt::VirtualizingLayoutContext & context)
+    const winrt::Size& availableSize,
+    const winrt::Size& measureSize,
+    const winrt::Size& desiredSize,
+    const winrt::Size& provisionalArrangeSize,
+    const winrt::VirtualizingLayoutContext& context)
 {
-    overridable().OnElementMeasured(
-        element,
-        index,
-        availableSize,
-        measureSize,
-        desiredSize,
-        provisionalArrangeSize,
-        context);
+    overridable().OnElementMeasured(element, index, availableSize, measureSize, desiredSize, provisionalArrangeSize, context);
 }
 
-void FlowLayout::Algorithm_OnLineArranged(
-    int startIndex,
-    int countInLine,
-    double lineSize,
-    const winrt::VirtualizingLayoutContext & context)
+void FlowLayout::Algorithm_OnLineArranged(int startIndex, int countInLine, double lineSize, const winrt::VirtualizingLayoutContext& context)
 {
-    return overridable().OnLineArranged(
-        startIndex,
-        countInLine,
-        lineSize,
-        context);
+    return overridable().OnLineArranged(startIndex, countInLine, lineSize, context);
 }
 
 #pragma endregion
@@ -372,9 +341,10 @@ void FlowLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     {
         auto orientation = unbox_value<winrt::Orientation>(args.NewValue());
 
-        //Note: For FlowLayout Vertical Orientation means we have a Horizontal ScrollOrientation. Horizontal Orientation means we have a Vertical ScrollOrientation.
-        //i.e. the properties are the inverse of each other.
-        const auto scrollOrientation = (orientation == winrt::Orientation::Horizontal) ? ScrollOrientation::Vertical : ScrollOrientation::Horizontal;
+        // Note: For FlowLayout Vertical Orientation means we have a Horizontal ScrollOrientation. Horizontal Orientation means we
+        // have a Vertical ScrollOrientation. i.e. the properties are the inverse of each other.
+        const auto scrollOrientation =
+            (orientation == winrt::Orientation::Horizontal) ? ScrollOrientation::Vertical : ScrollOrientation::Horizontal;
         OrientationBasedMeasures::SetScrollOrientation(scrollOrientation);
     }
     else if (property == s_MinColumnSpacingProperty)
@@ -396,10 +366,7 @@ void FlowLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
 #pragma region private helpers
 
 double FlowLayout::GetAverageLineInfo(
-    const winrt::Size& availableSize,
-    const winrt::VirtualizingLayoutContext& context,
-    const winrt::com_ptr<FlowLayoutState>& flowState,
-    double& avgCountInLine)
+    const winrt::Size& availableSize, const winrt::VirtualizingLayoutContext& context, const winrt::com_ptr<FlowLayoutState>& flowState, double& avgCountInLine)
 {
     // default to 1 item per line with 0 size
     double avgLineSize = 0;
@@ -408,7 +375,8 @@ double FlowLayout::GetAverageLineInfo(
     MUX_ASSERT(context.ItemCountCore() > 0);
     if (flowState->TotalLinesMeasured() == 0)
     {
-        const auto tmpElement = context.GetOrCreateElementAt(0, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle);
+        const auto tmpElement = context.GetOrCreateElementAt(
+            0, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle);
         const auto desiredSize = flowState->FlowAlgorithm().MeasureElement(tmpElement, 0, availableSize, context);
         context.RecycleElement(tmpElement);
 

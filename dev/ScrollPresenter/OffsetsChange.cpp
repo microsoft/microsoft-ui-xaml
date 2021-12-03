@@ -7,17 +7,10 @@
 #include "ScrollPresenterTrace.h"
 #include "OffsetsChange.h"
 
-OffsetsChange::OffsetsChange(
-    double zoomedHorizontalOffset,
-    double zoomedVerticalOffset,
-    ScrollPresenterViewKind offsetsKind,
-    winrt::IInspectable const& options) :
-        m_zoomedHorizontalOffset(zoomedHorizontalOffset),
-        m_zoomedVerticalOffset(zoomedVerticalOffset),
-        ViewChange(offsetsKind, options)
+OffsetsChange::OffsetsChange(double zoomedHorizontalOffset, double zoomedVerticalOffset, ScrollPresenterViewKind offsetsKind, winrt::IInspectable const& options) :
+    m_zoomedHorizontalOffset(zoomedHorizontalOffset), m_zoomedVerticalOffset(zoomedVerticalOffset), ViewChange(offsetsKind, options)
 {
-    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL_DBL, METH_NAME, this,
-        zoomedHorizontalOffset, zoomedVerticalOffset);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, zoomedHorizontalOffset, zoomedVerticalOffset);
 }
 
 OffsetsChange::~OffsetsChange()

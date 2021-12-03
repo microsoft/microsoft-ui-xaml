@@ -5,8 +5,8 @@
 
 #include "ScrollingAnchorRequestedEventArgs.g.h"
 
-class ScrollingAnchorRequestedEventArgs :
-    public ReferenceTracker<ScrollingAnchorRequestedEventArgs, winrt::implementation::ScrollingAnchorRequestedEventArgsT, winrt::composable, winrt::composing>
+class ScrollingAnchorRequestedEventArgs
+    : public ReferenceTracker<ScrollingAnchorRequestedEventArgs, winrt::implementation::ScrollingAnchorRequestedEventArgsT, winrt::composable, winrt::composing>
 {
 public:
     ~ScrollingAnchorRequestedEventArgs()

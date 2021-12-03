@@ -9,14 +9,14 @@
 #include "ImageIcon.g.h"
 #include "ImageIcon.properties.h"
 
-class ImageIcon :
-    public ReferenceTracker<ImageIcon, DeriveFromBitmapIconHelper_base, winrt::ImageIcon>,
-    public ImageIconProperties
+class ImageIcon : public ReferenceTracker<ImageIcon, DeriveFromBitmapIconHelper_base, winrt::ImageIcon>, public ImageIconProperties
 {
 
 public:
     ImageIcon();
-    ~ImageIcon() {}
+    ~ImageIcon()
+    {
+    }
 
     // IFrameworkElement
     void OnApplyTemplate();
@@ -24,6 +24,5 @@ public:
     void OnSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
-
     tracker_ref<winrt::Image> m_rootImage{ this };
 };

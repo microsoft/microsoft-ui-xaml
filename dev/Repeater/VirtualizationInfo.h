@@ -28,8 +28,14 @@ class VirtualizationInfo : public winrt::implements<VirtualizationInfo, winrt::I
 public:
     VirtualizationInfo();
 
-    ElementOwner Owner() const { return m_owner; }
-    int Index() const { return m_index; }
+    ElementOwner Owner() const
+    {
+        return m_owner;
+    }
+    int Index() const
+    {
+        return m_index;
+    }
 
     // Pinned means that the element is protected from getting cleared by layout.
     // A pinned element may still get cleared by a collection change.
@@ -43,13 +49,31 @@ public:
 
     // Info for phasing
     void UpdatePhasingInfo(int phase, const winrt::IInspectable& data, const winrt::IDataTemplateComponent& component);
-    int Phase() const { return m_phase; }
-    void Phase(int phase) { m_phase = phase; }
-    winrt::IInspectable Data() const { return m_data.get(); }
-    winrt::IDataTemplateComponent DataTemplateComponent() const { return m_dataTemplateComponent.get(); }
+    int Phase() const
+    {
+        return m_phase;
+    }
+    void Phase(int phase)
+    {
+        m_phase = phase;
+    }
+    winrt::IInspectable Data() const
+    {
+        return m_data.get();
+    }
+    winrt::IDataTemplateComponent DataTemplateComponent() const
+    {
+        return m_dataTemplateComponent.get();
+    }
 
-    bool MustClearDataContext() const { return m_mustClearDataContext; }
-    void MustClearDataContext(bool mustClearDataContext) { m_mustClearDataContext = mustClearDataContext; }
+    bool MustClearDataContext() const
+    {
+        return m_mustClearDataContext;
+    }
+    void MustClearDataContext(bool mustClearDataContext)
+    {
+        m_mustClearDataContext = mustClearDataContext;
+    }
 
     static constexpr int PhaseNotSpecified = std::numeric_limits<int>::min();
     static constexpr int PhaseReachedEnd = -1;
@@ -71,18 +95,39 @@ public:
 
     void UpdateIndex(int newIndex);
 
-    winrt::Rect ArrangeBounds() const { return m_arrangeBounds; }
-    void ArrangeBounds(winrt::Rect value) { m_arrangeBounds = value; }
+    winrt::Rect ArrangeBounds() const
+    {
+        return m_arrangeBounds;
+    }
+    void ArrangeBounds(winrt::Rect value)
+    {
+        m_arrangeBounds = value;
+    }
 
-    wstring_view UniqueId() const { return m_uniqueId; }
+    wstring_view UniqueId() const
+    {
+        return m_uniqueId;
+    }
 
 #pragma region Keep element from being recycled
-    bool KeepAlive() { return m_keepAlive; }
-    void KeepAlive(bool value) { m_keepAlive = value; }
+    bool KeepAlive()
+    {
+        return m_keepAlive;
+    }
+    void KeepAlive(bool value)
+    {
+        m_keepAlive = value;
+    }
 #pragma endregion
 
-    bool AutoRecycleCandidate() { return m_autoRecycleCandidate; }
-    void AutoRecycleCandidate(bool value) { m_autoRecycleCandidate = value; }
+    bool AutoRecycleCandidate()
+    {
+        return m_autoRecycleCandidate;
+    }
+    void AutoRecycleCandidate(bool value)
+    {
+        m_autoRecycleCandidate = value;
+    }
 
 private:
     unsigned m_pinCounter{ 0u };

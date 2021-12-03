@@ -17,8 +17,7 @@
 //
 #define DOWNLEVEL_API_OPERATION(Operation) \
     Operation(ToDisplayName, winrt::ColorHelper, winrt::IColorHelperStatics, winrt::IColorHelperStatics2) \
-    Operation(SetIsTranslationEnabled, winrt::ElementCompositionPreview, winrt::IElementCompositionPreviewStatics, winrt::IElementCompositionPreviewStatics2) \
-
+        Operation(SetIsTranslationEnabled, winrt::ElementCompositionPreview, winrt::IElementCompositionPreviewStatics, winrt::IElementCompositionPreviewStatics2)
 
 #define ADD_DOWNLEVEL_API(ApiName, Type, BaseInterface, NewInterface) \
 public: \
@@ -30,17 +29,17 @@ public: \
             s_##ApiName##Exists = factory.try_as<NewInterface>() != nullptr; \
             s_##ApiName##ExistsInitialized = true; \
         } \
-        \
+\
         return s_##ApiName##Exists; \
-} \
+    } \
 \
 private: \
     static bool s_##ApiName##ExistsInitialized; \
     static bool s_##ApiName##Exists;
 
 #define ADD_DOWNLEVEL_API_STATIC_DEFINITION(ApiName, Unused1, Unused2, Unused3) \
-bool DownlevelHelper::s_##ApiName##ExistsInitialized{ false }; \
-bool DownlevelHelper::s_##ApiName##Exists{ false };
+    bool DownlevelHelper::s_##ApiName##ExistsInitialized{ false }; \
+    bool DownlevelHelper::s_##ApiName##Exists{ false };
 
 class DownlevelHelper
 {

@@ -53,8 +53,9 @@ winrt::IVector<winrt::UIElement> ScrollingAnchorRequestedEventArgs::GetAnchorCan
 
 void ScrollingAnchorRequestedEventArgs::SetAnchorCandidates(const std::vector<tracker_ref<winrt::UIElement>>& anchorCandidates)
 {
-    winrt::IVector<winrt::UIElement> anchorCandidatesTmp = winrt::make<Vector<winrt::UIElement, MakeVectorParam<VectorFlag::DependencyObjectBase>()>>();
-        
+    winrt::IVector<winrt::UIElement> anchorCandidatesTmp =
+        winrt::make<Vector<winrt::UIElement, MakeVectorParam<VectorFlag::DependencyObjectBase>()>>();
+
     for (tracker_ref<winrt::UIElement> anchorCandidate : anchorCandidates)
     {
         anchorCandidatesTmp.Append(anchorCandidate.get());

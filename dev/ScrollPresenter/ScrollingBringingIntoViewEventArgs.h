@@ -5,8 +5,7 @@
 
 #include "ScrollingBringingIntoViewEventArgs.g.h"
 
-class ScrollingBringingIntoViewEventArgs :
-    public winrt::implementation::ScrollingBringingIntoViewEventArgsT<ScrollingBringingIntoViewEventArgs>
+class ScrollingBringingIntoViewEventArgs : public winrt::implementation::ScrollingBringingIntoViewEventArgsT<ScrollingBringingIntoViewEventArgs>
 {
 public:
     ScrollingBringingIntoViewEventArgs()
@@ -27,7 +26,7 @@ public:
     double TargetVerticalOffset();
     int32_t CorrelationId();
     bool Cancel();
-    void Cancel(bool value); 
+    void Cancel(bool value);
 
     double GetTargetHorizontalOffset() const
     {
@@ -56,4 +55,3 @@ private:
     bool m_cancel{ false };
     int32_t m_offsetsChangeCorrelationId{ -1 };
 };
-

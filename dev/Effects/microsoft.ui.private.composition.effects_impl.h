@@ -65,11 +65,10 @@ typedef enum GRAPHICS_EFFECT_PROPERTY_MAPPING
     GRAPHICS_EFFECT_PROPERTY_MAPPING_COLOR_TO_VECTOR4
 } GRAPHICS_EFFECT_PROPERTY_MAPPING;
 
-namespace abi
-{
-    using ABI::Windows::Foundation::IPropertyValue;
-    using ABI::Windows::Graphics::Effects::IGraphicsEffectSource;
-}
+namespace abi {
+using ABI::Windows::Foundation::IPropertyValue;
+using ABI::Windows::Graphics::Effects::IGraphicsEffectSource;
+} // namespace abi
 
 // NOTE: We are redefining this to work around VS15.5 issue where the MIDL headers give errors with the new
 // compiler. We don't really want to be including MIDL headers anyway so this is kind of ok. This interface
@@ -77,33 +76,17 @@ namespace abi
 
 DECLARE_INTERFACE_IID_(IGraphicsEffectD2D1Interop, IUnknown, "2FC57384-A068-44D7-A331-30982FCF7177")
 {
-    STDMETHOD(GetEffectId)(
-        _Out_ GUID * id
-        ) PURE;
+    STDMETHOD(GetEffectId)(_Out_ GUID * id) PURE;
 
-    STDMETHOD(GetNamedPropertyMapping)(
-        LPCWSTR name,
-        _Out_ UINT * index,
-        _Out_ GRAPHICS_EFFECT_PROPERTY_MAPPING * mapping
-        ) PURE;
+    STDMETHOD(GetNamedPropertyMapping)(LPCWSTR name, _Out_ UINT * index, _Out_ GRAPHICS_EFFECT_PROPERTY_MAPPING * mapping) PURE;
 
-    STDMETHOD(GetPropertyCount)(
-        _Out_ UINT * count
-        ) PURE;
+    STDMETHOD(GetPropertyCount)(_Out_ UINT * count) PURE;
 
-    STDMETHOD(GetProperty)(
-        UINT index,
-        _Outptr_ abi::IPropertyValue ** value
-        ) PURE;
+    STDMETHOD(GetProperty)(UINT index, _Outptr_ abi::IPropertyValue * *value) PURE;
 
-    STDMETHOD(GetSource)(
-        UINT index,
-        _Outptr_ abi::IGraphicsEffectSource ** source
-        ) PURE;
+    STDMETHOD(GetSource)(UINT index, _Outptr_ abi::IGraphicsEffectSource * *source) PURE;
 
-    STDMETHOD(GetSourceCount)(
-        _Out_ UINT * count
-        ) PURE;
+    STDMETHOD(GetSourceCount)(_Out_ UINT * count) PURE;
 };
 
 inline winrt::IGraphicsEffectSource& to_winrt(abi::IGraphicsEffectSource*& instance)
@@ -116,14 +99,9 @@ inline winrt::IPropertyValue& to_winrt(abi::IPropertyValue*& instance)
     return reinterpret_cast<winrt::IPropertyValue&>(instance);
 }
 
-
-namespace Microsoft { namespace UI { namespace Private { namespace Composition { namespace Effects
-{
+namespace Microsoft { namespace UI { namespace Private { namespace Composition { namespace Effects {
     // Base class for Win2D-like effect descriptions
-    class EffectBase : 
-        public winrt::implements<
-            EffectBase,
-            ::IGraphicsEffectD2D1Interop>
+    class EffectBase : public winrt::implements<EffectBase, ::IGraphicsEffectD2D1Interop>
     {
     protected:
         // This is a header file so we can't use "using namespace", but we can do this:
@@ -137,12 +115,26 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     public:
         // IGraphicsEffect
-        winrt::hstring Name() { return m_Name; }
-        void Name(winrt::hstring const& value) { m_Name = value; }
+        winrt::hstring Name()
+        {
+            return m_Name;
+        }
+        void Name(winrt::hstring const& value)
+        {
+            m_Name = value;
+        }
 
         // IGraphicsEffectD2D1Interop
-        IFACEMETHODIMP GetSourceCount(_Out_ UINT * count) override { *count = 0; return S_OK; }
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override { *count = 0; return S_OK; }
+        IFACEMETHODIMP GetSourceCount(_Out_ UINT* count) override
+        {
+            *count = 0;
+            return S_OK;
+        }
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
+        {
+            *count = 0;
+            return S_OK;
+        }
 
         IFACEMETHODIMP GetSource(UINT, _Outptr_ abi::IGraphicsEffectSource**) override
         {
@@ -154,15 +146,15 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             return E_INVALIDARG;
         }
 
-        IFACEMETHODIMP GetNamedPropertyMapping(LPCWSTR, _Out_ UINT*,
-            _Out_ GRAPHICS_EFFECT_PROPERTY_MAPPING*) override
+        IFACEMETHODIMP GetNamedPropertyMapping(LPCWSTR, _Out_ UINT*, _Out_ GRAPHICS_EFFECT_PROPERTY_MAPPING*) override
         {
             return E_INVALIDARG;
         }
 
     protected:
         // Invokes a functor with the pointer to the property factory
-        static HRESULT UsePropertyFactory(_Outptr_ abi::IPropertyValue **value, std::function<winrt::IInspectable()> const& func) try
+        static HRESULT UsePropertyFactory(_Outptr_ abi::IPropertyValue** value, std::function<winrt::IInspectable()> const& func)
+        try
         {
             auto ret = func();
             auto propertyValue = ret.as<winrt::IPropertyValue>();
@@ -170,7 +162,7 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             CATCH_RETURN;
         }
 
-        template<UINT32 ComponentCount>
+        template <UINT32 ComponentCount>
         static winrt::IInspectable CreateColor(UIColor color)
         {
             static_assert(ComponentCount == 3 || ComponentCount == 4, "Unexpected color component count.");
@@ -182,7 +174,7 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
         struct NamedProperty
         {
             const wchar_t* Name; // Compile-time constant
-            UINT Index; // Property index
+            UINT Index;          // Property index
             GRAPHICS_EFFECT_PROPERTY_MAPPING Mapping;
         };
 
@@ -190,8 +182,8 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             _In_count_(mappingCount) const NamedProperty* namedProperties,
             UINT namedPropertyCount,
             LPCWSTR name,
-            _Out_ UINT * index,
-            _Out_ GRAPHICS_EFFECT_PROPERTY_MAPPING * mapping)
+            _Out_ UINT* index,
+            _Out_ GRAPHICS_EFFECT_PROPERTY_MAPPING* mapping)
         {
             for (UINT i = 0; i < namedPropertyCount; ++i)
             {
@@ -220,18 +212,29 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 #pragma push_macro("DECLARE_D2D_GUID")
 #undef DECLARE_D2D_GUID
 #define DECLARE_D2D_GUID(Guid) \
-    IFACEMETHODIMP GetEffectId(_Out_ GUID * id) override { *id = Guid; return S_OK; }
+    IFACEMETHODIMP GetEffectId(_Out_ GUID* id) override \
+    { \
+        *id = Guid; \
+        return S_OK; \
+    }
 
 #pragma push_macro("DECLARE_POD_PROPERTY")
 #undef DECLARE_POD_PROPERTY
 #define DECLARE_POD_PROPERTY(Name, Type, InitialValue, Condition) \
-    private: \
+private: \
     Type m_##Name = InitialValue; \
-    public: \
-    Type Name() { return m_##Name; } \
+\
+public: \
+    Type Name() \
+    { \
+        return m_##Name; \
+    } \
     void Name(Type const& value) \
     { \
-        if (!(0, Condition)) { throw winrt::hresult_invalid_argument(); } \
+        if (!(0, Condition)) \
+        { \
+            throw winrt::hresult_invalid_argument(); \
+        } \
         m_##Name = value; \
     }
 
@@ -239,18 +242,31 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 #undef DECLARE_SOURCE
 #define DECLARE_SOURCE(Name) \
     winrt::IGraphicsEffectSource m_##Name; \
-    winrt::IGraphicsEffectSource Name() { return m_##Name; } \
-    void Name(winrt::IGraphicsEffectSource const& value) { m_##Name = value; }
+    winrt::IGraphicsEffectSource Name() \
+    { \
+        return m_##Name; \
+    } \
+    void Name(winrt::IGraphicsEffectSource const& value) \
+    { \
+        m_##Name = value; \
+    }
 
 #pragma push_macro("DECLARE_SINGLE_SOURCE")
 #undef DECLARE_SINGLE_SOURCE
 #define DECLARE_SINGLE_SOURCE(Name) \
     DECLARE_SOURCE(Name) \
-    IFACEMETHODIMP GetSourceCount(_Out_ UINT * count) override { *count = 1; return S_OK; } \
-    IFACEMETHODIMP GetSource(UINT index, _Outptr_ abi::IGraphicsEffectSource ** source) override try \
+    IFACEMETHODIMP GetSourceCount(_Out_ UINT* count) override \
     { \
-        if (index == 0) to_winrt(*source) = m_##Name; \
-        else throw winrt::hresult_invalid_argument(); \
+        *count = 1; \
+        return S_OK; \
+    } \
+    IFACEMETHODIMP GetSource(UINT index, _Outptr_ abi::IGraphicsEffectSource** source) override \
+    try \
+    { \
+        if (index == 0) \
+            to_winrt(*source) = m_##Name; \
+        else \
+            throw winrt::hresult_invalid_argument(); \
         CATCH_RETURN; \
     }
 
@@ -259,30 +275,36 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 #define DECLARE_DUAL_SOURCES(Name1, Name2) \
     DECLARE_SOURCE(Name1) \
     DECLARE_SOURCE(Name2) \
-    IFACEMETHODIMP GetSourceCount(_Out_ UINT * count) override { *count = 2; return S_OK; } \
-    IFACEMETHODIMP GetSource(UINT index, _Outptr_ abi::IGraphicsEffectSource ** source) override try \
+    IFACEMETHODIMP GetSourceCount(_Out_ UINT* count) override \
     { \
-        if (index == 0) to_winrt(*source) = m_##Name1; \
-        else if (index == 1) to_winrt(*source) = m_##Name2; \
-        else throw winrt::hresult_invalid_argument(); \
+        *count = 2; \
+        return S_OK; \
+    } \
+    IFACEMETHODIMP GetSource(UINT index, _Outptr_ abi::IGraphicsEffectSource** source) override \
+    try \
+    { \
+        if (index == 0) \
+            to_winrt(*source) = m_##Name1; \
+        else if (index == 1) \
+            to_winrt(*source) = m_##Name2; \
+        else \
+            throw winrt::hresult_invalid_argument(); \
         CATCH_RETURN; \
     }
 
 #pragma push_macro("DECLARE_NAMED_PROPERTY_MAPPING")
 #undef DECLARE_NAMED_PROPERTY_MAPPING
 #define DECLARE_NAMED_PROPERTY_MAPPING(...) \
-    IFACEMETHODIMP GetNamedPropertyMapping(LPCWSTR name, _Out_ UINT * index, \
-        _Out_ GRAPHICS_EFFECT_PROPERTY_MAPPING * mapping) override \
+    IFACEMETHODIMP GetNamedPropertyMapping(LPCWSTR name, _Out_ UINT* index, _Out_ GRAPHICS_EFFECT_PROPERTY_MAPPING* mapping) override \
     { \
         static const NamedProperty s_Properties[] = { __VA_ARGS__ }; \
         return GetNamedPropertyMappingImpl(s_Properties, _countof(s_Properties), name, index, mapping); \
     }
-    
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class AlphaMaskEffect : 
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::AlphaMaskEffectT<AlphaMaskEffect, EffectBase>
+    class AlphaMaskEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::AlphaMaskEffectT<AlphaMaskEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1AlphaMask);
@@ -291,8 +313,8 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class ArithmeticCompositeEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::ArithmeticCompositeEffectT<ArithmeticCompositeEffect, EffectBase>
+    class ArithmeticCompositeEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::ArithmeticCompositeEffectT<ArithmeticCompositeEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1ArithmeticComposite);
@@ -310,23 +332,26 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"ClampOutput", D2D1_ARITHMETICCOMPOSITE_PROP_CLAMP_OUTPUT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 2; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 2;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_ARITHMETICCOMPOSITE_PROP_COEFFICIENTS:
-                    {
-                        float coefficients[4] = { m_MultiplyAmount, m_Source1Amount, m_Source2Amount, m_Offset };
-                        return winrt::PropertyValue::CreateSingleArray({ coefficients });
-                    }
-                    case D2D1_ARITHMETICCOMPOSITE_PROP_CLAMP_OUTPUT:
-                        return winrt::PropertyValue::CreateBoolean(m_ClampOutput);
-                    default:
-                        throw winrt::hresult_invalid_argument();
+                case D2D1_ARITHMETICCOMPOSITE_PROP_COEFFICIENTS:
+                {
+                    float coefficients[4] = { m_MultiplyAmount, m_Source1Amount, m_Source2Amount, m_Offset };
+                    return winrt::PropertyValue::CreateSingleArray({ coefficients });
+                }
+                case D2D1_ARITHMETICCOMPOSITE_PROP_CLAMP_OUTPUT:
+                    return winrt::PropertyValue::CreateBoolean(m_ClampOutput);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -334,27 +359,30 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class BlendEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::BlendEffectT<BlendEffect, EffectBase>
+    class BlendEffect : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::BlendEffectT<BlendEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Blend);
         DECLARE_DUAL_SOURCES(Background, Foreground);
         DECLARE_POD_PROPERTY(Mode, winrt::BlendEffectMode, winrt::BlendEffectMode::Multiply, true);
-        DECLARE_NAMED_PROPERTY_MAPPING(
-            { L"Mode", D2D1_BLEND_PROP_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
+        DECLARE_NAMED_PROPERTY_MAPPING({ L"Mode", D2D1_BLEND_PROP_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 1;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_BLEND_PROP_MODE: return winrt::PropertyValue::CreateUInt32((UINT32)m_Mode);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_BLEND_PROP_MODE:
+                    return winrt::PropertyValue::CreateUInt32((UINT32)m_Mode);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -362,8 +390,7 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class BorderEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::BorderEffectT<BorderEffect, EffectBase>
+    class BorderEffect : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::BorderEffectT<BorderEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Border);
@@ -375,17 +402,23 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"ExtendY", D2D1_BORDER_PROP_EDGE_MODE_Y, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 2; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 2;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                case D2D1_BORDER_PROP_EDGE_MODE_X: return winrt::PropertyValue::CreateUInt32((UINT32)m_ExtendX);
-                case D2D1_BORDER_PROP_EDGE_MODE_Y: return winrt::PropertyValue::CreateUInt32((UINT32)m_ExtendY);
-                default: throw winrt::hresult_invalid_argument();
+                case D2D1_BORDER_PROP_EDGE_MODE_X:
+                    return winrt::PropertyValue::CreateUInt32((UINT32)m_ExtendX);
+                case D2D1_BORDER_PROP_EDGE_MODE_Y:
+                    return winrt::PropertyValue::CreateUInt32((UINT32)m_ExtendY);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -393,13 +426,14 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class ColorMatrixEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::ColorMatrixEffectT<ColorMatrixEffect, EffectBase>
+    class ColorMatrixEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::ColorMatrixEffectT<ColorMatrixEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1ColorMatrix);
         DECLARE_SINGLE_SOURCE(Source);
-        DECLARE_POD_PROPERTY(ColorMatrix, winrt::Matrix5x4, (winrt::Matrix5x4{ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0 }), true);
+        DECLARE_POD_PROPERTY(
+            ColorMatrix, winrt::Matrix5x4, (winrt::Matrix5x4{ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0 }), true);
         DECLARE_POD_PROPERTY(AlphaMode, winrt::CanvasAlphaMode, winrt::CanvasAlphaMode::Premultiplied, value != winrt::CanvasAlphaMode::Ignore);
         DECLARE_POD_PROPERTY(ClampOutput, bool, false, true);
         DECLARE_NAMED_PROPERTY_MAPPING(
@@ -408,27 +442,32 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"ClampOutput", D2D1_COLORMATRIX_PROP_CLAMP_OUTPUT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 3; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 3;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_COLORMATRIX_PROP_COLOR_MATRIX: return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 20>&>(m_ColorMatrix));
-                    case D2D1_COLORMATRIX_PROP_ALPHA_MODE:
+                case D2D1_COLORMATRIX_PROP_COLOR_MATRIX:
+                    return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 20>&>(m_ColorMatrix));
+                case D2D1_COLORMATRIX_PROP_ALPHA_MODE:
+                {
+                    switch (m_AlphaMode)
                     {
-                        switch (m_AlphaMode)
-                        {
-                            case winrt::CanvasAlphaMode::Premultiplied: 
-                                return winrt::PropertyValue::CreateUInt32(D2D1_COLORMANAGEMENT_ALPHA_MODE_PREMULTIPLIED);
-                            case winrt::CanvasAlphaMode::Straight:
-                                return winrt::PropertyValue::CreateUInt32(D2D1_COLORMANAGEMENT_ALPHA_MODE_STRAIGHT);
-                        }
-                        break;
+                    case winrt::CanvasAlphaMode::Premultiplied:
+                        return winrt::PropertyValue::CreateUInt32(D2D1_COLORMANAGEMENT_ALPHA_MODE_PREMULTIPLIED);
+                    case winrt::CanvasAlphaMode::Straight:
+                        return winrt::PropertyValue::CreateUInt32(D2D1_COLORMANAGEMENT_ALPHA_MODE_STRAIGHT);
                     }
-                    case D2D1_COLORMATRIX_PROP_CLAMP_OUTPUT: return winrt::PropertyValue::CreateBoolean(m_ClampOutput);
+                    break;
+                }
+                case D2D1_COLORMATRIX_PROP_CLAMP_OUTPUT:
+                    return winrt::PropertyValue::CreateBoolean(m_ClampOutput);
                 }
                 throw winrt::hresult_invalid_argument();
             });
@@ -437,26 +476,30 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class ColorSourceEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::ColorSourceEffectT<ColorSourceEffect, EffectBase>
+    class ColorSourceEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::ColorSourceEffectT<ColorSourceEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Flood);
         DECLARE_POD_PROPERTY(Color, UIColor, (UIColor{ 255, 0, 0, 0 }), true);
-        DECLARE_NAMED_PROPERTY_MAPPING(
-            { L"Color", D2D1_FLOOD_PROP_COLOR, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_COLOR_TO_VECTOR4 });
+        DECLARE_NAMED_PROPERTY_MAPPING({ L"Color", D2D1_FLOOD_PROP_COLOR, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_COLOR_TO_VECTOR4 });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 1;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_FLOOD_PROP_COLOR: return CreateColor<4>(m_Color);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_FLOOD_PROP_COLOR:
+                    return CreateColor<4>(m_Color);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -467,27 +510,31 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
     // but this involves having an IVector of sources and is more trouble than it's worth.
     // We declare a simplified single-step composite effect between two sources.
 
-    class CompositeStepEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::CompositeStepEffectT<CompositeStepEffect, EffectBase>
+    class CompositeStepEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::CompositeStepEffectT<CompositeStepEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Composite);
         DECLARE_DUAL_SOURCES(Destination, Source);
         DECLARE_POD_PROPERTY(Mode, winrt::CanvasComposite, winrt::CanvasComposite::SourceOver, true);
-        DECLARE_NAMED_PROPERTY_MAPPING(
-            { L"Mode", D2D1_COMPOSITE_PROP_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
+        DECLARE_NAMED_PROPERTY_MAPPING({ L"Mode", D2D1_COMPOSITE_PROP_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 1;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_COMPOSITE_PROP_MODE: return winrt::PropertyValue::CreateUInt32((UINT32)m_Mode);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_COMPOSITE_PROP_MODE:
+                    return winrt::PropertyValue::CreateUInt32((UINT32)m_Mode);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -495,8 +542,7 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class ContrastEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::ContrastEffectT<ContrastEffect, EffectBase>
+    class ContrastEffect : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::ContrastEffectT<ContrastEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Contrast);
@@ -508,17 +554,23 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"ClampSource", D2D1_CONTRAST_PROP_CLAMP_INPUT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 2; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 2;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_CONTRAST_PROP_CONTRAST: return winrt::PropertyValue::CreateSingle(m_Contrast);
-                    case D2D1_CONTRAST_PROP_CLAMP_INPUT: return winrt::PropertyValue::CreateBoolean(m_ClampSource);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_CONTRAST_PROP_CONTRAST:
+                    return winrt::PropertyValue::CreateSingle(m_Contrast);
+                case D2D1_CONTRAST_PROP_CLAMP_INPUT:
+                    return winrt::PropertyValue::CreateBoolean(m_ClampSource);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -526,27 +578,31 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class CrossFadeEffect : 
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::CrossFadeEffectT<CrossFadeEffect, EffectBase>
+    class CrossFadeEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::CrossFadeEffectT<CrossFadeEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1CrossFade);
         DECLARE_DUAL_SOURCES(Source1, Source2);
         DECLARE_POD_PROPERTY(Weight, float, 0.5f, value >= 0.0f && value <= 1.0f);
-        DECLARE_NAMED_PROPERTY_MAPPING(
-            { L"Weight", D2D1_CROSSFADE_PROP_WEIGHT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
+        DECLARE_NAMED_PROPERTY_MAPPING({ L"Weight", D2D1_CROSSFADE_PROP_WEIGHT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 1;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_CROSSFADE_PROP_WEIGHT: return winrt::PropertyValue::CreateSingle(m_Weight);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_CROSSFADE_PROP_WEIGHT:
+                    return winrt::PropertyValue::CreateSingle(m_Weight);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -554,18 +610,21 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class DistantDiffuseEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::DistantDiffuseEffectT<DistantDiffuseEffect, EffectBase>
+    class DistantDiffuseEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::DistantDiffuseEffectT<DistantDiffuseEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1DistantDiffuse);
         DECLARE_SINGLE_SOURCE(Source);
-        DECLARE_POD_PROPERTY(Azimuth, float, 0.0f, true); // D2D clamps within [0, 360] degrees
+        DECLARE_POD_PROPERTY(Azimuth, float, 0.0f, true);   // D2D clamps within [0, 360] degrees
         DECLARE_POD_PROPERTY(Elevation, float, 0.0f, true); // D2D clamps within [0, 360] degrees
         DECLARE_POD_PROPERTY(DiffuseAmount, float, 1.0f, value >= 0.0f && value <= 10000.0f);
         DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
         DECLARE_POD_PROPERTY(LightColor, UIColor, (UIColor{ 255, 255, 255, 255 }), true);
-        DECLARE_POD_PROPERTY(HeightMapKernelSize, winrt::float2, (winrt::float2{ 1.0f, 1.0f }),
+        DECLARE_POD_PROPERTY(
+            HeightMapKernelSize,
+            winrt::float2,
+            (winrt::float2{ 1.0f, 1.0f }),
             value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
         DECLARE_POD_PROPERTY(HeightMapInterpolationMode, winrt::CanvasImageInterpolation, winrt::CanvasImageInterpolation::Linear, true);
         DECLARE_NAMED_PROPERTY_MAPPING(
@@ -578,23 +637,33 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"HeightMapInterpolationMode", D2D1_DISTANTDIFFUSE_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT }, );
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 7; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 7;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_DISTANTDIFFUSE_PROP_AZIMUTH: return winrt::PropertyValue::CreateSingle(m_Azimuth * k_DegreesPerRadian);
-                    case D2D1_DISTANTDIFFUSE_PROP_ELEVATION: return winrt::PropertyValue::CreateSingle(m_Elevation * k_DegreesPerRadian);
-                    case D2D1_DISTANTDIFFUSE_PROP_DIFFUSE_CONSTANT: return winrt::PropertyValue::CreateSingle(m_DiffuseAmount);
-                    case D2D1_DISTANTDIFFUSE_PROP_SURFACE_SCALE: return winrt::PropertyValue::CreateSingle(m_HeightMapScale);
-                    case D2D1_DISTANTDIFFUSE_PROP_COLOR: return CreateColor<3>(m_LightColor);
-                    case D2D1_DISTANTDIFFUSE_PROP_KERNEL_UNIT_LENGTH:
-                        return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 2>&>(m_HeightMapKernelSize));
-                    case D2D1_DISTANTDIFFUSE_PROP_SCALE_MODE: return winrt::PropertyValue::CreateUInt32((UINT32)m_HeightMapInterpolationMode);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_DISTANTDIFFUSE_PROP_AZIMUTH:
+                    return winrt::PropertyValue::CreateSingle(m_Azimuth * k_DegreesPerRadian);
+                case D2D1_DISTANTDIFFUSE_PROP_ELEVATION:
+                    return winrt::PropertyValue::CreateSingle(m_Elevation * k_DegreesPerRadian);
+                case D2D1_DISTANTDIFFUSE_PROP_DIFFUSE_CONSTANT:
+                    return winrt::PropertyValue::CreateSingle(m_DiffuseAmount);
+                case D2D1_DISTANTDIFFUSE_PROP_SURFACE_SCALE:
+                    return winrt::PropertyValue::CreateSingle(m_HeightMapScale);
+                case D2D1_DISTANTDIFFUSE_PROP_COLOR:
+                    return CreateColor<3>(m_LightColor);
+                case D2D1_DISTANTDIFFUSE_PROP_KERNEL_UNIT_LENGTH:
+                    return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 2>&>(m_HeightMapKernelSize));
+                case D2D1_DISTANTDIFFUSE_PROP_SCALE_MODE:
+                    return winrt::PropertyValue::CreateUInt32((UINT32)m_HeightMapInterpolationMode);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -602,20 +671,19 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class DistantSpecularEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::DistantSpecularEffectT<DistantSpecularEffect, EffectBase>
+    class DistantSpecularEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::DistantSpecularEffectT<DistantSpecularEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1DistantSpecular);
         DECLARE_SINGLE_SOURCE(Source);
-        DECLARE_POD_PROPERTY(Azimuth, float, 0.0f, true); // D2D clamps within [0, 360] degrees
+        DECLARE_POD_PROPERTY(Azimuth, float, 0.0f, true);   // D2D clamps within [0, 360] degrees
         DECLARE_POD_PROPERTY(Elevation, float, 0.0f, true); // D2D clamps within [0, 360] degrees
         DECLARE_POD_PROPERTY(SpecularExponent, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
         DECLARE_POD_PROPERTY(SpecularAmount, float, 1.0f, value >= 0.0f && value <= 10000.0f);
         DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
         DECLARE_POD_PROPERTY(LightColor, UIColor, (UIColor{ 255, 255, 255, 255 }), true);
-        DECLARE_POD_PROPERTY(HeightMapKernelSize, Vector2, (Vector2{ 1.0f, 1.0f }),
-            value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
+        DECLARE_POD_PROPERTY(HeightMapKernelSize, Vector2, (Vector2{ 1.0f, 1.0f }), value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
         DECLARE_POD_PROPERTY(HeightMapInterpolationMode, winrt::CanvasImageInterpolation, winrt::CanvasImageInterpolation::Linear, true);
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"Azimuth", D2D1_DISTANTSPECULAR_PROP_AZIMUTH, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_RADIANS_TO_DEGREES },
@@ -625,27 +693,38 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"HeightMapScale", D2D1_DISTANTSPECULAR_PROP_SURFACE_SCALE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
             { L"LightColor", D2D1_DISTANTSPECULAR_PROP_COLOR, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_COLOR_TO_VECTOR3 },
             { L"HeightMapKernelSize", D2D1_DISTANTSPECULAR_PROP_KERNEL_UNIT_LENGTH, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
-            { L"HeightMapInterpolationMode", D2D1_DISTANTSPECULAR_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },);
+            { L"HeightMapInterpolationMode", D2D1_DISTANTSPECULAR_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT }, );
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 8; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 8;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_DISTANTSPECULAR_PROP_AZIMUTH: return winrt::PropertyValue::CreateSingle(m_Azimuth * k_DegreesPerRadian);
-                    case D2D1_DISTANTSPECULAR_PROP_ELEVATION: return winrt::PropertyValue::CreateSingle(m_Elevation * k_DegreesPerRadian);
-                    case D2D1_DISTANTSPECULAR_PROP_SPECULAR_EXPONENT: return winrt::PropertyValue::CreateSingle(m_SpecularExponent);
-                    case D2D1_DISTANTSPECULAR_PROP_SPECULAR_CONSTANT: return winrt::PropertyValue::CreateSingle(m_SpecularAmount);
-                    case D2D1_DISTANTSPECULAR_PROP_SURFACE_SCALE: return winrt::PropertyValue::CreateSingle(m_HeightMapScale);
-                    case D2D1_DISTANTSPECULAR_PROP_COLOR: return CreateColor<3>(m_LightColor);
-                    case D2D1_DISTANTSPECULAR_PROP_KERNEL_UNIT_LENGTH:
-                        return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 2>&>(m_HeightMapKernelSize));
-                    case D2D1_DISTANTSPECULAR_PROP_SCALE_MODE: return winrt::PropertyValue::CreateUInt32((UINT32)m_HeightMapInterpolationMode);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_DISTANTSPECULAR_PROP_AZIMUTH:
+                    return winrt::PropertyValue::CreateSingle(m_Azimuth * k_DegreesPerRadian);
+                case D2D1_DISTANTSPECULAR_PROP_ELEVATION:
+                    return winrt::PropertyValue::CreateSingle(m_Elevation * k_DegreesPerRadian);
+                case D2D1_DISTANTSPECULAR_PROP_SPECULAR_EXPONENT:
+                    return winrt::PropertyValue::CreateSingle(m_SpecularExponent);
+                case D2D1_DISTANTSPECULAR_PROP_SPECULAR_CONSTANT:
+                    return winrt::PropertyValue::CreateSingle(m_SpecularAmount);
+                case D2D1_DISTANTSPECULAR_PROP_SURFACE_SCALE:
+                    return winrt::PropertyValue::CreateSingle(m_HeightMapScale);
+                case D2D1_DISTANTSPECULAR_PROP_COLOR:
+                    return CreateColor<3>(m_LightColor);
+                case D2D1_DISTANTSPECULAR_PROP_KERNEL_UNIT_LENGTH:
+                    return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 2>&>(m_HeightMapKernelSize));
+                case D2D1_DISTANTSPECULAR_PROP_SCALE_MODE:
+                    return winrt::PropertyValue::CreateUInt32((UINT32)m_HeightMapInterpolationMode);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -653,27 +732,30 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class ExposureEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::ExposureEffectT<ExposureEffect, EffectBase>
+    class ExposureEffect : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::ExposureEffectT<ExposureEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Exposure);
         DECLARE_SINGLE_SOURCE(Source);
         DECLARE_POD_PROPERTY(Exposure, float, 0.0f, value >= -2.0f && value <= 2.0f);
-        DECLARE_NAMED_PROPERTY_MAPPING(
-            { L"Exposure", D2D1_EXPOSURE_PROP_EXPOSURE_VALUE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
+        DECLARE_NAMED_PROPERTY_MAPPING({ L"Exposure", D2D1_EXPOSURE_PROP_EXPOSURE_VALUE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 1;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_EXPOSURE_PROP_EXPOSURE_VALUE: return winrt::PropertyValue::CreateSingle(m_Exposure);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_EXPOSURE_PROP_EXPOSURE_VALUE:
+                    return winrt::PropertyValue::CreateSingle(m_Exposure);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -681,8 +763,8 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class GammaTransferEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::GammaTransferEffectT<GammaTransferEffect, EffectBase>
+    class GammaTransferEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::GammaTransferEffectT<GammaTransferEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1GammaTransfer);
@@ -724,40 +806,61 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"ClampOutput", D2D1_GAMMATRANSFER_PROP_CLAMP_OUTPUT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 17; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 17;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_GAMMATRANSFER_PROP_RED_AMPLITUDE: return winrt::PropertyValue::CreateSingle(m_RedAmplitude);
-                    case D2D1_GAMMATRANSFER_PROP_RED_EXPONENT: return winrt::PropertyValue::CreateSingle(m_RedExponent);
-                    case D2D1_GAMMATRANSFER_PROP_RED_OFFSET: return winrt::PropertyValue::CreateSingle(m_RedOffset);
-                    case D2D1_GAMMATRANSFER_PROP_RED_DISABLE: return winrt::PropertyValue::CreateBoolean(m_RedDisable);
-                    case D2D1_GAMMATRANSFER_PROP_GREEN_AMPLITUDE: return winrt::PropertyValue::CreateSingle(m_GreenAmplitude);
-                    case D2D1_GAMMATRANSFER_PROP_GREEN_EXPONENT: return winrt::PropertyValue::CreateSingle(m_GreenExponent);
-                    case D2D1_GAMMATRANSFER_PROP_GREEN_OFFSET: return winrt::PropertyValue::CreateSingle(m_GreenOffset);
-                    case D2D1_GAMMATRANSFER_PROP_GREEN_DISABLE: return winrt::PropertyValue::CreateBoolean(m_GreenDisable);
-                    case D2D1_GAMMATRANSFER_PROP_BLUE_AMPLITUDE: return winrt::PropertyValue::CreateSingle(m_BlueAmplitude);
-                    case D2D1_GAMMATRANSFER_PROP_BLUE_EXPONENT: return winrt::PropertyValue::CreateSingle(m_BlueExponent);
-                    case D2D1_GAMMATRANSFER_PROP_BLUE_OFFSET: return winrt::PropertyValue::CreateSingle(m_BlueOffset);
-                    case D2D1_GAMMATRANSFER_PROP_BLUE_DISABLE: return winrt::PropertyValue::CreateBoolean(m_BlueDisable);
-                    case D2D1_GAMMATRANSFER_PROP_ALPHA_AMPLITUDE: return winrt::PropertyValue::CreateSingle(m_AlphaAmplitude);
-                    case D2D1_GAMMATRANSFER_PROP_ALPHA_EXPONENT: return winrt::PropertyValue::CreateSingle(m_AlphaExponent);
-                    case D2D1_GAMMATRANSFER_PROP_ALPHA_OFFSET: return winrt::PropertyValue::CreateSingle(m_AlphaOffset);
-                    case D2D1_GAMMATRANSFER_PROP_ALPHA_DISABLE: return winrt::PropertyValue::CreateBoolean(m_AlphaDisable);
-                    case D2D1_GAMMATRANSFER_PROP_CLAMP_OUTPUT: return winrt::PropertyValue::CreateBoolean(m_ClampOutput);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_GAMMATRANSFER_PROP_RED_AMPLITUDE:
+                    return winrt::PropertyValue::CreateSingle(m_RedAmplitude);
+                case D2D1_GAMMATRANSFER_PROP_RED_EXPONENT:
+                    return winrt::PropertyValue::CreateSingle(m_RedExponent);
+                case D2D1_GAMMATRANSFER_PROP_RED_OFFSET:
+                    return winrt::PropertyValue::CreateSingle(m_RedOffset);
+                case D2D1_GAMMATRANSFER_PROP_RED_DISABLE:
+                    return winrt::PropertyValue::CreateBoolean(m_RedDisable);
+                case D2D1_GAMMATRANSFER_PROP_GREEN_AMPLITUDE:
+                    return winrt::PropertyValue::CreateSingle(m_GreenAmplitude);
+                case D2D1_GAMMATRANSFER_PROP_GREEN_EXPONENT:
+                    return winrt::PropertyValue::CreateSingle(m_GreenExponent);
+                case D2D1_GAMMATRANSFER_PROP_GREEN_OFFSET:
+                    return winrt::PropertyValue::CreateSingle(m_GreenOffset);
+                case D2D1_GAMMATRANSFER_PROP_GREEN_DISABLE:
+                    return winrt::PropertyValue::CreateBoolean(m_GreenDisable);
+                case D2D1_GAMMATRANSFER_PROP_BLUE_AMPLITUDE:
+                    return winrt::PropertyValue::CreateSingle(m_BlueAmplitude);
+                case D2D1_GAMMATRANSFER_PROP_BLUE_EXPONENT:
+                    return winrt::PropertyValue::CreateSingle(m_BlueExponent);
+                case D2D1_GAMMATRANSFER_PROP_BLUE_OFFSET:
+                    return winrt::PropertyValue::CreateSingle(m_BlueOffset);
+                case D2D1_GAMMATRANSFER_PROP_BLUE_DISABLE:
+                    return winrt::PropertyValue::CreateBoolean(m_BlueDisable);
+                case D2D1_GAMMATRANSFER_PROP_ALPHA_AMPLITUDE:
+                    return winrt::PropertyValue::CreateSingle(m_AlphaAmplitude);
+                case D2D1_GAMMATRANSFER_PROP_ALPHA_EXPONENT:
+                    return winrt::PropertyValue::CreateSingle(m_AlphaExponent);
+                case D2D1_GAMMATRANSFER_PROP_ALPHA_OFFSET:
+                    return winrt::PropertyValue::CreateSingle(m_AlphaOffset);
+                case D2D1_GAMMATRANSFER_PROP_ALPHA_DISABLE:
+                    return winrt::PropertyValue::CreateBoolean(m_AlphaDisable);
+                case D2D1_GAMMATRANSFER_PROP_CLAMP_OUTPUT:
+                    return winrt::PropertyValue::CreateBoolean(m_ClampOutput);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
     };
 
     //-----------------------------------------------------------------------------------------------------------------
-    class GaussianBlurEffect : 
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::GaussianBlurEffectT<GaussianBlurEffect, EffectBase>
+    class GaussianBlurEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::GaussianBlurEffectT<GaussianBlurEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1GaussianBlur);
@@ -771,18 +874,25 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"BorderMode", D2D1_GAUSSIANBLUR_PROP_BORDER_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 3; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 3;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION: return winrt::PropertyValue::CreateSingle(m_BlurAmount);
-                    case D2D1_GAUSSIANBLUR_PROP_OPTIMIZATION: return winrt::PropertyValue::CreateUInt32((UINT32)m_Optimization);
-                    case D2D1_GAUSSIANBLUR_PROP_BORDER_MODE: return winrt::PropertyValue::CreateUInt32((UINT32)m_BorderMode);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION:
+                    return winrt::PropertyValue::CreateSingle(m_BlurAmount);
+                case D2D1_GAUSSIANBLUR_PROP_OPTIMIZATION:
+                    return winrt::PropertyValue::CreateUInt32((UINT32)m_Optimization);
+                case D2D1_GAUSSIANBLUR_PROP_BORDER_MODE:
+                    return winrt::PropertyValue::CreateUInt32((UINT32)m_BorderMode);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -790,8 +900,8 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class GrayscaleEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::GrayscaleEffectT<GrayscaleEffect, EffectBase>
+    class GrayscaleEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::GrayscaleEffectT<GrayscaleEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Grayscale);
@@ -800,28 +910,31 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class HueRotationEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::HueRotationEffectT<HueRotationEffect, EffectBase>
+    class HueRotationEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::HueRotationEffectT<HueRotationEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1HueRotation);
         DECLARE_SINGLE_SOURCE(Source);
-        DECLARE_POD_PROPERTY(Angle, float, 0.0f, true);  // D2D clamps within [0, 360] degrees
-        DECLARE_NAMED_PROPERTY_MAPPING(
-            { L"Angle", D2D1_HUEROTATION_PROP_ANGLE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_RADIANS_TO_DEGREES });
+        DECLARE_POD_PROPERTY(Angle, float, 0.0f, true); // D2D clamps within [0, 360] degrees
+        DECLARE_NAMED_PROPERTY_MAPPING({ L"Angle", D2D1_HUEROTATION_PROP_ANGLE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_RADIANS_TO_DEGREES });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 1;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_HUEROTATION_PROP_ANGLE:
-                        return winrt::PropertyValue::CreateSingle(m_Angle * k_DegreesPerRadian);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_HUEROTATION_PROP_ANGLE:
+                    return winrt::PropertyValue::CreateSingle(m_Angle * k_DegreesPerRadian);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -829,8 +942,7 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class InvertEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::InvertEffectT<InvertEffect, EffectBase>
+    class InvertEffect : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::InvertEffectT<InvertEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Invert);
@@ -839,8 +951,8 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class LinearTransferEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::LinearTransferEffectT<LinearTransferEffect, EffectBase>
+    class LinearTransferEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::LinearTransferEffectT<LinearTransferEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1LinearTransfer);
@@ -871,31 +983,48 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"AlphaOffset", D2D1_LINEARTRANSFER_PROP_ALPHA_Y_INTERCEPT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
             { L"AlphaSlope", D2D1_LINEARTRANSFER_PROP_ALPHA_SLOPE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
             { L"AlphaDisable", D2D1_LINEARTRANSFER_PROP_ALPHA_DISABLE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
-            { L"ClampOutput", D2D1_LINEARTRANSFER_PROP_CLAMP_OUTPUT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT } );
+            { L"ClampOutput", D2D1_LINEARTRANSFER_PROP_CLAMP_OUTPUT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 13; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 13;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_LINEARTRANSFER_PROP_RED_Y_INTERCEPT: return winrt::PropertyValue::CreateSingle(m_RedOffset);
-                    case D2D1_LINEARTRANSFER_PROP_RED_SLOPE: return winrt::PropertyValue::CreateSingle(m_RedSlope);
-                    case D2D1_LINEARTRANSFER_PROP_RED_DISABLE: return winrt::PropertyValue::CreateBoolean(m_RedDisable);
-                    case D2D1_LINEARTRANSFER_PROP_GREEN_Y_INTERCEPT: return winrt::PropertyValue::CreateSingle(m_GreenOffset);
-                    case D2D1_LINEARTRANSFER_PROP_GREEN_SLOPE: return winrt::PropertyValue::CreateSingle(m_GreenSlope);
-                    case D2D1_LINEARTRANSFER_PROP_GREEN_DISABLE: return winrt::PropertyValue::CreateBoolean(m_GreenDisable);
-                    case D2D1_LINEARTRANSFER_PROP_BLUE_Y_INTERCEPT: return winrt::PropertyValue::CreateSingle(m_BlueOffset);
-                    case D2D1_LINEARTRANSFER_PROP_BLUE_SLOPE: return winrt::PropertyValue::CreateSingle(m_BlueSlope);
-                    case D2D1_LINEARTRANSFER_PROP_BLUE_DISABLE: return winrt::PropertyValue::CreateBoolean(m_BlueDisable);
-                    case D2D1_LINEARTRANSFER_PROP_ALPHA_Y_INTERCEPT: return winrt::PropertyValue::CreateSingle(m_AlphaOffset);
-                    case D2D1_LINEARTRANSFER_PROP_ALPHA_SLOPE: return winrt::PropertyValue::CreateSingle(m_AlphaSlope);
-                    case D2D1_LINEARTRANSFER_PROP_ALPHA_DISABLE: return winrt::PropertyValue::CreateBoolean(m_AlphaDisable);
-                    case D2D1_LINEARTRANSFER_PROP_CLAMP_OUTPUT: return winrt::PropertyValue::CreateBoolean(m_ClampOutput);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_LINEARTRANSFER_PROP_RED_Y_INTERCEPT:
+                    return winrt::PropertyValue::CreateSingle(m_RedOffset);
+                case D2D1_LINEARTRANSFER_PROP_RED_SLOPE:
+                    return winrt::PropertyValue::CreateSingle(m_RedSlope);
+                case D2D1_LINEARTRANSFER_PROP_RED_DISABLE:
+                    return winrt::PropertyValue::CreateBoolean(m_RedDisable);
+                case D2D1_LINEARTRANSFER_PROP_GREEN_Y_INTERCEPT:
+                    return winrt::PropertyValue::CreateSingle(m_GreenOffset);
+                case D2D1_LINEARTRANSFER_PROP_GREEN_SLOPE:
+                    return winrt::PropertyValue::CreateSingle(m_GreenSlope);
+                case D2D1_LINEARTRANSFER_PROP_GREEN_DISABLE:
+                    return winrt::PropertyValue::CreateBoolean(m_GreenDisable);
+                case D2D1_LINEARTRANSFER_PROP_BLUE_Y_INTERCEPT:
+                    return winrt::PropertyValue::CreateSingle(m_BlueOffset);
+                case D2D1_LINEARTRANSFER_PROP_BLUE_SLOPE:
+                    return winrt::PropertyValue::CreateSingle(m_BlueSlope);
+                case D2D1_LINEARTRANSFER_PROP_BLUE_DISABLE:
+                    return winrt::PropertyValue::CreateBoolean(m_BlueDisable);
+                case D2D1_LINEARTRANSFER_PROP_ALPHA_Y_INTERCEPT:
+                    return winrt::PropertyValue::CreateSingle(m_AlphaOffset);
+                case D2D1_LINEARTRANSFER_PROP_ALPHA_SLOPE:
+                    return winrt::PropertyValue::CreateSingle(m_AlphaSlope);
+                case D2D1_LINEARTRANSFER_PROP_ALPHA_DISABLE:
+                    return winrt::PropertyValue::CreateBoolean(m_AlphaDisable);
+                case D2D1_LINEARTRANSFER_PROP_CLAMP_OUTPUT:
+                    return winrt::PropertyValue::CreateBoolean(m_ClampOutput);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -903,8 +1032,8 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class LuminanceToAlphaEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::LuminanceToAlphaEffectT<LuminanceToAlphaEffect, EffectBase>
+    class LuminanceToAlphaEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::LuminanceToAlphaEffectT<LuminanceToAlphaEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1LuminanceToAlpha);
@@ -913,27 +1042,30 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class OpacityEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::OpacityEffectT<OpacityEffect, EffectBase>
+    class OpacityEffect : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::OpacityEffectT<OpacityEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Opacity);
         DECLARE_SINGLE_SOURCE(Source);
         DECLARE_POD_PROPERTY(Opacity, float, 1.0f, value >= 0.0f && value <= 1.0f);
-        DECLARE_NAMED_PROPERTY_MAPPING(
-            { L"Opacity", D2D1_OPACITY_PROP_OPACITY, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
+        DECLARE_NAMED_PROPERTY_MAPPING({ L"Opacity", D2D1_OPACITY_PROP_OPACITY, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 1;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_OPACITY_PROP_OPACITY: return winrt::PropertyValue::CreateSingle(m_Opacity);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_OPACITY_PROP_OPACITY:
+                    return winrt::PropertyValue::CreateSingle(m_Opacity);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -941,8 +1073,8 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class PointDiffuseEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::PointDiffuseEffectT<PointDiffuseEffect, EffectBase>
+    class PointDiffuseEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::PointDiffuseEffectT<PointDiffuseEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1PointDiffuse);
@@ -951,8 +1083,7 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
         DECLARE_POD_PROPERTY(DiffuseAmount, float, 1.0f, value >= 0.0f && value <= 10000.0f);
         DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
         DECLARE_POD_PROPERTY(LightColor, UIColor, (UIColor{ 255, 255, 255, 255 }), true);
-        DECLARE_POD_PROPERTY(HeightMapKernelSize, Vector2, (Vector2{ 1.0f, 1.0f }),
-            value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
+        DECLARE_POD_PROPERTY(HeightMapKernelSize, Vector2, (Vector2{ 1.0f, 1.0f }), value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
         DECLARE_POD_PROPERTY(HeightMapInterpolationMode, winrt::CanvasImageInterpolation, winrt::CanvasImageInterpolation::Linear, true);
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"LightPosition", D2D1_POINTDIFFUSE_PROP_LIGHT_POSITION, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
@@ -960,26 +1091,34 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"HeightMapScale", D2D1_POINTDIFFUSE_PROP_SURFACE_SCALE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
             { L"LightColor", D2D1_POINTDIFFUSE_PROP_COLOR, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_COLOR_TO_VECTOR3 },
             { L"HeightMapKernelSize", D2D1_POINTDIFFUSE_PROP_KERNEL_UNIT_LENGTH, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
-            { L"HeightMapInterpolationMode", D2D1_POINTDIFFUSE_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },);
+            { L"HeightMapInterpolationMode", D2D1_POINTDIFFUSE_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT }, );
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 6; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 6;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_POINTDIFFUSE_PROP_LIGHT_POSITION:
-                        return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 3>&>(m_LightPosition));
-                    case D2D1_POINTDIFFUSE_PROP_DIFFUSE_CONSTANT: return winrt::PropertyValue::CreateSingle(m_DiffuseAmount);
-                    case D2D1_POINTDIFFUSE_PROP_SURFACE_SCALE: return winrt::PropertyValue::CreateSingle(m_HeightMapScale);
-                    case D2D1_POINTDIFFUSE_PROP_COLOR: return CreateColor<3>(m_LightColor);
-                    case D2D1_POINTDIFFUSE_PROP_KERNEL_UNIT_LENGTH:
-                        return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 2>&>(m_HeightMapKernelSize));
-                    case D2D1_POINTDIFFUSE_PROP_SCALE_MODE: return winrt::PropertyValue::CreateUInt32((UINT32)m_HeightMapInterpolationMode);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_POINTDIFFUSE_PROP_LIGHT_POSITION:
+                    return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 3>&>(m_LightPosition));
+                case D2D1_POINTDIFFUSE_PROP_DIFFUSE_CONSTANT:
+                    return winrt::PropertyValue::CreateSingle(m_DiffuseAmount);
+                case D2D1_POINTDIFFUSE_PROP_SURFACE_SCALE:
+                    return winrt::PropertyValue::CreateSingle(m_HeightMapScale);
+                case D2D1_POINTDIFFUSE_PROP_COLOR:
+                    return CreateColor<3>(m_LightColor);
+                case D2D1_POINTDIFFUSE_PROP_KERNEL_UNIT_LENGTH:
+                    return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 2>&>(m_HeightMapKernelSize));
+                case D2D1_POINTDIFFUSE_PROP_SCALE_MODE:
+                    return winrt::PropertyValue::CreateUInt32((UINT32)m_HeightMapInterpolationMode);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -987,8 +1126,8 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class PointSpecularEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::PointSpecularEffectT<PointSpecularEffect, EffectBase>
+    class PointSpecularEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::PointSpecularEffectT<PointSpecularEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1PointSpecular);
@@ -998,8 +1137,7 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
         DECLARE_POD_PROPERTY(SpecularAmount, float, 1.0f, value >= 0.0f && value <= 10000.0f);
         DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
         DECLARE_POD_PROPERTY(LightColor, UIColor, (UIColor{ 255, 255, 255, 255 }), true);
-        DECLARE_POD_PROPERTY(HeightMapKernelSize, Vector2, (Vector2{ 1.0f, 1.0f }),
-            value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
+        DECLARE_POD_PROPERTY(HeightMapKernelSize, Vector2, (Vector2{ 1.0f, 1.0f }), value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
         DECLARE_POD_PROPERTY(HeightMapInterpolationMode, winrt::CanvasImageInterpolation, winrt::CanvasImageInterpolation::Linear, true);
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"LightPosition", D2D1_POINTDIFFUSE_PROP_LIGHT_POSITION, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
@@ -1008,27 +1146,36 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"HeightMapScale", D2D1_POINTSPECULAR_PROP_SURFACE_SCALE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
             { L"LightColor", D2D1_POINTSPECULAR_PROP_COLOR, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_COLOR_TO_VECTOR3 },
             { L"HeightMapKernelSize", D2D1_POINTSPECULAR_PROP_KERNEL_UNIT_LENGTH, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
-            { L"HeightMapInterpolationMode", D2D1_POINTSPECULAR_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },);
+            { L"HeightMapInterpolationMode", D2D1_POINTSPECULAR_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT }, );
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 7; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 7;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_POINTDIFFUSE_PROP_LIGHT_POSITION:
-                        return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 3>&>(m_LightPosition));
-                    case D2D1_POINTSPECULAR_PROP_SPECULAR_EXPONENT: return winrt::PropertyValue::CreateSingle(m_SpecularExponent);
-                    case D2D1_POINTSPECULAR_PROP_SPECULAR_CONSTANT: return winrt::PropertyValue::CreateSingle(m_SpecularAmount);
-                    case D2D1_POINTSPECULAR_PROP_SURFACE_SCALE: return winrt::PropertyValue::CreateSingle(m_HeightMapScale);
-                    case D2D1_POINTSPECULAR_PROP_COLOR: return CreateColor<3>(m_LightColor);
-                    case D2D1_POINTSPECULAR_PROP_KERNEL_UNIT_LENGTH:
-                        return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 2>&>(m_HeightMapKernelSize));
-                    case D2D1_POINTSPECULAR_PROP_SCALE_MODE: return winrt::PropertyValue::CreateUInt32((UINT32)m_HeightMapInterpolationMode);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_POINTDIFFUSE_PROP_LIGHT_POSITION:
+                    return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 3>&>(m_LightPosition));
+                case D2D1_POINTSPECULAR_PROP_SPECULAR_EXPONENT:
+                    return winrt::PropertyValue::CreateSingle(m_SpecularExponent);
+                case D2D1_POINTSPECULAR_PROP_SPECULAR_CONSTANT:
+                    return winrt::PropertyValue::CreateSingle(m_SpecularAmount);
+                case D2D1_POINTSPECULAR_PROP_SURFACE_SCALE:
+                    return winrt::PropertyValue::CreateSingle(m_HeightMapScale);
+                case D2D1_POINTSPECULAR_PROP_COLOR:
+                    return CreateColor<3>(m_LightColor);
+                case D2D1_POINTSPECULAR_PROP_KERNEL_UNIT_LENGTH:
+                    return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 2>&>(m_HeightMapKernelSize));
+                case D2D1_POINTSPECULAR_PROP_SCALE_MODE:
+                    return winrt::PropertyValue::CreateUInt32((UINT32)m_HeightMapInterpolationMode);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -1036,8 +1183,8 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class PosterizeEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::PosterizeEffectT<PosterizeEffect, EffectBase>
+    class PosterizeEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::PosterizeEffectT<PosterizeEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Posterize);
@@ -1051,18 +1198,25 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"BlueValueCount", D2D1_POSTERIZE_PROP_BLUE_VALUE_COUNT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 1;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_POSTERIZE_PROP_RED_VALUE_COUNT: return winrt::PropertyValue::CreateInt32(m_RedValueCount);
-                    case D2D1_POSTERIZE_PROP_GREEN_VALUE_COUNT: return winrt::PropertyValue::CreateInt32(m_GreenValueCount);
-                    case D2D1_POSTERIZE_PROP_BLUE_VALUE_COUNT: return winrt::PropertyValue::CreateInt32(m_BlueValueCount);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_POSTERIZE_PROP_RED_VALUE_COUNT:
+                    return winrt::PropertyValue::CreateInt32(m_RedValueCount);
+                case D2D1_POSTERIZE_PROP_GREEN_VALUE_COUNT:
+                    return winrt::PropertyValue::CreateInt32(m_GreenValueCount);
+                case D2D1_POSTERIZE_PROP_BLUE_VALUE_COUNT:
+                    return winrt::PropertyValue::CreateInt32(m_BlueValueCount);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -1070,8 +1224,8 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class PremultiplyEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::PremultiplyEffectT<PremultiplyEffect, EffectBase>
+    class PremultiplyEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::PremultiplyEffectT<PremultiplyEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Premultiply);
@@ -1080,27 +1234,31 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class SaturationEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::SaturationEffectT<SaturationEffect, EffectBase>
+    class SaturationEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::SaturationEffectT<SaturationEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Saturation);
         DECLARE_SINGLE_SOURCE(Source);
         DECLARE_POD_PROPERTY(Saturation, float, 0.5f, value >= 0.0f && value <= 2.0f);
-        DECLARE_NAMED_PROPERTY_MAPPING(
-            { L"Saturation", D2D1_SATURATION_PROP_SATURATION, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
+        DECLARE_NAMED_PROPERTY_MAPPING({ L"Saturation", D2D1_SATURATION_PROP_SATURATION, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 1;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_SATURATION_PROP_SATURATION: return winrt::PropertyValue::CreateSingle(m_Saturation);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_SATURATION_PROP_SATURATION:
+                    return winrt::PropertyValue::CreateSingle(m_Saturation);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -1108,8 +1266,7 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class SepiaEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::SepiaEffectT<SepiaEffect, EffectBase>
+    class SepiaEffect : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::SepiaEffectT<SepiaEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Sepia);
@@ -1121,26 +1278,30 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"AlphaMode", D2D1_SEPIA_PROP_ALPHA_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_COLORMATRIX_ALPHA_MODE });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 2; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 2;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_SEPIA_PROP_INTENSITY: return winrt::PropertyValue::CreateSingle(m_Intensity);
-                    case D2D1_SEPIA_PROP_ALPHA_MODE:
+                case D2D1_SEPIA_PROP_INTENSITY:
+                    return winrt::PropertyValue::CreateSingle(m_Intensity);
+                case D2D1_SEPIA_PROP_ALPHA_MODE:
+                {
+                    switch (m_AlphaMode)
                     {
-                        switch (m_AlphaMode)
-                        {
-                            case winrt::CanvasAlphaMode::Premultiplied: 
-                                return winrt::PropertyValue::CreateUInt32(D2D1_COLORMANAGEMENT_ALPHA_MODE_PREMULTIPLIED);
-                            case winrt::CanvasAlphaMode::Straight:
-                                return winrt::PropertyValue::CreateUInt32(D2D1_COLORMANAGEMENT_ALPHA_MODE_STRAIGHT);
-                        }
-                        break;
+                    case winrt::CanvasAlphaMode::Premultiplied:
+                        return winrt::PropertyValue::CreateUInt32(D2D1_COLORMANAGEMENT_ALPHA_MODE_PREMULTIPLIED);
+                    case winrt::CanvasAlphaMode::Straight:
+                        return winrt::PropertyValue::CreateUInt32(D2D1_COLORMANAGEMENT_ALPHA_MODE_STRAIGHT);
                     }
+                    break;
+                }
                 }
                 throw winrt::hresult_invalid_argument();
             });
@@ -1149,8 +1310,8 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class SpotDiffuseEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::SpotDiffuseEffectT<SpotDiffuseEffect, EffectBase>
+    class SpotDiffuseEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::SpotDiffuseEffectT<SpotDiffuseEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1SpotDiffuse);
@@ -1162,8 +1323,7 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
         DECLARE_POD_PROPERTY(DiffuseAmount, float, 1.0f, value >= 0.0f && value <= 10000.0f);
         DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
         DECLARE_POD_PROPERTY(LightColor, UIColor, (UIColor{ 255, 255, 255, 255 }), true);
-        DECLARE_POD_PROPERTY(HeightMapKernelSize, Vector2, (Vector2{ 1.0f, 1.0f }),
-            value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
+        DECLARE_POD_PROPERTY(HeightMapKernelSize, Vector2, (Vector2{ 1.0f, 1.0f }), value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
         DECLARE_POD_PROPERTY(HeightMapInterpolationMode, winrt::CanvasImageInterpolation, winrt::CanvasImageInterpolation::Linear, true);
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"LightPosition", D2D1_SPOTDIFFUSE_PROP_LIGHT_POSITION, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
@@ -1174,31 +1334,40 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"HeightMapScale", D2D1_SPOTDIFFUSE_PROP_SURFACE_SCALE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
             { L"LightColor", D2D1_SPOTDIFFUSE_PROP_COLOR, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_COLOR_TO_VECTOR3 },
             { L"HeightMapKernelSize", D2D1_SPOTDIFFUSE_PROP_KERNEL_UNIT_LENGTH, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
-            { L"HeightMapInterpolationMode", D2D1_SPOTDIFFUSE_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },);
+            { L"HeightMapInterpolationMode", D2D1_SPOTDIFFUSE_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT }, );
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 9; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 9;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_SPOTDIFFUSE_PROP_LIGHT_POSITION:
-                        return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 3>&>(m_LightPosition));
-                    case D2D1_SPOTDIFFUSE_PROP_POINTS_AT:
-                        return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 3>&>(m_LightTarget));
-                    case D2D1_SPOTDIFFUSE_PROP_FOCUS: return winrt::PropertyValue::CreateSingle(m_Focus);
-                    case D2D1_SPOTDIFFUSE_PROP_LIMITING_CONE_ANGLE:
-                        return winrt::PropertyValue::CreateSingle(m_LimitingConeAngle * k_DegreesPerRadian);
-                    case D2D1_SPOTDIFFUSE_PROP_DIFFUSE_CONSTANT: return winrt::PropertyValue::CreateSingle(m_DiffuseAmount);
-                    case D2D1_SPOTDIFFUSE_PROP_SURFACE_SCALE: return winrt::PropertyValue::CreateSingle(m_HeightMapScale);
-                    case D2D1_SPOTDIFFUSE_PROP_COLOR: return CreateColor<3>(m_LightColor);
-                    case D2D1_SPOTDIFFUSE_PROP_KERNEL_UNIT_LENGTH:
-                        return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 2>&>(m_HeightMapKernelSize));
-                    case D2D1_SPOTDIFFUSE_PROP_SCALE_MODE: return winrt::PropertyValue::CreateUInt32((UINT32)m_HeightMapInterpolationMode);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_SPOTDIFFUSE_PROP_LIGHT_POSITION:
+                    return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 3>&>(m_LightPosition));
+                case D2D1_SPOTDIFFUSE_PROP_POINTS_AT:
+                    return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 3>&>(m_LightTarget));
+                case D2D1_SPOTDIFFUSE_PROP_FOCUS:
+                    return winrt::PropertyValue::CreateSingle(m_Focus);
+                case D2D1_SPOTDIFFUSE_PROP_LIMITING_CONE_ANGLE:
+                    return winrt::PropertyValue::CreateSingle(m_LimitingConeAngle * k_DegreesPerRadian);
+                case D2D1_SPOTDIFFUSE_PROP_DIFFUSE_CONSTANT:
+                    return winrt::PropertyValue::CreateSingle(m_DiffuseAmount);
+                case D2D1_SPOTDIFFUSE_PROP_SURFACE_SCALE:
+                    return winrt::PropertyValue::CreateSingle(m_HeightMapScale);
+                case D2D1_SPOTDIFFUSE_PROP_COLOR:
+                    return CreateColor<3>(m_LightColor);
+                case D2D1_SPOTDIFFUSE_PROP_KERNEL_UNIT_LENGTH:
+                    return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 2>&>(m_HeightMapKernelSize));
+                case D2D1_SPOTDIFFUSE_PROP_SCALE_MODE:
+                    return winrt::PropertyValue::CreateUInt32((UINT32)m_HeightMapInterpolationMode);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -1206,8 +1375,8 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class SpotSpecularEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::SpotSpecularEffectT<SpotSpecularEffect, EffectBase>
+    class SpotSpecularEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::SpotSpecularEffectT<SpotSpecularEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1SpotSpecular);
@@ -1220,8 +1389,7 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
         DECLARE_POD_PROPERTY(SpecularAmount, float, 1.0f, value >= 0.0f && value <= 10000.0f);
         DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
         DECLARE_POD_PROPERTY(LightColor, UIColor, (UIColor{ 255, 255, 255, 255 }), true);
-        DECLARE_POD_PROPERTY(HeightMapKernelSize, Vector2, (Vector2{ 1.0f, 1.0f }),
-            value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
+        DECLARE_POD_PROPERTY(HeightMapKernelSize, Vector2, (Vector2{ 1.0f, 1.0f }), value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
         DECLARE_POD_PROPERTY(HeightMapInterpolationMode, winrt::CanvasImageInterpolation, winrt::CanvasImageInterpolation::Linear, true);
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"LightPosition", D2D1_SPOTDIFFUSE_PROP_LIGHT_POSITION, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
@@ -1233,32 +1401,42 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"HeightMapScale", D2D1_SPOTSPECULAR_PROP_SURFACE_SCALE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
             { L"LightColor", D2D1_SPOTSPECULAR_PROP_COLOR, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_COLOR_TO_VECTOR3 },
             { L"HeightMapKernelSize", D2D1_SPOTSPECULAR_PROP_KERNEL_UNIT_LENGTH, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
-            { L"HeightMapInterpolationMode", D2D1_SPOTSPECULAR_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },);
+            { L"HeightMapInterpolationMode", D2D1_SPOTSPECULAR_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT }, );
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 10; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 10;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_SPOTDIFFUSE_PROP_LIGHT_POSITION:
-                        return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 3>&>(m_LightPosition));
-                    case D2D1_SPOTDIFFUSE_PROP_POINTS_AT:
-                        return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 3>&>(m_LightTarget));
-                    case D2D1_SPOTDIFFUSE_PROP_FOCUS: return winrt::PropertyValue::CreateSingle(m_Focus);
-                    case D2D1_SPOTDIFFUSE_PROP_LIMITING_CONE_ANGLE:
-                        return winrt::PropertyValue::CreateSingle(m_LimitingConeAngle * k_DegreesPerRadian);
-                    case D2D1_SPOTSPECULAR_PROP_SPECULAR_EXPONENT: return winrt::PropertyValue::CreateSingle(m_SpecularExponent);
-                    case D2D1_SPOTSPECULAR_PROP_SPECULAR_CONSTANT: return winrt::PropertyValue::CreateSingle(m_SpecularAmount);
-                    case D2D1_SPOTSPECULAR_PROP_SURFACE_SCALE: return winrt::PropertyValue::CreateSingle(m_HeightMapScale);
-                    case D2D1_SPOTSPECULAR_PROP_COLOR: return CreateColor<3>(m_LightColor);
-                    case D2D1_SPOTSPECULAR_PROP_KERNEL_UNIT_LENGTH:
-                        return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 2>&>(m_HeightMapKernelSize));
-                    case D2D1_SPOTSPECULAR_PROP_SCALE_MODE: return winrt::PropertyValue::CreateUInt32((UINT32)m_HeightMapInterpolationMode);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_SPOTDIFFUSE_PROP_LIGHT_POSITION:
+                    return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 3>&>(m_LightPosition));
+                case D2D1_SPOTDIFFUSE_PROP_POINTS_AT:
+                    return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 3>&>(m_LightTarget));
+                case D2D1_SPOTDIFFUSE_PROP_FOCUS:
+                    return winrt::PropertyValue::CreateSingle(m_Focus);
+                case D2D1_SPOTDIFFUSE_PROP_LIMITING_CONE_ANGLE:
+                    return winrt::PropertyValue::CreateSingle(m_LimitingConeAngle * k_DegreesPerRadian);
+                case D2D1_SPOTSPECULAR_PROP_SPECULAR_EXPONENT:
+                    return winrt::PropertyValue::CreateSingle(m_SpecularExponent);
+                case D2D1_SPOTSPECULAR_PROP_SPECULAR_CONSTANT:
+                    return winrt::PropertyValue::CreateSingle(m_SpecularAmount);
+                case D2D1_SPOTSPECULAR_PROP_SURFACE_SCALE:
+                    return winrt::PropertyValue::CreateSingle(m_HeightMapScale);
+                case D2D1_SPOTSPECULAR_PROP_COLOR:
+                    return CreateColor<3>(m_LightColor);
+                case D2D1_SPOTSPECULAR_PROP_KERNEL_UNIT_LENGTH:
+                    return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 2>&>(m_HeightMapKernelSize));
+                case D2D1_SPOTSPECULAR_PROP_SCALE_MODE:
+                    return winrt::PropertyValue::CreateUInt32((UINT32)m_HeightMapInterpolationMode);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -1266,8 +1444,8 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class TemperatureAndTintEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::TemperatureAndTintEffectT<TemperatureAndTintEffect, EffectBase>
+    class TemperatureAndTintEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::TemperatureAndTintEffectT<TemperatureAndTintEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1TemperatureTint);
@@ -1279,17 +1457,23 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"Tint", D2D1_TEMPERATUREANDTINT_PROP_TINT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 2; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 2;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_TEMPERATUREANDTINT_PROP_TEMPERATURE: return winrt::PropertyValue::CreateSingle(m_Temperature);
-                    case D2D1_TEMPERATUREANDTINT_PROP_TINT: return winrt::PropertyValue::CreateSingle(m_Tint);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_TEMPERATUREANDTINT_PROP_TEMPERATURE:
+                    return winrt::PropertyValue::CreateSingle(m_Temperature);
+                case D2D1_TEMPERATUREANDTINT_PROP_TINT:
+                    return winrt::PropertyValue::CreateSingle(m_Tint);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -1297,8 +1481,7 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class TintEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::TintEffectT<TintEffect, EffectBase>
+    class TintEffect : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::TintEffectT<TintEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Tint);
@@ -1310,17 +1493,23 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"ClampOutput", D2D1_TINT_PROP_CLAMP_OUTPUT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 2; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 2;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_TINT_PROP_COLOR: return CreateColor<4>(m_Color);
-                    case D2D1_TINT_PROP_CLAMP_OUTPUT: return winrt::PropertyValue::CreateBoolean(m_ClampOutput);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_TINT_PROP_COLOR:
+                    return CreateColor<4>(m_Color);
+                case D2D1_TINT_PROP_CLAMP_OUTPUT:
+                    return winrt::PropertyValue::CreateBoolean(m_ClampOutput);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -1328,15 +1517,15 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class Transform2DEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::Transform2DEffectT<Transform2DEffect, EffectBase>
+    class Transform2DEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::Transform2DEffectT<Transform2DEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D12DAffineTransform);
         DECLARE_SINGLE_SOURCE(Source);
         DECLARE_POD_PROPERTY(InterpolationMode, winrt::CanvasImageInterpolation, winrt::CanvasImageInterpolation::Linear, true);
         DECLARE_POD_PROPERTY(BorderMode, winrt::EffectBorderMode, winrt::EffectBorderMode::Soft, true);
-        DECLARE_POD_PROPERTY(TransformMatrix, winrt::float3x2, (winrt::float3x2{ 1, 0, 0, 1, 0, 0}), true);
+        DECLARE_POD_PROPERTY(TransformMatrix, winrt::float3x2, (winrt::float3x2{ 1, 0, 0, 1, 0, 0 }), true);
         DECLARE_POD_PROPERTY(Sharpness, float, 0.0f, value >= 0.0f && value <= 1.0f);
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"InterpolationMode", D2D1_2DAFFINETRANSFORM_PROP_INTERPOLATION_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
@@ -1345,20 +1534,27 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             { L"Sharpness", D2D1_2DAFFINETRANSFORM_PROP_SHARPNESS, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 4; return S_OK; }
-
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override
         {
-            return UsePropertyFactory(value, [=]()
-            {
+            *count = 4;
+            return S_OK;
+        }
+
+        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue** value) override
+        {
+            return UsePropertyFactory(value, [=]() {
                 switch (index)
                 {
-                    case D2D1_2DAFFINETRANSFORM_PROP_INTERPOLATION_MODE: return winrt::PropertyValue::CreateUInt32((UINT32)m_InterpolationMode);
-                    case D2D1_2DAFFINETRANSFORM_PROP_BORDER_MODE: return winrt::PropertyValue::CreateUInt32((UINT32)m_BorderMode);
-                    case D2D1_2DAFFINETRANSFORM_PROP_TRANSFORM_MATRIX:
-                        return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 6>&>(m_TransformMatrix));
-                    case D2D1_2DAFFINETRANSFORM_PROP_SHARPNESS: return winrt::PropertyValue::CreateSingle(m_Sharpness);
-                    default: throw winrt::hresult_invalid_argument();
+                case D2D1_2DAFFINETRANSFORM_PROP_INTERPOLATION_MODE:
+                    return winrt::PropertyValue::CreateUInt32((UINT32)m_InterpolationMode);
+                case D2D1_2DAFFINETRANSFORM_PROP_BORDER_MODE:
+                    return winrt::PropertyValue::CreateUInt32((UINT32)m_BorderMode);
+                case D2D1_2DAFFINETRANSFORM_PROP_TRANSFORM_MATRIX:
+                    return winrt::PropertyValue::CreateSingleArray(reinterpret_cast<std::array<float, 6>&>(m_TransformMatrix));
+                case D2D1_2DAFFINETRANSFORM_PROP_SHARPNESS:
+                    return winrt::PropertyValue::CreateSingle(m_Sharpness);
+                default:
+                    throw winrt::hresult_invalid_argument();
                 }
             });
         }
@@ -1366,8 +1562,8 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    class UnPremultiplyEffect :
-        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::UnPremultiplyEffectT<UnPremultiplyEffect, EffectBase>
+    class UnPremultiplyEffect
+        : public winrt::Microsoft::UI::Private::Composition::Effects::implementation::UnPremultiplyEffectT<UnPremultiplyEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1UnPremultiply);
@@ -1378,13 +1574,13 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
     // Clean up preprocessor state
 
 #ifndef MICROSOFT_UI_COMPOSITION_EFFECT_IMPL_KEEP_MACROS
-#    pragma pop_macro("DECLARE_D2D_GUID")
-#    pragma pop_macro("DECLARE_POD_PROPERTY")
-#    pragma pop_macro("DECLARE_SOURCE")
-#    pragma pop_macro("DECLARE_SINGLE_SOURCE")
-#    pragma pop_macro("DECLARE_DUAL_SOURCES")
-#    pragma pop_macro("DECLARE_NAMED_PROPERTY_MAPPING")
+#pragma pop_macro("DECLARE_D2D_GUID")
+#pragma pop_macro("DECLARE_POD_PROPERTY")
+#pragma pop_macro("DECLARE_SOURCE")
+#pragma pop_macro("DECLARE_SINGLE_SOURCE")
+#pragma pop_macro("DECLARE_DUAL_SOURCES")
+#pragma pop_macro("DECLARE_NAMED_PROPERTY_MAPPING")
 #endif
 
-}}}}}
+}}}}} // namespace Microsoft::UI::Private::Composition::Effects
 #pragma warning(pop)

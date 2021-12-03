@@ -7,13 +7,20 @@ class ItemsRepeater;
 
 struct ElementInfo
 {
-    ElementInfo(const winrt::UIElement&  element, const winrt::com_ptr<VirtualizationInfo>& virtInfo) :
-        m_element(element),
-        m_virtInfo(virtInfo)
-    {}
+    ElementInfo(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo) :
+        m_element(element), m_virtInfo(virtInfo)
+    {
+    }
 
-    winrt::UIElement Element() const { return m_element; }
-    winrt::com_ptr<VirtualizationInfo> VirtInfo() const { return m_virtInfo; }
+    winrt::UIElement Element() const
+    {
+        return m_element;
+    }
+    winrt::com_ptr<VirtualizationInfo> VirtInfo() const
+    {
+        return m_virtInfo;
+    }
+
 private:
     winrt::UIElement m_element{ nullptr };
     winrt::com_ptr<VirtualizationInfo> m_virtInfo{ nullptr };

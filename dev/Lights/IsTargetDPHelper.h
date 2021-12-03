@@ -3,10 +3,8 @@
 
 #pragma once
 
-template<typename T>
-inline void OnAttachedIsTargetPropertyChanged(
-    const winrt::DependencyObject& sender,
-    const winrt::DependencyPropertyChangedEventArgs& args)
+template <typename T>
+inline void OnAttachedIsTargetPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (auto element = sender.try_as<winrt::UIElement>())
     {
@@ -32,14 +30,9 @@ inline void OnAttachedIsTargetPropertyChanged(
     }
 }
 
-template<typename T>
+template <typename T>
 inline auto InitializeIsTargetDependencyProperty()
 {
     return InitializeDependencyProperty(
-        L"IsTarget",
-        winrt::name_of<bool>(),
-        winrt::name_of<winrt::DependencyObject>(),
-        true /* isAttached */,
-        box_value(false),
-        &OnAttachedIsTargetPropertyChanged<T>);
+        L"IsTarget", winrt::name_of<bool>(), winrt::name_of<winrt::DependencyObject>(), true /* isAttached */, box_value(false), &OnAttachedIsTargetPropertyChanged<T>);
 }

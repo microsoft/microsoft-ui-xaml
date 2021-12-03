@@ -9,8 +9,7 @@
 
 #include "BreadcrumbBarItem.g.h"
 
-class BreadcrumbBarItem :
-    public ReferenceTracker<BreadcrumbBarItem, winrt::implementation::BreadcrumbBarItemT>
+class BreadcrumbBarItem : public ReferenceTracker<BreadcrumbBarItem, winrt::implementation::BreadcrumbBarItemT>
 {
 public:
     BreadcrumbBarItem();
@@ -55,7 +54,7 @@ public:
 private:
     void OnLoadedEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnEllipsisItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnBreadcrumbBarItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs & args);
+    void OnBreadcrumbBarItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&);
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnIsEnabledChanged(const winrt::IInspectable& sender, const winrt::DependencyPropertyChangedEventArgs& args);

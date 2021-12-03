@@ -64,7 +64,6 @@ winrt::UIElement LayoutContextAdapter::GetOrCreateElementAtCore(int index, winrt
 
 void LayoutContextAdapter::RecycleElementCore(winrt::UIElement const& element)
 {
-
 }
 
 int32_t LayoutContextAdapter::GetElementIndexCore(winrt::UIElement const& element)
@@ -80,7 +79,7 @@ int32_t LayoutContextAdapter::GetElementIndexCore(winrt::UIElement const& elemen
             }
         }
     }
-    
+
     return -1;
 }
 

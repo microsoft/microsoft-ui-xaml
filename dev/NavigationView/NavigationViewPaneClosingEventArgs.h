@@ -5,8 +5,8 @@
 
 #include "NavigationViewPaneClosingEventArgs.g.h"
 
-class NavigationViewPaneClosingEventArgs :
-    public ReferenceTracker<NavigationViewPaneClosingEventArgs, winrt::implementation::NavigationViewPaneClosingEventArgsT, winrt::composing, winrt::composable>
+class NavigationViewPaneClosingEventArgs
+    : public ReferenceTracker<NavigationViewPaneClosingEventArgs, winrt::implementation::NavigationViewPaneClosingEventArgsT, winrt::composing, winrt::composable>
 {
 public:
     bool Cancel();

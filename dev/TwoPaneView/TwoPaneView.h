@@ -25,16 +25,13 @@ enum class ViewMode
     None
 };
 
-class TwoPaneView :
-    public ReferenceTracker<TwoPaneView, winrt::implementation::TwoPaneViewT>,
-    public TwoPaneViewProperties
+class TwoPaneView : public ReferenceTracker<TwoPaneView, winrt::implementation::TwoPaneViewT>, public TwoPaneViewProperties
 {
 public:
     TwoPaneView();
 
     // IFrameworkElement
     void OnApplyTemplate();
-
 
     void OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
@@ -51,9 +48,9 @@ private:
     winrt::Rect GetControlRect();
     bool IsInMultipleRegions(DisplayRegionHelperInfo info, winrt::Rect rcControl);
 
-    ViewMode m_currentMode { ViewMode::None } ;
+    ViewMode m_currentMode{ ViewMode::None };
 
-    bool m_loaded { false };
+    bool m_loaded{ false };
 
     winrt::Control::Loaded_revoker m_pane1LoadedRevoker{};
     winrt::Control::Loaded_revoker m_pane2LoadedRevoker{};
@@ -65,5 +62,4 @@ private:
     tracker_ref<winrt::RowDefinition> m_rowMiddle{ this };
     tracker_ref<winrt::RowDefinition> m_rowBottom{ this };
     winrt::IWindow::SizeChanged_revoker m_windowSizeChangedRevoker{};
-
 };

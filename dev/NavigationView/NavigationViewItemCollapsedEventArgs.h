@@ -5,8 +5,8 @@
 
 #include "NavigationViewItemCollapsedEventArgs.g.h"
 
-class NavigationViewItemCollapsedEventArgs :
-    public ReferenceTracker<NavigationViewItemCollapsedEventArgs, winrt::implementation::NavigationViewItemCollapsedEventArgsT, winrt::composing, winrt::composable>
+class NavigationViewItemCollapsedEventArgs
+    : public ReferenceTracker<NavigationViewItemCollapsedEventArgs, winrt::implementation::NavigationViewItemCollapsedEventArgsT, winrt::composing, winrt::composable>
 {
 public:
     NavigationViewItemCollapsedEventArgs(const winrt::NavigationView& navigationView);

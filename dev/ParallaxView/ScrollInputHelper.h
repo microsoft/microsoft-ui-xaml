@@ -7,8 +7,7 @@
 class ScrollInputHelper
 {
 public:
-    ScrollInputHelper(const ITrackerHandleManager* owner,
-        std::function<void(bool, bool)> infoChangedFunction);
+    ScrollInputHelper(const ITrackerHandleManager* owner, std::function<void(bool, bool)> infoChangedFunction);
     ~ScrollInputHelper();
 
     winrt::UIElement TargetElement() const;
@@ -28,9 +27,7 @@ public:
 private:
     static winrt::RichEditBox GetRichEditBoxParent(const winrt::DependencyObject& childElement);
     static void GetChildScrollPresenterOrScrollViewer(
-        const winrt::DependencyObject& rootElement,
-        _Out_ winrt::ScrollPresenter* scrollPresenter,
-        _Out_ winrt::FxScrollViewer* scrollViewer);
+        const winrt::DependencyObject& rootElement, _Out_ winrt::ScrollPresenter* scrollPresenter, _Out_ winrt::FxScrollViewer* scrollViewer);
     winrt::UIElement GetScrollContentElement() const;
     winrt::HorizontalAlignment GetEffectiveHorizontalAlignment() const;
     winrt::VerticalAlignment GetEffectiveVerticalAlignment() const;
@@ -155,4 +152,3 @@ private:
     static PCWSTR s_verticalOffsetPropertyName;
     static PCWSTR s_scalePropertyName;
 };
-

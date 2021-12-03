@@ -5,12 +5,8 @@
 
 #include "TreeViewListAutomationPeer.g.h"
 
-class TreeViewListAutomationPeer :
-    public ReferenceTracker<
-        TreeViewListAutomationPeer,
-        winrt::implementation::TreeViewListAutomationPeerT,
-        winrt::IDropTargetProvider,
-        winrt::ISelectionProvider>
+class TreeViewListAutomationPeer
+    : public ReferenceTracker<TreeViewListAutomationPeer, winrt::implementation::TreeViewListAutomationPeerT, winrt::IDropTargetProvider, winrt::ISelectionProvider>
 {
 public:
     TreeViewListAutomationPeer(winrt::TreeViewList const& owner);

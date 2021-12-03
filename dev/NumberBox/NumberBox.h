@@ -10,27 +10,31 @@
 #include "NumberBox.properties.h"
 #include "Windows.Globalization.NumberFormatting.h"
 
-class NumberBoxValueChangedEventArgs :
-    public winrt::implementation::NumberBoxValueChangedEventArgsT<NumberBoxValueChangedEventArgs>
+class NumberBoxValueChangedEventArgs : public winrt::implementation::NumberBoxValueChangedEventArgsT<NumberBoxValueChangedEventArgs>
 {
 public:
-    NumberBoxValueChangedEventArgs(double oldValue, double newValue) : m_oldValue(oldValue), m_newValue(newValue) {}
+    NumberBoxValueChangedEventArgs(double oldValue, double newValue) : m_oldValue(oldValue), m_newValue(newValue)
+    {
+    }
 
-    double OldValue() { return m_oldValue; }
-    double NewValue() { return m_newValue; }
+    double OldValue()
+    {
+        return m_oldValue;
+    }
+    double NewValue()
+    {
+        return m_newValue;
+    }
 
 private:
     double m_oldValue;
     double m_newValue;
 };
 
-class NumberBox :
-    public ReferenceTracker<NumberBox, winrt::implementation::NumberBoxT>,
-    public NumberBoxProperties
+class NumberBox : public ReferenceTracker<NumberBox, winrt::implementation::NumberBoxT>, public NumberBoxProperties
 {
-    
-public:
 
+public:
     NumberBox();
 
     void Value(double value);

@@ -6,9 +6,7 @@
 #include "ColorPickerSlider.g.h"
 #include "ColorPickerSlider.properties.h"
 
-class ColorPickerSlider :
-    public ReferenceTracker<ColorPickerSlider, winrt::implementation::ColorPickerSliderT>,
-    public ColorPickerSliderProperties
+class ColorPickerSlider : public ReferenceTracker<ColorPickerSlider, winrt::implementation::ColorPickerSliderT>, public ColorPickerSliderProperties
 {
 public:
     ColorPickerSlider();

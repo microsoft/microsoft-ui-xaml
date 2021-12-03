@@ -23,14 +23,12 @@ enum class TopNavigationViewLayoutState
 enum class NavigationRecommendedTransitionDirection
 {
     FromOverflow, // mapping to SlideNavigationTransitionInfo FromLeft
-    FromLeft, // SlideNavigationTransitionInfo
-    FromRight, // SlideNavigationTransitionInfo
-    Default // Currently it's mapping to EntranceNavigationTransitionInfo and is subject to change.
+    FromLeft,     // SlideNavigationTransitionInfo
+    FromRight,    // SlideNavigationTransitionInfo
+    Default       // Currently it's mapping to EntranceNavigationTransitionInfo and is subject to change.
 };
 
-class NavigationView :
-    public ReferenceTracker<NavigationView, winrt::implementation::NavigationViewT>,
-    public NavigationViewProperties
+class NavigationView : public ReferenceTracker<NavigationView, winrt::implementation::NavigationViewT>, public NavigationViewProperties
 {
 public:
     NavigationView();
@@ -50,7 +48,7 @@ public:
     winrt::IInspectable MenuItemFromContainer(winrt::DependencyObject const& container);
     winrt::DependencyObject ContainerFromMenuItem(winrt::IInspectable const& item);
 
-    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&  args);
+    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
@@ -71,7 +69,10 @@ public:
     int GetNavigationViewItemCountInPrimaryList();
     int GetNavigationViewItemCountInTopNav();
     winrt::SplitView GetSplitView();
-    TopNavigationViewDataProvider& GetTopDataProvider() { return m_topDataProvider; };
+    TopNavigationViewDataProvider& GetTopDataProvider()
+    {
+        return m_topDataProvider;
+    };
     void TopNavigationViewItemContentChanged();
 
     void CoerceToGreaterThanZero(double& value);
@@ -79,13 +80,16 @@ public:
     void OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
     void OnRepeaterElementClearing(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementClearingEventArgs& args);
 
-    com_ptr<NavigationViewItemsFactory> GetNavigationViewItemsFactory() { return m_navigationViewItemsFactory; };
+    com_ptr<NavigationViewItemsFactory> GetNavigationViewItemsFactory()
+    {
+        return m_navigationViewItemsFactory;
+    };
 
     // Used in AutomationPeer
     winrt::ItemsRepeater LeftNavRepeater();
     winrt::NavigationViewItem GetSelectedContainer();
     winrt::ItemsRepeater GetParentItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
-    winrt::ItemsRepeater GetParentRootItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib); 
+    winrt::ItemsRepeater GetParentRootItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
     winrt::IndexPath GetIndexPathForContainer(const winrt::NavigationViewItemBase& nvib);
 
     // Hierarchical related functions
@@ -96,7 +100,6 @@ public:
     void OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi);
 
 private:
-
     // Selection handling functions
     void OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e);
@@ -116,7 +119,8 @@ private:
     winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool forceRealize = false);
     winrt::UIElement SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data);
     winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data, bool isFooterRepeater);
-    winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::NavigationViewItem& parentContainer, const winrt::IInspectable& data, const winrt::IndexPath& ip);
+    winrt::IndexPath SearchEntireTreeForIndexPath(
+        const winrt::NavigationViewItem& parentContainer, const winrt::IInspectable& data, const winrt::IndexPath& ip);
 
     winrt::ItemsRepeater GetChildRepeaterForIndexPath(const winrt::IndexPath& ip);
     winrt::NavigationViewItem GetParentNavigationViewItemForContainer(const winrt::NavigationViewItemBase& nvib);
@@ -157,7 +161,7 @@ private:
     inline bool IsNavigationViewListSingleSelectionFollowsFocus();
     inline void UpdateSingleSelectionFollowsFocusTemplateSetting();
     void OnMenuItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
-    void OnFooterItemsSourceCollectionChanged(const winrt::IInspectable &, const winrt::IInspectable &);
+    void OnFooterItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnOverflowItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(winrt::IInspectable const& item);
     void ChangeSelectStatusForItem(winrt::IInspectable const& item, bool selected);
@@ -173,7 +177,8 @@ private:
     void SyncItemTemplates();
     bool IsRootGridOfFlyout(const winrt::DependencyObject& element);
     bool IsRootItemsRepeater(const winrt::DependencyObject& element);
-    void RaiseItemInvoked(winrt::IInspectable const& item,
+    void RaiseItemInvoked(
+        winrt::IInspectable const& item,
         bool isSettings,
         winrt::NavigationViewItemBase const& container = nullptr,
         NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default);
@@ -192,15 +197,15 @@ private:
     std::once_flag s_NavigationViewItemRevokersPropertySet;
 
     void InvalidateTopNavPrimaryLayout();
-    // Measure functions for top navigation   
+    // Measure functions for top navigation
     float MeasureTopNavigationViewDesiredWidth(winrt::Size const& availableSize);
     float MeasureTopNavMenuItemsHostDesiredWidth(winrt::Size const& availableSize);
     float GetTopNavigationViewActualWidth();
 
     bool HasTopNavigationViewItemNotInPrimaryList();
     void HandleTopNavigationMeasureOverride(winrt::Size const& availableSize);
-    void HandleTopNavigationMeasureOverrideNormal(const winrt::Windows::Foundation::Size & availableSize);
-    void HandleTopNavigationMeasureOverrideOverflow(const winrt::Windows::Foundation::Size & availableSize);
+    void HandleTopNavigationMeasureOverrideNormal(const winrt::Windows::Foundation::Size& availableSize);
+    void HandleTopNavigationMeasureOverrideOverflow(const winrt::Windows::Foundation::Size& availableSize);
     void SetOverflowButtonVisibility(winrt::Visibility const& visibility);
     void SelectOverflowItem(winrt::IInspectable const& item, winrt::IndexPath const& ip);
     void SelectandMoveOverflowItem(winrt::IInspectable const& selectedItem, winrt::IndexPath const& selectedIndex, bool closeFlyout);
@@ -259,7 +264,7 @@ private:
     void UpdateOpenPaneWidth(double width);
     void UpdatePaneLayout();
     void SetDisplayMode(const winrt::NavigationViewDisplayMode& displayMode, bool forceSetDisplayMode = false);
-   
+
     NavigationViewVisualStateDisplayMode GetVisualStateDisplayMode(const winrt::NavigationViewDisplayMode& displayMode);
     void UpdateVisualStateForDisplayModeGroup(const winrt::NavigationViewDisplayMode& displayMode);
 
@@ -274,7 +279,8 @@ private:
     void OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& e);
     void OnNavigationViewItemExpandedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
-    void RaiseSelectionChangedEvent(winrt::IInspectable const& nextItem, 
+    void RaiseSelectionChangedEvent(
+        winrt::IInspectable const& nextItem,
         bool isSettingsItem,
         NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default);
 
@@ -299,7 +305,8 @@ private:
     winrt::ViewManagement::ApplicationView m_applicationView{ nullptr };
     winrt::ViewManagement::UIViewSettings m_uiViewSettings{ nullptr };
 
-    template<typename T> T GetContainerForData(const winrt::IInspectable& data);
+    template <typename T>
+    T GetContainerForData(const winrt::IInspectable& data);
 
     void OpenPane();
     void ClosePane();
@@ -308,7 +315,7 @@ private:
     void SwapPaneHeaderContent(tracker_ref<winrt::ContentControl> newParent, tracker_ref<winrt::ContentControl> oldParent, winrt::hstring const& propertyPathName);
     void UpdateSettingsItemToolTip();
     void UpdatePaneTitleFrameworkElementParents();
-    std::function<void ()> SetPaneTitleFrameworkElementParent(const winrt::ContentControl& parent, const winrt::FrameworkElement& paneTitle, bool shouldNotContainPaneTitle);
+    std::function<void()> SetPaneTitleFrameworkElementParent(const winrt::ContentControl& parent, const winrt::FrameworkElement& paneTitle, bool shouldNotContainPaneTitle);
 
     void OnSplitViewClosedCompactChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnSplitViewPaneClosed(const winrt::DependencyObject& sender, const winrt::IInspectable& obj);
@@ -326,7 +333,7 @@ private:
     bool ShouldShowBackOrCloseButton();
 
     void UnhookEventsAndClearFields(bool isFromDestructor = false);
-    
+
     bool ShouldPreserveNavigationViewRS4Behavior();
     bool ShouldPreserveNavigationViewRS3Behavior();
 
@@ -508,4 +515,3 @@ private:
 
     double m_openPaneWidth{ 320.0 };
 };
-

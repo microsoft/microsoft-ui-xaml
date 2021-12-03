@@ -7,12 +7,14 @@
 #include "WebView2.h"
 #include "UIAutomationCore.h"
 
-class WebView2AutomationPeer :
-    public ReferenceTracker<WebView2AutomationPeer, winrt::implementation::WebView2AutomationPeerT
+class WebView2AutomationPeer : public ReferenceTracker<
+                                   WebView2AutomationPeer,
+                                   winrt::implementation::WebView2AutomationPeerT
 #if WINUI3
-    , IAutomationPeerHwndInterop
+                                   ,
+                                   IAutomationPeerHwndInterop
 #endif
-    >
+                                   >
 {
 public:
     WebView2AutomationPeer(winrt::WebView2 const& owner);

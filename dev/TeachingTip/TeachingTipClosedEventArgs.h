@@ -5,13 +5,12 @@
 
 #include "TeachingTipClosedEventArgs.g.h"
 
-class TeachingTipClosedEventArgs :
-    public winrt::implementation::TeachingTipClosedEventArgsT<TeachingTipClosedEventArgs>
+class TeachingTipClosedEventArgs : public winrt::implementation::TeachingTipClosedEventArgsT<TeachingTipClosedEventArgs>
 {
 public:
     winrt::TeachingTipCloseReason Reason();
     void Reason(const winrt::TeachingTipCloseReason& reason);
-private:
 
+private:
     winrt::TeachingTipCloseReason m_reason{ winrt::TeachingTipCloseReason::CloseButton };
 };

@@ -6,8 +6,8 @@
 #include "ScrollPresenterTrace.h"
 #include "ScrollingScrollAnimationStartingEventArgs.g.h"
 
-class ScrollingScrollAnimationStartingEventArgs :
-    public winrt::implementation::ScrollingScrollAnimationStartingEventArgsT<ScrollingScrollAnimationStartingEventArgs>
+class ScrollingScrollAnimationStartingEventArgs
+    : public winrt::implementation::ScrollingScrollAnimationStartingEventArgsT<ScrollingScrollAnimationStartingEventArgs>
 {
 public:
     ScrollingScrollAnimationStartingEventArgs()

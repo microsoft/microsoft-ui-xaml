@@ -6,12 +6,8 @@
 
 #include "TreeViewExpandingEventArgs.g.h"
 
-class TreeViewExpandingEventArgs :
-    public ReferenceTracker<
-        TreeViewExpandingEventArgs,
-        winrt::implementation::TreeViewExpandingEventArgsT,
-        winrt::composing,
-        winrt::composable>
+class TreeViewExpandingEventArgs
+    : public ReferenceTracker<TreeViewExpandingEventArgs, winrt::implementation::TreeViewExpandingEventArgsT, winrt::composing, winrt::composable>
 {
 public:
     winrt::TreeViewNode Node();

@@ -5,13 +5,13 @@
 //
 //       LottieGen version:
 //           7.1.0+ge1fa92580f
-//       
+//
 //       Command:
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedChevronDownSmallVisualSource.json
-//       
+//
 //       Input file:
 //           AnimatedChevronDownSmallVisualSource.json (9531 bytes created 23:37-07:00 Oct 5 2021)
-//       
+//
 //       LottieGen source:
 //           http://aka.ms/Lottie
 //
@@ -55,6 +55,7 @@ class AnimatedChevronDownSmallVisualSource
     winrt::Windows::UI::Composition::CompositionPropertySet EnsureThemeProperties(winrt::Windows::UI::Composition::Compositor compositor);
 
     static winrt::Windows::Foundation::Numerics::float4 ColorAsVector4(winrt::Windows::UI::Color color);
+
 public:
     // Animation duration: 1.333 seconds.
     static constexpr int64_t c_durationTicks{ 13333333L };
@@ -98,16 +99,13 @@ public:
     // Theme property: Foreground.
     static inline const winrt::Windows::UI::Color c_themeForeground{ 0xFF, 0x06, 0x08, 0x08 };
 
-
     winrt::Windows::UI::Color Foreground();
     void Foreground(winrt::Windows::UI::Color value);
 
-    winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(
-        winrt::Windows::UI::Composition::Compositor const& compositor);
+    winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(winrt::Windows::UI::Composition::Compositor const& compositor);
 
     winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(
-        winrt::Windows::UI::Composition::Compositor const& compositor,
-        winrt::Windows::Foundation::IInspectable& diagnostics);
+        winrt::Windows::UI::Composition::Compositor const& compositor, winrt::Windows::Foundation::IInspectable& diagnostics);
 
     // Gets the number of frames in the animation.
     double FrameCount();

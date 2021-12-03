@@ -24,4 +24,3 @@ private:
     int8_t m_ticksCount{ 0 };
     weak_ref<winrt::UIElement> m_targetElement;
 };
-

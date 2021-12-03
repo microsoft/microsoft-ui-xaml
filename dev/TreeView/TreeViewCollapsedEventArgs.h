@@ -6,8 +6,8 @@
 
 #include "TreeViewCollapsedEventArgs.g.h"
 
-class TreeViewCollapsedEventArgs :
-    public ReferenceTracker<TreeViewCollapsedEventArgs, winrt::implementation::TreeViewCollapsedEventArgsT, winrt::composing, winrt::composable>
+class TreeViewCollapsedEventArgs
+    : public ReferenceTracker<TreeViewCollapsedEventArgs, winrt::implementation::TreeViewCollapsedEventArgsT, winrt::composing, winrt::composable>
 {
 public:
     winrt::TreeViewNode Node();

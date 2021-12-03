@@ -8,9 +8,7 @@
 #include "ElementFactoryGetArgs.h"
 #include "ElementFactoryRecycleArgs.h"
 
-
-winrt::event_token RepeaterTestHooks::BuildTreeCompletedImpl(
-    winrt::TypedEventHandler<winrt::IInspectable, winrt::IInspectable> const& value)
+winrt::event_token RepeaterTestHooks::BuildTreeCompletedImpl(winrt::TypedEventHandler<winrt::IInspectable, winrt::IInspectable> const& value)
 {
     return m_buildTreeCompleted.add(value);
 }
@@ -25,8 +23,8 @@ void RepeaterTestHooks::NotifyBuildTreeCompletedImpl()
     m_buildTreeCompleted(nullptr, nullptr);
 }
 
-// We removed index parameter from the GetElement call, which we used extensively for 
-// validation in tests. In order to avoid rewriting the tests, we keep the index internally and have 
+// We removed index parameter from the GetElement call, which we used extensively for
+// validation in tests. In order to avoid rewriting the tests, we keep the index internally and have
 // a test hook to get it for validation in tests.
 /* static */
 int RepeaterTestHooks::GetElementFactoryElementIndex(winrt::IInspectable const& getArgs)

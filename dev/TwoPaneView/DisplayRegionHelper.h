@@ -11,8 +11,7 @@ struct DisplayRegionHelperInfo
     std::array<winrt::Rect, c_maxRegions> Regions{};
 };
 
-class DisplayRegionHelper:
-    public winrt::implements<DisplayRegionHelper, winrt::IInspectable>
+class DisplayRegionHelper : public winrt::implements<DisplayRegionHelper, winrt::IInspectable>
 {
 public:
     static DisplayRegionHelperInfo GetRegionInfo();
@@ -27,12 +26,11 @@ public:
     static winrt::TwoPaneViewMode SimulateMode();
 
 private:
-
     void OnDisplayModeChanged(const winrt::IInspectable& sender, const winrt::IInspectable& args);
 
     bool m_simulateDisplayRegions{ false };
     winrt::TwoPaneViewMode m_simulateMode{ winrt::TwoPaneViewMode::SinglePane };
-    
+
     static constexpr winrt::Rect m_simulateWide0{ 0, 0, 300, 400 };
     static constexpr winrt::Rect m_simulateWide1{ 312, 0, 300, 400 };
     static constexpr winrt::Rect m_simulateTall0{ 0, 0, 400, 300 };

@@ -8,15 +8,15 @@
 #include "SpotLightStateHelper.h"
 
 #pragma warning(push)
-#pragma warning(disable: 6101)  // Returning uninitialized memory '<value>'.  A successful path through the function does not set the named _Out_ parameter.
+#pragma warning(disable : 6101) // Returning uninitialized memory '<value>'.  A successful path through the function does not set the named _Out_ parameter.
 #include "Microsoft.UI.Private.Composition.Effects_impl.h"
 #pragma warning(pop)
 
 #include "RevealHoverLight.properties.cpp"
 
-static constexpr EasingInfo c_LinearEasing = EasingInfo{ EasingTypes::Linear,{ 0.f, 0.f },{ 0.f, 0.f } };
-static constexpr EasingInfo c_CubicEasing1 = EasingInfo{ EasingTypes::CubicBezier,{ 0.5f, 0.f } ,{ 0.6f, 1.f } };
-static constexpr EasingInfo c_CubicEasingRelease = EasingInfo{ EasingTypes::CubicBezier,{ 0.33f, 0.f },{ 0.67f, 1.f } };
+static constexpr EasingInfo c_LinearEasing = EasingInfo{ EasingTypes::Linear, { 0.f, 0.f }, { 0.f, 0.f } };
+static constexpr EasingInfo c_CubicEasing1 = EasingInfo{ EasingTypes::CubicBezier, { 0.5f, 0.f }, { 0.6f, 1.f } };
+static constexpr EasingInfo c_CubicEasingRelease = EasingInfo{ EasingTypes::CubicBezier, { 0.33f, 0.f }, { 0.67f, 1.f } };
 static constexpr winrt::TimeSpan c_HalfDuration = 166ms;
 
 // Due to "Bug 14047529: Flash when moving mouse over NavigationView items due to reveal backplate"
@@ -26,115 +26,116 @@ static constexpr winrt::TimeSpan c_HalfDuration = 166ms;
 // simulated touch mode in the RS2 OS release. To work around, we use a 1ms color animation. This can still lead to a flash, but a very brief one.
 // For RS3+, we directly switch light on/off, which completely resolves the flash.
 static constexpr std::array<RevealHoverSpotlightStateDesc, RevealHoverSpotlightState_StateCount> sc_revealHoverSpotlightStates = { {
-        // AnimToOff
-        // Flags, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
-        {
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeColor         , L"InnerConeColor"         , 1ms, { 255, 0, 0, 0 } },
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeColor         , L"OuterConeColor"         , 1ms, { 255, 0, 0, 0 } },
-            { RevealHoverSpotlightFlags::None,    SpotlightProperty::InnerConeIntensity     , L"InnerConeIntensity"     , c_HalfDuration, 0.f },
-            { RevealHoverSpotlightFlags::None,    SpotlightProperty::OuterConeIntensity     , L"OuterConeIntensity"     , c_HalfDuration, 0.f },
-            { RevealHoverSpotlightFlags::None,    SpotlightProperty::OuterAngleScale        , L"OuterAngleScale"        , c_HalfDuration, 1.f },
-        },
+    // AnimToOff
+    // Flags, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
+    {
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeColor, L"InnerConeColor", 1ms, { 255, 0, 0, 0 } },
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeColor, L"OuterConeColor", 1ms, { 255, 0, 0, 0 } },
+        { RevealHoverSpotlightFlags::None, SpotlightProperty::InnerConeIntensity, L"InnerConeIntensity", c_HalfDuration, 0.f },
+        { RevealHoverSpotlightFlags::None, SpotlightProperty::OuterConeIntensity, L"OuterConeIntensity", c_HalfDuration, 0.f },
+        { RevealHoverSpotlightFlags::None, SpotlightProperty::OuterAngleScale, L"OuterAngleScale", c_HalfDuration, 1.f },
+    },
 
-        // AnimToHover
-        // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
-        {
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeColor         , L"InnerConeColor"         , 1ms, { 255, 255, 255, 255 } },
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeColor         , L"OuterConeColor"         , 1ms, { 255, 255, 255, 255 } },
-            { RevealHoverSpotlightFlags::None,    SpotlightProperty::InnerConeIntensity     , L"InnerConeIntensity"     , c_HalfDuration, 1.f },
-            { RevealHoverSpotlightFlags::None,    SpotlightProperty::OuterConeIntensity     , L"OuterConeIntensity"     , c_HalfDuration, 1.f },
-            { RevealHoverSpotlightFlags::None,    SpotlightProperty::OuterAngleScale        , L"OuterAngleScale"        , c_HalfDuration, 1.f },
-        },
+    // AnimToHover
+    // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
+    {
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeColor, L"InnerConeColor", 1ms, { 255, 255, 255, 255 } },
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeColor, L"OuterConeColor", 1ms, { 255, 255, 255, 255 } },
+        { RevealHoverSpotlightFlags::None, SpotlightProperty::InnerConeIntensity, L"InnerConeIntensity", c_HalfDuration, 1.f },
+        { RevealHoverSpotlightFlags::None, SpotlightProperty::OuterConeIntensity, L"OuterConeIntensity", c_HalfDuration, 1.f },
+        { RevealHoverSpotlightFlags::None, SpotlightProperty::OuterAngleScale, L"OuterAngleScale", c_HalfDuration, 1.f },
+    },
 
-        // Pressing
-        // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
-        {
-            { RevealHoverSpotlightFlags::Ignore,  SpotlightProperty::InnerConeColor         , L"InnerConeColor" },
-            { RevealHoverSpotlightFlags::Ignore,  SpotlightProperty::OuterConeColor         , L"OuterConeColor" },
-            { RevealHoverSpotlightFlags::Ignore,  SpotlightProperty::InnerConeIntensity     , L"InnerConeIntensity" },
-            { RevealHoverSpotlightFlags::Ignore,  SpotlightProperty::OuterConeIntensity     , L"OuterConeIntensity" },
-            { RevealHoverSpotlightFlags::Ignore,  SpotlightProperty::OuterAngleScale        , L"OuterAngleScale" },
-        },
+    // Pressing
+    // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
+    {
+        { RevealHoverSpotlightFlags::Ignore, SpotlightProperty::InnerConeColor, L"InnerConeColor" },
+        { RevealHoverSpotlightFlags::Ignore, SpotlightProperty::OuterConeColor, L"OuterConeColor" },
+        { RevealHoverSpotlightFlags::Ignore, SpotlightProperty::InnerConeIntensity, L"InnerConeIntensity" },
+        { RevealHoverSpotlightFlags::Ignore, SpotlightProperty::OuterConeIntensity, L"OuterConeIntensity" },
+        { RevealHoverSpotlightFlags::Ignore, SpotlightProperty::OuterAngleScale, L"OuterAngleScale" },
+    },
 
-        // FastRelease
-        // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
-        {
-            { RevealHoverSpotlightFlags::Ignore,  SpotlightProperty::InnerConeColor         , L"InnerConeColor" },
-            { RevealHoverSpotlightFlags::Ignore,  SpotlightProperty::OuterConeColor         , L"OuterConeColor" },
-            { RevealHoverSpotlightFlags::Ignore,  SpotlightProperty::InnerConeIntensity     , L"InnerConeIntensity" },
-            { RevealHoverSpotlightFlags::Ignore,  SpotlightProperty::OuterConeIntensity     , L"OuterConeIntensity" },
-            { RevealHoverSpotlightFlags::Ignore,  SpotlightProperty::OuterAngleScale        , L"OuterAngleScale" },
-        },
+    // FastRelease
+    // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
+    {
+        { RevealHoverSpotlightFlags::Ignore, SpotlightProperty::InnerConeColor, L"InnerConeColor" },
+        { RevealHoverSpotlightFlags::Ignore, SpotlightProperty::OuterConeColor, L"OuterConeColor" },
+        { RevealHoverSpotlightFlags::Ignore, SpotlightProperty::InnerConeIntensity, L"InnerConeIntensity" },
+        { RevealHoverSpotlightFlags::Ignore, SpotlightProperty::OuterConeIntensity, L"OuterConeIntensity" },
+        { RevealHoverSpotlightFlags::Ignore, SpotlightProperty::OuterAngleScale, L"OuterAngleScale" },
+    },
 
-        // SlowRelease
-        // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
-        {
-            { RevealHoverSpotlightFlags::Ignore,  SpotlightProperty::InnerConeColor         , L"InnerConeColor" },
-            { RevealHoverSpotlightFlags::Ignore,  SpotlightProperty::OuterConeColor         , L"OuterConeColor" },
-            { RevealHoverSpotlightFlags::Ignore,  SpotlightProperty::InnerConeIntensity     , L"InnerConeIntensity" },
-            { RevealHoverSpotlightFlags::Ignore,  SpotlightProperty::OuterConeIntensity     , L"OuterConeIntensity" },
-            { RevealHoverSpotlightFlags::Ignore,  SpotlightProperty::OuterAngleScale        , L"OuterAngleScale" },
-        },
+    // SlowRelease
+    // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
+    {
+        { RevealHoverSpotlightFlags::Ignore, SpotlightProperty::InnerConeColor, L"InnerConeColor" },
+        { RevealHoverSpotlightFlags::Ignore, SpotlightProperty::OuterConeColor, L"OuterConeColor" },
+        { RevealHoverSpotlightFlags::Ignore, SpotlightProperty::InnerConeIntensity, L"InnerConeIntensity" },
+        { RevealHoverSpotlightFlags::Ignore, SpotlightProperty::OuterConeIntensity, L"OuterConeIntensity" },
+        { RevealHoverSpotlightFlags::Ignore, SpotlightProperty::OuterAngleScale, L"OuterAngleScale" },
+    },
 
-    } };
+} };
 
 static constexpr std::array<RevealHoverSpotlightStateDesc, RevealHoverSpotlightState_StateCount> sc_pressSpotLightStates = { {
-        // AnimToOff
-        // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
-        {
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeColor         , L"InnerConeColor"         , 1ms, { 255, 0, 0, 0 },      c_CubicEasing1 },
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeColor         , L"OuterConeColor"         , 1ms, { 255, 0, 0, 0 },      c_CubicEasing1 },
-            { RevealHoverSpotlightFlags::None,    SpotlightProperty::InnerConeIntensity     , L"InnerConeIntensity"     , c_HalfDuration, 0.f,        c_CubicEasing1 },
-            { RevealHoverSpotlightFlags::None,    SpotlightProperty::OuterConeIntensity     , L"OuterConeIntensity"     , c_HalfDuration, 0.f,        c_CubicEasing1 },
-            { RevealHoverSpotlightFlags::None,    SpotlightProperty::OuterAngleScale        , L"OuterAngleScale"        , c_HalfDuration, 1.f,        c_CubicEasing1 },
-        },
+    // AnimToOff
+    // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
+    {
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeColor, L"InnerConeColor", 1ms, { 255, 0, 0, 0 }, c_CubicEasing1 },
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeColor, L"OuterConeColor", 1ms, { 255, 0, 0, 0 }, c_CubicEasing1 },
+        { RevealHoverSpotlightFlags::None, SpotlightProperty::InnerConeIntensity, L"InnerConeIntensity", c_HalfDuration, 0.f, c_CubicEasing1 },
+        { RevealHoverSpotlightFlags::None, SpotlightProperty::OuterConeIntensity, L"OuterConeIntensity", c_HalfDuration, 0.f, c_CubicEasing1 },
+        { RevealHoverSpotlightFlags::None, SpotlightProperty::OuterAngleScale, L"OuterAngleScale", c_HalfDuration, 1.f, c_CubicEasing1 },
+    },
 
-        // AnimToHover
-        // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
-        {
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeColor         , L"InnerConeColor"         , 1ms, { 255, 0, 0, 0 },       c_CubicEasing1 },
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeColor         , L"OuterConeColor"         , 1ms, { 255, 0, 0, 0 },       c_CubicEasing1 },
-            { RevealHoverSpotlightFlags::None,    SpotlightProperty::InnerConeIntensity     , L"InnerConeIntensity"     , c_HalfDuration, 0.f,         c_CubicEasing1 },
-            { RevealHoverSpotlightFlags::None,    SpotlightProperty::OuterConeIntensity     , L"OuterConeIntensity"     , c_HalfDuration, 0.f,         c_CubicEasing1 },
-            { RevealHoverSpotlightFlags::None,    SpotlightProperty::OuterAngleScale        , L"OuterAngleScale"        , c_HalfDuration, 1.f,         c_CubicEasing1 },
-        },
+    // AnimToHover
+    // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
+    {
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeColor, L"InnerConeColor", 1ms, { 255, 0, 0, 0 }, c_CubicEasing1 },
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeColor, L"OuterConeColor", 1ms, { 255, 0, 0, 0 }, c_CubicEasing1 },
+        { RevealHoverSpotlightFlags::None, SpotlightProperty::InnerConeIntensity, L"InnerConeIntensity", c_HalfDuration, 0.f, c_CubicEasing1 },
+        { RevealHoverSpotlightFlags::None, SpotlightProperty::OuterConeIntensity, L"OuterConeIntensity", c_HalfDuration, 0.f, c_CubicEasing1 },
+        { RevealHoverSpotlightFlags::None, SpotlightProperty::OuterAngleScale, L"OuterAngleScale", c_HalfDuration, 1.f, c_CubicEasing1 },
+    },
 
-        // Pressing
-        // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
-        {
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeColor         , L"InnerConeColor"         , 66ms,{ 255, 255, 255, 255 },            c_LinearEasing },
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeColor         , L"OuterConeColor"         , 66ms,{ 255, 255, 255, 255 },            c_LinearEasing },
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeIntensity     , L"InnerConeIntensity"     , 66ms, 1.f,                              c_LinearEasing },
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeIntensity     , L"OuterConeIntensity"     , 66ms, 1.f,                              c_CubicEasing1 },
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterAngleScale        , L"OuterAngleScale"        , 66ms, 1.f,                              c_LinearEasing },
-        },
+    // Pressing
+    // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
+    {
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeColor, L"InnerConeColor", 66ms, { 255, 255, 255, 255 }, c_LinearEasing },
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeColor, L"OuterConeColor", 66ms, { 255, 255, 255, 255 }, c_LinearEasing },
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeIntensity, L"InnerConeIntensity", 66ms, 1.f, c_LinearEasing },
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeIntensity, L"OuterConeIntensity", 66ms, 1.f, c_CubicEasing1 },
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterAngleScale, L"OuterAngleScale", 66ms, 1.f, c_LinearEasing },
+    },
 
-        // FastRelease
-        // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
-        {
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeColor         , L"InnerConeColor"         , 200ms,{ 255, 0, 0, 0 },                c_CubicEasingRelease },
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeColor         , L"OuterConeColor"         , 266ms,{ 255, 0, 0, 0 },                c_CubicEasingRelease },
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeIntensity     , L"InnerConeIntensity"     , 200ms, 0.f,                             c_CubicEasingRelease },
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeIntensity     , L"OuterConeIntensity"     , 266ms, 0.f,                             c_CubicEasingRelease },
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterAngleScale        , L"OuterAngleScale"        , 266ms, 4.44f,                           c_CubicEasingRelease },
-        },
+    // FastRelease
+    // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
+    {
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeColor, L"InnerConeColor", 200ms, { 255, 0, 0, 0 }, c_CubicEasingRelease },
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeColor, L"OuterConeColor", 266ms, { 255, 0, 0, 0 }, c_CubicEasingRelease },
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeIntensity, L"InnerConeIntensity", 200ms, 0.f, c_CubicEasingRelease },
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeIntensity, L"OuterConeIntensity", 266ms, 0.f, c_CubicEasingRelease },
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterAngleScale, L"OuterAngleScale", 266ms, 4.44f, c_CubicEasingRelease },
+    },
 
-        // SlowRelease
-        // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
-        {
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeColor         , L"InnerConeColor"         , 1000ms,{ 255, 0, 0, 0 },               c_CubicEasingRelease },
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeColor         , L"OuterConeColor"         , 1500ms,{ 255, 0, 0, 0 },               c_CubicEasingRelease },
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeIntensity     , L"InnerConeIntensity"     , 1000ms, 0.f,                            c_CubicEasingRelease },
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeIntensity     , L"OuterConeIntensity"     , 1500ms, 0.f,                            c_CubicEasingRelease },
-            { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterAngleScale        , L"OuterAngleScale"        , 1500ms, 4.44f,                          c_CubicEasingRelease },
-        },
-    } };
+    // SlowRelease
+    // Ignore, Animate, SpotlightProperty, PropertyName, Duration, Value, EasingType, EasingControlPoint1, EasingControlPoint2
+    {
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeColor, L"InnerConeColor", 1000ms, { 255, 0, 0, 0 }, c_CubicEasingRelease },
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeColor, L"OuterConeColor", 1500ms, { 255, 0, 0, 0 }, c_CubicEasingRelease },
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::InnerConeIntensity, L"InnerConeIntensity", 1000ms, 0.f, c_CubicEasingRelease },
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterConeIntensity, L"OuterConeIntensity", 1500ms, 0.f, c_CubicEasingRelease },
+        { RevealHoverSpotlightFlags::Animate, SpotlightProperty::OuterAngleScale, L"OuterAngleScale", 1500ms, 4.44f, c_CubicEasingRelease },
+    },
+} };
 
 #if DBG
 // NOTE: These arrays exist because in debug they need to be mutable so that the test API can change values dynamically.
 // We default them to the const data blobs above but then they can be modified. Below the code chooses the mutable one
 // in debug and the const one in retail.
-std::array<RevealHoverSpotlightStateDesc, RevealHoverSpotlightState_StateCount> RevealHoverLight::s_revealHoverSpotlightStates = sc_revealHoverSpotlightStates;
+std::array<RevealHoverSpotlightStateDesc, RevealHoverSpotlightState_StateCount> RevealHoverLight::s_revealHoverSpotlightStates =
+    sc_revealHoverSpotlightStates;
 std::array<RevealHoverSpotlightStateDesc, RevealHoverSpotlightState_StateCount> RevealHoverLight::s_pressSpotLightStates = sc_pressSpotLightStates;
 
 float RevealHoverLight::s_lightMinSize{ 16.0f };
@@ -148,17 +149,20 @@ float RevealHoverLight::s_constantAttenuation{ 2.f };
 float RevealHoverLight::s_linearAttenuation{ 0.5f };
 static constexpr auto c_PointerOffsetExpression = L"pointer.Position + Vector3(0, 0, props.SpotlightHeight)";
 static constexpr auto c_CenteredOffsetExpression = L"Vector3((visual.Size.X / 2), (visual.Size.Y / 2), props.SpotlightHeight)";
-static constexpr auto c_OuterAngleExpression = L"ATan((Clamp(Max(visual.Size.X, visual.Size.Y) + props.SizeAdjustment, props.MinSize, props.MaxSize) * props.OuterAngleScale) / props.SpotlightHeight)";
-static constexpr auto c_PressOuterAngleExpression = L"ATan(((props.PressOuterSize) * props.OuterAngleScale) / props.SpotlightHeight)";
+static constexpr auto c_OuterAngleExpression =
+    L"ATan((Clamp(Max(visual.Size.X, visual.Size.Y) + props.SizeAdjustment, props.MinSize, props.MaxSize) * "
+    L"props.OuterAngleScale) / props.SpotlightHeight)";
+static constexpr auto c_PressOuterAngleExpression =
+    L"ATan(((props.PressOuterSize) * props.OuterAngleScale) / props.SpotlightHeight)";
 #else
 const float RevealHoverLight::s_constantAttenuation{ 2.f };
 const float RevealHoverLight::s_linearAttenuation{ 0.5f };
 static constexpr auto c_PointerOffsetExpression = L"pointer.Position + Vector3(0, 0, 256)";
 static constexpr auto c_CenteredOffsetExpression = L"Vector3((visual.Size.X / 2), (visual.Size.Y / 2), 256)";
-static constexpr auto c_OuterAngleExpression = L"ATan((Clamp(Max(visual.Size.X, visual.Size.Y) + 12, 16, 512) * props.OuterAngleScale) / 256)";
+static constexpr auto c_OuterAngleExpression =
+    L"ATan((Clamp(Max(visual.Size.X, visual.Size.Y) + 12, 16, 512) * props.OuterAngleScale) / 256)";
 static constexpr auto c_PressOuterAngleExpression = L"ATan(((47.25) * props.OuterAngleScale) / 256)";
 #endif
-
 
 winrt::hstring& RevealHoverLight::GetLightIdStatic()
 {
@@ -191,29 +195,25 @@ void RevealHoverLight::OnConnected(winrt::UIElement const& newElement)
         // This matches the legacy MaterialHelper behavior and should be sufficient for the special case of login screen.
         if (m_dispatcherQueue)
         {
-            m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(winrt::auto_revoke, {
-                [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue] (const winrt::IMaterialProperties& sender, const winrt::IInspectable& args)
-                {
+            m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(
+                winrt::auto_revoke,
+                { [weakThis = get_weak(),
+                   dispatcherQueue = m_dispatcherQueue](const winrt::IMaterialProperties& sender, const winrt::IInspectable& args) {
                     MaterialHelper::LightTemplates<RevealHoverLight>::OnLightTransparencyPolicyChanged(
-                        weakThis,
-                        sender,
-                        dispatcherQueue,
-                        false /* onUIThread */);
-                }
-                });
+                        weakThis, sender, dispatcherQueue, false /* onUIThread */);
+                } });
         }
     }
 
     // Apply Initial policy state
     MaterialHelper::LightTemplates<RevealHoverLight>::OnLightTransparencyPolicyChanged(
-        get_weak(),
-        m_materialProperties,
-        m_dispatcherQueue,
-        true /* onUIThread */);
+        get_weak(), m_materialProperties, m_dispatcherQueue, true /* onUIThread */);
 
-    m_additionalMaterialPolicyChangedToken = MaterialHelper::AdditionalPolicyChanged([this](auto sender) { OnAdditionalMaterialPolicyChanged(sender); });
+    m_additionalMaterialPolicyChangedToken =
+        MaterialHelper::AdditionalPolicyChanged([this](auto sender) { OnAdditionalMaterialPolicyChanged(sender); });
 #else
-    m_materialPolicyChangedToken = MaterialHelper::PolicyChanged([this](auto sender, auto args) { OnMaterialPolicyStatusChanged(sender, args); });
+    m_materialPolicyChangedToken =
+        MaterialHelper::PolicyChanged([this](auto sender, auto args) { OnMaterialPolicyStatusChanged(sender, args); });
 #endif
 
     if (!m_isDisabledByMaterialPolicy)
@@ -235,7 +235,6 @@ void RevealHoverLight::OnDisconnected(winrt::UIElement const& /*oldElement*/)
     MaterialHelper::PolicyChanged(m_materialPolicyChangedToken);
     m_materialPolicyChangedToken.value = 0;
 #endif
-
 }
 
 void RevealHoverLight::EnsureCompositionResources()
@@ -270,13 +269,15 @@ void RevealHoverLight::EnsureCompositionResources()
             m_offsetAnimation = compositor.CreateExpressionAnimation(c_CenteredOffsetExpression);
             m_offsetAnimation.SetReferenceParameter(L"props", m_offsetProps);
 
-            m_outerAngleAnimation = compositor.CreateExpressionAnimation(m_isPressLight ? c_PressOuterAngleExpression : c_OuterAngleExpression);
+            m_outerAngleAnimation =
+                compositor.CreateExpressionAnimation(m_isPressLight ? c_PressOuterAngleExpression : c_OuterAngleExpression);
             m_outerAngleAnimation.SetReferenceParameter(L"props", m_offsetProps);
 
             m_colorsProxy = CreateSpotLightColorsProxy(m_compositionSpotLight);
 
             // hook into PointerPressed event so we know if pressed is invoked by mouse/touch versus keyboard
-            m_elementPointerPressedEventHandler = winrt::box_value<winrt::PointerEventHandler>({ this, &RevealHoverLight::OnPointerPressed });
+            m_elementPointerPressedEventHandler =
+                winrt::box_value<winrt::PointerEventHandler>({ this, &RevealHoverLight::OnPointerPressed });
             element.AddHandler(winrt::UIElement::PointerPressedEvent(), m_elementPointerPressedEventHandler, true);
 
             // Set animatable initial state
@@ -340,16 +341,12 @@ void RevealHoverLight::ReleaseCompositionResources()
 void RevealHoverLight::OnAdditionalMaterialPolicyChanged(const com_ptr<MaterialHelperBase>& sender)
 {
     MaterialHelper::LightTemplates<RevealHoverLight>::OnLightTransparencyPolicyChanged(
-        get_weak(),
-        m_materialProperties,
-        m_dispatcherQueue,
-        true /* onUIThread */);
+        get_weak(), m_materialProperties, m_dispatcherQueue, true /* onUIThread */);
 }
 #else
 void RevealHoverLight::OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>& sender, bool isDisabledByMaterialPolicy)
 {
     MaterialHelper::LightPolicyChangedHelper<RevealHoverLight>(this, isDisabledByMaterialPolicy);
-
 }
 #endif
 
@@ -370,11 +367,11 @@ void RevealHoverLight::GoToState(_In_ winrt::RevealBrushState newState)
 }
 
 // There are 5 possible states for the hover light: { Off, AnimToHover, AnimToOff, Hover, Pressing }
-// There are 4 possible events which can result in a state change: { GotoNormal, GotoPointerOver, GotoPressed, AnimationComplete }. 
-//    >> The first three  correspond to VSM state transitionswhile AnimationComplete signifies that an animated state transition is finished. 
+// There are 4 possible events which can result in a state change: { GotoNormal, GotoPointerOver, GotoPressed, AnimationComplete }.
+//    >> The first three  correspond to VSM state transitionswhile AnimationComplete signifies that an animated state transition is finished.
 //
-// Of the 20 possible transitions, 19 (?) either do nothing or switch to another state. There is a little bit of logic nescessary 
-// when in the state Releasing and the animation completes (what happens depends on whether the pointer is pressed and / or hovering) 
+// Of the 20 possible transitions, 19 (?) either do nothing or switch to another state. There is a little bit of logic nescessary
+// when in the state Releasing and the animation completes (what happens depends on whether the pointer is pressed and / or hovering)
 void RevealHoverLight::GotoLightState(LightEvents e)
 {
     // Update pointer flags before transitioning to the next state
@@ -586,10 +583,13 @@ void RevealHoverLight::GotoLightStateHelper(LightStates target, bool skipAnimati
         }
         else
         {
-            PlaySpotLightStateAnimation(m_compositionSpotLight, m_colorsProxy, m_offsetProps, m_spotLightStates[RevealHoverSpotlightState_AnimToOff], &m_cancelCurrentPressStateContinuation, [=]
-                {
-                    GotoLightState(LightEvents::AnimationComplete);
-                });
+            PlaySpotLightStateAnimation(
+                m_compositionSpotLight,
+                m_colorsProxy,
+                m_offsetProps,
+                m_spotLightStates[RevealHoverSpotlightState_AnimToOff],
+                &m_cancelCurrentPressStateContinuation,
+                [=] { GotoLightState(LightEvents::AnimationComplete); });
         }
     }
     break;
@@ -606,15 +606,19 @@ void RevealHoverLight::GotoLightStateHelper(LightStates target, bool skipAnimati
 
         if (skipAnimation)
         {
-            SetSpotLightStateImmediate(m_compositionSpotLight, m_colorsProxy, m_offsetProps, m_spotLightStates[RevealHoverSpotlightState_AnimToHover]);
+            SetSpotLightStateImmediate(
+                m_compositionSpotLight, m_colorsProxy, m_offsetProps, m_spotLightStates[RevealHoverSpotlightState_AnimToHover]);
             GotoLightState(LightEvents::AnimationComplete);
         }
         else
         {
-            PlaySpotLightStateAnimation(m_compositionSpotLight, m_colorsProxy, m_offsetProps, m_spotLightStates[RevealHoverSpotlightState_AnimToHover], &m_cancelCurrentPressStateContinuation, [=]
-                {
-                    GotoLightState(LightEvents::AnimationComplete);
-                });
+            PlaySpotLightStateAnimation(
+                m_compositionSpotLight,
+                m_colorsProxy,
+                m_offsetProps,
+                m_spotLightStates[RevealHoverSpotlightState_AnimToHover],
+                &m_cancelCurrentPressStateContinuation,
+                [=] { GotoLightState(LightEvents::AnimationComplete); });
         }
     }
     break;
@@ -633,19 +637,19 @@ void RevealHoverLight::GotoLightStateHelper(LightStates target, bool skipAnimati
 
             // m_targetElement can be Grid or other kind of element which is not a control.
             // In this case, we only check m_centerLight, and set focusState directly to keyboard.
-            // This is not a perfect solution, The light may appear in the wrong place if apps 
+            // This is not a perfect solution, The light may appear in the wrong place if apps
             // apply RevealBrush.State to elements really deep in the template:
-            // m_centerLight alone is not correct if reveal light is added on Pressed(as usually happens for touch), 
-            // in that case the light misses the PointerPressed event since it's not yet hooked up at that time, 
+            // m_centerLight alone is not correct if reveal light is added on Pressed(as usually happens for touch),
+            // in that case the light misses the PointerPressed event since it's not yet hooked up at that time,
             // and we will still do keyboard placement.
 
-            // To avoid these types of cases, we should suggest customer that RevealState is always applied to immediate child of a Control
-            // Like below, we add UserControl:
+            // To avoid these types of cases, we should suggest customer that RevealState is always applied to immediate child of
+            // a Control Like below, we add UserControl:
             //  <Grid><UserControl><Border Name="myBorderElement"></Border></UserControl></Grid>
             //  then RevealBrush::SetState(myBorderElement, RevealBrushState::Pressed);
             auto const focusState = targetControl ? targetControl.FocusState() : winrt::FocusState::Keyboard;
 
-            // Only center the hover light if the element has KB focus and to the best of our knowledge 
+            // Only center the hover light if the element has KB focus and to the best of our knowledge
             // it is the keyboard and not pointer that's responsible for current press.
             if (focusState == winrt::FocusState::Keyboard && m_centerLight)
             {
@@ -667,10 +671,13 @@ void RevealHoverLight::GotoLightStateHelper(LightStates target, bool skipAnimati
         }
         else
         {
-            PlaySpotLightStateAnimation(m_compositionSpotLight, m_colorsProxy, m_offsetProps, m_spotLightStates[RevealHoverSpotlightState_Pressing], &m_cancelCurrentPressStateContinuation, [=]
-                {
-                    GotoLightState(LightEvents::AnimationComplete);
-                });
+            PlaySpotLightStateAnimation(
+                m_compositionSpotLight,
+                m_colorsProxy,
+                m_offsetProps,
+                m_spotLightStates[RevealHoverSpotlightState_Pressing],
+                &m_cancelCurrentPressStateContinuation,
+                [=] { GotoLightState(LightEvents::AnimationComplete); });
         }
     }
     break;
@@ -681,15 +688,19 @@ void RevealHoverLight::GotoLightStateHelper(LightStates target, bool skipAnimati
 
         if (skipAnimation)
         {
-            SetSpotLightStateImmediate(m_compositionSpotLight, m_colorsProxy, m_offsetProps, m_spotLightStates[RevealHoverSpotlightState_FastRelease]);
+            SetSpotLightStateImmediate(
+                m_compositionSpotLight, m_colorsProxy, m_offsetProps, m_spotLightStates[RevealHoverSpotlightState_FastRelease]);
             GotoLightState(LightEvents::AnimationComplete);
         }
         else
         {
-            PlaySpotLightStateAnimation(m_compositionSpotLight, m_colorsProxy, m_offsetProps, m_spotLightStates[RevealHoverSpotlightState_FastRelease], &m_cancelCurrentPressStateContinuation, [=]
-                {
-                    GotoLightState(LightEvents::AnimationComplete);
-                });
+            PlaySpotLightStateAnimation(
+                m_compositionSpotLight,
+                m_colorsProxy,
+                m_offsetProps,
+                m_spotLightStates[RevealHoverSpotlightState_FastRelease],
+                &m_cancelCurrentPressStateContinuation,
+                [=] { GotoLightState(LightEvents::AnimationComplete); });
         }
     }
     break;
@@ -700,15 +711,19 @@ void RevealHoverLight::GotoLightStateHelper(LightStates target, bool skipAnimati
 
         if (skipAnimation)
         {
-            SetSpotLightStateImmediate(m_compositionSpotLight, m_colorsProxy, m_offsetProps, m_spotLightStates[RevealHoverSpotlightState_SlowRelease]);
+            SetSpotLightStateImmediate(
+                m_compositionSpotLight, m_colorsProxy, m_offsetProps, m_spotLightStates[RevealHoverSpotlightState_SlowRelease]);
             GotoLightState(LightEvents::AnimationComplete);
         }
         else
         {
-            PlaySpotLightStateAnimation(m_compositionSpotLight, m_colorsProxy, m_offsetProps, m_spotLightStates[RevealHoverSpotlightState_SlowRelease], &m_cancelCurrentPressStateContinuation, [=]
-                {
-                    GotoLightState(LightEvents::AnimationComplete);
-                });
+            PlaySpotLightStateAnimation(
+                m_compositionSpotLight,
+                m_colorsProxy,
+                m_offsetProps,
+                m_spotLightStates[RevealHoverSpotlightState_SlowRelease],
+                &m_cancelCurrentPressStateContinuation,
+                [=] { GotoLightState(LightEvents::AnimationComplete); });
         }
     }
     break;
@@ -724,7 +739,7 @@ void RevealHoverLight::CancelCurrentPressStateContinuation()
     }
 }
 
-void  RevealHoverLight::OnPointerPressed(const winrt::IInspectable& /*sender*/, const winrt::PointerRoutedEventArgs& /*args*/)
+void RevealHoverLight::OnPointerPressed(const winrt::IInspectable& /*sender*/, const winrt::PointerRoutedEventArgs& /*args*/)
 {
     m_centerLight = false;
 

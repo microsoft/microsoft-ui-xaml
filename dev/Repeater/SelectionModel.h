@@ -12,9 +12,9 @@ struct SelectedItemInfo
     winrt::IndexPath Path;
 };
 
-class SelectionModel :
-    public ReferenceTracker<SelectionModel, winrt::implementation::SelectionModelT, winrt::Windows::UI::Xaml::Data::ICustomPropertyProvider, winrt::composing>,
-    public SelectionModelProperties
+class SelectionModel
+    : public ReferenceTracker<SelectionModel, winrt::implementation::SelectionModelT, winrt::Windows::UI::Xaml::Data::ICustomPropertyProvider, winrt::composing>,
+      public SelectionModelProperties
 {
 public:
     SelectionModel();
@@ -25,7 +25,7 @@ public:
     void Source(winrt::IInspectable const& value);
 
     bool SingleSelect();
-    void SingleSelect(bool value); 
+    void SingleSelect(bool value);
 
     winrt::IndexPath AnchorIndex();
     void AnchorIndex(winrt::IndexPath const& value);
@@ -86,7 +86,10 @@ public:
 
     winrt::IInspectable ResolvePath(const winrt::IInspectable& data, const winrt::IndexPath& dataIndexPath);
     void OnSelectionInvalidatedDueToCollectionChange();
-    std::shared_ptr<SelectionNode> SharedLeafNode() { return m_leafNode; }
+    std::shared_ptr<SelectionNode> SharedLeafNode()
+    {
+        return m_leafNode;
+    }
 
 private:
     void RaisePropertyChanged(std::wstring_view const& name);

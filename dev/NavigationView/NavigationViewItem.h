@@ -10,18 +10,16 @@ struct bringintoview_event_revoker;
 #include "NavigationViewItemPresenter.h"
 #include "NavigationViewItem.properties.h"
 
-class NavigationViewItem :
-    public winrt::implementation::NavigationViewItemT<NavigationViewItem, NavigationViewItemBase>,
-    public NavigationViewItemProperties
+class NavigationViewItem : public winrt::implementation::NavigationViewItemT<NavigationViewItem, NavigationViewItemBase>, public NavigationViewItemProperties
 {
 public:
     ForwardRefToBaseReferenceTracker(NavigationViewItemBase)
 
-    NavigationViewItem();
+        NavigationViewItem();
 
-    // These functions are ambiguous with NavigationViewItemBase, disambiguate 
-    using NavigationViewItemProperties::EnsureProperties;
+    // These functions are ambiguous with NavigationViewItemBase, disambiguate
     using NavigationViewItemProperties::ClearProperties;
+    using NavigationViewItemProperties::EnsureProperties;
 
     // IFrameworkElementOverrides
     void OnApplyTemplate() override;
@@ -48,15 +46,18 @@ public:
     void OnGotFocus(winrt::RoutedEventArgs const& e) override;
     void OnLostFocus(winrt::RoutedEventArgs const& e) override;
 
-    // VisualState is maintained by NavigationViewItem. but actual state should be apply to 
-    // NavigationViewItemPresenter. But NavigationViewItemPresenter is created after NavigationViewItem. 
+    // VisualState is maintained by NavigationViewItem. but actual state should be apply to
+    // NavigationViewItemPresenter. But NavigationViewItemPresenter is created after NavigationViewItem.
     // It provides a chance for NavigationViewItemPresenter to request visualstate refresh
     void UpdateVisualStateNoTransition();
 
     void ShowHideChildren();
     bool ShouldRepeaterShowInFlyout() const;
 
-    winrt::ItemsRepeater GetRepeater() const { return m_repeater.get(); };
+    winrt::ItemsRepeater GetRepeater() const
+    {
+        return m_repeater.get();
+    };
 
     void OnExpandCollapseChevronTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args);
     void RotateExpandCollapseChevron(bool isExpanded);

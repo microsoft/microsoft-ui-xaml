@@ -14,9 +14,7 @@
 #include "TreeView.g.h"
 #include "TreeView.properties.h"
 
-class TreeView :
-    public ReferenceTracker<TreeView, winrt::implementation::TreeViewT>,
-    public TreeViewProperties
+class TreeView : public ReferenceTracker<TreeView, winrt::implementation::TreeViewT>, public TreeViewProperties
 {
 public:
     TreeView();

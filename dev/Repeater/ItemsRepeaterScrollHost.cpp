@@ -77,21 +77,20 @@ winrt::Size ItemsRepeaterScrollHost::ArrangeOverride(winrt::Size const& finalSiz
         }
         else
         {
-            const auto shouldApplyPendingChangeView = scrollViewer && HasPendingBringIntoView() && !m_pendingBringIntoView.ChangeViewCalled();
+            const auto shouldApplyPendingChangeView =
+                scrollViewer && HasPendingBringIntoView() && !m_pendingBringIntoView.ChangeViewCalled();
 
             winrt::Rect anchorElementRelativeBounds{};
             const auto anchorElement =
                 // BringIntoView takes precedence over tracking.
-                shouldApplyPendingChangeView ?
-                nullptr :
-                // Pick the best candidate depending on HorizontalAnchorRatio and VerticalAnchorRatio.
-                // The best candidate is the element that's the closest to the edge of interest.
-                GetAnchorElement(&anchorElementRelativeBounds);
+                shouldApplyPendingChangeView ? nullptr :
+                                             // Pick the best candidate depending on HorizontalAnchorRatio and VerticalAnchorRatio.
+                                             // The best candidate is the element that's the closest to the edge of interest.
+                    GetAnchorElement(&anchorElementRelativeBounds);
 
             scrollViewer.Arrange({ 0, 0, finalSize.Width, finalSize.Height });
 
             m_pendingViewportShift = 0.0;
-
 
             if (shouldApplyPendingChangeView)
             {
@@ -144,22 +143,10 @@ void ItemsRepeaterScrollHost::VerticalAnchorRatio(double value)
 
 // TODO: this API should go on UIElement.
 void ItemsRepeaterScrollHost::StartBringIntoView(
-    winrt::UIElement const& element,
-    double alignmentX,
-    double alignmentY,
-    double offsetX,
-    double offsetY,
-    bool animate)
+    winrt::UIElement const& element, double alignmentX, double alignmentY, double offsetX, double offsetY, bool animate)
 {
 
-    m_pendingBringIntoView = {
-        this /* owner */,
-        element,
-        alignmentX,
-        alignmentY,
-        offsetX,
-        offsetY,
-        !!animate };
+    m_pendingBringIntoView = { this /* owner */, element, alignmentX, alignmentY, offsetX, offsetY, !!animate };
 }
 
 bool ItemsRepeaterScrollHost::IsHorizontallyScrollable()
@@ -176,7 +163,6 @@ winrt::UIElement ItemsRepeaterScrollHost::AnchorElement()
 {
     return GetAnchorElement();
 }
-
 
 winrt::event_token ItemsRepeaterScrollHost::ViewportChanged(winrt::ViewportChangedEventHandler const& value)
 {
@@ -198,14 +184,12 @@ void ItemsRepeaterScrollHost::PostArrange(winrt::event_token const& token)
     m_postArrange.remove(token);
 }
 
-winrt::event_token ItemsRepeaterScrollHost::ConfigurationChanged(
-    winrt::ConfigurationChangedEventHandler const& /*value*/)
+winrt::event_token ItemsRepeaterScrollHost::ConfigurationChanged(winrt::ConfigurationChangedEventHandler const& /*value*/)
 {
     return {};
 }
 
-void ItemsRepeaterScrollHost::ConfigurationChanged(
-    winrt::event_token const& /*token*/)
+void ItemsRepeaterScrollHost::ConfigurationChanged(winrt::event_token const& /*token*/)
 {
 }
 
@@ -222,7 +206,8 @@ void ItemsRepeaterScrollHost::RegisterAnchorCandidate(winrt::UIElement const& el
             // However checking if an element is already in the list every time a new element is registered is worse for perf.
             // So, I'm leaving an assert here to catch regression in our code but in release builds we run without the check.
             const auto elem = element;
-            const auto it = std::find_if(m_candidates.cbegin(), m_candidates.cend(), [&elem](const CandidateInfo& c) { return c.Element() == elem; });
+            const auto it = std::find_if(
+                m_candidates.cbegin(), m_candidates.cend(), [&elem](const CandidateInfo& c) { return c.Element() == elem; });
             if (it != m_candidates.cend())
             {
                 MUX_ASSERT(false);
@@ -238,7 +223,8 @@ void ItemsRepeaterScrollHost::RegisterAnchorCandidate(winrt::UIElement const& el
 void ItemsRepeaterScrollHost::UnregisterAnchorCandidate(winrt::UIElement const& element)
 {
     const auto elem = element;
-    const auto it = std::find_if(m_candidates.cbegin(), m_candidates.cend(), [&elem](const CandidateInfo& c) { return c.Element() == elem; });
+    const auto it =
+        std::find_if(m_candidates.cbegin(), m_candidates.cend(), [&elem](const CandidateInfo& c) { return c.Element() == elem; });
     if (it != m_candidates.cend())
     {
         REPEATER_TRACE_INFO(L"Unregistered candidate %d\n", it - m_candidates.begin());
@@ -247,8 +233,7 @@ void ItemsRepeaterScrollHost::UnregisterAnchorCandidate(winrt::UIElement const& 
     }
 }
 
-winrt::Rect ItemsRepeaterScrollHost::GetRelativeViewport(
-    winrt::UIElement const& element)
+winrt::Rect ItemsRepeaterScrollHost::GetRelativeViewport(winrt::UIElement const& element)
 {
     if (const auto scrollViewer = ScrollViewer())
     {
@@ -290,10 +275,9 @@ void ItemsRepeaterScrollHost::ApplyPendingChangeView(const winrt::FxScrollViewer
     const auto layoutSlot = CachedVisualTreeHelpers::GetLayoutSlot(bringIntoView.TargetElement().as<winrt::FrameworkElement>());
 
     // Arrange bounds are absolute.
-    const auto arrangeBounds = bringIntoView
-        .TargetElement()
-        .TransformToVisual(scrollViewer.ContentTemplateRoot())
-        .TransformBounds(winrt::Rect{ 0, 0, layoutSlot.Width, layoutSlot.Height });
+    const auto arrangeBounds = bringIntoView.TargetElement()
+                                   .TransformToVisual(scrollViewer.ContentTemplateRoot())
+                                   .TransformBounds(winrt::Rect{ 0, 0, layoutSlot.Width, layoutSlot.Height });
 
     const auto scrollableArea = winrt::Point(
         static_cast<float>(scrollViewer.ViewportWidth() - arrangeBounds.Width),
@@ -301,16 +285,24 @@ void ItemsRepeaterScrollHost::ApplyPendingChangeView(const winrt::FxScrollViewer
 
     // Calculate the target offset based on the alignment and offset parameters.
     // Make sure that we are constrained to the ScrollViewer's extent.
-    const auto changeViewOffset = winrt::Point{
-        std::max(0.0f, static_cast<float>(std::min(
-            arrangeBounds.X + bringIntoView.OffsetX() - scrollableArea.X * bringIntoView.AlignmentX(),
-            scrollViewer.ExtentWidth() - scrollViewer.ViewportWidth()))),
-        std::max(0.0f, static_cast<float>(std::min(
-            arrangeBounds.Y + bringIntoView.OffsetY() - scrollableArea.Y * bringIntoView.AlignmentY(),
-            scrollViewer.ExtentHeight() - scrollViewer.ViewportHeight()))) };
+    const auto changeViewOffset =
+        winrt::Point{ std::max(
+                          0.0f,
+                          static_cast<float>(std::min(
+                              arrangeBounds.X + bringIntoView.OffsetX() - scrollableArea.X * bringIntoView.AlignmentX(),
+                              scrollViewer.ExtentWidth() - scrollViewer.ViewportWidth()))),
+                      std::max(
+                          0.0f,
+                          static_cast<float>(std::min(
+                              arrangeBounds.Y + bringIntoView.OffsetY() - scrollableArea.Y * bringIntoView.AlignmentY(),
+                              scrollViewer.ExtentHeight() - scrollViewer.ViewportHeight()))) };
     bringIntoView.ChangeViewOffset(changeViewOffset);
 
-    REPEATER_TRACE_INFO(L"ItemsRepeaterScrollHost scroll to absolute offset (%.0f, %.0f), animate=%d \n", changeViewOffset.X, changeViewOffset.Y, bringIntoView.Animate());
+    REPEATER_TRACE_INFO(
+        L"ItemsRepeaterScrollHost scroll to absolute offset (%.0f, %.0f), animate=%d \n",
+        changeViewOffset.X,
+        changeViewOffset.Y,
+        bringIntoView.Animate());
     scrollViewer.ChangeView(
         box_value(static_cast<double>(changeViewOffset.X)).as<winrt::IReference<double>>(),
         box_value(static_cast<double>(changeViewOffset.Y)).as<winrt::IReference<double>>(),
@@ -324,11 +316,7 @@ double ItemsRepeaterScrollHost::TrackElement(const winrt::UIElement& element, wi
 {
     const auto bounds = winrt::LayoutInformation::GetLayoutSlot(element.as<winrt::FrameworkElement>());
     const auto transformer = element.TransformToVisual(scrollViewer.ContentTemplateRoot());
-    const auto newBounds = transformer.TransformBounds(winrt::Rect{
-        0.0f,
-        0.0f,
-        bounds.Width,
-        bounds.Height });
+    const auto newBounds = transformer.TransformBounds(winrt::Rect{ 0.0f, 0.0f, bounds.Width, bounds.Height });
 
     const auto oldEdgeOffset = previousBounds.Y + HorizontalAnchorRatio() * previousBounds.Height;
     const auto newEdgeOffset = newBounds.Y + HorizontalAnchorRatio() * newBounds.Height;
@@ -338,10 +326,9 @@ double ItemsRepeaterScrollHost::TrackElement(const winrt::UIElement& element, wi
 
     // ScrollViewer.ChangeView is not synchronous, so we need to account for the pending ChangeView call
     // and make sure we are locked on the target viewport.
-    const auto verticalOffset =
-        HasPendingBringIntoView() && !m_pendingBringIntoView.Animate() ?
-        m_pendingBringIntoView.ChangeViewOffset().Y :
-        scrollViewer.VerticalOffset();
+    const auto verticalOffset = HasPendingBringIntoView() && !m_pendingBringIntoView.Animate()
+                                    ? m_pendingBringIntoView.ChangeViewOffset().Y
+                                    : scrollViewer.VerticalOffset();
 
     // Constrain the viewport shift to the extent
     if (verticalOffset + pendingViewportShift < 0)
@@ -362,11 +349,7 @@ double ItemsRepeaterScrollHost::TrackElement(const winrt::UIElement& element, wi
         //  viewport. We should address that when building element tracking as part
         //  of the framework.
         REPEATER_TRACE_INFO(L"Viewport shift:%.0f. \n", pendingViewportShift);
-        scrollViewer.ChangeView(
-            nullptr,
-            box_value(verticalOffset + pendingViewportShift).as<winrt::IReference<double>>(),
-            nullptr,
-            true /* disableAnimation */);
+        scrollViewer.ChangeView(nullptr, box_value(verticalOffset + pendingViewportShift).as<winrt::IReference<double>>(), nullptr, true /* disableAnimation */);
     }
     else
     {
@@ -392,10 +375,9 @@ winrt::UIElement ItemsRepeaterScrollHost::GetAnchorElement(_Out_opt_ winrt::Rect
         {
             // ScrollViewer.ChangeView is not synchronous, so we need to account for the pending ChangeView call
             // and make sure we are locked on the target viewport.
-            const auto verticalOffset =
-                HasPendingBringIntoView() && !m_pendingBringIntoView.Animate() ?
-                m_pendingBringIntoView.ChangeViewOffset().Y :
-                scrollViewer.VerticalOffset();
+            const auto verticalOffset = HasPendingBringIntoView() && !m_pendingBringIntoView.Animate()
+                                            ? m_pendingBringIntoView.ChangeViewOffset().Y
+                                            : scrollViewer.VerticalOffset();
             const double viewportEdgeOffset = verticalOffset + HorizontalAnchorRatio() * scrollViewer.ViewportHeight() + m_pendingViewportShift;
 
             const CandidateInfo* bestCandidate{ nullptr };
@@ -409,14 +391,11 @@ winrt::UIElement ItemsRepeaterScrollHost::GetAnchorElement(_Out_opt_ winrt::Rect
                 {
                     const auto bounds = winrt::LayoutInformation::GetLayoutSlot(element.as<winrt::FrameworkElement>());
                     const auto transformer = element.TransformToVisual(scrollViewer.ContentTemplateRoot());
-                    candidate.RelativeBounds(transformer.TransformBounds(winrt::Rect{
-                        0.0f,
-                        0.0f,
-                        bounds.Width,
-                        bounds.Height }));
+                    candidate.RelativeBounds(transformer.TransformBounds(winrt::Rect{ 0.0f, 0.0f, bounds.Width, bounds.Height }));
                 }
 
-                const double elementEdgeOffset = candidate.RelativeBounds().Y + HorizontalAnchorRatio() * candidate.RelativeBounds().Height;
+                const double elementEdgeOffset =
+                    candidate.RelativeBounds().Y + HorizontalAnchorRatio() * candidate.RelativeBounds().Height;
                 const double candidateDistance = std::abs(elementEdgeOffset - viewportEdgeOffset);
                 if (candidateDistance < bestCandidateDistance)
                 {
@@ -448,16 +427,12 @@ winrt::UIElement ItemsRepeaterScrollHost::GetAnchorElement(_Out_opt_ winrt::Rect
     return m_anchorElement.get();
 }
 
-void ItemsRepeaterScrollHost::OnScrollViewerViewChanging(
-    const winrt::IInspectable& sender,
-    const winrt::ScrollViewerViewChangingEventArgs& args)
+void ItemsRepeaterScrollHost::OnScrollViewerViewChanging(const winrt::IInspectable& sender, const winrt::ScrollViewerViewChangingEventArgs& args)
 {
     m_viewportChanged(*this, false /* isFinal */);
 }
 
-void ItemsRepeaterScrollHost::OnScrollViewerViewChanged(
-    winrt::IInspectable const&,
-    winrt::ScrollViewerViewChangedEventArgs const& args)
+void ItemsRepeaterScrollHost::OnScrollViewerViewChanged(winrt::IInspectable const&, winrt::ScrollViewerViewChangedEventArgs const& args)
 {
     const bool isFinal = !args.IsIntermediate();
 
@@ -465,8 +440,7 @@ void ItemsRepeaterScrollHost::OnScrollViewerViewChanged(
     {
         m_pendingViewportShift = 0.0;
 
-        if (HasPendingBringIntoView() &&
-            m_pendingBringIntoView.ChangeViewCalled() == true)
+        if (HasPendingBringIntoView() && m_pendingBringIntoView.ChangeViewCalled() == true)
         {
             m_pendingBringIntoView.Reset();
         }
@@ -475,9 +449,7 @@ void ItemsRepeaterScrollHost::OnScrollViewerViewChanged(
     m_viewportChanged(*this, isFinal);
 }
 
-void ItemsRepeaterScrollHost::OnScrollViewerSizeChanged(
-    const winrt::IInspectable& sender,
-    const winrt::SizeChangedEventArgs& args)
+void ItemsRepeaterScrollHost::OnScrollViewerSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
 {
     m_viewportChanged(*this, true /* isFinal */);
 }

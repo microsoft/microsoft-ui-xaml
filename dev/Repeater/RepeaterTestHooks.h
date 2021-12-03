@@ -6,8 +6,7 @@
 #include "WinEventLogLevels.h"
 #include "RepeaterTestHooks.g.h"
 
-class RepeaterTestHooks :
-    public winrt::implementation::RepeaterTestHooksT<RepeaterTestHooks>
+class RepeaterTestHooks : public winrt::implementation::RepeaterTestHooksT<RepeaterTestHooks>
 {
 public:
     winrt::event_token BuildTreeCompletedImpl(winrt::TypedEventHandler<winrt::IInspectable, winrt::IInspectable> const& value); // subscribe

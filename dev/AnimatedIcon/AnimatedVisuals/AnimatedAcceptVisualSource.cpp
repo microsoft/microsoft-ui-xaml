@@ -4,13 +4,13 @@
 //
 //       LottieGen version:
 //           7.0.2+gebbbdfc697
-//       
+//
 //       Command:
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedAcceptVisualSource.json
-//       
+//
 //       Input file:
 //           AnimatedAcceptVisualSource.json (22496 bytes created 11:36-07:00 May 14 2021)
-//       
+//
 //       LottieGen source:
 //           http://aka.ms/Lottie
 //
@@ -53,8 +53,7 @@
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
 #ifdef BUILD_WINDOWS
-namespace ABI
-{
+namespace ABI {
 #include <Windows.Graphics.Effects.Interop.h>
 }
 #else
@@ -70,26 +69,25 @@ using namespace winrt::Windows::UI;
 using namespace winrt::Windows::UI::Composition;
 using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
-namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
-{
-    CppWinRTActivatableClassWithBasicFactory(AnimatedAcceptVisualSource)
+namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals {
+CppWinRTActivatableClassWithBasicFactory(AnimatedAcceptVisualSource)
 }
 #include "AnimatedVisuals\AnimatedAcceptVisualSource.g.cpp"
 
-
-class CanvasGeometry : public winrt::implements<CanvasGeometry,
-    IGeometrySource2D,
-    ::ABI::Windows::Graphics::IGeometrySource2DInterop>
+class CanvasGeometry : public winrt::implements<CanvasGeometry, IGeometrySource2D, ::ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
     winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 
 public:
-    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry)
-        : _geometry{ geometry }
-    { }
+    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry) : _geometry{ geometry }
+    {
+    }
 
     // IGeometrySource2D.
-    winrt::com_ptr<ID2D1Geometry> Geometry() { return _geometry; }
+    winrt::com_ptr<ID2D1Geometry> Geometry()
+    {
+        return _geometry;
+    }
 
     // IGeometrySource2DInterop.
     IFACEMETHODIMP GetGeometry(ID2D1Geometry** value) override
@@ -104,9 +102,8 @@ public:
         return E_NOTIMPL;
     }
 };
-class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<AnimatedAcceptVisualSource_AnimatedVisual,
-        winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
-        IClosable>
+class AnimatedAcceptVisualSource_AnimatedVisual
+    : public winrt::implements<AnimatedAcceptVisualSource_AnimatedVisual, winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual, IClosable>
 {
     winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
     static constexpr int64_t c_durationTicks{ 26666666L };
@@ -124,11 +121,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     StepEasingFunction _holdThenStepEasingFunction{ nullptr };
     StepEasingFunction _stepThenHoldEasingFunction{ nullptr };
 
-    static void StartProgressBoundAnimation(
-        CompositionObject target,
-        winrt::hstring animatedPropertyName,
-        CompositionAnimation animation,
-        ExpressionAnimation controllerProgressExpression)
+    static void StartProgressBoundAnimation(CompositionObject target, winrt::hstring animatedPropertyName, CompositionAnimation animation, ExpressionAnimation controllerProgressExpression)
     {
         target.StartAnimation(animatedPropertyName, animation);
         const auto controller = target.TryGetAnimationController(animatedPropertyName);
@@ -136,12 +129,7 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         controller.StartAnimation(L"Progress", controllerProgressExpression);
     }
 
-    void BindProperty(
-        CompositionObject target,
-        winrt::hstring animatedPropertyName,
-        winrt::hstring expression,
-        winrt::hstring referenceParameterName,
-        CompositionObject referencedObject)
+    void BindProperty(CompositionObject target, winrt::hstring animatedPropertyName, winrt::hstring expression, winrt::hstring referenceParameterName, CompositionObject referencedObject)
     {
         _reusableExpressionAnimation.ClearAllParameters();
         _reusableExpressionAnimation.Expression(expression);
@@ -415,7 +403,12 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     CompositionColorBrush ThemeColor_Foreground()
     {
         const auto result = _themeColor_Foreground = _c.CreateColorBrush();
-        BindProperty(result, L"Color", L"ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties);
+        BindProperty(
+            result,
+            L"Color",
+            L"ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)",
+            L"_theme",
+            _themeProperties);
         return result;
     }
 
@@ -837,7 +830,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_01());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_00(), RootProgress());
@@ -864,7 +858,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_03());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_01(), _rootProgress);
@@ -892,7 +887,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_05());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_02(), _rootProgress);
@@ -920,7 +916,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_07());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_03(), _rootProgress);
@@ -948,7 +945,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_09());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_04(), _rootProgress);
@@ -976,7 +974,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_11());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_05(), _rootProgress);
@@ -1004,7 +1003,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_13());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_06(), _rootProgress);
@@ -1032,7 +1032,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_15());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_07(), _rootProgress);
@@ -1069,7 +1070,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_18());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_08(), _rootProgress);
@@ -1106,7 +1108,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_21());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_09(), _rootProgress);
@@ -1134,7 +1137,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_23());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_10(), _rootProgress);
@@ -1162,7 +1166,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_25());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_11(), _rootProgress);
@@ -1190,7 +1195,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_27());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_12(), _rootProgress);
@@ -1218,7 +1224,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_29());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_13(), _rootProgress);
@@ -1255,7 +1262,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_32());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_14(), _rootProgress);
@@ -1292,7 +1300,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_35());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_15(), _rootProgress);
@@ -1320,7 +1329,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_37());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_16(), _rootProgress);
@@ -1348,7 +1358,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
         const auto result = _c.CreateContainerVisual();
         result.IsVisible(false);
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_39());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_17(), _rootProgress);
@@ -1375,7 +1386,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     {
         const auto result = _c.CreateContainerVisual();
         // Offset:<24, 24>, Scale:<1.05, 1.05>
-        result.TransformMatrix({ 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
+        result.TransformMatrix(
+            { 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 1.04999995F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 24.0F, 24.0F, 0.0F, 1.0F });
         // Transforms for Null 230 Scale(1.05,1.05,0), Offset(24,24,0)
         result.Children().InsertAtTop(ContainerVisual_41());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_18(), _rootProgress);
@@ -1452,7 +1464,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
 
     CubicBezierEasingFunction CubicBezierEasingFunction_1()
     {
-        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.833000004F, 0.833000004F });
+        return _cubicBezierEasingFunction_1 =
+                   _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.833000004F, 0.833000004F });
     }
 
     ExpressionAnimation RootProgress()
@@ -1830,12 +1843,8 @@ class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<Anima
     }
 
 public:
-    AnimatedAcceptVisualSource_AnimatedVisual(
-        Compositor compositor,
-        CompositionPropertySet themeProperties)
-        : _c{compositor}
-        , _themeProperties{themeProperties}
-        , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
+    AnimatedAcceptVisualSource_AnimatedVisual(Compositor compositor, CompositionPropertySet themeProperties) :
+        _c{ compositor }, _themeProperties{ themeProperties }, _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
     {
         winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.put()));
         const auto _ = Root();
@@ -1866,7 +1875,8 @@ public:
 
     static bool IsRuntimeCompatible()
     {
-        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 7);
+        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(
+            L"Windows.Foundation.UniversalApiContract", 7);
     }
 };
 
@@ -1900,25 +1910,20 @@ void AnimatedAcceptVisualSource::Foreground(Color value)
     }
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedAcceptVisualSource::TryCreateAnimatedVisual(
-    Compositor const& compositor)
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedAcceptVisualSource::TryCreateAnimatedVisual(Compositor const& compositor)
 {
     IInspectable diagnostics = nullptr;
     return TryCreateAnimatedVisual(compositor, diagnostics);
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedAcceptVisualSource::TryCreateAnimatedVisual(
-    Compositor const& compositor,
-    IInspectable& diagnostics)
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedAcceptVisualSource::TryCreateAnimatedVisual(Compositor const& compositor, IInspectable& diagnostics)
 {
     const auto _ = EnsureThemeProperties(compositor);
     diagnostics = nullptr;
 
     if (AnimatedAcceptVisualSource_AnimatedVisual::IsRuntimeCompatible())
     {
-        return winrt::make<AnimatedAcceptVisualSource_AnimatedVisual>(
-            compositor,
-            _themeProperties);
+        return winrt::make<AnimatedAcceptVisualSource_AnimatedVisual>(compositor, _themeProperties);
     }
 
     return nullptr;
@@ -1946,50 +1951,48 @@ double AnimatedAcceptVisualSource::FrameToProgress(double frameNumber)
 
 winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedAcceptVisualSource::Markers()
 {
-    return winrt::single_threaded_map<winrt::hstring, double>(
-        std::map<winrt::hstring, double>
-        {
-            { L"NormalOnToNormalOff_Start", 0.0 },
-            { L"NormalOnToNormalOff_End", 0.0253125 },
-            { L"NormalOnToPointerOverOn_Start", 0.0315625 },
-            { L"NormalOnToPointerOverOn_End", 0.0565625 },
-            { L"NormalOnToPressedOn_Start", 0.0628125 },
-            { L"NormalOnToPressedOn_End", 0.0878125 },
-            { L"NormalOffToNormalOn_Start", 0.0940625 },
-            { L"NormalOffToNormalOn_End", 0.2128125 },
-            { L"NormalOffToPointerOverOff_Start", 0.2190625 },
-            { L"NormalOffToPointerOverOff_End", 0.2440625 },
-            { L"NormalOffToPressedOff_Start", 0.2503125 },
-            { L"NormalOffToPressedOff_End", 0.2753125 },
-            { L"PointerOverOnToPointerOverOff_Start", 0.2815625 },
-            { L"PointerOverOnToPointerOverOff_End", 0.3065625 },
-            { L"PointerOverOnToNormalOn_Start", 0.3128125 },
-            { L"PointerOverOnToNormalOn_End", 0.3378125 },
-            { L"PointerOverOnToPressedOn_Start", 0.3440625 },
-            { L"PointerOverOnToPressedOn_End", 0.3690625 },
-            { L"PointerOverOffToPointerOverOn_Start", 0.3753125 },
-            { L"PointerOverOffToPointerOverOn_End", 0.4940625 },
-            { L"PointerOverOffToNormalOff_Start", 0.5003125 },
-            { L"PointerOverOffToNormalOff_End", 0.5253125 },
-            { L"PointerOverOffToPressedOff_Start", 0.5315625 },
-            { L"PointerOverOffToPressedOff_End", 0.5565625 },
-            { L"PressedOnToPressedOff_Start", 0.5628125 },
-            { L"PressedOnToPressedOff_End", 0.5878125 },
-            { L"PressedOnToPointerOverOff_Start", 0.5940625 },
-            { L"PressedOnToPointerOverOff_End", 0.6190625 },
-            { L"PressedOnToNormalOff_Start", 0.6253125 },
-            { L"PressedOnToNormalOff_End", 0.6503125 },
-            { L"PressedOffToPressedOn_Start", 0.6565625 },
-            { L"PressedOffToPressedOn_End", 0.7128125 },
-            { L"PressedOffToPointerOverOn_Start", 0.7190625 },
-            { L"PressedOffToPointerOverOn_End", 0.8378125 },
-            { L"PressedOffToNormalOn_Start", 0.8440625 },
-            { L"PressedOffToNormalOn_End", 0.9628125 },
-            { L"NormalIndeterminate", 0.9690625 },
-            { L"PointerOverIndeterminate", 0.9815625 },
-            { L"PressedIndeterminate", 0.9940625 },
-        }
-    ).GetView();
+    return winrt::single_threaded_map<winrt::hstring, double>(std::map<winrt::hstring, double>{
+                                                                  { L"NormalOnToNormalOff_Start", 0.0 },
+                                                                  { L"NormalOnToNormalOff_End", 0.0253125 },
+                                                                  { L"NormalOnToPointerOverOn_Start", 0.0315625 },
+                                                                  { L"NormalOnToPointerOverOn_End", 0.0565625 },
+                                                                  { L"NormalOnToPressedOn_Start", 0.0628125 },
+                                                                  { L"NormalOnToPressedOn_End", 0.0878125 },
+                                                                  { L"NormalOffToNormalOn_Start", 0.0940625 },
+                                                                  { L"NormalOffToNormalOn_End", 0.2128125 },
+                                                                  { L"NormalOffToPointerOverOff_Start", 0.2190625 },
+                                                                  { L"NormalOffToPointerOverOff_End", 0.2440625 },
+                                                                  { L"NormalOffToPressedOff_Start", 0.2503125 },
+                                                                  { L"NormalOffToPressedOff_End", 0.2753125 },
+                                                                  { L"PointerOverOnToPointerOverOff_Start", 0.2815625 },
+                                                                  { L"PointerOverOnToPointerOverOff_End", 0.3065625 },
+                                                                  { L"PointerOverOnToNormalOn_Start", 0.3128125 },
+                                                                  { L"PointerOverOnToNormalOn_End", 0.3378125 },
+                                                                  { L"PointerOverOnToPressedOn_Start", 0.3440625 },
+                                                                  { L"PointerOverOnToPressedOn_End", 0.3690625 },
+                                                                  { L"PointerOverOffToPointerOverOn_Start", 0.3753125 },
+                                                                  { L"PointerOverOffToPointerOverOn_End", 0.4940625 },
+                                                                  { L"PointerOverOffToNormalOff_Start", 0.5003125 },
+                                                                  { L"PointerOverOffToNormalOff_End", 0.5253125 },
+                                                                  { L"PointerOverOffToPressedOff_Start", 0.5315625 },
+                                                                  { L"PointerOverOffToPressedOff_End", 0.5565625 },
+                                                                  { L"PressedOnToPressedOff_Start", 0.5628125 },
+                                                                  { L"PressedOnToPressedOff_End", 0.5878125 },
+                                                                  { L"PressedOnToPointerOverOff_Start", 0.5940625 },
+                                                                  { L"PressedOnToPointerOverOff_End", 0.6190625 },
+                                                                  { L"PressedOnToNormalOff_Start", 0.6253125 },
+                                                                  { L"PressedOnToNormalOff_End", 0.6503125 },
+                                                                  { L"PressedOffToPressedOn_Start", 0.6565625 },
+                                                                  { L"PressedOffToPressedOn_End", 0.7128125 },
+                                                                  { L"PressedOffToPointerOverOn_Start", 0.7190625 },
+                                                                  { L"PressedOffToPointerOverOn_End", 0.8378125 },
+                                                                  { L"PressedOffToNormalOn_Start", 0.8440625 },
+                                                                  { L"PressedOffToNormalOn_End", 0.9628125 },
+                                                                  { L"NormalIndeterminate", 0.9690625 },
+                                                                  { L"PointerOverIndeterminate", 0.9815625 },
+                                                                  { L"PressedIndeterminate", 0.9940625 },
+                                                              })
+        .GetView();
 }
 
 void AnimatedAcceptVisualSource::SetColorProperty(hstring const& propertyName, Color value)

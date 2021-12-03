@@ -11,17 +11,22 @@
 template <typename Owner>
 struct ValueProviderThunk : winrt::implements<ValueProviderThunk<Owner>, winrt::IValueProvider, winrt::composable, winrt::composing>
 {
-    bool IsReadOnly() { return static_cast<Owner*>(this)->IsReadOnly(); }
-    hstring Value() { return static_cast<Owner*>(this)->IValueProvider_Value(); }
-    void SetValue(hstring const& value) { static_cast<Owner*>(this)->SetValue(value); }
+    bool IsReadOnly()
+    {
+        return static_cast<Owner*>(this)->IsReadOnly();
+    }
+    hstring Value()
+    {
+        return static_cast<Owner*>(this)->IValueProvider_Value();
+    }
+    void SetValue(hstring const& value)
+    {
+        static_cast<Owner*>(this)->SetValue(value);
+    }
 };
 
-class RatingControlAutomationPeer : 
-    public ReferenceTracker<
-        RatingControlAutomationPeer,
-        winrt::implementation::RatingControlAutomationPeerT,
-        ValueProviderThunk<RatingControlAutomationPeer>,
-        winrt::IRangeValueProvider>
+class RatingControlAutomationPeer
+    : public ReferenceTracker<RatingControlAutomationPeer, winrt::implementation::RatingControlAutomationPeerT, ValueProviderThunk<RatingControlAutomationPeer>, winrt::IRangeValueProvider>
 {
 
 public:
@@ -29,7 +34,7 @@ public:
 
     // IAutomationPeerOverrides
     hstring GetLocalizedControlTypeCore();
-    
+
     // IValueProvider properties
     bool IsReadOnly();
     hstring IValueProvider_Value();
@@ -46,7 +51,7 @@ public:
     // Methods
     void SetValue(double value);
 
-    // IAutomationPeerOverrides 
+    // IAutomationPeerOverrides
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     winrt::AutomationControlType GetAutomationControlTypeCore();
 
@@ -60,4 +65,3 @@ private:
 
     winrt::hstring GenerateValue_ValueString(const winrt::hstring& resourceString, double ratingValue);
 };
-

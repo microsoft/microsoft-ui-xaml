@@ -36,6 +36,9 @@ void MUXControlsFactory::VerifyInitialized()
 {
     if (!s_initialized)
     {
-        throw winrt::hresult_error(E_FAIL, L"ERROR: You must put an instance of " MUXCONTROLSROOT_NAMESPACE_STR ".XamlControlsResources in your Application.Resources.MergedDictionaries.");
+        throw winrt::hresult_error(
+            E_FAIL,
+            L"ERROR: You must put an instance of " MUXCONTROLSROOT_NAMESPACE_STR
+            ".XamlControlsResources in your Application.Resources.MergedDictionaries.");
     }
 }

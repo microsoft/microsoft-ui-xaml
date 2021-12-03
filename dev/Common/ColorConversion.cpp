@@ -28,7 +28,7 @@ std::optional<unsigned long> TryParseInt(const wstring_view& str, int base)
         return std::nullopt;
     }
 
-    wchar_t *end;
+    wchar_t* end;
 
     // wcstoll takes in a string and converts as much as it as it can to an integer value,
     // returning a pointer to the first element that it wasn't able to consider part of an integer.
@@ -42,7 +42,7 @@ std::optional<unsigned long> TryParseInt(const wstring_view& str, int base)
     return std::nullopt;
 }
 
-Hsv RgbToHsv(const Rgb &rgb)
+Hsv RgbToHsv(const Rgb& rgb)
 {
     double hue = 0;
     double saturation = 0;
@@ -133,7 +133,7 @@ Hsv RgbToHsv(const Rgb &rgb)
     return Hsv(hue, saturation, value);
 }
 
-Rgb HsvToRgb(const Hsv &hsv)
+Rgb HsvToRgb(const Hsv& hsv)
 {
     double hue = hsv.h;
     double saturation = hsv.s;
@@ -193,7 +193,7 @@ Rgb HsvToRgb(const Hsv &hsv)
     // For example, as we transition between red and yellow, red is completely present, green is becoming increasingly present, and blue is not present.
     // Then, as we transition from yellow and green, green is now completely present, red is becoming decreasingly present, and blue is still not present.
     // As we transition from green to cyan, green is still completely present, blue is becoming increasingly present, and red is no longer present.  And so on.
-    // 
+    //
     // To convert from hue to RGB value, we first need to figure out which of the three channels is in which configuration
     // in the sextant that we're located in.  Next, we figure out what value the completely-present color should have.
     // We know that chroma = (max - min), and we know that this color is the max color, so to find its value we simply add
@@ -253,7 +253,7 @@ Rgb HexToRgb(const wstring_view& input)
     return rgb;
 }
 
-winrt::hstring RgbToHex(const Rgb &rgb)
+winrt::hstring RgbToHex(const Rgb& rgb)
 {
     const byte rByte = static_cast<byte>(round(rgb.r * 255.0));
     const byte gByte = static_cast<byte>(round(rgb.g * 255.0));
@@ -292,7 +292,7 @@ std::tuple<Rgb, double> HexToRgba(const wstring_view& input)
     return { Rgb(r / 255.0, g / 255.0, b / 255.0), a / 255.0 };
 }
 
-winrt::hstring RgbaToHex(const Rgb &rgb, double alpha)
+winrt::hstring RgbaToHex(const Rgb& rgb, double alpha)
 {
     const byte aByte = static_cast<byte>(round(alpha * 255.0));
     const byte rByte = static_cast<byte>(round(rgb.r * 255.0));
@@ -307,7 +307,7 @@ winrt::hstring RgbaToHex(const Rgb &rgb, double alpha)
     return winrt::hstring(hexString);
 }
 
-winrt::Color ColorFromRgba(const Rgb &rgb, double alpha)
+winrt::Color ColorFromRgba(const Rgb& rgb, double alpha)
 {
     return winrt::ColorHelper::FromArgb(
         static_cast<byte>(round(alpha * 255)),
@@ -316,7 +316,7 @@ winrt::Color ColorFromRgba(const Rgb &rgb, double alpha)
         static_cast<byte>(round(rgb.b * 255)));
 }
 
-Rgb RgbFromColor(const winrt::Color &color)
+Rgb RgbFromColor(const winrt::Color& color)
 {
     return Rgb(color.R / 255.0, color.G / 255.0, color.B / 255.0);
 }

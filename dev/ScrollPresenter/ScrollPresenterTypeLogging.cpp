@@ -5,8 +5,7 @@
 #include "ScrollPresenterTypeLogging.h"
 #include "Utils.h"
 
-namespace TypeLogging
-{
+namespace TypeLogging {
 
 winrt::hstring ScrollBarVisibilityToString(const winrt::ScrollingScrollBarVisibility& scrollBarVisibility)
 {
@@ -90,9 +89,9 @@ winrt::hstring InputKindToString(const winrt::ScrollingInputKinds& inputKind)
 {
     switch (static_cast<int>(inputKind))
     {
-    case static_cast<int>(winrt::ScrollingInputKinds::None) :
+    case static_cast<int>(winrt::ScrollingInputKinds::None):
         return L"None";
-    case static_cast<int>(winrt::ScrollingInputKinds::All) :
+    case static_cast<int>(winrt::ScrollingInputKinds::All):
         return L"All";
     case static_cast<int>(winrt::ScrollingInputKinds::Touch):
         return L"Touch";
@@ -195,7 +194,8 @@ winrt::hstring ScrollOptionsToString(const winrt::ScrollingScrollOptions& option
 {
     if (options)
     {
-        return StringUtil::FormatString(L"ScrollingScrollOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
+        return StringUtil::FormatString(
+            L"ScrollingScrollOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
             options,
             AnimationModeToString(options.AnimationMode()).c_str(),
             SnapPointsModeToString(options.SnapPointsMode()).c_str());
@@ -210,7 +210,8 @@ winrt::hstring ZoomOptionsToString(const winrt::ScrollingZoomOptions& options)
 {
     if (options)
     {
-        return StringUtil::FormatString(L"ScrollingZoomOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
+        return StringUtil::FormatString(
+            L"ScrollingZoomOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
             options,
             AnimationModeToString(options.AnimationMode()).c_str(),
             SnapPointsModeToString(options.SnapPointsMode()).c_str());
@@ -265,4 +266,4 @@ winrt::hstring InteractionTrackerAsyncOperationTriggerToString(InteractionTracke
     }
 }
 
-}
+} // namespace TypeLogging

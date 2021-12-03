@@ -6,7 +6,7 @@
 #include "RevealBrush.h"
 
 #pragma warning(push)
-#pragma warning(disable: 6101)  // Returning uninitialized memory '<value>'.  A successful path through the function does not set the named _Out_ parameter.
+#pragma warning(disable : 6101) // Returning uninitialized memory '<value>'.  A successful path through the function does not set the named _Out_ parameter.
 #include "Microsoft.UI.Private.Composition.Effects_impl.h"
 #pragma warning(pop)
 
@@ -30,26 +30,19 @@ const float RevealBrush::sc_diffuseAmountBorder{ 0.2f };
 const float RevealBrush::sc_specularAmountBorder{ 0.0f };
 const float RevealBrush::sc_specularShineBorder{ 0.0f };
 
-const winrt::Matrix5x4 RevealBrush::sc_colorToAlphaMatrix =
-{ 1.0f, 0.0f, 0.0f, 0.15f,
-  0.0f, 1.0f, 0.0f, 0.0f,
-  0.0f, 0.0f, 1.0f, 0.0f,
-  0.0f, 0.0f, 0.0f, 0.0f,
-  0.0f, 0.0f, 0.0f, 0.85f };
+const winrt::Matrix5x4 RevealBrush::sc_colorToAlphaMatrix = { 1.0f, 0.0f, 0.0f, 0.15f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                                                              1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.85f };
 
-const winrt::Matrix5x4 RevealBrush::sc_luminanceToAlphaMatrix
-{ 1.0f, 0.0f, 0.0f, 0.2125f,
-  0.0f, 1.0f, 0.0f, 0.7154f,
-  0.0f, 0.0f, 1.0f, 0.0721f,
-  0.0f, 0.0f, 0.0f, 0.0f,
-  0.0f, 0.0f, 0.0f, 0.0f };
+const winrt::Matrix5x4 RevealBrush::sc_luminanceToAlphaMatrix{ 1.0f,    0.0f, 0.0f, 0.2125f, 0.0f,    1.0f, 0.0f,
+                                                               0.7154f, 0.0f, 0.0f, 1.0f,    0.0721f, 0.0f, 0.0f,
+                                                               0.0f,    0.0f, 0.0f, 0.0f,    0.0f,    0.0f };
 
 // Originally the reveal border effect was built as:
 // 0) SceneLightingEffect input
 // 1) (0) multiplied through Luminance-to-alpha color matrix with ambient contribution of 0.5 in the RGBA offset row.
 // 2) ArithmeticCompositeEffect taking (1) and the base color with the multiply factors = 2 and offset = -1.
-// 
-// In light theme we now want to "invert" that result -- but we also don't want to invert the color part of 
+//
+// In light theme we now want to "invert" that result -- but we also don't want to invert the color part of
 // the equation. In addition, the ArithmeticComposite step needs to work when the base color is transparent,
 // so instead we will just assume that the base color is transparent and just do a "SourceOver" of the border
 // effect onto the base color if it's provided. This gives consistent results no matter what the color is.
@@ -57,27 +50,20 @@ const winrt::Matrix5x4 RevealBrush::sc_luminanceToAlphaMatrix
 // If we assume that then we can simplify 1 & 2 above to be just one color matrix. ArithmeticComposite
 // when one of the inputs is transparent (all 0) is just a Multiply and Offset factor. In our case that's *2 and -1.
 // Folding this into the matrix from #1 produces the below.
-// 
+//
 // At the end of the day, it doesn't matter so much how we got here. There's the luminance to alpha operation
-// plus a *2 multiplier. The *2 factor on the luminance to alpha matrix can only be explained as "that's what 
+// plus a *2 multiplier. The *2 factor on the luminance to alpha matrix can only be explained as "that's what
 // design wants". :)
 
 // The reveal border matrix is the luminance to alpha matrix * 2
-const winrt::Matrix5x4 sc_revealBorderColorMatrix
-{ 2.0f, 0.0f, 0.0f, 2 * 0.2125f,
-    0.0f, 2.0f, 0.0f, 2 * 0.7154f,
-    0.0f, 0.0f, 2.0f, 2 * 0.0721f,
-    0.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 0.0f };
+const winrt::Matrix5x4 sc_revealBorderColorMatrix{ 2.0f,        0.0f, 0.0f, 2 * 0.2125f, 0.0f,        2.0f, 0.0f,
+                                                   2 * 0.7154f, 0.0f, 0.0f, 2.0f,        2 * 0.0721f, 0.0f, 0.0f,
+                                                   0.0f,        0.0f, 0.0f, 0.0f,        0.0f,        0.0f };
 
 // The inverse border is the above but the colors are negated.
-const winrt::Matrix5x4 sc_revealInvertedBorderColorMatrix
-{ -2.0f,  0.0f,  0.0f,  2 * .2125f,
-    0.0f, -2.0f,  0.0f,  2 * .7154f,
-    0.0f,  0.0f, -2.0f,  2 * .0721f,
-    0.0f,  0.0f,  0.0f,  0.0f,
-    0.0f,  0.0f,  0.0f,  0.0f };
-
+const winrt::Matrix5x4 sc_revealInvertedBorderColorMatrix{ -2.0f,      0.0f, 0.0f, 2 * .2125f, 0.0f,       -2.0f, 0.0f,
+                                                           2 * .7154f, 0.0f, 0.0f, -2.0f,      2 * .0721f, 0.0f,  0.0f,
+                                                           0.0f,       0.0f, 0.0f, 0.0f,       0.0f,       0.0f };
 
 GlobalDependencyProperty RevealBrush::s_IsContainerProperty{ nullptr };
 
@@ -92,14 +78,8 @@ void RevealBrush::EnsureProperties()
     RevealBrushProperties::EnsureProperties();
     if (!s_IsContainerProperty)
     {
-        s_IsContainerProperty =
-            InitializeDependencyProperty(
-                L"IsContainer",
-                winrt::name_of<bool>(),
-                winrt::name_of<winrt::RevealBrush>(),
-                true /* isAttached */,
-                box_value(false),
-                &OnIsContainerPropertyChanged);
+        s_IsContainerProperty = InitializeDependencyProperty(
+            L"IsContainer", winrt::name_of<bool>(), winrt::name_of<winrt::RevealBrush>(), true /* isAttached */, box_value(false), &OnIsContainerPropertyChanged);
     }
 }
 
@@ -131,7 +111,10 @@ RevealBrush::~RevealBrush()
 void RevealBrush::OnElementConnected(winrt::DependencyObject element) noexcept
 {
     // XCBB will use Fallback rendering, so do not run derived Brush code.
-    if (SharedHelpers::IsInDesignMode()) { return; }
+    if (SharedHelpers::IsInDesignMode())
+    {
+        return;
+    }
 
     bool hasNewMaterialPolicy = false;
     winrt::XamlIsland xamlIsland = winrt::XamlIsland::GetIslandFromElement(element.try_as<winrt::UIElement>());
@@ -199,23 +182,23 @@ void RevealBrush::OnElementConnected(winrt::DependencyObject element) noexcept
         // This matches the legacy MaterialHelper behavior and should be sufficient for the special case of login screen.
         if (m_dispatcherQueue)
         {
-            m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(winrt::auto_revoke, {
-                [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue] (const winrt::IMaterialProperties& sender, const winrt::IInspectable& args)
-                {
-                    dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler([weakThis]()
-                    {
+            m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(
+                winrt::auto_revoke,
+                { [weakThis = get_weak(),
+                   dispatcherQueue = m_dispatcherQueue](const winrt::IMaterialProperties& sender, const winrt::IInspectable& args) {
+                    dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler([weakThis]() {
                         auto target = weakThis.get();
                         if (target)
                         {
-                            target->PolicyStatusChangedHelper(MaterialHelper::BrushTemplates<RevealBrush>::IsDisabledByInAppTransparencyPolicy(target.get()));
+                            target->PolicyStatusChangedHelper(
+                                MaterialHelper::BrushTemplates<RevealBrush>::IsDisabledByInAppTransparencyPolicy(target.get()));
                         }
                     }));
-                }
-                });
+                } });
         }
 
-
-        m_additionalMaterialPolicyChangedToken = MaterialHelper::AdditionalPolicyChanged([this](auto sender) { OnAdditionalMaterialPolicyChanged(sender); });
+        m_additionalMaterialPolicyChangedToken =
+            MaterialHelper::AdditionalPolicyChanged([this](auto sender) { OnAdditionalMaterialPolicyChanged(sender); });
     }
 
     m_isConnected = true;
@@ -228,7 +211,10 @@ void RevealBrush::OnElementConnected(winrt::DependencyObject element) noexcept
 void RevealBrush::OnConnected()
 {
     // XCBB will use Fallback rendering, so do not run derived Brush code.
-    if (SharedHelpers::IsInDesignMode()) { return; }
+    if (SharedHelpers::IsInDesignMode())
+    {
+        return;
+    }
 
 #if BUILD_WINDOWS
 
@@ -259,7 +245,8 @@ void RevealBrush::OnConnected()
     }
 
     m_isConnected = true;
-    m_materialPolicyChangedToken = MaterialHelper::PolicyChanged([this](auto sender, auto args) { OnMaterialPolicyStatusChanged(sender, args); });
+    m_materialPolicyChangedToken =
+        MaterialHelper::PolicyChanged([this](auto sender, auto args) { OnMaterialPolicyStatusChanged(sender, args); });
 
     UpdateLightTargets(true /* ambientToo */);
     UpdateRevealBrush();
@@ -268,7 +255,10 @@ void RevealBrush::OnConnected()
 
 void RevealBrush::OnDisconnected()
 {
-    if (SharedHelpers::IsInDesignMode()) { return; }
+    if (SharedHelpers::IsInDesignMode())
+    {
+        return;
+    }
 
     m_isConnected = false;
 
@@ -303,7 +293,6 @@ void RevealBrush::OnDisconnected()
 #else
     MaterialHelper::OnRevealBrushDisconnected();
 #endif
-
 
 #if BUILD_WINDOWS
     // Brushes can't be sared between islands, and their MaterialProperties has affinity to a given island.
@@ -368,11 +357,14 @@ void RevealBrush::RemoveTargetBrush(const wstring_view& lightID)
     }
     catch (const winrt::hresult_error& e)
     {
-        // RemoveTargetBrush can fail with RPC_E_WRONG_THREAD if called while the Xaml Core is being shutdown, 
+        // RemoveTargetBrush can fail with RPC_E_WRONG_THREAD if called while the Xaml Core is being shutdown,
         // and there is evidence from Watson that such calls are made in real apps.
         // In this case, all the relationships between lights and brushes are going to be cleared as part of core shutdown,
         // so effectively all brush targets will be unset, so it's ok to ignore this error.
-        if (e.to_abi() != RPC_E_WRONG_THREAD) { throw; }
+        if (e.to_abi() != RPC_E_WRONG_THREAD)
+        {
+            throw;
+        }
     }
 }
 
@@ -383,8 +375,8 @@ void RevealBrush::UpdateLightTargets(bool ambientToo)
         // Untarget the brush by hover/border/ambient lights
         if (m_isBorder && m_isBorderLightSet)
         {
-            auto currentLightId = TargetTheme() == winrt::ApplicationTheme::Light ?
-                RevealBorderLight::GetLightThemeIdStatic() : RevealBorderLight::GetDarkThemeIdStatic();
+            auto currentLightId = TargetTheme() == winrt::ApplicationTheme::Light ? RevealBorderLight::GetLightThemeIdStatic()
+                                                                                  : RevealBorderLight::GetDarkThemeIdStatic();
             RemoveTargetBrush(currentLightId);
             m_isBorderLightSet = false;
         }
@@ -403,7 +395,7 @@ void RevealBrush::UpdateLightTargets(bool ambientToo)
     else
     {
         // Target the brush by hover/border/ambient lights
-        if (m_isBorder)         // May need to switch border light so always referesh
+        if (m_isBorder) // May need to switch border light so always referesh
         {
             auto oldLightId = RevealBorderLight::GetLightThemeIdStatic();
             auto newLightId = RevealBorderLight::GetDarkThemeIdStatic();
@@ -522,9 +514,9 @@ winrt::Windows::Graphics::Effects::IGraphicsEffect RevealBrush::CreateRevealHove
     noiseOpacityEffect->Source(*noiseBorderEffect);
 
     // (7) SceneLightingEffect
-    // Note: Unlike the Win2D-based effects, SceneLightingEffect is a public Windows platform type, we can instatiate it directly via winrt.
-    // No ambient coefficient. This SLE gets noise applied to it, and we don't want the ambient contribution to be affected by noise. The
-    // ambient contribution will be added by a separate ColorSourceEffect.
+    // Note: Unlike the Win2D-based effects, SceneLightingEffect is a public Windows platform type, we can instatiate it directly
+    // via winrt. No ambient coefficient. This SLE gets noise applied to it, and we don't want the ambient contribution to be
+    // affected by noise. The ambient contribution will be added by a separate ColorSourceEffect.
     winrt::Windows::UI::Composition::Effects::SceneLightingEffect sceneLightingEffect;
     sceneLightingEffect.AmbientAmount(0);
     sceneLightingEffect.DiffuseAmount(sc_diffuseAmount);
@@ -588,12 +580,12 @@ winrt::Windows::Graphics::Effects::IGraphicsEffect RevealBrush::CreateRevealBord
     if (hasBaseColor)
     {
         // (3) Base Color Effect
-        auto  baseColorEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::ColorSourceEffect>();
+        auto baseColorEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::ColorSourceEffect>();
         baseColorEffect->Name(L"BaseColorEffect");
         // Set base color to 0 because we want to build one EffectFactory and cache it regardless of the different colors that
         // the app may choose. So make the factory have it as 0,0,0,0 and then we'll make it an animatable property and set it
         // immediately after we create it.
-        baseColorEffect->Color({ 0,0,0,0 });
+        baseColorEffect->Color({ 0, 0, 0, 0 });
 
         // (4) Do a source over blend of (2) the color matrix with (3) the base color.
         auto compositeEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::CompositeStepEffect>();
@@ -610,18 +602,11 @@ winrt::Windows::Graphics::Effects::IGraphicsEffect RevealBrush::CreateRevealBord
     }
 }
 
-winrt::CompositionEffectFactory
-RevealBrush::GetOrCreateRevealBrushCompositionEffectFactory(
-    bool isBorder,
-    bool isInverted,
-    bool hasBaseColor,
-    const winrt::Compositor& compositor)
+winrt::CompositionEffectFactory RevealBrush::GetOrCreateRevealBrushCompositionEffectFactory(
+    bool isBorder, bool isInverted, bool hasBaseColor, const winrt::Compositor& compositor)
 {
     auto effectFactory = MaterialHelper::GetOrCreateRevealBrushCompositionEffectFactoryFromCache(
-        isBorder,
-        isInverted,
-        hasBaseColor,
-        [isBorder, isInverted, hasBaseColor, &compositor]() {
+        isBorder, isInverted, hasBaseColor, [isBorder, isInverted, hasBaseColor, &compositor]() {
             // Set up the effect chain for reveal
             winrt::IGraphicsEffect effect;
             if (isBorder)
@@ -766,12 +751,12 @@ void RevealBrush::AttachLights()
         {
             MaterialHelper::SetShouldBeginAttachingLights(true);
 
-            // Note that AttachLights is only called by the first RevealBrush::OnConnected. 
-            // In case of the brush re-entering on same tick, ShouldBeginAttachingLights ensure we 
+            // Note that AttachLights is only called by the first RevealBrush::OnConnected.
+            // In case of the brush re-entering on same tick, ShouldBeginAttachingLights ensure we
             // don't generate multiple subscriptions to CT.Rerndering
             auto renderingEventForWindowRootToken = std::make_shared<winrt::event_token>();
-            *renderingEventForWindowRootToken = winrt::Xaml::Media::CompositionTarget::Rendering(
-                [renderingEventForWindowRootToken](auto&, auto&) {
+            *renderingEventForWindowRootToken =
+                winrt::Xaml::Media::CompositionTarget::Rendering([renderingEventForWindowRootToken](auto&, auto&) {
                     bool unsubscribeFromRenderingEvent = true;
                     if (MaterialHelper::ShouldBeginAttachingLights())
                     {
@@ -805,7 +790,10 @@ void RevealBrush::AttachLightsImpl()
 {
     // Safe to attach RootScrollViewer lights immediately
     auto windowRoot = winrt::Window::Current().Content();
-    if (!windowRoot) { return; }
+    if (!windowRoot)
+    {
+        return;
+    }
 
     RevealBrush::AttachLightsToAncestor(windowRoot, true);
 
@@ -814,38 +802,37 @@ void RevealBrush::AttachLightsImpl()
     {
         MaterialHelper::SetShouldContinueAttachingLights(true);
 
-        // Defer attaching PopupRoot until next Rendering event since this requires tree manipulations 
+        // Defer attaching PopupRoot until next Rendering event since this requires tree manipulations
         // and will fail if we are called while PopupRoot is undergoing Layout
         auto renderingEventForPopupToken = std::make_shared<winrt::event_token>();
-        *renderingEventForPopupToken = winrt::Xaml::Media::CompositionTarget::Rendering(
-            [renderingEventForPopupToken](auto&, auto&) {
-                // Detach event or Rendering will keep calling us back.
-                winrt::Xaml::Media::CompositionTarget::Rendering(*renderingEventForPopupToken);
+        *renderingEventForPopupToken = winrt::Xaml::Media::CompositionTarget::Rendering([renderingEventForPopupToken](auto&, auto&) {
+            // Detach event or Rendering will keep calling us back.
+            winrt::Xaml::Media::CompositionTarget::Rendering(*renderingEventForPopupToken);
 
-                // If we've removed all lights from the tree before we finished attaching all lights, then don't attach the rest.
-                if (MaterialHelper::ShouldContinueAttachingLights())
-                {
-                    // Lights have been attached to the visual root, but there are still other places where the app can use
-                    // reveal brushes. They need lights as well. One place is the popup root, which is the parent of the child
-                    // elements of all open popups.
-                    winrt::Popup popup;
-                    winrt::Canvas popupChild;
-                    popup.Child(popupChild);
-                    auto popupOpenedToken = std::make_shared<winrt::event_token>();
-                    *popupOpenedToken = popup.Opened([popup, popupChild, popupOpenedToken](auto&, auto&) {
-                        // If we've removed all lights from the tree before we finished attaching all lights, then don't attach the rest.
-                        if (MaterialHelper::ShouldContinueAttachingLights())
-                        {
-                            // Attach lights to PopupRoot.
-                            RevealBrush::AttachLightsToAncestor(popupChild, true);
-                        }
-                        popup.IsOpen(false);
-                        popup.Opened(*popupOpenedToken);
-                        });
+            // If we've removed all lights from the tree before we finished attaching all lights, then don't attach the rest.
+            if (MaterialHelper::ShouldContinueAttachingLights())
+            {
+                // Lights have been attached to the visual root, but there are still other places where the app can use
+                // reveal brushes. They need lights as well. One place is the popup root, which is the parent of the child
+                // elements of all open popups.
+                winrt::Popup popup;
+                winrt::Canvas popupChild;
+                popup.Child(popupChild);
+                auto popupOpenedToken = std::make_shared<winrt::event_token>();
+                *popupOpenedToken = popup.Opened([popup, popupChild, popupOpenedToken](auto&, auto&) {
+                    // If we've removed all lights from the tree before we finished attaching all lights, then don't attach the rest.
+                    if (MaterialHelper::ShouldContinueAttachingLights())
+                    {
+                        // Attach lights to PopupRoot.
+                        RevealBrush::AttachLightsToAncestor(popupChild, true);
+                    }
+                    popup.IsOpen(false);
+                    popup.Opened(*popupOpenedToken);
+                });
 
-                    popup.IsOpen(true);
-                }
-            });
+                popup.IsOpen(true);
+            }
+        });
     }
 #endif
 }
@@ -856,7 +843,7 @@ winrt::UIElement RevealBrush::GetAncestor(const winrt::UIElement& root)
     auto parent = current;
 
     // Walk up to the highest element and hook up lights there.
-    // If there is an ambient light anywhere on the path, we must have already 
+    // If there is an ambient light anywhere on the path, we must have already
     // added the global lights required for Reveal, so return immediately.
     do
     {
@@ -882,8 +869,8 @@ bool RevealBrush::ValidatePublicRootAncestor()
     // on it directly, or it isn't, in which case we should have walked up to the RootScrollViewer and set lights there.
     auto ancestor = GetAncestor(windowRoot);
     bool windowContentIsCanvas = static_cast<bool>(windowRoot.try_as<winrt::Canvas>());
-    bool walkedUpToScrollViewer = winrt::VisualTreeHelper::GetParent(windowRoot) &&
-        static_cast<bool>(ancestor.try_as<winrt::FxScrollViewer>());
+    bool walkedUpToScrollViewer =
+        winrt::VisualTreeHelper::GetParent(windowRoot) && static_cast<bool>(ancestor.try_as<winrt::FxScrollViewer>());
 
     // On MUX + RS3/RS4, it's possible XCB::OnConnected is called before visual tree is constructed and the ancestor walk returns a false elemenet.
     return windowContentIsCanvas || walkedUpToScrollViewer;
@@ -912,7 +899,7 @@ void RevealBrush::AttachLightsToElement(const winrt::UIElement& element, bool tr
         // When RevealBorderLight is in light theme it reports a different ID than in dark theme. RevealBorderBrush also has a
         // theme property and it will select the RevealBorderLight "light theme" or "dark theme" ID as appropriate.
         //
-        // In this way we can have the desired effect of different light configs in dark vs light theme but also support 
+        // In this way we can have the desired effect of different light configs in dark vs light theme but also support
         // subtrees that have different theme via FrameworkElement.RequestedTheme because the ThemeResource references to
         // RevealBorderBrush resources will choose the right brush and then those brushes will choose the right light.
         //
@@ -936,8 +923,8 @@ void RevealBrush::AttachLightsToElement(const winrt::UIElement& element, bool tr
 
         if (trackAsRootToDisconnectFrom)
         {
-            MaterialHelper::TrackRevealLightsToRemove(lights,
-                { *borderLightTheme, *wideBorderLightTheme, *borderDarkTheme, *wideBorderDarkTheme, *ambientLight });
+            MaterialHelper::TrackRevealLightsToRemove(
+                lights, { *borderLightTheme, *wideBorderLightTheme, *borderDarkTheme, *wideBorderDarkTheme, *ambientLight });
         }
     }
 }
@@ -947,7 +934,6 @@ void RevealBrush::AttachLightsToAncestor(const winrt::UIElement& root, bool trac
     auto ancestor = GetAncestor(root);
     AttachLightsToElement(ancestor, trackAsRootToDisconnectFrom);
 }
-
 
 #if BUILD_WINDOWS
 void RevealBrush::AttachLightsToIsland(const winrt::XamlIsland& island)
@@ -973,7 +959,7 @@ void RevealBrush::AttachLightsToIsland(const winrt::XamlIsland& island)
         // When RevealBorderLight is in light theme it reports a different ID than in dark theme. RevealBorderBrush also has a
         // theme property and it will select the RevealBorderLight "light theme" or "dark theme" ID as appropriate.
         //
-        // In this way we can have the desired effect of different light configs in dark vs light theme but also support 
+        // In this way we can have the desired effect of different light configs in dark vs light theme but also support
         // subtrees that have different theme via FrameworkElement.RequestedTheme because the ThemeResource references to
         // RevealBorderBrush resources will choose the right brush and then those brushes will choose the right light.
         //
@@ -996,15 +982,12 @@ void RevealBrush::AttachLightsToIsland(const winrt::XamlIsland& island)
         lights.Append(*ambientLight);
 
         MaterialHelper::TrackRevealLightsToRemoveIsland(
-            island,
-            lights,
-            { *borderLightTheme, *wideBorderLightTheme, *borderDarkTheme, *wideBorderDarkTheme, *ambientLight }
-        );
+            island, lights, { *borderLightTheme, *wideBorderLightTheme, *borderDarkTheme, *wideBorderDarkTheme, *ambientLight });
     }
 }
 #endif
 
-// If Reveal is enabled, GridViewItem/ListViewItem add two additional layers: 
+// If Reveal is enabled, GridViewItem/ListViewItem add two additional layers:
 //     RevealBackground and RevealBorderBrush
 // It has great performance degradation on Xbox
 // The workaround is if it's running on Xbox and it's not in MouseMode,
@@ -1024,7 +1007,6 @@ bool RevealBrush::IsInFallbackMode()
 #endif
 }
 
-
 #if BUILD_WINDOWS
 void RevealBrush::OnTransparencyPolicyChanged(const winrt::IMaterialProperties& sender, const winrt::IInspectable& /*args*/)
 {
@@ -1034,11 +1016,10 @@ void RevealBrush::OnTransparencyPolicyChanged(const winrt::IMaterialProperties& 
     if (m_dispatcherQueue)
     {
         com_ptr<RevealBrush> strongThis = get_strong();
-        m_dispatcherQueue.TryEnqueue(
-            winrt::Windows::System::DispatcherQueueHandler([strongThis, sender]()
-                {
-                    strongThis->PolicyStatusChangedHelper(MaterialHelper::BrushTemplates<RevealBrush>::IsDisabledByInAppTransparencyPolicy(strongThis.get()));
-                }));
+        m_dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler([strongThis, sender]() {
+            strongThis->PolicyStatusChangedHelper(
+                MaterialHelper::BrushTemplates<RevealBrush>::IsDisabledByInAppTransparencyPolicy(strongThis.get()));
+        }));
     }
 }
 
@@ -1048,9 +1029,7 @@ void RevealBrush::OnIslandTransformChanged(const winrt::CompositionIsland& sende
 }
 #endif
 
-void RevealBrush::OnIsContainerPropertyChanged(
-    const winrt::DependencyObject& sender,
-    const winrt::DependencyPropertyChangedEventArgs& args)
+void RevealBrush::OnIsContainerPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (auto elementSender = sender.try_as<winrt::IUIElement5>())
     {
@@ -1086,9 +1065,7 @@ void RevealBrush::OnIsContainerPropertyChanged(
     }
 }
 
-void RevealBrush::OnStatePropertyChanged(
-    const winrt::DependencyObject& sender,
-    const winrt::DependencyPropertyChangedEventArgs& args)
+void RevealBrush::OnStatePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args)
 {
     auto currentState = unbox_value<winrt::RevealBrushState>(args.OldValue());
     auto targetState = unbox_value<winrt::RevealBrushState>(args.NewValue());

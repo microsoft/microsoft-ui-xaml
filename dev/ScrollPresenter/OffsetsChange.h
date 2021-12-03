@@ -8,11 +8,7 @@
 class OffsetsChange : public ViewChange
 {
 public:
-    OffsetsChange(
-        double zoomedHorizontalOffset,
-        double zoomedVerticalOffset,
-        ScrollPresenterViewKind offsetsKind,
-        winrt::IInspectable const& options);
+    OffsetsChange(double zoomedHorizontalOffset, double zoomedVerticalOffset, ScrollPresenterViewKind offsetsKind, winrt::IInspectable const& options);
     ~OffsetsChange();
 
     double ZoomedHorizontalOffset() const
@@ -32,4 +28,3 @@ private:
     double m_zoomedHorizontalOffset{};
     double m_zoomedVerticalOffset{};
 };
-

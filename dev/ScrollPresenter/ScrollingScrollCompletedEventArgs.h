@@ -6,8 +6,7 @@
 #include "ScrollPresenter.h"
 #include "ScrollingScrollCompletedEventArgs.g.h"
 
-class ScrollingScrollCompletedEventArgs :
-    public winrt::implementation::ScrollingScrollCompletedEventArgsT<ScrollingScrollCompletedEventArgs>
+class ScrollingScrollCompletedEventArgs : public winrt::implementation::ScrollingScrollCompletedEventArgsT<ScrollingScrollCompletedEventArgs>
 {
 public:
     ScrollingScrollCompletedEventArgs()

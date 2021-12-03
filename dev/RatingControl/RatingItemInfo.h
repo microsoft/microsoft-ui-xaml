@@ -5,7 +5,6 @@
 
 #include "RatingItemInfo.g.h"
 
-class RatingItemInfo :
-    public ReferenceTracker<RatingItemInfo, winrt::implementation::RatingItemInfoT>
+class RatingItemInfo : public ReferenceTracker<RatingItemInfo, winrt::implementation::RatingItemInfoT>
 {
 };

@@ -35,7 +35,7 @@ winrt::ResourceMap ResourceAccessor::GetResourceMap()
     return packageResourceMap.GetSubtree(ResourceAccessor::c_resourceLoc);
 }
 
-winrt::hstring ResourceAccessor::GetLocalizedStringResource(const wstring_view &resourceName)
+winrt::hstring ResourceAccessor::GetLocalizedStringResource(const wstring_view& resourceName)
 {
     static winrt::ResourceMap s_resourceMap = GetResourceMap();
     static winrt::ResourceContext s_resourceContext = winrt::ResourceContext::GetForViewIndependentUse();
@@ -47,7 +47,6 @@ winrt::hstring ResourceAccessor::GetLocalizedStringResource(const wstring_view &
 winrt::hstring ResourceAccessor::GetLocalizedStringResourceFromWinUI(const wstring_view& resourceName)
 {
     static winrt::ResourceMap s_resourceMapWinUI = []() {
-
         constexpr wchar_t c_winUIPackageNamePrefix[] = L"Microsoft.UI.Xaml.";
         constexpr size_t c_winUIPackageNamePrefixLength = ARRAYSIZE(c_winUIPackageNamePrefix) - 1;
 
@@ -70,20 +69,23 @@ winrt::hstring ResourceAccessor::GetLocalizedStringResourceFromWinUI(const wstri
 }
 #endif
 
-winrt::LoadedImageSurface ResourceAccessor::GetImageSurface(const wstring_view &assetName, winrt::Size imageSize)
+winrt::LoadedImageSurface ResourceAccessor::GetImageSurface(const wstring_view& assetName, winrt::Size imageSize)
 {
     auto imageUri = [assetName]() {
         if (SharedHelpers::IsInFrameworkPackage())
         {
-            return winrt::Uri{ std::wstring(L"ms-resource://" MUXCONTROLS_PACKAGE_NAME "/Files/Microsoft.UI.Xaml/Assets/") + std::wstring(assetName.data()) + std::wstring(L".png")  };
+            return winrt::Uri{ std::wstring(L"ms-resource://" MUXCONTROLS_PACKAGE_NAME "/Files/Microsoft.UI.Xaml/Assets/") +
+                               std::wstring(assetName.data()) + std::wstring(L".png") };
         }
         else if (SharedHelpers::IsInCBSPackage())
         {
-            return winrt::Uri{ std::wstring(L"ms-resource://" MUXCONTROLS_CBS_PACKAGE_NAME "/Files/Microsoft.UI.Xaml/Assets/") + std::wstring(assetName.data()) + std::wstring(L".png")  };
+            return winrt::Uri{ std::wstring(L"ms-resource://" MUXCONTROLS_CBS_PACKAGE_NAME "/Files/Microsoft.UI.Xaml/Assets/") +
+                               std::wstring(assetName.data()) + std::wstring(L".png") };
         }
         else
         {
-            return winrt::Uri{ std::wstring(L"ms-resource:///Files/Microsoft.UI.Xaml/Assets/") + std::wstring(assetName.data()) + std::wstring(L".png") };
+            return winrt::Uri{ std::wstring(L"ms-resource:///Files/Microsoft.UI.Xaml/Assets/") + std::wstring(assetName.data()) +
+                               std::wstring(L".png") };
         }
     }();
     return winrt::LoadedImageSurface::StartLoadFromUri(imageUri, imageSize);

@@ -7,9 +7,9 @@
 
 class ItemsRepeater;
 
-// Manages the virtualization windows (visible/realization). This class essentially is 
-// does the equivalent behavior as ViewportManager class except that here we use 
-// EffectiveViewport and ScrollAnchoring features added to the framework in RS5. 
+// Manages the virtualization windows (visible/realization). This class essentially is
+// does the equivalent behavior as ViewportManager class except that here we use
+// EffectiveViewport and ScrollAnchoring features added to the framework in RS5.
 // We also do not use the IRepeaterScrollingSurface internal API used by ViewManager.
 // Not that this class is used when built in the OS build (under wuxc) and ViewManager
 // is used when building in MUX to keep down level support.
@@ -20,18 +20,30 @@ public:
 
     winrt::UIElement SuggestedAnchor() const override;
 
-    double HorizontalCacheLength() const override { return m_maximumHorizontalCacheLength; }
+    double HorizontalCacheLength() const override
+    {
+        return m_maximumHorizontalCacheLength;
+    }
     void HorizontalCacheLength(double value) override;
 
-    double VerticalCacheLength() const override { return m_maximumVerticalCacheLength; }
+    double VerticalCacheLength() const override
+    {
+        return m_maximumVerticalCacheLength;
+    }
     void VerticalCacheLength(double value) override;
 
     winrt::Rect GetLayoutVisibleWindow() const override;
     winrt::Rect GetLayoutRealizationWindow() const override;
 
     void SetLayoutExtent(winrt::Rect extent) override;
-    winrt::Rect GetLayoutExtent() const override { return m_layoutExtent; }
-    winrt::Point GetOrigin() const override { return winrt::Point(m_layoutExtent.X, m_layoutExtent.Y); }
+    winrt::Rect GetLayoutExtent() const override
+    {
+        return m_layoutExtent;
+    }
+    winrt::Point GetOrigin() const override
+    {
+        return winrt::Point(m_layoutExtent.X, m_layoutExtent.Y);
+    }
 
     void OnLayoutChanged(bool isVirtualizing) override;
     void OnElementPrepared(const winrt::UIElement& element) override;
@@ -43,7 +55,10 @@ public:
 
     void ResetScrollers() override;
 
-    winrt::UIElement MadeAnchor() const override { return m_makeAnchorElement.get(); }
+    winrt::UIElement MadeAnchor() const override
+    {
+        return m_makeAnchorElement.get();
+    }
 
 private:
     struct ScrollerInfo;
@@ -53,7 +68,10 @@ private:
     void OnLayoutUpdated(winrt::IInspectable const& sender, winrt::IInspectable const& args);
 
     void EnsureScroller();
-    bool HasScroller() const { return m_scroller != nullptr; }
+    bool HasScroller() const
+    {
+        return m_scroller != nullptr;
+    }
     void UpdateViewport(winrt::Rect const& args);
     void ResetCacheBuffer();
     void ValidateCacheLength(double cacheLength);
@@ -71,7 +89,7 @@ private:
     tracker_ref<winrt::Controls::IScrollAnchorProvider> m_scroller;
 
     tracker_ref<winrt::UIElement> m_makeAnchorElement;
-    bool m_isAnchorOutsideRealizedRange{};  // Value is only valid when m_makeAnchorElement is set.
+    bool m_isAnchorOutsideRealizedRange{}; // Value is only valid when m_makeAnchorElement is set.
 
     tracker_ref<winrt::IAsyncAction> m_cacheBuildAction;
 
@@ -79,7 +97,7 @@ private:
     winrt::Rect m_layoutExtent{};
     // This is the expected shift by the layout.
     winrt::Point m_expectedViewportShift{};
-    // This is what is pending and not been accounted for. 
+    // This is what is pending and not been accounted for.
     // Sometimes the scrolling surface cannot service a shift (for example
     // it is already at the top and cannot shift anymore.)
     winrt::Point m_pendingViewportShift{};
@@ -89,14 +107,13 @@ private:
     // in the parent chain can scroll in the shift direction.
     winrt::Point m_unshiftableShift{};
 
-
     // Realization window cache fields
     double m_maximumHorizontalCacheLength{ 2.0 };
     double m_maximumVerticalCacheLength{ 2.0 };
     double m_horizontalCacheBufferPerSide{};
     double m_verticalCacheBufferPerSide{};
 
-    bool m_isBringIntoViewInProgress{false};
+    bool m_isBringIntoViewInProgress{ false };
     // For non-virtualizing layouts, we do not need to keep
     // updating viewports and invalidating measure often. So when
     // a non virtualizing layout is used, we stop doing all that work.

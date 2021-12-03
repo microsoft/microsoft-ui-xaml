@@ -6,8 +6,7 @@
 #include "ScrollView.h"
 #include "ScrollViewTestHooks.g.h"
 
-class ScrollViewTestHooks :
-    public winrt::implementation::ScrollViewTestHooksT<ScrollViewTestHooks>
+class ScrollViewTestHooks : public winrt::implementation::ScrollViewTestHooksT<ScrollViewTestHooks>
 {
 public:
     static com_ptr<ScrollViewTestHooks> GetGlobalTestHooks()

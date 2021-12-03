@@ -5,8 +5,8 @@
 
 #include "ScrollControllerScrollByRequestedEventArgs.g.h"
 
-class ScrollControllerScrollByRequestedEventArgs :
-    public winrt::implementation::ScrollControllerScrollByRequestedEventArgsT<ScrollControllerScrollByRequestedEventArgs>
+class ScrollControllerScrollByRequestedEventArgs
+    : public winrt::implementation::ScrollControllerScrollByRequestedEventArgsT<ScrollControllerScrollByRequestedEventArgs>
 {
 public:
     ~ScrollControllerScrollByRequestedEventArgs()
@@ -14,9 +14,7 @@ public:
         SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ScrollControllerScrollByRequestedEventArgs(
-        double offsetDelta,
-        winrt::ScrollingScrollOptions const & options);
+    ScrollControllerScrollByRequestedEventArgs(double offsetDelta, winrt::ScrollingScrollOptions const& options);
 
     double OffsetDelta() const;
     winrt::ScrollingScrollOptions Options() const;

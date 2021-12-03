@@ -6,8 +6,7 @@
 #include "ScrollPresenter.h"
 #include "ScrollingZoomOptions.g.h"
 
-class ScrollingZoomOptions :
-    public winrt::implementation::ScrollingZoomOptionsT<ScrollingZoomOptions>
+class ScrollingZoomOptions : public winrt::implementation::ScrollingZoomOptionsT<ScrollingZoomOptions>
 {
 public:
     ScrollingZoomOptions(winrt::ScrollingAnimationMode const& animationMode);
@@ -31,4 +30,3 @@ private:
     winrt::ScrollingAnimationMode m_animationMode{ s_defaultAnimationMode };
     winrt::ScrollingSnapPointsMode m_snapPointsMode{ s_defaultSnapPointsMode };
 };
-

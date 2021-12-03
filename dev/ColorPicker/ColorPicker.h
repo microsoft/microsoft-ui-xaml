@@ -11,9 +11,7 @@
 
 #include "ColorPicker.properties.h"
 
-class ColorPicker : 
-    public ReferenceTracker<ColorPicker, winrt::implementation::ColorPickerT>,
-    public ColorPickerProperties
+class ColorPicker : public ReferenceTracker<ColorPicker, winrt::implementation::ColorPickerT>, public ColorPickerProperties
 {
 public:
     ColorPicker();
@@ -24,7 +22,10 @@ public:
     // Property changed handler.
     void OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
-    Hsv & GetCurrentHsv() { return m_currentHsv; }
+    Hsv& GetCurrentHsv()
+    {
+        return m_currentHsv;
+    }
 
 private:
     // DependencyProperty changed event handlers
@@ -101,8 +102,8 @@ private:
     };
 
     void InitializeColor();
-    void UpdateColor(const Rgb &rgb, ColorUpdateReason reason);
-    void UpdateColor(const Hsv &hsv, ColorUpdateReason reason);
+    void UpdateColor(const Rgb& rgb, ColorUpdateReason reason);
+    void UpdateColor(const Hsv& hsv, ColorUpdateReason reason);
     void UpdateColor(double alpha, ColorUpdateReason reason);
     void SetColorAndUpdateControls(ColorUpdateReason reason);
 
@@ -121,7 +122,7 @@ private:
     Hsv GetHsvColorFromTextBoxes();
     winrt::hstring GetCurrentHexValue();
 
-    Rgb ApplyConstraintsToRgbColor(const Rgb &rgb);
+    Rgb ApplyConstraintsToRgbColor(const Rgb& rgb);
 
     void UpdateMoreButton();
 
@@ -159,7 +160,7 @@ private:
 
     tracker_ref<winrt::ButtonBase> m_moreButton{ this };
     tracker_ref<winrt::TextBlock> m_moreButtonLabel{ this };
-    
+
     tracker_ref<winrt::ComboBox> m_colorRepresentationComboBox{ this };
     tracker_ref<winrt::TextBox> m_redTextBox{ this };
     tracker_ref<winrt::TextBox> m_greenTextBox{ this };

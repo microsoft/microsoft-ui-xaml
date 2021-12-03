@@ -6,9 +6,7 @@
 #include "ButtonInteraction.g.h"
 #include "ButtonInteraction.properties.h"
 
-class ButtonInteraction :
-    public ReferenceTracker<ButtonInteraction, winrt::implementation::ButtonInteractionT>,
-    public ButtonInteractionProperties
+class ButtonInteraction : public ReferenceTracker<ButtonInteraction, winrt::implementation::ButtonInteractionT>, public ButtonInteractionProperties
 {
 public:
     // IButtonInteraction

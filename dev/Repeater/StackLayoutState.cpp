@@ -9,9 +9,7 @@
 
 #include "StackLayoutState.properties.cpp"
 
-void StackLayoutState::InitializeForContext(
-    const winrt::VirtualizingLayoutContext& context,
-    IFlowLayoutAlgorithmDelegates* callbacks)
+void StackLayoutState::InitializeForContext(const winrt::VirtualizingLayoutContext& context, IFlowLayoutAlgorithmDelegates* callbacks)
 {
     m_flowAlgorithm.InitializeForContext(context, callbacks);
     if (m_estimationBuffer.size() == 0)

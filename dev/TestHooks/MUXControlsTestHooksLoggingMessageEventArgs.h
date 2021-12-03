@@ -17,6 +17,6 @@ public:
     bool IsVerboseLevel();
 
 private:
-    winrt::hstring m_message{ };
+    winrt::hstring m_message{};
     bool m_isVerboseLevel{ false };
 };

@@ -25,22 +25,12 @@ public:
     void SetIgnoredValue(double ignoredValue);
 
     winrt::ExpressionAnimation CreateRestingPointExpression(
-        winrt::InteractionTracker const& interactionTracker,
-        winrt::hstring const& target,
-        winrt::hstring const& scale,
-        bool isInertiaFromImpulse);
+        winrt::InteractionTracker const& interactionTracker, winrt::hstring const& target, winrt::hstring const& scale, bool isInertiaFromImpulse);
     winrt::ExpressionAnimation CreateConditionalExpression(
-        winrt::InteractionTracker const& interactionTracker,
-        winrt::hstring const& target,
-        winrt::hstring const& scale,
-        bool isInertiaFromImpulse);
+        winrt::InteractionTracker const& interactionTracker, winrt::hstring const& target, winrt::hstring const& scale, bool isInertiaFromImpulse);
     std::tuple<winrt::ExpressionAnimation, winrt::ExpressionAnimation> GetUpdatedExpressionAnimationsForImpulse();
-    std::tuple<winrt::ExpressionAnimation, winrt::ExpressionAnimation> GetUpdatedExpressionAnimationsForImpulse(
-        bool isInertiaFromImpulse);
-    void DetermineActualApplicableZone(
-        const SnapPointWrapper<T>* previousSnapPointWrapper,
-        const SnapPointWrapper<T>* nextSnapPointWrapper,
-        bool forImpulseOnly);
+    std::tuple<winrt::ExpressionAnimation, winrt::ExpressionAnimation> GetUpdatedExpressionAnimationsForImpulse(bool isInertiaFromImpulse);
+    void DetermineActualApplicableZone(const SnapPointWrapper<T>* previousSnapPointWrapper, const SnapPointWrapper<T>* nextSnapPointWrapper, bool forImpulseOnly);
     void Combine(const SnapPointWrapper<T>* snapPointWrapper);
     double Evaluate(double value) const;
     bool SnapsAt(double value) const;
@@ -48,7 +38,7 @@ public:
     static SnapPointBase* GetSnapPointFromWrapper(std::shared_ptr<SnapPointWrapper<T>> snapPointWrapper);
 
 private:
-	static SnapPointBase* GetSnapPointFromWrapper(const SnapPointWrapper<T>* snapPointWrapper);
+    static SnapPointBase* GetSnapPointFromWrapper(const SnapPointWrapper<T>* snapPointWrapper);
 
 private:
     T m_snapPoint;

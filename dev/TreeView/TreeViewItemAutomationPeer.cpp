@@ -10,12 +10,11 @@
 
 #include "TreeViewItemAutomationPeer.properties.cpp"
 
-TreeViewItemAutomationPeer::TreeViewItemAutomationPeer(winrt::TreeViewItem const& owner) :
-    ReferenceTracker(owner)
+TreeViewItemAutomationPeer::TreeViewItemAutomationPeer(winrt::TreeViewItem const& owner) : ReferenceTracker(owner)
 {
 }
 
-// IExpandCollapseProvider 
+// IExpandCollapseProvider
 winrt::ExpandCollapseState TreeViewItemAutomationPeer::ExpandCollapseState()
 {
     auto targetNode = GetTreeViewNode();
@@ -26,7 +25,7 @@ winrt::ExpandCollapseState TreeViewItemAutomationPeer::ExpandCollapseState()
             return winrt::ExpandCollapseState::Expanded;
         }
         return winrt::ExpandCollapseState::Collapsed;
-    }   
+    }
     return winrt::ExpandCollapseState::LeafNode;
 }
 
@@ -73,7 +72,6 @@ winrt::IInspectable TreeViewItemAutomationPeer::GetPatternCore(winrt::PatternInt
     return __super::GetPatternCore(patternInterface);
 }
 
-
 winrt::AutomationControlType TreeViewItemAutomationPeer::GetAutomationControlTypeCore()
 {
     return winrt::AutomationControlType::TreeItem;
@@ -81,7 +79,7 @@ winrt::AutomationControlType TreeViewItemAutomationPeer::GetAutomationControlTyp
 
 winrt::hstring TreeViewItemAutomationPeer::GetNameCore()
 {
-    //Check to see if the item has a defined Automation Name
+    // Check to see if the item has a defined Automation Name
     winrt::hstring nameHString = __super::GetNameCore();
 
     if (nameHString.empty())

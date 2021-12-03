@@ -9,18 +9,14 @@
 #include "Layout.h"
 #include "NonVirtualizingLayout.h"
 
-class ColumnMajorUniformToLargestGridLayout :
-    public ReferenceTracker<ColumnMajorUniformToLargestGridLayout, winrt::implementation::ColumnMajorUniformToLargestGridLayoutT, NonVirtualizingLayout>,
-    public ColumnMajorUniformToLargestGridLayoutProperties
+class ColumnMajorUniformToLargestGridLayout
+    : public ReferenceTracker<ColumnMajorUniformToLargestGridLayout, winrt::implementation::ColumnMajorUniformToLargestGridLayoutT, NonVirtualizingLayout>,
+      public ColumnMajorUniformToLargestGridLayoutProperties
 {
 public:
     ColumnMajorUniformToLargestGridLayout() = default;
-    winrt::Size MeasureOverride(
-        winrt::NonVirtualizingLayoutContext const& context,
-        winrt::Size const& availableSize);
-    winrt::Size ArrangeOverride(
-        winrt::NonVirtualizingLayoutContext const& context,
-        winrt::Size const& finalSize);
+    winrt::Size MeasureOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& availableSize);
+    winrt::Size ArrangeOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& finalSize);
 
     void OnColumnSpacingPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&);
     void OnRowSpacingPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&);
@@ -28,7 +24,7 @@ public:
 
     static void ValidateGreaterThanZero(int value);
 
-    //Testhooks helpers, only function while m_testHooksEnabled == true
+    // Testhooks helpers, only function while m_testHooksEnabled == true
     void SetTestHooksEnabled(bool enabled);
     int GetRows();
     int GetColumns();
@@ -39,9 +35,9 @@ public:
 private:
     int CalculateColumns(int childCount, float maxItemWidth, float availableWidth);
     int m_actualColumnCount{ 1 };
-    winrt::Size m_largestChildSize{ 0,0 };
+    winrt::Size m_largestChildSize{ 0, 0 };
 
-    //Testhooks helpers, only function while m_testHooksEnabled == true
+    // Testhooks helpers, only function while m_testHooksEnabled == true
     bool m_testHooksEnabled{ false };
     winrt::event<winrt::TypedEventHandler<winrt::ColumnMajorUniformToLargestGridLayout, winrt::IInspectable>> m_layoutChangedEventSource;
 
@@ -49,4 +45,3 @@ private:
     int m_columns{ -1 };
     int m_largerColumns{ -1 };
 };
-

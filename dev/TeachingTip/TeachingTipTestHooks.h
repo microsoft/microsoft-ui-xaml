@@ -7,8 +7,7 @@
 
 #include "TeachingTipTestHooks.g.h"
 
-class TeachingTipTestHooks :
-    public winrt::implementation::TeachingTipTestHooksT<TeachingTipTestHooks>
+class TeachingTipTestHooks : public winrt::implementation::TeachingTipTestHooksT<TeachingTipTestHooks>
 {
 public:
     static com_ptr<TeachingTipTestHooks> GetGlobalTestHooks()

@@ -7,9 +7,9 @@
 #include "RecyclingElementFactory.g.h"
 #include "RecyclingElementFactory.properties.h"
 
-class RecyclingElementFactory :
-    public ReferenceTracker<RecyclingElementFactory, winrt::implementation::RecyclingElementFactoryT, ElementFactory>,
-    public RecyclingElementFactoryProperties
+class RecyclingElementFactory
+    : public ReferenceTracker<RecyclingElementFactory, winrt::implementation::RecyclingElementFactoryT, ElementFactory>,
+      public RecyclingElementFactoryProperties
 {
 public:
     RecyclingElementFactory();

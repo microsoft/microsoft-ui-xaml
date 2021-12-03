@@ -12,12 +12,10 @@
 #endif
 
 // Adds objects to CoreApplicationView.Properties so that they get destroyed accordingly and prevent potential deadlocks.
-class LifetimeHandler : 
-    public winrt::implements<LifetimeHandler, winrt::IInspectable>
+class LifetimeHandler : public winrt::implements<LifetimeHandler, winrt::IInspectable>
 {
 private:
-
-    // NoRef pointer to this thread's LifetimeHandler. 
+    // NoRef pointer to this thread's LifetimeHandler.
     // We let CoreApplicationView.Properties manage LifetimeHandler's lifetime.
     // This is intended to handle all com_ptrs and winrt objects stored in the TLS.
     // See Bug 14612819: Disconnecting UiaWindowNotifier blocks the loader lock, deadlocking ShellExperienceHost.
@@ -49,4 +47,3 @@ public:
     static com_ptr<DisplayRegionHelper> GetDisplayRegionHelperInstance();
 #endif
 };
-

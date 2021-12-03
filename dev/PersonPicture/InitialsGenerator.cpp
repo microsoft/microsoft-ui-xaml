@@ -26,7 +26,7 @@
 ///   -> If symbolic, use the first one or two characters of the string (decided by how squished it looks visually)
 ///      --> Note: This branch of the logic falls apart in the Family Name, Given Name case.
 /// </remarks>
-winrt::hstring InitialsGenerator::InitialsFromContactObject(const winrt::Contact &contact)
+winrt::hstring InitialsGenerator::InitialsFromContactObject(const winrt::Contact& contact)
 {
     if (!contact)
     {
@@ -70,7 +70,7 @@ winrt::hstring InitialsGenerator::InitialsFromContactObject(const winrt::Contact
     return winrt::hstring(L"");
 }
 
-winrt::hstring InitialsGenerator::InitialsFromDisplayName(const wstring_view &contactDisplayName)
+winrt::hstring InitialsGenerator::InitialsFromDisplayName(const wstring_view& contactDisplayName)
 {
     const CharacterType type = GetCharacterType(contactDisplayName);
 
@@ -97,7 +97,7 @@ winrt::hstring InitialsGenerator::InitialsFromDisplayName(const wstring_view &co
         else if (words.size() > 1)
         {
             // If there's at least two words, we'll show two initials.
-            // 
+            //
             // NOTE: Based on current implementation, we could be showing punctuation.
             // For example, "John -Smith" would be "J-".
             std::wstring firstWord = words.front();
@@ -123,7 +123,7 @@ winrt::hstring InitialsGenerator::InitialsFromDisplayName(const wstring_view &co
     }
 }
 
-std::wstring InitialsGenerator::GetFirstFullCharacter(const std::wstring &str)
+std::wstring InitialsGenerator::GetFirstFullCharacter(const std::wstring& str)
 {
     // Index should begin at the first desireable character.
     unsigned int start = 0;
@@ -187,7 +187,7 @@ std::wstring InitialsGenerator::GetFirstFullCharacter(const std::wstring &str)
     return result;
 }
 
-std::vector<std::wstring> InitialsGenerator::Split(const std::wstring &source, wchar_t delim, int maxIterations)
+std::vector<std::wstring> InitialsGenerator::Split(const std::wstring& source, wchar_t delim, int maxIterations)
 {
     std::vector<std::wstring> result;
 
@@ -210,7 +210,7 @@ std::vector<std::wstring> InitialsGenerator::Split(const std::wstring &source, w
     return result;
 }
 
-void InitialsGenerator::StripTrailingBrackets(std::wstring &source)
+void InitialsGenerator::StripTrailingBrackets(std::wstring& source)
 {
     // Guidance from the world readiness team is that text within a final set of brackets
     // can be removed for the purposes of calculating initials. ex. John Smith (OSG)
@@ -239,7 +239,7 @@ void InitialsGenerator::StripTrailingBrackets(std::wstring &source)
     }
 }
 
-CharacterType InitialsGenerator::GetCharacterType(const wstring_view &str)
+CharacterType InitialsGenerator::GetCharacterType(const wstring_view& str)
 {
     // Since we're doing initials, we're really only interested in the first
     // few characters. If the first three characters aren't a glyph then
@@ -280,7 +280,7 @@ CharacterType InitialsGenerator::GetCharacterType(const wstring_view &str)
             }
             break;
         default:
-            // Preserve result's current state (if we never got data other 
+            // Preserve result's current state (if we never got data other
             // than "Other", it'll be set to other anyway).
             break;
         }
@@ -422,7 +422,7 @@ CharacterType InitialsGenerator::GetCharacterType(wchar_t character)
         return CharacterType::Symbolic;
     }
 
-    // CJK Unified Ideographs Extension 
+    // CJK Unified Ideographs Extension
     if ((character >= 0x3400) && (character <= 0x4DBF))
     {
         return CharacterType::Symbolic;

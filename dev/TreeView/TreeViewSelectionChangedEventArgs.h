@@ -4,8 +4,8 @@
 #pragma once
 #include "TreeViewSelectionChangedEventArgs.g.h"
 
-class TreeViewSelectionChangedEventArgs :
-    public ReferenceTracker<TreeViewSelectionChangedEventArgs, winrt::implementation::TreeViewSelectionChangedEventArgsT, winrt::composing, winrt::composable>
+class TreeViewSelectionChangedEventArgs
+    : public ReferenceTracker<TreeViewSelectionChangedEventArgs, winrt::implementation::TreeViewSelectionChangedEventArgsT, winrt::composing, winrt::composable>
 {
 public:
     TreeViewSelectionChangedEventArgs(const winrt::IVector<winrt::IInspectable> addedItems, const winrt::IVector<winrt::IInspectable> removedItems);

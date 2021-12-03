@@ -7,9 +7,7 @@
 #include "PersonPicture.properties.h"
 #include "DispatcherHelper.h"
 
-class PersonPicture :
-    public ReferenceTracker<PersonPicture, winrt::implementation::PersonPictureT>,
-    public PersonPictureProperties
+class PersonPicture : public ReferenceTracker<PersonPicture, winrt::implementation::PersonPictureT>, public PersonPictureProperties
 {
 public:
     PersonPicture();
@@ -18,7 +16,7 @@ public:
     winrt::AutomationPeer OnCreateAutomationPeer();
 
     // Property changed handler.
-    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs &args);
+    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
     /// <summary>
@@ -49,7 +47,7 @@ private:
     /// <summary>
     /// Helper function to contain the calls to load and display a user's profile picture.
     /// </summary>
-    /// <param name="isNewContact"> 
+    /// <param name="isNewContact">
     /// Specifies if the target contact is to be handled as newContact.
     /// </param>
     void UpdateControlForContact(bool isNewContact);
@@ -70,17 +68,15 @@ private:
     winrt::ImageSource GetImageSource();
 
     // DependencyProperty changed event handlers
-    void OnDisplayNameChanged(const winrt::DependencyPropertyChangedEventArgs &args);
+    void OnDisplayNameChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnContactChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     // Event handlers
-    void OnSizeChanged(const winrt::IInspectable &sender, const winrt::SizeChangedEventArgs &e);
-    void OnUnloaded(const winrt::IInspectable &sender, const winrt::RoutedEventArgs &e);
+    void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& e);
+    void OnUnloaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& e);
 
     // Helper functions
-    void LoadImageAsync(
-        std::shared_ptr<winrt::IRandomAccessStreamReference> thumbStreamReference,
-        std::function<void(winrt::BitmapImage)> completedFunction);
+    void LoadImageAsync(std::shared_ptr<winrt::IRandomAccessStreamReference> thumbStreamReference, std::function<void(winrt::BitmapImage)> completedFunction);
 
     winrt::hstring PersonPicture::GetLocalizedPluralBadgeItemStringResource(unsigned int numericValue);
 
@@ -108,7 +104,7 @@ private:
     /// XAML Element for the first Ellipse matching x:Name of BadgingBackgroundEllipse.
     /// </summary>
     tracker_ref<winrt::Ellipse> m_badgingEllipse{ this };
-    
+
     /// <summary>
     /// XAML Element for the first Ellipse matching x:Name of BadgingEllipse.
     /// </summary>

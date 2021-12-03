@@ -14,11 +14,20 @@ public:
     winrt::UIElement Remove(int index);
     void Clear();
 
-    auto begin() const { return m_elementMap.begin(); }
-    auto end() const { return m_elementMap.end(); }
+    auto begin() const
+    {
+        return m_elementMap.begin();
+    }
+    auto end() const
+    {
+        return m_elementMap.end();
+    }
 
 #ifdef _DEBUG
-    auto IsEmpty() { return m_elementMap.size() == 0; }
+    auto IsEmpty()
+    {
+        return m_elementMap.size() == 0;
+    }
 #endif
 
 private:

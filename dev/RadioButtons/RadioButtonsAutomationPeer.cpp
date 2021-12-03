@@ -10,8 +10,7 @@
 
 #include "RadioButtonsAutomationPeer.properties.cpp"
 
-RadioButtonsAutomationPeer::RadioButtonsAutomationPeer(winrt::RadioButtons const& owner)
-    : ReferenceTracker(owner)
+RadioButtonsAutomationPeer::RadioButtonsAutomationPeer(winrt::RadioButtons const& owner) : ReferenceTracker(owner)
 {
 }
 

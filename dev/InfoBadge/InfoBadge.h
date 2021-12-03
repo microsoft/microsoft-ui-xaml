@@ -11,20 +11,21 @@
 #include "InfoBadge.g.h"
 #include "InfoBadge.properties.h"
 
-class InfoBadge :
-    public ReferenceTracker<InfoBadge, winrt::implementation::InfoBadgeT>,
-    public InfoBadgeProperties
+class InfoBadge : public ReferenceTracker<InfoBadge, winrt::implementation::InfoBadgeT>, public InfoBadgeProperties
 {
 
 public:
     InfoBadge();
-    ~InfoBadge() {}
+    ~InfoBadge()
+    {
+    }
 
     // IFrameworkElement
     void OnApplyTemplate();
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+
 private:
     void OnDisplayKindPropertiesChanged();
     void OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args);

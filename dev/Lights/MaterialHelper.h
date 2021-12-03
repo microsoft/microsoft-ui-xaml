@@ -33,8 +33,7 @@
 // To support this, the class was factored into MaterialHelperBase (shared functionality), and conditionally compiled
 // derived MaterialHelper (New vs legacy functionality).
 
-class MaterialHelperBase :
-    public winrt::implements<MaterialHelperBase, winrt::IInspectable>
+class MaterialHelperBase : public winrt::implements<MaterialHelperBase, winrt::IInspectable>
 {
 public:
     static void SimulateDisabledByPolicy(bool value);
@@ -57,17 +56,14 @@ public:
         std::function<winrt::CompositionEffectFactory()> cacheMissingCallback);
 
     static winrt::CompositionEffectFactory GetOrCreateRevealBrushCompositionEffectFactoryFromCache(
-        bool isBorder,
-        bool isInverted,
-        bool hasBaseColor,
-        std::function<winrt::CompositionEffectFactory()> cacheMissingCallback);
+        bool isBorder, bool isInverted, bool hasBaseColor, std::function<winrt::CompositionEffectFactory()> cacheMissingCallback);
 
-    template <typename T> static void LightPolicyChangedHelper(T* instance, bool isDisabledByMaterialPolicy);
+    template <typename T>
+    static void LightPolicyChangedHelper(T* instance, bool isDisabledByMaterialPolicy);
 
     // Number of connected RevealBrushes in the tree (i.e. # of brushes that need lights)
     int m_revealBrushConnectedCount{};
     std::vector<std::pair<winrt::IVector<winrt::XamlLight>, std::vector<winrt::XamlLight>>> m_revealLightsToRemove;
-
 
     enum AcrylicBrushCacheHelperParam
     {
@@ -91,8 +87,7 @@ public:
     void AssertUniqueCompositorOrUpdate(const winrt::Compositor& compositor);
 
     // cache storage for AcrylicBrushEffectory
-    std::array<winrt::ICompositionEffectFactory, AcrylicBrushCacheHelperParam::MaxCacheSize>
-        m_acrylicBrushCompositionEffectFactoryCache;
+    std::array<winrt::ICompositionEffectFactory, AcrylicBrushCacheHelperParam::MaxCacheSize> m_acrylicBrushCompositionEffectFactoryCache;
 
     // This is only a defensive assert to check that Compositor should be the same in the same thread
     // m_acrylicCompositor is used keep a copy of it and then assert in each following query.
@@ -100,15 +95,13 @@ public:
     winrt::Compositor m_acrylicCompositor{ nullptr };
 
     // Reveal
-    std::array<winrt::ICompositionEffectFactory, (size_t)RevealBrushCacheFlags::MaxCacheSize>
-        m_revealBrushCompositionEffectFactoryCache;
+    std::array<winrt::ICompositionEffectFactory, (size_t)RevealBrushCacheFlags::MaxCacheSize> m_revealBrushCompositionEffectFactoryCache;
 
     winrt::CompositionSurfaceBrush CreateScaledBrush(int dpiScale);
 
 protected:
-    bool m_simulateDisabledByPolicy{};   // Test use only: Simulate that material is disabled by policy - for test use only
-    bool m_ignoreAreEffectsFast{};       // Test use only: Ignore CompositionCapabilities.AreEffectFasts so tests can get Neon on VMs
-
+    bool m_simulateDisabledByPolicy{}; // Test use only: Simulate that material is disabled by policy - for test use only
+    bool m_ignoreAreEffectsFast{}; // Test use only: Ignore CompositionCapabilities.AreEffectFasts so tests can get Neon on VMs
 };
 
 #if BUILD_WINDOWS
@@ -149,7 +142,7 @@ public:
         static bool IsDisabledByHostBackdropTransparencyPolicy(T* instance);
     };
 
-    virtual ~MaterialHelper() {};
+    virtual ~MaterialHelper(){};
 
     static winrt::CompositionSurfaceBrush GetNoiseBrush(int dpiScale);
 
@@ -158,11 +151,12 @@ public:
 
     static void OnRevealBrushConnectedIsland(const winrt::XamlIsland& island);
     static void OnRevealBrushDisconnectedIsland(const winrt::XamlIsland& island);
-    static void TrackRevealLightsToRemoveIsland(const winrt::XamlIsland& island, const winrt::IVector<winrt::XamlLight>& lights, const std::vector<winrt::XamlLight>& revealLightsToRemove);
+    static void TrackRevealLightsToRemoveIsland(
+        const winrt::XamlIsland& island, const winrt::IVector<winrt::XamlLight>& lights, const std::vector<winrt::XamlLight>& revealLightsToRemove);
 
     // Notifies listeners of policy changes due to factors outside of materialProperties such, including test overrides or failure to create lights.
     static winrt::event_token AdditionalPolicyChanged(const std::function<void(const com_ptr<MaterialHelperBase>&)>& handler);
-    static void  AdditionalPolicyChanged(winrt::event_token removeToken);
+    static void AdditionalPolicyChanged(winrt::event_token removeToken);
     void NotifyAdditionalPolicyChangedListeners();
 
 protected:
@@ -192,10 +186,10 @@ public:
     static void PolicyChanged(winrt::event_token removeToken);
 
     static winrt::event_token WindowSizeChanged(const std::function<void(const com_ptr<MaterialHelperBase>&, bool)>& handler);
-    static void  WindowSizeChanged(winrt::event_token removeToken);
+    static void WindowSizeChanged(winrt::event_token removeToken);
 
     static winrt::event_token NoiseChanged(const std::function<void(const com_ptr<MaterialHelperBase>&)>& handler);
-    static void  NoiseChanged(winrt::event_token removeToken);
+    static void NoiseChanged(winrt::event_token removeToken);
 
     static winrt::CompositionSurfaceBrush GetNoiseBrush();
     static bool RS2IsSafeToCreateNoise();
@@ -251,8 +245,8 @@ private:
     winrt::ViewManagement::ApplicationView m_applicationView{ nullptr };
     winrt::ViewManagement::UIViewSettings m_uiViewSettings{ nullptr };
 
-    bool m_wasWindowHidden{};                           // True if we've received CoreWindow.VisiblityChanged w/ Visibility == false
-    bool m_waitingForRenderingAfterBecomingVisible{};   // True if we got a VisibilityChanged(True) and are waiting for a CT.Rendering to complete the RS2 workaround for Bug 11159685
+    bool m_wasWindowHidden{}; // True if we've received CoreWindow.VisiblityChanged w/ Visibility == false
+    bool m_waitingForRenderingAfterBecomingVisible{}; // True if we got a VisibilityChanged(True) and are waiting for a CT.Rendering to complete the RS2 workaround for Bug 11159685
     bool m_energySaverStatusChangedRevokerValid{};
     bool m_isFullScreenModeValid{};
     bool m_isFullScreenMode{};
@@ -263,7 +257,7 @@ private:
 
     winrt::Window m_currentWindow{ nullptr };
 
-    // On RS4 and lower, Bug 18005612 is not fixed and we may need to re-try light attachment on CT.Rendering event. 
+    // On RS4 and lower, Bug 18005612 is not fixed and we may need to re-try light attachment on CT.Rendering event.
     // This flag ensures that we only attempt to attach the lights once per tick (in case 1st reveal brush re-enters tree on same tick).
     bool m_shouldBeginAttachingLights{};
 

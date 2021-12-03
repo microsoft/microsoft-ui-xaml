@@ -10,8 +10,7 @@
 
 #include "ProgressRingAutomationPeer.properties.cpp"
 
-ProgressRingAutomationPeer::ProgressRingAutomationPeer(winrt::ProgressRing const& owner)
-    : ReferenceTracker(owner)
+ProgressRingAutomationPeer::ProgressRingAutomationPeer(winrt::ProgressRing const& owner) : ReferenceTracker(owner)
 {
 }
 
@@ -32,7 +31,7 @@ winrt::hstring ProgressRingAutomationPeer::GetClassNameCore()
 
 winrt::hstring ProgressRingAutomationPeer::GetNameCore()
 {
-    //Check to see if the item has a defined AutomationProperties.Name
+    // Check to see if the item has a defined AutomationProperties.Name
     winrt::hstring name = __super::GetNameCore();
 
     if (auto progressRing = Owner().try_as<winrt::ProgressRing>())

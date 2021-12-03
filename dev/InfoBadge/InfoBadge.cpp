@@ -49,8 +49,7 @@ void InfoBadge::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArg
         }
     }
 
-    if (property == winrt::InfoBadge::ValueProperty() ||
-             property == winrt::InfoBadge::IconSourceProperty())
+    if (property == winrt::InfoBadge::ValueProperty() || property == winrt::InfoBadge::IconSourceProperty())
     {
         OnDisplayKindPropertiesChanged();
     }
@@ -61,7 +60,7 @@ void InfoBadge::OnDisplayKindPropertiesChanged()
     winrt::Control const thisAsControl = *this;
     if (Value() >= 0)
     {
-    winrt::VisualStateManager::GoToState(thisAsControl, L"Value", true);
+        winrt::VisualStateManager::GoToState(thisAsControl, L"Value", true);
     }
     else if (auto const iconSource = IconSource())
     {
@@ -81,11 +80,9 @@ void InfoBadge::OnDisplayKindPropertiesChanged()
     }
 }
 
-
 void InfoBadge::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args)
 {
-    auto const value = [this]()
-    {
+    auto const value = [this]() {
         auto const cornerRadiusValue = ActualHeight() / 2;
         if (SharedHelpers::IsRS5OrHigher())
         {

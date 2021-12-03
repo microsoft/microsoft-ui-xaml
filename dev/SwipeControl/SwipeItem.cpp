@@ -24,7 +24,6 @@ SwipeItem::SwipeItem()
 
 #pragma endregion
 
-
 void SwipeItem::InvokeSwipe(const winrt::SwipeControl& swipeControl)
 {
     auto eventArgs = winrt::make_self<SwipeItemInvokedEventArgs>();
@@ -42,8 +41,7 @@ void SwipeItem::InvokeSwipe(const winrt::SwipeControl& swipeControl)
         }
     }
     // It stays open when onInvoked is expand.
-    if (BehaviorOnInvoked() == winrt::SwipeBehaviorOnInvoked::Close ||
-        BehaviorOnInvoked() == winrt::SwipeBehaviorOnInvoked::Auto)
+    if (BehaviorOnInvoked() == winrt::SwipeBehaviorOnInvoked::Close || BehaviorOnInvoked() == winrt::SwipeBehaviorOnInvoked::Auto)
     {
         swipeControl.Close();
     }
@@ -88,21 +86,20 @@ void SwipeItem::GenerateControl(const winrt::AppBarButton& appBarButton, const w
     AttachEventHandlers(appBarButton);
 }
 
-
 void SwipeItem::AttachEventHandlers(const winrt::AppBarButton& appBarButton)
 {
     auto weakThis = get_weak();
     appBarButton.Tapped({ [weakThis](auto& sender, auto& args) {
-        if (auto temp = weakThis.get()) temp->OnItemTapped(sender, args);
+        if (auto temp = weakThis.get())
+            temp->OnItemTapped(sender, args);
     } });
     appBarButton.PointerPressed({ [weakThis](auto& sender, auto& args) {
-        if (auto temp = weakThis.get()) temp->OnPointerPressed(sender, args);
+        if (auto temp = weakThis.get())
+            temp->OnPointerPressed(sender, args);
     } });
 }
 
-void SwipeItem::OnItemTapped(
-    const winrt::IInspectable& sender,
-    const winrt::TappedRoutedEventArgs& args)
+void SwipeItem::OnItemTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args)
 {
     auto current = winrt::VisualTreeHelper::GetParent(sender.try_as<winrt::DependencyObject>());
     while (current)
@@ -117,9 +114,7 @@ void SwipeItem::OnItemTapped(
     }
 }
 
-void SwipeItem::OnPointerPressed(
-    const winrt::IInspectable& /*sender*/,
-    const winrt::PointerRoutedEventArgs& args)
+void SwipeItem::OnPointerPressed(const winrt::IInspectable& /*sender*/, const winrt::PointerRoutedEventArgs& args)
 {
     if (args.Pointer().PointerDeviceType() == winrt::Devices::Input::PointerDeviceType::Touch)
     {

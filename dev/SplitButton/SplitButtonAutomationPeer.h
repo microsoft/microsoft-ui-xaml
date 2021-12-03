@@ -6,8 +6,7 @@
 #include "SplitButton.h"
 #include "SplitButtonAutomationPeer.g.h"
 
-class SplitButtonAutomationPeer :
-    public ReferenceTracker<SplitButtonAutomationPeer, winrt::implementation::SplitButtonAutomationPeerT>
+class SplitButtonAutomationPeer : public ReferenceTracker<SplitButtonAutomationPeer, winrt::implementation::SplitButtonAutomationPeerT>
 {
 
 public:
@@ -29,4 +28,3 @@ public:
 private:
     com_ptr<SplitButton> GetImpl();
 };
-

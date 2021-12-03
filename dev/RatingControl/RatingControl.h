@@ -27,9 +27,7 @@ enum class RatingInfoType
     Image
 };
 
-class RatingControl : 
-    public ReferenceTracker<RatingControl, winrt::implementation::RatingControlT>,
-    public RatingControlProperties
+class RatingControl : public ReferenceTracker<RatingControl, winrt::implementation::RatingControlT>, public RatingControlProperties
 {
 public:
     RatingControl();
@@ -77,7 +75,7 @@ private:
     void OnPointerEnteredBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPointerExitedBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void PointerExitedImpl(const winrt::PointerRoutedEventArgs& args, bool resetScaleAnimation = true);
-    void OnPointerPressedBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args); 
+    void OnPointerPressedBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPointerReleasedBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnTextScaleFactorChanged(const winrt::UISettings& setting, const winrt::IInspectable& args);
 
@@ -134,7 +132,7 @@ private:
     winrt::CompositionPropertySet m_sharedPointerPropertySet{ nullptr };
 
     tracker_ref<winrt::StackPanel> m_backgroundStackPanel{ this };
-    tracker_ref<winrt::StackPanel> m_foregroundStackPanel{ this }; 
+    tracker_ref<winrt::StackPanel> m_foregroundStackPanel{ this };
 
     bool m_isPointerOver{ false };
     bool m_isPointerDown{ false };

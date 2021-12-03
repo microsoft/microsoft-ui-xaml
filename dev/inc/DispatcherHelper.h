@@ -7,7 +7,6 @@
 class DispatcherHelper
 {
 public:
-
     DispatcherHelper(const winrt::DependencyObject& dependencyObject = nullptr)
     {
         if (SharedHelpers::IsDispatcherQueueAvailable())
@@ -45,8 +44,7 @@ public:
         {
             auto asyncOp = coreDispatcher.TryRunAsync(winrt::CoreDispatcherPriority::Normal, winrt::DispatchedHandler(func));
 
-            asyncOp.Completed([func, fallbackToThisThread](auto& asyncInfo, auto& asyncStatus)
-            {
+            asyncOp.Completed([func, fallbackToThisThread](auto& asyncInfo, auto& asyncStatus) {
                 bool reRunOnThisThread = false;
 
                 if (asyncStatus == winrt::AsyncStatus::Completed)

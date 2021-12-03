@@ -10,9 +10,7 @@
 #include "SharedHelpers.h"
 #include "NavigationViewAutomationPeer.properties.cpp"
 
-
-NavigationViewAutomationPeer::NavigationViewAutomationPeer(winrt::NavigationView const& owner) :
-    ReferenceTracker(owner)
+NavigationViewAutomationPeer::NavigationViewAutomationPeer(winrt::NavigationView const& owner) : ReferenceTracker(owner)
 {
 }
 

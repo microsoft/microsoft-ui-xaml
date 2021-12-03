@@ -10,8 +10,7 @@
 
 #include "PagerControlAutomationPeer.properties.cpp"
 
-PagerControlAutomationPeer::PagerControlAutomationPeer(winrt::PagerControl const& owner)
-    : ReferenceTracker(owner)
+PagerControlAutomationPeer::PagerControlAutomationPeer(winrt::PagerControl const& owner) : ReferenceTracker(owner)
 {
 }
 
@@ -76,7 +75,8 @@ void PagerControlAutomationPeer::RaiseSelectionChanged(double oldIndex, double n
 {
     if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
-        RaisePropertyChangedEvent(winrt::SelectionPatternIdentifiers::SelectionProperty(),
+        RaisePropertyChangedEvent(
+            winrt::SelectionPatternIdentifiers::SelectionProperty(),
             winrt::PropertyValue::CreateDouble(oldIndex),
             winrt::PropertyValue::CreateDouble(newIndex));
     }

@@ -8,14 +8,12 @@
 #include "RadialGradientBrush.g.h"
 #include "RadialGradientBrush.properties.h"
 
-class RadialGradientBrush :
-    public ReferenceTracker<RadialGradientBrush, winrt::implementation::RadialGradientBrushT>,
-    public RadialGradientBrushProperties
+class RadialGradientBrush : public ReferenceTracker<RadialGradientBrush, winrt::implementation::RadialGradientBrushT>, public RadialGradientBrushProperties
 {
 
 public:
     RadialGradientBrush();
-    ~RadialGradientBrush() {};
+    ~RadialGradientBrush(){};
 
     winrt::IObservableVector<winrt::GradientStop> GradientStops();
 
@@ -39,7 +37,8 @@ private:
     winrt::Collections::IObservableVector<winrt::GradientStop>::VectorChanged_revoker m_gradientStopsVectorChangedRevoker{};
     PropertyChanged_revoker m_fallbackColorChangedRevoker{};
 
-    void OnGradientStopsVectorChanged(winrt::Collections::IObservableVector<winrt::GradientStop> const& sender, winrt::Collections::IVectorChangedEventArgs const& e);
+    void OnGradientStopsVectorChanged(
+        winrt::Collections::IObservableVector<winrt::GradientStop> const& sender, winrt::Collections::IVectorChangedEventArgs const& e);
     void OnFallbackColorChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
     void EnsureCompositionBrush();

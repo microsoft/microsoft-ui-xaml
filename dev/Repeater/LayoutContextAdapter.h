@@ -7,8 +7,7 @@
 #include "VirtualizingLayoutContext.h"
 #include "NonvirtualizingLayoutContext.h"
 
-class LayoutContextAdapter :
-    public winrt::implements<LayoutContextAdapter, VirtualizingLayoutContext>
+class LayoutContextAdapter : public winrt::implements<LayoutContextAdapter, VirtualizingLayoutContext>
 {
 public:
     LayoutContextAdapter(winrt::NonVirtualizingLayoutContext const& nonVirtualizingContext);

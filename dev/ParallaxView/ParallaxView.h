@@ -8,9 +8,7 @@
 #include "ParallaxView.g.h"
 #include "ParallaxView.properties.h"
 
-class ParallaxView :
-    public ReferenceTracker<ParallaxView, DeriveFromPanelHelper_base, winrt::ParallaxView>,
-    public ParallaxViewProperties
+class ParallaxView : public ReferenceTracker<ParallaxView, DeriveFromPanelHelper_base, winrt::ParallaxView>, public ParallaxViewProperties
 {
 public:
     ParallaxView();
@@ -19,20 +17,17 @@ public:
 #pragma region IFrameworkElementOverridesHelper
     // IFrameworkElementOverrides (unoverridden methods provided by FrameworkElementOverridesHelper)
     winrt::Size MeasureOverride(winrt::Size const& availableSize); // not actually final for 'derived' classes
-    winrt::Size ArrangeOverride(winrt::Size const& finalSize); // not actually final for 'derived' classes
+    winrt::Size ArrangeOverride(winrt::Size const& finalSize);     // not actually final for 'derived' classes
 #pragma endregion
-
 
     void RefreshAutomaticHorizontalOffsets();
     void RefreshAutomaticVerticalOffsets();
 
     // Invoked when a dependency property of this ParallaxView has changed.
-    void OnPropertyChanged(
-        const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     // Invoked by ScrollInputHelper when a characteristic changes requires a re-evaluation of the parallaxing expression animations.
-    void OnScrollInputHelperInfoChanged(
-        bool horizontalInfoChanged, bool verticalInfoChanged);
+    void OnScrollInputHelperInfoChanged(bool horizontalInfoChanged, bool verticalInfoChanged);
 
 private:
     static bool IsVisualTranslationPropertyAvailable();

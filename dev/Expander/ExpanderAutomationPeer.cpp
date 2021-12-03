@@ -13,8 +13,7 @@
 // WPF ExpanderAutomationPeer:
 // https://github.com/dotnet/wpf/blob/main/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Automation/Peers/ExpanderAutomationPeer.cs
 
-ExpanderAutomationPeer::ExpanderAutomationPeer(winrt::Expander const& owner)
-    : ReferenceTracker(owner)
+ExpanderAutomationPeer::ExpanderAutomationPeer(winrt::Expander const& owner) : ReferenceTracker(owner)
 {
 }
 
@@ -86,7 +85,7 @@ winrt::AutomationPeer ExpanderAutomationPeer::GetPeerFromPointCore(winrt::Point 
         }
     }
 
-    return __super::GetPeerFromPointCore(point);    
+    return __super::GetPeerFromPointCore(point);
 }
 
 // We are going to take out the toggle button off the children, because we are setting
@@ -96,7 +95,7 @@ winrt::IVector<winrt::AutomationPeer> ExpanderAutomationPeer::GetChildrenCore()
 {
     auto childrenPeers = GetInner().as<winrt::IAutomationPeerOverrides>().GetChildrenCore();
     auto peers = winrt::make<Vector<winrt::AutomationPeer, MakeVectorParam<VectorFlag::DependencyObjectBase>()>>(
-                                        static_cast<int>(childrenPeers.Size() - 1) /* capacity */);
+        static_cast<int>(childrenPeers.Size() - 1) /* capacity */);
     for (auto peer : childrenPeers)
     {
         if (peer.GetAutomationId() != L"ExpanderToggleButton")
@@ -105,7 +104,7 @@ winrt::IVector<winrt::AutomationPeer> ExpanderAutomationPeer::GetChildrenCore()
         }
         else
         {
-            // If it is ExpanderToggleButton, we want to exclude it but add its children into the peer 
+            // If it is ExpanderToggleButton, we want to exclude it but add its children into the peer
             auto expanderToggleButtonChildrenPeers = peer.GetChildrenCore();
             for (auto expanderHeaderPeer : expanderToggleButtonChildrenPeers)
             {
@@ -117,16 +116,14 @@ winrt::IVector<winrt::AutomationPeer> ExpanderAutomationPeer::GetChildrenCore()
     return peers;
 }
 
-// IExpandCollapseProvider 
+// IExpandCollapseProvider
 
 winrt::ExpandCollapseState ExpanderAutomationPeer::ExpandCollapseState()
 {
     auto state = winrt::ExpandCollapseState::Collapsed;
     if (auto const expander = Owner().try_as<winrt::Expander>())
     {
-        state = expander.IsExpanded() ?
-            winrt::ExpandCollapseState::Expanded :
-            winrt::ExpandCollapseState::Collapsed;
+        state = expander.IsExpanded() ? winrt::ExpandCollapseState::Expanded : winrt::ExpandCollapseState::Collapsed;
     }
 
     return state;
@@ -138,7 +135,7 @@ void ExpanderAutomationPeer::Expand()
     {
         expander.IsExpanded(true);
         RaiseExpandCollapseAutomationEvent(winrt::ExpandCollapseState::Expanded);
-    }   
+    }
 }
 
 void ExpanderAutomationPeer::Collapse()
@@ -154,14 +151,13 @@ void ExpanderAutomationPeer::RaiseExpandCollapseAutomationEvent(winrt::ExpandCol
 {
     if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
-        const winrt::ExpandCollapseState oldState = (newState == winrt::ExpandCollapseState::Expanded) ?
-            winrt::ExpandCollapseState::Collapsed :
-            winrt::ExpandCollapseState::Expanded;
+        const winrt::ExpandCollapseState oldState = (newState == winrt::ExpandCollapseState::Expanded)
+                                                        ? winrt::ExpandCollapseState::Collapsed
+                                                        : winrt::ExpandCollapseState::Expanded;
 
         // if box_value(oldState) doesn't work here, use ReferenceWithABIRuntimeClassName to make Narrator unbox it.
-        RaisePropertyChangedEvent(winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty(),
-            box_value(oldState),
-            box_value(newState));
+        RaisePropertyChangedEvent(
+            winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty(), box_value(oldState), box_value(newState));
     }
 }
 

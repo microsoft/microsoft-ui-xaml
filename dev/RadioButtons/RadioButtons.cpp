@@ -36,14 +36,8 @@ RadioButtons::RadioButtons()
     // To ensure proper lifetime management we create revokers for these elements and attach
     // the revokers to the child radio button via this attached property.  This way, if/when the child
     // is cleaned up we will automatically revoke the handler.
-    s_childHandlersProperty =
-        InitializeDependencyProperty(
-            s_childHandlersPropertyName,
-            winrt::name_of<ChildHandlers>(),
-            winrt::name_of<winrt::RadioButtons>(),
-            true /* isAttached */,
-            nullptr,
-            nullptr);
+    s_childHandlersProperty = InitializeDependencyProperty(
+        s_childHandlersPropertyName, winrt::name_of<ChildHandlers>(), winrt::name_of<winrt::RadioButtons>(), true /* isAttached */, nullptr, nullptr);
 }
 
 winrt::AutomationPeer RadioButtons::OnCreateAutomationPeer()
@@ -51,21 +45,23 @@ winrt::AutomationPeer RadioButtons::OnCreateAutomationPeer()
     return winrt::make<RadioButtonsAutomationPeer>(*this);
 }
 
-
 void RadioButtons::OnApplyTemplate()
 {
     const winrt::IControlProtected controlProtected{ *this };
 
-    m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this,  &RadioButtons::OnIsEnabledChanged });
+    m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this, &RadioButtons::OnIsEnabledChanged });
 
     m_repeater.set([this, controlProtected]() {
         if (auto const repeater = GetTemplateChildT<winrt::ItemsRepeater>(s_repeaterName, controlProtected))
         {
             repeater.ItemTemplate(*m_radioButtonsElementFactory);
 
-            m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { this, &RadioButtons::OnRepeaterElementPrepared });
-            m_repeaterElementClearingRevoker = repeater.ElementClearing(winrt::auto_revoke, { this, &RadioButtons::OnRepeaterElementClearing });
-            m_repeaterElementIndexChangedRevoker = repeater.ElementIndexChanged(winrt::auto_revoke, { this, &RadioButtons::OnRepeaterElementIndexChanged });
+            m_repeaterElementPreparedRevoker =
+                repeater.ElementPrepared(winrt::auto_revoke, { this, &RadioButtons::OnRepeaterElementPrepared });
+            m_repeaterElementClearingRevoker =
+                repeater.ElementClearing(winrt::auto_revoke, { this, &RadioButtons::OnRepeaterElementClearing });
+            m_repeaterElementIndexChangedRevoker =
+                repeater.ElementIndexChanged(winrt::auto_revoke, { this, &RadioButtons::OnRepeaterElementIndexChanged });
             m_repeaterLoadedRevoker = repeater.Loaded(winrt::auto_revoke, { this, &RadioButtons::OnRepeaterLoaded });
             return repeater;
         }
@@ -101,9 +97,7 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
             }
 
             // Focus was already in the repeater: in On RS3+ Selection follows focus unless control is held down.
-            else if (SharedHelpers::IsRS3OrHigher() &&
-                (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
-                    winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
+            else if (SharedHelpers::IsRS3OrHigher() && (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
             {
                 if (auto const newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
                 {
@@ -243,8 +237,7 @@ bool RadioButtons::HandleEdgeCaseFocus(bool first, const winrt::IInspectable& so
     {
         if (auto const sourceAsUIElement = source.try_as<winrt::UIElement>())
         {
-            auto const index = [first, repeater]()
-            {
+            auto const index = [first, repeater]() {
                 if (first)
                 {
                     return 0;
@@ -281,7 +274,7 @@ void RadioButtons::OnRepeaterElementPrepared(const winrt::ItemsRepeater&, const 
             auto childHandlers = winrt::make_self<ChildHandlers>();
             childHandlers->checkedRevoker = toggleButton.Checked(winrt::auto_revoke, { this, &RadioButtons::OnChildChecked });
             childHandlers->uncheckedRevoker = toggleButton.Unchecked(winrt::auto_revoke, { this, &RadioButtons::OnChildUnchecked });
-                
+
             toggleButton.SetValue(s_childHandlersProperty, childHandlers.as<winrt::IInspectable>());
 
             // If the developer adds a checked toggle button to the collection, update selection to this item.
@@ -355,16 +348,13 @@ void RadioButtons::OnRepeaterCollectionChanged(const winrt::IInspectable&, const
 
 void RadioButtons::Select(int index)
 {
-    if(!m_blockSelecting && !m_currentlySelecting && m_selectedIndex != index)
+    if (!m_blockSelecting && !m_currentlySelecting && m_selectedIndex != index)
     {
         // Calling Select updates the checked state on the radio button being selected
         // and the radio button being unselected, as well as updates the SelectedIndex
         // and SelectedItem DP. All of these things would cause Select to be called so
         // we'll prevent reentrency with this m_currentlySelecting boolean.
-        auto clearSelecting = gsl::finally([this]()
-            {
-                m_currentlySelecting = false;
-            });
+        auto clearSelecting = gsl::finally([this]() { m_currentlySelecting = false; });
         m_currentlySelecting = true;
 
         auto const previousSelectedIndex = m_selectedIndex;
@@ -452,7 +442,7 @@ bool RadioButtons::MoveFocus(int indexIncrement)
         if (auto const focusedElement = winrt::FocusManager::GetFocusedElement().try_as<winrt::UIElement>())
         {
             auto focusedIndex = repeater.GetElementIndex(focusedElement);
-            
+
             if (focusedIndex >= 0)
             {
                 focusedIndex += indexIncrement;
@@ -523,7 +513,8 @@ void RadioButtons::UpdateItemsSource()
 
         if (auto const itemsSourceView = repeater.ItemsSourceView())
         {
-            m_itemsSourceChanged = itemsSourceView.CollectionChanged(winrt::auto_revoke, { this, &RadioButtons::OnRepeaterCollectionChanged });
+            m_itemsSourceChanged =
+                itemsSourceView.CollectionChanged(winrt::auto_revoke, { this, &RadioButtons::OnRepeaterCollectionChanged });
         }
     }
 }
@@ -632,7 +623,6 @@ int RadioButtons::GetLargerColumns()
     }
     return -1;
 }
-
 
 void RadioButtons::AttachToLayoutChanged()
 {

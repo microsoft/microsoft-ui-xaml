@@ -6,8 +6,7 @@
 #include "LayoutContext.h"
 #include "NonVirtualizingLayoutContext.g.h"
 
-class NonVirtualizingLayoutContext :
-    public winrt::implementation::NonVirtualizingLayoutContextT<NonVirtualizingLayoutContext, LayoutContext>
+class NonVirtualizingLayoutContext : public winrt::implementation::NonVirtualizingLayoutContextT<NonVirtualizingLayoutContext, LayoutContext>
 {
 public:
 #pragma region INonVirtualizingLayoutContext

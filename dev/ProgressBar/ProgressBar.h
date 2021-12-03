@@ -11,9 +11,7 @@
 #include "ProgressBar.g.h"
 #include "ProgressBar.properties.h"
 
-class ProgressBar :
-    public ReferenceTracker<ProgressBar, winrt::implementation::ProgressBarT>,
-    public ProgressBarProperties
+class ProgressBar : public ReferenceTracker<ProgressBar, winrt::implementation::ProgressBarT>, public ProgressBarProperties
 {
 
 public:

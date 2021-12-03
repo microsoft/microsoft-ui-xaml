@@ -41,7 +41,6 @@ winrt::XamlLight RevealTestApi::GetWindowLightAt(uint32_t i)
     return nullptr;
 }
 
-
 winrt::SpotLight RevealTestApi::BackgroundLight()
 {
     return GetBackgroundSpotlightProxy(m_targetTheme);
@@ -170,11 +169,12 @@ winrt::SpotLight RevealTestApi::GetBackgroundSpotlightProxy(winrt::ApplicationTh
         light.InnerConeColor(RevealHoverLight::s_revealHoverSpotlightStates[RevealHoverSpotlightState_AnimToOff].InnerConeColor.Value);
         light.OuterConeColor(RevealHoverLight::s_revealHoverSpotlightStates[RevealHoverSpotlightState_AnimToOff].OuterConeColor.Value);
 
-        s_pointerMovedRevoker = winrt::Window::Current().CoreWindow().PointerMoved(winrt::auto_revoke,
-            [=](const winrt::CoreWindow&, const winrt::PointerEventArgs&)
-            {
-                RevealHoverLight::s_revealHoverSpotlightStates[RevealHoverSpotlightState_AnimToOff].InnerConeColor.Value = light.InnerConeColor();
-                RevealHoverLight::s_revealHoverSpotlightStates[RevealHoverSpotlightState_AnimToOff].OuterConeColor.Value = light.OuterConeColor();
+        s_pointerMovedRevoker = winrt::Window::Current().CoreWindow().PointerMoved(
+            winrt::auto_revoke, [=](const winrt::CoreWindow&, const winrt::PointerEventArgs&) {
+                RevealHoverLight::s_revealHoverSpotlightStates[RevealHoverSpotlightState_AnimToOff].InnerConeColor.Value =
+                    light.InnerConeColor();
+                RevealHoverLight::s_revealHoverSpotlightStates[RevealHoverSpotlightState_AnimToOff].OuterConeColor.Value =
+                    light.OuterConeColor();
             });
     }
 

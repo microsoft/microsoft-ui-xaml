@@ -23,63 +23,54 @@ PersonPicture::PersonPicture()
     SizeChanged({ this, &PersonPicture::OnSizeChanged });
 }
 
-void PersonPicture::LoadImageAsync(
-    std::shared_ptr<winrt::IRandomAccessStreamReference> thumbStreamReference,
-    std::function<void(winrt::BitmapImage)> completedFunction)
+void PersonPicture::LoadImageAsync(std::shared_ptr<winrt::IRandomAccessStreamReference> thumbStreamReference, std::function<void(winrt::BitmapImage)> completedFunction)
 {
     com_ptr<PersonPicture> strongThis = get_strong();
     auto operation = thumbStreamReference->OpenReadAsync();
 
-    operation.Completed(
-        winrt::AsyncOperationCompletedHandler<winrt::IRandomAccessStreamWithContentType>(
-            [strongThis, completedFunction](
-                winrt::IAsyncOperation<winrt::IRandomAccessStreamWithContentType> operation,
-                winrt::AsyncStatus asyncStatus)
-    {
-        strongThis->m_dispatcherHelper.RunAsync(
-            [strongThis, asyncStatus, completedFunction, operation]()
-        {
-            winrt::BitmapImage bitmap;
+    operation.Completed(winrt::AsyncOperationCompletedHandler<winrt::IRandomAccessStreamWithContentType>(
+        [strongThis, completedFunction](winrt::IAsyncOperation<winrt::IRandomAccessStreamWithContentType> operation, winrt::AsyncStatus asyncStatus) {
+            strongThis->m_dispatcherHelper.RunAsync([strongThis, asyncStatus, completedFunction, operation]() {
+                winrt::BitmapImage bitmap;
 
-            // Handle the failure case here to ensure we are on the UI thread.
-            if (asyncStatus != winrt::AsyncStatus::Completed)
-            {
-                strongThis->m_profilePictureReadAsync.set(nullptr);
-                return;
-            }
-
-            try
-            {
-                bitmap.SetSourceAsync(operation.GetResults()).Completed(
-                    winrt::AsyncActionCompletedHandler(
-                        [strongThis, completedFunction, bitmap](winrt::IAsyncAction, winrt::AsyncStatus asyncStatus)
+                // Handle the failure case here to ensure we are on the UI thread.
+                if (asyncStatus != winrt::AsyncStatus::Completed)
                 {
-                    if (asyncStatus != winrt::AsyncStatus::Completed)
-                    {
-                        strongThis->m_profilePictureReadAsync.set(nullptr);
-                        return;
-                    }
-
-                    completedFunction(bitmap);
                     strongThis->m_profilePictureReadAsync.set(nullptr);
-                }));
-            }
-            catch (const winrt::hresult_error &e)
-            {
-                strongThis->m_profilePictureReadAsync.set(nullptr);
-
-                // Ignore the exception if the image is invalid
-                if (e.to_abi() == E_INVALIDARG)
-                {
                     return;
                 }
-                else
+
+                try
                 {
-                    throw;
+                    bitmap.SetSourceAsync(operation.GetResults())
+                        .Completed(winrt::AsyncActionCompletedHandler(
+                            [strongThis, completedFunction, bitmap](winrt::IAsyncAction, winrt::AsyncStatus asyncStatus) {
+                                if (asyncStatus != winrt::AsyncStatus::Completed)
+                                {
+                                    strongThis->m_profilePictureReadAsync.set(nullptr);
+                                    return;
+                                }
+
+                                completedFunction(bitmap);
+                                strongThis->m_profilePictureReadAsync.set(nullptr);
+                            }));
                 }
-            }
-        });
-    }));
+                catch (const winrt::hresult_error& e)
+                {
+                    strongThis->m_profilePictureReadAsync.set(nullptr);
+
+                    // Ignore the exception if the image is invalid
+                    if (e.to_abi() == E_INVALIDARG)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            });
+        }));
 
     m_profilePictureReadAsync.set(operation);
 }
@@ -335,10 +326,8 @@ void PersonPicture::UpdateAutomationName()
         }
         else
         {
-            automationName = StringUtil::FormatString(
-                GetLocalizedPluralBadgeItemStringResource(BadgeNumber()),
-                contactName.data(),
-                BadgeNumber());
+            automationName =
+                StringUtil::FormatString(GetLocalizedPluralBadgeItemStringResource(BadgeNumber()), contactName.data(), BadgeNumber());
         }
     }
     else if (!BadgeGlyph().empty() || BadgeImageSource())
@@ -346,15 +335,11 @@ void PersonPicture::UpdateAutomationName()
         if (!BadgeText().empty())
         {
             automationName = StringUtil::FormatString(
-                ResourceAccessor::GetLocalizedStringResource(SR_BadgeIconTextOverride),
-                contactName.data(),
-                BadgeText().data());
+                ResourceAccessor::GetLocalizedStringResource(SR_BadgeIconTextOverride), contactName.data(), BadgeText().data());
         }
         else
         {
-            automationName = StringUtil::FormatString(
-                ResourceAccessor::GetLocalizedStringResource(SR_BadgeIcon),
-                contactName.data());
+            automationName = StringUtil::FormatString(ResourceAccessor::GetLocalizedStringResource(SR_BadgeIcon), contactName.data());
         }
     }
     else
@@ -370,7 +355,7 @@ winrt::hstring PersonPicture::GetLocalizedPluralBadgeItemStringResource(unsigned
     const UINT32 valueMod10 = numericValue % 10;
     winrt::hstring value;
 
-    if (numericValue == 1)  // Singular
+    if (numericValue == 1) // Singular
     {
         value = ResourceAccessor::GetLocalizedStringResource(SR_BadgeItemSingular);
     }
@@ -471,10 +456,7 @@ void PersonPicture::UpdateControlForContact(bool isNewContact)
         {
             com_ptr<PersonPicture> strongThis = get_strong();
 
-            LoadImageAsync(
-                thumbStreamReference,
-                [strongThis](winrt::BitmapImage profileBitmap)
-            {
+            LoadImageAsync(thumbStreamReference, [strongThis](winrt::BitmapImage profileBitmap) {
                 profileBitmap.DecodePixelType(winrt::DecodePixelType::Logical);
 
                 // We want to constrain the shorter side to the same dimension as the control, allowing the decoder to
@@ -502,13 +484,11 @@ void PersonPicture::UpdateControlForContact(bool isNewContact)
     UpdateIfReady();
 }
 
-void PersonPicture::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs &args)
+void PersonPicture::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
 
-    if (property == s_BadgeNumberProperty ||
-        property == s_BadgeGlyphProperty ||
-        property == s_BadgeImageSourceProperty)
+    if (property == s_BadgeNumberProperty || property == s_BadgeGlyphProperty || property == s_BadgeImageSourceProperty)
     {
         UpdateBadge();
     }
@@ -524,9 +504,7 @@ void PersonPicture::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
     {
         OnDisplayNameChanged(args);
     }
-    else if (property == s_ProfilePictureProperty ||
-        property == s_InitialsProperty ||
-        property == s_IsGroupProperty)
+    else if (property == s_ProfilePictureProperty || property == s_InitialsProperty || property == s_IsGroupProperty)
     {
         UpdateIfReady();
     }
@@ -560,7 +538,7 @@ void PersonPicture::OnContactChanged(winrt::DependencyPropertyChangedEventArgs c
     UpdateControlForContact(isNewContact);
 }
 
-void PersonPicture::OnSizeChanged(winrt::IInspectable const& /*sender*/, const winrt::SizeChangedEventArgs &args)
+void PersonPicture::OnSizeChanged(winrt::IInspectable const& /*sender*/, const winrt::SizeChangedEventArgs& args)
 {
     {
         const bool widthChanged = (args.NewSize().Width != args.PreviousSize().Width);
@@ -604,7 +582,7 @@ void PersonPicture::OnSizeChanged(winrt::IInspectable const& /*sender*/, const w
     if (m_badgingEllipse && m_badgingBackgroundEllipse && m_badgeNumberTextBlock && m_badgeGlyphIcon)
     {
         // Maintain badging circle and font size by enforcing the new size on both Width and Height.
-        // Design guidelines have specified the font size to be 60% of the badging plate, and we want to keep 
+        // Design guidelines have specified the font size to be 60% of the badging plate, and we want to keep
         // badging plate to be about 50% of the control so that don't block the initial/profile picture.
         const double newSize = (args.NewSize().Width < args.NewSize().Height) ? args.NewSize().Width : args.NewSize().Height;
         m_badgingEllipse.get().Height(newSize * 0.5);

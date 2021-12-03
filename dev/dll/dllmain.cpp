@@ -13,11 +13,11 @@
 HINSTANCE g_hInstance = nullptr;
 
 // Version string to send on telemetry events, this is the version string that is used in the version resource
-const char *g_BinaryVersion = (const char *)(VER_FILE_VERSION_STR);
+const char* g_BinaryVersion = (const char*)(VER_FILE_VERSION_STR);
 
 STDAPI_(void) SendTelemetryOnSuspend();
 
-STDAPI_(BOOL) DllMain(_In_ HINSTANCE hInstance, _In_ DWORD reason, _In_opt_ void *)
+STDAPI_(BOOL) DllMain(_In_ HINSTANCE hInstance, _In_ DWORD reason, _In_opt_ void*)
 {
     if (DLL_PROCESS_ATTACH == reason)
     {
@@ -50,7 +50,7 @@ HRESULT WINAPI DllGetActivationFactory(_In_ HSTRING activatableClassId, _Out_ ::
     if (name == L"Microsoft.UI.Private.Controls.FrameworkPackageDetector"sv ||
         name == L"Microsoft.UI.Private.Controls.CBSPackageDetector"sv)
     {
-        winrt::hstring resources{L"Microsoft.UI.Xaml.Controls.XamlControlsResources"sv};
+        winrt::hstring resources{ L"Microsoft.UI.Xaml.Controls.XamlControlsResources"sv };
         // It doesn't matter *what* we return so return a type that everyone uses.
         return WINRT_GetActivationFactory(winrt::get_abi(resources), reinterpret_cast<void**>(factory));
     }
@@ -58,8 +58,7 @@ HRESULT WINAPI DllGetActivationFactory(_In_ HSTRING activatableClassId, _Out_ ::
     return WINRT_GetActivationFactory(activatableClassId, reinterpret_cast<void**>(factory));
 }
 
-__control_entrypoint(DllExport)
-HRESULT __stdcall DllCanUnloadNow()
+__control_entrypoint(DllExport) HRESULT __stdcall DllCanUnloadNow()
 {
     return WINRT_CanUnloadNow();
 }

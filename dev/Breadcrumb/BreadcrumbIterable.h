@@ -7,8 +7,8 @@
 
 #include "Vector.h"
 
-class BreadcrumbIterable :
-    public ReferenceTracker<BreadcrumbIterable, reference_tracker_implements_t<winrt::IIterable<winrt::IInspectable>>::type>
+class BreadcrumbIterable
+    : public ReferenceTracker<BreadcrumbIterable, reference_tracker_implements_t<winrt::IIterable<winrt::IInspectable>>::type>
 {
 public:
     BreadcrumbIterable();

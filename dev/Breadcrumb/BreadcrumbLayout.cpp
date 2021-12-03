@@ -61,7 +61,7 @@ winrt::Size BreadcrumbLayout::MeasureOverride(winrt::NonVirtualizingLayoutContex
 
     if (accumulatedCrumbsSize.Width > availableSize.Width)
     {
-        m_ellipsisIsRendered = true;   
+        m_ellipsisIsRendered = true;
     }
     else
     {
@@ -101,8 +101,7 @@ void BreadcrumbLayout::HideItem(const winrt::NonVirtualizingLayoutContext& conte
 int BreadcrumbLayout::GetFirstBreadcrumbBarItemToArrange(winrt::NonVirtualizingLayoutContext const& context)
 {
     const int itemCount = GetItemCount(context);
-    float accumLength = GetElementAt(context, itemCount - 1).DesiredSize().Width +
-        m_ellipsisButton.DesiredSize().Width;
+    float accumLength = GetElementAt(context, itemCount - 1).DesiredSize().Width + m_ellipsisButton.DesiredSize().Width;
 
     for (int i = itemCount - 2; i >= 0; --i)
     {

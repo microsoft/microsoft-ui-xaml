@@ -5,8 +5,8 @@
 
 #include "SelectionModelChildrenRequestedEventArgs.g.h"
 
-class SelectionModelChildrenRequestedEventArgs :
-    public ReferenceTracker<SelectionModelChildrenRequestedEventArgs, winrt::implementation::SelectionModelChildrenRequestedEventArgsT, winrt::composable, winrt::composing>
+class SelectionModelChildrenRequestedEventArgs
+    : public ReferenceTracker<SelectionModelChildrenRequestedEventArgs, winrt::implementation::SelectionModelChildrenRequestedEventArgsT, winrt::composable, winrt::composing>
 {
 public:
     SelectionModelChildrenRequestedEventArgs(const winrt::IInspectable& data, const winrt::IndexPath& sourceIndexPath, bool throwOnAccess);

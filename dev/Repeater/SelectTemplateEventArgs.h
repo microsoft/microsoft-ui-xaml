@@ -5,11 +5,10 @@
 
 #include "SelectTemplateEventArgs.g.h"
 
-class SelectTemplateEventArgs :
-    public ReferenceTracker<SelectTemplateEventArgs, winrt::implementation::SelectTemplateEventArgsT, winrt::composable, winrt::composing>
+class SelectTemplateEventArgs
+    : public ReferenceTracker<SelectTemplateEventArgs, winrt::implementation::SelectTemplateEventArgsT, winrt::composable, winrt::composing>
 {
 public:
-
 #pragma region ISelectTemplateEventArgs
     winrt::hstring TemplateKey();
     void TemplateKey(winrt::hstring const& value);

@@ -32,8 +32,10 @@ void SplitButton::OnApplyTemplate()
     {
         m_clickPrimaryRevoker = primaryButton.Click(winrt::auto_revoke, { this, &SplitButton::OnClickPrimary });
 
-        m_pressedPrimaryRevoker = RegisterPropertyChanged(primaryButton, winrt::ButtonBase::IsPressedProperty(), { this, &SplitButton::OnVisualPropertyChanged });
-        m_pointerOverPrimaryRevoker = RegisterPropertyChanged(primaryButton, winrt::ButtonBase::IsPointerOverProperty(), { this, &SplitButton::OnVisualPropertyChanged });
+        m_pressedPrimaryRevoker =
+            RegisterPropertyChanged(primaryButton, winrt::ButtonBase::IsPressedProperty(), { this, &SplitButton::OnVisualPropertyChanged });
+        m_pointerOverPrimaryRevoker = RegisterPropertyChanged(
+            primaryButton, winrt::ButtonBase::IsPointerOverProperty(), { this, &SplitButton::OnVisualPropertyChanged });
 
         // Register for pointer events so we can keep track of the last used pointer type
         m_pointerEnteredPrimaryRevoker = primaryButton.PointerEntered(winrt::auto_revoke, { this, &SplitButton::OnPointerEvent });
@@ -52,8 +54,10 @@ void SplitButton::OnApplyTemplate()
 
         m_clickSecondaryRevoker = secondaryButton.Click(winrt::auto_revoke, { this, &SplitButton::OnClickSecondary });
 
-        m_pressedSecondaryRevoker = RegisterPropertyChanged(secondaryButton, winrt::ButtonBase::IsPressedProperty(), { this, &SplitButton::OnVisualPropertyChanged });
-        m_pointerOverSecondaryRevoker = RegisterPropertyChanged(secondaryButton, winrt::ButtonBase::IsPointerOverProperty(), { this, &SplitButton::OnVisualPropertyChanged });
+        m_pressedSecondaryRevoker = RegisterPropertyChanged(
+            secondaryButton, winrt::ButtonBase::IsPressedProperty(), { this, &SplitButton::OnVisualPropertyChanged });
+        m_pointerOverSecondaryRevoker = RegisterPropertyChanged(
+            secondaryButton, winrt::ButtonBase::IsPointerOverProperty(), { this, &SplitButton::OnVisualPropertyChanged });
 
         // Register for pointer events so we can keep track of the last used pointer type
         m_pointerEnteredSecondaryRevoker = secondaryButton.PointerEntered(winrt::auto_revoke, { this, &SplitButton::OnPointerEvent });
@@ -61,7 +65,8 @@ void SplitButton::OnApplyTemplate()
         m_pointerPressedSecondaryRevoker = secondaryButton.PointerPressed(winrt::auto_revoke, { this, &SplitButton::OnPointerEvent });
         m_pointerReleasedSecondaryRevoker = secondaryButton.PointerReleased(winrt::auto_revoke, { this, &SplitButton::OnPointerEvent });
         m_pointerCanceledSecondaryRevoker = secondaryButton.PointerCanceled(winrt::auto_revoke, { this, &SplitButton::OnPointerEvent });
-        m_pointerCaptureLostSecondaryRevoker = secondaryButton.PointerCaptureLost(winrt::auto_revoke, { this, &SplitButton::OnPointerEvent });
+        m_pointerCaptureLostSecondaryRevoker =
+            secondaryButton.PointerCaptureLost(winrt::auto_revoke, { this, &SplitButton::OnPointerEvent });
     }
 
     // Register events on flyout
@@ -106,7 +111,8 @@ void SplitButton::RegisterFlyoutEvents()
 
         m_flyoutClosedRevoker = Flyout().Closed(winrt::auto_revoke, { this, &SplitButton::OnFlyoutClosed });
 
-        m_flyoutPlacementChangedRevoker = RegisterPropertyChanged(Flyout(), winrt::FlyoutBase::PlacementProperty(), { this, &SplitButton::OnFlyoutPlacementChanged });
+        m_flyoutPlacementChangedRevoker =
+            RegisterPropertyChanged(Flyout(), winrt::FlyoutBase::PlacementProperty(), { this, &SplitButton::OnFlyoutPlacementChanged });
     }
 }
 
@@ -130,7 +136,8 @@ void SplitButton::UpdateVisualStates(bool useTransitions)
     // change visual state
     auto primaryButton = m_primaryButton.get();
     auto secondaryButton = m_secondaryButton.get();
-    if (!IsEnabled()) {
+    if (!IsEnabled())
+    {
         winrt::VisualStateManager::GoToState(*this, L"Disabled", useTransitions);
     }
     else if (primaryButton && secondaryButton)

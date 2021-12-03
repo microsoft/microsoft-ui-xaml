@@ -11,8 +11,7 @@
 
 #include "ColorPickerSliderAutomationPeer.properties.cpp"
 
-ColorPickerSliderAutomationPeer::ColorPickerSliderAutomationPeer(winrt::ColorPickerSlider const& owner)
-    : ReferenceTracker(owner)
+ColorPickerSliderAutomationPeer::ColorPickerSliderAutomationPeer(winrt::ColorPickerSlider const& owner) : ReferenceTracker(owner)
 {
 }
 
@@ -20,7 +19,8 @@ winrt::IInspectable ColorPickerSliderAutomationPeer::GetPatternCore(winrt::Patte
 {
     // If this slider is handling the alpha channel, then we don't want to do anything special for it -
     // in that case, we'll just return the base SliderAutomationPeer.
-    if (Owner().as<winrt::ColorPickerSlider>().ColorChannel() != winrt::ColorPickerHsvChannel::Alpha && patternInterface == winrt::PatternInterface::Value)
+    if (Owner().as<winrt::ColorPickerSlider>().ColorChannel() != winrt::ColorPickerHsvChannel::Alpha &&
+        patternInterface == winrt::PatternInterface::Value)
     {
         return *this;
     }
@@ -79,7 +79,7 @@ winrt::hstring ColorPickerSliderAutomationPeer::GetValueString(winrt::Color colo
         {
         case winrt::ColorPickerHsvChannel::Hue:
             resourceStringWithName = ResourceAccessor::GetLocalizedStringResource(SR_ValueStringHueSliderWithColorName);
-             break;
+            break;
         case winrt::ColorPickerHsvChannel::Saturation:
             resourceStringWithName = ResourceAccessor::GetLocalizedStringResource(SR_ValueStringSaturationSliderWithColorName);
             break;
@@ -90,10 +90,7 @@ winrt::hstring ColorPickerSliderAutomationPeer::GetValueString(winrt::Color colo
             return L"";
         }
 
-        return StringUtil::FormatString(
-            resourceStringWithName,
-            value,
-            winrt::ColorHelper::ToDisplayName(color).data());
+        return StringUtil::FormatString(resourceStringWithName, value, winrt::ColorHelper::ToDisplayName(color).data());
     }
     else
     {
@@ -113,8 +110,6 @@ winrt::hstring ColorPickerSliderAutomationPeer::GetValueString(winrt::Color colo
             return L"";
         }
 
-        return StringUtil::FormatString(
-            resourceStringWithoutName,
-            value);
+        return StringUtil::FormatString(resourceStringWithoutName, value);
     }
 }

@@ -14,9 +14,7 @@ public:
     winrt::Button::Click_revoker clickRevoker{};
 };
 
-class PipsPager :
-    public ReferenceTracker<PipsPager, winrt::implementation::PipsPagerT>,
-    public PipsPagerProperties
+class PipsPager : public ReferenceTracker<PipsPager, winrt::implementation::PipsPagerT>, public PipsPagerProperties
 {
 public:
     PipsPager();
@@ -42,9 +40,7 @@ public:
     void OnSelectedPageIndexChanged(const int oldValue);
     void OnMaxVisiblePipsChanged();
     void OnNavigationButtonVisibilityChanged(
-        const winrt::PipsPagerButtonVisibility visibility,
-        const wstring_view& collapsedStateName,
-        const wstring_view& disabledStateName);
+        const winrt::PipsPagerButtonVisibility visibility, const wstring_view& collapsedStateName, const wstring_view& disabledStateName);
     void OnOrientationChanged();
 
     winrt::UIElement GetSelectedItem();
@@ -102,7 +98,7 @@ private:
     winrt::IObservableVector<int> m_pipsPagerItems{};
 
     /* Additional variables class variables*/
-    winrt::Size m_defaultPipSize{ 0.0,0.0 };
+    winrt::Size m_defaultPipSize{ 0.0, 0.0 };
     winrt::Size m_selectedPipSize{ 0.0, 0.0 };
     int m_lastSelectedPageIndex{ -1 };
     bool m_isPointerOver{ false };

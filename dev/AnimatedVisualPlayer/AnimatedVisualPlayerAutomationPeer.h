@@ -4,8 +4,8 @@
 
 #include "AnimatedVisualPlayerAutomationPeer.g.h"
 
-class AnimatedVisualPlayerAutomationPeer :
-    public ReferenceTracker<AnimatedVisualPlayerAutomationPeer, winrt::implementation::AnimatedVisualPlayerAutomationPeerT>
+class AnimatedVisualPlayerAutomationPeer
+    : public ReferenceTracker<AnimatedVisualPlayerAutomationPeer, winrt::implementation::AnimatedVisualPlayerAutomationPeerT>
 {
 public:
     AnimatedVisualPlayerAutomationPeer(winrt::AnimatedVisualPlayer const& owner);

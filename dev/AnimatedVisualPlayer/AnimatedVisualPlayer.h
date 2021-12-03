@@ -9,12 +9,10 @@
 #include "AnimatedVisualPlayer.g.h"
 #include "AnimatedVisualPlayer.properties.h"
 
-
 // Derive from DeriveFromPanelHelper_base so that we get access to Children collection
 // in Panel. The Children collection holds the fallback content.
-struct AnimatedVisualPlayer:
-    public ReferenceTracker<AnimatedVisualPlayer, DeriveFromPanelHelper_base, winrt::AnimatedVisualPlayer>,
-    public AnimatedVisualPlayerProperties
+struct AnimatedVisualPlayer : public ReferenceTracker<AnimatedVisualPlayer, DeriveFromPanelHelper_base, winrt::AnimatedVisualPlayer>,
+                              public AnimatedVisualPlayerProperties
 {
     friend class AnimatedVisualPlayerProperties;
 
@@ -40,11 +38,7 @@ private:
     //
     struct AnimationPlay final : public Awaitable
     {
-        AnimationPlay(
-            AnimatedVisualPlayer& owner,
-            float fromProgress,
-            float toProgress,
-            bool looped);
+        AnimationPlay(AnimatedVisualPlayer& owner, float fromProgress, float toProgress, bool looped);
 
         float FromProgress();
 
@@ -77,7 +71,7 @@ private:
         winrt::Composition::AnimationController m_controller{ nullptr };
         bool m_isPaused{ false };
         bool m_isPausedBecauseHidden{ false };
-        winrt::event_token m_batchCompletedToken{0};
+        winrt::event_token m_batchCompletedToken{ 0 };
         winrt::Composition::CompositionScopedBatch m_batch{ nullptr };
     };
 
@@ -130,7 +124,7 @@ private:
     double m_currentPlayFromProgress{ 0 };
     // The play that will be stopped when Stop() is called.
     std::shared_ptr<AnimationPlay> m_nowPlaying{ nullptr };
-    winrt::IDynamicAnimatedVisualSource::AnimatedVisualInvalidated_revoker  m_dynamicAnimatedVisualInvalidatedRevoker{};
+    winrt::IDynamicAnimatedVisualSource::AnimatedVisualInvalidated_revoker m_dynamicAnimatedVisualInvalidatedRevoker{};
 
     // Set true if an animated visual has failed to load and set false the next time an animated
     // visual loads with non-null content. When this is true the fallback content (if any) will

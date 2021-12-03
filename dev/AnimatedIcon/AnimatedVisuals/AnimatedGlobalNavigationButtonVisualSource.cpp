@@ -4,13 +4,13 @@
 //
 //       LottieGen version:
 //           7.1.0+ge1fa92580f
-//       
+//
 //       Command:
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedGlobalNavigationButtonVisualSource.json
-//       
+//
 //       Input file:
 //           AnimatedGlobalNavigationButtonVisualSource.json (37639 bytes created 23:37-07:00 Oct 5 2021)
-//       
+//
 //       LottieGen source:
 //           http://aka.ms/Lottie
 //
@@ -53,8 +53,7 @@
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
 #ifdef BUILD_WINDOWS
-namespace ABI
-{
+namespace ABI {
 #include <Windows.Graphics.Effects.Interop.h>
 }
 #else
@@ -70,25 +69,24 @@ using namespace winrt::Windows::UI;
 using namespace winrt::Windows::UI::Composition;
 using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
-
-namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
-{
+namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals {
 CppWinRTActivatableClassWithBasicFactory(AnimatedGlobalNavigationButtonVisualSource)
 }
 #include "AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.g.cpp"
-class CanvasGeometry : public winrt::implements<CanvasGeometry,
-    IGeometrySource2D,
-    ::ABI::Windows::Graphics::IGeometrySource2DInterop>
+class CanvasGeometry : public winrt::implements<CanvasGeometry, IGeometrySource2D, ::ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
     winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 
 public:
-    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry)
-        : _geometry{ geometry }
-    { }
+    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry) : _geometry{ geometry }
+    {
+    }
 
     // IGeometrySource2D.
-    winrt::com_ptr<ID2D1Geometry> Geometry() { return _geometry; }
+    winrt::com_ptr<ID2D1Geometry> Geometry()
+    {
+        return _geometry;
+    }
 
     // IGeometrySource2DInterop.
     IFACEMETHODIMP GetGeometry(ID2D1Geometry** value) override
@@ -103,9 +101,8 @@ public:
         return E_NOTIMPL;
     }
 };
-class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::implements<AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual,
-        winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
-        IClosable>
+class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual
+    : public winrt::implements<AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual, winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual, IClosable>
 {
     winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
     static constexpr int64_t c_durationTicks{ 13333333L };
@@ -129,11 +126,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     StepEasingFunction _holdThenStepEasingFunction{ nullptr };
     StepEasingFunction _stepThenHoldEasingFunction{ nullptr };
 
-    static void StartProgressBoundAnimation(
-        CompositionObject target,
-        winrt::hstring animatedPropertyName,
-        CompositionAnimation animation,
-        ExpressionAnimation controllerProgressExpression)
+    static void StartProgressBoundAnimation(CompositionObject target, winrt::hstring animatedPropertyName, CompositionAnimation animation, ExpressionAnimation controllerProgressExpression)
     {
         target.StartAnimation(animatedPropertyName, animation);
         const auto controller = target.TryGetAnimationController(animatedPropertyName);
@@ -141,12 +134,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
         controller.StartAnimation(L"Progress", controllerProgressExpression);
     }
 
-    void BindProperty(
-        CompositionObject target,
-        winrt::hstring animatedPropertyName,
-        winrt::hstring expression,
-        winrt::hstring referenceParameterName,
-        CompositionObject referencedObject)
+    void BindProperty(CompositionObject target, winrt::hstring animatedPropertyName, winrt::hstring expression, winrt::hstring referenceParameterName, CompositionObject referencedObject)
     {
         _reusableExpressionAnimation.ClearAllParameters();
         _reusableExpressionAnimation.Expression(expression);
@@ -470,7 +458,12 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     CompositionColorBrush ThemeColor_Foreground()
     {
         const auto result = _themeColor_Foreground = _c.CreateColorBrush();
-        BindProperty(result, L"Color", L"ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties);
+        BindProperty(
+            result,
+            L"Color",
+            L"ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)",
+            L"_theme",
+            _themeProperties);
         return result;
     }
 
@@ -1229,12 +1222,8 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     }
 
 public:
-    AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual(
-        Compositor compositor,
-        CompositionPropertySet themeProperties)
-        : _c{compositor}
-        , _themeProperties{themeProperties}
-        , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
+    AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual(Compositor compositor, CompositionPropertySet themeProperties) :
+        _c{ compositor }, _themeProperties{ themeProperties }, _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
     {
         winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.put()));
         const auto _ = Root();
@@ -1265,7 +1254,8 @@ public:
 
     static bool IsRuntimeCompatible()
     {
-        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 7);
+        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(
+            L"Windows.Foundation.UniversalApiContract", 7);
     }
 };
 
@@ -1299,25 +1289,21 @@ void AnimatedGlobalNavigationButtonVisualSource::Foreground(Color value)
     }
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedGlobalNavigationButtonVisualSource::TryCreateAnimatedVisual(
-    Compositor const& compositor)
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedGlobalNavigationButtonVisualSource::TryCreateAnimatedVisual(Compositor const& compositor)
 {
     IInspectable diagnostics = nullptr;
     return TryCreateAnimatedVisual(compositor, diagnostics);
 }
 
 winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedGlobalNavigationButtonVisualSource::TryCreateAnimatedVisual(
-    Compositor const& compositor,
-    IInspectable& diagnostics)
+    Compositor const& compositor, IInspectable& diagnostics)
 {
     const auto _ = EnsureThemeProperties(compositor);
     diagnostics = nullptr;
 
     if (AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual::IsRuntimeCompatible())
     {
-        return winrt::make<AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual>(
-            compositor,
-            _themeProperties);
+        return winrt::make<AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual>(compositor, _themeProperties);
     }
 
     return nullptr;
@@ -1345,23 +1331,21 @@ double AnimatedGlobalNavigationButtonVisualSource::FrameToProgress(double frameN
 
 winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedGlobalNavigationButtonVisualSource::Markers()
 {
-    return winrt::single_threaded_map<winrt::hstring, double>(
-        std::map<winrt::hstring, double>
-        {
-            { L"NormalToPointerOver_Start", 0.0 },
-            { L"NormalToPointerOver_End", 0.113125 },
-            { L"NormalToPressed_Start", 0.125625 },
-            { L"NormalToPressed_End", 0.238125 },
-            { L"PointerOverToNormal_Start", 0.250625 },
-            { L"PointerOverToNormal_End", 0.363125 },
-            { L"PointerOverToPressed_Start", 0.375625 },
-            { L"PointerOverToPressed_End", 0.488125 },
-            { L"PressedToNormal_Start", 0.500625 },
-            { L"PressedToNormal_End", 0.738125 },
-            { L"PressedToPointerOver_Start", 0.750625 },
-            { L"PressedToPointerOver_End", 0.988125 },
-        }
-    ).GetView();
+    return winrt::single_threaded_map<winrt::hstring, double>(std::map<winrt::hstring, double>{
+                                                                  { L"NormalToPointerOver_Start", 0.0 },
+                                                                  { L"NormalToPointerOver_End", 0.113125 },
+                                                                  { L"NormalToPressed_Start", 0.125625 },
+                                                                  { L"NormalToPressed_End", 0.238125 },
+                                                                  { L"PointerOverToNormal_Start", 0.250625 },
+                                                                  { L"PointerOverToNormal_End", 0.363125 },
+                                                                  { L"PointerOverToPressed_Start", 0.375625 },
+                                                                  { L"PointerOverToPressed_End", 0.488125 },
+                                                                  { L"PressedToNormal_Start", 0.500625 },
+                                                                  { L"PressedToNormal_End", 0.738125 },
+                                                                  { L"PressedToPointerOver_Start", 0.750625 },
+                                                                  { L"PressedToPointerOver_End", 0.988125 },
+                                                              })
+        .GetView();
 }
 
 void AnimatedGlobalNavigationButtonVisualSource::SetColorProperty(hstring const& propertyName, Color value)

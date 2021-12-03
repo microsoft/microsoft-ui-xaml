@@ -13,11 +13,11 @@ enum class SelectionState
     PartiallySelected
 };
 
-// SelectionNode in the internal tree data structure that we keep track of for selection in 
+// SelectionNode in the internal tree data structure that we keep track of for selection in
 // a nested scenario. This would map to one ItemsSourceView/Collection. This node reacts
 // to collection changes and keeps the selected indices up to date.
 // This can either be a leaf node or a non leaf node.
-class SelectionNode final: public std::enable_shared_from_this<SelectionNode>
+class SelectionNode final : public std::enable_shared_from_this<SelectionNode>
 {
 public:
     SelectionNode(SelectionModel* manager, SelectionNode* parent);
@@ -65,17 +65,17 @@ private:
 
     SelectionModel* m_manager;
 
-    // Note that a node can contain children who are leaf as well as 
+    // Note that a node can contain children who are leaf as well as
     // chlidren containing leaf entries.
 
     // For inner nodes (any node whose children are data sources)
     std::vector<std::shared_ptr<SelectionNode>> m_childrenNodes;
     // Don't take a ref.
-    SelectionNode* m_parent { nullptr };
+    SelectionNode* m_parent{ nullptr };
 
     // For parents of leaf nodes (any node whose children are not data sources)
     std::vector<IndexRange> m_selected;
-    
+
     tracker_ref<winrt::IInspectable> m_source;
     tracker_ref<winrt::ItemsSourceView> m_dataSource;
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceViewChanged{};

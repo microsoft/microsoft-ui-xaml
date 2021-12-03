@@ -9,14 +9,14 @@
 #include "InfoBar.g.h"
 #include "InfoBar.properties.h"
 
-class InfoBar :
-    public ReferenceTracker<InfoBar, winrt::implementation::InfoBarT>,
-    public InfoBarProperties
+class InfoBar : public ReferenceTracker<InfoBar, winrt::implementation::InfoBarT>, public InfoBarProperties
 {
 
 public:
     InfoBar();
-    ~InfoBar() {}
+    ~InfoBar()
+    {
+    }
 
     // IFrameworkElement
     void OnApplyTemplate();

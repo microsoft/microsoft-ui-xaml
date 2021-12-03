@@ -31,7 +31,7 @@
 #include <weakreference.h>
 #include <guiddef.h>
 
-#define MUX_ASSERT(X) _ASSERT(X) 
+#define MUX_ASSERT(X) _ASSERT(X)
 #define MUX_ASSERT_MSG(X, MSG) _ASSERT_EXPR(X, MSG)
 #define MUX_ASSERT_NOASSUME(X) _ASSERT(X)
 
@@ -59,8 +59,8 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
-#define M_PI       3.14159265358979323846   // pi
-#define M_PI_2     1.57079632679489661923   // pi/2
+#define M_PI 3.14159265358979323846   // pi
+#define M_PI_2 1.57079632679489661923 // pi/2
 
 #define WI_IS_FEATURE_PRESENT(FeatureName) 1
 
@@ -129,13 +129,25 @@ void constexpr specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::VectorChangedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ZoomSnapPointBase>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::ScrollingInteractionState>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollSnapPointsAlignment>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController, struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollControllerInteractionRequestedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController, struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollControllerScrollToRequestedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController, struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollControllerScrollByRequestedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController, struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollControllerAddScrollVelocityRequestedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<
+        struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController,
+        struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollControllerInteractionRequestedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<
+        struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController,
+        struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollControllerScrollToRequestedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<
+        struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController,
+        struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollControllerScrollByRequestedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<
+        struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController,
+        struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollControllerAddScrollVelocityRequestedEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController, struct winrt::Windows::Foundation::IInspectable>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Private::Controls::ScrollPresenterTestHooksAnchorEvaluatedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Private::Controls::ScrollPresenterTestHooksInteractionSourcesChangedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<
+        struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter,
+        struct winrt::Microsoft::UI::Private::Controls::ScrollPresenterTestHooksAnchorEvaluatedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<
+        struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter,
+        struct winrt::Microsoft::UI::Private::Controls::ScrollPresenterTestHooksInteractionSourcesChangedEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingAnchorRequestedEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingBringingIntoViewEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingScrollAnimationStartingEventArgs>>();
@@ -162,7 +174,7 @@ void constexpr specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::ColorSpectrumShape>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ColorSpectrum, struct winrt::Microsoft::UI::Xaml::Controls::ColorChangedEventArgs>>();
 #endif
-    
+
 #ifdef NAVIGATIONVIEW_INCLUDED
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::NavigationViewBackButtonVisible>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::NavigationViewDisplayMode>>();
@@ -205,12 +217,13 @@ void constexpr specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Media::AcrylicBackgroundSource>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Media::RevealBrushState>>();
 #endif
- 
+
 #ifndef MUX_EXPERIMENTAL
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::Foundation::IInspectable, struct winrt::Microsoft::UI::Private::Controls::MUXControlsTestHooksLoggingMessageEventArgs>>();
 #endif
-    
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Windows::Foundation::Collections::IKeyValuePair<struct winrt::hstring,struct winrt::Windows::UI::Xaml::DataTemplate> >>();
+
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<
+        struct winrt::Windows::Foundation::Collections::IKeyValuePair<struct winrt::hstring, struct winrt::Windows::UI::Xaml::DataTemplate>>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Windows::Foundation::IInspectable>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Windows::UI::Composition::Interactions::CompositionConditionalValue>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Windows::UI::Composition::Interactions::InteractionTrackerInertiaModifier>>();
@@ -220,7 +233,8 @@ void constexpr specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Windows::UI::Xaml::DependencyObject>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Windows::UI::Xaml::UIElement>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::hstring>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Windows::Foundation::Collections::IKeyValuePair<struct winrt::hstring,struct winrt::Windows::UI::Xaml::DataTemplate> >>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<
+        struct winrt::Windows::Foundation::Collections::IKeyValuePair<struct winrt::hstring, struct winrt::Windows::UI::Xaml::DataTemplate>>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Windows::Foundation::IInspectable>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Windows::UI::Composition::Interactions::CompositionConditionalValue>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Windows::UI::Composition::Interactions::InteractionTrackerInertiaModifier>>();
@@ -229,14 +243,14 @@ void constexpr specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Windows::UI::Xaml::Controls::MenuFlyoutItemBase>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Windows::UI::Xaml::DependencyObject>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Windows::UI::Xaml::UIElement>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IKeyValuePair<struct winrt::hstring,struct winrt::Windows::UI::Xaml::DataTemplate>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::hstring,struct winrt::hstring>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::hstring,struct winrt::Windows::Foundation::IInspectable>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::hstring,struct winrt::Windows::Graphics::Imaging::BitmapTypedValue>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::hstring,struct winrt::Windows::UI::Composition::ICompositionAnimationBase>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::hstring,struct winrt::Windows::UI::Xaml::DataTemplate>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::Windows::Foundation::IInspectable,struct winrt::Windows::Foundation::IInspectable>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMapView<struct winrt::hstring,struct winrt::Windows::UI::Xaml::DataTemplate>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IKeyValuePair<struct winrt::hstring, struct winrt::Windows::UI::Xaml::DataTemplate>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::hstring, struct winrt::hstring>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::hstring, struct winrt::Windows::Foundation::IInspectable>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::hstring, struct winrt::Windows::Graphics::Imaging::BitmapTypedValue>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::hstring, struct winrt::Windows::UI::Composition::ICompositionAnimationBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::hstring, struct winrt::Windows::UI::Xaml::DataTemplate>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::Windows::Foundation::IInspectable, struct winrt::Windows::Foundation::IInspectable>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMapView<struct winrt::hstring, struct winrt::Windows::UI::Xaml::DataTemplate>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Windows::Foundation::IInspectable>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Windows::UI::Composition::Interactions::InteractionTrackerInertiaModifier>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Windows::UI::Xaml::Controls::ICommandBarElement>>();
@@ -300,27 +314,27 @@ void constexpr specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<struct winrt::Windows::UI::Xaml::Interop::TypeName>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<struct winrt::Windows::UI::Xaml::Thickness>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<unsigned int>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::ApplicationModel::Core::CoreApplicationViewTitleBar,struct winrt::Windows::Foundation::IInspectable>>();    
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::Foundation::IInspectable,struct winrt::Windows::Foundation::IInspectable>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::Foundation::IInspectable,struct winrt::Windows::UI::Composition::CompositionBatchCompletedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::Graphics::Display::DisplayInformation,struct winrt::Windows::Foundation::IInspectable>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Composition::CompositionCapabilities,struct winrt::Windows::Foundation::IInspectable>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Core::CoreDispatcher,struct winrt::Windows::UI::Core::AcceleratorKeyEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Core::CoreWindow,struct winrt::Windows::UI::Core::KeyEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Core::CoreWindow,struct winrt::Windows::UI::Core::PointerEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Core::CoreWindow,struct winrt::Windows::UI::Core::VisibilityChangedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::ViewManagement::UISettings,struct winrt::Windows::Foundation::IInspectable>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Controls::Control,struct winrt::Windows::UI::Xaml::Controls::FocusDisengagedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Controls::Control,struct winrt::Windows::UI::Xaml::Controls::FocusEngagedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Controls::ListViewBase,struct winrt::Windows::UI::Xaml::Controls::ContainerContentChangingEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Controls::ListViewBase,struct winrt::Windows::UI::Xaml::Controls::DragItemsCompletedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Controls::Primitives::FlyoutBase,struct winrt::Windows::UI::Xaml::Controls::Primitives::FlyoutBaseClosingEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Controls::SplitView,struct winrt::Windows::Foundation::IInspectable>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Controls::SplitView,struct winrt::Windows::UI::Xaml::Controls::SplitViewPaneClosingEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Controls::TextBox,struct winrt::Windows::UI::Xaml::Controls::TextBoxTextChangingEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::FrameworkElement,struct winrt::Windows::UI::Xaml::EffectiveViewportChangedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Input::XamlUICommand,struct winrt::Windows::UI::Xaml::Input::ExecuteRequestedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::UIElement,struct winrt::Windows::UI::Xaml::BringIntoViewRequestedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::UIElement,struct winrt::Windows::UI::Xaml::Input::AccessKeyInvokedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::UIElement,struct winrt::Windows::UI::Xaml::Input::GettingFocusEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::ApplicationModel::Core::CoreApplicationViewTitleBar, struct winrt::Windows::Foundation::IInspectable>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::Foundation::IInspectable, struct winrt::Windows::Foundation::IInspectable>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::Foundation::IInspectable, struct winrt::Windows::UI::Composition::CompositionBatchCompletedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::Graphics::Display::DisplayInformation, struct winrt::Windows::Foundation::IInspectable>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Composition::CompositionCapabilities, struct winrt::Windows::Foundation::IInspectable>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Core::CoreDispatcher, struct winrt::Windows::UI::Core::AcceleratorKeyEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Core::CoreWindow, struct winrt::Windows::UI::Core::KeyEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Core::CoreWindow, struct winrt::Windows::UI::Core::PointerEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Core::CoreWindow, struct winrt::Windows::UI::Core::VisibilityChangedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::ViewManagement::UISettings, struct winrt::Windows::Foundation::IInspectable>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Controls::Control, struct winrt::Windows::UI::Xaml::Controls::FocusDisengagedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Controls::Control, struct winrt::Windows::UI::Xaml::Controls::FocusEngagedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Controls::ListViewBase, struct winrt::Windows::UI::Xaml::Controls::ContainerContentChangingEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Controls::ListViewBase, struct winrt::Windows::UI::Xaml::Controls::DragItemsCompletedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Controls::Primitives::FlyoutBase, struct winrt::Windows::UI::Xaml::Controls::Primitives::FlyoutBaseClosingEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Controls::SplitView, struct winrt::Windows::Foundation::IInspectable>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Controls::SplitView, struct winrt::Windows::UI::Xaml::Controls::SplitViewPaneClosingEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Controls::TextBox, struct winrt::Windows::UI::Xaml::Controls::TextBoxTextChangingEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::FrameworkElement, struct winrt::Windows::UI::Xaml::EffectiveViewportChangedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::Input::XamlUICommand, struct winrt::Windows::UI::Xaml::Input::ExecuteRequestedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::UIElement, struct winrt::Windows::UI::Xaml::BringIntoViewRequestedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::UIElement, struct winrt::Windows::UI::Xaml::Input::AccessKeyInvokedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::UIElement, struct winrt::Windows::UI::Xaml::Input::GettingFocusEventArgs>>();
 }

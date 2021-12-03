@@ -27,7 +27,7 @@ void ImageIcon::OnApplyTemplate()
     }
 }
 
-void  ImageIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void ImageIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (auto const image = m_rootImage.get())
     {

@@ -4,13 +4,13 @@
 //
 //       LottieGen version:
 //           7.1.0+ge1fa92580f
-//       
+//
 //       Command:
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedSettingsVisualSource.json
-//       
+//
 //       Input file:
 //           AnimatedSettingsVisualSource.json (28705 bytes created 23:37-07:00 Oct 5 2021)
-//       
+//
 //       LottieGen source:
 //           http://aka.ms/Lottie
 //
@@ -53,8 +53,7 @@
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
 #ifdef BUILD_WINDOWS
-namespace ABI
-{
+namespace ABI {
 #include <Windows.Graphics.Effects.Interop.h>
 }
 #else
@@ -70,25 +69,25 @@ using namespace winrt::Windows::UI;
 using namespace winrt::Windows::UI::Composition;
 using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
-namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
-{
-    CppWinRTActivatableClassWithBasicFactory(AnimatedSettingsVisualSource)
+namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals {
+CppWinRTActivatableClassWithBasicFactory(AnimatedSettingsVisualSource)
 }
 #include "AnimatedVisuals\AnimatedSettingsVisualSource.g.cpp"
 
-class CanvasGeometry : public winrt::implements<CanvasGeometry,
-    IGeometrySource2D,
-    ::ABI::Windows::Graphics::IGeometrySource2DInterop>
+class CanvasGeometry : public winrt::implements<CanvasGeometry, IGeometrySource2D, ::ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
     winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 
 public:
-    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry)
-        : _geometry{ geometry }
-    { }
+    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry) : _geometry{ geometry }
+    {
+    }
 
     // IGeometrySource2D.
-    winrt::com_ptr<ID2D1Geometry> Geometry() { return _geometry; }
+    winrt::com_ptr<ID2D1Geometry> Geometry()
+    {
+        return _geometry;
+    }
 
     // IGeometrySource2DInterop.
     IFACEMETHODIMP GetGeometry(ID2D1Geometry** value) override
@@ -103,9 +102,8 @@ public:
         return E_NOTIMPL;
     }
 };
-class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<AnimatedSettingsVisualSource_AnimatedVisual,
-        winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
-        IClosable>
+class AnimatedSettingsVisualSource_AnimatedVisual
+    : public winrt::implements<AnimatedSettingsVisualSource_AnimatedVisual, winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual, IClosable>
 {
     winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
     static constexpr int64_t c_durationTicks{ 20000000L };
@@ -122,11 +120,7 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
     StepEasingFunction _holdThenStepEasingFunction{ nullptr };
     StepEasingFunction _stepThenHoldEasingFunction{ nullptr };
 
-    static void StartProgressBoundAnimation(
-        CompositionObject target,
-        winrt::hstring animatedPropertyName,
-        CompositionAnimation animation,
-        ExpressionAnimation controllerProgressExpression)
+    static void StartProgressBoundAnimation(CompositionObject target, winrt::hstring animatedPropertyName, CompositionAnimation animation, ExpressionAnimation controllerProgressExpression)
     {
         target.StartAnimation(animatedPropertyName, animation);
         const auto controller = target.TryGetAnimationController(animatedPropertyName);
@@ -134,12 +128,7 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
         controller.StartAnimation(L"Progress", controllerProgressExpression);
     }
 
-    void BindProperty(
-        CompositionObject target,
-        winrt::hstring animatedPropertyName,
-        winrt::hstring expression,
-        winrt::hstring referenceParameterName,
-        CompositionObject referencedObject)
+    void BindProperty(CompositionObject target, winrt::hstring animatedPropertyName, winrt::hstring expression, winrt::hstring referenceParameterName, CompositionObject referencedObject)
     {
         _reusableExpressionAnimation.ClearAllParameters();
         _reusableExpressionAnimation.Expression(expression);
@@ -194,19 +183,14 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
     // - Path 4+Path 3+Path 2+Path 1.PathGeometry
     winrt::com_ptr<CanvasGeometry> Geometry_0()
     {
-        winrt::com_ptr<ID2D1Geometry> geometries[4]
-        {
+        winrt::com_ptr<ID2D1Geometry> geometries[4]{
             Geometry_1().get()->Geometry(),
             Geometry_2().get()->Geometry(),
             Geometry_3().get()->Geometry(),
             Geometry_4().get()->Geometry(),
         };
         winrt::com_ptr<ID2D1GeometryGroup> group{ nullptr };
-        winrt::check_hresult(_d2dFactory->CreateGeometryGroup(
-            D2D1_FILL_MODE_WINDING,
-            (ID2D1Geometry**)(&geometries),
-            4,
-            group.put()));
+        winrt::check_hresult(_d2dFactory->CreateGeometryGroup(D2D1_FILL_MODE_WINDING, (ID2D1Geometry**)(&geometries), 4, group.put()));
         auto result = winrt::make_self<CanvasGeometry>(group);
         return result;
     }
@@ -359,7 +343,12 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
     CompositionColorBrush ThemeColor_Foreground()
     {
         const auto result = _themeColor_Foreground = _c.CreateColorBrush();
-        BindProperty(result, L"Color", L"ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties);
+        BindProperty(
+            result,
+            L"Color",
+            L"ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)",
+            L"_theme",
+            _themeProperties);
         return result;
     }
 
@@ -620,12 +609,8 @@ class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<Ani
     }
 
 public:
-    AnimatedSettingsVisualSource_AnimatedVisual(
-        Compositor compositor,
-        CompositionPropertySet themeProperties)
-        : _c{compositor}
-        , _themeProperties{themeProperties}
-        , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
+    AnimatedSettingsVisualSource_AnimatedVisual(Compositor compositor, CompositionPropertySet themeProperties) :
+        _c{ compositor }, _themeProperties{ themeProperties }, _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
     {
         winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.put()));
         const auto _ = Root();
@@ -656,7 +641,8 @@ public:
 
     static bool IsRuntimeCompatible()
     {
-        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 7);
+        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(
+            L"Windows.Foundation.UniversalApiContract", 7);
     }
 };
 
@@ -690,25 +676,20 @@ void AnimatedSettingsVisualSource::Foreground(Color value)
     }
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedSettingsVisualSource::TryCreateAnimatedVisual(
-    Compositor const& compositor)
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedSettingsVisualSource::TryCreateAnimatedVisual(Compositor const& compositor)
 {
     IInspectable diagnostics = nullptr;
     return TryCreateAnimatedVisual(compositor, diagnostics);
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedSettingsVisualSource::TryCreateAnimatedVisual(
-    Compositor const& compositor,
-    IInspectable& diagnostics)
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedSettingsVisualSource::TryCreateAnimatedVisual(Compositor const& compositor, IInspectable& diagnostics)
 {
     const auto _ = EnsureThemeProperties(compositor);
     diagnostics = nullptr;
 
     if (AnimatedSettingsVisualSource_AnimatedVisual::IsRuntimeCompatible())
     {
-        return winrt::make<AnimatedSettingsVisualSource_AnimatedVisual>(
-            compositor,
-            _themeProperties);
+        return winrt::make<AnimatedSettingsVisualSource_AnimatedVisual>(compositor, _themeProperties);
     }
 
     return nullptr;
@@ -736,23 +717,21 @@ double AnimatedSettingsVisualSource::FrameToProgress(double frameNumber)
 
 winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedSettingsVisualSource::Markers()
 {
-    return winrt::single_threaded_map<winrt::hstring, double>(
-        std::map<winrt::hstring, double>
-        {
-            { L"NormalToPointerOver_Start", 0.0 },
-            { L"NormalToPointerOver_End", 0.0754166666666667 },
-            { L"NormalToPressed_Start", 0.08375 },
-            { L"NormalToPressed_End", 0.15875 },
-            { L"PointerOverToNormal_Start", 0.167083333333333 },
-            { L"PointerOverToNormal_End", 0.242083333333333 },
-            { L"PointerOverToPressed_Start", 0.250416666666667 },
-            { L"PointerOverToPressed_End", 0.325416666666667 },
-            { L"PressedToNormal_Start", 0.33375 },
-            { L"PressedToNormal_End", 0.65875 },
-            { L"PressedToPointerOver_Start", 0.667083333333333 },
-            { L"PressedToPointerOver_End", 0.992083333333333 },
-        }
-    ).GetView();
+    return winrt::single_threaded_map<winrt::hstring, double>(std::map<winrt::hstring, double>{
+                                                                  { L"NormalToPointerOver_Start", 0.0 },
+                                                                  { L"NormalToPointerOver_End", 0.0754166666666667 },
+                                                                  { L"NormalToPressed_Start", 0.08375 },
+                                                                  { L"NormalToPressed_End", 0.15875 },
+                                                                  { L"PointerOverToNormal_Start", 0.167083333333333 },
+                                                                  { L"PointerOverToNormal_End", 0.242083333333333 },
+                                                                  { L"PointerOverToPressed_Start", 0.250416666666667 },
+                                                                  { L"PointerOverToPressed_End", 0.325416666666667 },
+                                                                  { L"PressedToNormal_Start", 0.33375 },
+                                                                  { L"PressedToNormal_End", 0.65875 },
+                                                                  { L"PressedToPointerOver_Start", 0.667083333333333 },
+                                                                  { L"PressedToPointerOver_End", 0.992083333333333 },
+                                                              })
+        .GetView();
 }
 
 void AnimatedSettingsVisualSource::SetColorProperty(hstring const& propertyName, Color value)

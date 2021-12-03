@@ -30,8 +30,8 @@ enum class InteractionTrackerAsyncOperationTrigger
     MouseWheel = 0x08,
 };
 
-// Used as a workaround for InteractionTracker bug "12465209 - InteractionTracker remains silent when calling TryUpdatePosition with the current position":
-// Maximum number of UI thread ticks processed while waiting for non-animated operations to complete.
+// Used as a workaround for InteractionTracker bug "12465209 - InteractionTracker remains silent when calling TryUpdatePosition
+// with the current position": Maximum number of UI thread ticks processed while waiting for non-animated operations to complete.
 const int c_maxNonAnimatedOperationTicks = 10;
 
 // Number of UI thread ticks elapsed before a queued operation gets processed to allow any pending size
@@ -62,10 +62,10 @@ public:
     {
         switch (m_operationType)
         {
-            case InteractionTrackerAsyncOperationType::TryUpdatePosition:
-            case InteractionTrackerAsyncOperationType::TryUpdatePositionBy:
-            case InteractionTrackerAsyncOperationType::TryUpdateScale:
-                return false;
+        case InteractionTrackerAsyncOperationType::TryUpdatePosition:
+        case InteractionTrackerAsyncOperationType::TryUpdatePositionBy:
+        case InteractionTrackerAsyncOperationType::TryUpdateScale:
+            return false;
         }
         return true;
     }
@@ -137,7 +137,8 @@ public:
     // Returns True when the operation fulfills a horizontal IScrollController request.
     bool IsHorizontalScrollControllerRequest() const
     {
-        return static_cast<int>(m_operationTrigger) & static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest);
+        return static_cast<int>(m_operationTrigger) &
+               static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest);
     }
 
     // Returns True when the operation fulfills a vertical IScrollController request.
@@ -151,11 +152,13 @@ public:
         SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isFromHorizontalScrollController);
 
         if (isFromHorizontalScrollController)
-            m_operationTrigger = static_cast<InteractionTrackerAsyncOperationTrigger>(static_cast<int>(m_operationTrigger) | 
-                                 static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest));
+            m_operationTrigger = static_cast<InteractionTrackerAsyncOperationTrigger>(
+                static_cast<int>(m_operationTrigger) |
+                static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest));
         else
-            m_operationTrigger = static_cast<InteractionTrackerAsyncOperationTrigger>(static_cast<int>(m_operationTrigger) |
-                                 static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest));
+            m_operationTrigger = static_cast<InteractionTrackerAsyncOperationTrigger>(
+                static_cast<int>(m_operationTrigger) |
+                static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest));
     }
 
     // Returns True when the post-processing ticks count has reached 0
@@ -165,7 +168,7 @@ public:
         MUX_ASSERT(m_postProcessingTicksCountdown > 0);
 
         m_postProcessingTicksCountdown--;
-        
+
         SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, m_postProcessingTicksCountdown);
         return m_postProcessingTicksCountdown == 0;
     }
@@ -175,7 +178,7 @@ public:
     {
         MUX_ASSERT(m_preProcessingTicksCountdown > 0);
 
-        m_preProcessingTicksCountdown--;        
+        m_preProcessingTicksCountdown--;
 
         SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, m_preProcessingTicksCountdown);
         return m_preProcessingTicksCountdown == 0;
@@ -255,4 +258,3 @@ private:
     // Null by default and optionally set to a prior operation that needs to complete before this one can start.
     std::shared_ptr<InteractionTrackerAsyncOperation> m_requiredOperation{ nullptr };
 };
-

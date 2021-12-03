@@ -75,7 +75,7 @@ void NavigationViewItem::OnApplyTemplate()
     NavigationViewItemBase::OnApplyTemplate();
 
     // Find selection indicator
-    // Retrieve pointers to stable controls 
+    // Retrieve pointers to stable controls
     winrt::IControlProtected controlProtected = *this;
     m_helper.Init(controlProtected);
 
@@ -91,7 +91,7 @@ void NavigationViewItem::OnApplyTemplate()
 
     HookInputEvents(controlProtected);
 
-    m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this,  &NavigationViewItem::OnIsEnabledChanged });
+    m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this, &NavigationViewItem::OnIsEnabledChanged });
 
     m_toolTip.set(GetTemplateChildT<winrt::ToolTip>(L"ToolTip"sv, controlProtected));
 
@@ -102,7 +102,7 @@ void NavigationViewItem::OnApplyTemplate()
     else
     {
         // If the NVI is not prepared in an ItemPresenter, it will not have reference to SplitView. So check OnLoaded
-        // if it the reference has been manually set in NavigationViewItemBase::OnLoaded(). 
+        // if it the reference has been manually set in NavigationViewItemBase::OnLoaded().
         Loaded({ this, &NavigationViewItem::OnLoaded });
     }
 
@@ -114,8 +114,10 @@ void NavigationViewItem::OnApplyTemplate()
             m_repeater.set(repeater);
 
             // Primary element setup happens in NavigationView
-            m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { nvImpl,  &NavigationView::OnRepeaterElementPrepared });
-            m_repeaterElementClearingRevoker = repeater.ElementClearing(winrt::auto_revoke, { nvImpl, &NavigationView::OnRepeaterElementClearing });
+            m_repeaterElementPreparedRevoker =
+                repeater.ElementPrepared(winrt::auto_revoke, { nvImpl, &NavigationView::OnRepeaterElementPrepared });
+            m_repeaterElementClearingRevoker =
+                repeater.ElementClearing(winrt::auto_revoke, { nvImpl, &NavigationView::OnRepeaterElementClearing });
 
             repeater.ItemTemplate(*(nvImpl->GetNavigationViewItemsFactory()));
         }
@@ -152,8 +154,7 @@ void NavigationViewItem::UpdateRepeaterItemsSource()
 {
     if (auto repeater = m_repeater.get())
     {
-        auto const itemsSource = [this]()
-        {
+        auto const itemsSource = [this]() {
             if (auto const menuItemsSource = MenuItemsSource())
             {
                 return menuItemsSource;
@@ -162,7 +163,8 @@ void NavigationViewItem::UpdateRepeaterItemsSource()
         }();
         m_itemsSourceViewCollectionChangedRevoker.revoke();
         repeater.ItemsSource(itemsSource);
-        m_itemsSourceViewCollectionChangedRevoker = repeater.ItemsSourceView().CollectionChanged(winrt::auto_revoke, { this, &NavigationViewItem::OnItemsSourceViewChanged });
+        m_itemsSourceViewCollectionChangedRevoker =
+            repeater.ItemsSourceView().CollectionChanged(winrt::auto_revoke, { this, &NavigationViewItem::OnItemsSourceViewChanged });
     }
 }
 
@@ -170,10 +172,10 @@ void NavigationViewItem::OnItemsSourceViewChanged(const winrt::IInspectable& /*s
 {
     UpdateVisualStateForChevron();
 }
- 
+
 winrt::UIElement NavigationViewItem::GetSelectionIndicator() const
 {
-    auto selectIndicator = m_helper.GetSelectionIndicator(); 
+    auto selectIndicator = m_helper.GetSelectionIndicator();
     if (auto presenter = GetPresenter())
     {
         selectIndicator = presenter->GetSelectionIndicator();
@@ -187,8 +189,7 @@ void NavigationViewItem::OnSplitViewPropertyChanged(const winrt::DependencyObjec
     {
         UpdateCompactPaneLength();
     }
-    else if (args == winrt::SplitView::IsPaneOpenProperty() ||
-        args == winrt::SplitView::DisplayModeProperty())
+    else if (args == winrt::SplitView::IsPaneOpenProperty() || args == winrt::SplitView::DisplayModeProperty())
     {
         UpdateIsClosedCompact();
         ReparentRepeater();
@@ -214,8 +215,8 @@ void NavigationViewItem::UpdateIsClosedCompact()
     if (const auto splitView = GetSplitView())
     {
         // Check if the pane is closed and if the splitview is in either compact mode.
-        m_isClosedCompact = !splitView.IsPaneOpen()
-            && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline);
+        m_isClosedCompact = !splitView.IsPaneOpen() && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay ||
+                                                        splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline);
 
         UpdateVisualState(true /*useTransitions*/);
     }
@@ -224,7 +225,7 @@ void NavigationViewItem::UpdateIsClosedCompact()
 void NavigationViewItem::UpdateNavigationViewItemToolTip()
 {
     auto toolTipContent = winrt::ToolTipService::GetToolTip(*this);
-    
+
     // no custom tooltip, then use suggested tooltip
     if (!toolTipContent || toolTipContent == m_suggestedToolTipContent.get())
     {
@@ -246,10 +247,9 @@ void NavigationViewItem::UpdateNavigationViewItemToolTip()
 void NavigationViewItem::SuggestedToolTipChanged(winrt::IInspectable const& newContent)
 {
     auto potentialString = newContent.try_as<winrt::IPropertyValue>();
-    const bool validStringableToolTip = potentialString
-        && potentialString.Type() == winrt::PropertyType::String
-        && !potentialString.GetString().empty();
-    
+    const bool validStringableToolTip =
+        potentialString && potentialString.Type() == winrt::PropertyType::String && !potentialString.GetString().empty();
+
     winrt::IInspectable newToolTipContent{ nullptr };
     if (validStringableToolTip)
     {
@@ -276,11 +276,8 @@ void NavigationViewItem::OnIsExpandedPropertyChanged(const winrt::DependencyProp
     if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
     {
         auto navViewItemPeer = peer.as<winrt::NavigationViewItemAutomationPeer>();
-        winrt::get_self<NavigationViewItemAutomationPeer>(navViewItemPeer)->RaiseExpandCollapseAutomationEvent(
-            IsExpanded() ?
-                winrt::ExpandCollapseState::Expanded :
-                winrt::ExpandCollapseState::Collapsed
-        );
+        winrt::get_self<NavigationViewItemAutomationPeer>(navViewItemPeer)
+            ->RaiseExpandCollapseAutomationEvent(IsExpanded() ? winrt::ExpandCollapseState::Expanded : winrt::ExpandCollapseState::Collapsed);
     }
     UpdateVisualState(true);
 }
@@ -432,8 +429,7 @@ void NavigationViewItem::UpdateVisualStateForPointer()
     const auto isEnabled = IsEnabled();
     const auto enabledStateValue = isEnabled ? c_enabled : c_disabled;
     // DisabledStates and CommonStates
-    const auto selectedStateValue = [this, isEnabled, isSelected = IsSelected()]()
-    {
+    const auto selectedStateValue = [this, isEnabled, isSelected = IsSelected()]() {
         if (isEnabled)
         {
             if (isSelected)
@@ -503,7 +499,7 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
 
     const bool shouldShowIcon = ShouldShowIcon();
     const bool shouldShowContent = ShouldShowContent();
-  
+
     if (IsOnLeftNav())
     {
         if (auto const presenter = m_navigationViewItemPresenter.get())
@@ -513,8 +509,8 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
         }
 
         UpdateVisualStateForClosedCompact();
-    } 
-   
+    }
+
     UpdateVisualStateForToolTip();
 
     UpdateVisualStateForIconAndContent(shouldShowIcon, shouldShowContent);
@@ -531,31 +527,42 @@ void NavigationViewItem::UpdateVisualStateForChevron()
 {
     if (auto const presenter = m_navigationViewItemPresenter.get())
     {
-        enum class PointerStateValue{ Normal, PointerOver, Pressed };
-        enum class ChevronStateValue { ChevronHidden, ChevronVisibleOpen, ChevronVisibleClosed };
-        const auto pointerStateValue = [this, isEnabled = IsEnabled(), isSelected = IsSelected()]()
+        enum class PointerStateValue
         {
+            Normal,
+            PointerOver,
+            Pressed
+        };
+        enum class ChevronStateValue
+        {
+            ChevronHidden,
+            ChevronVisibleOpen,
+            ChevronVisibleClosed
+        };
+        const auto pointerStateValue = [this, isEnabled = IsEnabled(), isSelected = IsSelected()]() {
             if (isEnabled)
             {
                 if (m_isPointerOver)
                 {
                     if (m_isPressed)
                     {
-                        return PointerStateValue::Pressed; //Pressed
+                        return PointerStateValue::Pressed; // Pressed
                     }
                     else
                     {
-                        return PointerStateValue::PointerOver; //PointerOver
+                        return PointerStateValue::PointerOver; // PointerOver
                     }
                 }
                 else if (m_isPressed)
                 {
-                    return PointerStateValue::Pressed; //Pressed
+                    return PointerStateValue::Pressed; // Pressed
                 }
             }
-            return PointerStateValue::Normal; //Normal
+            return PointerStateValue::Normal; // Normal
         }();
-        auto const chevronState = HasChildren() && !(m_isClosedCompact && ShouldRepeaterShowInFlyout()) ? (IsExpanded() ? ChevronStateValue::ChevronVisibleOpen : ChevronStateValue::ChevronVisibleClosed) : ChevronStateValue::ChevronHidden;
+        auto const chevronState = HasChildren() && !(m_isClosedCompact && ShouldRepeaterShowInFlyout())
+                                      ? (IsExpanded() ? ChevronStateValue::ChevronVisibleOpen : ChevronStateValue::ChevronVisibleClosed)
+                                      : ChevronStateValue::ChevronHidden;
 
         auto const pointerChevronState = [this, pointerStateValue, chevronState]() {
             if (chevronState == ChevronStateValue::ChevronHidden)
@@ -626,9 +633,9 @@ void NavigationViewItem::UpdateVisualStateForChevron()
 
 bool NavigationViewItem::HasChildren()
 {
-    return MenuItems().Size() > 0
-        || (MenuItemsSource() != nullptr && m_repeater != nullptr && m_repeater.get().ItemsSourceView().Count() > 0)
-        || HasUnrealizedChildren();
+    return MenuItems().Size() > 0 ||
+           (MenuItemsSource() != nullptr && m_repeater != nullptr && m_repeater.get().ItemsSourceView().Count() > 0) ||
+           HasUnrealizedChildren();
 }
 
 bool NavigationViewItem::ShouldShowIcon()
@@ -706,10 +713,7 @@ void NavigationViewItem::ShowHideChildren()
                 // There seems to be a race condition happening which sometimes
                 // prevents the opening of the flyout. Queue callback as a workaround.
                 SharedHelpers::QueueCallbackForCompositionRendering(
-                    [strongThis = get_strong()]()
-                {
-                    winrt::FlyoutBase::ShowAttachedFlyout(strongThis->m_rootGrid.get());
-                });
+                    [strongThis = get_strong()]() { winrt::FlyoutBase::ShowAttachedFlyout(strongThis->m_rootGrid.get()); });
             }
             else
             {
@@ -832,9 +836,9 @@ void NavigationViewItem::OnGotFocus(winrt::RoutedEventArgs const& e)
     auto originalSource = e.OriginalSource().try_as<winrt::Control>();
     if (originalSource)
     {
-        // It's used to support bluebar have difference appearance between focused and focused+selection. 
-        // For example, we can move the SelectionIndicator 3px up when focused and selected to make sure focus rectange doesn't override SelectionIndicator. 
-        // If it's a pointer or programatic, no focus rectangle, so no action
+        // It's used to support bluebar have difference appearance between focused and focused+selection.
+        // For example, we can move the SelectionIndicator 3px up when focused and selected to make sure focus rectange doesn't
+        // override SelectionIndicator. If it's a pointer or programatic, no focus rectangle, so no action
         const auto focusState = originalSource.FocusState();
         if (focusState == winrt::FocusState::Keyboard)
         {
@@ -1018,16 +1022,14 @@ void NavigationViewItem::ProcessPointerCanceled(const winrt::PointerRoutedEventA
     UpdateVisualState(true);
 }
 
-bool NavigationViewItem::IsOutOfControlBounds(const winrt::Point& point) {
+bool NavigationViewItem::IsOutOfControlBounds(const winrt::Point& point)
+{
     // This is a conservative check. It is okay to say we are
     // out of the bounds when close to the edge to account for rounding.
     const auto tolerance = 1.0;
     const auto actualWidth = ActualWidth();
     const auto actualHeight = ActualHeight();
-    return point.X < tolerance ||
-        point.X > actualWidth - tolerance ||
-        point.Y < tolerance ||
-        point.Y  > actualHeight - tolerance;
+    return point.X < tolerance || point.X > actualWidth - tolerance || point.Y < tolerance || point.Y > actualHeight - tolerance;
 }
 
 void NavigationViewItem::ProcessPointerOver(const winrt::PointerRoutedEventArgs& args)
@@ -1046,8 +1048,7 @@ void NavigationViewItem::ProcessPointerOver(const winrt::PointerRoutedEventArgs&
 
 void NavigationViewItem::HookInputEvents(const winrt::IControlProtected& controlProtected)
 {
-    winrt::UIElement const presenter = [this, controlProtected]()
-    {
+    winrt::UIElement const presenter = [this, controlProtected]() {
         if (auto presenter = GetTemplateChildT<winrt::NavigationViewItemPresenter>(c_navigationViewItemPresenterName, controlProtected))
         {
             m_navigationViewItemPresenter.set(presenter);
@@ -1060,27 +1061,21 @@ void NavigationViewItem::HookInputEvents(const winrt::IControlProtected& control
     MUX_ASSERT(presenter);
 
     // Handlers that set flags are skipped when args.Handled is already True.
-    m_presenterPointerPressedRevoker = presenter.PointerPressed(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerPressed });
-    m_presenterPointerEnteredRevoker = presenter.PointerEntered(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerEntered });
+    m_presenterPointerPressedRevoker =
+        presenter.PointerPressed(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerPressed });
+    m_presenterPointerEnteredRevoker =
+        presenter.PointerEntered(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerEntered });
     m_presenterPointerMovedRevoker = presenter.PointerMoved(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerMoved });
 
     // Handlers that reset flags are not skipped when args.Handled is already True to avoid broken states.
     m_presenterPointerReleasedRevoker = AddRoutedEventHandler<RoutedEventType::PointerReleased>(
-        presenter,
-        { this, &NavigationViewItem::OnPresenterPointerReleased },
-        true /*handledEventsToo*/);
+        presenter, { this, &NavigationViewItem::OnPresenterPointerReleased }, true /*handledEventsToo*/);
     m_presenterPointerExitedRevoker = AddRoutedEventHandler<RoutedEventType::PointerExited>(
-        presenter,
-        { this, &NavigationViewItem::OnPresenterPointerExited },
-        true /*handledEventsToo*/);
+        presenter, { this, &NavigationViewItem::OnPresenterPointerExited }, true /*handledEventsToo*/);
     m_presenterPointerCanceledRevoker = AddRoutedEventHandler<RoutedEventType::PointerCanceled>(
-        presenter,
-        { this, &NavigationViewItem::OnPresenterPointerCanceled },
-        true /*handledEventsToo*/);
+        presenter, { this, &NavigationViewItem::OnPresenterPointerCanceled }, true /*handledEventsToo*/);
     m_presenterPointerCaptureLostRevoker = AddRoutedEventHandler<RoutedEventType::PointerCaptureLost>(
-        presenter,
-        { this, &NavigationViewItem::OnPresenterPointerCaptureLost },
-        true /*handledEventsToo*/);
+        presenter, { this, &NavigationViewItem::OnPresenterPointerCaptureLost }, true /*handledEventsToo*/);
 }
 
 void NavigationViewItem::UnhookInputEvents()
@@ -1116,12 +1111,12 @@ void NavigationViewItem::UnhookEventsAndClearFields()
 
 void NavigationViewItem::PrepNavigationViewItem(const winrt::SplitView& splitView)
 {
-    m_splitViewIsPaneOpenChangedRevoker = RegisterPropertyChanged(splitView,
-        winrt::SplitView::IsPaneOpenProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
-    m_splitViewDisplayModeChangedRevoker = RegisterPropertyChanged(splitView,
-        winrt::SplitView::DisplayModeProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
-    m_splitViewCompactPaneLengthChangedRevoker = RegisterPropertyChanged(splitView,
-        winrt::SplitView::CompactPaneLengthProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
+    m_splitViewIsPaneOpenChangedRevoker = RegisterPropertyChanged(
+        splitView, winrt::SplitView::IsPaneOpenProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
+    m_splitViewDisplayModeChangedRevoker = RegisterPropertyChanged(
+        splitView, winrt::SplitView::DisplayModeProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
+    m_splitViewCompactPaneLengthChangedRevoker = RegisterPropertyChanged(
+        splitView, winrt::SplitView::CompactPaneLengthProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
 
     UpdateCompactPaneLength();
     UpdateIsClosedCompact();

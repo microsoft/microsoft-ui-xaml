@@ -6,14 +6,12 @@
 #include "MenuBar.h"
 #include "MenuBarAutomationPeer.g.h"
 
-class MenuBarAutomationPeer :
-    public ReferenceTracker<MenuBarAutomationPeer, winrt::implementation::MenuBarAutomationPeerT>
+class MenuBarAutomationPeer : public ReferenceTracker<MenuBarAutomationPeer, winrt::implementation::MenuBarAutomationPeerT>
 {
 
 public:
     MenuBarAutomationPeer(winrt::MenuBar const& owner);
 
-    // IAutomationPeerOverrides 
+    // IAutomationPeerOverrides
     winrt::AutomationControlType GetAutomationControlTypeCore();
-
 };

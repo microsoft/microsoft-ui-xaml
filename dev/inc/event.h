@@ -19,9 +19,8 @@ protected:
     std::shared_ptr<std::map<int64_t, StorageT>> m_handlers;
 
 public:
-
-    event_base(const event_base &) = delete;
-    event_base & operator=(const event_base &) = delete;
+    event_base(const event_base&) = delete;
+    event_base& operator=(const event_base&) = delete;
 
     event_base() = default;
 
@@ -29,10 +28,10 @@ public:
     {
     }
 
-    winrt::event_token add(const T & value)
+    winrt::event_token add(const T& value)
     {
         auto token = InterlockedIncrement64(&s_eventHandlerId);
-        
+
         // Make a new map because add/remove during event call-out can happen and we want to
         // swap in a new container instead of modifying the one that we're iterating over.
         // This is a tradeoff -- either we copy the map every time during invoke in case add/remove
@@ -40,11 +39,11 @@ public:
         // we're copied from) choose the latter.
         auto handlers = std::make_shared<std::map<int64_t, StorageT>>();
 
-        if (auto * before = m_handlers.get())
+        if (auto* before = m_handlers.get())
         {
             handlers->insert(before->begin(), before->end());
         }
-        
+
         auto holder = Impl()->wrap(value);
         handlers->insert({ token, holder });
         m_handlers = std::move(handlers);
@@ -56,7 +55,7 @@ public:
         // See comment in add(), we make a copy of the map on add/remove just like the C++/WinRT event implementation.
         auto handlers = std::make_shared<std::map<int64_t, StorageT>>();
 
-        if (auto * before = m_handlers.get())
+        if (auto* before = m_handlers.get())
         {
             handlers->insert(before->begin(), before->end());
         }
@@ -65,13 +64,14 @@ public:
         m_handlers = std::move(handlers);
     }
 
-    template <typename... A> void operator()(A const & ... args) const
+    template <typename... A>
+    void operator()(A const&... args) const
     {
         auto handlers = m_handlers;
 
-        if (auto * map = handlers.get())
+        if (auto* map = handlers.get())
         {
-            for (const auto & pair : *map)
+            for (const auto& pair : *map)
             {
                 auto handler = Impl()->unwrap(pair.second);
                 handler(args...);
@@ -85,26 +85,25 @@ public:
     }
 
 private:
-    const ImplT* Impl() const { return static_cast<const ImplT*>(this); }
+    const ImplT* Impl() const
+    {
+        return static_cast<const ImplT*>(this);
+    }
 };
 
 template <typename T>
-class event_source :
-    public event_base<event_source<T>, T, tracker_ref<T>>,
-    public ReferenceTrackerContainerBase,
-    public ReferenceTrackerStorageHelper<event_source<T>, T>
+class event_source : public event_base<event_source<T>, T, tracker_ref<T>>,
+                     public ReferenceTrackerContainerBase,
+                     public ReferenceTrackerStorageHelper<event_source<T>, T>
 {
 public:
-    event_source(ITrackerHandleManager* owner)
-        : ReferenceTrackerContainerBase{ owner }
+    event_source(ITrackerHandleManager* owner) : ReferenceTrackerContainerBase{ owner }
     {
     }
 };
 
 // Bug #11634051 if we don't have winrt::Implements we can remove this.
 template <typename T>
-class event :
-    public event_base<event<T>, T, T>,
-    public NonReferenceTrackerStorageHelper<T>
+class event : public event_base<event<T>, T, T>, public NonReferenceTrackerStorageHelper<T>
 {
 };

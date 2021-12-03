@@ -10,9 +10,7 @@
 #include "ColorSpectrum.g.h"
 #include "ColorSpectrum.properties.h"
 
-class ColorSpectrum :
-    public ReferenceTracker<ColorSpectrum, winrt::implementation::ColorSpectrumT>,
-    public ColorSpectrumProperties
+class ColorSpectrum : public ReferenceTracker<ColorSpectrum, winrt::implementation::ColorSpectrumT>, public ColorSpectrumProperties
 {
 public:
     ColorSpectrum();
@@ -35,7 +33,6 @@ public:
     void RaiseColorChanged();
 
 private:
-
     // DependencyProperty changed event handlers
     void OnColorChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void OnHsvColorChanged(winrt::DependencyPropertyChangedEventArgs const& args);
@@ -74,7 +71,7 @@ private:
     static void FillPixelForBox(
         double x,
         double y,
-        const Hsv &baseHsv,
+        const Hsv& baseHsv,
         double minDimension,
         winrt::ColorSpectrumComponents components,
         double minHue,
@@ -94,7 +91,7 @@ private:
         double x,
         double y,
         double radius,
-        const Hsv &baseHsv,
+        const Hsv& baseHsv,
         winrt::ColorSpectrumComponents components,
         double minHue,
         double maxHue,

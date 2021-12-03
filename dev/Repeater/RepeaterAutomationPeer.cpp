@@ -12,8 +12,7 @@
 
 #include "RepeaterAutomationPeer.properties.cpp"
 
-RepeaterAutomationPeer::RepeaterAutomationPeer(winrt::ItemsRepeater const& owner) :
-    ReferenceTracker(owner)
+RepeaterAutomationPeer::RepeaterAutomationPeer(winrt::ItemsRepeater const& owner) : ReferenceTracker(owner)
 {
 }
 
@@ -66,11 +65,11 @@ winrt::AutomationControlType RepeaterAutomationPeer::GetAutomationControlTypeCor
 
 #pragma endregion
 
-// Get the immediate child element of repeater under which this childPeer came from. 
+// Get the immediate child element of repeater under which this childPeer came from.
 winrt::UIElement RepeaterAutomationPeer::GetElement(const winrt::AutomationPeer& childPeer, const winrt::ItemsRepeater& repeater)
 {
     auto childElement = static_cast<winrt::DependencyObject>(childPeer.as<winrt::FrameworkElementAutomationPeer>().Owner());
-    
+
     auto parent = CachedVisualTreeHelpers::GetParent(childElement);
     // Child peer could have given a descendant of the repeater's child. We
     // want to get to the immediate child.

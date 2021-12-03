@@ -6,9 +6,8 @@
 #include "SwipeItems.g.h"
 #include "SwipeItems.properties.h"
 
-class SwipeItems :
-    public ReferenceTracker<SwipeItems, winrt::implementation::SwipeItemsT, winrt::IObservableVector<winrt::SwipeItem>>,
-    public SwipeItemsProperties
+class SwipeItems : public ReferenceTracker<SwipeItems, winrt::implementation::SwipeItemsT, winrt::IObservableVector<winrt::SwipeItem>>,
+                   public SwipeItemsProperties
 {
 public:
     SwipeItems();
@@ -26,9 +25,18 @@ public:
     void Clear();
 
     // TODO:
-    winrt::IIterator<winrt::SwipeItem> First() { throw winrt::hresult_not_implemented(); }
-    uint32_t GetMany(uint32_t startIndex, winrt::array_view<winrt::SwipeItem> items) { throw winrt::hresult_not_implemented(); }
-    void ReplaceAll(winrt::array_view<winrt::SwipeItem const> items) { throw winrt::hresult_not_implemented(); }
+    winrt::IIterator<winrt::SwipeItem> First()
+    {
+        throw winrt::hresult_not_implemented();
+    }
+    uint32_t GetMany(uint32_t startIndex, winrt::array_view<winrt::SwipeItem> items)
+    {
+        throw winrt::hresult_not_implemented();
+    }
+    void ReplaceAll(winrt::array_view<winrt::SwipeItem const> items)
+    {
+        throw winrt::hresult_not_implemented();
+    }
 #pragma endregion
 
 #pragma region IObservableVector

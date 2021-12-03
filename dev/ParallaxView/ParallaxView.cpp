@@ -18,18 +18,14 @@ ParallaxView::ParallaxView()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_ParallaxView);
 
     std::shared_ptr<ScrollInputHelper> scrollInputHelper(
-        std::make_shared<ScrollInputHelper>(
-            this,
-            [this](bool horizontalInfoChanged, bool verticalInfoChanged)
-            { 
-                OnScrollInputHelperInfoChanged(horizontalInfoChanged, verticalInfoChanged);
-            }));
+        std::make_shared<ScrollInputHelper>(this, [this](bool horizontalInfoChanged, bool verticalInfoChanged) {
+            OnScrollInputHelperInfoChanged(horizontalInfoChanged, verticalInfoChanged);
+        }));
     m_scrollInputHelper = scrollInputHelper;
 
     HookLoaded();
     HookSizeChanged();
 }
-
 
 void ParallaxView::RefreshAutomaticHorizontalOffsets()
 {
@@ -64,16 +60,14 @@ winrt::Size ParallaxView::MeasureOverride(winrt::Size const& availableSize)
     {
         // Include the HorizontalShift/VerticalShift amounts in the available size so the desired child size
         // accounts for the parallaxing effect.
-        const winrt::Size childAvailableSize { 
-            static_cast<float>(availableSize.Width + abs(HorizontalShift())), 
-            static_cast<float>(availableSize.Height + abs(VerticalShift())) };
+        const winrt::Size childAvailableSize{ static_cast<float>(availableSize.Width + abs(HorizontalShift())),
+                                              static_cast<float>(availableSize.Height + abs(VerticalShift())) };
         child.Measure(childAvailableSize);
         childDesiredSize = child.DesiredSize();
     }
-    
-    return {
-        std::isinf(availableSize.Width) ? childDesiredSize.Width : availableSize.Width,
-        std::isinf(availableSize.Height) ? childDesiredSize.Height : availableSize.Height };
+
+    return { std::isinf(availableSize.Width) ? childDesiredSize.Width : availableSize.Width,
+             std::isinf(availableSize.Height) ? childDesiredSize.Height : availableSize.Height };
 }
 
 winrt::Size ParallaxView::ArrangeOverride(winrt::Size const& finalSize)
@@ -87,9 +81,10 @@ winrt::Size ParallaxView::ArrangeOverride(winrt::Size const& finalSize)
 
         if (HorizontalShift() != 0.0 && finalRect.Width < finalSize.Width + abs(HorizontalShift()))
         {
-            // The child is parallaxing horizontally. Ensure that its arrange width exceeds the ParallaxView's arrange width by at least HorizontalShift.
-            // Expand its height by the same ratio if it's stretched vertically.
-            const float stretchRatio = finalRect.Width > 0.0f ? (finalSize.Width + static_cast<float>(abs(HorizontalShift()))) / finalRect.Width : 0.0f;
+            // The child is parallaxing horizontally. Ensure that its arrange width exceeds the ParallaxView's arrange width by at
+            // least HorizontalShift. Expand its height by the same ratio if it's stretched vertically.
+            const float stretchRatio =
+                finalRect.Width > 0.0f ? (finalSize.Width + static_cast<float>(abs(HorizontalShift()))) / finalRect.Width : 0.0f;
             finalRect.Width = finalSize.Width + static_cast<float>(abs(HorizontalShift()));
             if (stretchRatio != 0.0f && childAsFE && isnan(childAsFE.Height()) && childAsFE.VerticalAlignment() == winrt::VerticalAlignment::Stretch)
             {
@@ -98,11 +93,13 @@ winrt::Size ParallaxView::ArrangeOverride(winrt::Size const& finalSize)
         }
         if (VerticalShift() != 0.0 && finalRect.Height < finalSize.Height + abs(VerticalShift()))
         {
-            // The child is parallaxing vertically. Ensure that its arrange height exceeds the ParallaxView's arrange height by at least VerticalShift.
-            // Expand its width by the same ratio if it's stretched horizontally.
-            const float stretchRatio = finalRect.Height > 0.0f ? (finalSize.Height + static_cast<float>(abs(VerticalShift()))) / finalRect.Height : 0.0f;
+            // The child is parallaxing vertically. Ensure that its arrange height exceeds the ParallaxView's arrange height by at
+            // least VerticalShift. Expand its width by the same ratio if it's stretched horizontally.
+            const float stretchRatio =
+                finalRect.Height > 0.0f ? (finalSize.Height + static_cast<float>(abs(VerticalShift()))) / finalRect.Height : 0.0f;
             finalRect.Height = finalSize.Height + static_cast<float>(abs(VerticalShift()));
-            if (stretchRatio != 0.0f && childAsFE && isnan(childAsFE.Width()) && childAsFE.HorizontalAlignment() == winrt::HorizontalAlignment::Stretch)
+            if (stretchRatio != 0.0f && childAsFE && isnan(childAsFE.Width()) &&
+                childAsFE.HorizontalAlignment() == winrt::HorizontalAlignment::Stretch)
             {
                 finalRect.Width *= stretchRatio;
             }
@@ -169,8 +166,8 @@ winrt::Size ParallaxView::ArrangeOverride(winrt::Size const& finalSize)
 
         const winrt::Rect currentClipRect = rectangleGeometry.Rect();
 
-        if (currentClipRect.X != 0.0f || currentClipRect.Width != finalSize.Width ||
-            currentClipRect.Y != 0.0f || currentClipRect.Height != finalSize.Height)
+        if (currentClipRect.X != 0.0f || currentClipRect.Width != finalSize.Width || currentClipRect.Y != 0.0f ||
+            currentClipRect.Height != finalSize.Height)
         {
             const winrt::Rect newClipRect{ 0.0f, 0.0f, finalSize.Width, finalSize.Height };
             rectangleGeometry.Rect(newClipRect);
@@ -200,10 +197,8 @@ wstring_view ParallaxView::GetVisualTargetedPropertyName(winrt::Orientation orie
     }
 }
 
-
 // Invoked when a dependency property of this ParallaxView has changed.
-void ParallaxView::OnPropertyChanged(
-    const winrt::DependencyPropertyChangedEventArgs& args)
+void ParallaxView::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty dependencyProperty = args.Property();
 
@@ -213,11 +208,10 @@ void ParallaxView::OnPropertyChanged(
         winrt::IInspectable newChild = args.NewValue();
         UpdateChild(oldChild.as<winrt::UIElement>(), newChild.as<winrt::UIElement>());
     }
-    else if (dependencyProperty == s_IsHorizontalShiftClampedProperty ||
-             dependencyProperty == s_HorizontalSourceOffsetKindProperty ||
-             dependencyProperty == s_HorizontalSourceStartOffsetProperty ||
-             dependencyProperty == s_HorizontalSourceEndOffsetProperty ||
-             dependencyProperty == s_MaxHorizontalShiftRatioProperty)
+    else if (
+        dependencyProperty == s_IsHorizontalShiftClampedProperty || dependencyProperty == s_HorizontalSourceOffsetKindProperty ||
+        dependencyProperty == s_HorizontalSourceStartOffsetProperty ||
+        dependencyProperty == s_HorizontalSourceEndOffsetProperty || dependencyProperty == s_MaxHorizontalShiftRatioProperty)
     {
         UpdateExpressionAnimation(winrt::Orientation::Horizontal);
     }
@@ -234,11 +228,10 @@ void ParallaxView::OnPropertyChanged(
             m_scrollInputHelper->SetSourceElement(newSource.as<winrt::UIElement>());
         }
     }
-    else if (dependencyProperty == s_IsVerticalShiftClampedProperty || 
-             dependencyProperty == s_VerticalSourceOffsetKindProperty ||
-             dependencyProperty == s_VerticalSourceStartOffsetProperty ||
-             dependencyProperty == s_VerticalSourceEndOffsetProperty ||
-             dependencyProperty == s_MaxVerticalShiftRatioProperty)
+    else if (
+        dependencyProperty == s_IsVerticalShiftClampedProperty || dependencyProperty == s_VerticalSourceOffsetKindProperty ||
+        dependencyProperty == s_VerticalSourceStartOffsetProperty || dependencyProperty == s_VerticalSourceEndOffsetProperty ||
+        dependencyProperty == s_MaxVerticalShiftRatioProperty)
     {
         UpdateExpressionAnimation(winrt::Orientation::Vertical);
     }
@@ -293,9 +286,8 @@ void ParallaxView::OnChildPropertyChanged(const winrt::DependencyObject& sender,
 {
     winrt::FrameworkElement senderAsFrameworkElement = sender.try_as<winrt::FrameworkElement>();
 
-    if (senderAsFrameworkElement &&
-        (args == winrt::FrameworkElement::HorizontalAlignmentProperty() ||
-         args == winrt::FrameworkElement::VerticalAlignmentProperty()))
+    if (senderAsFrameworkElement && (args == winrt::FrameworkElement::HorizontalAlignmentProperty() ||
+                                     args == winrt::FrameworkElement::VerticalAlignmentProperty()))
     {
         senderAsFrameworkElement.InvalidateArrange();
     }
@@ -304,7 +296,7 @@ void ParallaxView::OnChildPropertyChanged(const winrt::DependencyObject& sender,
 void ParallaxView::UpdateChild(const winrt::UIElement& oldChild, const winrt::UIElement& newChild)
 {
     winrt::FrameworkElement childAsFrameworkElement = nullptr;
-    
+
     UnhookChildPropertyChanged(false /* isInDestructor */);
 
     auto children = try_as<winrt::Panel>().Children();
@@ -351,7 +343,7 @@ void ParallaxView::UpdateStartOffsetExpression(winrt::Orientation orientation)
 {
     if (m_scrollInputHelper && m_scrollInputHelper->SourcePropertySet() && m_animatedVariables &&
         ((orientation == winrt::Orientation::Horizontal && HorizontalShift() != 0.0) ||
-        (orientation == winrt::Orientation::Vertical && VerticalShift() != 0.0)))
+         (orientation == winrt::Orientation::Vertical && VerticalShift() != 0.0)))
     {
         winrt::ExpressionAnimation startOffsetExpressionAnimation = nullptr;
 
@@ -373,7 +365,8 @@ void ParallaxView::UpdateStartOffsetExpression(winrt::Orientation orientation)
         }
 
         std::wstring startOffsetExpression;
-        const float startOffset = static_cast<float>(orientation == winrt::Orientation::Horizontal ? HorizontalSourceStartOffset() : VerticalSourceStartOffset());
+        const float startOffset = static_cast<float>(
+            orientation == winrt::Orientation::Horizontal ? HorizontalSourceStartOffset() : VerticalSourceStartOffset());
 
         startOffsetExpressionAnimation.SetScalarParameter(L"startOffset", startOffset);
 
@@ -391,10 +384,13 @@ void ParallaxView::UpdateStartOffsetExpression(winrt::Orientation orientation)
                 // Target is inside the scrollPresenter.
 
                 // startOffset = (ParallaxViewOffset + HorizontalSourceStartOffset) * ZoomFactor - ViewportWidth - MaxUnderpanOffset
-                const float parallaxViewOffset = static_cast<float>(m_scrollInputHelper->GetOffsetFromScrollContentElement(*this, orientation));
+                const float parallaxViewOffset =
+                    static_cast<float>(m_scrollInputHelper->GetOffsetFromScrollContentElement(*this, orientation));
                 const float viewportSize = static_cast<float>(m_scrollInputHelper->GetViewportSize(orientation));
 
-                startOffsetExpression = L"(parallaxViewOffset + startOffset) * source." + static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) + L" - viewportSize - maxUnderpanOffset";
+                startOffsetExpression = L"(parallaxViewOffset + startOffset) * source." +
+                                        static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) +
+                                        L" - viewportSize - maxUnderpanOffset";
                 startOffsetExpressionAnimation.SetScalarParameter(L"parallaxViewOffset", static_cast<float>(parallaxViewOffset));
                 startOffsetExpressionAnimation.SetScalarParameter(L"viewportSize", static_cast<float>(viewportSize));
                 startOffsetExpressionAnimation.SetReferenceParameter(L"source", m_scrollInputHelper->SourcePropertySet());
@@ -404,7 +400,9 @@ void ParallaxView::UpdateStartOffsetExpression(winrt::Orientation orientation)
                 // Target is outside the scrollPresenter.
 
                 // startOffset = HorizontalSourceStartOffset * ZoomFactor - MaxUnderpanOffset
-                startOffsetExpression = L"startOffset * source." + static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) + L" - maxUnderpanOffset";
+                startOffsetExpression = L"startOffset * source." +
+                                        static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) +
+                                        L" - maxUnderpanOffset";
                 startOffsetExpressionAnimation.SetReferenceParameter(L"source", m_scrollInputHelper->SourcePropertySet());
             }
         }
@@ -418,7 +416,8 @@ void ParallaxView::UpdateStartOffsetExpression(winrt::Orientation orientation)
             //   startOffset = HorizontalSourceStartOffset * ZoomFactor
             if (startOffset > 0.0f)
             {
-                startOffsetExpression = L"startOffset * source." + static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName());
+                startOffsetExpression =
+                    L"startOffset * source." + static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName());
                 startOffsetExpressionAnimation.SetReferenceParameter(L"source", m_scrollInputHelper->SourcePropertySet());
             }
             else
@@ -433,7 +432,9 @@ void ParallaxView::UpdateStartOffsetExpression(winrt::Orientation orientation)
         }
 
         m_animatedVariables.StopAnimation((orientation == winrt::Orientation::Horizontal) ? L"HorizontalSourceStartOffset" : L"VerticalSourceStartOffset");
-        m_animatedVariables.StartAnimation((orientation == winrt::Orientation::Horizontal) ? L"HorizontalSourceStartOffset" : L"VerticalSourceStartOffset", startOffsetExpressionAnimation);
+        m_animatedVariables.StartAnimation(
+            (orientation == winrt::Orientation::Horizontal) ? L"HorizontalSourceStartOffset" : L"VerticalSourceStartOffset",
+            startOffsetExpressionAnimation);
     }
 }
 
@@ -442,7 +443,7 @@ void ParallaxView::UpdateEndOffsetExpression(winrt::Orientation orientation)
 {
     if (m_scrollInputHelper && m_scrollInputHelper->SourcePropertySet() && m_animatedVariables &&
         ((orientation == winrt::Orientation::Horizontal && HorizontalShift() != 0.0) ||
-        (orientation == winrt::Orientation::Vertical && VerticalShift() != 0.0)))
+         (orientation == winrt::Orientation::Vertical && VerticalShift() != 0.0)))
     {
         winrt::ExpressionAnimation endOffsetExpressionAnimation = nullptr;
 
@@ -464,7 +465,8 @@ void ParallaxView::UpdateEndOffsetExpression(winrt::Orientation orientation)
         }
 
         std::wstring endOffsetExpression;
-        const float endOffset = static_cast<float>(orientation == winrt::Orientation::Horizontal ? HorizontalSourceEndOffset() : VerticalSourceEndOffset());
+        const float endOffset =
+            static_cast<float>(orientation == winrt::Orientation::Horizontal ? HorizontalSourceEndOffset() : VerticalSourceEndOffset());
 
         endOffsetExpressionAnimation.SetScalarParameter(L"endOffset", endOffset);
         endOffsetExpressionAnimation.SetReferenceParameter(L"source", m_scrollInputHelper->SourcePropertySet());
@@ -483,10 +485,14 @@ void ParallaxView::UpdateEndOffsetExpression(winrt::Orientation orientation)
                 // Target is inside the scrollPresenter.
 
                 // endOffset = (ParallaxViewOffset + ParallaxViewWidth + HorizontalSourceEndOffset) * ZoomFactor + MaxOverpanOffset
-                const float parallaxViewOffset = static_cast<float>(m_scrollInputHelper->GetOffsetFromScrollContentElement(*this, orientation));
-                const float parallaxViewSize = static_cast<float>(orientation == winrt::Orientation::Horizontal ? ActualWidth() : ActualHeight());
+                const float parallaxViewOffset =
+                    static_cast<float>(m_scrollInputHelper->GetOffsetFromScrollContentElement(*this, orientation));
+                const float parallaxViewSize =
+                    static_cast<float>(orientation == winrt::Orientation::Horizontal ? ActualWidth() : ActualHeight());
 
-                endOffsetExpression = L"(parallaxViewOffset + parallaxViewSize + endOffset) * source." + static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) + L" + maxOverpanOffset";
+                endOffsetExpression = L"(parallaxViewOffset + parallaxViewSize + endOffset) * source." +
+                                      static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) +
+                                      L" + maxOverpanOffset";
                 endOffsetExpressionAnimation.SetScalarParameter(L"parallaxViewOffset", parallaxViewOffset);
                 endOffsetExpressionAnimation.SetScalarParameter(L"parallaxViewSize", parallaxViewSize);
             }
@@ -498,7 +504,9 @@ void ParallaxView::UpdateEndOffsetExpression(winrt::Orientation orientation)
                 const float contentSize = static_cast<float>(m_scrollInputHelper->GetContentSize(orientation));
 
                 // endOffset = Max(0, (ContentWidth + HorizontalSourceEndOffset) * ZoomFactor - ViewportWidth) + MaxOverpanOffset
-                endOffsetExpression = L"Max(0.0f, (contentSize + endOffset) * source." + static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) + L" - viewportSize) + maxOverpanOffset";
+                endOffsetExpression = L"Max(0.0f, (contentSize + endOffset) * source." +
+                                      static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) +
+                                      L" - viewportSize) + maxOverpanOffset";
                 endOffsetExpressionAnimation.SetScalarParameter(L"viewportSize", viewportSize);
                 endOffsetExpressionAnimation.SetScalarParameter(L"contentSize", contentSize);
             }
@@ -524,11 +532,14 @@ void ParallaxView::UpdateEndOffsetExpression(winrt::Orientation orientation)
             {
                 if (endOffset <= contentSize - viewportSize)
                 {
-                    endOffsetExpression = L"Max(0.0f, endOffset * source." + static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) + L")";
+                    endOffsetExpression = L"Max(0.0f, endOffset * source." +
+                                          static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) + L")";
                 }
                 else
                 {
-                    endOffsetExpression = L"Max(0.0f, (contentSize - viewportSize) * source." + static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) + L") + endOffset - contentSize + viewportSize";
+                    endOffsetExpression = L"Max(0.0f, (contentSize - viewportSize) * source." +
+                                          static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) +
+                                          L") + endOffset - contentSize + viewportSize";
                     endOffsetExpressionAnimation.SetScalarParameter(L"contentSize", contentSize);
                     endOffsetExpressionAnimation.SetScalarParameter(L"viewportSize", viewportSize);
                 }
@@ -537,11 +548,15 @@ void ParallaxView::UpdateEndOffsetExpression(winrt::Orientation orientation)
             {
                 if (endOffset <= 0.0f)
                 {
-                    endOffsetExpression = L"Max(0.0f, (contentSize + endOffset) * source." + static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) + L" - viewportSize)";
+                    endOffsetExpression = L"Max(0.0f, (contentSize + endOffset) * source." +
+                                          static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) +
+                                          L" - viewportSize)";
                 }
                 else
                 {
-                    endOffsetExpression = L"Max(0.0f, contentSize * source." + static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) + L" - viewportSize) + endOffset";
+                    endOffsetExpression = L"Max(0.0f, contentSize * source." +
+                                          static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) +
+                                          L" - viewportSize) + endOffset";
                 }
                 endOffsetExpressionAnimation.SetScalarParameter(L"contentSize", contentSize);
                 endOffsetExpressionAnimation.SetScalarParameter(L"viewportSize", viewportSize);
@@ -554,7 +569,9 @@ void ParallaxView::UpdateEndOffsetExpression(winrt::Orientation orientation)
         }
 
         m_animatedVariables.StopAnimation((orientation == winrt::Orientation::Horizontal) ? L"HorizontalSourceEndOffset" : L"VerticalSourceEndOffset");
-        m_animatedVariables.StartAnimation((orientation == winrt::Orientation::Horizontal) ? L"HorizontalSourceEndOffset" : L"VerticalSourceEndOffset", endOffsetExpressionAnimation);
+        m_animatedVariables.StartAnimation(
+            (orientation == winrt::Orientation::Horizontal) ? L"HorizontalSourceEndOffset" : L"VerticalSourceEndOffset",
+            endOffsetExpressionAnimation);
     }
 }
 
@@ -582,7 +599,7 @@ void ParallaxView::UpdateExpressionAnimation(winrt::Orientation orientation)
     }
     else if (m_targetVisual)
     {
-        // Stop prior parallaxing animations.        
+        // Stop prior parallaxing animations.
         m_targetVisual.StopAnimation(GetVisualTargetedPropertyName(winrt::Orientation::Horizontal));
         m_targetVisual.StopAnimation(GetVisualTargetedPropertyName(winrt::Orientation::Vertical));
         m_isHorizontalAnimationStarted = m_isVerticalAnimationStarted = false;
@@ -659,10 +676,16 @@ void ParallaxView::UpdateExpressionAnimation(winrt::Orientation orientation)
             UpdateStartOffsetExpression(orientation);
             UpdateEndOffsetExpression(orientation);
 
-            winrt::ExpressionAnimation parallaxExpressionInternal = (orientation == winrt::Orientation::Horizontal) ? m_horizontalParallaxExpressionInternal : m_verticalParallaxExpressionInternal;
+            winrt::ExpressionAnimation parallaxExpressionInternal = (orientation == winrt::Orientation::Horizontal)
+                                                                        ? m_horizontalParallaxExpressionInternal
+                                                                        : m_verticalParallaxExpressionInternal;
             std::wstring source = L"source." + static_cast<std::wstring>(m_scrollInputHelper->GetSourceOffsetPropertyName(orientation));
-            std::wstring startOffset = (orientation == winrt::Orientation::Horizontal) ? L"animatedVariables.HorizontalSourceStartOffset" : L"animatedVariables.VerticalSourceStartOffset";
-            std::wstring endOffset = (orientation == winrt::Orientation::Horizontal) ? L"animatedVariables.HorizontalSourceEndOffset" : L"animatedVariables.VerticalSourceEndOffset";
+            std::wstring startOffset = (orientation == winrt::Orientation::Horizontal)
+                                           ? L"animatedVariables.HorizontalSourceStartOffset"
+                                           : L"animatedVariables.VerticalSourceStartOffset";
+            std::wstring endOffset = (orientation == winrt::Orientation::Horizontal)
+                                         ? L"animatedVariables.HorizontalSourceEndOffset"
+                                         : L"animatedVariables.VerticalSourceEndOffset";
             std::wstring parallaxExpression;
             const float shift = (float)(orientation == winrt::Orientation::Horizontal ? HorizontalShift() : VerticalShift());
 
@@ -674,25 +697,35 @@ void ParallaxView::UpdateExpressionAnimation(winrt::Orientation orientation)
                 if (shift > 0.0)
                 {
                     // X <= startOffset --> P(X) = 0
-                    parallaxExpression = L"(-" + static_cast<std::wstring>(source) + L" <= " + static_cast<std::wstring>(startOffset) + L") ? 0.0f : ";
+                    parallaxExpression = L"(-" + static_cast<std::wstring>(source) + L" <= " +
+                                         static_cast<std::wstring>(startOffset) + L") ? 0.0f : ";
 
                     // startOffset < X < endOffset --> P(X) = -Min(MaxRatio, shift / (endOffset - startOffset)) * (X - startOffset)
-                    parallaxExpression += L"((-" + static_cast<std::wstring>(source) + L" < " + static_cast<std::wstring>(endOffset) + L") ? ";
-                    parallaxExpression += L"(-Min(maxRatio, (shift / (" + static_cast<std::wstring>(endOffset) + L" - " + static_cast<std::wstring>(startOffset) + L"))) * (-" + static_cast<std::wstring>(source) + L" - " + static_cast<std::wstring>(startOffset) + L")) : ";
+                    parallaxExpression +=
+                        L"((-" + static_cast<std::wstring>(source) + L" < " + static_cast<std::wstring>(endOffset) + L") ? ";
+                    parallaxExpression += L"(-Min(maxRatio, (shift / (" + static_cast<std::wstring>(endOffset) + L" - " +
+                                          static_cast<std::wstring>(startOffset) + L"))) * (-" + static_cast<std::wstring>(source) +
+                                          L" - " + static_cast<std::wstring>(startOffset) + L")) : ";
 
                     // X >= endOffset --> P(X) = -Min(MaxRatio * Max(0 , endOffset - startOffset), shift)
-                    parallaxExpression += L"-Min(maxRatio * Max(0.0f, " + static_cast<std::wstring>(endOffset) + L" - " + static_cast<std::wstring>(startOffset) + L"), shift))";
+                    parallaxExpression += L"-Min(maxRatio * Max(0.0f, " + static_cast<std::wstring>(endOffset) + L" - " +
+                                          static_cast<std::wstring>(startOffset) + L"), shift))";
                 }
                 else
                 {
                     // shift < 0.0
 
                     // X <= startOffset --> P(X) = -Min(MaxRatio * Max(0 , endOffset - startOffset), -shift)
-                    parallaxExpression = L"(-" + static_cast<std::wstring>(source) + L" <= " + static_cast<std::wstring>(startOffset) + L") ? -Min(maxRatio * Max(0.0f, " + static_cast<std::wstring>(endOffset) + L" - " + static_cast<std::wstring>(startOffset) + L"), -shift) : ";
+                    parallaxExpression = L"(-" + static_cast<std::wstring>(source) + L" <= " + static_cast<std::wstring>(startOffset) +
+                                         L") ? -Min(maxRatio * Max(0.0f, " + static_cast<std::wstring>(endOffset) + L" - " +
+                                         static_cast<std::wstring>(startOffset) + L"), -shift) : ";
 
                     // startOffset < X < endOffset --> P(X) = Min(MaxRatio, shift / (startOffset - endOffset)) * (X - endOffset)
-                    parallaxExpression += L"((-" + static_cast<std::wstring>(source) + L" < " + static_cast<std::wstring>(endOffset) + L") ? ";
-                    parallaxExpression += L"(Min(maxRatio, (shift / (" + static_cast<std::wstring>(startOffset) + L" - " + static_cast<std::wstring>(endOffset) + L"))) * (-" + static_cast<std::wstring>(source) + L" - " + static_cast<std::wstring>(endOffset) + L")) : ";
+                    parallaxExpression +=
+                        L"((-" + static_cast<std::wstring>(source) + L" < " + static_cast<std::wstring>(endOffset) + L") ? ";
+                    parallaxExpression += L"(Min(maxRatio, (shift / (" + static_cast<std::wstring>(startOffset) + L" - " +
+                                          static_cast<std::wstring>(endOffset) + L"))) * (-" + static_cast<std::wstring>(source) +
+                                          L" - " + static_cast<std::wstring>(endOffset) + L")) : ";
 
                     // X >= endOffset --> P(X) = 0
                     parallaxExpression += L"0.0f)";
@@ -705,18 +738,24 @@ void ParallaxView::UpdateExpressionAnimation(winrt::Orientation orientation)
                 if (shift > 0.0)
                 {
                     // startOffset == endOffset --> P(X) = 0
-                    parallaxExpression = L"(" + static_cast<std::wstring>(startOffset) + L" == " + static_cast<std::wstring>(endOffset) + L") ? 0.0f : ";
+                    parallaxExpression = L"(" + static_cast<std::wstring>(startOffset) + L" == " +
+                                         static_cast<std::wstring>(endOffset) + L") ? 0.0f : ";
 
                     // startOffset != endOffset --> P(X) = -Min(MaxRatio, shift / (endOffset - startOffset)) * (X - startOffset)
-                    parallaxExpression += L"-Min(maxRatio, shift / (" + static_cast<std::wstring>(endOffset) + L" - " + static_cast<std::wstring>(startOffset) + L")) * (-" + static_cast<std::wstring>(source) + L" - " + static_cast<std::wstring>(startOffset) + L")";
+                    parallaxExpression += L"-Min(maxRatio, shift / (" + static_cast<std::wstring>(endOffset) + L" - " +
+                                          static_cast<std::wstring>(startOffset) + L")) * (-" + static_cast<std::wstring>(source) +
+                                          L" - " + static_cast<std::wstring>(startOffset) + L")";
                 }
                 else
                 {
                     // startOffset == endOffset --> P(X) = 0
-                    parallaxExpression = L"(" + static_cast<std::wstring>(startOffset) + L" == " + static_cast<std::wstring>(endOffset) + L") ? 0.0f : ";
+                    parallaxExpression = L"(" + static_cast<std::wstring>(startOffset) + L" == " +
+                                         static_cast<std::wstring>(endOffset) + L") ? 0.0f : ";
 
                     // startOffset != endOffset --> P(X) = Min(MaxRatio, shift / (startOffset - endOffset)) * (X - endOffset)
-                    parallaxExpression += L"Min(maxRatio, shift / (" + static_cast<std::wstring>(startOffset) + L" - " + static_cast<std::wstring>(endOffset) + L")) * (-" + static_cast<std::wstring>(source) + L" - " + static_cast<std::wstring>(endOffset) + L")";
+                    parallaxExpression += L"Min(maxRatio, shift / (" + static_cast<std::wstring>(startOffset) + L" - " +
+                                          static_cast<std::wstring>(endOffset) + L")) * (-" + static_cast<std::wstring>(source) +
+                                          L" - " + static_cast<std::wstring>(endOffset) + L")";
                 }
             }
 
@@ -739,7 +778,10 @@ void ParallaxView::UpdateExpressionAnimation(winrt::Orientation orientation)
 
             parallaxExpressionInternal.SetReferenceParameter(L"source", m_scrollInputHelper->SourcePropertySet());
             parallaxExpressionInternal.SetReferenceParameter(L"animatedVariables", m_animatedVariables);
-            parallaxExpressionInternal.SetScalarParameter(L"maxRatio", static_cast<float>(max(0.0, (orientation == winrt::Orientation::Horizontal ? MaxHorizontalShiftRatio() : MaxVerticalShiftRatio()))));
+            parallaxExpressionInternal.SetScalarParameter(
+                L"maxRatio",
+                static_cast<float>(
+                    max(0.0, (orientation == winrt::Orientation::Horizontal ? MaxHorizontalShiftRatio() : MaxVerticalShiftRatio()))));
             parallaxExpressionInternal.SetScalarParameter(L"shift", shift);
 
             if (orientation == winrt::Orientation::Horizontal)
@@ -804,12 +846,14 @@ void ParallaxView::UnhookChildPropertyChanged(bool isInDestructor)
     {
         if (m_childHorizontalAlignmentChangedToken.value != 0)
         {
-            child.UnregisterPropertyChangedCallback(winrt::FrameworkElement::HorizontalAlignmentProperty(), m_childHorizontalAlignmentChangedToken.value);
+            child.UnregisterPropertyChangedCallback(
+                winrt::FrameworkElement::HorizontalAlignmentProperty(), m_childHorizontalAlignmentChangedToken.value);
             m_childHorizontalAlignmentChangedToken.value = 0;
         }
         if (m_childVerticalAlignmentChangedToken.value != 0)
         {
-            child.UnregisterPropertyChangedCallback(winrt::FrameworkElement::VerticalAlignmentProperty(), m_childVerticalAlignmentChangedToken.value);
+            child.UnregisterPropertyChangedCallback(
+                winrt::FrameworkElement::VerticalAlignmentProperty(), m_childVerticalAlignmentChangedToken.value);
             m_childVerticalAlignmentChangedToken.value = 0;
         }
         m_currentListeningChild.set(nullptr);

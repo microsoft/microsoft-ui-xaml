@@ -10,77 +10,49 @@
 
 #pragma region IElementAnimator
 
-void ElementAnimator::OnElementShown(
-    winrt::UIElement const& element,
-    winrt::AnimationContext const& context)
+void ElementAnimator::OnElementShown(winrt::UIElement const& element, winrt::AnimationContext const& context)
 {
     if (HasShowAnimation(element, static_cast<winrt::AnimationContext>(context)))
     {
         m_hasShowAnimationsPending = true;
         m_sharedContext |= context;
-        QueueElementForAnimation(ElementInfo(
-            this /* owner */,
-            element,
-            AnimationTrigger::Show,
-            context));
+        QueueElementForAnimation(ElementInfo(this /* owner */, element, AnimationTrigger::Show, context));
     }
 }
 
-void ElementAnimator::OnElementHidden(
-    winrt::UIElement const& element,
-    winrt::AnimationContext const& context)
+void ElementAnimator::OnElementHidden(winrt::UIElement const& element, winrt::AnimationContext const& context)
 {
     if (HasHideAnimation(element, static_cast<winrt::AnimationContext>(context)))
     {
         m_hasHideAnimationsPending = true;
         m_sharedContext |= context;
-        QueueElementForAnimation(ElementInfo(
-            this /* owner */,
-            element,
-            AnimationTrigger::Hide,
-            context));
+        QueueElementForAnimation(ElementInfo(this /* owner */, element, AnimationTrigger::Hide, context));
     }
 }
 
 void ElementAnimator::OnElementBoundsChanged(
-    winrt::UIElement const& element,
-    winrt::AnimationContext const& context,
-    winrt::Rect const& oldBounds,
-    winrt::Rect const& newBounds)
+    winrt::UIElement const& element, winrt::AnimationContext const& context, winrt::Rect const& oldBounds, winrt::Rect const& newBounds)
 {
     if (HasBoundsChangeAnimation(element, static_cast<winrt::AnimationContext>(context), oldBounds, newBounds))
     {
         m_hasBoundsChangeAnimationsPending = true;
         m_sharedContext |= context;
-        QueueElementForAnimation(ElementInfo(
-            this /* owner */,
-            element,
-            AnimationTrigger::BoundsChange,
-            context,
-            oldBounds,
-            newBounds));
+        QueueElementForAnimation(ElementInfo(this /* owner */, element, AnimationTrigger::BoundsChange, context, oldBounds, newBounds));
     }
 }
 
-bool ElementAnimator::HasShowAnimation(
-    winrt::UIElement const& element,
-    winrt::AnimationContext const& context)
+bool ElementAnimator::HasShowAnimation(winrt::UIElement const& element, winrt::AnimationContext const& context)
 {
     return overridable().HasShowAnimationCore(element, context);
 }
 
-bool ElementAnimator::HasHideAnimation(
-    winrt::UIElement const& element,
-    winrt::AnimationContext const& context)
+bool ElementAnimator::HasHideAnimation(winrt::UIElement const& element, winrt::AnimationContext const& context)
 {
     return overridable().HasHideAnimationCore(element, context);
 }
 
 bool ElementAnimator::HasBoundsChangeAnimation(
-    winrt::UIElement const& element,
-    winrt::AnimationContext const& context,
-    winrt::Rect const& oldBounds,
-    winrt::Rect const& newBounds)
+    winrt::UIElement const& element, winrt::AnimationContext const& context, winrt::Rect const& oldBounds, winrt::Rect const& newBounds)
 {
     return overridable().HasBoundsChangeAnimationCore(element, context, oldBounds, newBounds);
 }
@@ -89,48 +61,34 @@ bool ElementAnimator::HasBoundsChangeAnimation(
 
 #pragma region IElementAnimatorOverrides
 
-bool ElementAnimator::HasShowAnimationCore(
-    winrt::UIElement const& /*element*/,
-    winrt::AnimationContext const& /*context*/)
+bool ElementAnimator::HasShowAnimationCore(winrt::UIElement const& /*element*/, winrt::AnimationContext const& /*context*/)
 {
     throw winrt::hresult_not_implemented();
 }
 
-bool ElementAnimator::HasHideAnimationCore(
-    winrt::UIElement const& /*element*/,
-    winrt::AnimationContext const& /*context*/)
+bool ElementAnimator::HasHideAnimationCore(winrt::UIElement const& /*element*/, winrt::AnimationContext const& /*context*/)
 {
     throw winrt::hresult_not_implemented();
 }
 
 bool ElementAnimator::HasBoundsChangeAnimationCore(
-    winrt::UIElement const& /*element*/,
-    winrt::AnimationContext const& /*context*/,
-    winrt::Rect const& /*oldBounds*/,
-    winrt::Rect const& /*newBounds*/)
+    winrt::UIElement const& /*element*/, winrt::AnimationContext const& /*context*/, winrt::Rect const& /*oldBounds*/, winrt::Rect const& /*newBounds*/)
 {
     throw winrt::hresult_not_implemented();
 }
 
-void ElementAnimator::StartShowAnimation(
-    winrt::UIElement const& /*element*/,
-    winrt::AnimationContext const& /*context*/)
+void ElementAnimator::StartShowAnimation(winrt::UIElement const& /*element*/, winrt::AnimationContext const& /*context*/)
 {
     throw winrt::hresult_not_implemented();
 }
 
-void ElementAnimator::StartHideAnimation(
-    winrt::UIElement const& /*element*/,
-    winrt::AnimationContext const& /*context*/)
+void ElementAnimator::StartHideAnimation(winrt::UIElement const& /*element*/, winrt::AnimationContext const& /*context*/)
 {
     throw winrt::hresult_not_implemented();
 }
 
 void ElementAnimator::StartBoundsChangeAnimation(
-    winrt::UIElement const& /*element*/,
-    winrt::AnimationContext const& /*context*/,
-    winrt::Rect const& /*oldBounds*/,
-    winrt::Rect const& /*newBounds*/)
+    winrt::UIElement const& /*element*/, winrt::AnimationContext const& /*context*/, winrt::Rect const& /*oldBounds*/, winrt::Rect const& /*newBounds*/)
 {
     throw winrt::hresult_not_implemented();
 }
@@ -181,7 +139,8 @@ void ElementAnimator::QueueElementForAnimation(ElementInfo elementInfo)
     m_animatingElements.push_back(std::move(elementInfo));
     if (m_animatingElements.size() == 1)
     {
-        m_rendering = winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering(winrt::auto_revoke, { this, &ElementAnimator::OnRendering });
+        m_rendering =
+            winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering(winrt::auto_revoke, { this, &ElementAnimator::OnRendering });
     }
 }
 
@@ -189,10 +148,7 @@ void ElementAnimator::OnRendering(winrt::IInspectable const& /*sender*/, winrt::
 {
     m_rendering.revoke();
 
-    auto resetState = gsl::finally([this]()
-    {
-        ResetState();
-    });
+    auto resetState = gsl::finally([this]() { ResetState(); });
 
     for (const auto& elementInfo : m_animatingElements)
     {
@@ -209,10 +165,7 @@ void ElementAnimator::OnRendering(winrt::IInspectable const& /*sender*/, winrt::
         case AnimationTrigger::BoundsChange:
             // Call into the derivied class's StartBoundsChangeAnimation override
             overridable().StartBoundsChangeAnimation(
-                elementInfo.Element(),
-                elementInfo.Context(),
-                elementInfo.OldBounds(),
-                elementInfo.NewBounds());
+                elementInfo.Element(), elementInfo.Context(), elementInfo.OldBounds(), elementInfo.NewBounds());
             break;
         }
     }

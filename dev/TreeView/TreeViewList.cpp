@@ -56,7 +56,7 @@ void TreeViewList::OnDragItemsStarting(const winrt::IInspectable& /*sender*/, co
                 auto settings = tvItem.as<winrt::TreeViewItem>().TreeViewItemTemplateSettings();
                 winrt::get_self<TreeViewItemTemplateSettings>(settings)->DragItemsCount(selectedCount);
                 isMultipleDragging = true;
-                
+
                 // TreeView items' selection states are maintained by ViewModel, not by TreeViewList.
                 // When TreeView is set to multi-select mode, the underlying TreeViewList's selection mode is set to None (See OnPropertyChanged function in TreeView.cpp).
                 // TreeViewList has no knowledge about item selections happened in TreeView, no matter how many items are actually selected, args.Items() always contains only one item that is currently being dragged by cursor.
@@ -82,7 +82,8 @@ void TreeViewList::OnDragItemsStarting(const winrt::IInspectable& /*sender*/, co
             m_draggedTreeViewNode.get().IsExpanded(false);
         }
 
-        winrt::VisualStateManager::GoToState(tvItem.as<winrt::TreeViewItem>(), isMultipleDragging ? L"MultipleDraggingPrimary" : L"Dragging", false);
+        winrt::VisualStateManager::GoToState(
+            tvItem.as<winrt::TreeViewItem>(), isMultipleDragging ? L"MultipleDraggingPrimary" : L"Dragging", false);
         UpdateDropTargetDropEffect(false, false, nullptr);
     }
 }
@@ -110,7 +111,7 @@ void TreeViewList::OnContainerContentChanging(const winrt::IInspectable& /*sende
             {
                 treeViewItem->SetItemsSource(targetNode, itemsSource);
             }
-        }   
+        }
 
         treeViewItem->UpdateIndentation(targetNode.Depth());
         treeViewItem->UpdateSelectionVisual(winrt::get_self<TreeViewNode>(targetNode)->SelectionState());
@@ -131,7 +132,7 @@ void TreeViewList::OnDrop(winrt::DragEventArgs const& e)
 
             if (IsMutiSelectWithSelectedItems())
             {
-                // Multiselect drag and drop. In the selected items, find all the selected subtrees 
+                // Multiselect drag and drop. In the selected items, find all the selected subtrees
                 // and move each of those subtrees.
                 const auto selectedRootNodes = GetRootsOfSelectedSubtrees();
                 const auto selectionSize = selectedRootNodes.size();
@@ -324,20 +325,17 @@ void TreeViewList::PrepareContainerForItemOverride(winrt::DependencyObject const
     winrt::TreeViewItem itemContainer = element.as<winrt::TreeViewItem>();
     const auto selectionState = itemNode->SelectionState();
 
-    //Set the expanded property to match that of the Node, and enable Drop by default
+    // Set the expanded property to match that of the Node, and enable Drop by default
     itemContainer.AllowDrop(true);
 
     if (IsContentMode())
     {
         const bool hasChildren = itemContainer.HasUnrealizedChildren() || itemNode->HasChildren();
         itemContainer.GlyphOpacity(hasChildren ? 1.0 : 0.0);
-        if (itemContainer.IsExpanded() != itemNode->IsExpanded()) {
+        if (itemContainer.IsExpanded() != itemNode->IsExpanded())
+        {
             const DispatcherHelper dispatcher{ *this };
-            dispatcher.RunAsync(
-                [itemNode, itemContainer]()
-                {
-                    itemNode->IsExpanded(itemContainer.IsExpanded());
-                });
+            dispatcher.RunAsync([itemNode, itemContainer]() { itemNode->IsExpanded(itemContainer.IsExpanded()); });
         }
     }
     else
@@ -346,7 +344,7 @@ void TreeViewList::PrepareContainerForItemOverride(winrt::DependencyObject const
         itemContainer.GlyphOpacity(itemNode->HasChildren() ? 1.0 : 0.0);
     }
 
-    //Set startup TemplateSettings properties
+    // Set startup TemplateSettings properties
     auto templateSettings = winrt::get_self<TreeViewItemTemplateSettings>(itemContainer.TreeViewItemTemplateSettings());
     templateSettings->ExpandedGlyphVisibility(itemNode->IsExpanded() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
     templateSettings->CollapsedGlyphVisibility(!itemNode->IsExpanded() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
@@ -400,7 +398,7 @@ void TreeViewList::SetDraggedOverItem(winrt::TreeViewItem newDraggedOverItem)
 
 void TreeViewList::UpdateDropTargetDropEffect(bool forceUpdate, bool isLeaving, winrt::TreeViewItem keyboardReorderedContainer)
 {
-    //Preserve old value of string in case it's needed.
+    // Preserve old value of string in case it's needed.
     winrt::hstring oldValue = m_dropTargetDropEffectString;
 
     winrt::TreeViewItem dragItem{ nullptr };
@@ -412,7 +410,7 @@ void TreeViewList::UpdateDropTargetDropEffect(bool forceUpdate, bool isLeaving, 
     }
     else
     {
-    auto listItem = ContainerFromItem(m_draggedOverItem.get());
+        auto listItem = ContainerFromItem(m_draggedOverItem.get());
         if (listItem)
         {
             dragItem = listItem.as<winrt::TreeViewItem>();
@@ -439,9 +437,8 @@ void TreeViewList::UpdateDropTargetDropEffect(bool forceUpdate, bool isLeaving, 
 
         if (isLeaving)
         {
-            m_dropTargetDropEffectString = StringUtil::FormatString(
-                ResourceAccessor::GetLocalizedStringResource(SR_CancelDraggingString),
-                dragItemString);
+            m_dropTargetDropEffectString =
+                StringUtil::FormatString(ResourceAccessor::GetLocalizedStringResource(SR_CancelDraggingString), dragItemString);
         }
         else
         {
@@ -491,13 +488,17 @@ void TreeViewList::UpdateDropTargetDropEffect(bool forceUpdate, bool isLeaving, 
                 itemAfterInsertPositionString = GetAutomationName(afterInsertIndex);
             }
 
-            m_dropTargetDropEffectString = BuildEffectString(itemBeforeInsertPositionString, itemAfterInsertPositionString, dragItemString, draggedOverString);
+            m_dropTargetDropEffectString =
+                BuildEffectString(itemBeforeInsertPositionString, itemAfterInsertPositionString, dragItemString, draggedOverString);
         }
 
         if (!forceUpdate && oldValue != m_dropTargetDropEffectString)
         {
             winrt::AutomationPeer treePeer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
-            treePeer.RaisePropertyChangedEvent(winrt::DropTargetPatternIdentifiers::DropTargetEffectProperty(), box_value(oldValue.data()), box_value(m_dropTargetDropEffectString.data()));
+            treePeer.RaisePropertyChangedEvent(
+                winrt::DropTargetPatternIdentifiers::DropTargetEffectProperty(),
+                box_value(oldValue.data()),
+                box_value(m_dropTargetDropEffectString.data()));
         }
     }
 }
@@ -512,11 +513,10 @@ bool TreeViewList::IsMultiselect() const
     return m_isMultiselectEnabled;
 }
 
-
 bool TreeViewList::IsMutiSelectWithSelectedItems() const
 {
     auto selectedItems = ListViewModel()->GetSelectedNodes();
-    const bool isMutiSelect = m_isMultiselectEnabled &&  selectedItems.Size() > 0;
+    const bool isMutiSelect = m_isMultiselectEnabled && selectedItems.Size() > 0;
     return isMutiSelect;
 }
 
@@ -617,31 +617,28 @@ hstring TreeViewList::BuildEffectString(hstring priorString, hstring afterString
     {
         resultString = StringUtil::FormatString(
             ResourceAccessor::GetLocalizedStringResource(SR_PlaceBetweenString),
-            dragString.data(), priorString.data(), afterString.data());
+            dragString.data(),
+            priorString.data(),
+            afterString.data());
     }
     else if (!priorString.empty())
     {
         resultString = StringUtil::FormatString(
-            ResourceAccessor::GetLocalizedStringResource(SR_PlaceAfterString),
-            dragString.data(), priorString.data());
+            ResourceAccessor::GetLocalizedStringResource(SR_PlaceAfterString), dragString.data(), priorString.data());
     }
     else if (!afterString.empty())
     {
         resultString = StringUtil::FormatString(
-            ResourceAccessor::GetLocalizedStringResource(SR_PlaceBeforeString),
-            dragString.data(), afterString.data());
+            ResourceAccessor::GetLocalizedStringResource(SR_PlaceBeforeString), dragString.data(), afterString.data());
     }
     else if (!dragOverString.empty())
     {
         resultString = StringUtil::FormatString(
-            ResourceAccessor::GetLocalizedStringResource(SR_DropIntoNodeString),
-            dragString.data(), dragOverString.data());
+            ResourceAccessor::GetLocalizedStringResource(SR_DropIntoNodeString), dragString.data(), dragOverString.data());
     }
     else
     {
-        resultString = StringUtil::FormatString(
-            ResourceAccessor::GetLocalizedStringResource(SR_FallBackPlaceString),
-            dragString.data());
+        resultString = StringUtil::FormatString(ResourceAccessor::GetLocalizedStringResource(SR_FallBackPlaceString), dragString.data());
     }
 
     return resultString;
@@ -692,9 +689,7 @@ winrt::DependencyObject TreeViewList::ContainerFromNode(winrt::TreeViewNode cons
 
 winrt::TreeViewNode TreeViewList::NodeFromItem(winrt::IInspectable const& item) const
 {
-    return IsContentMode() ?
-        ListViewModel().get()->GetAssociatedNode(item) :
-        item.try_as<winrt::TreeViewNode>();
+    return IsContentMode() ? ListViewModel().get()->GetAssociatedNode(item) : item.try_as<winrt::TreeViewNode>();
 }
 
 winrt::IInspectable TreeViewList::ItemFromNode(winrt::TreeViewNode const& node) const

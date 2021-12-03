@@ -21,8 +21,7 @@ InteractionTrackerOwner::~InteractionTrackerOwner()
 }
 
 #pragma region IInteractionTrackerOwner
-void InteractionTrackerOwner::ValuesChanged(
-    const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerValuesChangedArgs& args)
+void InteractionTrackerOwner::ValuesChanged(const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerValuesChangedArgs& args)
 {
     if (!m_owner)
     {
@@ -39,8 +38,7 @@ void InteractionTrackerOwner::ValuesChanged(
     }
 }
 
-void InteractionTrackerOwner::RequestIgnored(
-    const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerRequestIgnoredArgs& args)
+void InteractionTrackerOwner::RequestIgnored(const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerRequestIgnoredArgs& args)
 {
     if (!m_owner)
     {
@@ -57,8 +55,7 @@ void InteractionTrackerOwner::RequestIgnored(
     }
 }
 
-void InteractionTrackerOwner::InteractingStateEntered(
-    const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerInteractingStateEnteredArgs& args)
+void InteractionTrackerOwner::InteractingStateEntered(const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerInteractingStateEnteredArgs& args)
 {
     if (!m_owner)
     {
@@ -75,8 +72,7 @@ void InteractionTrackerOwner::InteractingStateEntered(
     }
 }
 
-void InteractionTrackerOwner::InertiaStateEntered(
-    const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerInertiaStateEnteredArgs& args)
+void InteractionTrackerOwner::InertiaStateEntered(const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerInertiaStateEnteredArgs& args)
 {
     if (!m_owner)
     {
@@ -93,8 +89,7 @@ void InteractionTrackerOwner::InertiaStateEntered(
     }
 }
 
-void InteractionTrackerOwner::IdleStateEntered(
-    const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerIdleStateEnteredArgs& args)
+void InteractionTrackerOwner::IdleStateEntered(const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerIdleStateEnteredArgs& args)
 {
     if (!m_owner)
     {
@@ -111,8 +106,7 @@ void InteractionTrackerOwner::IdleStateEntered(
     }
 }
 
-void InteractionTrackerOwner::CustomAnimationStateEntered(
-    const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerCustomAnimationStateEnteredArgs& args)
+void InteractionTrackerOwner::CustomAnimationStateEntered(const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerCustomAnimationStateEnteredArgs& args)
 {
     if (!m_owner)
     {

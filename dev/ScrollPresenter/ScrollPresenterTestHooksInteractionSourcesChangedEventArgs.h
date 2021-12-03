@@ -5,15 +5,16 @@
 
 #include "ScrollPresenterTestHooksInteractionSourcesChangedEventArgs.g.h"
 
-class ScrollPresenterTestHooksInteractionSourcesChangedEventArgs :
-    public winrt::implementation::ScrollPresenterTestHooksInteractionSourcesChangedEventArgsT<ScrollPresenterTestHooksInteractionSourcesChangedEventArgs>
+class ScrollPresenterTestHooksInteractionSourcesChangedEventArgs
+    : public winrt::implementation::ScrollPresenterTestHooksInteractionSourcesChangedEventArgsT<ScrollPresenterTestHooksInteractionSourcesChangedEventArgs>
 {
 public:
-    ScrollPresenterTestHooksInteractionSourcesChangedEventArgs(const winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources);
+    ScrollPresenterTestHooksInteractionSourcesChangedEventArgs(
+        const winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources);
 
     // IScrollPresenterTestHooksInteractionSourcesChangedEventArgs overrides
     winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection InteractionSources();
-        
+
 private:
     winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection m_interactionSources{ nullptr };
 };

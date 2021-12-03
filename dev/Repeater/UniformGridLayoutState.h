@@ -8,18 +8,24 @@
 #include "UniformGridLayoutState.g.h"
 #include "FlowLayoutAlgorithm.h"
 
-class UniformGridLayoutState :
-    public ReferenceTracker<UniformGridLayoutState, winrt::implementation::UniformGridLayoutStateT, winrt::composing>
+class UniformGridLayoutState : public ReferenceTracker<UniformGridLayoutState, winrt::implementation::UniformGridLayoutStateT, winrt::composing>
 {
 public:
-    void InitializeForContext(
-        const winrt::VirtualizingLayoutContext& context,
-        IFlowLayoutAlgorithmDelegates* callbacks);
+    void InitializeForContext(const winrt::VirtualizingLayoutContext& context, IFlowLayoutAlgorithmDelegates* callbacks);
     void UninitializeForContext(const winrt::VirtualizingLayoutContext& context);
 
-    ::FlowLayoutAlgorithm& FlowAlgorithm() { return m_flowAlgorithm; }
-    double EffectiveItemWidth() { return m_effectiveItemWidth; }
-    double EffectiveItemHeight() { return m_effectiveItemHeight; }
+    ::FlowLayoutAlgorithm& FlowAlgorithm()
+    {
+        return m_flowAlgorithm;
+    }
+    double EffectiveItemWidth()
+    {
+        return m_effectiveItemWidth;
+    }
+    double EffectiveItemHeight()
+    {
+        return m_effectiveItemHeight;
+    }
 
     void EnsureElementSize(
         const winrt::Size availableSize,
@@ -37,7 +43,8 @@ private:
     double m_effectiveItemWidth{ 0.0 };
     double m_effectiveItemHeight{ 0.0 };
 
-    winrt::Size CalculateAvailableSize(const winrt::Size availableSize,
+    winrt::Size CalculateAvailableSize(
+        const winrt::Size availableSize,
         const winrt::Orientation orientation,
         const winrt::UniformGridLayoutItemsStretch& stretch,
         const unsigned int maxItemsPerLine,
@@ -46,13 +53,10 @@ private:
         double minRowSpacing,
         double minColumnSpacing);
 
-    double CalculateExtraPixelsInLine(unsigned int maxItemsPerLine,
-        const float availableSizeMinor,
-        const double itemSizeMinor,
-        const double minorItemSpacing);
+    double CalculateExtraPixelsInLine(unsigned int maxItemsPerLine, const float availableSizeMinor, const double itemSizeMinor, const double minorItemSpacing);
 
-
-    void SetSize(const winrt::Size& desiredItemSize,
+    void SetSize(
+        const winrt::Size& desiredItemSize,
         const double itemWidth,
         const double itemHeight,
         const winrt::Size availableSize,

@@ -20,43 +20,41 @@ void Layout::LayoutId(winrt::hstring const& value)
     m_layoutId = value;
 }
 
-namespace
+namespace {
+winrt::VirtualizingLayoutContext GetVirtualizingLayoutContext(winrt::LayoutContext const& context)
 {
-    winrt::VirtualizingLayoutContext GetVirtualizingLayoutContext(winrt::LayoutContext const& context)
+    if (auto virtualizingContext = context.try_as<winrt::VirtualizingLayoutContext>())
     {
-        if (auto virtualizingContext = context.try_as<winrt::VirtualizingLayoutContext>())
-        {
-            return virtualizingContext;
-        }
-        else if (auto nonVirtualizingContext = context.try_as<winrt::NonVirtualizingLayoutContext>())
-        {
-            auto adapter = winrt::get_self<NonVirtualizingLayoutContext>(nonVirtualizingContext)->GetVirtualizingContextAdapter();
-            return adapter;
-        }
-        else
-        {
-            throw winrt::hresult_not_implemented();
-        }
+        return virtualizingContext;
     }
-
-    winrt::NonVirtualizingLayoutContext GetNonVirtualizingLayoutContext(winrt::LayoutContext const& context)
+    else if (auto nonVirtualizingContext = context.try_as<winrt::NonVirtualizingLayoutContext>())
     {
-        if (auto nonVirtualizingContext = context.try_as<winrt::NonVirtualizingLayoutContext>())
-        {
-            return nonVirtualizingContext;
-        }
-        else if (auto virtualizingContext = context.try_as<winrt::VirtualizingLayoutContext>())
-        {
-            auto adapter = winrt::get_self<VirtualizingLayoutContext>(virtualizingContext)->GetNonVirtualizingContextAdapter();
-            return adapter;
-        }
-        else
-        {
-            throw winrt::hresult_not_implemented();
-        }
+        auto adapter = winrt::get_self<NonVirtualizingLayoutContext>(nonVirtualizingContext)->GetVirtualizingContextAdapter();
+        return adapter;
+    }
+    else
+    {
+        throw winrt::hresult_not_implemented();
     }
 }
 
+winrt::NonVirtualizingLayoutContext GetNonVirtualizingLayoutContext(winrt::LayoutContext const& context)
+{
+    if (auto nonVirtualizingContext = context.try_as<winrt::NonVirtualizingLayoutContext>())
+    {
+        return nonVirtualizingContext;
+    }
+    else if (auto virtualizingContext = context.try_as<winrt::VirtualizingLayoutContext>())
+    {
+        auto adapter = winrt::get_self<VirtualizingLayoutContext>(virtualizingContext)->GetNonVirtualizingContextAdapter();
+        return adapter;
+    }
+    else
+    {
+        throw winrt::hresult_not_implemented();
+    }
+}
+} // namespace
 
 void Layout::InitializeForContext(winrt::LayoutContext const& context)
 {
@@ -96,10 +94,7 @@ void Layout::UninitializeForContext(winrt::LayoutContext const& context)
     }
 }
 
-winrt::Size Layout::Measure(
-    winrt::LayoutContext const& context,
-    winrt::Size const& availableSize
-    )
+winrt::Size Layout::Measure(winrt::LayoutContext const& context, winrt::Size const& availableSize)
 {
     auto spThis = get_strong();
     if (auto virtualizingLayout = spThis.try_as<winrt::IVirtualizingLayoutOverrides>())
@@ -118,9 +113,7 @@ winrt::Size Layout::Measure(
     }
 }
 
-winrt::Size Layout::Arrange(
-    winrt::LayoutContext const& context,
-    winrt::Size const& finalSize)
+winrt::Size Layout::Arrange(winrt::LayoutContext const& context, winrt::Size const& finalSize)
 {
     auto spThis = get_strong();
     if (auto virtualizingLayout = spThis.try_as<winrt::IVirtualizingLayoutOverrides>())
@@ -158,7 +151,6 @@ void Layout::ArrangeInvalidated(winrt::event_token const& token)
 {
     m_arrangeInvalidatedEventSource.remove(token);
 }
-
 
 #pragma endregion
 

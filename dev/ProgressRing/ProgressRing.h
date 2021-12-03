@@ -13,9 +13,7 @@
 #include "ProgressRing.g.h"
 #include "ProgressRing.properties.h"
 
-class ProgressRing :
-    public ReferenceTracker<ProgressRing, winrt::implementation::ProgressRingT>,
-    public ProgressRingProperties
+class ProgressRing : public ReferenceTracker<ProgressRing, winrt::implementation::ProgressRingT>, public ProgressRingProperties
 {
 
 public:

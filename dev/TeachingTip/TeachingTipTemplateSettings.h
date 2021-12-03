@@ -6,9 +6,8 @@
 #include "TeachingTipTemplateSettings.g.h"
 #include "TeachingTipTemplateSettings.properties.h"
 
-class TeachingTipTemplateSettings :
-    public winrt::implementation::TeachingTipTemplateSettingsT<TeachingTipTemplateSettings>,
-    public TeachingTipTemplateSettingsProperties
+class TeachingTipTemplateSettings : public winrt::implementation::TeachingTipTemplateSettingsT<TeachingTipTemplateSettings>,
+                                    public TeachingTipTemplateSettingsProperties
 {
 public:
     TeachingTipTemplateSettings();

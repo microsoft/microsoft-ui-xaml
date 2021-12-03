@@ -9,9 +9,7 @@
 #include "SplitButton.g.h"
 #include "SplitButton.properties.h"
 
-class SplitButton :
-    public ReferenceTracker<SplitButton, winrt::implementation::SplitButtonT>,
-    public SplitButtonProperties
+class SplitButton : public ReferenceTracker<SplitButton, winrt::implementation::SplitButtonT>, public SplitButtonProperties
 {
 
 public:
@@ -24,11 +22,17 @@ public:
     virtual winrt::AutomationPeer OnCreateAutomationPeer();
 
     // Internal
-    bool IsFlyoutOpen() { return m_isFlyoutOpen; };
+    bool IsFlyoutOpen()
+    {
+        return m_isFlyoutOpen;
+    };
     void OpenFlyout();
     void CloseFlyout();
     virtual void OnClickPrimary(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    virtual bool InternalIsChecked() { return false; }
+    virtual bool InternalIsChecked()
+    {
+        return false;
+    }
 
     void UpdateVisualStates(bool useTransitions = true);
 

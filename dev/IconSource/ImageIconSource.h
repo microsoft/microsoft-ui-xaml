@@ -7,13 +7,11 @@
 #include "ImageIconSource.g.h"
 #include "ImageIconSource.properties.h"
 
-class ImageIconSource :
-    public ReferenceTracker<ImageIconSource, winrt::implementation::ImageIconSourceT, IconSource>,
-    public ImageIconSourceProperties
+class ImageIconSource : public ReferenceTracker<ImageIconSource, winrt::implementation::ImageIconSourceT, IconSource>, public ImageIconSourceProperties
 {
 public:
-    using ImageIconSourceProperties::EnsureProperties;
     using ImageIconSourceProperties::ClearProperties;
+    using ImageIconSourceProperties::EnsureProperties;
 
     winrt::DependencyProperty GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty);
     winrt::IconElement CreateIconElementCore();

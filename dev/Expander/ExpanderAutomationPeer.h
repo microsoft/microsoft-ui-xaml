@@ -6,8 +6,7 @@
 #include "Expander.h"
 #include "ExpanderAutomationPeer.g.h"
 
-class ExpanderAutomationPeer :
-    public ReferenceTracker<ExpanderAutomationPeer, winrt::implementation::ExpanderAutomationPeerT>
+class ExpanderAutomationPeer : public ReferenceTracker<ExpanderAutomationPeer, winrt::implementation::ExpanderAutomationPeerT>
 {
 
 public:
@@ -28,8 +27,6 @@ public:
     void Expand();
     void RaiseExpandCollapseAutomationEvent(winrt::ExpandCollapseState newState);
 
-
 private:
     com_ptr<Expander> GetImpl();
 };
-

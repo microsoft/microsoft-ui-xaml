@@ -5,8 +5,7 @@
 #include "common.h"
 #include "ElementFactory.h"
 
-class BreadcrumbElementFactory :
-    public winrt::implements<BreadcrumbElementFactory, ElementFactory>
+class BreadcrumbElementFactory : public winrt::implements<BreadcrumbElementFactory, ElementFactory>
 {
 public:
     BreadcrumbElementFactory();
@@ -18,4 +17,3 @@ public:
 private:
     winrt::IElementFactoryShim m_itemTemplateWrapper{ nullptr };
 };
-

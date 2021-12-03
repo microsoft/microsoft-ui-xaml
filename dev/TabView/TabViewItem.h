@@ -12,9 +12,7 @@
 #include "TabViewItemAutomationPeer.h"
 #include "TabViewItemTemplateSettings.h"
 
-class TabViewItem :
-    public ReferenceTracker<TabViewItem, winrt::implementation::TabViewItemT>,
-    public TabViewItemProperties
+class TabViewItem : public ReferenceTracker<TabViewItem, winrt::implementation::TabViewItemT>, public TabViewItemProperties
 {
 
 public:

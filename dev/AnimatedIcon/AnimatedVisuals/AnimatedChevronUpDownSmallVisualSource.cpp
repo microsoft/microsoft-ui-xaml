@@ -4,13 +4,13 @@
 //
 //       LottieGen version:
 //           7.1.0+ge1fa92580f
-//       
+//
 //       Command:
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedChevronUpDownSmallVisualSource.json
-//       
+//
 //       Input file:
 //           AnimatedChevronUpDownSmallVisualSource.json (24992 bytes created 23:37-07:00 Oct 5 2021)
-//       
+//
 //       LottieGen source:
 //           http://aka.ms/Lottie
 //
@@ -53,8 +53,7 @@
 #include <d2d1helper.h>
 #include <Windows.Graphics.Interop.h>
 #ifdef BUILD_WINDOWS
-namespace ABI
-{
+namespace ABI {
 #include <Windows.Graphics.Effects.Interop.h>
 }
 #else
@@ -70,25 +69,25 @@ using namespace winrt::Windows::UI;
 using namespace winrt::Windows::UI::Composition;
 using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
-namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
-{
-    CppWinRTActivatableClassWithBasicFactory(AnimatedChevronUpDownSmallVisualSource)
+namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals {
+CppWinRTActivatableClassWithBasicFactory(AnimatedChevronUpDownSmallVisualSource)
 }
 #include "AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.g.cpp"
 
-class CanvasGeometry : public winrt::implements<CanvasGeometry,
-    IGeometrySource2D,
-    ::ABI::Windows::Graphics::IGeometrySource2DInterop>
+class CanvasGeometry : public winrt::implements<CanvasGeometry, IGeometrySource2D, ::ABI::Windows::Graphics::IGeometrySource2DInterop>
 {
     winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 
 public:
-    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry)
-        : _geometry{ geometry }
-    { }
+    CanvasGeometry(winrt::com_ptr<ID2D1Geometry> geometry) : _geometry{ geometry }
+    {
+    }
 
     // IGeometrySource2D.
-    winrt::com_ptr<ID2D1Geometry> Geometry() { return _geometry; }
+    winrt::com_ptr<ID2D1Geometry> Geometry()
+    {
+        return _geometry;
+    }
 
     // IGeometrySource2DInterop.
     IFACEMETHODIMP GetGeometry(ID2D1Geometry** value) override
@@ -103,9 +102,8 @@ public:
         return E_NOTIMPL;
     }
 };
-class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual : public winrt::implements<AnimatedChevronUpDownSmallVisualSource_AnimatedVisual,
-        winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
-        IClosable>
+class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual
+    : public winrt::implements<AnimatedChevronUpDownSmallVisualSource_AnimatedVisual, winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual, IClosable>
 {
     winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
     static constexpr int64_t c_durationTicks{ 43333333L };
@@ -120,11 +118,7 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual : public winrt::impl
     ExpressionAnimation _rootProgress{ nullptr };
     StepEasingFunction _holdThenStepEasingFunction{ nullptr };
 
-    static void StartProgressBoundAnimation(
-        CompositionObject target,
-        winrt::hstring animatedPropertyName,
-        CompositionAnimation animation,
-        ExpressionAnimation controllerProgressExpression)
+    static void StartProgressBoundAnimation(CompositionObject target, winrt::hstring animatedPropertyName, CompositionAnimation animation, ExpressionAnimation controllerProgressExpression)
     {
         target.StartAnimation(animatedPropertyName, animation);
         const auto controller = target.TryGetAnimationController(animatedPropertyName);
@@ -132,12 +126,7 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual : public winrt::impl
         controller.StartAnimation(L"Progress", controllerProgressExpression);
     }
 
-    void BindProperty(
-        CompositionObject target,
-        winrt::hstring animatedPropertyName,
-        winrt::hstring expression,
-        winrt::hstring referenceParameterName,
-        CompositionObject referencedObject)
+    void BindProperty(CompositionObject target, winrt::hstring animatedPropertyName, winrt::hstring expression, winrt::hstring referenceParameterName, CompositionObject referencedObject)
     {
         _reusableExpressionAnimation.ClearAllParameters();
         _reusableExpressionAnimation.Expression(expression);
@@ -226,7 +215,12 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual : public winrt::impl
     CompositionColorBrush ThemeColor_Foreground()
     {
         const auto result = _c.CreateColorBrush();
-        BindProperty(result, L"Color", L"ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties);
+        BindProperty(
+            result,
+            L"Color",
+            L"ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)",
+            L"_theme",
+            _themeProperties);
         return result;
     }
 
@@ -674,12 +668,8 @@ class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual : public winrt::impl
     }
 
 public:
-    AnimatedChevronUpDownSmallVisualSource_AnimatedVisual(
-        Compositor compositor,
-        CompositionPropertySet themeProperties)
-        : _c{compositor}
-        , _themeProperties{themeProperties}
-        , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
+    AnimatedChevronUpDownSmallVisualSource_AnimatedVisual(Compositor compositor, CompositionPropertySet themeProperties) :
+        _c{ compositor }, _themeProperties{ themeProperties }, _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
     {
         winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.put()));
         const auto _ = Root();
@@ -710,7 +700,8 @@ public:
 
     static bool IsRuntimeCompatible()
     {
-        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 7);
+        return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(
+            L"Windows.Foundation.UniversalApiContract", 7);
     }
 };
 
@@ -744,25 +735,21 @@ void AnimatedChevronUpDownSmallVisualSource::Foreground(Color value)
     }
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedChevronUpDownSmallVisualSource::TryCreateAnimatedVisual(
-    Compositor const& compositor)
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedChevronUpDownSmallVisualSource::TryCreateAnimatedVisual(Compositor const& compositor)
 {
     IInspectable diagnostics = nullptr;
     return TryCreateAnimatedVisual(compositor, diagnostics);
 }
 
 winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedChevronUpDownSmallVisualSource::TryCreateAnimatedVisual(
-    Compositor const& compositor,
-    IInspectable& diagnostics)
+    Compositor const& compositor, IInspectable& diagnostics)
 {
     const auto _ = EnsureThemeProperties(compositor);
     diagnostics = nullptr;
 
     if (AnimatedChevronUpDownSmallVisualSource_AnimatedVisual::IsRuntimeCompatible())
     {
-        return winrt::make<AnimatedChevronUpDownSmallVisualSource_AnimatedVisual>(
-            compositor,
-            _themeProperties);
+        return winrt::make<AnimatedChevronUpDownSmallVisualSource_AnimatedVisual>(compositor, _themeProperties);
     }
 
     return nullptr;
@@ -790,47 +777,45 @@ double AnimatedChevronUpDownSmallVisualSource::FrameToProgress(double frameNumbe
 
 winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedChevronUpDownSmallVisualSource::Markers()
 {
-    return winrt::single_threaded_map<winrt::hstring, double>(
-        std::map<winrt::hstring, double>
-        {
-            { L"NormalOnToNormalOff_Start", 0.0 },
-            { L"NormalOnToNormalOff_End", 0.111730769230769 },
-            { L"NormalOnToPointerOverOn_Start", 0.115576923076923 },
-            { L"NormalOnToPointerOverOn_End", 0.150192307692308 },
-            { L"NormalOnToPressedOn_Start", 0.154038461538462 },
-            { L"NormalOnToPressedOn_End", 0.188653846153846 },
-            { L"NormalOffToNormalOn_Start", 0.1925 },
-            { L"NormalOffToNormalOn_End", 0.304038461538462 },
-            { L"NormalOffToPointerOverOff_Start", 0.307884615384615 },
-            { L"NormalOffToPointerOverOff_End", 0.3425 },
-            { L"NormalOffToPressedOff_Start", 0.346346153846154 },
-            { L"NormalOffToPressedOff_End", 0.380961538461538 },
-            { L"PointerOverOnToPointerOverOff_Start", 0.384807692307692 },
-            { L"PointerOverOnToPointerOverOff_End", 0.419423076923077 },
-            { L"PointerOverOnToNormalOn_Start", 0.423269230769231 },
-            { L"PointerOverOnToNormalOn_End", 0.457884615384615 },
-            { L"PointerOverOnToPressedOn_Start", 0.461730769230769 },
-            { L"PointerOverOnToPressedOn_End", 0.496346153846154 },
-            { L"PointerOverOffToPointerOverOn_Start", 0.500192307692308 },
-            { L"PointerOverOffToPointerOverOn_End", 0.534807692307692 },
-            { L"PointerOverOffToNormalOff_Start", 0.538653846153846 },
-            { L"PointerOverOffToNormalOff_End", 0.573269230769231 },
-            { L"PointerOverOffToPressedOff_Start", 0.577115384615385 },
-            { L"PointerOverOffToPressedOff_End", 0.611730769230769 },
-            { L"PressedOnToPressedOff_Start", 0.615576923076923 },
-            { L"PressedOnToPressedOff_End", 0.650192307692308 },
-            { L"PressedOnToPointerOverOff_Start", 0.654038461538462 },
-            { L"PressedOnToPointerOverOff_End", 0.727115384615385 },
-            { L"PressedOnToNormalOff_Start", 0.730961538461539 },
-            { L"PressedOnToNormalOff_End", 0.804038461538462 },
-            { L"PressedOffToPressedOn_Start", 0.807884615384615 },
-            { L"PressedOffToPressedOn_End", 0.8425 },
-            { L"PressedOffToPointerOverOn_Start", 0.846346153846154 },
-            { L"PressedOffToPointerOverOn_End", 0.919423076923077 },
-            { L"PressedOffToNormalOn_Start", 0.923269230769231 },
-            { L"PressedOffToNormalOn_End", 0.996346153846154 },
-        }
-    ).GetView();
+    return winrt::single_threaded_map<winrt::hstring, double>(std::map<winrt::hstring, double>{
+                                                                  { L"NormalOnToNormalOff_Start", 0.0 },
+                                                                  { L"NormalOnToNormalOff_End", 0.111730769230769 },
+                                                                  { L"NormalOnToPointerOverOn_Start", 0.115576923076923 },
+                                                                  { L"NormalOnToPointerOverOn_End", 0.150192307692308 },
+                                                                  { L"NormalOnToPressedOn_Start", 0.154038461538462 },
+                                                                  { L"NormalOnToPressedOn_End", 0.188653846153846 },
+                                                                  { L"NormalOffToNormalOn_Start", 0.1925 },
+                                                                  { L"NormalOffToNormalOn_End", 0.304038461538462 },
+                                                                  { L"NormalOffToPointerOverOff_Start", 0.307884615384615 },
+                                                                  { L"NormalOffToPointerOverOff_End", 0.3425 },
+                                                                  { L"NormalOffToPressedOff_Start", 0.346346153846154 },
+                                                                  { L"NormalOffToPressedOff_End", 0.380961538461538 },
+                                                                  { L"PointerOverOnToPointerOverOff_Start", 0.384807692307692 },
+                                                                  { L"PointerOverOnToPointerOverOff_End", 0.419423076923077 },
+                                                                  { L"PointerOverOnToNormalOn_Start", 0.423269230769231 },
+                                                                  { L"PointerOverOnToNormalOn_End", 0.457884615384615 },
+                                                                  { L"PointerOverOnToPressedOn_Start", 0.461730769230769 },
+                                                                  { L"PointerOverOnToPressedOn_End", 0.496346153846154 },
+                                                                  { L"PointerOverOffToPointerOverOn_Start", 0.500192307692308 },
+                                                                  { L"PointerOverOffToPointerOverOn_End", 0.534807692307692 },
+                                                                  { L"PointerOverOffToNormalOff_Start", 0.538653846153846 },
+                                                                  { L"PointerOverOffToNormalOff_End", 0.573269230769231 },
+                                                                  { L"PointerOverOffToPressedOff_Start", 0.577115384615385 },
+                                                                  { L"PointerOverOffToPressedOff_End", 0.611730769230769 },
+                                                                  { L"PressedOnToPressedOff_Start", 0.615576923076923 },
+                                                                  { L"PressedOnToPressedOff_End", 0.650192307692308 },
+                                                                  { L"PressedOnToPointerOverOff_Start", 0.654038461538462 },
+                                                                  { L"PressedOnToPointerOverOff_End", 0.727115384615385 },
+                                                                  { L"PressedOnToNormalOff_Start", 0.730961538461539 },
+                                                                  { L"PressedOnToNormalOff_End", 0.804038461538462 },
+                                                                  { L"PressedOffToPressedOn_Start", 0.807884615384615 },
+                                                                  { L"PressedOffToPressedOn_End", 0.8425 },
+                                                                  { L"PressedOffToPointerOverOn_Start", 0.846346153846154 },
+                                                                  { L"PressedOffToPointerOverOn_End", 0.919423076923077 },
+                                                                  { L"PressedOffToNormalOn_Start", 0.923269230769231 },
+                                                                  { L"PressedOffToNormalOn_End", 0.996346153846154 },
+                                                              })
+        .GetView();
 }
 
 void AnimatedChevronUpDownSmallVisualSource::SetColorProperty(hstring const& propertyName, Color value)

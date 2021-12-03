@@ -5,8 +5,7 @@
 #include "common.h"
 #include "ElementFactory.h"
 
-class RadioButtonsElementFactory :
-    public winrt::implements<RadioButtonsElementFactory, ElementFactory>
+class RadioButtonsElementFactory : public winrt::implements<RadioButtonsElementFactory, ElementFactory>
 {
 public:
     RadioButtonsElementFactory();
@@ -18,4 +17,3 @@ public:
 private:
     winrt::IElementFactoryShim m_itemTemplateWrapper{ nullptr };
 };
-

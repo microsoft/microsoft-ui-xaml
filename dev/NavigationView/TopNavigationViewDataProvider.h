@@ -16,10 +16,9 @@ enum class NavigationViewSplitVectorID
 using SplitDataSourceT = typename SplitDataSourceBase<winrt::IInspectable, NavigationViewSplitVectorID, float>;
 using SplitVectorT = typename SplitVector<winrt::IInspectable, NavigationViewSplitVectorID>;
 
-class TopNavigationViewDataProvider: public SplitDataSourceT
+class TopNavigationViewDataProvider : public SplitDataSourceT
 {
 public:
-    
     TopNavigationViewDataProvider(const ITrackerHandleManager* m_owner);
 
     winrt::IVector<winrt::IInspectable> GetPrimaryItems();
@@ -53,17 +52,18 @@ public:
 
     void UpdateWidthForPrimaryItem(int indexInPrimary, float width);
     float WidthRequiredToRecoveryAllItemsToPrimary();
-    float CalculateWidthForItems(std::vector<int> &items);
+    float CalculateWidthForItems(std::vector<int>& items);
     float GetWidthForItem(int index);
     void InvalidWidthCache();
     float OverflowButtonWidth();
     void OverflowButtonWidth(float width);
     bool IsItemInPrimaryList(int index);
-    bool HasInvalidWidth(std::vector<int> & items);
+    bool HasInvalidWidth(std::vector<int>& items);
     bool IsValidWidthForItem(int index);
 
     // If value is not in the raw data set or can't be move to primarylist, then return false
     bool IsItemSelectableInPrimaryList(const winrt::IInspectable& value);
+
 protected:
     void OnDataSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
 
@@ -82,4 +82,3 @@ private:
     std::function<void(const winrt::NotifyCollectionChangedEventArgs& args)> m_dataChangeCallback;
     float m_overflowButtonCachedWidth{};
 };
-

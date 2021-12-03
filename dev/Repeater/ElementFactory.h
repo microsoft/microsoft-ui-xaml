@@ -5,8 +5,7 @@
 
 #include "ElementFactory.g.h"
 
-class ElementFactory :
-    public winrt::implementation::ElementFactoryT<ElementFactory>
+class ElementFactory : public winrt::implementation::ElementFactoryT<ElementFactory>
 {
 public:
 #pragma region IElementFactory
@@ -34,5 +33,4 @@ public:
     {
         return __super::NonDelegatingRelease();
     }
-
 };

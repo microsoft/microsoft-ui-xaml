@@ -12,7 +12,6 @@ TreeViewDragItemsCompletedEventArgs::TreeViewDragItemsCompletedEventArgs(const w
     m_newParentItem = newParentItem;
 }
 
-
 DataPackageOperation TreeViewDragItemsCompletedEventArgs::DropResult() const
 {
     return m_dragItemsCompletedEventArgs.DropResult();

@@ -3,8 +3,8 @@
 
 #include "InfoBarClosingEventArgs.g.h"
 
-class InfoBarClosingEventArgs :
-    public ReferenceTracker<InfoBarClosingEventArgs, winrt::implementation::InfoBarClosingEventArgsT, winrt::composable, winrt::composing>
+class InfoBarClosingEventArgs
+    : public ReferenceTracker<InfoBarClosingEventArgs, winrt::implementation::InfoBarClosingEventArgsT, winrt::composable, winrt::composing>
 {
 public:
     winrt::InfoBarCloseReason Reason();

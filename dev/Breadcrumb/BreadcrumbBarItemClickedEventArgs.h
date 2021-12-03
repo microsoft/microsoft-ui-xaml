@@ -5,8 +5,7 @@
 
 #include "BreadcrumbBarItemClickedEventArgs.g.h"
 
-class BreadcrumbBarItemClickedEventArgs :
-    public winrt::implementation::BreadcrumbBarItemClickedEventArgsT<BreadcrumbBarItemClickedEventArgs>
+class BreadcrumbBarItemClickedEventArgs : public winrt::implementation::BreadcrumbBarItemClickedEventArgsT<BreadcrumbBarItemClickedEventArgs>
 {
 public:
     winrt::IInspectable Item();
@@ -17,5 +16,5 @@ public:
 
 private:
     int m_index{ -1 };
-    winrt::IInspectable m_item{ };
+    winrt::IInspectable m_item{};
 };

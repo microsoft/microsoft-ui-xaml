@@ -26,5 +26,4 @@ private:
     tracker_ref<winrt::IInspectable> m_selectedItem{ this };
     tracker_ref<winrt::NavigationViewItemBase> m_selectedItemContainer{ this };
     tracker_ref<winrt::NavigationTransitionInfo> m_recommendedNavigationTransitionInfo{ this };
-
 };

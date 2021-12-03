@@ -5,8 +5,8 @@
 
 #include "RefreshInteractionRatioChangedEventArgs.g.h"
 
-class RefreshInteractionRatioChangedEventArgs :
-    public winrt::implementation::RefreshInteractionRatioChangedEventArgsT<RefreshInteractionRatioChangedEventArgs>
+class RefreshInteractionRatioChangedEventArgs
+    : public winrt::implementation::RefreshInteractionRatioChangedEventArgsT<RefreshInteractionRatioChangedEventArgs>
 {
 public:
     RefreshInteractionRatioChangedEventArgs(double value);

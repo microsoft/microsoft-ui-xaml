@@ -6,8 +6,7 @@
 #include "ScrollPresenter.h"
 #include "ScrollingZoomCompletedEventArgs.g.h"
 
-class ScrollingZoomCompletedEventArgs :
-    public winrt::implementation::ScrollingZoomCompletedEventArgsT<ScrollingZoomCompletedEventArgs>
+class ScrollingZoomCompletedEventArgs : public winrt::implementation::ScrollingZoomCompletedEventArgsT<ScrollingZoomCompletedEventArgs>
 {
 public:
     ScrollingZoomCompletedEventArgs()

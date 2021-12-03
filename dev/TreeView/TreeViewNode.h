@@ -7,12 +7,11 @@
 #include "TreeViewNode.g.h"
 #include "TreeViewNode.properties.h"
 
-class TreeViewNode :
-    public ReferenceTracker<TreeViewNode, winrt::implementation::TreeViewNodeT, winrt::Windows::UI::Xaml::Data::ICustomPropertyProvider, winrt::Windows::Foundation::IStringable>,
-    public TreeViewNodeProperties
+class TreeViewNode
+    : public ReferenceTracker<TreeViewNode, winrt::implementation::TreeViewNodeT, winrt::Windows::UI::Xaml::Data::ICustomPropertyProvider, winrt::Windows::Foundation::IStringable>,
+      public TreeViewNodeProperties
 {
 public:
-
     enum class TreeNodeSelectionState
     {
         UnSelected,
@@ -84,21 +83,15 @@ public:
 
 typedef typename VectorOptionsFromFlag<winrt::TreeViewNode, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()> TreeViewNodeVectorOptions;
 
-class TreeViewNodeVector :
-    public ReferenceTracker<
-    TreeViewNodeVector,
-    reference_tracker_implements_t<typename TreeViewNodeVectorOptions::VectorType>::type,
-    typename TreeViewNodeVectorOptions::IterableType,
-    typename TreeViewNodeVectorOptions::ObservableVectorType>,
-    public TreeViewNodeVectorOptions::IVectorOwner
+class TreeViewNodeVector
+    : public ReferenceTracker<TreeViewNodeVector, reference_tracker_implements_t<typename TreeViewNodeVectorOptions::VectorType>::type, typename TreeViewNodeVectorOptions::IterableType, typename TreeViewNodeVectorOptions::ObservableVectorType>,
+      public TreeViewNodeVectorOptions::IVectorOwner
 {
     Implement_Vector_Read(TreeViewNodeVectorOptions)
 
-private:
-    winrt::weak_ref<winrt::TreeViewNode> m_parent{ nullptr };
+        private : winrt::weak_ref<winrt::TreeViewNode> m_parent{ nullptr };
 
 public:
-    
     TreeViewNodeVector();
     TreeViewNodeVector(unsigned int capacity);
 
@@ -106,11 +99,11 @@ public:
     void SetParent(winrt::TreeViewNode value);
     winrt::IBindableVector GetWritableParentItemsSource();
 
-    void Append(winrt::TreeViewNode const& item, bool updateItemsSource = true);   
+    void Append(winrt::TreeViewNode const& item, bool updateItemsSource = true);
     void InsertAt(unsigned int index, winrt::TreeViewNode const& item, bool updateItemsSource = true);
-    void SetAt(unsigned int index, winrt::TreeViewNode const& item, bool updateItemsSource = true);   
+    void SetAt(unsigned int index, winrt::TreeViewNode const& item, bool updateItemsSource = true);
     void RemoveAt(unsigned int index, bool updateItemsSource = true, bool updateIsExpanded = true);
     void RemoveAtEnd(bool updateItemsSource = true);
-    void ReplaceAll(winrt::array_view<winrt::TreeViewNode const> values, bool updateItemsSource = true);    
+    void ReplaceAll(winrt::array_view<winrt::TreeViewNode const> values, bool updateItemsSource = true);
     void Clear(bool updateItemsSource = true, bool updateIsExpanded = true);
 };

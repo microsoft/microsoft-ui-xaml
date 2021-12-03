@@ -10,7 +10,7 @@ using namespace std::chrono_literals;
 using namespace std::string_view_literals;
 using namespace std::chrono_literals;
 
-using ResourceIdType = const winrt::hstring &;
+using ResourceIdType = const winrt::hstring&;
 
 #include "ErrorHandling.h"
 #include "CppWinRTHelpers.h"

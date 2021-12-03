@@ -5,8 +5,7 @@
 
 #include "SliderInteraction.g.h"
 
-class SliderInteraction :
-    public ReferenceTracker<SliderInteraction, winrt::implementation::SliderInteractionT>
+class SliderInteraction : public ReferenceTracker<SliderInteraction, winrt::implementation::SliderInteractionT>
 {
 public:
     // ISliderInteraction

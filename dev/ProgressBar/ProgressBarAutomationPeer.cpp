@@ -10,8 +10,7 @@
 
 #include "ProgressBarAutomationPeer.properties.cpp"
 
-ProgressBarAutomationPeer::ProgressBarAutomationPeer(winrt::ProgressBar const& owner)
-    : ReferenceTracker(owner)
+ProgressBarAutomationPeer::ProgressBarAutomationPeer(winrt::ProgressBar const& owner) : ReferenceTracker(owner)
 {
 }
 
@@ -41,7 +40,7 @@ hstring ProgressBarAutomationPeer::GetClassNameCore()
 
 winrt::hstring ProgressBarAutomationPeer::GetNameCore()
 {
-    //Check to see if the item has a defined AutomationProperties.Name
+    // Check to see if the item has a defined AutomationProperties.Name
     winrt::hstring name = __super::GetNameCore();
 
     if (auto progressBar = Owner().try_as<winrt::ProgressBar>())

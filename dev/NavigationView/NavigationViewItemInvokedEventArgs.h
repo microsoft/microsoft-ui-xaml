@@ -27,4 +27,3 @@ private:
     tracker_ref<winrt::NavigationViewItemBase> m_invokedItemContainer{ this };
     tracker_ref<winrt::NavigationTransitionInfo> m_recommendedNavigationTransitionInfo{ this };
 };
-

@@ -14,9 +14,8 @@
 
 using namespace Microsoft::WRL;
 
-namespace Private
-{
-    PROVIDE_DEPENDENCY(XamlRuntimeType);
+namespace Private {
+PROVIDE_DEPENDENCY(XamlRuntimeType);
 }
 
 // Need it to export services

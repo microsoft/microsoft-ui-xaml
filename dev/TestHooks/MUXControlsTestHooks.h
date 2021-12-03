@@ -11,8 +11,7 @@
 
 #include "MUXControlsTestHooks.g.h"
 
-class MUXControlsTestHooks :
-    public winrt::implementation::MUXControlsTestHooksT<MUXControlsTestHooks>
+class MUXControlsTestHooks : public winrt::implementation::MUXControlsTestHooksT<MUXControlsTestHooks>
 {
 public:
     UCHAR GetLoggingLevelForType(const wstring_view& type);

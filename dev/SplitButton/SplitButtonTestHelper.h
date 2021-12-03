@@ -3,8 +3,7 @@
 
 #pragma once
 
-class SplitButtonTestHelper :
-    public winrt::implements<SplitButtonTestHelper, winrt::IInspectable>
+class SplitButtonTestHelper : public winrt::implements<SplitButtonTestHelper, winrt::IInspectable>
 {
 public:
     static void SimulateTouch(bool value);

@@ -21,8 +21,7 @@ SwipeControlInteractionTrackerOwner::~SwipeControlInteractionTrackerOwner()
 }
 
 #pragma region IInteractionTrackerOwner
-void SwipeControlInteractionTrackerOwner::ValuesChanged(
-    const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerValuesChangedArgs& args)
+void SwipeControlInteractionTrackerOwner::ValuesChanged(const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerValuesChangedArgs& args)
 {
     if (!m_owner)
     {
@@ -39,8 +38,7 @@ void SwipeControlInteractionTrackerOwner::ValuesChanged(
     }
 }
 
-void SwipeControlInteractionTrackerOwner::RequestIgnored(
-    const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerRequestIgnoredArgs& args)
+void SwipeControlInteractionTrackerOwner::RequestIgnored(const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerRequestIgnoredArgs& args)
 {
     if (!m_owner)
     {
@@ -75,8 +73,7 @@ void SwipeControlInteractionTrackerOwner::InteractingStateEntered(
     }
 }
 
-void SwipeControlInteractionTrackerOwner::InertiaStateEntered(
-    const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerInertiaStateEnteredArgs& args)
+void SwipeControlInteractionTrackerOwner::InertiaStateEntered(const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerInertiaStateEnteredArgs& args)
 {
     if (!m_owner)
     {
@@ -93,8 +90,7 @@ void SwipeControlInteractionTrackerOwner::InertiaStateEntered(
     }
 }
 
-void SwipeControlInteractionTrackerOwner::IdleStateEntered(
-    const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerIdleStateEnteredArgs& args)
+void SwipeControlInteractionTrackerOwner::IdleStateEntered(const winrt::InteractionTracker& /*sender*/, const winrt::InteractionTrackerIdleStateEnteredArgs& args)
 {
     if (!m_owner)
     {

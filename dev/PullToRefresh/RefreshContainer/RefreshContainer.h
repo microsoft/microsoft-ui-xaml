@@ -6,9 +6,9 @@
 #include "RefreshContainer.g.h"
 #include "RefreshContainer.properties.h"
 
-class RefreshContainer :
-    public ReferenceTracker<RefreshContainer, winrt::implementation::RefreshContainerT, winrt::IRefreshContainerPrivate>,
-    public RefreshContainerProperties
+class RefreshContainer
+    : public ReferenceTracker<RefreshContainer, winrt::implementation::RefreshContainerT, winrt::IRefreshContainerPrivate>,
+      public RefreshContainerProperties
 {
 public:
     RefreshContainer();
@@ -29,7 +29,7 @@ private:
     // Property changed event handler.
     static void OnPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
 
-    winrt::IRefreshInfoProvider SearchTreeForIRefreshInfoProvider(); 
+    winrt::IRefreshInfoProvider SearchTreeForIRefreshInfoProvider();
     winrt::IRefreshInfoProvider SearchTreeForIRefreshInfoProviderRecursiveHelper(winrt::DependencyObject root, int depth);
 
     void OnRefreshVisualizerChanged(const winrt::DependencyPropertyChangedEventArgs& args);

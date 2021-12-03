@@ -10,9 +10,9 @@
 
 class NavigationViewItem;
 
-class NavigationViewItemPresenter:
-    public ReferenceTracker<NavigationViewItemPresenter, winrt::implementation::NavigationViewItemPresenterT>,
-    public NavigationViewItemPresenterProperties
+class NavigationViewItemPresenter
+    : public ReferenceTracker<NavigationViewItemPresenter, winrt::implementation::NavigationViewItemPresenterT>,
+      public NavigationViewItemPresenterProperties
 {
 public:
     NavigationViewItemPresenter();
@@ -29,15 +29,15 @@ public:
 
     void RotateExpandCollapseChevron(bool isExpanded);
 
-    void UpdateCompactPaneLength(double compactPaneLength,bool shouldUpdate);
+    void UpdateCompactPaneLength(double compactPaneLength, bool shouldUpdate);
 
     void UpdateClosedCompactVisualState(bool isTopLevelItem, bool isClosedCompact);
 
 private:
-    NavigationViewItem * GetNavigationViewItem();
+    NavigationViewItem* GetNavigationViewItem();
     void UpdateMargin();
 
-    double m_compactPaneLengthValue { 40 };
+    double m_compactPaneLengthValue{ 40 };
 
     NavigationViewItemHelper<NavigationViewItemPresenter> m_helper{ this };
     tracker_ref<winrt::Grid> m_contentGrid{ this };

@@ -31,7 +31,7 @@ winrt::IInspectable MenuBarItemAutomationPeer::GetPatternCore(winrt::PatternInte
 
 winrt::hstring MenuBarItemAutomationPeer::GetNameCore()
 {
-    //Check to see if the item has a defined AutomationProperties.Name
+    // Check to see if the item has a defined AutomationProperties.Name
     winrt::hstring name = __super::GetNameCore();
 
     if (name.empty())
@@ -66,7 +66,7 @@ winrt::ExpandCollapseState MenuBarItemAutomationPeer::ExpandCollapseState()
     {
         return winrt::ExpandCollapseState::Collapsed;
     }
-} 
+}
 
 void MenuBarItemAutomationPeer::Collapse()
 {
@@ -78,4 +78,4 @@ void MenuBarItemAutomationPeer::Expand()
 {
     auto owner = Owner().as<winrt::MenuBarItem>();
     winrt::get_self<MenuBarItem>(owner)->ShowMenuFlyout();
-} 
+}

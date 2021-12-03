@@ -17,9 +17,7 @@ struct XamlCompBrush : winrt::Windows::UI::Xaml::Media::XamlCompositionBrushBase
 
 MonochromaticOverlayPresenter::MonochromaticOverlayPresenter()
 {
-    SizeChanged([this](auto&&...) {
-        InvalidateBrush();
-        });
+    SizeChanged([this](auto&&...) { InvalidateBrush(); });
 }
 
 void MonochromaticOverlayPresenter::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -109,5 +107,4 @@ void MonochromaticOverlayPresenter::UpdateBrush()
 
         winrt::ElementCompositionPreview::SetElementChildVisual(*this, visual);
     }
-
 }

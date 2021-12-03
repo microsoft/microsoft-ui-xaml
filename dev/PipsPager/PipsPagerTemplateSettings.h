@@ -7,8 +7,6 @@
 #include "PipsPagerTemplateSettings.g.h"
 #include "PipsPagerTemplateSettings.properties.h"
 
-class PipsPagerTemplateSettings :
-    public winrt::implementation::PipsPagerTemplateSettingsT<PipsPagerTemplateSettings>,
-    public PipsPagerTemplateSettingsProperties
+class PipsPagerTemplateSettings : public winrt::implementation::PipsPagerTemplateSettingsT<PipsPagerTemplateSettings>, public PipsPagerTemplateSettingsProperties
 {
 };

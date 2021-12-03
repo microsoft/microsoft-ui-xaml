@@ -12,7 +12,7 @@
 #include <limits>
 
 #pragma warning(push)
-#pragma warning(disable: 6101)  // Returning uninitialized memory '<value>'.  A successful path through the function does not set the named _Out_ parameter.
+#pragma warning(disable : 6101) // Returning uninitialized memory '<value>'.  A successful path through the function does not set the named _Out_ parameter.
 #include "Microsoft.UI.Private.Composition.Effects_impl.h"
 #pragma warning(pop)
 
@@ -49,7 +49,6 @@ public:
     void OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>& sender, bool isDisabledByMaterialPolicy);
     void OnWindowSizeChanged(const com_ptr<MaterialHelperBase>& sender, bool isFullScreenOrTabletMode);
 #endif
-
 
 public:
     // Default value on public DP - ok to be public
@@ -93,7 +92,8 @@ private:
         const winrt::Color initialLuminosityColor,
         std::vector<winrt::hstring>& animatedProperties);
 
-    static winrt::CompositionEffectFactory CreateAcrylicBrushCompositionEffectFactory(const winrt::Compositor& compositor,
+    static winrt::CompositionEffectFactory CreateAcrylicBrushCompositionEffectFactory(
+        const winrt::Compositor& compositor,
         bool shouldBrushBeOpaque,
         bool useWindowAcrylic,
         bool useCrossFadeEffect,
@@ -123,7 +123,8 @@ private:
 
     void OnFallbackColorChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
-    void CreateAnimation(const winrt::CompositionBrush& brush,
+    void CreateAnimation(
+        const winrt::CompositionBrush& brush,
         winrt::CompositionScopedBatch& scopedBatch,
         winrt::event_token& token,
         float acrylicStart,
@@ -134,14 +135,13 @@ private:
 
     static winrt::CompositionAnimation MakeColorAnimation(const winrt::Color& color, const winrt::TimeSpan& duration, const winrt::Compositor& compositor);
     static winrt::CompositionAnimation MakeFloatAnimation(
-        float fromValue,
-        float toValue,
-        const winrt::TimeSpan& duration,
-        const winrt::CompositionEasingFunction& easing,
-        const winrt::Compositor& compositor);
+        float fromValue, float toValue, const winrt::TimeSpan& duration, const winrt::CompositionEasingFunction& easing, const winrt::Compositor& compositor);
     static void PlayCrossFadeAnimation(const winrt::CompositionBrush& brush, float acrylicStart, float acrylicEnd);
 
-    bool IsInFallbackMode() { return !m_isUsingAcrylicBrush; }
+    bool IsInFallbackMode()
+    {
+        return !m_isUsingAcrylicBrush;
+    }
 
 #if BUILD_WINDOWS
     void PolicyStatusChangedHelper(bool isDisabledByBackdropPolicy, bool isDisabledByHostBackdropPolicy);

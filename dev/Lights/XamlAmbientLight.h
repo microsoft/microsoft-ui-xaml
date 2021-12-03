@@ -7,12 +7,11 @@
 #include "XamlAmbientLight.g.h"
 #include "XamlAmbientLight.properties.h"
 
-class XamlAmbientLight :
-    public ReferenceTracker<XamlAmbientLight, winrt::implementation::XamlAmbientLightT>,
-    public XamlAmbientLightProperties
+class XamlAmbientLight : public ReferenceTracker<XamlAmbientLight, winrt::implementation::XamlAmbientLightT>, public XamlAmbientLightProperties
 {
     friend MaterialHelperBase;
     friend MaterialHelper;
+
 public:
     XamlAmbientLight();
 
@@ -29,11 +28,8 @@ public:
     void OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>& sender, bool isDisabledByMaterialPolicy);
 #endif
 
-    void OnColorPropertyChanged(
-        const winrt::DependencyPropertyChangedEventArgs& args);
-    static void OnIsTargetPropertyChanged(
-        const winrt::DependencyObject& sender,
-        const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnColorPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    static void OnIsTargetPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
 
 public:
     static const winrt::Color sc_defaultColor;

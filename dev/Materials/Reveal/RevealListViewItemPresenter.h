@@ -5,8 +5,7 @@
 
 #include "RevealListViewItemPresenter.g.h"
 
-class RevealListViewItemPresenter :
-    public ReferenceTracker<RevealListViewItemPresenter, winrt::implementation::RevealListViewItemPresenterT>
+class RevealListViewItemPresenter : public ReferenceTracker<RevealListViewItemPresenter, winrt::implementation::RevealListViewItemPresenterT>
 {
 public:
     bool GoToElementStateCore(winrt::hstring const& stateName, bool useTransitions);

@@ -11,12 +11,12 @@
 class PointerHoverElementHelper;
 class SoftLightSwitch;
 
-class RevealHoverLight :
-    public ReferenceTracker<RevealHoverLight, winrt::implementation::RevealHoverLightT>
+class RevealHoverLight : public ReferenceTracker<RevealHoverLight, winrt::implementation::RevealHoverLightT>
 {
     friend RevealTestApi;
     friend MaterialHelperBase;
     friend MaterialHelper;
+
 public:
     static winrt::hstring& GetLightIdStatic();
 
@@ -33,9 +33,18 @@ public:
 
     void GoToState(_In_ winrt::RevealBrushState newState);
 
-    void SetIsPressLight(bool isPressLight) { m_isPressLight = isPressLight; }
-    bool GetIsPressLight() { return m_isPressLight; }
-    winrt::SpotLight GetLight() { return m_compositionSpotLight; } // For test APIs
+    void SetIsPressLight(bool isPressLight)
+    {
+        m_isPressLight = isPressLight;
+    }
+    bool GetIsPressLight()
+    {
+        return m_isPressLight;
+    }
+    winrt::SpotLight GetLight()
+    {
+        return m_compositionSpotLight;
+    } // For test APIs
 
 public:
     // These can be adjusted for tweaking/development on DBG builds
@@ -63,8 +72,23 @@ protected:
     void InitializeImpl(_In_opt_ IInspectable* outer);
 
 private:
-    enum class LightStates { Off, AnimToHover, AnimToOff, Hover, Pressing, FastRelease, SlowRelease };
-    enum class LightEvents { GotoNormal, GotoPointerOver, GotoPressed, AnimationComplete };
+    enum class LightStates
+    {
+        Off,
+        AnimToHover,
+        AnimToOff,
+        Hover,
+        Pressing,
+        FastRelease,
+        SlowRelease
+    };
+    enum class LightEvents
+    {
+        GotoNormal,
+        GotoPointerOver,
+        GotoPressed,
+        AnimationComplete
+    };
     LightStates m_currentLightState{ LightStates::Off };
 
     void GotoLightState(LightEvents e);

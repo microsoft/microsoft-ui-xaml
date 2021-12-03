@@ -6,9 +6,9 @@
 #include "RefreshVisualizer.g.h"
 #include "RefreshVisualizer.properties.h"
 
-class RefreshVisualizer :
-    public ReferenceTracker<RefreshVisualizer, winrt::implementation::RefreshVisualizerT, winrt::IRefreshVisualizerPrivate>,
-    public RefreshVisualizerProperties
+class RefreshVisualizer
+    : public ReferenceTracker<RefreshVisualizer, winrt::implementation::RefreshVisualizerT, winrt::IRefreshVisualizerPrivate>,
+      public RefreshVisualizerProperties
 {
 public:
     RefreshVisualizer();
@@ -23,7 +23,7 @@ public:
     // IRefreshVisualizer overrides
     void RequestRefresh();
 
-    //Private Interface members
+    // Private Interface members
     winrt::IRefreshInfoProvider InfoProvider();
     void InfoProvider(winrt::IRefreshInfoProvider const& value);
 
@@ -52,7 +52,7 @@ private:
     void ExecuteExecutingRotationAnimation();
     void UpdateRefreshState(const winrt::RefreshVisualizerState& newState);
     void RaiseRefreshStateChanged(const winrt::RefreshVisualizerState& oldState, const winrt::RefreshVisualizerState& newState);
-    void RaiseRefreshRequested();    
+    void RaiseRefreshRequested();
     void RefreshCompleted();
 
     ///////////////////////////////////////////////
@@ -64,9 +64,9 @@ private:
     ///////////////////////////////////////////////
     ///// Private Dependency Property Setters /////
     ///////////////////////////////////////////////
-    void put_State (const winrt::RefreshVisualizerState& value);
+    void put_State(const winrt::RefreshVisualizerState& value);
 
-    //Helpers
+    // Helpers
     bool IsPullDirectionVertical();
     bool IsPullDirectionFar();
 

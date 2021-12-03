@@ -7,8 +7,7 @@
 
 #include "SwipeTestHooks.g.h"
 
-class SwipeTestHooks :
-    public winrt::implementation::SwipeTestHooksT<SwipeTestHooks>
+class SwipeTestHooks : public winrt::implementation::SwipeTestHooksT<SwipeTestHooks>
 {
 public:
     static com_ptr<SwipeTestHooks> GetGlobalTestHooks()

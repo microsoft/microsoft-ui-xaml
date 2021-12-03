@@ -9,13 +9,7 @@
 const int CheckerSize = 4;
 
 Hsv IncrementColorChannel(
-    const Hsv &originalHsv,
-    winrt::ColorPickerHsvChannel channel,
-    IncrementDirection direction,
-    IncrementAmount amount,
-    bool shouldWrap,
-    double minBound,
-    double maxBound)
+    const Hsv& originalHsv, winrt::ColorPickerHsvChannel channel, IncrementDirection direction, IncrementAmount amount, bool shouldWrap, double minBound, double maxBound)
 {
     Hsv newHsv = originalHsv;
 
@@ -26,7 +20,7 @@ Hsv IncrementColorChannel(
         newHsv.s *= 100;
         newHsv.v *= 100;
 
-        double *valueToIncrement = nullptr;
+        double* valueToIncrement = nullptr;
         double incrementAmount = 0;
 
         // If we're adding a small increment, then we'll just add or subtract 1.
@@ -80,8 +74,7 @@ Hsv IncrementColorChannel(
         // While working with named colors, we're going to need to be working in actual HSV units,
         // so we'll divide the min bound and max bound by 100 in the case of saturation or value,
         // since we'll have received units between 0-100 and we need them within 0-1.
-        if (channel == winrt::ColorPickerHsvChannel::Saturation ||
-            channel == winrt::ColorPickerHsvChannel::Value)
+        if (channel == winrt::ColorPickerHsvChannel::Saturation || channel == winrt::ColorPickerHsvChannel::Value)
         {
             minBound /= 100;
             maxBound /= 100;
@@ -103,13 +96,7 @@ int sgn(T val)
     return first - second;
 }
 
-Hsv FindNextNamedColor(
-    const Hsv &originalHsv,
-    winrt::ColorPickerHsvChannel channel,
-    IncrementDirection direction,
-    bool shouldWrap,
-    double minBound,
-    double maxBound)
+Hsv FindNextNamedColor(const Hsv& originalHsv, winrt::ColorPickerHsvChannel channel, IncrementDirection direction, bool shouldWrap, double minBound, double maxBound)
 {
     // There's no easy way to directly get the next named color, so what we'll do
     // is just iterate in the direction that we want to find it until we find a color
@@ -123,7 +110,7 @@ Hsv FindNextNamedColor(
     winrt::hstring newColorName = originalColorName;
 
     double originalValue = 0;
-    double *newValue = nullptr;
+    double* newValue = nullptr;
     double incrementAmount = 0;
 
     switch (channel)
@@ -193,9 +180,7 @@ Hsv FindNextNamedColor(
             }
         }
 
-        if (!justWrapped &&
-            previousValue != originalValue &&
-            sgn(*newValue - originalValue) != sgn(previousValue - originalValue))
+        if (!justWrapped && previousValue != originalValue && sgn(*newValue - originalValue) != sgn(previousValue - originalValue))
         {
             // If we've wrapped all the way back to the start and have failed to find a new color name,
             // then we'll just quit - there isn't a new color name that we're going to find.
@@ -213,8 +198,8 @@ Hsv FindNextNamedColor(
         double startEndOffset = 0;
         winrt::hstring currentColorName = newColorName;
 
-        double *startValue = nullptr;
-        double *currentValue = nullptr;
+        double* startValue = nullptr;
+        double* currentValue = nullptr;
         double wrapIncrement = 0;
 
         switch (channel)
@@ -305,13 +290,7 @@ Hsv FindNextNamedColor(
     return newHsv;
 }
 
-double IncrementAlphaChannel(
-    double originalAlpha,
-    IncrementDirection direction,
-    IncrementAmount amount,
-    bool shouldWrap,
-    double minBound,
-    double maxBound)
+double IncrementAlphaChannel(double originalAlpha, IncrementDirection direction, IncrementAmount amount, bool shouldWrap, double minBound, double maxBound)
 {
     // In order to avoid working with small values that can incur rounding issues,
     // we'll multiple alpha by 100 to put it in the range of 0-100 instead of 0-1.
@@ -357,7 +336,7 @@ void CreateCheckeredBackgroundAsync(
     int height,
     winrt::Color checkerColor,
     std::shared_ptr<std::vector<byte>> const& bgraCheckeredPixelData,
-    winrt::IAsyncAction &asyncActionToAssign,
+    winrt::IAsyncAction& asyncActionToAssign,
     DispatcherHelper dispatcherHelper,
     std::function<void(winrt::WriteableBitmap)> completedFunction)
 {
@@ -368,10 +347,7 @@ void CreateCheckeredBackgroundAsync(
 
     bgraCheckeredPixelData->reserve(static_cast<size_t>(width * height * 4));
 
-    winrt::WorkItemHandler workItemHandler(
-        [width, height, checkerColor, bgraCheckeredPixelData]
-    (winrt::IAsyncAction workItem)
-    {
+    winrt::WorkItemHandler workItemHandler([width, height, checkerColor, bgraCheckeredPixelData](winrt::IAsyncAction workItem) {
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
@@ -413,28 +389,23 @@ void CreateCheckeredBackgroundAsync(
 
     asyncActionToAssign = winrt::ThreadPool::RunAsync(workItemHandler);
     asyncActionToAssign.Completed(winrt::AsyncActionCompletedHandler(
-        [width, height, bgraCheckeredPixelData, &asyncActionToAssign, completedFunction, dispatcherHelper] 
-    (winrt::IAsyncAction asyncInfo, winrt::AsyncStatus asyncStatus)
-    {
-        if (asyncStatus != winrt::AsyncStatus::Completed)
-        {
-            return;
-        }
+        [width, height, bgraCheckeredPixelData, &asyncActionToAssign, completedFunction, dispatcherHelper](
+            winrt::IAsyncAction asyncInfo, winrt::AsyncStatus asyncStatus) {
+            if (asyncStatus != winrt::AsyncStatus::Completed)
+            {
+                return;
+            }
 
-        asyncActionToAssign = nullptr;
+            asyncActionToAssign = nullptr;
 
-        dispatcherHelper.RunAsync([completedFunction, width, height, bgraCheckeredPixelData]()
-        {
-            winrt::WriteableBitmap checkeredBackgroundBitmap = CreateBitmapFromPixelData(width, height, bgraCheckeredPixelData);
-            completedFunction(checkeredBackgroundBitmap);
-        });
-    }));
+            dispatcherHelper.RunAsync([completedFunction, width, height, bgraCheckeredPixelData]() {
+                winrt::WriteableBitmap checkeredBackgroundBitmap = CreateBitmapFromPixelData(width, height, bgraCheckeredPixelData);
+                completedFunction(checkeredBackgroundBitmap);
+            });
+        }));
 }
 
-winrt::WriteableBitmap CreateBitmapFromPixelData(
-    int pixelWidth,
-    int pixelHeight,
-    std::shared_ptr<std::vector<byte>> const& bgraPixelData)
+winrt::WriteableBitmap CreateBitmapFromPixelData(int pixelWidth, int pixelHeight, std::shared_ptr<std::vector<byte>> const& bgraPixelData)
 {
     // IBufferByteAccess isn't included in any WinMD file, because its sole method - Buffer() -
     // allows direct pointer access, which isn't applicable to C#.  In C#, there's a separate ToStream()
@@ -442,7 +413,7 @@ winrt::WriteableBitmap CreateBitmapFromPixelData(
     // we need to flip to ABI in this circumstance to do what this method requires.
     winrt::WriteableBitmap bitmap(pixelWidth, pixelHeight);
 
-    byte *pixelBuffer = nullptr;
+    byte* pixelBuffer = nullptr;
     winrt::check_hresult(bitmap.PixelBuffer().as<Windows::Storage::Streams::IBufferByteAccess>()->Buffer(&pixelBuffer));
 
     std::memcpy(pixelBuffer, (*bgraPixelData).data(), (*bgraPixelData).size());
@@ -451,10 +422,7 @@ winrt::WriteableBitmap CreateBitmapFromPixelData(
     return bitmap;
 }
 
-winrt::LoadedImageSurface CreateSurfaceFromPixelData(
-    int pixelWidth,
-    int pixelHeight,
-    std::shared_ptr<std::vector<byte>> const& bgraPixelData)
+winrt::LoadedImageSurface CreateSurfaceFromPixelData(int pixelWidth, int pixelHeight, std::shared_ptr<std::vector<byte>> const& bgraPixelData)
 {
     MUX_ASSERT(SharedHelpers::IsRS2OrHigher());
 

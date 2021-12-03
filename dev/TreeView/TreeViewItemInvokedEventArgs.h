@@ -5,16 +5,16 @@
 
 #include "TreeViewItemInvokedEventArgs.g.h"
 
-class TreeViewItemInvokedEventArgs :
-    public ReferenceTracker<TreeViewItemInvokedEventArgs, winrt::implementation::TreeViewItemInvokedEventArgsT, winrt::composing, winrt::composable>
+class TreeViewItemInvokedEventArgs
+    : public ReferenceTracker<TreeViewItemInvokedEventArgs, winrt::implementation::TreeViewItemInvokedEventArgsT, winrt::composing, winrt::composable>
 {
 public:
     winrt::IInspectable InvokedItem();
     bool Handled();
-    void Handled(bool value); 
+    void Handled(bool value);
     void InvokedItem(const winrt::IInspectable& invokedItem);
 
 private:
-    bool m_Handled{false};
+    bool m_Handled{ false };
     tracker_ref<winrt::IInspectable> m_invokedItem{ this };
 };

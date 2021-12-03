@@ -5,8 +5,8 @@
 
 #include "ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs.g.h"
 
-class ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs :
-    public winrt::implementation::ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgsT<ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs>
+class ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs
+    : public winrt::implementation::ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgsT<ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs>
 {
 public:
     ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs(bool isExpressionAnimationStarted, wstring_view const& propertyName);

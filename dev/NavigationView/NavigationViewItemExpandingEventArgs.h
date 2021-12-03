@@ -5,8 +5,8 @@
 
 #include "NavigationViewItemExpandingEventArgs.g.h"
 
-class NavigationViewItemExpandingEventArgs :
-    public ReferenceTracker<NavigationViewItemExpandingEventArgs, winrt::implementation::NavigationViewItemExpandingEventArgsT, winrt::composing, winrt::composable>
+class NavigationViewItemExpandingEventArgs
+    : public ReferenceTracker<NavigationViewItemExpandingEventArgs, winrt::implementation::NavigationViewItemExpandingEventArgsT, winrt::composing, winrt::composable>
 {
 public:
     NavigationViewItemExpandingEventArgs(const winrt::NavigationView& navigationView);

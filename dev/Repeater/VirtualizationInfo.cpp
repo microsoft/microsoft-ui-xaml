@@ -7,9 +7,9 @@
 #include "VirtualizationInfo.h"
 #include "ItemsRepeater.h"
 
-VirtualizationInfo::VirtualizationInfo()
-    : m_arrangeBounds(ItemsRepeater::InvalidRect)
-{ }
+VirtualizationInfo::VirtualizationInfo() : m_arrangeBounds(ItemsRepeater::InvalidRect)
+{
+}
 
 bool VirtualizationInfo::IsPinned() const
 {

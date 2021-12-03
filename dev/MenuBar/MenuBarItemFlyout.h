@@ -5,17 +5,15 @@
 
 #include "MenuBarItemFlyout.g.h"
 
-class MenuBarItemFlyout : 
-    public ReferenceTracker<MenuBarItemFlyout, winrt::implementation::MenuBarItemFlyoutT>
+class MenuBarItemFlyout : public ReferenceTracker<MenuBarItemFlyout, winrt::implementation::MenuBarItemFlyoutT>
 {
 public:
     // Property changed event handler.
-    static void OnPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args) {}
+    static void OnPropertyChanged(winrt::DependencyObject const& sender, winrt::DependencyPropertyChangedEventArgs const& args)
+    {
+    }
 
     winrt::Control CreatePresenter();
 
     tracker_ref<winrt::Control> m_presenter{ this };
 };
-

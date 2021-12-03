@@ -9,10 +9,10 @@
 #include "RadioMenuFlyoutItem.g.h"
 #include "RadioMenuFlyoutItem.properties.h"
 
-
 // This type exists for RadioMenuFlyoutItem to derive publically from MenuFlyoutItem, but secretly from ToggleMenuFlyoutItem.
-template <typename D, typename T, typename ... I>
-struct __declspec(empty_bases) DeriveFromToggleMenuFlyoutItemHelper_base : winrt::Windows::UI::Xaml::Controls::ToggleMenuFlyoutItemT<D, winrt::default_interface<T>, winrt::composable, I...>
+template <typename D, typename T, typename... I>
+struct __declspec(empty_bases) DeriveFromToggleMenuFlyoutItemHelper_base
+    : winrt::Windows::UI::Xaml::Controls::ToggleMenuFlyoutItemT<D, winrt::default_interface<T>, winrt::composable, I...>
 {
     using composable = T;
     using class_type = typename T;
@@ -38,9 +38,9 @@ struct __declspec(empty_bases) DeriveFromToggleMenuFlyoutItemHelper_base : winrt
     }
 };
 
-class RadioMenuFlyoutItem :
-    public ReferenceTracker<RadioMenuFlyoutItem, DeriveFromToggleMenuFlyoutItemHelper_base, winrt::RadioMenuFlyoutItem>,
-    public RadioMenuFlyoutItemProperties
+class RadioMenuFlyoutItem
+    : public ReferenceTracker<RadioMenuFlyoutItem, DeriveFromToggleMenuFlyoutItemHelper_base, winrt::RadioMenuFlyoutItem>,
+      public RadioMenuFlyoutItemProperties
 {
 
 public:

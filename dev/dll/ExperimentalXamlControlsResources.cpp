@@ -14,73 +14,68 @@ ExperimentalXamlControlsResources::ExperimentalXamlControlsResources()
     UpdateSource();
 }
 
-
 void ExperimentalXamlControlsResources::UpdateSource()
 {
-    // At runtime choose the URI to use. 
-    winrt::Uri uri {
-        []() -> hstring {
-            const bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
-            const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
-            const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
-            const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
-            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher();
+    // At runtime choose the URI to use.
+    winrt::Uri uri{ []() -> hstring {
+        const bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
+        const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
+        const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
+        const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
+        const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher();
 
-            hstring packagePrefix = L"ms-appx:///" MUX_EXPERIMENTAL_NAMESPACE_STR "/Themes/";
-            hstring postfix = L"themeresources.xaml";
+        hstring packagePrefix = L"ms-appx:///" MUX_EXPERIMENTAL_NAMESPACE_STR "/Themes/";
+        hstring postfix = L"themeresources.xaml";
 
-            hstring releasePrefix;
+        hstring releasePrefix;
 
-            if (is21H1OrHigher)
-            {
-                releasePrefix = L"21h1_";
-            }
-            else if (is19H1OrHigher)
-            {
-                releasePrefix = L"19h1_";
-            }
-            else if (isRS5OrHigher)
-            {
-                releasePrefix = L"rs5_";
-            }
-            else if (isRS4OrHigher)
-            {
-                releasePrefix = L"rs4_";
-            }
-            else if (isRS3OrHigher)
-            {
-                releasePrefix = L"rs3_";
-            }
-            else
-            {
-                releasePrefix = L"rs2_";
-            }
+        if (is21H1OrHigher)
+        {
+            releasePrefix = L"21h1_";
+        }
+        else if (is19H1OrHigher)
+        {
+            releasePrefix = L"19h1_";
+        }
+        else if (isRS5OrHigher)
+        {
+            releasePrefix = L"rs5_";
+        }
+        else if (isRS4OrHigher)
+        {
+            releasePrefix = L"rs4_";
+        }
+        else if (isRS3OrHigher)
+        {
+            releasePrefix = L"rs3_";
+        }
+        else
+        {
+            releasePrefix = L"rs2_";
+        }
 
-            return packagePrefix + releasePrefix + postfix;
-        }()
-    };
+        return packagePrefix + releasePrefix + postfix;
+    }() };
 
     ThemeDictionaries().Clear();
 
     Source(uri);
 }
 
-void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, std::wstring_view const& className) 
+void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, std::wstring_view const& className)
 {
     controlProtected.DefaultStyleKey(box_value(className));
 
     if (auto control5 = controlProtected.try_as<winrt::IControl5>())
     {
-        winrt::Uri uri{
-            []() {
-            
+        winrt::Uri uri{ []() {
             // RS3 styles should be used on builds where ListViewItemPresenter's VSM integration works.
             const bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
             const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
             const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
             const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher();
-            
+
             std::wstring postfix = L"generic.xaml";
             std::wstring releasePrefix = L"";
 
@@ -90,28 +85,27 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             }
             else if (is19H1OrHigher)
             {
-                releasePrefix =  L"ms-appx:///" MUX_EXPERIMENTAL_NAMESPACE_STR "/Themes/19h1_";
+                releasePrefix = L"ms-appx:///" MUX_EXPERIMENTAL_NAMESPACE_STR "/Themes/19h1_";
             }
             else if (isRS5OrHigher)
             {
-                releasePrefix =  L"ms-appx:///" MUX_EXPERIMENTAL_NAMESPACE_STR "/Themes/rs5_";
+                releasePrefix = L"ms-appx:///" MUX_EXPERIMENTAL_NAMESPACE_STR "/Themes/rs5_";
             }
             else if (isRS4OrHigher)
             {
-                releasePrefix =  L"ms-appx:///" MUX_EXPERIMENTAL_NAMESPACE_STR "/Themes/rs4_";
+                releasePrefix = L"ms-appx:///" MUX_EXPERIMENTAL_NAMESPACE_STR "/Themes/rs4_";
             }
             else if (isRS3OrHigher)
             {
-                releasePrefix =  L"ms-appx:///" MUX_EXPERIMENTAL_NAMESPACE_STR "/Themes/rs3_";
+                releasePrefix = L"ms-appx:///" MUX_EXPERIMENTAL_NAMESPACE_STR "/Themes/rs3_";
             }
             else
             {
-                releasePrefix =  L"ms-appx:///" MUX_EXPERIMENTAL_NAMESPACE_STR "/Themes/rs2_";
+                releasePrefix = L"ms-appx:///" MUX_EXPERIMENTAL_NAMESPACE_STR "/Themes/rs2_";
             }
 
             return releasePrefix + postfix;
-        }()
-        };
+        }() };
         control5.DefaultStyleResourceUri(uri);
     }
 }

@@ -6,13 +6,12 @@
 #include "NavigationViewItemBase.h"
 #include "NavigationViewItemSeparator.g.h"
 
-class NavigationViewItemSeparator :
-    public winrt::implementation::NavigationViewItemSeparatorT<NavigationViewItemSeparator, NavigationViewItemBase>
+class NavigationViewItemSeparator : public winrt::implementation::NavigationViewItemSeparatorT<NavigationViewItemSeparator, NavigationViewItemBase>
 {
 public:
     ForwardRefToBaseReferenceTracker(NavigationViewItemBase)
 
-    NavigationViewItemSeparator();
+        NavigationViewItemSeparator();
     void OnApplyTemplate() override;
 
 private:

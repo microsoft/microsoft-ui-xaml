@@ -8,11 +8,16 @@
 
 #include "SwipeControl.properties.h"
 
-enum class CreatedContent { Left, Top, Bottom, Right, None };
+enum class CreatedContent
+{
+    Left,
+    Top,
+    Bottom,
+    Right,
+    None
+};
 
-class SwipeControl :
-    public ReferenceTracker<SwipeControl, winrt::implementation::SwipeControlT>,
-    public SwipeControlProperties
+class SwipeControl : public ReferenceTracker<SwipeControl, winrt::implementation::SwipeControlT>, public SwipeControlProperties
 {
 public:
     SwipeControl();
@@ -31,25 +36,22 @@ public:
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
 #pragma endregion
 
-    void CustomAnimationStateEntered(
-        winrt::InteractionTrackerCustomAnimationStateEnteredArgs const& args);
+    void CustomAnimationStateEntered(winrt::InteractionTrackerCustomAnimationStateEnteredArgs const& args);
 
-    void RequestIgnored(
-        winrt::InteractionTrackerRequestIgnoredArgs const& args);
+    void RequestIgnored(winrt::InteractionTrackerRequestIgnoredArgs const& args);
 
-    void IdleStateEntered(
-        winrt::InteractionTrackerIdleStateEnteredArgs const& args);
+    void IdleStateEntered(winrt::InteractionTrackerIdleStateEnteredArgs const& args);
 
-    void InteractingStateEntered(
-        winrt::InteractionTrackerInteractingStateEnteredArgs const& args);
+    void InteractingStateEntered(winrt::InteractionTrackerInteractingStateEnteredArgs const& args);
 
-    void InertiaStateEntered(
-        winrt::InteractionTrackerInertiaStateEnteredArgs const& args);
+    void InertiaStateEntered(winrt::InteractionTrackerInertiaStateEnteredArgs const& args);
 
-    void ValuesChanged(
-        winrt::InteractionTrackerValuesChangedArgs const& args);
+    void ValuesChanged(winrt::InteractionTrackerValuesChangedArgs const& args);
 
-    winrt::SwipeItems GetCurrentItems() { return m_currentItems.get(); }
+    winrt::SwipeItems GetCurrentItems()
+    {
+        return m_currentItems.get();
+    }
 
 #pragma region TestHookHelpers
     static winrt::SwipeControl GetLastInteractedWithSwipeControl();
@@ -73,15 +75,15 @@ private:
 
     void AttachDismissingHandlers();
     void DetachDismissingHandlers();
-    void DismissSwipeOnAcceleratorKeyActivator(const winrt::Windows::UI::Core::CoreDispatcher & sender, const winrt::AcceleratorKeyEventArgs & args);
+    void DismissSwipeOnAcceleratorKeyActivator(const winrt::Windows::UI::Core::CoreDispatcher& sender, const winrt::AcceleratorKeyEventArgs& args);
 
     // Used on platforms where we have XamlRoot.
-    void CurrentXamlRootChanged(const winrt::XamlRoot & sender, const winrt::XamlRootChangedEventArgs & args);
-    
+    void CurrentXamlRootChanged(const winrt::XamlRoot& sender, const winrt::XamlRootChangedEventArgs& args);
+
     // Used on platforms where we don't have XamlRoot.
-    void DismissSwipeOnCoreWindowKeyDown(const winrt::CoreWindow & sender, const winrt::KeyEventArgs & args);
-    void CurrentWindowSizeChanged(const winrt::IInspectable & sender, const winrt::WindowSizeChangedEventArgs& args);
-    void CurrentWindowVisibilityChanged(const winrt::CoreWindow & sender, const winrt::VisibilityChangedEventArgs args);
+    void DismissSwipeOnCoreWindowKeyDown(const winrt::CoreWindow& sender, const winrt::KeyEventArgs& args);
+    void CurrentWindowSizeChanged(const winrt::IInspectable& sender, const winrt::WindowSizeChangedEventArgs& args);
+    void CurrentWindowVisibilityChanged(const winrt::CoreWindow& sender, const winrt::VisibilityChangedEventArgs args);
     void DismissSwipeOnAnExternalCoreWindowTap(const winrt::CoreWindow& sender, const winrt::PointerEventArgs& args);
 
     void DismissSwipeOnAnExternalTap(winrt::Point const& tapPoint);
@@ -189,8 +191,8 @@ private:
     bool m_isIdle{ true };
     bool m_isOpen{ false };
     bool m_thresholdReached{ false };
-    //Near content = left or top
-    //Far content = right or bottom
+    // Near content = left or top
+    // Far content = right or bottom
     bool m_blockNearContent{ false };
     bool m_blockFarContent{ false };
     bool m_isHorizontal{ true };
@@ -200,39 +202,87 @@ private:
     static wstring_view DirectionToInset(const CreatedContent& createdContent);
 
     static constexpr wstring_view s_isNearOpenPropertyName{ L"isNearOpen"sv };
-    static inline const std::wstring isNearOpenPropertyName() { return s_isNearOpenPropertyName.data(); }
+    static inline const std::wstring isNearOpenPropertyName()
+    {
+        return s_isNearOpenPropertyName.data();
+    }
     static constexpr wstring_view s_isFarOpenPropertyName{ L"isFarOpen"sv };
-    static inline const std::wstring isFarOpenPropertyName() { return s_isFarOpenPropertyName.data(); }
+    static inline const std::wstring isFarOpenPropertyName()
+    {
+        return s_isFarOpenPropertyName.data();
+    }
     static constexpr wstring_view s_isNearContentPropertyName{ L"isNearContent"sv };
-    static inline const std::wstring isNearContentPropertyName() { return s_isNearContentPropertyName.data(); }
+    static inline const std::wstring isNearContentPropertyName()
+    {
+        return s_isNearContentPropertyName.data();
+    }
     static constexpr wstring_view s_blockNearContentPropertyName{ L"blockNearContent"sv };
-    static inline const std::wstring blockNearContentPropertyName() { return s_blockNearContentPropertyName.data(); }
+    static inline const std::wstring blockNearContentPropertyName()
+    {
+        return s_blockNearContentPropertyName.data();
+    }
     static constexpr wstring_view s_blockFarContentPropertyName{ L"blockFarContent"sv };
-    static inline const std::wstring blockFarContentPropertyName() { return s_blockFarContentPropertyName.data(); }
+    static inline const std::wstring blockFarContentPropertyName()
+    {
+        return s_blockFarContentPropertyName.data();
+    }
 
     static constexpr wstring_view s_hasLeftContentPropertyName{ L"hasLeftContent"sv };
-    static inline const std::wstring hasLeftContentPropertyName() { return s_hasLeftContentPropertyName.data(); }
+    static inline const std::wstring hasLeftContentPropertyName()
+    {
+        return s_hasLeftContentPropertyName.data();
+    }
     static constexpr wstring_view s_hasRightContentPropertyName{ L"hasRightContent"sv };
-    static inline const std::wstring hasRightContentPropertyName() { return s_hasRightContentPropertyName.data(); }
+    static inline const std::wstring hasRightContentPropertyName()
+    {
+        return s_hasRightContentPropertyName.data();
+    }
     static constexpr wstring_view s_hasTopContentPropertyName{ L"hasTopContent"sv };
-    static inline const std::wstring hasTopContentPropertyName() { return s_hasTopContentPropertyName.data(); }
+    static inline const std::wstring hasTopContentPropertyName()
+    {
+        return s_hasTopContentPropertyName.data();
+    }
     static constexpr wstring_view s_hasBottomContentPropertyName{ L"hasBottomContent"sv };
-    static inline const std::wstring hasBottomContentPropertyName() { return s_hasBottomContentPropertyName.data(); }
+    static inline const std::wstring hasBottomContentPropertyName()
+    {
+        return s_hasBottomContentPropertyName.data();
+    }
     static constexpr wstring_view s_isHorizontalPropertyName{ L"isHorizontal"sv };
-    static inline const std::wstring isHorizontalPropertyName() { return s_isHorizontalPropertyName.data(); }
+    static inline const std::wstring isHorizontalPropertyName()
+    {
+        return s_isHorizontalPropertyName.data();
+    }
 
     static constexpr wstring_view s_trackerPropertyName{ L"tracker"sv };
-    static inline const std::wstring trackerPropertyName() { return s_trackerPropertyName.data(); }
+    static inline const std::wstring trackerPropertyName()
+    {
+        return s_trackerPropertyName.data();
+    }
     static constexpr wstring_view s_foregroundVisualPropertyName{ L"foregroundVisual"sv };
-    static inline const std::wstring foregroundVisualPropertyName() { return s_foregroundVisualPropertyName.data(); }
+    static inline const std::wstring foregroundVisualPropertyName()
+    {
+        return s_foregroundVisualPropertyName.data();
+    }
     static constexpr wstring_view s_swipeContentVisualPropertyName{ L"swipeContentVisual"sv };
-    static inline const std::wstring swipeContentVisualPropertyName() { return s_swipeContentVisualPropertyName.data(); }
+    static inline const std::wstring swipeContentVisualPropertyName()
+    {
+        return s_swipeContentVisualPropertyName.data();
+    }
     static constexpr wstring_view s_swipeContentSizeParameterName{ L"swipeContentVisual"sv };
-    static inline const std::wstring swipeContentSizeParameterName() { return s_swipeContentSizeParameterName.data(); }
+    static inline const std::wstring swipeContentSizeParameterName()
+    {
+        return s_swipeContentSizeParameterName.data();
+    }
     static constexpr wstring_view s_swipeRootVisualPropertyName{ L"swipeRootVisual"sv };
-    static inline const std::wstring swipeRootVisualPropertyName() { return s_swipeRootVisualPropertyName.data(); }
+    static inline const std::wstring swipeRootVisualPropertyName()
+    {
+        return s_swipeRootVisualPropertyName.data();
+    }
     static constexpr wstring_view s_maxThresholdPropertyName{ L"maxThreshold"sv };
-    static inline const std::wstring maxThresholdPropertyName() { return s_maxThresholdPropertyName.data(); }
+    static inline const std::wstring maxThresholdPropertyName()
+    {
+        return s_maxThresholdPropertyName.data();
+    }
 
     static constexpr wstring_view s_minPositionPropertyName{ L"minPosition"sv };
     static constexpr wstring_view s_maxPositionPropertyName{ L"maxPosition"sv };
@@ -252,11 +302,18 @@ private:
     static constexpr wstring_view s_swipeContentStackPanelName{ L"SwipeContentStackPanel"sv };
     static constexpr wstring_view s_swipeItemStyleName{ L"SwipeItemStyle"sv };
 
-
     static constexpr wstring_view s_swipeItemBackgroundResourceName{ L"SwipeItemBackground"sv };
     static constexpr wstring_view s_swipeItemForegroundResourceName{ L"SwipeItemForeground"sv };
-    static constexpr wstring_view s_executeSwipeItemPreThresholdBackgroundResourceName{ L"SwipeItemPreThresholdExecuteBackground"sv };
-    static constexpr wstring_view s_executeSwipeItemPostThresholdBackgroundResourceName{ L"SwipeItemPostThresholdExecuteBackground"sv };
-    static constexpr wstring_view s_executeSwipeItemPreThresholdForegroundResourceName{ L"SwipeItemPreThresholdExecuteForeground"sv };
-    static constexpr wstring_view s_executeSwipeItemPostThresholdForegroundResourceName{ L"SwipeItemPostThresholdExecuteForeground"sv };
+    static constexpr wstring_view s_executeSwipeItemPreThresholdBackgroundResourceName{
+        L"SwipeItemPreThresholdExecuteBackground"sv
+    };
+    static constexpr wstring_view s_executeSwipeItemPostThresholdBackgroundResourceName{
+        L"SwipeItemPostThresholdExecuteBackground"sv
+    };
+    static constexpr wstring_view s_executeSwipeItemPreThresholdForegroundResourceName{
+        L"SwipeItemPreThresholdExecuteForeground"sv
+    };
+    static constexpr wstring_view s_executeSwipeItemPostThresholdForegroundResourceName{
+        L"SwipeItemPostThresholdExecuteForeground"sv
+    };
 };

@@ -10,56 +10,53 @@
 
 inline bool IsScrollPresenterTracingEnabled()
 {
-    return g_IsLoggingProviderEnabled &&
-        g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLPRESENTER || g_LoggingProviderMatchAnyKeyword == 0);
+    return g_IsLoggingProviderEnabled && g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
+           (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLPRESENTER || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsScrollPresenterVerboseTracingEnabled()
 {
-    return g_IsLoggingProviderEnabled &&
-        g_LoggingProviderLevel >= WINEVENT_LEVEL_VERBOSE &&
-        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLPRESENTER || g_LoggingProviderMatchAnyKeyword == 0);
+    return g_IsLoggingProviderEnabled && g_LoggingProviderLevel >= WINEVENT_LEVEL_VERBOSE &&
+           (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLPRESENTER || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsScrollPresenterPerfTracingEnabled()
 {
-    return g_IsPerfProviderEnabled &&
-        g_PerfProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_PerfProviderMatchAnyKeyword & KEYWORD_SCROLLPRESENTER || g_PerfProviderMatchAnyKeyword == 0);
+    return g_IsPerfProviderEnabled && g_PerfProviderLevel >= WINEVENT_LEVEL_INFO &&
+           (g_PerfProviderMatchAnyKeyword & KEYWORD_SCROLLPRESENTER || g_PerfProviderMatchAnyKeyword == 0);
 }
 
 #define SCROLLPRESENTER_TRACE_INFO_ENABLED(includeTraceLogging, sender, message, ...) \
-ScrollPresenterTrace::TraceInfo(includeTraceLogging, sender, message, __VA_ARGS__); \
+    ScrollPresenterTrace::TraceInfo(includeTraceLogging, sender, message, __VA_ARGS__);
 
 #define SCROLLPRESENTER_TRACE_INFO(sender, message, ...) \
-if (IsScrollPresenterTracingEnabled()) \
-{ \
-    SCROLLPRESENTER_TRACE_INFO_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-} \
-else if (ScrollPresenterTrace::s_IsDebugOutputEnabled || ScrollPresenterTrace::s_IsVerboseDebugOutputEnabled) \
-{ \
-    SCROLLPRESENTER_TRACE_INFO_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-} \
+    if (IsScrollPresenterTracingEnabled()) \
+    { \
+        SCROLLPRESENTER_TRACE_INFO_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+    } \
+    else if (ScrollPresenterTrace::s_IsDebugOutputEnabled || ScrollPresenterTrace::s_IsVerboseDebugOutputEnabled) \
+    { \
+        SCROLLPRESENTER_TRACE_INFO_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+    }
 
 #define SCROLLPRESENTER_TRACE_VERBOSE_ENABLED(includeTraceLogging, sender, message, ...) \
-ScrollPresenterTrace::TraceVerbose(includeTraceLogging, sender, message, __VA_ARGS__); \
+    ScrollPresenterTrace::TraceVerbose(includeTraceLogging, sender, message, __VA_ARGS__);
 
 #define SCROLLPRESENTER_TRACE_VERBOSE(sender, message, ...) \
-if (IsScrollPresenterVerboseTracingEnabled()) \
-{ \
-    SCROLLPRESENTER_TRACE_VERBOSE_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-} \
-else if (ScrollPresenterTrace::s_IsVerboseDebugOutputEnabled) \
-{ \
-    SCROLLPRESENTER_TRACE_VERBOSE_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-} \
+    if (IsScrollPresenterVerboseTracingEnabled()) \
+    { \
+        SCROLLPRESENTER_TRACE_VERBOSE_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+    } \
+    else if (ScrollPresenterTrace::s_IsVerboseDebugOutputEnabled) \
+    { \
+        SCROLLPRESENTER_TRACE_VERBOSE_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+    }
 
 #define SCROLLPRESENTER_TRACE_PERF(info) \
-if (IsScrollPresenterPerfTracingEnabled()) \
-{ \
-    ScrollPresenterTrace::TracePerfInfo(info); \
-} \
+    if (IsScrollPresenterPerfTracingEnabled()) \
+    { \
+        ScrollPresenterTrace::TracePerfInfo(info); \
+    }
 
 class ScrollPresenterTrace
 {
@@ -77,7 +74,7 @@ public:
             if (includeTraceLogging)
             {
                 // TraceViewers
-                // http://toolbox/pef 
+                // http://toolbox/pef
                 // http://fastetw/index.aspx
                 TraceLoggingWrite(
                     g_hLoggingProvider,
@@ -94,8 +91,8 @@ public:
 
             com_ptr<MUXControlsTestHooks> globalTestHooks = MUXControlsTestHooks::GetGlobalTestHooks();
 
-            if (globalTestHooks &&
-                (globalTestHooks->GetLoggingLevelForType(L"ScrollPresenter") >= WINEVENT_LEVEL_INFO || globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_INFO))
+            if (globalTestHooks && (globalTestHooks->GetLoggingLevelForType(L"ScrollPresenter") >= WINEVENT_LEVEL_INFO ||
+                                    globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_INFO))
             {
                 globalTestHooks->LogMessage(sender, buffer, false /*isVerboseLevel*/);
             }
@@ -114,7 +111,7 @@ public:
             if (includeTraceLogging)
             {
                 // TraceViewers
-                // http://toolbox/pef 
+                // http://toolbox/pef
                 // http://fastetw/index.aspx
                 TraceLoggingWrite(
                     g_hLoggingProvider,
@@ -131,8 +128,8 @@ public:
 
             com_ptr<MUXControlsTestHooks> globalTestHooks = MUXControlsTestHooks::GetGlobalTestHooks();
 
-            if (globalTestHooks &&
-                (globalTestHooks->GetLoggingLevelForType(L"ScrollPresenter") >= WINEVENT_LEVEL_VERBOSE || globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_VERBOSE))
+            if (globalTestHooks && (globalTestHooks->GetLoggingLevelForType(L"ScrollPresenter") >= WINEVENT_LEVEL_VERBOSE ||
+                                    globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_VERBOSE))
             {
                 globalTestHooks->LogMessage(sender, buffer, true /*isVerboseLevel*/);
             }
@@ -143,7 +140,7 @@ public:
     static void TracePerfInfo(PCWSTR info) noexcept
     {
         // TraceViewers
-        // http://toolbox/pef 
+        // http://toolbox/pef
         // http://fastetw/index.aspx
         TraceLoggingWrite(
             g_hPerfProvider,

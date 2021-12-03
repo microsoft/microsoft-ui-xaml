@@ -5,13 +5,13 @@
 //
 //       LottieGen version:
 //           7.0.2+gebbbdfc697
-//       
+//
 //       Command:
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedAcceptVisualSource.json
-//       
+//
 //       Input file:
 //           AnimatedAcceptVisualSource.json (27378 bytes created 11:16-08:00 Mar 5 2021)
-//       
+//
 //       LottieGen source:
 //           http://aka.ms/Lottie
 //
@@ -74,14 +74,14 @@
 // |________________|____________|_______|_________________|
 // | Foreground     | Foreground | Color | #FF000000 Black |
 // ---------------------------------------------------------
-class AnimatedAcceptVisualSource
-    : public winrt::implementation::AnimatedAcceptVisualSourceT<AnimatedAcceptVisualSource>
+class AnimatedAcceptVisualSource : public winrt::implementation::AnimatedAcceptVisualSourceT<AnimatedAcceptVisualSource>
 {
     winrt::Windows::UI::Composition::CompositionPropertySet _themeProperties{ nullptr };
     winrt::Windows::UI::Color _themeForeground{ 0xFF, 0x00, 0x00, 0x00 };
     winrt::Windows::UI::Composition::CompositionPropertySet EnsureThemeProperties(winrt::Windows::UI::Composition::Compositor compositor);
 
     static winrt::Windows::Foundation::Numerics::float4 ColorAsVector4(winrt::Windows::UI::Color color);
+
 public:
     // Animation duration: 2.667 seconds.
     static constexpr int64_t c_durationTicks{ 26666666L };
@@ -206,16 +206,13 @@ public:
     // Theme property: Foreground.
     static inline const winrt::Windows::UI::Color c_themeForeground{ 0xFF, 0x00, 0x00, 0x00 };
 
-
     winrt::Windows::UI::Color Foreground();
     void Foreground(winrt::Windows::UI::Color value);
 
-    winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(
-        winrt::Windows::UI::Composition::Compositor const& compositor);
+    winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(winrt::Windows::UI::Composition::Compositor const& compositor);
 
     winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(
-        winrt::Windows::UI::Composition::Compositor const& compositor,
-        winrt::Windows::Foundation::IInspectable& diagnostics);
+        winrt::Windows::UI::Composition::Compositor const& compositor, winrt::Windows::Foundation::IInspectable& diagnostics);
 
     // Gets the number of frames in the animation.
     double FrameCount();

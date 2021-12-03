@@ -5,8 +5,8 @@
 
 #include "ScrollingZoomAnimationStartingEventArgs.g.h"
 
-class ScrollingZoomAnimationStartingEventArgs :
-    public winrt::implementation::ScrollingZoomAnimationStartingEventArgsT<ScrollingZoomAnimationStartingEventArgs>
+class ScrollingZoomAnimationStartingEventArgs
+    : public winrt::implementation::ScrollingZoomAnimationStartingEventArgsT<ScrollingZoomAnimationStartingEventArgs>
 {
 public:
     ScrollingZoomAnimationStartingEventArgs()
@@ -36,7 +36,7 @@ public:
 
 private:
     winrt::CompositionAnimation m_animation{ nullptr };
-    winrt::float2 m_centerPoint{ };
+    winrt::float2 m_centerPoint{};
     float m_startZoomFactor{ 1.0f };
     float m_endZoomFactor{ 1.0f };
     int32_t m_zoomFactorChangeCorrelationId{ -1 };

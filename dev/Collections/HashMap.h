@@ -4,12 +4,8 @@
 #pragma once
 
 template <typename K, typename V>
-class HashMap :
-    public ReferenceTracker<
-        HashMap<K, V>,
-        reference_tracker_implements_t<winrt::IMap<K, V>>::type,
-        winrt::IMapView<K, V>,
-        winrt::IIterable<winrt::IKeyValuePair<K, V>>>
+class HashMap
+    : public ReferenceTracker<HashMap<K, V>, reference_tracker_implements_t<winrt::IMap<K, V>>::type, winrt::IMapView<K, V>, winrt::IIterable<winrt::IKeyValuePair<K, V>>>
 {
     using K_storage = tracker_ref<K>;
     using V_storage = tracker_ref<V>;
@@ -18,7 +14,7 @@ class HashMap :
     typedef typename std::map<K_storage, V_storage>::const_iterator T_iterator;
 
 public:
-#pragma region IMap(View)<K, V> interface
+#pragma region IMap(View) < K, V> interface
     V Lookup(K const& key)
     {
         auto it = FindKey(key);
@@ -80,7 +76,7 @@ public:
         m_map.clear();
     }
 
-    void Split(winrt::IMapView<K, V> &firstPartition, winrt::IMapView<K, V> &secondPartition)
+    void Split(winrt::IMapView<K, V>& firstPartition, winrt::IMapView<K, V>& secondPartition)
     {
         // This view doesn't allow spliting.
         firstPartition = nullptr;
@@ -88,7 +84,7 @@ public:
     }
 #pragma endregion
 
-#pragma region abi::IIterable<K, V>
+#pragma region abi::IIterable < K, V>
     winrt::IIterator<KVP> First()
     {
         return winrt::make<HashMap<K, V>::Iterator>(this);
@@ -116,10 +112,7 @@ private:
         return std::find_if(m_map.begin(), m_map.end(), [&key](const auto& entry) { return entry.first == key; });
     }
 
-    class Iterator :
-        public ReferenceTracker<
-            Iterator,
-            reference_tracker_implements_t<winrt::IIterator<KVP>>::type>
+    class Iterator : public ReferenceTracker<Iterator, reference_tracker_implements_t<winrt::IIterator<KVP>>::type>
     {
     public:
         Iterator(HashMap<K, V>* map)
@@ -171,7 +164,8 @@ private:
             {
                 do
                 {
-                    if (howMany >= values.size()) break;
+                    if (howMany >= values.size())
+                        break;
 
                     values[howMany] = Current();
                     howMany++;
@@ -180,6 +174,7 @@ private:
 
             return howMany;
         }
+
     private:
         void CheckMutationCount() const
         {
@@ -193,13 +188,9 @@ private:
         T_iterator m_iterator;
         unsigned int m_expectedMutationCount = 0;
 
-        class KeyValuePair :
-            public ReferenceTracker<
-                KeyValuePair,
-                reference_tracker_implements_t<winrt::IKeyValuePair<K, V>>::type>
+        class KeyValuePair : public ReferenceTracker<KeyValuePair, reference_tracker_implements_t<winrt::IKeyValuePair<K, V>>::type>
         {
         public:
-
             KeyValuePair(K const& key, V const& value)
             {
                 m_key.set(key);

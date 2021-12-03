@@ -9,7 +9,8 @@ class SharedHelpers
 {
 public:
     static bool IsAnimationsEnabled();
-    static winrt::IInspectable FindResource(const std::wstring_view& resource, const winrt::ResourceDictionary& resources, const winrt::IInspectable& defaultValue = nullptr);
+    static winrt::IInspectable FindResource(
+        const std::wstring_view& resource, const winrt::ResourceDictionary& resources, const winrt::IInspectable& defaultValue = nullptr);
     static winrt::IInspectable FindInApplicationResources(const std::wstring_view& resource, const winrt::IInspectable& defaultValue = nullptr);
     static bool IsInDesignMode();
     static bool IsInDesignModeV1();
@@ -62,7 +63,7 @@ public:
 
     // Actual OS version checks
     static bool IsAPIContractV14Available(); // 21H1
-    static bool IsAPIContractV10Available();  // 20H1
+    static bool IsAPIContractV10Available(); // 20H1
     static bool IsAPIContractV9Available();  // 19H2
     static bool IsAPIContractV8Available();  // 19H1
     static bool IsAPIContractV7Available();  // RS5
@@ -91,9 +92,7 @@ public:
     {
         MUXControls::Common::Handle synchronizationHandle(::CreateEvent(nullptr, FALSE, FALSE, nullptr));
 
-        asyncAction.Completed(winrt::AsyncActionCompletedHandler(
-            [&synchronizationHandle](winrt::IAsyncAction asyncAction, winrt::AsyncStatus asyncStatus)
-        {
+        asyncAction.Completed(winrt::AsyncActionCompletedHandler([&synchronizationHandle](winrt::IAsyncAction asyncAction, winrt::AsyncStatus asyncStatus) {
             if (asyncStatus == winrt::AsyncStatus::Completed)
             {
                 SetEvent(synchronizationHandle);
@@ -114,26 +113,23 @@ public:
         MUXControls::Common::Handle synchronizationHandle(::CreateEvent(nullptr, FALSE, FALSE, nullptr));
 
         asyncOperation.Completed(winrt::AsyncOperationCompletedHandler<T>(
-            [&synchronizationHandle, &returnValue](winrt::IAsyncOperation<T> asyncOperation, winrt::AsyncStatus asyncStatus)
-        {
-            if (asyncStatus == winrt::AsyncStatus::Completed)
-            {
-                SetEvent(synchronizationHandle);
-                returnValue = asyncOperation.GetResults();
-            }
-            else if (asyncStatus == winrt::AsyncStatus::Error)
-            {
-                throw winrt::hresult_error(E_FAIL, L"Async operation failed!");
-            }
-        }));
+            [&synchronizationHandle, &returnValue](winrt::IAsyncOperation<T> asyncOperation, winrt::AsyncStatus asyncStatus) {
+                if (asyncStatus == winrt::AsyncStatus::Completed)
+                {
+                    SetEvent(synchronizationHandle);
+                    returnValue = asyncOperation.GetResults();
+                }
+                else if (asyncStatus == winrt::AsyncStatus::Error)
+                {
+                    throw winrt::hresult_error(E_FAIL, L"Async operation failed!");
+                }
+            }));
 
         WaitForSingleObject(synchronizationHandle, INFINITE);
         return returnValue;
     }
 
-    static void ScheduleActionAfterWait(
-        std::function<void()> const& action,
-        unsigned int millisecondWait);
+    static void ScheduleActionAfterWait(std::function<void()> const& action, unsigned int millisecondWait);
 
     static winrt::InMemoryRandomAccessStream CreateStreamFromBytes(const winrt::array_view<const byte>& bytes);
 
@@ -141,21 +137,14 @@ public:
 
     static winrt::FrameworkElement FindInVisualTreeByName(winrt::FrameworkElement const& parent, std::wstring_view const& name)
     {
-        return FindInVisualTree(parent,
-            [name](const winrt::FrameworkElement& element)
-            {
-                return (element.Name() == name);
-            });
+        return FindInVisualTree(parent, [name](const winrt::FrameworkElement& element) { return (element.Name() == name); });
     }
 
     template <typename ElementType>
     static ElementType FindInVisualTreeByType(winrt::FrameworkElement const& parent)
     {
-        auto element = FindInVisualTree(parent,
-            [](const winrt::FrameworkElement& element)
-            {
-                return (element.try_as<ElementType>() != nullptr);
-            });
+        auto element = FindInVisualTree(
+            parent, [](const winrt::FrameworkElement& element) { return (element.try_as<ElementType>() != nullptr); });
         return element.as<ElementType>();
     }
 
@@ -208,7 +197,7 @@ public:
         return false;
     }
 
-    template<typename AncestorType>
+    template <typename AncestorType>
     static AncestorType GetAncestorOfType(winrt::DependencyObject const& firstGuess)
     {
         auto obj = firstGuess;
@@ -235,10 +224,7 @@ public:
     static winrt::IconElement MakeIconElementFrom(winrt::IconSource const& iconSource);
 #endif
 
-    static void SetBinding(
-        std::wstring_view const& pathString,
-        winrt::DependencyObject const& target,
-        winrt::DependencyProperty const& targetProperty);
+    static void SetBinding(std::wstring_view const& pathString, winrt::DependencyObject const& target, winrt::DependencyProperty const& targetProperty);
 
     static void SetBinding(
         winrt::IInspectable const& source,
@@ -249,9 +235,7 @@ public:
         winrt::BindingMode mode = winrt::BindingMode::OneWay);
 
     template <class ElementType>
-    static void CopyVector(
-        winrt::IObservableVector<ElementType> const& source,
-        winrt::IObservableVector<ElementType> const& destination)
+    static void CopyVector(winrt::IObservableVector<ElementType> const& source, winrt::IObservableVector<ElementType> const& destination)
     {
         destination.Clear();
 
@@ -308,9 +292,7 @@ public:
         if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(element))
         {
             peer.RaisePropertyChangedEvent(
-                winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty(),
-                winrt::box_value(oldValue),
-                winrt::box_value(newValue));
+                winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty(), winrt::box_value(oldValue), winrt::box_value(newValue));
         }
     }
 
@@ -319,7 +301,8 @@ public:
 private:
     SharedHelpers() = default;
 
-    template <uint16_t APIVersion> static bool IsAPIContractVxAvailable();
+    template <uint16_t APIVersion>
+    static bool IsAPIContractVxAvailable();
 
     static bool s_isOnXboxInitialized;
     static bool s_isOnXbox;
@@ -360,24 +343,26 @@ private:
 // on built-in numeric types, so they need to be told how to interact with a flag enum.
 //
 #define DECLARE_FLAG_ENUM_OPERATOR_OVERLOADS(EnumType) \
-inline EnumType operator | (EnumType lhs, EnumType rhs) \
-{ \
-    return static_cast<EnumType>(static_cast<std::underlying_type_t<EnumType>>(lhs) | static_cast<std::underlying_type_t<EnumType>>(rhs)); \
-} \
- \
-inline EnumType& operator |= (EnumType& lhs, EnumType rhs) \
-{ \
-    lhs = static_cast<EnumType>(static_cast<std::underlying_type_t<EnumType>>(lhs) | static_cast<std::underlying_type_t<EnumType>>(rhs)); \
-    return lhs; \
-} \
- \
-inline EnumType operator & (EnumType lhs, EnumType rhs) \
-{ \
-    return static_cast<EnumType>(static_cast<std::underlying_type_t<EnumType>>(lhs) & static_cast<std::underlying_type_t<EnumType>>(rhs)); \
-} \
+    inline EnumType operator|(EnumType lhs, EnumType rhs) \
+    { \
+        return static_cast<EnumType>( \
+            static_cast<std::underlying_type_t<EnumType>>(lhs) | static_cast<std::underlying_type_t<EnumType>>(rhs)); \
+    } \
 \
-inline EnumType& operator &= (EnumType& lhs, EnumType rhs) \
-{ \
-    lhs = static_cast<EnumType>(static_cast<std::underlying_type_t<EnumType>>(lhs) & static_cast<std::underlying_type_t<EnumType>>(rhs)); \
-    return lhs; \
-}
+    inline EnumType& operator|=(EnumType& lhs, EnumType rhs) \
+    { \
+        lhs = static_cast<EnumType>(static_cast<std::underlying_type_t<EnumType>>(lhs) | static_cast<std::underlying_type_t<EnumType>>(rhs)); \
+        return lhs; \
+    } \
+\
+    inline EnumType operator&(EnumType lhs, EnumType rhs) \
+    { \
+        return static_cast<EnumType>( \
+            static_cast<std::underlying_type_t<EnumType>>(lhs) & static_cast<std::underlying_type_t<EnumType>>(rhs)); \
+    } \
+\
+    inline EnumType& operator&=(EnumType& lhs, EnumType rhs) \
+    { \
+        lhs = static_cast<EnumType>(static_cast<std::underlying_type_t<EnumType>>(lhs) & static_cast<std::underlying_type_t<EnumType>>(rhs)); \
+        return lhs; \
+    }

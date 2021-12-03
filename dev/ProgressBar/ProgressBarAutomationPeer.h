@@ -6,8 +6,8 @@
 #include "ProgressBar.h"
 #include "ProgressBarAutomationPeer.g.h"
 
-class ProgressBarAutomationPeer :
-    public ReferenceTracker<ProgressBarAutomationPeer, winrt::implementation::ProgressBarAutomationPeerT, winrt::IRangeValueProvider>
+class ProgressBarAutomationPeer
+    : public ReferenceTracker<ProgressBarAutomationPeer, winrt::implementation::ProgressBarAutomationPeerT, winrt::IRangeValueProvider>
 {
 
 public:
@@ -20,7 +20,10 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore();
 
     // IRangeValueProvider is necessary here to override IsReadOnly() to true.
-    bool IsReadOnly() { return true; }
+    bool IsReadOnly()
+    {
+        return true;
+    }
     double Value();
     double SmallChange();
     double LargeChange();
@@ -28,8 +31,6 @@ public:
     double Maximum();
     void SetValue(double value);
 
-
 private:
     com_ptr<ProgressBar> GetImpl();
 };
-

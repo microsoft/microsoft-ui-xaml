@@ -7,28 +7,20 @@
 #include "XamlMember.h"
 #include "XamlMetadataProvider.h"
 
-void XamlTypeBase::AddDPMember(
-    wstring_view const& name,
-    wstring_view const& baseTypeName,
-    winrt::DependencyProperty const& dp,
-    bool isContent)
+void XamlTypeBase::AddDPMember(wstring_view const& name, wstring_view const& baseTypeName, winrt::DependencyProperty const& dp, bool isContent)
 {
     MUX_ASSERT(dp);
     AddMember(
         name,
         baseTypeName,
-        [dp](winrt::IInspectable instance) 
-            { 
-                return instance.as<winrt::DependencyObject>().GetValue(dp); 
-            },
-        [dp](winrt::IInspectable instance, winrt::IInspectable value)
-            {
-                return instance.as<winrt::DependencyObject>().SetValue(dp, value);
-            },
-        isContent, 
+        [dp](winrt::IInspectable instance) { return instance.as<winrt::DependencyObject>().GetValue(dp); },
+        [dp](winrt::IInspectable instance, winrt::IInspectable value) {
+            return instance.as<winrt::DependencyObject>().SetValue(dp, value);
+        },
+        isContent,
         true /* isDependencyProperty */,
         false /* isAttachable */
-         );
+    );
 }
 
 winrt::IXamlType XamlTypeBase::BaseType()
@@ -91,10 +83,7 @@ winrt::TypeName XamlTypeBase::UnderlyingType()
 {
     winrt::TypeName typeName;
     typeName.Name = m_typeName;
-    typeName.Kind =
-        m_isSystemType ?
-        winrt::TypeKind::Primitive:
-        winrt::TypeKind::Metadata;
+    typeName.Kind = m_isSystemType ? winrt::TypeKind::Primitive : winrt::TypeKind::Metadata;
     return typeName;
 }
 
@@ -158,21 +147,13 @@ void XamlTypeBase::AddMember(
     wstring_view const& baseTypeName,
     std::function<winrt::IInspectable(const winrt::IInspectable&)> getter,
     std::function<void(const winrt::IInspectable&, const winrt::IInspectable&)> setter,
-    bool isContent, 
+    bool isContent,
     bool isDependencyProperty,
-    bool isAttachable
-)
+    bool isAttachable)
 {
     auto baseType = XamlMetadataProvider::GetXamlType(baseTypeName);
 
-    auto member = 
-        winrt::make<XamlMember>(
-            name,
-            baseType,
-            getter,
-            setter, 
-            isDependencyProperty,
-            isAttachable);
+    auto member = winrt::make<XamlMember>(name, baseType, getter, setter, isDependencyProperty, isAttachable);
 
     m_members.push_back(member);
     if (isContent)
@@ -195,8 +176,7 @@ XamlType::XamlType(
     wstring_view const& typeName,
     wstring_view const& baseTypeName,
     std::function<winrt::IInspectable()> activator,
-    std::function<void(XamlTypeBase&)> populatePropertiesFunc
-    )
+    std::function<void(XamlTypeBase&)> populatePropertiesFunc)
 {
     m_typeName = typeName;
     m_baseTypeName = baseTypeName;
@@ -214,10 +194,7 @@ void XamlType::SetAddToMapFunc(std::function<void(winrt::IInspectable const&, wi
     m_addToMap = addToMap;
 }
 
-EnumXamlType::EnumXamlType(
-    wstring_view const& typeName,
-    std::function<winrt::IInspectable(hstring)> createFromString
-    )
+EnumXamlType::EnumXamlType(wstring_view const& typeName, std::function<winrt::IInspectable(hstring)> createFromString)
 {
     m_typeName = typeName;
     m_baseTypeName = winrt::name_of<int32_t>();

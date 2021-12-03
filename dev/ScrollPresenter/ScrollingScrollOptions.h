@@ -6,8 +6,7 @@
 #include "ScrollPresenter.h"
 #include "ScrollingScrollOptions.g.h"
 
-class ScrollingScrollOptions :
-    public winrt::implementation::ScrollingScrollOptionsT<ScrollingScrollOptions>
+class ScrollingScrollOptions : public winrt::implementation::ScrollingScrollOptionsT<ScrollingScrollOptions>
 {
 public:
     ScrollingScrollOptions(winrt::ScrollingAnimationMode const& animationMode);

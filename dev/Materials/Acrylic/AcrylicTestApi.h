@@ -5,8 +5,7 @@
 
 #include "AcrylicTestApi.g.h"
 
-class AcrylicTestApi : 
-    public ReferenceTracker<AcrylicTestApi, winrt::implementation::AcrylicTestApiT, winrt::composable>
+class AcrylicTestApi : public ReferenceTracker<AcrylicTestApi, winrt::implementation::AcrylicTestApiT, winrt::composable>
 {
 public:
     winrt::AcrylicBrush AcrylicBrush();

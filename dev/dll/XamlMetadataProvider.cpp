@@ -19,10 +19,7 @@ void XamlMetadataProvider::Initialize()
     MUXControlsFactory::EnsureInitialized();
 }
 
-bool XamlMetadataProvider::RegisterXamlType(
-    PCWSTR typeName,
-    std::function<winrt::IXamlType()> createXamlTypeCallback
-    )
+bool XamlMetadataProvider::RegisterXamlType(PCWSTR typeName, std::function<winrt::IXamlType()> createXamlTypeCallback)
 {
     if (!s_types)
     {
@@ -38,8 +35,7 @@ bool XamlMetadataProvider::RegisterXamlType(
     return true;
 }
 
-winrt::IXamlType XamlMetadataProvider::GetXamlType(
-    const wstring_view& typeName)
+winrt::IXamlType XamlMetadataProvider::GetXamlType(const wstring_view& typeName)
 {
     if (s_types)
     {

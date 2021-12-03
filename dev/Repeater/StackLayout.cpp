@@ -53,9 +53,7 @@ void StackLayout::UninitializeForContextCore(winrt::VirtualizingLayoutContext co
     stackState->UninitializeForContext(context);
 }
 
-winrt::Size StackLayout::MeasureOverride(
-    winrt::VirtualizingLayoutContext const& context,
-    winrt::Size const& availableSize)
+winrt::Size StackLayout::MeasureOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& availableSize)
 {
     GetAsStackState(context.LayoutState())->OnMeasureStart();
 
@@ -72,9 +70,7 @@ winrt::Size StackLayout::MeasureOverride(
     return { desiredSize.Width, desiredSize.Height };
 }
 
-winrt::Size StackLayout::ArrangeOverride(
-    winrt::VirtualizingLayoutContext const& context,
-    winrt::Size const& finalSize)
+winrt::Size StackLayout::ArrangeOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& finalSize)
 {
     const auto value = GetFlowAlgorithm(context).Arrange(
         finalSize,
@@ -87,9 +83,7 @@ winrt::Size StackLayout::ArrangeOverride(
 }
 
 void StackLayout::OnItemsChangedCore(
-    winrt::VirtualizingLayoutContext const& context,
-    winrt::IInspectable const& source,
-    winrt::NotifyCollectionChangedEventArgs const& args)
+    winrt::VirtualizingLayoutContext const& context, winrt::IInspectable const& source, winrt::NotifyCollectionChangedEventArgs const& args)
 {
     GetFlowAlgorithm(context).OnItemsSourceChanged(source, args, context);
     // Always invalidate layout to keep the view accurate.
@@ -100,9 +94,7 @@ void StackLayout::OnItemsChangedCore(
 
 #pragma region IStackLayoutOverrides
 
-winrt::FlowLayoutAnchorInfo StackLayout::GetAnchorForRealizationRect(
-    winrt::Size const& availableSize,
-    winrt::VirtualizingLayoutContext const& context)
+winrt::FlowLayoutAnchorInfo StackLayout::GetAnchorForRealizationRect(winrt::Size const& availableSize, winrt::VirtualizingLayoutContext const& context)
 {
 
     int anchorIndex = -1;
@@ -118,13 +110,13 @@ winrt::FlowLayoutAnchorInfo StackLayout::GetAnchorForRealizationRect(
 
         const double averageElementSize = GetAverageElementSize(availableSize, context, state) + m_itemSpacing;
         const double realizationWindowOffsetInExtent = MajorStart(realizationRect) - MajorStart(lastExtent);
-        const double majorSize = MajorSize(lastExtent) == 0 ? std::max(0.0, averageElementSize * itemsCount - m_itemSpacing) : MajorSize(lastExtent);
-        if (itemsCount > 0 &&
-            MajorSize(realizationRect) >= 0 &&
-            // MajorSize = 0 will account for when a nested repeater is outside the realization rect but still being measured. Also,
-            // note that if we are measuring this repeater, then we are already realizing an element to figure out the size, so we could
-            // just keep that element alive. It also helps in XYFocus scenarios to have an element realized for XYFocus to find a candidate
-            // in the navigating direction.
+        const double majorSize =
+            MajorSize(lastExtent) == 0 ? std::max(0.0, averageElementSize * itemsCount - m_itemSpacing) : MajorSize(lastExtent);
+        if (itemsCount > 0 && MajorSize(realizationRect) >= 0 &&
+            // MajorSize = 0 will account for when a nested repeater is outside the realization rect but still being measured.
+            // Also, note that if we are measuring this repeater, then we are already realizing an element to figure out the size,
+            // so we could just keep that element alive. It also helps in XYFocus scenarios to have an element realized for
+            // XYFocus to find a candidate in the navigating direction.
             realizationWindowOffsetInExtent + MajorSize(realizationRect) >= 0 && realizationWindowOffsetInExtent <= majorSize)
         {
             anchorIndex = (int)(realizationWindowOffsetInExtent / averageElementSize);
@@ -164,11 +156,13 @@ winrt::Rect StackLayout::GetExtent(
             MUX_ASSERT(lastRealized);
             MajorStart(extent) = static_cast<float>(MajorStart(firstRealizedLayoutBounds) - firstRealizedItemIndex * averageElementSize);
             auto remainingItems = itemsCount - lastRealizedItemIndex - 1;
-            MajorSize(extent) = MajorEnd(lastRealizedLayoutBounds) - MajorStart(extent) + static_cast<float>(remainingItems* averageElementSize);
+            MajorSize(extent) =
+                MajorEnd(lastRealizedLayoutBounds) - MajorStart(extent) + static_cast<float>(remainingItems * averageElementSize);
         }
         else
         {
-            REPEATER_TRACE_INFO(L"%*s: \tEstimating extent with no realized elements.  \n",
+            REPEATER_TRACE_INFO(
+                L"%*s: \tEstimating extent with no realized elements.  \n",
                 winrt::get_self<VirtualizingLayoutContext>(context)->Indent(),
                 LayoutId().data());
         }
@@ -179,9 +173,13 @@ winrt::Rect StackLayout::GetExtent(
         MUX_ASSERT(lastRealizedItemIndex == -1);
     }
 
-    REPEATER_TRACE_INFO(L"%*s: \tExtent is (%.0f,%.0f). Based on average %.0f. \n",
+    REPEATER_TRACE_INFO(
+        L"%*s: \tExtent is (%.0f,%.0f). Based on average %.0f. \n",
         winrt::get_self<VirtualizingLayoutContext>(context)->Indent(),
-        LayoutId().data(), extent.Width, extent.Height, averageElementSize);
+        LayoutId().data(),
+        extent.Width,
+        extent.Height,
+        averageElementSize);
     return extent;
 }
 
@@ -200,10 +198,7 @@ void StackLayout::OnElementMeasured(
     {
         const auto stackState = GetAsStackState(virtualContext.LayoutState());
         const auto provisionalArrangeSizeWinRt = provisionalArrangeSize;
-        stackState->OnElementMeasured(
-            index,
-            Major(provisionalArrangeSizeWinRt),
-            Minor(provisionalArrangeSizeWinRt));
+        stackState->OnElementMeasured(index, Major(provisionalArrangeSizeWinRt), Minor(provisionalArrangeSizeWinRt));
     }
 }
 
@@ -211,19 +206,17 @@ void StackLayout::OnElementMeasured(
 
 #pragma region IFlowLayoutAlgorithmDelegates
 
-winrt::Size StackLayout::Algorithm_GetMeasureSize(int /*index*/, const winrt::Size & availableSize, const winrt::VirtualizingLayoutContext& /*context*/)
+winrt::Size StackLayout::Algorithm_GetMeasureSize(int /*index*/, const winrt::Size& availableSize, const winrt::VirtualizingLayoutContext& /*context*/)
 {
     return availableSize;
 }
 
-winrt::Size StackLayout::Algorithm_GetProvisionalArrangeSize(int /*index*/, const winrt::Size & measureSize, winrt::Size const& desiredSize, const winrt::VirtualizingLayoutContext& /*context*/)
+winrt::Size StackLayout::Algorithm_GetProvisionalArrangeSize(
+    int /*index*/, const winrt::Size& measureSize, winrt::Size const& desiredSize, const winrt::VirtualizingLayoutContext& /*context*/)
 {
     const auto measureSizeMinor = Minor(measureSize);
     return MinorMajorSize(
-        std::isfinite(measureSizeMinor) ?
-            std::max(measureSizeMinor, Minor(desiredSize)) :
-            Minor(desiredSize),
-        Major(desiredSize));
+        std::isfinite(measureSizeMinor) ? std::max(measureSizeMinor, Minor(desiredSize)) : Minor(desiredSize), Major(desiredSize));
 }
 
 bool StackLayout::Algorithm_ShouldBreakLine(int /*index*/, double /*remainingSpace*/)
@@ -231,17 +224,13 @@ bool StackLayout::Algorithm_ShouldBreakLine(int /*index*/, double /*remainingSpa
     return true;
 }
 
-winrt::FlowLayoutAnchorInfo StackLayout::Algorithm_GetAnchorForRealizationRect(
-    const winrt::Size & availableSize,
-    const winrt::VirtualizingLayoutContext & context)
+winrt::FlowLayoutAnchorInfo StackLayout::Algorithm_GetAnchorForRealizationRect(const winrt::Size& availableSize, const winrt::VirtualizingLayoutContext& context)
 {
     return GetAnchorForRealizationRect(availableSize, context);
 }
 
 winrt::FlowLayoutAnchorInfo StackLayout::Algorithm_GetAnchorForTargetElement(
-    int targetIndex,
-    const winrt::Size & availableSize,
-    const winrt::VirtualizingLayoutContext & context)
+    int targetIndex, const winrt::Size& availableSize, const winrt::VirtualizingLayoutContext& context)
 {
     double offset = DoubleUtil::NaN;
     int index = -1;
@@ -259,43 +248,28 @@ winrt::FlowLayoutAnchorInfo StackLayout::Algorithm_GetAnchorForTargetElement(
 }
 
 winrt::Rect StackLayout::Algorithm_GetExtent(
-    const winrt::Size & availableSize,
-    const winrt::VirtualizingLayoutContext & context,
-    const winrt::UIElement & firstRealized,
+    const winrt::Size& availableSize,
+    const winrt::VirtualizingLayoutContext& context,
+    const winrt::UIElement& firstRealized,
     int firstRealizedItemIndex,
-    const winrt::Rect & firstRealizedLayoutBounds,
-    const winrt::UIElement & lastRealized,
+    const winrt::Rect& firstRealizedLayoutBounds,
+    const winrt::UIElement& lastRealized,
     int lastRealizedItemIndex,
-    const winrt::Rect & lastRealizedLayoutBounds)
+    const winrt::Rect& lastRealizedLayoutBounds)
 {
-    return GetExtent(
-        availableSize,
-        context,
-        firstRealized,
-        firstRealizedItemIndex,
-        firstRealizedLayoutBounds,
-        lastRealized,
-        lastRealizedItemIndex,
-        lastRealizedLayoutBounds);
+    return GetExtent(availableSize, context, firstRealized, firstRealizedItemIndex, firstRealizedLayoutBounds, lastRealized, lastRealizedItemIndex, lastRealizedLayoutBounds);
 }
 
 void StackLayout::Algorithm_OnElementMeasured(
-    const winrt::UIElement & element,
+    const winrt::UIElement& element,
     int index,
-    const winrt::Size & availableSize,
-    const winrt::Size & measureSize,
-    const winrt::Size & desiredSize,
-    const winrt::Size & provisionalArrangeSize,
-    const winrt::VirtualizingLayoutContext & context)
+    const winrt::Size& availableSize,
+    const winrt::Size& measureSize,
+    const winrt::Size& desiredSize,
+    const winrt::Size& provisionalArrangeSize,
+    const winrt::VirtualizingLayoutContext& context)
 {
-    OnElementMeasured(
-        element,
-        index,
-        availableSize,
-        measureSize,
-        desiredSize,
-        provisionalArrangeSize,
-        context);
+    OnElementMeasured(element, index, availableSize, measureSize, desiredSize, provisionalArrangeSize, context);
 }
 
 #pragma endregion
@@ -307,9 +281,10 @@ void StackLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     {
         const auto orientation = unbox_value<winrt::Orientation>(args.NewValue());
 
-        //Note: For StackLayout Vertical Orientation means we have a Vertical ScrollOrientation.
-        //Horizontal Orientation means we have a Horizontal ScrollOrientation.
-        const ScrollOrientation scrollOrientation = (orientation == winrt::Orientation::Horizontal) ? ScrollOrientation::Horizontal : ScrollOrientation::Vertical;
+        // Note: For StackLayout Vertical Orientation means we have a Vertical ScrollOrientation.
+        // Horizontal Orientation means we have a Horizontal ScrollOrientation.
+        const ScrollOrientation scrollOrientation =
+            (orientation == winrt::Orientation::Horizontal) ? ScrollOrientation::Horizontal : ScrollOrientation::Vertical;
         OrientationBasedMeasures::SetScrollOrientation(scrollOrientation);
     }
     else if (property == s_SpacingProperty)
@@ -322,10 +297,7 @@ void StackLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
 
 #pragma region private helpers
 
-double StackLayout::GetAverageElementSize(
-    winrt::Size availableSize,
-    winrt::VirtualizingLayoutContext context,
-    const winrt::com_ptr<StackLayoutState>& stackLayoutState)
+double StackLayout::GetAverageElementSize(winrt::Size availableSize, winrt::VirtualizingLayoutContext context, const winrt::com_ptr<StackLayoutState>& stackLayoutState)
 {
     double averageElementSize = 0;
 
@@ -333,7 +305,8 @@ double StackLayout::GetAverageElementSize(
     {
         if (stackLayoutState->TotalElementsMeasured() == 0)
         {
-            const auto tmpElement = context.GetOrCreateElementAt(0, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle);
+            const auto tmpElement = context.GetOrCreateElementAt(
+                0, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle);
             stackLayoutState->FlowAlgorithm().MeasureElement(tmpElement, 0, availableSize, context);
             context.RecycleElement(tmpElement);
         }

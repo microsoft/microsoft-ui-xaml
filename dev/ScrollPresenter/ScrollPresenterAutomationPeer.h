@@ -7,8 +7,8 @@
 
 #include "ScrollPresenterAutomationPeer.g.h"
 
-class ScrollPresenterAutomationPeer :
-    public ReferenceTracker<ScrollPresenterAutomationPeer, winrt::implementation::ScrollPresenterAutomationPeerT, winrt::IScrollProvider>
+class ScrollPresenterAutomationPeer
+    : public ReferenceTracker<ScrollPresenterAutomationPeer, winrt::implementation::ScrollPresenterAutomationPeerT, winrt::IScrollProvider>
 {
 public:
     ScrollPresenterAutomationPeer(winrt::ScrollPresenter const& owner);
@@ -18,7 +18,7 @@ public:
         SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    // IAutomationPeerOverrides methods 
+    // IAutomationPeerOverrides methods
     winrt::AutomationControlType GetAutomationControlTypeCore();
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
 
@@ -44,7 +44,7 @@ private:
 
     winrt::IInspectable GetPatternCoreImpl(winrt::PatternInterface patternInterface);
     winrt::ScrollPresenter GetScrollPresenter();
-    
+
     static double GetViewPercent(double zoomedExtent, double viewport);
     static double GetScrollPercent(double zoomedExtent, double viewport, double offset);
 

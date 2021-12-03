@@ -7,8 +7,8 @@
 
 #include "ScrollViewerIRefreshInfoProviderAdapter.g.h"
 
-class ScrollViewerIRefreshInfoProviderAdapter :
-    public ReferenceTracker<ScrollViewerIRefreshInfoProviderAdapter, winrt::implementation::ScrollViewerIRefreshInfoProviderAdapterT, winrt::composable, winrt::composing>
+class ScrollViewerIRefreshInfoProviderAdapter
+    : public ReferenceTracker<ScrollViewerIRefreshInfoProviderAdapter, winrt::implementation::ScrollViewerIRefreshInfoProviderAdapterT, winrt::composable, winrt::composing>
 {
 public:
     ScrollViewerIRefreshInfoProviderAdapter(winrt::RefreshPullDirection const& refreshPullDirection, winrt::IAdapterAnimationHandler const& animationHandler);
@@ -52,4 +52,3 @@ private:
 
     tracker_ref<winrt::IInspectable> m_boxedPointerPressedEventHandler{ this };
 };
-

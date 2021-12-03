@@ -5,6 +5,7 @@
 
 #include "PipsPagerSelectedIndexChangedEventArgs.g.h"
 
-class PipsPagerSelectedIndexChangedEventArgs :
-    public winrt::implementation::PipsPagerSelectedIndexChangedEventArgsT<PipsPagerSelectedIndexChangedEventArgs>
-{};
+class PipsPagerSelectedIndexChangedEventArgs
+    : public winrt::implementation::PipsPagerSelectedIndexChangedEventArgsT<PipsPagerSelectedIndexChangedEventArgs>
+{
+};

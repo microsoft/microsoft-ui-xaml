@@ -10,12 +10,12 @@
 static constexpr auto c_pane1ScrollViewerName = L"PART_Pane1ScrollViewer";
 static constexpr auto c_pane2ScrollViewerName = L"PART_Pane2ScrollViewer";
 
-static constexpr auto c_columnLeftName   = L"PART_ColumnLeft"sv;
+static constexpr auto c_columnLeftName = L"PART_ColumnLeft"sv;
 static constexpr auto c_columnMiddleName = L"PART_ColumnMiddle"sv;
-static constexpr auto c_columnRightName  = L"PART_ColumnRight"sv;
-static constexpr auto c_rowTopName       = L"PART_RowTop"sv;
-static constexpr auto c_rowMiddleName    = L"PART_RowMiddle"sv;
-static constexpr auto c_rowBottomName    = L"PART_RowBottom"sv;
+static constexpr auto c_columnRightName = L"PART_ColumnRight"sv;
+static constexpr auto c_rowTopName = L"PART_RowTop"sv;
+static constexpr auto c_rowMiddleName = L"PART_RowMiddle"sv;
+static constexpr auto c_rowBottomName = L"PART_RowBottom"sv;
 
 using namespace std;
 
@@ -108,7 +108,8 @@ void TwoPaneView::OnSizeChanged(const winrt::IInspectable& sender, const winrt::
 void TwoPaneView::UpdateMode()
 {
     // Don't bother running this logic until after we hit OnApplyTemplate.
-    if (!m_loaded) return;
+    if (!m_loaded)
+        return;
 
     const double controlWidth = ActualWidth();
     const double controlHeight = ActualHeight();
@@ -127,7 +128,8 @@ void TwoPaneView::UpdateMode()
             // Regions are laid out horizontally
             if (WideModeConfiguration() != winrt::TwoPaneViewWideModeConfiguration::SinglePane)
             {
-                newMode = (WideModeConfiguration() == winrt::TwoPaneViewWideModeConfiguration::LeftRight) ? ViewMode::LeftRight : ViewMode::RightLeft;
+                newMode = (WideModeConfiguration() == winrt::TwoPaneViewWideModeConfiguration::LeftRight) ? ViewMode::LeftRight
+                                                                                                          : ViewMode::RightLeft;
             }
         }
         else if (info.Mode == winrt::TwoPaneViewMode::Tall)
@@ -135,7 +137,8 @@ void TwoPaneView::UpdateMode()
             // Regions are laid out vertically
             if (TallModeConfiguration() != winrt::TwoPaneViewTallModeConfiguration::SinglePane)
             {
-                newMode = (TallModeConfiguration() == winrt::TwoPaneViewTallModeConfiguration::TopBottom) ? ViewMode::TopBottom : ViewMode::BottomTop;
+                newMode = (TallModeConfiguration() == winrt::TwoPaneViewTallModeConfiguration::TopBottom) ? ViewMode::TopBottom
+                                                                                                          : ViewMode::BottomTop;
             }
         }
     }
@@ -145,12 +148,14 @@ void TwoPaneView::UpdateMode()
         if (controlWidth > MinWideModeWidth() && WideModeConfiguration() != winrt::TwoPaneViewWideModeConfiguration::SinglePane)
         {
             // Split horizontally
-            newMode = (WideModeConfiguration() == winrt::TwoPaneViewWideModeConfiguration::LeftRight) ? ViewMode::LeftRight : ViewMode::RightLeft;
+            newMode = (WideModeConfiguration() == winrt::TwoPaneViewWideModeConfiguration::LeftRight) ? ViewMode::LeftRight
+                                                                                                      : ViewMode::RightLeft;
         }
         else if (controlHeight > MinTallModeHeight() && TallModeConfiguration() != winrt::TwoPaneViewTallModeConfiguration::SinglePane)
         {
             // Split vertically
-            newMode = (TallModeConfiguration() == winrt::TwoPaneViewTallModeConfiguration::TopBottom) ? ViewMode::TopBottom : ViewMode::BottomTop;
+            newMode = (TallModeConfiguration() == winrt::TwoPaneViewTallModeConfiguration::TopBottom) ? ViewMode::TopBottom
+                                                                                                      : ViewMode::BottomTop;
         }
     }
 
@@ -166,12 +171,28 @@ void TwoPaneView::UpdateMode()
 
         switch (m_currentMode)
         {
-            case ViewMode::Pane1Only: winrt::VisualStateManager::GoToState(*this, L"ViewMode_OneOnly", true); break;
-            case ViewMode::Pane2Only: winrt::VisualStateManager::GoToState(*this, L"ViewMode_TwoOnly", true); break;
-            case ViewMode::LeftRight: winrt::VisualStateManager::GoToState(*this, L"ViewMode_LeftRight", true); newViewMode = winrt::TwoPaneViewMode::Wide; break;
-            case ViewMode::RightLeft: winrt::VisualStateManager::GoToState(*this, L"ViewMode_RightLeft", true); newViewMode = winrt::TwoPaneViewMode::Wide; break;
-            case ViewMode::TopBottom: winrt::VisualStateManager::GoToState(*this, L"ViewMode_TopBottom", true); newViewMode = winrt::TwoPaneViewMode::Tall; break;
-            case ViewMode::BottomTop: winrt::VisualStateManager::GoToState(*this, L"ViewMode_BottomTop", true); newViewMode = winrt::TwoPaneViewMode::Tall; break;
+        case ViewMode::Pane1Only:
+            winrt::VisualStateManager::GoToState(*this, L"ViewMode_OneOnly", true);
+            break;
+        case ViewMode::Pane2Only:
+            winrt::VisualStateManager::GoToState(*this, L"ViewMode_TwoOnly", true);
+            break;
+        case ViewMode::LeftRight:
+            winrt::VisualStateManager::GoToState(*this, L"ViewMode_LeftRight", true);
+            newViewMode = winrt::TwoPaneViewMode::Wide;
+            break;
+        case ViewMode::RightLeft:
+            winrt::VisualStateManager::GoToState(*this, L"ViewMode_RightLeft", true);
+            newViewMode = winrt::TwoPaneViewMode::Wide;
+            break;
+        case ViewMode::TopBottom:
+            winrt::VisualStateManager::GoToState(*this, L"ViewMode_TopBottom", true);
+            newViewMode = winrt::TwoPaneViewMode::Tall;
+            break;
+        case ViewMode::BottomTop:
+            winrt::VisualStateManager::GoToState(*this, L"ViewMode_BottomTop", true);
+            newViewMode = winrt::TwoPaneViewMode::Tall;
+            break;
         }
 
         if (newViewMode != Mode())
@@ -225,15 +246,15 @@ void TwoPaneView::UpdateRowsColumns(ViewMode newMode, DisplayRegionHelperInfo in
             {
                 m_columnMiddle.get().Width({ rc2.X - rc1.Width, winrt::GridUnitType::Pixel });
 
-                m_columnLeft.get().Width({ rc1.Width - rcControl.X , winrt::GridUnitType::Pixel });
-                m_columnRight.get().Width({ rc2.Width - ((rcWindow.Width - rcControl.Width) - rcControl.X) , winrt::GridUnitType::Pixel });
+                m_columnLeft.get().Width({ rc1.Width - rcControl.X, winrt::GridUnitType::Pixel });
+                m_columnRight.get().Width({ rc2.Width - ((rcWindow.Width - rcControl.Width) - rcControl.X), winrt::GridUnitType::Pixel });
             }
             else
             {
                 m_rowMiddle.get().Height({ rc2.Y - rc1.Height, winrt::GridUnitType::Pixel });
 
-                m_rowTop.get().Height({ rc1.Height - rcControl.Y , winrt::GridUnitType::Pixel });
-                m_rowBottom.get().Height({ rc2.Height - ((rcWindow.Height - rcControl.Height) - rcControl.Y) , winrt::GridUnitType::Pixel });
+                m_rowTop.get().Height({ rc1.Height - rcControl.Y, winrt::GridUnitType::Pixel });
+                m_rowBottom.get().Height({ rc2.Height - ((rcWindow.Height - rcControl.Height) - rcControl.Y), winrt::GridUnitType::Pixel });
             }
         }
     }
@@ -292,13 +313,9 @@ void TwoPaneView::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs co
         }
     }
 
-    if (property == s_PanePriorityProperty
-        || property == s_Pane1LengthProperty
-        || property == s_Pane2LengthProperty
-        || property == s_WideModeConfigurationProperty
-        || property == s_TallModeConfigurationProperty
-        || property == s_MinWideModeWidthProperty
-        || property == s_MinTallModeHeightProperty)
+    if (property == s_PanePriorityProperty || property == s_Pane1LengthProperty || property == s_Pane2LengthProperty ||
+        property == s_WideModeConfigurationProperty || property == s_TallModeConfigurationProperty ||
+        property == s_MinWideModeWidthProperty || property == s_MinTallModeHeightProperty)
     {
         UpdateMode();
     }

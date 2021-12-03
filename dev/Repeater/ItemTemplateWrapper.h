@@ -5,8 +5,7 @@
 
 #include "common.h"
 
-class ItemTemplateWrapper :
-    public winrt::implements<ItemTemplateWrapper, winrt::IElementFactoryShim>
+class ItemTemplateWrapper : public winrt::implements<ItemTemplateWrapper, winrt::IElementFactoryShim>
 {
 public:
     ItemTemplateWrapper(winrt::DataTemplate const& dataTemplate);

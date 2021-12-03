@@ -5,22 +5,20 @@
 
 #include "CppWinRTHelpers.h"
 
-
 class ScrollViewerIRefreshInfoProviderDefaultAnimationHandler
-    : public ReferenceTracker<ScrollViewerIRefreshInfoProviderDefaultAnimationHandler,
-    reference_tracker_implements_t<winrt::IAdapterAnimationHandler>::type>
+    : public ReferenceTracker<ScrollViewerIRefreshInfoProviderDefaultAnimationHandler, reference_tracker_implements_t<winrt::IAdapterAnimationHandler>::type>
 {
 public:
     ScrollViewerIRefreshInfoProviderDefaultAnimationHandler(const winrt::UIElement& container, const winrt::RefreshPullDirection& refreshPullDirection);
     ~ScrollViewerIRefreshInfoProviderDefaultAnimationHandler();
 
-    //IAdapterAnimationHandler
+    // IAdapterAnimationHandler
     void InteractionTrackerAnimation(const winrt::UIElement& refreshVisualizer, const winrt::UIElement& infoProvider, const winrt::InteractionTracker& interactionTracker);
     void RefreshRequestedAnimation(const winrt::UIElement& refreshVisualizer, const winrt::UIElement& infoProvider, double executionRatio);
     void RefreshCompletedAnimation(const winrt::UIElement& refreshVisualizer, const winrt::UIElement& infoProvider);
 
 private:
-    //PrivateHelpers
+    // PrivateHelpers
     void ValidateAndStoreParameters(const winrt::UIElement& refreshVisualizer, const winrt::UIElement& infoProvider, const winrt::InteractionTracker& interactionTracker);
     void RefreshCompletedBatchCompleted(const winrt::IInspectable& sender, const winrt::CompositionBatchCompletedEventArgs& args);
     winrt::hstring getAnimatedPropertyName();

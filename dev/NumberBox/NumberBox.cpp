@@ -50,7 +50,8 @@ NumberBox::NumberBox()
 
     // We are not revoking this since the event and the listener reside on the same object and as such have the same lifecycle.
     // That means that as soon as the NumberBox gets removed so will the event and the listener.
-    this->RegisterPropertyChangedCallback(winrt::AutomationProperties::NameProperty(), { this , &NumberBox::OnAutomationPropertiesNamePropertyChanged });
+    this->RegisterPropertyChangedCallback(
+        winrt::AutomationProperties::NameProperty(), { this, &NumberBox::OnAutomationPropertiesNamePropertyChanged });
 }
 
 void NumberBox::SetDefaultInputScope()
@@ -188,7 +189,8 @@ void NumberBox::OnApplyTemplate()
                 popupRoot.Shadow(winrt::ThemeShadow{});
                 const auto translation = popupRoot.Translation();
 
-                const double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_numberBoxPopupShadowDepthName, box_value(c_popupShadowDepth)));
+                const double shadowDepth = unbox_value<double>(
+                    SharedHelpers::FindInApplicationResources(c_numberBoxPopupShadowDepthName, box_value(c_popupShadowDepth)));
 
                 popupRoot.Translation({ translation.x, translation.y, (float)shadowDepth });
             }
@@ -205,7 +207,7 @@ void NumberBox::OnApplyTemplate()
         m_popupUpButtonClickRevoker = popupSpinUp.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinUpClick });
     }
 
-    m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this,  &NumberBox::OnIsEnabledChanged });
+    m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this, &NumberBox::OnIsEnabledChanged });
 
     // .NET rounds to 12 significant digits when displaying doubles, so we will do the same.
     m_displayRounder.SignificantDigits(12);
@@ -217,8 +219,8 @@ void NumberBox::OnApplyTemplate()
 
     ReevaluateForwardedUIAName();
 
-    if (ReadLocalValue(s_ValueProperty) == winrt::DependencyProperty::UnsetValue()
-        && ReadLocalValue(s_TextProperty) != winrt::DependencyProperty::UnsetValue())
+    if (ReadLocalValue(s_ValueProperty) == winrt::DependencyProperty::UnsetValue() &&
+        ReadLocalValue(s_TextProperty) != winrt::DependencyProperty::UnsetValue())
     {
         // If Text has been set, but Value hasn't, update Value based on Text.
         UpdateValueToText();
@@ -242,10 +244,7 @@ void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         const auto oldValue = unbox_value<double>(args.OldValue());
 
-        auto scopeGuard = gsl::finally([this]()
-        {
-            m_valueUpdating = false;
-        });
+        auto scopeGuard = gsl::finally([this]() { m_valueUpdating = false; });
         m_valueUpdating = true;
 
         CoerceValue();
@@ -327,7 +326,7 @@ void NumberBox::OnTextPropertyChanged(const winrt::DependencyPropertyChangedEven
 
 void NumberBox::UpdateValueToText()
 {
-    if (auto && textBox = m_textBox.get())
+    if (auto&& textBox = m_textBox.get())
     {
         textBox.Text(Text());
         ValidateInput();
@@ -365,24 +364,26 @@ void NumberBox::ReevaluateForwardedUIAName()
     if (const auto textBox = m_textBox.get())
     {
         const auto name = winrt::AutomationProperties::GetName(*this);
-        const auto minimum = Minimum() == -std::numeric_limits<double>::max() ?
-            winrt::hstring{} :
-            winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMinimumValueStatus) + winrt::to_hstring(Minimum()) };
-        const auto maximum = Maximum() == std::numeric_limits<double>::max() ?
-            winrt::hstring{} :
-            winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMaximumValueStatus) + winrt::to_hstring(Maximum()) };
+        const auto minimum = Minimum() == -std::numeric_limits<double>::max()
+                                 ? winrt::hstring{}
+                                 : winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMinimumValueStatus) +
+                                                   winrt::to_hstring(Minimum()) };
+        const auto maximum = Maximum() == std::numeric_limits<double>::max()
+                                 ? winrt::hstring{}
+                                 : winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMaximumValueStatus) +
+                                                   winrt::to_hstring(Maximum()) };
 
         if (!name.empty())
         {
             // AutomationProperties.Name is a non empty string, we will use that value.
-            winrt::AutomationProperties::SetName(textBox, name + minimum + maximum );
+            winrt::AutomationProperties::SetName(textBox, name + minimum + maximum);
         }
         else
         {
             if (const auto headerAsString = Header().try_as<winrt::IReference<winrt::hstring>>())
             {
                 // Header is a string, we can use that as our UIA name.
-                winrt::AutomationProperties::SetName(textBox, headerAsString.Value() + minimum + maximum );
+                winrt::AutomationProperties::SetName(textBox, headerAsString.Value() + minimum + maximum);
             }
         }
     }
@@ -396,14 +397,14 @@ void NumberBox::UpdateVisualStateForIsEnabledChange()
 void NumberBox::OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
     // When the control receives focus, select the text
-    if (auto && textBox = m_textBox.get())
+    if (auto&& textBox = m_textBox.get())
     {
         textBox.SelectAll();
     }
 
     if (SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Compact)
     {
-        if (auto && popup = m_popup.get())
+        if (auto&& popup = m_popup.get())
         {
             popup.IsOpen(true);
         }
@@ -414,7 +415,7 @@ void NumberBox::OnNumberBoxLostFocus(winrt::IInspectable const& sender, winrt::R
 {
     ValidateInput();
 
-    if (auto && popup = m_popup.get())
+    if (auto&& popup = m_popup.get())
     {
         popup.IsOpen(false);
     }
@@ -474,9 +475,8 @@ void NumberBox::ValidateInput()
             // Setting NumberFormatter to something that isn't an INumberParser will throw an exception, so this should be safe
             const auto numberParser = NumberFormatter().as<winrt::INumberParser>();
 
-            const winrt::IReference<double> value = AcceptsExpression()
-                ? NumberBoxParser::Compute(text, numberParser)
-                : numberParser.ParseDouble(text);
+            const winrt::IReference<double> value =
+                AcceptsExpression() ? NumberBoxParser::Compute(text, numberParser) : numberParser.ParseDouble(text);
 
             if (!value)
             {
@@ -502,7 +502,7 @@ void NumberBox::ValidateInput()
     }
 }
 
-void NumberBox::OnSpinDownClick(winrt::IInspectable const&  sender, winrt::RoutedEventArgs const& args)
+void NumberBox::OnSpinDownClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
     StepValue(-SmallChange());
 }
@@ -517,25 +517,25 @@ void NumberBox::OnNumberBoxKeyDown(winrt::IInspectable const& sender, winrt::Key
     // Handle these on key down so that we get repeat behavior.
     switch (args.OriginalKey())
     {
-        case winrt::VirtualKey::Up:
-            StepValue(SmallChange());
-            args.Handled(true); 
-            break;
+    case winrt::VirtualKey::Up:
+        StepValue(SmallChange());
+        args.Handled(true);
+        break;
 
-        case winrt::VirtualKey::Down:
-            StepValue(-SmallChange());
-            args.Handled(true);
-            break;
+    case winrt::VirtualKey::Down:
+        StepValue(-SmallChange());
+        args.Handled(true);
+        break;
 
-        case winrt::VirtualKey::PageUp:
-            StepValue(LargeChange());
-            args.Handled(true);
-            break;
+    case winrt::VirtualKey::PageUp:
+        StepValue(LargeChange());
+        args.Handled(true);
+        break;
 
-        case winrt::VirtualKey::PageDown:
-            StepValue(-LargeChange());
-            args.Handled(true);
-            break;
+    case winrt::VirtualKey::PageDown:
+        StepValue(-LargeChange());
+        args.Handled(true);
+        break;
     }
 }
 
@@ -559,7 +559,7 @@ void NumberBox::OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRo
 
 void NumberBox::OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args)
 {
-    if (auto && textBox = m_textBox.get())
+    if (auto&& textBox = m_textBox.get())
     {
         if (textBox.FocusState() != winrt::FocusState::Unfocused)
         {
@@ -614,7 +614,7 @@ void NumberBox::StepValue(double change)
 // Updates TextBox.Text with the formatted Value
 void NumberBox::UpdateTextToValue()
 {
-    if (auto && textBox = m_textBox.get())
+    if (auto&& textBox = m_textBox.get())
     {
         winrt::hstring newText = L"";
 
@@ -628,10 +628,7 @@ void NumberBox::UpdateTextToValue()
 
         textBox.Text(newText);
 
-        auto scopeGuard = gsl::finally([this]()
-        {
-            m_textUpdating = false;
-        });
+        auto scopeGuard = gsl::finally([this]() { m_textUpdating = false; });
         m_textUpdating = true;
         Text(newText.data());
     }
@@ -723,14 +720,14 @@ void NumberBox::UpdateHeaderPresenterState()
             }
         }
     }
-    if(const auto headerTemplate = HeaderTemplate())
+    if (const auto headerTemplate = HeaderTemplate())
     {
         shouldShowHeader = true;
     }
 
-    if(shouldShowHeader && m_headerPresenter == nullptr)
+    if (shouldShowHeader && m_headerPresenter == nullptr)
     {
-        if (const auto headerPresenter = GetTemplateChildT<winrt::ContentPresenter>(c_numberBoxHeaderName, (winrt::IControlProtected)*this))
+        if (const auto headerPresenter = GetTemplateChildT<winrt::ContentPresenter>(c_numberBoxHeaderName, (winrt::IControlProtected) * this))
         {
             // Set presenter to enable lightweight styling of the headers margin
             m_headerPresenter.set(headerPresenter);
@@ -747,7 +744,7 @@ void NumberBox::UpdateHeaderPresenterState()
 
 void NumberBox::MoveCaretToTextEnd()
 {
-    if (auto && textBox = m_textBox.get())
+    if (auto&& textBox = m_textBox.get())
     {
         // This places the caret at the end of the text.
         textBox.Select(static_cast<int32_t>(textBox.Text().size()), 0);

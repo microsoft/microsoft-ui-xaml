@@ -9,14 +9,14 @@
 #include "TitleBar.g.h"
 #include "TitleBar.properties.h"
 
-class TitleBar :
-    public ReferenceTracker<TitleBar, winrt::implementation::TitleBarT>,
-    public TitleBarProperties
+class TitleBar : public ReferenceTracker<TitleBar, winrt::implementation::TitleBarT>, public TitleBarProperties
 {
 
 public:
     TitleBar();
-    ~TitleBar() {}
+    ~TitleBar()
+    {
+    }
 
     // IFrameworkElement
     void OnApplyTemplate();

@@ -6,22 +6,17 @@
 #include "TreeViewNode.h"
 
 using TreeNodeSelectionState = TreeViewNode::TreeNodeSelectionState;
-using ViewModelVectorOptions = typename VectorOptionsFromFlag<winrt::IInspectable, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()>;
+using ViewModelVectorOptions =
+    typename VectorOptionsFromFlag<winrt::IInspectable, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()>;
 
-class ViewModel : 
-    public ReferenceTracker<
-        ViewModel,
-        reference_tracker_implements_t<typename ViewModelVectorOptions::VectorType>::type,
-            typename ViewModelVectorOptions::IterableType,
-            typename ViewModelVectorOptions::ObservableVectorType>,
-    public ViewModelVectorOptions::IVectorOwner
+class ViewModel
+    : public ReferenceTracker<ViewModel, reference_tracker_implements_t<typename ViewModelVectorOptions::VectorType>::type, typename ViewModelVectorOptions::IterableType, typename ViewModelVectorOptions::ObservableVectorType>,
+      public ViewModelVectorOptions::IVectorOwner
 {
-    Implement_IObservable(ViewModelVectorOptions)
-    Implement_Vector_External(ViewModelVectorOptions)
-    Implement_IIterator(ViewModelVectorOptions)
+    Implement_IObservable(ViewModelVectorOptions) Implement_Vector_External(ViewModelVectorOptions)
+        Implement_IIterator(ViewModelVectorOptions)
 
-public:
-    ViewModel();
+            public : ViewModel();
     ~ViewModel();
 
     void ExpandNode(const winrt::TreeViewNode& value);
@@ -40,7 +35,6 @@ public:
     bool IsContentMode();
 
 public:
-
     // IVector functions
     uint32_t Size();
     winrt::IInspectable GetAt(uint32_t index);

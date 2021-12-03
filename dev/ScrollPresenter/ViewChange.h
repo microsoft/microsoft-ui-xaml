@@ -17,9 +17,7 @@ enum class ScrollPresenterViewKind
 class ViewChange : public ViewChangeBase
 {
 public:
-    ViewChange(
-        ScrollPresenterViewKind viewKind,
-        winrt::IInspectable const& options);
+    ViewChange(ScrollPresenterViewKind viewKind, winrt::IInspectable const& options);
     ~ViewChange();
 
     ScrollPresenterViewKind ViewKind() const
@@ -37,4 +35,3 @@ private:
     // ScrollingScrollOptions or ScrollingZoomOptions instance associated with this view change.
     winrt::IInspectable m_options{ nullptr };
 };
-

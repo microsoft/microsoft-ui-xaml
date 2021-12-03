@@ -12,12 +12,23 @@ struct MicaController : winrt::implementation::MicaControllerT<MicaController>, 
 
     bool SetTarget(winrt::Windows::UI::Xaml::Window const& xamlWindow);
 
-
     // Property getters.
-    winrt::Windows::UI::Color TintColor() { return m_tintColor; }
-    float TintOpacity() { return m_tintOpacity; }
-    float LuminosityOpacity() { return m_luminosityOpacity; }
-    winrt::Windows::UI::Color FallbackColor() { return m_fallbackColor; }
+    winrt::Windows::UI::Color TintColor()
+    {
+        return m_tintColor;
+    }
+    float TintOpacity()
+    {
+        return m_tintOpacity;
+    }
+    float LuminosityOpacity()
+    {
+        return m_luminosityOpacity;
+    }
+    winrt::Windows::UI::Color FallbackColor()
+    {
+        return m_fallbackColor;
+    }
 
     // Property setters.
     void TintColor(winrt::Windows::UI::Color const& value);
@@ -28,7 +39,10 @@ struct MicaController : winrt::implementation::MicaControllerT<MicaController>, 
     // SystemBackdropComponent::ISystemBackdropController methods.
     void Activate() override;
     void Deactivate() override;
-    void SetHighContrast(bool isHighContrast) override { m_isHighContrast = isHighContrast; }
+    void SetHighContrast(bool isHighContrast) override
+    {
+        m_isHighContrast = isHighContrast;
+    }
     void UpdateTheme(winrt::Windows::UI::Xaml::ElementTheme theme) override;
 
     static constexpr auto sc_darkThemeColor = winrt::Color{ 255, 32, 32, 32 };
@@ -68,8 +82,11 @@ struct MicaControllerFactory : winrt::factory_implementation::MicaControllerT<Mi
 {
 };
 
-namespace winrt::Microsoft::UI::Private::Controls
-{
-    namespace factory_implementation { using MicaController = ::MicaControllerFactory; };
-    namespace implementation { using MicaController = ::MicaController; };
-}
+namespace winrt::Microsoft::UI::Private::Controls {
+namespace factory_implementation {
+    using MicaController = ::MicaControllerFactory;
+};
+namespace implementation {
+    using MicaController = ::MicaController;
+};
+} // namespace winrt::Microsoft::UI::Private::Controls

@@ -4,9 +4,8 @@
 #pragma once
 #include "Vector.h"
 
-template<int flags = MakeVectorParam<VectorFlag::Bindable, VectorFlag::Observable, VectorFlag::DependencyObjectBase>(), 
-    typename Helper = VectorFlagHelper<flags>>
-class BindableVector :
-    public VectorBase<winrt::IInspectable, Helper::isObservable, true, Helper::isDependencyObjectBase, Helper::isNoTrackerRef>
+template <int flags = MakeVectorParam<VectorFlag::Bindable, VectorFlag::Observable, VectorFlag::DependencyObjectBase>(), typename Helper = VectorFlagHelper<flags>>
+class BindableVector
+    : public VectorBase<winrt::IInspectable, Helper::isObservable, true, Helper::isDependencyObjectBase, Helper::isNoTrackerRef>
 {
 };
