@@ -162,7 +162,6 @@
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>21H1</Version>
       <Type>ThemeResources</Type>
-      <RequireInsiderSDK>true</RequireInsiderSDK>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
@@ -173,7 +172,6 @@
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>21H1</Version>
       <Type>ThemeResources</Type>
-      <RequireInsiderSDK>true</RequireInsiderSDK>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_v1.xaml">
       <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
@@ -279,7 +277,6 @@
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>21H1</Version>
       <Type>ThemeResources</Type>
-      <RequireInsiderSDK>true</RequireInsiderSDK>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)CalendarView_themeresources_v1.xaml">
       <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
