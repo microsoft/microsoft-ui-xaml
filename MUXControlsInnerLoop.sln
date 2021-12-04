@@ -1,7 +1,6 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29009.5
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dev", "dev", "{67599AD5-51EC-44CB-85CE-B60CD8CBA270}"
 EndProject
@@ -544,8 +543,6 @@ Global
 		dev\Repeater\TestUI\Repeater_TestUI.projitems*{2ed883f5-20db-4445-8c96-517a21e5e657}*SharedItemsImports = 13
 		dev\TabView\APITests\TabView_APITests.projitems*{2f4e95e9-f729-481c-b9aa-c9bec91ae395}*SharedItemsImports = 13
 		dev\SampleControl\InteractionTests\SampleControl_InteractionTests.projitems*{30120040-3eb8-404d-9344-5e99e34b6090}*SharedItemsImports = 13
-		dev\MenuFlyout\TestUI\MenuFlyout_TestUI.projitems*{2ef860e2-8766-41fc-bde2-e6b18bb8c206}*SharedItemsImports = 13
-		dev\TabView\APITests\TabView_APITests.projitems*{2f4e95e9-f729-481c-b9aa-c9bec91ae395}*SharedItemsImports = 13
 		dev\ParallaxView\ParallaxView.vcxitems*{3095445a-afcd-5154-ac36-9770e6ec1aa5}*SharedItemsImports = 9
 		dev\InfoBar\TestUI\InfoBar_TestUI.projitems*{32dfaf1e-c2ec-4c52-a4d8-b3a3946242b4}*SharedItemsImports = 13
 		dev\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems*{3353a4a7-87b3-4e43-8f8d-43c7380d1d56}*SharedItemsImports = 9
@@ -637,11 +634,16 @@ Global
 		dev\Effects\Microsoft.UI.Private.Composition.Effects.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\IconSource\IconSource.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\ImageIcon\ImageIcon.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
+		dev\LayoutPanel\LayoutPanel.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Lights\Lights.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Materials\Acrylic\AcrylicBrush.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
+		dev\Materials\Backdrop\SystemBackdropComponent.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Materials\Reveal\RevealBrush.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\MonochromaticOverlayPresenter\MonochromaticOverlayPresenter.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
+		dev\Repeater\Repeater.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\ResourceHelper\ResourceHelper.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
+		dev\ScrollPresenter\ScrollPresenter.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
+		dev\ScrollView\ScrollView.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\SplitButton\SplitButton.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Telemetry\Telemetry.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\TestHooks\TestHooks.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
@@ -682,8 +684,10 @@ Global
 		dev\PullToRefresh\RefreshContainer\TestUI\RefreshContainer_TestUI.projitems*{ddb468e4-7b64-4301-8fcb-1bebbb1e689f}*SharedItemsImports = 13
 		dev\ImageIcon\TestUI\ImageIcon_TestUI.projitems*{dde1c022-6f9a-4067-89c2-81f2eeaf249f}*SharedItemsImports = 13
 		dev\TreeView\APITests\TreeView_APITests.projitems*{de885c66-929c-464e-bac4-3e076ec46483}*SharedItemsImports = 13
-		dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\CommonManaged\CommonManaged.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\Repeater\APITests\Repeater_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\Repeater\TestUI\Repeater_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		test\TestAppUtils\TestAppUtils.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\SplitButton\InteractionTests\SplitButton_InteractionTests.projitems*{e1c861e2-c4d9-41e1-aed7-5e203451bd4d}*SharedItemsImports = 13
 		dev\CommandBarFlyout\TestUI\CommandBarFlyout_TestUI.projitems*{e63f1c1d-f06d-46a0-b5c2-184184e44f29}*SharedItemsImports = 13
@@ -703,10 +707,10 @@ Global
 		dev\InfoBadge\InteractionTests\InfoBadge_InteractionTests.projitems*{f55ab8bf-f828-4a2e-bcdf-68f22aed35c3}*SharedItemsImports = 13
 		dev\Materials\Acrylic\InteractionTests\AcrylicBrush_InteractionTests.projitems*{f601284a-00c1-49f9-99b3-70d45585f784}*SharedItemsImports = 13
 		dev\SplitButton\SplitButton.vcxitems*{faf114dd-af1f-4d9f-a511-354c19912aad}*SharedItemsImports = 9
-		dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\CommonManaged\CommonManaged.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
-		dev\SplitButton\APITests\SplitButton_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
-		dev\SplitButton\TestUI\SplitButton_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\Repeater\APITests\Repeater_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\Repeater\TestUI\Repeater_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		test\TestAppUtils\TestAppUtils.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\LayoutPanel\LayoutPanel.vcxitems*{fd3c1a00-0d07-4849-a3b9-646f0ff21d7b}*SharedItemsImports = 9
 		dev\SwipeControl\SwipeControl.vcxitems*{fd63f767-bd98-45d9-8a63-3cd4a148d527}*SharedItemsImports = 9
