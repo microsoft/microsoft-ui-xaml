@@ -148,7 +148,7 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                         Wrap SelectionIndicator in a grid so that its offset is 0,0 - this enables the offset animation. 
+                         <!--Wrap SelectionIndicator in a grid so that its offset is 0,0 - this enables the offset animation.--> 
                         <Grid
                             Margin="4,0,0,0"
                             HorizontalAlignment="Left"
