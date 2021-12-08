@@ -55,7 +55,7 @@ It focuses on enabling three main use cases:
 3. **Enabling other frameworks**
     * Providing the native implementation for other frameworks like [React Native](https://github.com/Microsoft/react-native-windows) when running on Windows
 
-WinUI 3 is available as a part of the [Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk) for building stable and supported desktop/Win32 apps for production scenarios. The latest release is the Windows App SDK 0.8, which you can download and read more about at the documentation linked below:
+WinUI 3 is available as a part of the [Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk) for building stable and supported desktop/Win32 apps for production scenarios. The latest release is the Windows App SDK 1.0, which you can download and read more about at the documentation linked below:
 
 [Stable release channel for the Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk/stable-channel)
 
@@ -66,7 +66,7 @@ There's also a version of WinUI 3 available that includes experimental features.
 
 
 ## WinUI 3 Feature Roadmap
-The images below lists out what the WinUI team plans to ship in 2021.
+The images below list out what the WinUI team has shipped in 2021. Stay tuned for an updated roadmap for 2022.
 
 The Windows App SDK ships experimental, preview, and stable builds (with WinUI 3 as a component). You can read more about the shipping schedule and cadence in our [Release Channels doc](https://docs.microsoft.com/windows/apps/windows-app-sdk/release-channels). For more details on when specific features will become available, see the feature roadmap table below. 
 
@@ -97,9 +97,9 @@ For questions or status updates on either features listed here, or features not 
 Blank -  Not available
 
 
-**WinUI 3 - Windows App SDK 0.8** is our latest release. 
+**WinUI 3 - Windows App SDK 1.0** is our latest release. 
 
-| Customer Capability                                    | Project Reunion 0.5 <br/>(March 2021) | Windows App SDK 0.8 <br/>(June 2021) | Windows App SDK 1.0 <br/>(Q4 2021) | Planned for a future update |
+| Customer Capability                                    | Project Reunion 0.5 <br/>(March 2021) | Windows App SDK 0.8 <br/>(June 2021) | Windows App SDK 1.0 <br/> | Planned for a future update |
 | ------------------------------------------------------ | -------------------------------- | ------------------------------- | ----------------------------- | --------------------------- |
 | Supported in any app using the Windows App SDK         | &#128994;                              | &#128994;                             | &#128994;                           |      &#128994;                       |
 | Contains new Windows 11 controls/styles from WinUI 2.6 |                                 |                                | &#128994;                           | &#128994;  
