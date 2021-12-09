@@ -55,20 +55,6 @@
     Outputs="@(BinplaceItemCopied)">
     <ItemGroup>
       <BinplaceItem Include="$(PkgMicrosoft_Win32_Registry)\runtimes\win\lib\netstandard2.0\Microsoft.Win32.Registry.dll" />
-    </ItemGroup>
-    <PropertyGroup>
-      <BinplaceDestination>$(OutDir)</BinplaceDestination>
-    </PropertyGroup>
-    <Copy SourceFiles="@(BinplaceItem)"
-      DestinationFiles="@(BinplaceItem->'$(BinplaceDestination)\%(Destination)\%(RecursiveDir)%(Filename)%(Extension)')"
-      SkipUnchangedFiles="true">
-      <Output TaskParameter="CopiedFiles" ItemName="BinplaceItemCopied" />
-    </Copy>
-  </Target>
-  <Target Name="Binplace"
-    AfterTargets="Build"
-    Outputs="@(BinplaceItemCopied)">
-    <ItemGroup>
       <BinplaceItem Include="$(NuGetPackageRoot)\axe.windows\1.0.4\lib\netstandard20\Axe.Windows.Automation.dll" />
       <BinplaceItem Include="$(NuGetPackageRoot)\axe.windows\1.0.4\lib\netstandard20\Axe.Windows.Actions.dll" />
       <BinplaceItem Include="$(NuGetPackageRoot)\axe.windows\1.0.4\lib\netstandard20\Axe.Windows.Core.dll" />
