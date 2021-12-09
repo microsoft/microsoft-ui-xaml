@@ -4,6 +4,8 @@ variables:
   rerunPassesRequiredToAvoidFailure: 5
 jobs:
 - job: Setup
+  pool:
+    vmImage: 'windows-latest'
   steps:
     - task: powershell@2
       name: checkPayload
