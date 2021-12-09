@@ -12,6 +12,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 using Axe.Windows.Automation;
 using System.Diagnostics;
+using Axe.Windows.Desktop.UIAutomation;
+using System;
 
 namespace MUXTestInfra.Shared.Infra
 {
@@ -35,14 +37,20 @@ namespace MUXTestInfra.Shared.Infra
             var processes = Process.GetProcessesByName("MUXControlsTestApp");
             Verify.IsTrue(processes.Length > 0);
 
-            var config = Config.Builder.ForProcessId(processes[0].Id).Build();
-
+            string directory = Environment.GetEnvironmentVariable("TEMP") + @"\"; // For instance C:\Users\TDPUser\AppData\Local\Temp\
+            var config = Config.Builder.ForProcessId(processes[0].Id).WithOutputFileFormat(OutputFileFormat.A11yTest).WithOutputDirectory(directory).Build();
             scanner = ScannerFactory.CreateScanner(config);
         }
 
         public static void TestForAxeIssues()
         {
             var result = AxeScanner.Scan();
+
+            foreach(var error in result.Errors)
+            {
+                Log.Error($"{error.ToString()} - {error.Element.ToString()} - {error.Rule.ToString()} - {error.Rule.HowToFix}");
+            }
+
             Verify.AreEqual(0, result.ErrorCount, "Found " + result.ErrorCount + " Axe errors.");
         }
     }
