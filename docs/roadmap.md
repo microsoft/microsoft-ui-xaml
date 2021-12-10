@@ -98,7 +98,7 @@ Blank -  Not available
 
 **WinUI 3 - Windows App SDK 1.0** is our latest release. 
 
-| Customer Capability                                    | Project Reunion 0.5 <br/>(March 2021) | Windows App SDK 0.8 <br/>(June 2021) | Windows App SDK 1.0 <br/> | Windows App SDK 1.1 (still under discussion) <br/> | Planned for a future update |
+| Customer Capability                                    | Project Reunion 0.5 <br/>(March 2021) | Windows App SDK 0.8 <br/>(June 2021) | Windows App SDK 1.0 <br/> (November 2021) | Planned for Windows App SDK 1.1 | Planned for a future update |
 | ------------------------------------------------------ | -------------------------------- | ------------------------------- | ----------------------------- | --------------------------- | --------------------------- |
 | Supported in any app using the Windows App SDK         | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
 | Contains new Windows 11 controls/styles from WinUI 2.6 |            |            | &#128994;                       | &#128994;          | &#128994;     |
@@ -108,7 +108,7 @@ Blank -  Not available
 | Supports the latest .NET                               | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
 | ARM64 support                                          | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
 | `<SwapChainPanel> `                                    | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
-| Intellisense, Hot Reload, Live Visual Tree             | &#128311; | &#128311; | &#128994; (packaged apps only)  | &#128994;          | &#128994;     |
+| Intellisense, Hot Reload, Live Visual Tree             | &#128311; | &#128311; | &#128994;[^1]  | &#128994;          | &#128994;     |
 | Chromium-based WebView2                                | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
 | Title bar customization                                | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
 | Fluent Shadows                                         | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;
@@ -123,7 +123,9 @@ Blank -  Not available
 | In-app acrylic                                         | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
 | Background acrylic                                     |            |            |                         | &#128994;          | &#128994;     |
 | Mica                                                   |            |            |                         | &#128994;          | &#128994;     |
-| XAML Islands                                           |            |            |                         | &#128311; | &#128994;     |
+| XAML Islands                                           |            |            |                         |  | &#128994;     |
 | Media Controls (e.g. `<MediaPlayerElement>`)           |            |            |                         |            | &#128994;     |
 | `<InkCanvas>`                                          |            |            |                         |            | &#128994;     |
 | `<MapControl>`                                         |            |            |                         |            | &#129002; |
+
+[^1]: Supported in packaged apps only
