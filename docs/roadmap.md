@@ -123,7 +123,7 @@ Blank -  Not available
 | In-app acrylic                                         | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
 | Background acrylic                                     |            |            |                         | &#128994;          | &#128994;     |
 | Mica                                                   |            |            |                         | &#128994;          | &#128994;     |
-| XAML Islands                                           |            |            |                         |  | &#128994;     |
+| XAML Islands                                           |            | &#128311;           |    &#128311;                     | &#128311; | &#128994;     |
 | Media Controls (e.g. `<MediaPlayerElement>`)           |            |            |                         |            | &#128994;     |
 | `<InkCanvas>`                                          |            |            |                         |            | &#128994;     |
 | `<MapControl>`                                         |            |            |                         |            | &#129002; |
