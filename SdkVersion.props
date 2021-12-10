@@ -12,7 +12,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- By default we use the publicly shipped SDK version which is 21H1 now -->
-    <MuxSdkVersion>$(SDKVersion21H1)</MuxSdkVersion>
+    <MuxSdkVersion Condition="$(UseInsiderSDK) != 'true'">$(SDKVersion21H1)</MuxSdkVersion>
 
     <!-- Setting UseInsiderSDK will allow the code to build to the newest insider SDK 
          In order to get this from a cmd prompt run 
