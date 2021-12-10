@@ -27,9 +27,9 @@ Include the following workloads:
 
 While WinUI is designed to work against many versions of Windows, you will need 
 a fairly recent SDK in order to build WinUI. It's required that you install the 
-17763 and 18362 SDKs. You can download these via Visual Studio (check 
+17763 and 22000 SDKs. You can download these via Visual Studio (check 
 all the boxes when prompted), or you can manually download them from here: 
-https://developer.microsoft.com/windows/downloads/windows-10-sdk
+https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/
 
 
 ## Building the repository
