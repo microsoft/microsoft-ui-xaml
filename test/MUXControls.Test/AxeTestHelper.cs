@@ -43,6 +43,10 @@ namespace MUXTestInfra.Shared.Infra
         public static void TestForAxeIssues()
         {
             var result = AxeScanner.Scan();
+            foreach(var error in result.Errors)
+            {
+                Log.Error($"{error.ToString()} - {error.Element.ToString()} - {error.Rule.ToString()} - {error.Rule.HowToFix}");
+            }
             Verify.AreEqual(0, result.ErrorCount, "Found " + result.ErrorCount + " Axe errors.");
         }
     }
