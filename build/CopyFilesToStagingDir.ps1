@@ -49,6 +49,8 @@ PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAE
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\Axe.Windows.SystemAbstractions.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\Axe.Windows.Telemetry.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\Axe.Windows.Win32.dll $FullPublishDir\Test\
+PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\Newtonsoft.Json.dll $FullPublishDir\Test\
+PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\System.Drawing.Common.dll $FullPublishDir\Test\
 PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\WebView2Loader.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.ReleaseTest.TAEF\MUXControls.ReleaseTest.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.ReleaseTest.TAEF\WebView2Loader.dll $FullPublishDir\Test\
