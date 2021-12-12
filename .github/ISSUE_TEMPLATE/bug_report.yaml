@@ -72,17 +72,14 @@ body:
       multiple: true
       options:
         - "Insider Build (xxxxx)"
-        - "Windows 11 (22000)"
-        - "November 2021 Update (19044)
-        - "May 2021 Update (19043)"
-        - "October 2020 Update (19042)"
-        - "May 2020 Update (19041)"
-        - "November 2019 Update (18363)"
-        - "May 2019 Update (18362)"
-        - "October 2018 Update (17763)"
-        - "April 2018 Update (17134)"
-        - "Fall Creators Update (16299)"
-        - "Creators Update (15063)"
+        - "Windows 11 version 21H2 (22000)"
+        - "Windows 10 version 21H2 (19044, November 2021 Update)"
+        - "Windows 10 version 21H1 (19043, May 2021 Update)"
+        - "Windows 10 version 20H2 (19042, October 2020 Update)"
+        - "Windows 10 version 2004 (19041, May 2020 Update)"
+        - "Windows 10 version 1909 (18363, November 2019 Update)"
+        - "Windows 10 version 1903 (18362, May 2019 Update)"
+        - "Windows 10 version 1809 (17763, October 2018 Update)"
   - type: textarea
     attributes:
       label: Additional context
