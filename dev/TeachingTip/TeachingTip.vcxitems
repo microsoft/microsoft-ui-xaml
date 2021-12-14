@@ -3,13 +3,16 @@
   <PropertyGroup Label="Globals">
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
-    <ItemsProjectGuid>{499b8bf7-bca1-4c23-baa7-59e2c551be4b}</ItemsProjectGuid>
+    <ItemsProjectGuid>{499B8BF7-BCA1-4C23-BAA7-59E2C551BE4B}</ItemsProjectGuid>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
+  <ImportGroup Label="Shared">
+    <Import Project="TeachingTipImpl\TeachingTipImpl.vcxitems" Label="Shared" />
+  </ImportGroup>
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
@@ -68,7 +71,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipClosedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipClosingEventArgs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipTemplatePartHelpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipTestHooks.h" />
   </ItemGroup>

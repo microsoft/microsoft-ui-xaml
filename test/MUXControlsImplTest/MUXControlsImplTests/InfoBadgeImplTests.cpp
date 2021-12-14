@@ -19,7 +19,7 @@ namespace Microsoft {
             }
 
             template<>
-            std::wstring ToString<std::tuple<double,double,double,double>>(const std::tuple<double, double, double, double>& values) {
+            std::wstring ToString<std::tuple<double, double, double, double>>(const std::tuple<double, double, double, double>& values) {
                 return L"(" + std::to_wstring(std::get<0>(values)) + L", "
                     + std::to_wstring(std::get<1>(values)) + L", "
                     + std::to_wstring(std::get<2>(values)) + L", "
@@ -57,7 +57,7 @@ public:
         TEST_DESCRIPTION(L"MeasureOverrideImpl should not change values that are equal")
         END_TEST_METHOD_ATTRIBUTE()
 
-    TEST_METHOD(MeasureOverrideImpl_EqualHeightAndWidth)
+        TEST_METHOD(MeasureOverrideImpl_EqualHeightAndWidth)
     {
         Assert::AreEqual(winrt::Size{ 0,0 }, InfoBadgeImpl::MeasureOverrideImpl(winrt::Size{ 0,0 }));
         Assert::AreEqual(winrt::Size{ 10,10 }, InfoBadgeImpl::MeasureOverrideImpl(winrt::Size{ 10,10 }));
@@ -69,7 +69,7 @@ public:
         TEST_DESCRIPTION(L"MeasureOverrideImpl should change the width to be as large as the height when it is higher so we can fully round the rectangle.")
         END_TEST_METHOD_ATTRIBUTE()
 
-    TEST_METHOD(MeasureOverrideImpl_GreaterHeight)
+        TEST_METHOD(MeasureOverrideImpl_GreaterHeight)
     {
         Assert::AreEqual(winrt::Size{ 10,10 }, InfoBadgeImpl::MeasureOverrideImpl(winrt::Size{ 0,10 }));
         Assert::AreEqual(winrt::Size{ 10,10 }, InfoBadgeImpl::MeasureOverrideImpl(winrt::Size{ 5,10 }));
@@ -81,7 +81,7 @@ public:
         TEST_DESCRIPTION(L"MeasureOverrideImpl should not change values when width is larger because we can still round the rectangle in that case.")
         END_TEST_METHOD_ATTRIBUTE()
 
-    TEST_METHOD(MeasureOverrideImpl_GreaterWidth)
+        TEST_METHOD(MeasureOverrideImpl_GreaterWidth)
     {
         Assert::AreEqual(winrt::Size{ 10,0 }, InfoBadgeImpl::MeasureOverrideImpl(winrt::Size{ 10,0 }));
         Assert::AreEqual(winrt::Size{ 10,5 }, InfoBadgeImpl::MeasureOverrideImpl(winrt::Size{ 10,5 }));
@@ -93,7 +93,7 @@ public:
         TEST_DESCRIPTION(L"ValidateValuePropertyImpl throws when the value is less than -1.")
         END_TEST_METHOD_ATTRIBUTE()
 
-    TEST_METHOD(ValidateValuePropertyImpl_LessThanNegativeOne)
+        TEST_METHOD(ValidateValuePropertyImpl_LessThanNegativeOne)
     {
         auto const invalidValueCall = [] { InfoBadgeImpl::ValidateValuePropertyImpl(-2); };
         Assert::ExpectException<winrt::hresult_out_of_bounds>(invalidValueCall);
@@ -104,7 +104,7 @@ public:
         TEST_DESCRIPTION(L"ValidateValuePropertyImpl no opts for -1 and higher")
         END_TEST_METHOD_ATTRIBUTE()
 
-    TEST_METHOD(ValidateValuePropertyImpl_NegativeOneAndGreater)
+        TEST_METHOD(ValidateValuePropertyImpl_NegativeOneAndGreater)
     {
         InfoBadgeImpl::ValidateValuePropertyImpl(-1);
         InfoBadgeImpl::ValidateValuePropertyImpl(0);
@@ -117,7 +117,7 @@ public:
         TEST_DESCRIPTION(L"CalculateAppropriateDisplayKindStateImpl Prioritizes Value if we have a non-sentinal value, followed by an icon state if we have an icon, followed by the Dot state if we have neither.")
         END_TEST_METHOD_ATTRIBUTE()
 
-    TEST_METHOD(CalculateAppropriateDisplayKindStateImpl_StandardInputs)
+        TEST_METHOD(CalculateAppropriateDisplayKindStateImpl_StandardInputs)
     {
         Assert::AreEqual(InfoBadgeDisplayKindStates::Dot, InfoBadgeImpl::CalculateAppropriateDisplayKindStateImpl(-1, false, false));
         Assert::AreEqual(InfoBadgeDisplayKindStates::Icon, InfoBadgeImpl::CalculateAppropriateDisplayKindStateImpl(-1, true, false));
@@ -135,7 +135,7 @@ public:
         TEST_DESCRIPTION(L"CalculateAppropriateDisplayKindStateImpl should not receive a value parameter less than -1, but if it does, it is treated the same as the sentinal value.")
         END_TEST_METHOD_ATTRIBUTE()
 
-    TEST_METHOD(CalculateAppropriateDisplayKindStateImpl_NonValidValueInput)
+        TEST_METHOD(CalculateAppropriateDisplayKindStateImpl_NonValidValueInput)
     {
         Assert::AreEqual(InfoBadgeDisplayKindStates::FontIcon, InfoBadgeImpl::CalculateAppropriateDisplayKindStateImpl(-2, true, true));
         Assert::AreEqual(InfoBadgeDisplayKindStates::Icon, InfoBadgeImpl::CalculateAppropriateDisplayKindStateImpl(-2, true, false));
@@ -147,7 +147,7 @@ public:
         TEST_DESCRIPTION(L"CalculateAppropriateDisplayKindStateImpl should not receive a false for its iconExists parameter but true for its iconIsFontIcon parameter, but if it does, the iconIsFontIcon parameter is ignored.")
         END_TEST_METHOD_ATTRIBUTE()
 
-    TEST_METHOD(CalculateAppropriateDisplayKindStateImpl_NonValidBooleanInputs)
+        TEST_METHOD(CalculateAppropriateDisplayKindStateImpl_NonValidBooleanInputs)
     {
         Assert::AreEqual(InfoBadgeDisplayKindStates::Dot, InfoBadgeImpl::CalculateAppropriateDisplayKindStateImpl(-2, false, true));
         Assert::AreEqual(InfoBadgeDisplayKindStates::Dot, InfoBadgeImpl::CalculateAppropriateDisplayKindStateImpl(-1, false, true));

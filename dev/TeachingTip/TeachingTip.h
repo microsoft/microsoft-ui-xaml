@@ -180,9 +180,6 @@ private:
     bool ToggleTitleVisibilityForEmptyContent();
     bool ToggleSubtitleVisibilityForEmptyContent();
 
-    template <typename VisualStateGroupEnum>
-    bool ToggleVisibilityForEmptyContent(const VisualStateGroupEnum visibleState, const VisualStateGroupEnum collapsedState, const winrt::hstring& content);
-
     // The tail is designed as an 8x16 pixel shape, however it is actually a 10x20 shape which is partially occluded by the tip content.
     // This is done to get the border of the tip to follow the tail shape without drawing the border on the tip edge of the tail.
     float TailLongSideActualLength();

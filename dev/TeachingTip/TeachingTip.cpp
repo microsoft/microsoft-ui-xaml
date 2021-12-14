@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TeachingTip.h"
+#include "TeachingTipImpl.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 #include "TeachingTipClosingEventArgs.h"
@@ -14,6 +15,8 @@
 #include <enum_array.h>
 
 static constexpr auto c_OverlayCornerRadiusName = L"OverlayCornerRadius"sv;
+
+using namespace TeachingTipImpl;
 
 TeachingTip::TeachingTip()
 {
@@ -254,58 +257,26 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
 
 bool TeachingTip::ToggleTitleVisibilityForEmptyContent()
 {
-    return ToggleVisibilityForEmptyContent(
-        TeachingTipTitleBlockStates::ShowTitleTextBlock,
-        TeachingTipTitleBlockStates::CollapseTitleTextBlock,
-        Title());
+    GoToState(GetTitleVisibilityStateImpl(Title()));
+    return true;
 }
 
 bool TeachingTip::ToggleSubtitleVisibilityForEmptyContent()
 {
-    return ToggleVisibilityForEmptyContent(
-        TeachingTipSubtitleBlockStates::ShowSubtitleTextBlock,
-        TeachingTipSubtitleBlockStates::CollapseSubtitleTextBlock,
-        Subtitle());
-}
-
-template <typename VisualStateGroupEnum>
-bool TeachingTip::ToggleVisibilityForEmptyContent(const VisualStateGroupEnum visibleState, const VisualStateGroupEnum collapsedState, const winrt::hstring& content)
-{
-    if (content != L"")
-    {
-        GoToState(visibleState);
-        return true;
-    }
-    else
-    {
-        GoToState(collapsedState);
-        return true;
-    }
-    return false;
+    GoToState(GetSubtitleVisibilityStateImpl(Subtitle()));
+    return true;
 }
 
 void TeachingTip::OnContentChanged(const winrt::IInspectable& oldContent, const winrt::IInspectable& newContent)
 {
-    if (newContent)
-    {
-        GoToState(TeachingTipContentStates::Content);
-    }
-    else
-    {
-        GoToState(TeachingTipContentStates::NoContent);
-    }
+    GoToState(GetContentStateImpl(newContent));
 }
 
 void TeachingTip::SetPopupAutomationProperties()
 {
     if (auto&& popup = m_popup.get())
     {
-        auto name = winrt::AutomationProperties::GetName(*this);
-        if (name.empty())
-        {
-            name = Title();
-        }
-        winrt::AutomationProperties::SetName(popup, name);
+        winrt::AutomationProperties::SetName(popup, TeachingTipImpl::GetPopupAutomationNameImpl(winrt::AutomationProperties::GetName(*this), Title()));
 
         winrt::AutomationProperties::SetAutomationId(popup, winrt::AutomationProperties::GetAutomationId(*this));
     }
