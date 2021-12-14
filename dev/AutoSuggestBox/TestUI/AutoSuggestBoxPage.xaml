@@ -32,7 +32,7 @@
                 Margin="5"
                 Orientation="Horizontal">
             <AutoSuggestBox Height="33" MinWidth="230"
-                PlaceholderText="Search Stuff" QueryIcon="Find" />
+                Header="Search Stuff" QueryIcon="Find" />
         </StackPanel>
     </StackPanel>
 

@@ -11,6 +11,6 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <StackPanel>
-        <muxc:NumberBox PlaceholderText="Sample NumberBox"/>
+        <muxc:NumberBox Header="Sample NumberBox"/>
     </StackPanel>
 </local:TestPage>
