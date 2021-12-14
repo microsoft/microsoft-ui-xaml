@@ -66,6 +66,7 @@
       <BinplaceItem Include="$(NuGetPackageRoot)\axe.windows\1.0.4\lib\netstandard20\Axe.Windows.Win32.dll" />
       <BinplaceItem Include="$(NuGetPackageRoot)\newtonsoft.json\12.0.3\lib\netstandard2.0\Newtonsoft.Json.dll" />
       <BinplaceItem Include="$(NuGetPackageRoot)\system.drawing.common\4.7.0\runtimes\win\lib\netcoreapp2.0\System.Drawing.Common.dll" />
+      <BinplaceItem Include="$(NuGetPackageRoot)\system.io.packaging\4.7.0\lib\netstandard2.0\System.IO.Packaging.dll" />
     </ItemGroup>
     <PropertyGroup>
       <BinplaceDestination>$(OutDir)</BinplaceDestination>

@@ -94,6 +94,7 @@ Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\
 Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.Win32.dll" "$payloadDir\.NETCoreApp2.1\"
 Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Newtonsoft.Json.dll" "$payloadDir\.NETCoreApp2.1\"
 Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\System.Drawing.Common.dll" "$payloadDir\.NETCoreApp2.1\"
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\System.IO.Packaging.dll" "$payloadDir\.NETCoreApp2.1\"
 Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXTestInfra.TAEF.dll" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXExperimental.Test.dll" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\WebView2Loader.dll" $payloadDir
