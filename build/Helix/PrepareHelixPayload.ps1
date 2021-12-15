@@ -82,6 +82,19 @@ function Copy-Recursively-If-Exists
 
 # Copy files from the 'drop' artifact dir
 Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXControls.Test.dll" $payloadDir
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Microsoft.Win32.Registry.dll" "$payloadDir\.NETCoreApp2.1\"
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.Actions.dll" "$payloadDir\.NETCoreApp2.1\"
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.Automation.dll" "$payloadDir\.NETCoreApp2.1\"
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.Core.dll" "$payloadDir\.NETCoreApp2.1\"
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.Desktop.dll" "$payloadDir\.NETCoreApp2.1\"
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.Rules.dll" "$payloadDir\.NETCoreApp2.1\"
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.RuleSelection.dll" "$payloadDir\.NETCoreApp2.1\"
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.SystemAbstractions.dll" "$payloadDir\.NETCoreApp2.1\"
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.Telemetry.dll" "$payloadDir\.NETCoreApp2.1\"
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.Win32.dll" "$payloadDir\.NETCoreApp2.1\"
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Newtonsoft.Json.dll" "$payloadDir\.NETCoreApp2.1\"
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\System.Drawing.Common.dll" "$payloadDir\.NETCoreApp2.1\"
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\System.IO.Packaging.dll" "$payloadDir\.NETCoreApp2.1\"
 Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXTestInfra.TAEF.dll" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXExperimental.Test.dll" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\WebView2Loader.dll" $payloadDir
