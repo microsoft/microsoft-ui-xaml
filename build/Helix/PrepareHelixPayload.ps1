@@ -38,7 +38,6 @@ Write-Host "netCoreAppVer = $netCoreAppVer"
 
 # Copy files from nuget packages
 Copy-Item "$nugetPackagesDir\Microsoft.Internal.WinUI.Helix.$winuiHelixVer\scripts\test\*" $payloadDir
-Copy-Item "$nugetPackagesDir\microsoft.windows.apps.test.$mitaVer\lib\netcoreapp2.1\*.dll" $payloadDir
 Copy-Item "$nugetPackagesDir\taef.redist.wlk.$taefVer\build\Binaries\$Platform\*" $payloadDir
 Copy-Item "$nugetPackagesDir\taef.redist.wlk.$taefVer\build\Binaries\$Platform\CoreClr\*" $payloadDir
 New-Item -ItemType Directory -Force -Path "$payloadDir\.netcoreapp3.1\"
@@ -81,21 +80,7 @@ function Copy-Recursively-If-Exists
 }
 
 # Copy files from the 'drop' artifact dir
-Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXControls.Test.dll" $payloadDir
-Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Microsoft.Win32.Registry.dll" "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.Actions.dll" "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.Automation.dll" "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.Core.dll" "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.Desktop.dll" "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.Rules.dll" "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.RuleSelection.dll" "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.SystemAbstractions.dll" "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.Telemetry.dll" "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Axe.Windows.Win32.dll" "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\Newtonsoft.Json.dll" "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\System.Drawing.Common.dll" "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\System.IO.Packaging.dll" "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXTestInfra.TAEF.dll" $payloadDir
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\*.dll" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXExperimental.Test.dll" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\WebView2Loader.dll" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\*" $payloadDir
