@@ -35,21 +35,16 @@
       <HintPath>$(TaefRootDirectory)Wex.Logger.Interop.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <!-- If we include the razzle includes in the csproj, VS raises warnings about referenced components not being found even if
-       it's gated with the condition that we're building with build.exe.  To avoid that, we'll add the razzle includes
-       in a props file that is only included when we're building with build.exe, which makes VS never see them.
-       Similarly, the non-razzle includes confuse the razzle MSBuild, even though it's marked with a condition that should
-       cause it to be excluded. -->
-  <Import Project="RazzleIncludes.props" Condition="$(BuildingWithBuildExe) == 'true'" />
-  <Import Project="NonRazzleIncludes.props" Condition="$(BuildingWithBuildExe) != 'true'" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Win32.Registry" Version="4.7.0" GeneratePathProperty="True"/>
+    <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
+    <PackageReference Include="TAEF.Redist.Wlk" Version="10.31.180822002" />
+  </ItemGroup>
   <Import Project="..\MUXControls.Test.Shared.projitems" />
   <ItemGroup>
     <ProjectReference Include="..\..\testinfra\MUXTestInfra\TAEF\MUXTestInfra.TAEF.csproj" />
   </ItemGroup>
   <Import Project="..\MUXControls.Test.Shared.targets" />
-  <!-- Sdk="Microsoft.NET.Sdk" doesn't do anything in Razzle, so we need to manually include the C# targets file there. -->
-  <Import Project="$(CSharpTargetsFilePath)" Condition="$(BuildingWithBuildExe) == 'true'" />
-  <Import Project="$(NTMAKEENV)\UniversalTest\Microsoft.TestInfrastructure.UniversalTest.props" Condition="$(BuildingWithBuildExe) == 'true'" />
   <Target Name="Binplace"
     AfterTargets="Build"
     Outputs="@(BinplaceItemCopied)">

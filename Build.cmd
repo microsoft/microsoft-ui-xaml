@@ -9,7 +9,6 @@ if "%DevEnvDir%" == "" (
 )
 
 set TFS_SourcesDirectory=%~dp0
-set XES_DFSDROP=%~dp0BuildOutput
 set BUILD_BINARIESDIRECTORY=%~dp0BuildOutput
 set VERSIONBUILDNUMBER=local
 set VERSIONBUILDREVISION=10001
@@ -132,7 +131,6 @@ if "%PROJECTPATH%" NEQ "" (
     !MSBuildCommand!
 ) else (
     if "%BUILDALL%" == "" (
-        set XES_OUTDIR=%BUILD_BINARIESDIRECTORY%\%BUILDCONFIGURATION%\%BUILDPLATFORM%\
 
         "%MSBUILDPATH%" .\MUXControls.sln /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false 
 
@@ -150,16 +148,6 @@ if "%PROJECTPATH%" NEQ "" (
             call .\tools\MakeAppxHelper.cmd arm64 release
             call .\tools\MakeAppxHelper.cmd arm64 debug
         )
-
-        REM
-        REM     PostBuild
-        REM
-        call .\tools\PostBuild.cmd
-
-        REM
-        REM     PkgGen
-        REM
-        REM call .\tools\pkggen.cmd
     )
 )
 
