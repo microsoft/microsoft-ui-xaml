@@ -10,6 +10,10 @@
     <Import_RootNamespace>PipsPager_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)PipsPagerAxeTestPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)PipsPagerExamples.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -20,6 +24,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)PipsPagerAxeTestPage.xaml.cs">
+      <DependentUpon>PipsPagerAxeTestPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)PipsPagerExamples.xaml.cs">
       <DependentUpon>PipsPagerExamples.xaml</DependentUpon>
     </Compile>
