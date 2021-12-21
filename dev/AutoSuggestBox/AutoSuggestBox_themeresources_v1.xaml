@@ -329,7 +329,7 @@
                             Margin="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}"
                             IsTabStop="False"
-                            Grid.ColumnSpan="3"
+                            Grid.ColumnSpan="2"
                             Content="{TemplateBinding PlaceholderText}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"

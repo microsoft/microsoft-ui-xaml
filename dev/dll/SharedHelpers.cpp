@@ -224,7 +224,10 @@ template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
     if (!isAPIContractVxAvailableInitialized)
     {
         isAPIContractVxAvailableInitialized = true;
-        isAPIContractVxAvailable = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
+        // The CBS package is only ever used as a part of the Windows build. Therefore, we can assume that
+        // all API contracts are present since we can never be running these binaries on a windows build
+        // that does not match the windows sdk these binaries were compiled against.
+        isAPIContractVxAvailable = IsInCBSPackage() ? true : winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
     }
 
     return isAPIContractVxAvailable;
@@ -531,7 +534,7 @@ bool SharedHelpers::IsAncestor(
     return false;
 }
 
-#ifdef ICONSOURCE_INCLUDED
+#if defined(ICONSOURCE_INCLUDED) || defined(TITLEBAR_INCLUDED)
 
 winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& iconSource)
 {
@@ -587,7 +590,7 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         }
         return bitmapIcon;
     }
-#ifdef IMAGEICON_INCLUDED
+#if defined(IMAGEICON_INCLUDED) || defined(TITLEBAR_INCLUDED)
     else if (auto imageIconSource = iconSource.try_as<winrt::ImageIconSource>())
     {
         winrt::ImageIcon imageIcon;
@@ -616,7 +619,7 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         }
         return pathIcon;
     }
-#ifdef ANIMATEDICON_INCLUDED
+#if defined(ANIMATEDICON_INCLUDED) || defined(TITLEBAR_INCLUDED)
     else if (auto animatedIconSource = iconSource.try_as<winrt::AnimatedIconSource>())
     {
         winrt::AnimatedIcon animatedIcon;

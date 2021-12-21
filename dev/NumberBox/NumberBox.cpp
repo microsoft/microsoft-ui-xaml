@@ -15,7 +15,6 @@ static constexpr wstring_view c_numberBoxHeaderName{ L"HeaderContentPresenter"sv
 static constexpr wstring_view c_numberBoxDownButtonName{ L"DownSpinButton"sv };
 static constexpr wstring_view c_numberBoxUpButtonName{ L"UpSpinButton"sv };
 static constexpr wstring_view c_numberBoxTextBoxName{ L"InputBox"sv };
-static constexpr wstring_view c_numberBoxPopupButtonName{ L"PopupButton"sv };
 static constexpr wstring_view c_numberBoxPopupName{ L"UpDownPopup"sv };
 static constexpr wstring_view c_numberBoxPopupDownButtonName{ L"PopupDownSpinButton"sv };
 static constexpr wstring_view c_numberBoxPopupUpButtonName{ L"PopupUpSpinButton"sv };
@@ -276,6 +275,7 @@ void NumberBox::OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedE
     CoerceValue();
 
     UpdateSpinButtonEnabled();
+    ReevaluateForwardedUIAName();
 }
 
 void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -284,6 +284,7 @@ void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedE
     CoerceValue();
 
     UpdateSpinButtonEnabled();
+    ReevaluateForwardedUIAName();
 }
 
 void NumberBox::OnSmallChangePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -364,17 +365,24 @@ void NumberBox::ReevaluateForwardedUIAName()
     if (const auto textBox = m_textBox.get())
     {
         const auto name = winrt::AutomationProperties::GetName(*this);
+        const auto minimum = Minimum() == -std::numeric_limits<double>::max() ?
+            winrt::hstring{} :
+            winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMinimumValueStatus) + winrt::to_hstring(Minimum()) };
+        const auto maximum = Maximum() == std::numeric_limits<double>::max() ?
+            winrt::hstring{} :
+            winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMaximumValueStatus) + winrt::to_hstring(Maximum()) };
+
         if (!name.empty())
         {
             // AutomationProperties.Name is a non empty string, we will use that value.
-            winrt::AutomationProperties::SetName(textBox, name);
+            winrt::AutomationProperties::SetName(textBox, name + minimum + maximum );
         }
         else
         {
             if (const auto headerAsString = Header().try_as<winrt::IReference<winrt::hstring>>())
             {
                 // Header is a string, we can use that as our UIA name.
-                winrt::AutomationProperties::SetName(textBox, headerAsString.Value());
+                winrt::AutomationProperties::SetName(textBox, headerAsString.Value() + minimum + maximum );
             }
         }
     }

@@ -22,6 +22,7 @@ using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using MUXTestInfra.Shared.Infra;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -127,6 +128,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void VerifyAxeScanPasses()
+        {
+            using (var setup = new TestSetupHelper("Expander-Axe"))
+            {
+                AxeTestHelper.TestForAxeIssues();
+            }
+        }
+
+        [TestMethod]
         public void ExpandCollapseAutomationTests()
         {
             using (var setup = new TestSetupHelper("Expander Tests"))
@@ -158,6 +168,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Expand using UIA ExpandCollapse pattern");
                 expander.ExpandAndWait();
                 Verify.AreEqual(expander.ExpandCollapseState, ExpandCollapseState.Expanded);
+            }
+        }
+
+        [TestMethod]
+        public void AutomationPeerTest()
+        {
+            using (var setup = new TestSetupHelper("Expander Tests"))
+            {
+                Expander expander = FindElement.ByName<Expander>("ExpanderWithToggleSwitch");
+                expander.SetFocus();
+                Wait.ForIdle();
+
+                // Verify ExpandedExpander header content AutomationProperties.Name properties are set
+                VerifyElement.Found("This expander with ToggleSwitch is expanded by default.", FindBy.Name);
+                VerifyElement.Found("This is the second line of text.", FindBy.Name);
+                VerifyElement.Found("SettingsToggleSwitch", FindBy.Name);
+
+                // Verify ExpandedExpander content AutomationProperties.Name property is set
+                VerifyElement.Found("ExpanderWithToggleSwitch Content", FindBy.Name);
+
+                Log.Comment("Collapse using keyboard space key.");
+                KeyboardHelper.PressKey(Key.Space);
+                Verify.AreEqual(expander.ExpandCollapseState, ExpandCollapseState.Collapsed);
+
+                // Verify ExpandedExpander content AutomationProperties.Name property is not visible once collapsed
+                VerifyElement.NotFound("ExpanderWithToggleSwitch Content", FindBy.Name);
             }
         }
     }

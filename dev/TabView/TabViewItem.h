@@ -58,6 +58,9 @@ private:
     void OnIconSourceChanged();
     void UpdateWidthModeVisualState();
 
+    void OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args);
+    void UpdateTabGeometry();
+
     bool m_firstTimeSettingToolTip{ true };
 
     winrt::ButtonBase::Click_revoker m_closeButtonClickRevoker{};

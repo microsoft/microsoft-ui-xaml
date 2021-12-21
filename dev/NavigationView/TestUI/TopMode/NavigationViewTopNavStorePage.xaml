@@ -56,7 +56,7 @@
                 <AutoSuggestBox QueryIcon="Find" AutomationProperties.Name="PaneAutoSuggestBox"/>
             </controls:NavigationView.AutoSuggestBox>
 
-            <StackPanel Background="BurlyWood">
+            <StackPanel Background="{ThemeResource SystemAccentColor}">
                 <ScrollViewer x:Name="ContentScrollViewer" VerticalAlignment="Top" VerticalScrollBarVisibility="Disabled">
                     <StackPanel x:Name="ContentStackPanel" Orientation="Vertical">
                         <StackPanel Orientation="Horizontal">

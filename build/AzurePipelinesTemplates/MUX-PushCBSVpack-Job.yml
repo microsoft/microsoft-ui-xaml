@@ -55,6 +55,7 @@ jobs:
   # Push the VPacks:
   - task: PkgESVPack@12
     displayName: 'Push VPack Microsoft.UI.Xaml'
+    condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\WinUIVpack'
       description: Microsoft.UI.Xaml
@@ -62,6 +63,7 @@ jobs:
       version: $(vpackversion)
   - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_x64'
+    condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\x64'
       description: 'MicrosoftUIXamlInbox_x64'
@@ -69,6 +71,7 @@ jobs:
       version: $(vpackversion)
   - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_x86'
+    condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\x86'
       description: 'MicrosoftUIXamlInbox_x86'
@@ -76,6 +79,7 @@ jobs:
       version: $(vpackversion)
   - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_arm'
+    condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\arm'
       description: 'MicrosoftUIXamlInbox_arm'
@@ -83,6 +87,7 @@ jobs:
       version: $(vpackversion)
   - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_arm64'
+    condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\arm64'
       description: 'MicrosoftUIXamlInbox_arm64'
@@ -90,6 +95,7 @@ jobs:
       version: $(vpackversion)
   - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInboxWinmd'
+    condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\winmd'
       description: 'MicrosoftUIXamlInboxWinmd'

@@ -125,4 +125,12 @@
     <value>増加</value>
     <comment>Automation name for the up button</comment>
   </data>
+  <data name="NumberBoxMaximumValueStatus" xml:space="preserve">
+    <value>最大</value>
+    <comment>Maximum value declaration</comment>
+  </data>
+  <data name="NumberBoxMinimumValueStatus" xml:space="preserve">
+    <value>最小</value>
+    <comment>Minimum value declaration</comment>
+  </data>
 </root>

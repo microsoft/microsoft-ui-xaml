@@ -31,7 +31,16 @@ void AnimatedIcon::OnApplyTemplate()
     __super::OnApplyTemplate();
     // Construct the visual from the Source property in on apply template so that it participates
     // in the initial measure for the object.
-    ConstructAndInsertVisual();
+    auto const visual = [animatedVisual = m_animatedVisual.get(), this]()
+    {
+        if (animatedVisual)
+        {
+            return animatedVisual.RootVisual();
+        }
+        return ConstructVisual();
+    }();
+    InsertVisual(visual);
+
     auto const panel = winrt::VisualTreeHelper::GetChild(*this, 0).as<winrt::Panel>();
     m_rootPanel.set(panel);
     m_currentState = GetState(*this);
@@ -50,10 +59,8 @@ void AnimatedIcon::OnApplyTemplate()
                 path.Visibility(winrt::Visibility::Collapsed);
             }
         }
-        if (auto const visual = m_animatedVisual.get())
-        {
-            winrt::ElementCompositionPreview::SetElementChildVisual(panel, visual.RootVisual());
-        }
+
+        winrt::ElementCompositionPreview::SetElementChildVisual(panel, visual);
 
         TrySetForegroundProperty();
     }
@@ -464,7 +471,8 @@ void AnimatedIcon::PlaySegment(float from, float to, const std::function<void()>
 
 void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
 {
-    if(!ConstructAndInsertVisual())
+    auto const visual = ConstructVisual();
+    if(!InsertVisual(visual))
     {
         SetRootPanelChildToFallbackIcon();
     }
@@ -497,26 +505,26 @@ void AnimatedIcon::OnMirroredWhenRightToLeftPropertyChanged(const winrt::Depende
     UpdateMirrorTransform();
 }
 
-bool AnimatedIcon::ConstructAndInsertVisual()
+winrt::Visual AnimatedIcon::ConstructVisual()
 {
-    auto const visual = [this]()
+    if (auto const source = Source())
     {
-        if (auto const source = Source())
-        {
-            TrySetForegroundProperty(source);
+        TrySetForegroundProperty(source);
 
-            winrt::IInspectable diagnostics{};
-            auto const visual = source.TryCreateAnimatedVisual(winrt::Window::Current().Compositor(), diagnostics);
-            m_animatedVisual.set(visual);
-            return visual ? visual.RootVisual() : nullptr;
-        }
-        else
-        {
-            m_animatedVisual.set(nullptr);
-            return static_cast<winrt::Visual>(nullptr);
-        }
-    }();
+        winrt::IInspectable diagnostics{};
+        auto const visual = source.TryCreateAnimatedVisual(winrt::Window::Current().Compositor(), diagnostics);
+        m_animatedVisual.set(visual);
+        return visual ? visual.RootVisual() : nullptr;
+    }
+    else
+    {
+        m_animatedVisual.set(nullptr);
+        return static_cast<winrt::Visual>(nullptr);
+    }
+}
 
+bool AnimatedIcon::InsertVisual(winrt::Visual visual)
+{
     if (auto const rootPanel = m_rootPanel.get())
     {
         winrt::ElementCompositionPreview::SetElementChildVisual(rootPanel, visual);

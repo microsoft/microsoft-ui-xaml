@@ -19,7 +19,7 @@
             <ColumnDefinition Width="auto" />
         </Grid.ColumnDefinitions>
         <StackPanel>
-            <TextBlock>DataTemplate Sample:</TextBlock>
+            <TextBlock Text="DataTemplate Sample:"/>
             <controls:ItemsRepeaterScrollHost Height="400" Width="150">
                 <ScrollViewer>
                     <controls:ItemsRepeater x:Name="repeater0"
@@ -35,7 +35,7 @@
             </controls:ItemsRepeaterScrollHost>
         </StackPanel>
         <StackPanel Grid.Column="1">
-            <TextBlock>DataTemplateSelector Sample:</TextBlock>
+            <TextBlock Text="DataTemplateSelector Sample:"/>
             <controls:ItemsRepeaterScrollHost Height="400" Width="150">
                 <ScrollViewer>
                     <controls:ItemsRepeater x:Name="repeater1" 
@@ -60,7 +60,7 @@
             </controls:ItemsRepeaterScrollHost>
         </StackPanel>
         <StackPanel Grid.Column="2">
-            <TextBlock>ElementFactory Single Template Sample:</TextBlock>
+            <TextBlock Text="ElementFactory Single Template Sample:"/>
             <controls:ItemsRepeaterScrollHost Height="400" Width="150">
                 <ScrollViewer>
                     <controls:ItemsRepeater x:Name="repeater2" 
@@ -78,7 +78,7 @@
             </controls:ItemsRepeaterScrollHost>
         </StackPanel>
         <StackPanel Grid.Column="3">
-            <TextBlock>ElementFactory Multiple Template Sample:</TextBlock>
+            <TextBlock Text="ElementFactory Multiple Template Sample:"/>
             <controls:ItemsRepeaterScrollHost Height="400" Width="150">
                 <ScrollViewer>
                     <controls:ItemsRepeater x:Name="repeater4" 
@@ -101,7 +101,7 @@
             </controls:ItemsRepeaterScrollHost>
         </StackPanel>
         <StackPanel Grid.Column="4">
-            <TextBlock>DataTemplate clear count checking:</TextBlock>
+            <TextBlock Text="DataTemplate clear count checking:"/>
             <controls:ItemsRepeaterScrollHost Height="400" Width="150">
                 <ScrollViewer>
                     <controls:ItemsRepeater x:Name="repeater3" 
