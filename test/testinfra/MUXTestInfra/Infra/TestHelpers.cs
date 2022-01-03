@@ -9,14 +9,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Common;
 
-#if USING_TAEF
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
-#else
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
-#endif
 
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
@@ -75,16 +70,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 ElementCache.Clear();
                 Wait.ResetIdleHelper();
 
-#if USING_TAEF
-                string deploymentDir = TestEnvironment.TestContext.TestDeploymentDir;
-#else
-                // TestDeploymentDir doesn't exist on MSTest's TestContext.  The only thing we use it for
-                // is to install the AppX, and we install the AppX in other ways when using MSTest, so
-                // we don't need it there.
-                string deploymentDir = null;
-#endif
-
-                TestEnvironment.Application.Initialize(true, deploymentDir);
+                TestEnvironment.Application.Initialize(true, TestEnvironment.TestContext.TestDeploymentDir);
             }
 
             ElementCache.Clear();

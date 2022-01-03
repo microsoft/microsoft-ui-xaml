@@ -189,7 +189,7 @@ namespace MUXControlsTestApp
                         }
                     }
 
-                    apiTestCases.Sort(new Comparison<ApiTestCase>((testCase1, testCase2) => testCase1.DisplayName.CompareTo(testCase2.DisplayName)));
+                    apiTestCases.Sort(new Comparison<ApiTestCase>((testCase1, testCase2) => testCase1.ToString().CompareTo(testCase2.ToString())));
                 }
 
                 return apiTestCases;

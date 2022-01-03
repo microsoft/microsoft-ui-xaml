@@ -7,14 +7,9 @@ using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using Common;
 using System.Threading.Tasks;
 
-#if USING_TAEF
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
-#else
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
-#endif
 
 #if BUILD_WINDOWS
 using System.Windows.Automation;

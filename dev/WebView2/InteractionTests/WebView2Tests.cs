@@ -9,13 +9,9 @@ using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 
-#if USING_TAEF
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
-#else
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-#endif
 
 using System;
 using System.Diagnostics;

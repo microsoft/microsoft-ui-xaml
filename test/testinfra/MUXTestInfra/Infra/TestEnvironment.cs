@@ -13,14 +13,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
 
-#if USING_TAEF
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
-#else
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
-#endif
 
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
@@ -120,12 +115,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
-#if USING_TAEF
-                string testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App";
-#else
-                string testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!App";
-#endif
-                return new TestApplicationInfo("MUXControlsTestApp_8wekyb3d8bbwe", testAppName, "MUXControlsTestApp", isUwpApp: true, "MUXControlsTestApp.TAEF");
+                return new TestApplicationInfo("MUXControlsTestApp_8wekyb3d8bbwe", "MUXControlsTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App", "MUXControlsTestApp", isUwpApp: true, "MUXControlsTestApp.TAEF");
             }
         }
 
@@ -133,12 +123,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
-#if USING_TAEF
-                string testAppName = "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App";
-#else
-                string testAppName = "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe!App";
-#endif
-                return new TestApplicationInfo("MUXControlsInnerLoopTestApp_8wekyb3d8bbwe", testAppName, "MUXControlsInnerLoopTestApp", isUwpApp: true, "MUXControlsTestApp.TAEF");
+                return new TestApplicationInfo("MUXControlsInnerLoopTestApp_8wekyb3d8bbwe", "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App", "MUXControlsInnerLoopTestApp", isUwpApp: true, "MUXControlsTestApp.TAEF");
             }
         }
 
@@ -235,7 +220,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 }
             }
 
-#if USING_TAEF
             Log.Comment("TestContext.TestDeploymentDir    = {0}", testContext.TestDeploymentDir);
             Log.Comment("TestContext.TestDir              = {0}", testContext.TestDir);
             Log.Comment("TestContext.TestLogsDir          = {0}", testContext.TestLogsDir);
@@ -251,7 +235,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             // that doesn't need installation.
             Log.Comment("Installing the certificate for the test app");
             TestAppInstallHelper.InstallAppxCert(testContext.TestDeploymentDir, certFileName);
-#endif
         }
 
         public static void AssemblyCleanup()
@@ -343,11 +326,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             // Initialize relies on TestEnvironment.Application to be set, so we'll call this method
             // outside of the constructor.
-#if USING_TAEF
             Application.Initialize(true, TestContext.TestDeploymentDir);
-#else
-            Application.Initialize(true);
-#endif
         }
 
         public static void LogDumpTree(UIObject root = null)

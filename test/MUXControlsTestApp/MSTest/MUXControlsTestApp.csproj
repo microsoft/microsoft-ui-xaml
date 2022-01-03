@@ -13,6 +13,7 @@
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+    <ProjectGuid>{120D7076-3900-492E-807D-6B83B45FDBD5}</ProjectGuid>
   </PropertyGroup>
   <!-- We need to define NuGet references using this newer style for running tests locally in VS to work.
        However, for some reason, specifially in lab builds, using the below to resolve NuGet references
@@ -39,7 +40,7 @@
     <PackageReference Include="MSTest.TestFramework">
       <Version>2.1.2</Version>
     </PackageReference>
-	<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
   </ItemGroup>
   <ItemGroup>
     <SDKReference Include="TestPlatform.Universal, Version=$(UnitTestPlatformVersion)" />

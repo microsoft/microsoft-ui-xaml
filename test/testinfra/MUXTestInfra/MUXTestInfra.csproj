@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\..\..\SdkVersion.props" />
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\SdkVersion.props" />
   
   <PropertyGroup>
     <TargetFramework>net5.0-windows$(MuxSdkVersion)</TargetFramework>
@@ -12,10 +12,9 @@
     <RuntimeIdentifier Condition="'$(Platform)' == 'arm'">win-arm</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(Platform)' == 'arm64'">win-arm64</RuntimeIdentifier>
 
-    <DefineConstants>$(DefineConstants);USING_TAEF</DefineConstants>
     <DefineConstants Condition="$(SolutionName) == 'MUXControlsInnerLoop'">$(DefineConstants);INNERLOOP_BUILD</DefineConstants>
 
-    <TaefRootDirectory>$(NuGetPackageRoot)microsoft.taef\10.65.211117001\build\Binaries\x86\CoreClr\</TaefRootDirectory>
+    <TaefRootDirectory>$(NuGetPackageRoot)microsoft.taef\10.65.211117001\build\Binaries\x86\netstandard2.0\</TaefRootDirectory>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,5 +38,12 @@
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
   </ItemGroup>
 
-  <Import Project="..\MUXTestInfra.Shared.projitems" />
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>107794d7-4be0-407e-a76c-efa46d1e9f93</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>MUXTestInfra.Shared</Import_RootNamespace>
+  </PropertyGroup>
 </Project>

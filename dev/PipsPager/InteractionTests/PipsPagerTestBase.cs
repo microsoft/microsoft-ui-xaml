@@ -1,13 +1,10 @@
 ﻿using Common;
 using Microsoft.Windows.Apps.Test.Automation;
-#if USING_TAEF
+
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
-#else
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
-#endif
+
 using System;
 using System.Linq;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;

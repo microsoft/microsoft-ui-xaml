@@ -286,11 +286,6 @@ namespace MUXControlsTestApp
             {
                 Microsoft.VisualStudio.TestPlatform.TestExecutor.UnitTestClient.Run(e.Arguments);
             }
-            else
-            {
-
-                LogController.InitializeLogging();
-            }
         }
 
         /// <summary>
