@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- This is a special MSBuild file that is parsed before everything else when MSBuild detects it in our directory structure.
+     Adding Sdk="Microsoft.NET.Sdk" to a project causes NuGet files to be generated very early on, so we need these defines to be here
+     to ensure that all of our build output files end up in the same location.  This is parsed too late when put in mux.controls.props. -->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <!-- WPF apps do this thing where they generate a temporary copy of their projects for pass 2 stuff,
+         which messes up our pattern where we generate output directories based on project name.
+         We'll special-case WpfApp.csproj in this case to ensure a consistent output directory name. -->
+    <ProjectNameToUse>WpfApp</ProjectNameToUse>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+</Project>

@@ -2,14 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 using Common;
 
-#if USING_TAEF
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
-#else
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
-#endif
+
 using Axe.Windows.Automation;
 using System.Diagnostics;
 using Axe.Windows.Desktop.UIAutomation;

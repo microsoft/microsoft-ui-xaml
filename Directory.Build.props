@@ -9,6 +9,8 @@
     <IsTDPConfiguration Condition="'$(Configuration)' == 'Debug_test'">true</IsTDPConfiguration>
     <Configuration Condition="'$(Configuration)' == 'Debug_test'">Debug</Configuration>
     
+    <ProjectNameToUse Condition="'$(ProjectNameToUse)' == ''">$(MSBuildProjectName)</ProjectNameToUse>
+    
     <BaseOutputPath>$(MSBuildThisFileDirectory)BuildOutput\$(Configuration)\</BaseOutputPath>
 	<BaseOutputPath Condition="'$(Configuration)' == 'Debug_test'">$(MSBuildThisFileDirectory)BuildOutput\Debug\</BaseOutputPath>
     <OutDir>$(BaseOutputPath)\$(Platform)\</OutDir>
@@ -17,10 +19,10 @@
          property to provide consistency between projects. -->
     <OutDir Condition="'$(Platform)' == 'Win32'">$(BaseOutputPath)\x86\</OutDir>
 
-    <OutputPath>$(OutDir)\$(MSBuildProjectName)\</OutputPath>
+    <OutputPath>$(OutDir)\$(ProjectNameToUse)\</OutputPath>
 
-    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)BuildOutput\Intermediates\$(Platform)\$(MSBuildProjectName)\obj\</BaseIntermediateOutputPath>
-    <MSBuildProjectExtensionsPath>$(MSBuildThisFileDirectory)BuildOutput\Intermediates\$(MSBuildProjectName)\obj\</MSBuildProjectExtensionsPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)BuildOutput\Intermediates\$(Platform)\$(ProjectNameToUse)\obj\</BaseIntermediateOutputPath>
+    <MSBuildProjectExtensionsPath>$(MSBuildThisFileDirectory)BuildOutput\Intermediates\$(ProjectNameToUse)\obj\</MSBuildProjectExtensionsPath>
     <IntDir>$(BaseIntermediateOutputPath)</IntDir>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <GeneratedFilesDir>$(BaseIntermediateOutputPath)Generated Files\</GeneratedFilesDir>
