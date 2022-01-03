@@ -3,6 +3,7 @@
   
   <PropertyGroup>
     <TargetFramework>net5.0-windows$(MuxSdkVersion)</TargetFramework>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Platforms>x86;x64;arm;arm64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm;win-arm64</RuntimeIdentifiers>
     <!-- Some platforms like ARM can be passed in as Platform="ARM" (upper case), which VS doesn't like in the case of RuntimeIdentifier.
@@ -36,7 +37,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Taef" Version="10.65.211117001" />
     <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
-    <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="4.7.0" />
   </ItemGroup>
 
   <PropertyGroup>
