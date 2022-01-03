@@ -7,6 +7,7 @@ unsealed runtimeclass TitleBar : Windows.UI.Xaml.Controls.Control
 {
     TitleBar();
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String Title{ get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]

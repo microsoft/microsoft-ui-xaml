@@ -44,6 +44,15 @@
                                 </VisualState>
                             </VisualStateGroup>
 
+                            <VisualStateGroup x:Name="TitleTextVisibilityGroup">
+                                <VisualState x:Name="TitleTextVisible" />
+                                <VisualState x:Name="TitleTextCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="TitleText.Visibility" Value="Collapsed" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
                             <VisualStateGroup x:Name="FullScreenGroup">
                                 <VisualState x:Name="TitleBarVisible"/>
                                 <VisualState x:Name="TitleBarCollapsed">

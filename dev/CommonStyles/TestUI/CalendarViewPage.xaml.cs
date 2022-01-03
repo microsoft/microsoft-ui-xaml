@@ -178,7 +178,6 @@ namespace MUXControlsTestApp
 
         private void SetDayItemMargin_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 string[] thicknessParts = dayItemMargin.Text.Split(',');
@@ -195,12 +194,10 @@ namespace MUXControlsTestApp
                     float.Parse(thicknessParts[2]),
                     float.Parse(thicknessParts[3]));
             }
-#endif
         }
 
         private void SetMonthYearItemMargin_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 string[] thicknessParts = monthYearItemMargin.Text.Split(',');
@@ -217,12 +214,10 @@ namespace MUXControlsTestApp
                     float.Parse(thicknessParts[2]),
                     float.Parse(thicknessParts[3]));
             }
-#endif
         }
 
         private void SetFirstOfMonthLabelMargin_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 string[] thicknessParts = firstOfMonthLabelMargin.Text.Split(',');
@@ -239,12 +234,10 @@ namespace MUXControlsTestApp
                     float.Parse(thicknessParts[2]),
                     float.Parse(thicknessParts[3]));
             }
-#endif
         }
 
         private void SetFirstOfYearDecadeLabelMargin_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 string[] thicknessParts = firstOfYearDecadeLabelMargin.Text.Split(',');
@@ -261,7 +254,6 @@ namespace MUXControlsTestApp
                     float.Parse(thicknessParts[2]),
                     float.Parse(thicknessParts[3]));
             }
-#endif
         }
 
         private void GetDayItemFontSize_Click(object sender, RoutedEventArgs e)
@@ -306,23 +298,19 @@ namespace MUXControlsTestApp
 
         private void SetCalendarItemCornerRadius_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 PageCalendar2.CalendarItemCornerRadius = PageCalendar.CalendarItemCornerRadius = new CornerRadius(double.Parse(calendarItemCornerRadius.Text));
             }
-#endif
         }
 
         private void ResetCalendarItemCornerRadius_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 PageCalendar.ClearValue(CalendarView.CalendarItemCornerRadiusProperty);
                 PageCalendar2.ClearValue(CalendarView.CalendarItemCornerRadiusProperty);
             }
-#endif
         }
 
         private void GetCalendarItemBorderThickness_Click(object sender, RoutedEventArgs e)
@@ -377,7 +365,6 @@ namespace MUXControlsTestApp
                 case 36: // CalendarViewDayItem.Background
                     return null;
                 default:
-#if USE_INSIDER_SDK
                     if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
                     {
                         switch (brushPropertyName.SelectedIndex)
@@ -424,7 +411,6 @@ namespace MUXControlsTestApp
                                 return null;
                         }
                     }
-#endif // USE_INSIDER_SDK
                     return null;
             }
         }
@@ -519,7 +505,6 @@ namespace MUXControlsTestApp
                     SetBackgrounds(PageCalendar, solidColorBrush);
                     SetBackgrounds(PageCalendar2, solidColorBrush);
                     break;
-#if USE_INSIDER_SDK
                 default:
                     if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
                     {
@@ -585,7 +570,6 @@ namespace MUXControlsTestApp
                         }
                     }
                     break;
-#endif // USE_INSIDER_SDK
             }
         }
 
