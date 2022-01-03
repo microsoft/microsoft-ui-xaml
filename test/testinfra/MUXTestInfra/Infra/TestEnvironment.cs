@@ -115,7 +115,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
+                // When building inside Visual Studio, we'll install the test app from a directory to avoid needing to build and install an AppX,
+                // since that mimics how F5 deployment works from Visual Studio and is a lot faster.
+                // When building from a command line, we don't have Visual Studio integration, so we'll build and install an AppX in that case.
+#if INSTALL_FROM_APPX
+                return new TestApplicationInfo("MUXControlsTestApp", "MUXControlsTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App", "MUXControlsTestApp_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+#else
                 return new TestApplicationInfo("MUXControlsTestApp_8wekyb3d8bbwe", "MUXControlsTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App", "MUXControlsTestApp", isUwpApp: true, "MUXControlsTestApp.TAEF");
+#endif
             }
         }
 
@@ -123,7 +130,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
+                // When building inside Visual Studio, we'll install the test app from a directory to avoid needing to build and install an AppX,
+                // since that mimics how F5 deployment works from Visual Studio and is a lot faster.
+                // When building from a command line, we don't have Visual Studio integration, so we'll build and install an AppX in that case.
+#if INSTALL_FROM_APPX
+                return new TestApplicationInfo("MUXControlsInnerLoopTestApp", "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App", "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+#else
                 return new TestApplicationInfo("MUXControlsInnerLoopTestApp_8wekyb3d8bbwe", "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App", "MUXControlsInnerLoopTestApp", isUwpApp: true, "MUXControlsTestApp.TAEF");
+#endif
             }
         }
 

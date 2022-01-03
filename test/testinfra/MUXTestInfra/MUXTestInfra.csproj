@@ -13,6 +13,7 @@
     <RuntimeIdentifier Condition="'$(Platform)' == 'arm64'">win-arm64</RuntimeIdentifier>
 
     <DefineConstants Condition="$(SolutionName) == 'MUXControlsInnerLoop'">$(DefineConstants);INNERLOOP_BUILD</DefineConstants>
+    <DefineConstants Condition="'$(BuildingInsideVisualStudio)' != 'true'">$(DefineConstants);INSTALL_FROM_APPX</DefineConstants>
 
     <TaefRootDirectory>$(NuGetPackageRoot)microsoft.taef\10.65.211117001\build\Binaries\x86\netstandard2.0\</TaefRootDirectory>
   </PropertyGroup>
