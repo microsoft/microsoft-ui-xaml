@@ -25,7 +25,7 @@
     
     <!-- The binaries we're building against are managed, so which platform's folder they come out of is immaterial.
          For simplicity's sake, we'll always get them from the x86 folder, but the CoreClr binaries are the same everywhere. -->
-    <TaefRootDirectory>$(NuGetPackageRoot)microsoft.taef\10.65.211117001\build\Binaries\x86\netstandard2.0\</TaefRootDirectory>
+    <TaefRootDirectory>$(NuGetPackageRoot)\microsoft.taef\10.65.211117001\build\Binaries\x86\netstandard2.0\</TaefRootDirectory>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1018-prerelease" />
