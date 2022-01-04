@@ -788,18 +788,31 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToBottomImpl()
 
 void TeachingTip::OnIsOpenChanged()
 {
-    SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong()]() 
+    if (m_ignoreNextIsOpenChanged) {
+        m_ignoreNextIsOpenChanged = false;
+    }
+    else
     {
-        if (strongThis->IsOpen())
+        SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong()]()
         {
-            strongThis->IsOpenChangedToOpen();
-        }
-        else
-        {
-            strongThis->IsOpenChangedToClose();
-        }
-        TeachingTipTestHooks::NotifyOpenedStatusChanged(*strongThis);
-    });
+            if (strongThis->m_isIdle) {
+                if (strongThis->IsOpen())
+                {
+                    strongThis->IsOpenChangedToOpen();
+                }
+                else
+                {
+                    strongThis->IsOpenChangedToClose();
+                }
+                TeachingTipTestHooks::NotifyOpenedStatusChanged(*strongThis);
+            }
+            else
+            {
+                strongThis->m_ignoreNextIsOpenChanged = true;
+                strongThis->IsOpen(!strongThis->IsOpen());
+            }
+        });
+    }
 }
 
 void TeachingTip::IsOpenChangedToOpen()
