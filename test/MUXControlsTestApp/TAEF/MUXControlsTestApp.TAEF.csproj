@@ -12,7 +12,7 @@
     <AppxBundle>Never</AppxBundle>
     <AppInstallerUpdateFrequency>1</AppInstallerUpdateFrequency>
     <AppInstallerCheckForUpdateFrequency>OnApplicationRun</AppInstallerCheckForUpdateFrequency>
-    <IsTestApp>true</IsTestApp>
+    <IsPackagedTestApp>true</IsPackagedTestApp>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.VS.appxmanifest">

@@ -27,7 +27,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         /// <summary>
         /// Installs the unit test app from a package
         /// </summary>
-        public static void InstallTestAppFromPackageIfNeeded(string deploymentDir, string packageName, string packageFamilyName, string appInstallerName)
+        public static bool InstallTestAppFromPackageIfNeeded(string deploymentDir, string packageName, string packageFamilyName, string appInstallerName)
         {
             if (!TestAppxInstalled.Contains(packageFamilyName))
             {
@@ -135,17 +135,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 }
                 else
                 {
-                    Log.Comment("Test Appx Package was not found in {0}.", deploymentDir);
+                    Log.Error("Test Appx Package was not found in {0}.", deploymentDir);
+                    return false;
                 }
 
                 TestAppxInstalled.Add(packageFamilyName);
             }
+
+            return true;
         }
 
         /// <summary>
         /// Installs the unit test app from a package
         /// </summary>
-        public static void InstallTestAppFromDirectoryIfNeeded(string testAppDirectory, string packageFamilyName)
+        public static bool InstallTestAppFromDirectoryIfNeeded(string testAppDirectory, string packageFamilyName)
         {
             if (!TestAppxInstalled.Contains(packageFamilyName))
             {
@@ -176,9 +179,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 }
                 else
                 {
-                    Log.Comment("Create AppX directory script was not found at {0}.", createAppxDirectoryScript);
+                    Log.Error("Create AppX directory script was not found at {0}.", createAppxDirectoryScript);
+                    return false;
                 }
             }
+
+            return true;
         }
 
         public static void InstallCert(string certFilePath)

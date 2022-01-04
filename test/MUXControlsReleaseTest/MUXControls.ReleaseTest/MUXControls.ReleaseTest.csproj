@@ -40,6 +40,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.7.0" />
     <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
     <PackageReference Include="Microsoft.Taef" Version="10.65.211117001" />
@@ -146,14 +147,6 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)AppThatUsesMUXIndirectlyTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PGOManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)NugetTestsCX.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)NugetTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ReleaseTestEnvironment.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)XamlIslandsTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)XamlIslandsTestsBase.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)XamlIslandsUnpackagedTests.cs" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Properties\MuxControls.ReleaseTest.rd.xml">
       <SubType>Designer</SubType>
     </EmbeddedResource>

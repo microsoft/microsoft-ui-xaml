@@ -3,10 +3,10 @@
 <!-- This is a special MSBuild file that is parsed after everything else when MSBuild detects it in our directory structure. -->
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- TAEF version 10.65.211117001 is built against .NET Standard 2.0, which needs netstandard.dll. -->
-  <ItemGroup Condition="'$(IsTestApp)' == 'true'">
-    <ReferenceCopyLocalPaths Include="$(FrameworkPathOverride)netstandard.dll" />
+  <ItemGroup Condition="'$(IsPackagedTestApp)' == 'true'">
+    <ReferenceCopyLocalPaths Include="$(MSBuildFrameworkToolsPath)netstandard.dll" />
   </ItemGroup>
-  <Target Name="CopyCreateAppxFile" AfterTargets="Build" Condition="'$(IsTestApp)' == 'true'">
+  <Target Name="CopyCreateAppxFile" AfterTargets="Build" Condition="'$(IsPackagedTestApp)' == 'true'">
     <ItemGroup>
       <DeploymentFiles Include="$(MSBuildThisFileDirectory)tools\CreateAppxDirectory.ps1" />
       <DeploymentFiles Include="$(MSBuildThisFileDirectory)tools\CreateAppxDirectory.msbuildproj" />

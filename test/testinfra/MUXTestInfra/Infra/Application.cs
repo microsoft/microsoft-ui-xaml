@@ -107,7 +107,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         #endregion
 
         #region Methods
-        internal void Initialize(bool doLaunch = false, string deploymentDir = null)
+        internal bool Initialize(bool doLaunch = false, string deploymentDir = null)
         {
             var topWindowCondition = _windowCondition.OrWith(_appFrameWindowCondition);
 
@@ -118,6 +118,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             if (doLaunch && !didFindWindow)
             {
                 CoreWindow = Launch(deploymentDir);
+
+                if (CoreWindow == null)
+                {
+                    return false;
+                }
 
                 foreach (UIObject obj in CoreWindow.Ancestors)
                 {
@@ -201,11 +206,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
 
             TestCleanupHelper.TestSetupHelperPendingDisposals = 0;
+            return true;
         }
 
         private UIObject Launch(string deploymentDir)
         {
             UIObject coreWindow = null;
+            bool packageInstalled = false;
 
             if (_isPackaged)
             {
@@ -213,12 +220,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 // When running in TestMD we also want to install the app.
                 if (_installFromDirectory)
                 {
-                    TestAppInstallHelper.InstallTestAppFromDirectoryIfNeeded(Path.Combine(deploymentDir, "..", _testAppProjectName), _packageFamilyName);
+                    packageInstalled = TestAppInstallHelper.InstallTestAppFromDirectoryIfNeeded(Path.Combine(deploymentDir, "..", _testAppProjectName), _packageFamilyName);
                 }
                 else
                 {
-                    TestAppInstallHelper.InstallTestAppFromPackageIfNeeded(deploymentDir, _packageName, _packageFamilyName, _appInstallerName);
+                    packageInstalled = TestAppInstallHelper.InstallTestAppFromPackageIfNeeded(deploymentDir, _packageName, _packageFamilyName, _appInstallerName);
                 }
+            }
+
+            if (_isPackaged && !packageInstalled)
+            {
+                return null;
             }
 
             Log.Comment("Launching app {0}", _appName);

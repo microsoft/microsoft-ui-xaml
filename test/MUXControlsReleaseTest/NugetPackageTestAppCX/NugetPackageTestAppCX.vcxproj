@@ -16,6 +16,7 @@
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <ConvertedPlatformName>$(Platform)</ConvertedPlatformName>
     <ConvertedPlatformName Condition="'$(Platform)' == 'Win32'">x86</ConvertedPlatformName>
+    <IsPackagedTestApp>true</IsPackagedTestApp>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ItemGroup Label="ProjectConfigurations">

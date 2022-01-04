@@ -145,7 +145,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
+#if INSTALL_FROM_APPX
                 return new TestApplicationInfo("NugetPackageTestApp", "NugetPackageTestApp_8wekyb3d8bbwe!App", "NugetPackageTestApp_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+#else
+                return new TestApplicationInfo("NugetPackageTestApp_8wekyb3d8bbwe", "NugetPackageTestApp_8wekyb3d8bbwe!App", "NugetPackageTestApp", isUwpApp: true, "NugetPackageTestApp");
+#endif
             }
         }
 
@@ -153,7 +157,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
+#if INSTALL_FROM_APPX
                 return new TestApplicationInfo("AppThatUsesMUXIndirectly", "AppThatUsesMUXIndirectly_8wekyb3d8bbwe!App", "AppThatUsesMUXIndirectly_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+#else
+                return new TestApplicationInfo("AppThatUsesMUXIndirectly_8wekyb3d8bbwe", "AppThatUsesMUXIndirectly_8wekyb3d8bbwe!App", "AppThatUsesMUXIndirectly", isUwpApp: true, "AppThatUsesMUXIndirectly");
+#endif
             }
         }
 
@@ -161,7 +169,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
+#if INSTALL_FROM_APPX
                 return new TestApplicationInfo("NugetPackageTestAppCX", "NugetPackageTestAppCX_8wekyb3d8bbwe!App", "NugetPackageTestAppCX_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+#else
+                return new TestApplicationInfo("NugetPackageTestAppCX_8wekyb3d8bbwe", "NugetPackageTestAppCX_8wekyb3d8bbwe!App", "NugetPackageTestAppCX", isUwpApp: true, "NugetPackageTestAppCX");
+#endif
             }
         }
 
@@ -169,7 +181,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
+#if INSTALL_FROM_APPX
                 return new TestApplicationInfo("WpfApp", "WpfApp_8wekyb3d8bbwe!App", "WpfApp_8wekyb3d8bbwe", "WpfApp", "WpfApp.exe", "WpfApp", isUwpApp: false, MUXCertSerialNumber, MUXBaseAppxDir);
+#else
+                return new TestApplicationInfo("WpfApp_8wekyb3d8bbwe", "WpfApp_8wekyb3d8bbwe!App", "WpfApp", isUwpApp: false, "WpfApp");
+#endif
             }
         }
 
@@ -340,7 +356,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             // Initialize relies on TestEnvironment.Application to be set, so we'll call this method
             // outside of the constructor.
-            Application.Initialize(true, TestContext.TestDeploymentDir);
+            if (!Application.Initialize(true, TestContext.TestDeploymentDir))
+            {
+                Log.Error("Application failed to initialize.");
+            }
         }
 
         public static void LogDumpTree(UIObject root = null)
