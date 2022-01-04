@@ -2,7 +2,7 @@
   <Import Project="$(MSBuildThisFileDirectory)..\..\..\SdkVersion.props" />
   
   <PropertyGroup>
-    <TargetFramework>net5.0-windows$(MuxSdkVersion)</TargetFramework>
+    <TargetFramework>net5.0-windows$(SDKVersion19H1)</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Platforms>x86;x64;arm;arm64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm;win-arm64</RuntimeIdentifiers>
