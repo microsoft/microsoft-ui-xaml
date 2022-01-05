@@ -285,7 +285,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     {
                         using (AppLaunchWaiter launchWaiter = new AppLaunchWaiter(_windowCondition))
                         {
+                            // If we're running from within VS, the path to the unpackaged exe is up a level,
+                            // since the executing assembly is in its own build output folder.
+#if INSTALL_FROM_APPX
                             string unpackagedExeFullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), _unpackagedExePath);
+#else
+                            string unpackagedExeFullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "..", _unpackagedExePath);
+#endif
 
                             Process.Start(unpackagedExeFullPath);
 
@@ -563,7 +569,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
         }
 
-        #endregion
+#endregion
 
         private void LogDumpTree()
         {
