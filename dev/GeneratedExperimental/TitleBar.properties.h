@@ -60,4 +60,8 @@ public:
     static void OnIsBackButtonVisiblePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnTitlePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 };

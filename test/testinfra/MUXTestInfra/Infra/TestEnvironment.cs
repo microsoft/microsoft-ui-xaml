@@ -201,7 +201,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
+#if INSTALL_FROM_APPX
                 return new TestApplicationInfo("MUXExperimentalTestApp", "MUXExperimentalTestApp_8wekyb3d8bbwe!App", "MUXExperimentalTestApp_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+#else
+                return new TestApplicationInfo("MUXExperimentalTestApp_8wekyb3d8bbwe", "MUXExperimentalTestApp_8wekyb3d8bbwe!App", "MUXExperimentalTestApp", isUwpApp: true, "MUXExperimentalTestApp");
+#endif
             }
         }
     }
