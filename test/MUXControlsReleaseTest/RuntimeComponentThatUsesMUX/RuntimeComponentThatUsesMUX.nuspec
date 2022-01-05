@@ -12,7 +12,7 @@
     <dependencies>
       <group targetFramework="UAP10.0.15063">
         <dependency id="Microsoft.NETCore.UniversalWindowsPlatform" version="6.2.8" exclude="Build,Analyzers" />
-        <dependency id="Microsoft.UI.Xaml" version="2.6.1" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.UI.Xaml" version="2.6.1-prerelease.210709001" exclude="Build,Analyzers" />
       </group>
     </dependencies>
   </metadata>
