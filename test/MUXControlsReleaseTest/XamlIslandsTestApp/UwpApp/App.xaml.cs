@@ -57,7 +57,15 @@ namespace UwpApp
                 Window.Current.Content = rootFrame;
             }
 
-            if (e.PrelaunchActivated == false)
+            bool prelaunchActivated = false;
+
+            try
+            {
+                prelaunchActivated = e.PrelaunchActivated;
+            }
+            catch (InvalidCastException) { }
+
+            if (!prelaunchActivated)
             {
                 if (rootFrame.Content == null)
                 {
