@@ -12,3 +12,8 @@ steps:
       arguments: -Version ${{ parameters.sdkVersion }}
     displayName: 'Install .NET ${{ parameters.sdkVersion }} SDK'
 
+  - task: BatchScript@1
+    displayName: 'Add .NET ${{ parameters.sdkVersion }} SDK to PATH'
+    inputs:
+      filename: '$(Build.SourcesDirectory)\build\AddDotNetSdkToPath.cmd'
+      modifyEnvironment: true
