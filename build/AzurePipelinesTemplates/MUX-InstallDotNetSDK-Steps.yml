@@ -1,0 +1,14 @@
+parameters:
+  sdkVersion: 5.0.404
+
+steps:
+  - powershell: Invoke-WebRequest "https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1" -OutFile "$(Agent.TempDirectory)\dotnet-install.ps1"
+    displayName: 'Download .NET SDK installer'
+
+  - task: powershell@2
+    inputs:
+      targetType: filePath
+      filePath: $(Agent.TempDirectory)\dotnet-install.ps1
+      arguments: -Version ${{ parameters.sdkVersion }}
+    displayName: 'Install .NET ${{ parameters.sdkVersion }} SDK'
+

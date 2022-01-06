@@ -50,6 +50,8 @@ jobs:
     displayName: 'Display build machine environment variables'
     inputs:
       filename: 'set'
+
+  - template: MUX-InstallDotNetSDK-Steps.yml
       
   - template: MUX-InstallNuget-Steps.yml
 
