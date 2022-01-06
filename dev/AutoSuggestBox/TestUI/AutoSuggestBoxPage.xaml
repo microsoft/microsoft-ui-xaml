@@ -13,7 +13,9 @@
 
     <StackPanel Margin="12">
         <TextBlock Text="Sample AutoSuggestBoxes" Style="{ThemeResource StandardGroupHeader}"/>
-        <AutoSuggestBox QueryIcon="Find"/>
+        <AutoSuggestBox AutomationProperties.Name="Sample AutoSuggestBox"/>
+        <AutoSuggestBox Header="AutoSuggestBox with header"/>
+        <AutoSuggestBox AutomationProperties.Name="Sample AutoSuggestBox with QueryIcon" QueryIcon="Find"/>
         <AutoSuggestBox Header="AutoSuggestBox with header" FontSize="12">
             <AutoSuggestBox.QueryIcon>
                 <controls:AnimatedIcon>
@@ -24,7 +26,14 @@
                 </controls:AnimatedIcon>
             </AutoSuggestBox.QueryIcon>
         </AutoSuggestBox>
+
         <AutoSuggestBox Header="AutoSuggestBox with suggestions" QuerySubmitted="AutoSuggestBox_QuerySubmitted" />
+        <StackPanel x:Name="stackPanelSearch"
+                Margin="5"
+                Orientation="Horizontal">
+            <AutoSuggestBox Height="33" MinWidth="230"
+                Header="Search Stuff" QueryIcon="Find" />
+        </StackPanel>
     </StackPanel>
 
 </local:TestPage>

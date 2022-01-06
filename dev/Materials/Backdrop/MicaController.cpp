@@ -51,7 +51,7 @@ bool MicaController::SetTarget(winrt::Windows::UI::Xaml::Window const& xamlWindo
         return false;
     }
 
-    m_windowHandler = std::make_unique<SystemBackdropComponentInternal::XamlWindowHandler>(this, xamlWindow);
+    m_windowHandler = winrt::make_self<SystemBackdropComponentInternal::XamlWindowHandler>(this, xamlWindow);
 
     // Ensure we are in the correct policy state only *after* creating the appropriate WindowHandler.
     // If we start in high contrast mode, the controller will query the window handler for the correct system fallback color.

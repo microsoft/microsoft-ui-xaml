@@ -61,7 +61,7 @@ namespace SystemBackdropComponentInternal
         winrt::event_token m_token{};
     };
 
-    struct BaseWindowHandler
+    struct BaseWindowHandler : public winrt::implements<BaseWindowHandler, winrt::IInspectable>
     {
         virtual ~BaseWindowHandler()
         {

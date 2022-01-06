@@ -86,6 +86,7 @@ void TabView::OnApplyTemplate()
     {
         m_tabContainerGrid.set(containerGrid);
         m_tabStripPointerExitedRevoker = containerGrid.PointerExited(winrt::auto_revoke, { this,&TabView::OnTabStripPointerExited });
+        m_tabStripPointerEnteredRevoker = containerGrid.PointerEntered(winrt::auto_revoke, { this,&TabView::OnTabStripPointerEntered });
     }
 
     if (!SharedHelpers::Is21H1OrHigher())
@@ -269,6 +270,60 @@ void TabView::OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChan
     SetTabSeparatorOpacity(winrt::unbox_value<int>(args.OldValue()) - 1);
     SetTabSeparatorOpacity(SelectedIndex() - 1);
     SetTabSeparatorOpacity(SelectedIndex());
+
+    UpdateTabBottomBorderLineVisualStates();
+}
+
+void TabView::UpdateTabBottomBorderLineVisualStates()
+{
+    const int numItems = static_cast<int>(TabItems().Size());
+    const int selectedIndex = SelectedIndex();
+
+    for (int i = 0; i < numItems; i++)
+    {
+        auto state = L"NormalBottomBorderLine";
+        if (m_isDragging)
+        {
+            state = L"NoBottomBorderLine";
+        }
+        else if (selectedIndex != -1)
+        {
+            if (i == selectedIndex - 1)
+            {
+                state = L"LeftOfSelectedTab";
+            }
+            else if (i == selectedIndex + 1)
+            {
+                state = L"RightOfSelectedTab";
+            }
+        }
+
+        if (const auto tvi = ContainerFromIndex(i).try_as<winrt::Control>())
+        {
+            winrt::VisualStateManager::GoToState(tvi, state, false /*useTransitions*/);
+        }
+    }
+}
+
+void TabView::UpdateBottomBorderLineVisualStates()
+{
+    // Update border line on all tabs
+    UpdateTabBottomBorderLineVisualStates();
+
+    // Update border lines on the TabView
+    winrt::VisualStateManager::GoToState(*this, m_isDragging ? L"SingleBottomBorderLine" : L"NormalBottomBorderLine", false /*useTransitions*/);
+
+    // Update border lines in the inner TabViewListView
+    if (const auto lv = m_listView.get())
+    {
+        winrt::VisualStateManager::GoToState(lv, m_isDragging ? L"NoBottomBorderLine" : L"NormalBottomBorderLine", false /*useTransitions*/);
+    }
+
+    // Update border lines in the ScrollViewer
+    if (const auto scroller = m_scrollViewer.get())
+    {
+        winrt::VisualStateManager::GoToState(scroller, m_isDragging ? L"NoBottomBorderLine" : L"NormalBottomBorderLine", false /*useTransitions*/);
+    }
 }
 
 void TabView::OnSelectedItemPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -355,6 +410,7 @@ void TabView::UnhookEventsAndClearFields()
     m_addButtonClickRevoker.revoke();
     m_itemsPresenterSizeChangedRevoker.revoke();
     m_tabStripPointerExitedRevoker.revoke();
+    m_tabStripPointerEnteredRevoker.revoke();
     m_scrollViewerLoadedRevoker.revoke();
     m_scrollViewerViewChangedRevoker.revoke();
     m_scrollDecreaseClickRevoker.revoke();
@@ -504,10 +560,13 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
             }
         }
     }
+
+    UpdateTabBottomBorderLineVisualStates();
 }
 
 void TabView::OnTabStripPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
 {
+    m_pointerInTabstrip = false;
     if (m_updateTabWidthOnPointerLeave)
     {
         auto scopeGuard = gsl::finally([this]()
@@ -516,6 +575,11 @@ void TabView::OnTabStripPointerExited(const winrt::IInspectable& sender, const w
         });
         UpdateTabWidths();
     }
+}
+
+void TabView::OnTabStripPointerEntered(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+{
+    m_pointerInTabstrip = true;
 }
 
 void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
@@ -678,12 +742,9 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
                 }
 
             }
-            // Last item removed, update sizes
-            // The index of the last element is "Size() - 1", but in TabItems, it is already removed.
             if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
             {
-                m_updateTabWidthOnPointerLeave = true;
-                if (args.Index() == TabItems().Size())
+                if (!m_pointerInTabstrip || args.Index() == TabItems().Size())
                 {
                     UpdateTabWidths(true, false);
                 }
@@ -696,6 +757,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
         }
     }
 
+    UpdateTabBottomBorderLineVisualStates();
 }
 
 void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
@@ -745,11 +807,15 @@ winrt::TabViewItem TabView::FindTabViewItemFromDragItem(const winrt::IInspectabl
 
 void TabView::OnListViewDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args)
 {
+    m_isDragging = true;
+
     auto item = args.Items().GetAt(0);
     auto tab = FindTabViewItemFromDragItem(item);
     auto myArgs = winrt::make_self<TabViewTabDragStartingEventArgs>(args, item, tab);
 
     m_tabDragStartingEventSource(*this, *myArgs);
+
+    UpdateBottomBorderLineVisualStates();
 }
 
 void TabView::OnListViewDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
@@ -764,6 +830,8 @@ void TabView::OnListViewDrop(const winrt::IInspectable& sender, const winrt::Dra
 
 void TabView::OnListViewDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args)
 {
+    m_isDragging = false;
+
     auto item = args.Items().GetAt(0);
     auto tab = FindTabViewItemFromDragItem(item);
     auto myArgs = winrt::make_self<TabViewTabDragCompletedEventArgs>(args, item, tab);
@@ -776,6 +844,8 @@ void TabView::OnListViewDragItemsCompleted(const winrt::IInspectable& sender, co
         auto tabDroppedArgs = winrt::make_self<TabViewTabDroppedOutsideEventArgs>(item, tab);
         m_tabDroppedOutsideEventSource(*this, *tabDroppedArgs);
     }
+
+    UpdateBottomBorderLineVisualStates();
 }
 
 void TabView::UpdateTabContent()
@@ -920,15 +990,30 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths, bool fillAllAvailableSpac
 
                     // If we should fill all of the available space, use scrollviewer dimensions
                     auto const padding = Padding();
+
+                    double headerWidth = 0.0;
+                    double footerWidth = 0.0;
+                    if (auto&& itemsPresenter = m_itemsPresenter.get())
+                    {
+                        if (auto const header = itemsPresenter.Header().try_as<winrt::FrameworkElement>())
+                        {
+                            headerWidth = header.ActualWidth();
+                        }
+                        if (auto const footer = itemsPresenter.Footer().try_as<winrt::FrameworkElement>())
+                        {
+                            footerWidth = footer.ActualWidth();
+                        }
+                    }
+
                     if (fillAllAvailableSpace)
                     {
                         // Calculate the proportional width of each tab given the width of the ScrollViewer.
-                        auto const tabWidthForScroller = (availableWidth - (padding.Left + padding.Right)) / (double)(TabItems().Size());
+                        auto const tabWidthForScroller = (availableWidth - (padding.Left + padding.Right + headerWidth + footerWidth)) / (double)(TabItems().Size());
                         tabWidth = std::clamp(tabWidthForScroller, minTabWidth, maxTabWidth);
                     }
                     else
                     {
-                        double availableTabViewSpace = (tabColumn.ActualWidth() - (padding.Left + padding.Right));
+                        double availableTabViewSpace = (tabColumn.ActualWidth() - (padding.Left + padding.Right + headerWidth + footerWidth));
                         if (const auto increaseButton = m_scrollIncreaseButton.get())
                         {
                             if (increaseButton.Visibility() == winrt::Visibility::Visible)
@@ -952,8 +1037,8 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths, bool fillAllAvailableSpac
 
 
                     // Size tab column to needed size
-                    tabColumn.MaxWidth(availableWidth);
-                    auto requiredWidth = tabWidth * TabItems().Size();
+                    tabColumn.MaxWidth(availableWidth + headerWidth + footerWidth);
+                    auto requiredWidth = tabWidth * TabItems().Size() + headerWidth + footerWidth;
                     if (requiredWidth > availableWidth - (padding.Left + padding.Right))
                     {
                         tabColumn.Width(winrt::GridLengthHelper::FromPixels(availableWidth));

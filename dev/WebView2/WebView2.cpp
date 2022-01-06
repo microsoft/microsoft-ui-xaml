@@ -398,7 +398,7 @@ void WebView2::ResetPointerHelper(const winrt::PointerRoutedEventArgs& args)
 
     if (m_isPointerOver)
     {
-        m_isPointerOver = true;
+        m_isPointerOver = false;
         winrt::CoreWindow::GetForCurrentThread().PointerCursor(m_oldCursor);
         m_oldCursor = nullptr;
     }
@@ -430,7 +430,7 @@ void WebView2::ResetPointerHelper(const winrt::PointerRoutedEventArgs& args)
 
 bool WebView2::ShouldNavigate(const winrt::Uri& uri)
 {
-    return uri != nullptr && uri.ToString() != m_stopNavigateOnUriChanged;
+    return uri != nullptr && uri.RawUri() != m_stopNavigateOnUriChanged;
 }
 
 winrt::IAsyncAction WebView2::OnSourceChanged(winrt::Uri providedUri)
@@ -821,13 +821,10 @@ HWND WebView2::EnsureTemporaryHostHwnd()
 void WebView2::CreateMissingAnaheimWarning()
 {
     auto warning = winrt::TextBlock();
-    warning.Text(L"A suitable version of Microsoft Edge WebView2 Runtime was not detected. ");
+    warning.Text(ResourceAccessor::GetLocalizedStringResource(SR_WarningSuitableWebView2NotFound));
     warning.Inlines().Append(winrt::LineBreak());
-    auto moreText = winrt::Run();
-    moreText.Text(L"Please install from: ");
-    warning.Inlines().Append(moreText);
     auto linkText = winrt::Run();
-    linkText.Text(L"Download WebView2 Runtime");
+    linkText.Text(ResourceAccessor::GetLocalizedStringResource(SR_DownloadWebView2Runtime));
     auto hyperlink = winrt::Hyperlink();
     hyperlink.Inlines().Append(linkText);
     auto url = winrt::Uri(L"https://aka.ms/winui3/webview2download/");

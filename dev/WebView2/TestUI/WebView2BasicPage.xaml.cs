@@ -195,6 +195,8 @@ namespace MUXControlsTestApp
             NavigateToLocalImageTest,
             CloseThenDPIChangeTest,
             AddHostObjectToScriptTest,
+            UserAgentTest,
+            NonAsciiUriTest,
         };
 
         // Map of TestList entry to its webpage (index in TestPageNames[])
@@ -253,6 +255,8 @@ namespace MUXControlsTestApp
             { TestList.NavigateToLocalImageTest, 0 },
             { TestList.CloseThenDPIChangeTest, 0 },
             { TestList.AddHostObjectToScriptTest, 0 },
+            { TestList.UserAgentTest, 0 },
+            { TestList.NonAsciiUriTest, 7 },
         };
 
         readonly string[] TestPageNames =
@@ -264,6 +268,7 @@ namespace MUXControlsTestApp
             "SimplePageWithText.html",
             "SimpleInputPage.html",
             "SimplePageWithManyButtons.html",
+            "SimplePageWithNonÅscií.html",
         };
 
         readonly WebView2Common _helpers;
@@ -658,6 +663,16 @@ namespace MUXControlsTestApp
                         WebView2Common.LoadWebPage(newWebView2, TestPageNames[TestInfoDictionary[test]]);
                     }
                     break;
+                case TestList.NonAsciiUriTest:
+                    {
+                        // Put the URI with non-ascii characters in a TextBox, so we can easily copy/paste for manual testing.
+                        var box = FindName("CopyPasteTextBox2") as TextBox;
+                        string fileLocation = WebView2Common.GetTestPageUri("SimplePageWithNonÅscií.html").ToString();
+                        string query = "?query=";
+                        box.Text = fileLocation + query;
+                        WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[test]]);
+                    }
+                    break;
                 default:
                     WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[test]]);
                     break;
@@ -690,6 +705,8 @@ namespace MUXControlsTestApp
 
         private void OnNavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
+            // Be careful if changing this message. The "NavigationStarting" string is expected
+            // to be logged exactly once per NavigationStarting event by the NonAsciiUriTest.
             AppendMessage(string.Format("[{0}]: Got NavigationStarting ({1}).", sender.Name, args.Uri));
 
             string expectedUri = "http://www.blockedbynavigationstarting.invalid/";
@@ -1245,21 +1262,6 @@ namespace MUXControlsTestApp
                         }
                         break;
 
-                    case TestList.BasicKeyboardTest:
-                        {
-                            string expectedMessage = "Input button clicked.";
-                            string receivedMessage = Status2.Text;
-                            logger.Verify((expectedMessage == receivedMessage),
-                                          string.Format("Test {0}: Expected web message {1} did not match received web message {2}.",
-                                                        selectedTest.ToString(), expectedMessage, receivedMessage));
-                            string expectedText = "Hello 123 Worm";
-                            string textResult = CopyPasteTextBox2.Text;
-                            logger.Verify((textResult == expectedText),
-                                          string.Format("Test {0}: Expected text {1} did not match with sampled text {2}.",
-                                                        selectedTest.ToString(), expectedText, textResult));
-                        }
-                        break;
-
                     case TestList.MouseCaptureTest:
                         {
                             string textResult = CopyPasteTextBox2.Text;
@@ -1758,6 +1760,32 @@ namespace MUXControlsTestApp
                                 logger.Verify(false, string.Format("Test {0}: Unexpected exception: {1}", 
                                     selectedTest.ToString(), e.ToString()));
                             }
+                        }
+                        break;
+
+                    case TestList.UserAgentTest:
+                        {
+                            var userAgent = string.Empty;
+                            var core_wv2 = MyWebView2.CoreWebView2;
+                            if (core_wv2 == null)
+                            {
+                                logger.LogError(string.Format("Test {0}: Couldn't get CoreWebView2 object", selectedTest.ToString()));
+                                break;
+                            }
+
+                            var core_wv2_settings = core_wv2.Settings;
+                            if (core_wv2_settings == null)
+                            {
+                                logger.LogError(string.Format("Test {0}: Couldn't get CoreWebView2Settings object", selectedTest.ToString()));
+                                break;
+                            }
+                            
+                            userAgent = core_wv2_settings.UserAgent;
+                            
+                            // The "Edg" token identifies the Chromium Edge browser
+                            // For more information, see https://docs.microsoft.com/en-us/microsoft-edge/web-platform/user-agent-guidance
+                            logger.Verify(userAgent.Contains("Edg"),
+                                string.Format("Test {0}: Expected a valid UserAgent, got {1}", selectedTest.ToString(), userAgent));
                         }
                         break;
 

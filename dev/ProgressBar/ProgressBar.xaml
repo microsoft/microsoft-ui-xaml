@@ -229,7 +229,7 @@
                                     <Rectangle
                                         x:Name="ProgressBarTrack"
                                         Fill="{TemplateBinding Background}"
-                                        Height="{StaticResource ProgressBarTrackHeight}"
+                                        Height="{ThemeResource ProgressBarTrackHeight}"
                                         Width="{TemplateBinding Width}"
                                         VerticalAlignment="Center"
                                         RadiusX="{Binding Source={StaticResource ProgressBarTrackCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"

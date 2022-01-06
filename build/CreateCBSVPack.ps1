@@ -69,7 +69,7 @@ if(!(Get-Command mdmerge -ErrorAction Ignore))
     Write-Error "Cannot find mdmerge. Make sure to run from a Developer Command Prompt."
     exit 1
 }
-
+$winuiVpackFolder = "$releaseFolder\WinUIVpack"
 $cbsFolder = "$releaseFolder\CBS"
 $winmdFolder = "$cbsFolder\winmd"
 $packagesDir = Join-Path $repoRoot "packages"
@@ -81,12 +81,19 @@ if (Test-Path $cbsFolder)
     Remove-Item -Path $cbsFolder -Force -Recurse| Out-Null
 }
 
+if (Test-Path $winuiVpackFolder)
+{
+    Write-Host "Deleting $winuiVpackFolder"
+    Remove-Item -Path $winuiVpackFolder -Force -Recurse| Out-Null
+}
+
 if (Test-Path $winmdReferencesDir)
 {
     Write-Host "Deleting $winmdReferencesDir"
     Remove-Item -Path $winmdReferencesDir -Force -Recurse| Out-Null
 }
 
+New-Item -Path "$winuiVpackFolder" -ItemType Directory | Out-Null
 New-Item -Path "$cbsFolder" -ItemType Directory | Out-Null
 New-Item -Path "$winmdFolder" -ItemType Directory | Out-Null
 New-Item -Path "$winmdReferencesDir" -ItemType Directory | Out-Null
@@ -112,6 +119,32 @@ foreach ($flavour in $buildFlavours)
     }  
 }
 
+# Create WinUI Vpack:
+foreach ($flavour in $buildFlavours) 
+{
+    $sourceFolder = "$releaseFolder\$flavour\FrameworkPackage"
+    $targetFolder = "$winuiVpackFolder\$flavour"
+
+    New-Item -Path "$targetFolder" -ItemType Directory | Out-Null
+
+    $search = "Microsoft.UI.Xaml.*.appx"
+    $found = Get-ChildItem $sourceFolder -Filter $search
+    if ($found.Length -eq 0)
+    {
+        Write-Error "Could not find '$search' in '$sourceFolder'"
+        Exit 1
+    }
+
+    $fileName = $found[0].Name
+    $sourcePathFull = $found[0].FullName
+    
+    $destPathFull = Join-Path $targetFolder $fileName
+
+    Write-Verbose "Copy item from '$sourcePathFull' to '$destPathFull' "
+    Copy-Item $sourcePathFull $destPathFull
+}
+
+# Create CBS Vpacks:
 foreach ($flavour in $buildFlavours) 
 {
     $sourceFolder = "$releaseFolder\$flavour"

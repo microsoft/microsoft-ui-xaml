@@ -21,7 +21,7 @@ namespace MUXControls.ReleaseTest
     public class ReleaseTestEnvironment
     {
         [AssemblyInitialize]
-        [TestProperty("CoreClrProfile", ".NETCoreApp2.1")]
+        [TestProperty("CoreClrProfile", ".netcoreapp3.1")]
         [TestProperty("RunFixtureAs:Assembly", "ElevatedUserOrSystem")]
         [TestProperty("HelixWorkItemCreation", "CreateWorkItemPerTestClass")]
         public static void AssemblyInitialize(TestContext testContext)

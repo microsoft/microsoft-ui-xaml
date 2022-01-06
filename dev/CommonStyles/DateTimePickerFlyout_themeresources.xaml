@@ -26,33 +26,34 @@
             <StaticResource x:Key="LoopingSelectorItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="LoopingSelectorItemBackgroundSelected" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="DateTimePickerFlyoutButtonBackground" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
-            <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
-            <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
-            <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightTransparentBrush" />
-            <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
-            <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="DateTimePickerFlyoutButtonBackground" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPointerOver" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPressed" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrush" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPressed" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="SystemColorHighlightColorBrush" />
+            
+            <StaticResource x:Key="LoopingSelectorUpDownButtonForeground" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonForegroundPointerOver" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonForegroundPressed" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonBackground" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonBackgroundPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="LoopingSelectorUpDownButtonBackgroundPressed" ResourceKey="SystemColorWindowColorBrush" />
 
-            <StaticResource x:Key="LoopingSelectorUpDownButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="LoopingSelectorUpDownButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="LoopingSelectorUpDownButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="LoopingSelectorUpDownButtonBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="LoopingSelectorUpDownButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
-            <StaticResource x:Key="LoopingSelectorUpDownButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
-
-
-            <StaticResource x:Key="LoopingSelectorItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="LoopingSelectorItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="LoopingSelectorItemForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="LoopingSelectorItemForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="LoopingSelectorItemBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
-            <StaticResource x:Key="LoopingSelectorItemBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
+            <StaticResource x:Key="LoopingSelectorItemForeground" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="LoopingSelectorItemForegroundSelected" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="LoopingSelectorItemForegroundPointerOver" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="LoopingSelectorItemForegroundPressed" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="LoopingSelectorItemBackgroundSelected" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="LoopingSelectorItemBackgroundPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="LoopingSelectorItemBackgroundPressed" ResourceKey="SystemColorWindowColorBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="DateTimePickerFlyoutButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
@@ -75,6 +76,7 @@
             <StaticResource x:Key="LoopingSelectorItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="LoopingSelectorItemBackgroundSelected" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="LoopingSelectorItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
         </ResourceDictionary>
@@ -327,6 +329,9 @@
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource LoopingSelectorItemForegroundSelected}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource LoopingSelectorItemBackgroundSelected}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>

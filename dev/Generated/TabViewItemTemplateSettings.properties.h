@@ -12,9 +12,14 @@ public:
     void IconElement(winrt::IconElement const& value);
     winrt::IconElement IconElement();
 
+    void TabGeometry(winrt::Geometry const& value);
+    winrt::Geometry TabGeometry();
+
     static winrt::DependencyProperty IconElementProperty() { return s_IconElementProperty; }
+    static winrt::DependencyProperty TabGeometryProperty() { return s_TabGeometryProperty; }
 
     static GlobalDependencyProperty s_IconElementProperty;
+    static GlobalDependencyProperty s_TabGeometryProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
