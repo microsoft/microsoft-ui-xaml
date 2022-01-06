@@ -102,7 +102,7 @@ public:
 
         TEST_METHOD(GetContentStateImpl)
     {
-        Assert::AreEqual(TeachingTipContentStates::Content, TeachingTipImpl::GetContentStateImpl(winrt::IInspectable{}));
+        Assert::AreEqual(TeachingTipContentStates::Content, TeachingTipImpl::GetContentStateImpl(winrt::box_value(1)));
         Assert::AreEqual(TeachingTipContentStates::NoContent, TeachingTipImpl::GetContentStateImpl(nullptr));
     }
 };

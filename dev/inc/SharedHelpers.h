@@ -316,7 +316,7 @@ public:
 
     static winrt::float4 RgbaColor(winrt::Color const& color);
 
-    static winrt::CornerRadius CornerRadiusFromTuple(std::tuple<double, double, double, double> values)
+    static constexpr winrt::CornerRadius CornerRadiusFromTuple(std::tuple<double, double, double, double> values)
     {
         return winrt::CornerRadius{
             std::get<0>(values),
