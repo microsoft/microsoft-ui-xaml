@@ -6,21 +6,16 @@
     <DefineConstants>$(DefineConstants);USING_TAEF</DefineConstants>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
-  </PropertyGroup>
-  <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v2.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.1</TargetFrameworkVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm;win-arm64</RuntimeIdentifiers>
     <!-- The binaries we're building against are managed, so which platform's folder they come out of is immaterial.
          For simplicity's sake, we'll always get them from the x86 folder, but the CoreClr binaries are the same everywhere. -->
     <TaefRootDirectory>$(NuGetPackageRoot)taef.redist.wlk\10.31.180822002\build\Binaries\x86\CoreClr\</TaefRootDirectory>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Axe.Windows" Version="1.0.4" GeneratePathProperty="True"/>
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1018-prerelease" />
-  </ItemGroup>
   <ItemGroup>
     <Reference Include="TE.Managed">
       <HintPath>$(TaefRootDirectory)TE.Managed.dll</HintPath>
@@ -35,46 +30,18 @@
       <HintPath>$(TaefRootDirectory)Wex.Logger.Interop.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <!-- If we include the razzle includes in the csproj, VS raises warnings about referenced components not being found even if
-       it's gated with the condition that we're building with build.exe.  To avoid that, we'll add the razzle includes
-       in a props file that is only included when we're building with build.exe, which makes VS never see them.
-       Similarly, the non-razzle includes confuse the razzle MSBuild, even though it's marked with a condition that should
-       cause it to be excluded. -->
-  <Import Project="RazzleIncludes.props" Condition="$(BuildingWithBuildExe) == 'true'" />
-  <Import Project="NonRazzleIncludes.props" Condition="$(BuildingWithBuildExe) != 'true'" />
+  
+  <ItemGroup>
+    <PackageReference Include="Axe.Windows" Version="1.0.4" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1018-prerelease" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
+    <PackageReference Include="TAEF.Redist.Wlk" Version="10.31.180822002" />
+  </ItemGroup>
+  
   <Import Project="..\MUXControls.Test.Shared.projitems" />
   <ItemGroup>
     <ProjectReference Include="..\..\testinfra\MUXTestInfra\TAEF\MUXTestInfra.TAEF.csproj" />
   </ItemGroup>
   <Import Project="..\MUXControls.Test.Shared.targets" />
-  <!-- Sdk="Microsoft.NET.Sdk" doesn't do anything in Razzle, so we need to manually include the C# targets file there. -->
-  <Import Project="$(CSharpTargetsFilePath)" Condition="$(BuildingWithBuildExe) == 'true'" />
-  <Import Project="$(NTMAKEENV)\UniversalTest\Microsoft.TestInfrastructure.UniversalTest.props" Condition="$(BuildingWithBuildExe) == 'true'" />
-  <Target Name="Binplace"
-    AfterTargets="Build"
-    Outputs="@(BinplaceItemCopied)">
-    <ItemGroup>
-      <BinplaceItem Include="$(PkgMicrosoft_Win32_Registry)\runtimes\win\lib\netstandard2.0\Microsoft.Win32.Registry.dll" />
-      <BinplaceItem Include="$(NuGetPackageRoot)\axe.windows\1.0.4\lib\netstandard20\Axe.Windows.Automation.dll" />
-      <BinplaceItem Include="$(NuGetPackageRoot)\axe.windows\1.0.4\lib\netstandard20\Axe.Windows.Actions.dll" />
-      <BinplaceItem Include="$(NuGetPackageRoot)\axe.windows\1.0.4\lib\netstandard20\Axe.Windows.Core.dll" />
-      <BinplaceItem Include="$(NuGetPackageRoot)\axe.windows\1.0.4\lib\netstandard20\Axe.Windows.Desktop.dll" />
-      <BinplaceItem Include="$(NuGetPackageRoot)\axe.windows\1.0.4\lib\netstandard20\Axe.Windows.Rules.dll" />
-      <BinplaceItem Include="$(NuGetPackageRoot)\axe.windows\1.0.4\lib\netstandard20\Axe.Windows.RuleSelection.dll" />
-      <BinplaceItem Include="$(NuGetPackageRoot)\axe.windows\1.0.4\lib\netstandard20\Axe.Windows.SystemAbstractions.dll" />
-      <BinplaceItem Include="$(NuGetPackageRoot)\axe.windows\1.0.4\lib\netstandard20\Axe.Windows.Telemetry.dll" />
-      <BinplaceItem Include="$(NuGetPackageRoot)\axe.windows\1.0.4\lib\netstandard20\Axe.Windows.Win32.dll" />
-      <BinplaceItem Include="$(NuGetPackageRoot)\newtonsoft.json\12.0.3\lib\netstandard2.0\Newtonsoft.Json.dll" />
-      <BinplaceItem Include="$(NuGetPackageRoot)\system.drawing.common\4.7.0\runtimes\win\lib\netcoreapp2.0\System.Drawing.Common.dll" />
-      <BinplaceItem Include="$(NuGetPackageRoot)\system.io.packaging\4.7.0\lib\netstandard2.0\System.IO.Packaging.dll" />
-    </ItemGroup>
-    <PropertyGroup>
-      <BinplaceDestination>$(OutDir)</BinplaceDestination>
-    </PropertyGroup>
-    <Copy SourceFiles="@(BinplaceItem)"
-      DestinationFiles="@(BinplaceItem->'$(BinplaceDestination)\%(Destination)\%(RecursiveDir)%(Filename)%(Extension)')"
-      SkipUnchangedFiles="true">
-      <Output TaskParameter="CopiedFiles" ItemName="BinplaceItemCopied" />
-    </Copy>
-  </Target>
 </Project>

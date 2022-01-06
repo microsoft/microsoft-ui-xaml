@@ -15,6 +15,13 @@ steps:
       echo parameters.buildOutputDir = '${{ parameters.buildOutputDir }}'
     displayName: 'BuildProject: Display parameters'
 
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk'
+    inputs:
+      packageType: sdk
+      version: 3.1.415
+      installationPath: $(Agent.ToolsDirectory)/dotnet
+
   - template: MUX-InstallWindowsSDK-Steps.yml
 
   - template: MUX-InstallNuget-Steps.yml
