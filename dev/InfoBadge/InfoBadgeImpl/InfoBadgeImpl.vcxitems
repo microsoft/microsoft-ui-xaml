@@ -9,6 +9,9 @@
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);.\InfoBadgeImpl\Target\Release\</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
@@ -16,6 +19,7 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBadgeImpl.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBadgeTemplatePartHelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)\InfoBadgeImpl\RustImpl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)InfoBadgeImpl.cpp" />

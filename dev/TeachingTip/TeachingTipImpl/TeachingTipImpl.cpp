@@ -16,7 +16,7 @@ namespace TeachingTipImpl
 
     TeachingTipContentStates TeachingTipImpl::GetContentStateImpl(const winrt::IInspectable& content)
     {
-        if (content)
+        if (content != nullptr)
         {
             return TeachingTipContentStates::Content;
         }
@@ -28,7 +28,7 @@ namespace TeachingTipImpl
 
     TeachingTipTitleBlockStates  TeachingTipImpl::GetTitleVisibilityStateImpl(const winrt::hstring& title)
     {
-        if (title)
+        if (!title.empty())
         {
             return TeachingTipTitleBlockStates::ShowTitleTextBlock;
         }
@@ -40,7 +40,7 @@ namespace TeachingTipImpl
 
     TeachingTipSubtitleBlockStates TeachingTipImpl::GetSubtitleVisibilityStateImpl(const winrt::hstring& subtitle)
     {
-        if (subtitle)
+        if (!subtitle.empty())
         {
             return TeachingTipSubtitleBlockStates::ShowSubtitleTextBlock;
         }

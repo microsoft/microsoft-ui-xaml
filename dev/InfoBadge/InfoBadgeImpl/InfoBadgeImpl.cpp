@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 #include "pch.h"
 #include "InfoBadgeImpl.h"
+#include "InfoBadgeImpl/RustImpl.h"
 
 namespace InfoBadgeImpl
 {
@@ -64,8 +65,8 @@ namespace InfoBadgeImpl
 #pragma region OnSizeChanged
     std::tuple<double, double, double, double> InfoBadgeImpl::GetFullyRoundedCornerRadiusValueImpl(double height)
     {
-        auto const cornerRadiusValue = height / 2;
-        return std::make_tuple(cornerRadiusValue, cornerRadiusValue, cornerRadiusValue, cornerRadiusValue);
+        auto const CornerRadius = get_fully_rounded_corner_radius_value_rust_impl(height);
+        return std::make_tuple(CornerRadius.TopLeft, CornerRadius.TopRight, CornerRadius.BottomLeft, CornerRadius.BottomRight);
     }
 #pragma endregion
 };
