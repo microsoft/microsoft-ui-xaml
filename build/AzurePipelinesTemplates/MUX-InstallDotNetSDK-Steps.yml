@@ -9,11 +9,19 @@ steps:
     inputs:
       targetType: filePath
       filePath: $(Agent.TempDirectory)\dotnet-install.ps1
-      arguments: -Version ${{ parameters.sdkVersion }}
-    displayName: 'Install .NET ${{ parameters.sdkVersion }} SDK'
+      arguments: -Version ${{ parameters.sdkVersion }} -InstallDir $(Build.SourcesDirectory)\.dotnet -Architecture x64
+    displayName: 'Install .NET ${{ parameters.sdkVersion }} SDK (x64)'
+
+  - task: powershell@2
+    inputs:
+      targetType: filePath
+      filePath: $(Agent.TempDirectory)\dotnet-install.ps1
+      arguments: -Version ${{ parameters.sdkVersion }} -InstallDir $(Build.SourcesDirectory)\.dotnet\x86 -Architecture x86
+    displayName: 'Install .NET ${{ parameters.sdkVersion }} SDK (x86)'
 
   - task: BatchScript@1
     displayName: 'Add .NET ${{ parameters.sdkVersion }} SDK to PATH'
     inputs:
       filename: '$(Build.SourcesDirectory)\build\AddDotNetSdkToPath.cmd'
+      arguments: $(Build.SourcesDirectory)
       modifyEnvironment: true

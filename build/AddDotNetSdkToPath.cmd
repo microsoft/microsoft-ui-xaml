@@ -1,3 +1,5 @@
-set PATH=%PATH%;%LOCALAPPDATA%\Microsoft\dotnet
-set DOTNET_INSTALL_DIR=%LOCALAPPDATA%\Microsoft\dotnet
-set DOTNET_ROOT=%LOCALAPPDATA%\Microsoft\dotnet
+set DOTNET_ROOT=%1\.dotnet
+set DOTNET_ROOT(x86)=%1\.dotnet\x86
+set DOTNET_INSTALL_DIR=%1\.dotnet
+set PATH=%DOTNET_ROOT%;%DOTNET_ROOT(x86)%;%PATH%
+set DOTNET_MULTILEVEL_LOOKUP=0
