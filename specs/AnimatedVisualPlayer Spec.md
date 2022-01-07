@@ -61,6 +61,8 @@ but don't use up resources otherwise.
 Setting the `CacheMode` to `Always` when the mouse enters the control will ensure that
 the animation objects are preloaded so that the animation may start immediately when it needs to play. 
 
+If your player is does not have any animations to play and `CacheMode` is set to `Always`, the player will instantiate all animations immediately and play what was instantiated. 
+
 ```c#
 private void Player_PointerEntered(object sender, PointerRoutedEventArgs e)
 {
@@ -141,8 +143,8 @@ interface IAnimatedVisualSource3
 {
     IAnimatedVisual2 TryCreateAnimatedVisual(
         Windows.UI.Composition.Compositor compositor,
-        Boolean instantiateAnimations,
-        out Object diagnostics);
+        out Object diagnostics,
+        Boolean instantiateAnimations,);
 };
 
 ```
