@@ -24,10 +24,6 @@
       FocusVisualSecondaryThickness=1,1,1,1
       Foreground=#E4000000
       Margin=0,0,0,0
-      MaxHeight=756
-      MaxWidth=548
-      MinHeight=184
-      MinWidth=320
       Padding=0,0,0,0
       RenderSize=0,0
       Visibility=Visible

@@ -361,7 +361,7 @@
                     FocusVisualSecondaryThickness=1,1,1,1
                     Margin=0,0,0,0
                     Name=MonthViewPanel
-                    RenderSize=398,559413
+                    RenderSize=398,559360
                     Visibility=Visible
                   [Windows.UI.Xaml.Controls.CalendarViewDayItem]
                       Background=[NULL]
@@ -5112,31 +5112,6 @@
                         Margin=0,0,0,0
                         Padding=0,0,0,0
                         RenderSize=11,27
-                        Visibility=Visible
-                  [Windows.UI.Xaml.Controls.CalendarViewDayItem]
-                      Background=[NULL]
-                      BorderBrush=[NULL]
-                      BorderThickness=0,0,0,0
-                      FocusVisualPrimaryBrush=#E4000000
-                      FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualSecondaryBrush=#B3FFFFFF
-                      FocusVisualSecondaryThickness=1,1,1,1
-                      Foreground=#E4000000
-                      Margin=1,1,1,1
-                      MinHeight=40
-                      MinWidth=40
-                      Padding=0,0,0,4
-                      RenderSize=55,51
-                      Visibility=Visible
-                    [Windows.UI.Xaml.Controls.TextBlock]
-                        FocusVisualPrimaryBrush=#E4000000
-                        FocusVisualPrimaryThickness=2,2,2,2
-                        FocusVisualSecondaryBrush=#B3FFFFFF
-                        FocusVisualSecondaryThickness=1,1,1,1
-                        Foreground=#E4000000
-                        Margin=0,0,0,0
-                        Padding=0,0,0,0
-                        RenderSize=22,27
                         Visibility=Visible
                   [Windows.UI.Xaml.Controls.CalendarViewDayItem]
                       Background=[NULL]
