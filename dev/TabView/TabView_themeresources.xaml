@@ -7,11 +7,11 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="TabViewBackground"                                       ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackground"                             ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"                     ResourceKey="SolidBackgroundFillColorTertiaryBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundPointerOver"                  ResourceKey="SubtleFillColorSecondaryBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundPressed"                      ResourceKey="SubtleFillColorTertiaryBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundDisabled"                     ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackground"                             ResourceKey="TabFillColorInactivePrimaryBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"                     ResourceKey="TabFillColorActiveLayerBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundPointerOver"                  ResourceKey="TabFillColorInactiveSecondaryBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundPressed"                      ResourceKey="TabFillColorActiveLayerBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundDisabled"                     ResourceKey="TabFillColorInactivePrimaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderForeground"                             ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundPressed"                      ResourceKey="TextFillColorTertiaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundSelected"                     ResourceKey="TextFillColorPrimaryBrush" />
@@ -73,11 +73,11 @@
 
         <ResourceDictionary x:Key="Dark">
             <StaticResource x:Key="TabViewBackground"                                       ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackground"                             ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"                     ResourceKey="SolidBackgroundFillColorTertiaryBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundPointerOver"                  ResourceKey="SubtleFillColorSecondaryBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundPressed"                      ResourceKey="SubtleFillColorTertiaryBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundDisabled"                     ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackground"                             ResourceKey="TabFillColorInactivePrimary" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"                     ResourceKey="TabFillColorActiveLayer" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundPointerOver"                  ResourceKey="TabFillColorInactiveSecondary" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundPressed"                      ResourceKey="TabFillColorActiveLayer" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundDisabled"                     ResourceKey="TabFillColorInactivePrimary" />
             <StaticResource x:Key="TabViewItemHeaderForeground"                             ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundPressed"                      ResourceKey="TextFillColorTertiaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundSelected"                     ResourceKey="TextFillColorPrimaryBrush" />
