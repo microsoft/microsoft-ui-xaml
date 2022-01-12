@@ -59,50 +59,52 @@ namespace Microsoft {
     }
 }
 
-TEST_CLASS(TeachingTipImplTests)
-{
-public:
-    TeachingTipImplTests()
+namespace UnitTests {
+    TEST_CLASS(TeachingTipImplTests)
     {
-        Logger::WriteMessage("In TeachingTipImplTests");
-    }
+    public:
+        TeachingTipImplTests()
+        {
+            Logger::WriteMessage("In TeachingTipImplTests");
+        }
 
-    ~TeachingTipImplTests()
-    {
-        Logger::WriteMessage("In ~TeachingTipImplTests");
-    }
+        ~TeachingTipImplTests()
+        {
+            Logger::WriteMessage("In ~TeachingTipImplTests");
+        }
 
-    TEST_CLASS_INITIALIZE(TeachingTipImplTestsInitialize)
-    {
-        Logger::WriteMessage("In TeachingTipImplTests Initialize");
-    }
+        TEST_CLASS_INITIALIZE(TeachingTipImplTestsInitialize)
+        {
+            Logger::WriteMessage("In TeachingTipImplTests Initialize");
+        }
 
-    TEST_CLASS_CLEANUP(TeachingTipImplTestsCleanup)
-    {
-        Logger::WriteMessage("In TeachingTipImplTests Cleanup");
-    }
+        TEST_CLASS_CLEANUP(TeachingTipImplTestsCleanup)
+        {
+            Logger::WriteMessage("In TeachingTipImplTests Cleanup");
+        }
 
-    BEGIN_TEST_METHOD_ATTRIBUTE(GetPopupAutomationNameImpl)
-        TEST_METHOD_ATTRIBUTE(L"ImplMethod", L"GetPopupAutomationNameImpl")
-        TEST_DESCRIPTION(L"GetPopupAutomationNameImpl should return the automationName unless it is null or empty.")
-        END_TEST_METHOD_ATTRIBUTE()
+        BEGIN_TEST_METHOD_ATTRIBUTE(GetPopupAutomationNameImpl)
+            TEST_METHOD_ATTRIBUTE(L"ImplMethod", L"GetPopupAutomationNameImpl")
+            TEST_DESCRIPTION(L"GetPopupAutomationNameImpl should return the automationName unless it is null or empty.")
+            END_TEST_METHOD_ATTRIBUTE()
 
-        TEST_METHOD(GetPopupAutomationNameImpl)
-    {
-        Assert::AreEqual(winrt::hstring{ L"automationName" }, TeachingTipImpl::GetPopupAutomationNameImpl(L"automationName", L"title"));
-        Assert::AreEqual(winrt::hstring{ L"automationName" }, TeachingTipImpl::GetPopupAutomationNameImpl(L"automationName", L""));
-        Assert::AreEqual(winrt::hstring{ L"title" }, TeachingTipImpl::GetPopupAutomationNameImpl(L"", L"title"));
-        Assert::AreEqual(winrt::hstring{ L"" }, TeachingTipImpl::GetPopupAutomationNameImpl(L"", L""));
-    }
+            TEST_METHOD(GetPopupAutomationNameImpl)
+        {
+            Assert::AreEqual(winrt::hstring{ L"automationName" }, TeachingTipImpl::GetPopupAutomationNameImpl(L"automationName", L"title"));
+            Assert::AreEqual(winrt::hstring{ L"automationName" }, TeachingTipImpl::GetPopupAutomationNameImpl(L"automationName", L""));
+            Assert::AreEqual(winrt::hstring{ L"title" }, TeachingTipImpl::GetPopupAutomationNameImpl(L"", L"title"));
+            Assert::AreEqual(winrt::hstring{ L"" }, TeachingTipImpl::GetPopupAutomationNameImpl(L"", L""));
+        }
 
-    BEGIN_TEST_METHOD_ATTRIBUTE(GetContentStateImpl)
-        TEST_METHOD_ATTRIBUTE(L"ImplMethod", L"GetContentStateImpl")
-        TEST_DESCRIPTION(L"GetContentStateImpl should return the the content state if the content is non-null.")
-        END_TEST_METHOD_ATTRIBUTE()
+        BEGIN_TEST_METHOD_ATTRIBUTE(GetContentStateImpl)
+            TEST_METHOD_ATTRIBUTE(L"ImplMethod", L"GetContentStateImpl")
+            TEST_DESCRIPTION(L"GetContentStateImpl should return the the content state if the content is non-null.")
+            END_TEST_METHOD_ATTRIBUTE()
 
-        TEST_METHOD(GetContentStateImpl)
-    {
-        Assert::AreEqual(TeachingTipContentStates::Content, TeachingTipImpl::GetContentStateImpl(winrt::box_value(1)));
-        Assert::AreEqual(TeachingTipContentStates::NoContent, TeachingTipImpl::GetContentStateImpl(nullptr));
-    }
-};
+            TEST_METHOD(GetContentStateImpl)
+        {
+            Assert::AreEqual(TeachingTipContentStates::Content, TeachingTipImpl::GetContentStateImpl(winrt::box_value(1)));
+            Assert::AreEqual(TeachingTipContentStates::NoContent, TeachingTipImpl::GetContentStateImpl(nullptr));
+        }
+    };
+}
