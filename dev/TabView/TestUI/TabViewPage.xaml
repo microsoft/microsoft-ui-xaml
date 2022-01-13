@@ -140,7 +140,7 @@
                     </controls:TabView.Resources>
 
                     <controls:TabView.TabStripHeader>
-                        <TextBlock Grid.Column="0" Text="Middle" Margin="6,3,6,0" VerticalAlignment="Left" FontSize="14"/>
+                        <TextBlock Grid.Column="0" Text="Left" Margin="6,3,6,0" VerticalAlignment="Center" FontSize="14"/>
                     </controls:TabView.TabStripHeader>
 
                     <controls:TabView.TabStripFooter>
