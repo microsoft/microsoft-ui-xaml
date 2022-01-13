@@ -151,7 +151,10 @@ void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sen
     if (IsSelected())
     {
         SetValue(winrt::Canvas::ZIndexProperty(), box_value(20));
-        StartBringIntoView();
+        // we need to set the TargetRect to be slightly wider than the TabViewItem size in order to avoid cutting off the end of the Tab
+        auto bringIntoViewOptions = winrt::BringIntoViewOptions();
+        bringIntoViewOptions.TargetRect(winrt::Rect{ 0, 0, DesiredSize().Width+2, DesiredSize().Height});
+        StartBringIntoView(bringIntoViewOptions);
     }
     else
     {
