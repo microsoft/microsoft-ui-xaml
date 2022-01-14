@@ -1,0 +1,22 @@
+﻿<local:TestPage
+    x:Class="MUXControlsTestApp.SplitButtonAxeTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel>
+        <muxc:SplitButton>
+            <muxc:SplitButton.Content>
+                <SymbolIcon Symbol="FontColor"/>
+            </muxc:SplitButton.Content>
+        </muxc:SplitButton>
+
+        <muxc:SplitButton Content="Demo text"/>
+    </StackPanel>
+
+</local:TestPage>

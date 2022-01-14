@@ -21,6 +21,7 @@ using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using MUXTestInfra.Shared.Infra;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -39,6 +40,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
+        }
+
+        [TestMethod]
+        public void VerifyAxeScanPasses()
+        {
+            using (var setup = new TestSetupHelper("SplitButton-Axe"))
+            {
+                AxeTestHelper.TestForAxeIssues();
+            }
         }
 
         [TestMethod]
@@ -138,38 +148,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
 
-        [TestMethod]
-        public void AccessibilityTest()
-        {
-            using (var setup = new TestSetupHelper("SplitButton Tests"))
-            {
-                SplitButton splitButton = FindElement.ByName<SplitButton>("TestSplitButton");
+        //[TestMethod]
+        //public void AccessibilityTest()
+        //{
+        //    using (var setup = new TestSetupHelper("SplitButton Tests"))
+        //    {
+        //        SplitButton splitButton = FindElement.ByName<SplitButton>("TestSplitButton");
 
-                TextBlock clickCountTextBlock = FindElement.ByName<TextBlock>("ClickCountTextBlock");
-                TextBlock flyoutOpenedCountTextBlock = FindElement.ByName<TextBlock>("FlyoutOpenedCountTextBlock");
-                TextBlock flyoutClosedCountTextBlock = FindElement.ByName<TextBlock>("FlyoutClosedCountTextBlock");
+        //        TextBlock clickCountTextBlock = FindElement.ByName<TextBlock>("ClickCountTextBlock");
+        //        TextBlock flyoutOpenedCountTextBlock = FindElement.ByName<TextBlock>("FlyoutOpenedCountTextBlock");
+        //        TextBlock flyoutClosedCountTextBlock = FindElement.ByName<TextBlock>("FlyoutClosedCountTextBlock");
 
-                Log.Comment("Verify that SplitButton has no accessible children");
-                Verify.AreEqual(0, splitButton.Children.Count);
+        //        Log.Comment("Verify that SplitButton has no accessible children");
+        //        Verify.AreEqual(0, splitButton.Children.Count);
 
-                Verify.AreEqual("0", clickCountTextBlock.DocumentText);
-                Log.Comment("Verify that invoking the SplitButton causes a click");
-                splitButton.InvokeAndWait();
-                Verify.AreEqual("1", clickCountTextBlock.DocumentText);
+        //        Verify.AreEqual("0", clickCountTextBlock.DocumentText);
+        //        Log.Comment("Verify that invoking the SplitButton causes a click");
+        //        splitButton.InvokeAndWait();
+        //        Verify.AreEqual("1", clickCountTextBlock.DocumentText);
 
-                Verify.AreEqual("0", flyoutOpenedCountTextBlock.DocumentText);
-                Log.Comment("Verify that expanding the SplitButton opens the flyout");
-                splitButton.ExpandAndWait();
-                Verify.AreEqual("1", flyoutOpenedCountTextBlock.DocumentText);
-                Verify.AreEqual(ExpandCollapseState.Expanded, splitButton.ExpandCollapseState);
+        //        Verify.AreEqual("0", flyoutOpenedCountTextBlock.DocumentText);
+        //        Log.Comment("Verify that expanding the SplitButton opens the flyout");
+        //        splitButton.ExpandAndWait();
+        //        Verify.AreEqual("1", flyoutOpenedCountTextBlock.DocumentText);
+        //        Verify.AreEqual(ExpandCollapseState.Expanded, splitButton.ExpandCollapseState);
 
-                Verify.AreEqual("0", flyoutClosedCountTextBlock.DocumentText);
-                Log.Comment("Verify that collapsing the SplitButton closes the flyout");
-                splitButton.CollapseAndWait();
-                Verify.AreEqual("1", flyoutClosedCountTextBlock.DocumentText);
-                Verify.AreEqual(ExpandCollapseState.Collapsed, splitButton.ExpandCollapseState);
-            }
-        }
+        //        Verify.AreEqual("0", flyoutClosedCountTextBlock.DocumentText);
+        //        Log.Comment("Verify that collapsing the SplitButton closes the flyout");
+        //        splitButton.CollapseAndWait();
+        //        Verify.AreEqual("1", flyoutClosedCountTextBlock.DocumentText);
+        //        Verify.AreEqual(ExpandCollapseState.Collapsed, splitButton.ExpandCollapseState);
+        //    }
+        //}
 
         [TestMethod]
         public void KeyboardTest()

@@ -10,12 +10,19 @@
     <Import_RootNamespace>SplitButton_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)SplitButtonAxeTestPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)SplitButtonPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)SplitButtonAxeTestPage.xaml.cs">
+      <DependentUpon>SplitButtonAxeTestPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)SplitButtonPage.xaml.cs">
       <DependentUpon>SplitButtonPage.xaml</DependentUpon>
     </Compile>
