@@ -92,11 +92,6 @@
             <Color x:Key="SolidBackgroundFillColorQuarternary">#2C2C2C</Color>
             <Color x:Key="SolidBackgroundFillColorTransparent">#00202020</Color>
 
-            <Color x:Key="TabFillColorActiveLayer">#733A3A3A</Color>
-            <Color x:Key="TabFillColorActiveDrag">#2C2C2C</Color>
-            <Color x:Key="TabFillColorInactivePrimary">#00FFFFFF</Color>
-            <Color x:Key="TabFillColorInactiveSecondary">#0FFFFFFF</Color>
-
             <Color x:Key="SystemFillColorSuccess">#6CCB5F</Color>
             <Color x:Key="SystemFillColorCaution">#FCE100</Color>
             <Color x:Key="SystemFillColorCritical">#FF99A4</Color>
@@ -202,11 +197,6 @@
             <SolidColorBrush x:Key="SolidBackgroundFillColorSecondaryBrush" Color="{StaticResource SolidBackgroundFillColorSecondary}" />
             <SolidColorBrush x:Key="SolidBackgroundFillColorTertiaryBrush" Color="{StaticResource SolidBackgroundFillColorTertiary}" />
             <SolidColorBrush x:Key="SolidBackgroundFillColorQuarternaryBrush" Color="{StaticResource SolidBackgroundFillColorQuarternary}" />
-
-            <SolidColorBrush x:Key="TabFillColorActiveLayerBrush" Color="{StaticResource TabFillColorActiveLayer}" />
-            <SolidColorBrush x:Key="TabFillColorActiveDragBrush" Color="{StaticResource TabFillColorActiveDrag}" />
-            <SolidColorBrush x:Key="TabFillColorInactivePrimaryBrush" Color="{StaticResource TabFillColorInactivePrimary}" />
-            <SolidColorBrush x:Key="TabFillColorInactiveSecondaryBrush" Color="{StaticResource TabFillColorInactiveSecondary}" />
 
             <SolidColorBrush x:Key="SystemFillColorAttentionBrush" Color="{ThemeResource SystemAccentColorLight2}" />
             <SolidColorBrush x:Key="SystemFillColorSuccessBrush" Color="{StaticResource SystemFillColorSuccess}" />
@@ -347,11 +337,6 @@
             <Color x:Key="SolidBackgroundFillColorQuarternary">#FFFFFF</Color>
             <Color x:Key="SolidBackgroundFillColorTransparent">#00F3F3F3</Color>
 
-            <Color x:Key="TabFillColorActiveLayer">#B3FFFFFF</Color>
-            <Color x:Key="TabFillColorActiveDrag">#F9F9F9</Color>
-            <Color x:Key="TabFillColorInactivePrimary">#00000000</Color>
-            <Color x:Key="TabFillColorInactiveSecondary">#0A000000</Color>
-
             <Color x:Key="SystemFillColorSuccess">#0F7B0F</Color>
             <Color x:Key="SystemFillColorCaution">#9D5D00</Color>
             <Color x:Key="SystemFillColorCritical">#C42B1C</Color>
@@ -457,11 +442,6 @@
             <SolidColorBrush x:Key="SolidBackgroundFillColorSecondaryBrush" Color="{StaticResource SolidBackgroundFillColorSecondary}" />
             <SolidColorBrush x:Key="SolidBackgroundFillColorTertiaryBrush" Color="{StaticResource SolidBackgroundFillColorTertiary}" />
             <SolidColorBrush x:Key="SolidBackgroundFillColorQuarternaryBrush" Color="{StaticResource SolidBackgroundFillColorQuarternary}" />
-
-            <SolidColorBrush x:Key="TabFillColorActiveLayerBrush" Color="{StaticResource TabFillColorActiveLayer}" />
-            <SolidColorBrush x:Key="TabFillColorActiveDragBrush" Color="{StaticResource TabFillColorActiveDrag}" />
-            <SolidColorBrush x:Key="TabFillColorInactivePrimaryBrush" Color="{StaticResource TabFillColorInactivePrimary}" />
-            <SolidColorBrush x:Key="TabFillColorInactiveSecondaryBrush" Color="{StaticResource TabFillColorInactiveSecondary}" />
 
             <SolidColorBrush x:Key="SystemFillColorAttentionBrush" Color="{ThemeResource SystemAccentColor}" />
             <SolidColorBrush x:Key="SystemFillColorSuccessBrush" Color="{StaticResource SystemFillColorSuccess}" />
