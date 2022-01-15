@@ -18,7 +18,8 @@ SplitButtonAutomationPeer::SplitButtonAutomationPeer(winrt::SplitButton const& o
 // IAutomationPeerOverrides
 winrt::IInspectable SplitButtonAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
-    if (patternInterface == winrt::PatternInterface::Invoke)
+    if (patternInterface == winrt::PatternInterface::Invoke ||
+        patternInterface == winrt::PatternInterface::ExpandCollapse)
     {
         return *this;
     }

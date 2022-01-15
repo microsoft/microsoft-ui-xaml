@@ -10,11 +10,11 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <StackPanel>
-        <muxc:SplitButton>
+        <muxc:SplitButton AutomationProperties.Name="Font color options">
             <muxc:SplitButton.Content>
                 <SymbolIcon Symbol="FontColor"/>
             </muxc:SplitButton.Content>
-        </muxc:SplitButton>
+        </muxc:SplitButton> 
 
         <muxc:SplitButton Content="Demo text"/>
     </StackPanel>
