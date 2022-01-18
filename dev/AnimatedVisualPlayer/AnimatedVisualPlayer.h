@@ -148,4 +148,5 @@ private:
     bool m_isUnloaded{ false };
 
     bool m_isAnimationsCreated{ false };
+    uint32_t m_createAnimationsCounter = 0;
 };

@@ -119,7 +119,7 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
                 {
                     if (m_owner) 
                     {                        
-                        // If cache mode is set to None - destroy animations immediately after player stops.
+                        // If optimization is set to Resources - destroy animations immediately after player stops.
                         if (m_owner->AnimationOptimization() == winrt::PlayerAnimationOptimization::Resources) 
                         {
                             m_owner->DestroyAnimations();
@@ -746,7 +746,7 @@ void AnimatedVisualPlayer::SetProgress(double progress)
         m_nowPlaying->Complete();
     }
 
-    // If cache mode is set to None - destroy annimations immediately.
+    // If optimization is set to Resources - destroy annimations immediately.
     if (AnimationOptimization() == winrt::PlayerAnimationOptimization::Resources) {
         DestroyAnimations();
     }
@@ -783,7 +783,7 @@ void AnimatedVisualPlayer::OnAutoPlayPropertyChanged(
 void AnimatedVisualPlayer::OnAnimationOptimizationPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    auto cacheMode = unbox_value<winrt::PlayerAnimationOptimization>(args.NewValue());
+    auto optimization = unbox_value<winrt::PlayerAnimationOptimization>(args.NewValue());
 
     if (m_nowPlaying)
     {
@@ -791,17 +791,19 @@ void AnimatedVisualPlayer::OnAnimationOptimizationPropertyChanged(
         return;
     }
 
-    if (cacheMode == winrt::PlayerAnimationOptimization::Resources)
+    if (optimization == winrt::PlayerAnimationOptimization::Resources)
     {
         DestroyAnimations();
     }
-    else if (cacheMode == winrt::PlayerAnimationOptimization::Latency)
+    else if (optimization == winrt::PlayerAnimationOptimization::Latency)
     {
         CreateAnimations();
     }
 }
 
 void AnimatedVisualPlayer::CreateAnimations() {
+    m_createAnimationsCounter++;
+
     if (m_isAnimationsCreated) 
     {
         return;
@@ -826,7 +828,14 @@ void AnimatedVisualPlayer::DestroyAnimations() {
 
     // Call RequestCommit to make sure that previous compositor calls complete before destroying animations.
     m_rootVisual.Compositor().RequestCommitAsync().Completed(
-        [&](auto, auto) {
+        [&, createAnimationsCounter = m_createAnimationsCounter](auto, auto) {
+            // Check if there was any CreateAnimations call after DestroyAnimations.
+            // We should not destroy animations in this case,
+            // they will be destroyed by the following DestroyAnimations call.
+            if (createAnimationsCounter != m_createAnimationsCounter) {
+                return;
+            }
+
             // Check if current animated visual supports destroyig animations.
             if (const auto& animatedVisual = m_animatedVisual.get())
             {
