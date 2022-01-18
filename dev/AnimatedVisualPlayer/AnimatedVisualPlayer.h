@@ -83,7 +83,7 @@ private:
 
     void OnAutoPlayPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
-    void OnAnimationsCacheModePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
+    void OnAnimationOptimizationPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
     void OnFallbackContentPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
@@ -132,7 +132,7 @@ private:
     winrt::float2 m_animatedVisualSize;
     winrt::Composition::Visual m_animatedVisualRoot{ nullptr };
     int m_playAsyncVersion{ 0 };
-    double m_lastPlayProgress{ 0 };
+    double m_currentPlayFromProgress{ 0 };
     // The play that will be stopped when Stop() is called.
     std::shared_ptr<AnimationPlay> m_nowPlaying{ nullptr };
     winrt::IDynamicAnimatedVisualSource::AnimatedVisualInvalidated_revoker  m_dynamicAnimatedVisualInvalidatedRevoker{};
@@ -147,5 +147,5 @@ private:
     // unloaded) from later Loaded events.
     bool m_isUnloaded{ false };
 
-    bool m_isAnimationsCached{ false };
+    bool m_isAnimationsCreated{ false };
 };

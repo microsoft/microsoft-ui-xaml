@@ -131,15 +131,15 @@ namespace MUXControlsTestApp
 
         void SwitchCacheModeButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Player.AnimationsCacheMode == Microsoft.UI.Xaml.Controls.AnimationsCacheModeEnum.Always)
+            if (Player.AnimationOptimization == Microsoft.UI.Xaml.Controls.PlayerAnimationOptimization.Latency)
             {
-                Player.AnimationsCacheMode = Microsoft.UI.Xaml.Controls.AnimationsCacheModeEnum.None;
-                SwitchCacheModeButton.Content = "Switch Cache Mode (Current: None)";
+                Player.AnimationOptimization = Microsoft.UI.Xaml.Controls.PlayerAnimationOptimization.Resources;
+                SwitchCacheModeButton.Content = "Switch Optimization (Current: Resources)";
             }
-            else if (Player.AnimationsCacheMode == Microsoft.UI.Xaml.Controls.AnimationsCacheModeEnum.None)
+            else if (Player.AnimationOptimization == Microsoft.UI.Xaml.Controls.PlayerAnimationOptimization.Resources)
             {
-                Player.AnimationsCacheMode = Microsoft.UI.Xaml.Controls.AnimationsCacheModeEnum.Always;
-                SwitchCacheModeButton.Content = "Switch Cache Mode (Current: Always)";
+                Player.AnimationOptimization = Microsoft.UI.Xaml.Controls.PlayerAnimationOptimization.Latency;
+                SwitchCacheModeButton.Content = "Switch Optimization (Current: Latency)";
             }
         }
 

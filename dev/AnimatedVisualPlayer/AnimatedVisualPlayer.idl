@@ -11,11 +11,11 @@ interface IAnimatedVisual
     Windows.Foundation.TimeSpan Duration{ get; };
 };
 
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 [webhosthidden]
 interface IAnimatedVisual2 requires IAnimatedVisual
 {
-    void CreateAnimations(Double progressHint);
+    void CreateAnimations();
     void DestroyAnimations();
 };
 
@@ -36,7 +36,7 @@ interface IDynamicAnimatedVisualSource
     event Windows.Foundation.TypedEventHandler<IDynamicAnimatedVisualSource, Object> AnimatedVisualInvalidated;
 };
 
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 [webhosthidden]
 interface IAnimatedVisualSource3
 {
@@ -63,10 +63,10 @@ interface ISelfPlayingAnimatedVisual
 
 [MUX_PUBLIC]
 [webhosthidden]
-enum AnimationsCacheModeEnum
+enum PlayerAnimationOptimization
 {
-    None,
-    Always
+    Latency,
+    Resources
 };
 
 [MUX_PUBLIC]
@@ -96,9 +96,9 @@ unsealed runtimeclass AnimatedVisualPlayer
 
     [MUX_PUBLIC_V2]
     {
-        [MUX_DEFAULT_VALUE("winrt::AnimationsCacheModeEnum::Always")]
+        [MUX_DEFAULT_VALUE("winrt::PlayerAnimationOptimization::Latency")]
         [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-        AnimationsCacheModeEnum AnimationsCacheMode;
+        PlayerAnimationOptimization AnimationOptimization;
     }
 
     Windows.UI.Composition.CompositionObject ProgressObject{ get; };
@@ -115,7 +115,6 @@ unsealed runtimeclass AnimatedVisualPlayer
 
     // Dependency properties
     static Windows.UI.Xaml.DependencyProperty AutoPlayProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty AnimationsCacheModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty DiagnosticsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty DurationProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty FallbackContentProperty{ get; };
@@ -124,6 +123,11 @@ unsealed runtimeclass AnimatedVisualPlayer
     static Windows.UI.Xaml.DependencyProperty PlaybackRateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SourceProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty StretchProperty{ get; };
+
+    [MUX_PUBLIC_V2]
+    {
+        static Windows.UI.Xaml.DependencyProperty AnimationOptimizationProperty{ get; };
+    }
 }
 
 }

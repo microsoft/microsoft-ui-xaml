@@ -13,7 +13,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "AnimatedVisualPlayer.g.cpp"
 
-GlobalDependencyProperty AnimatedVisualPlayerProperties::s_AnimationsCacheModeProperty{ nullptr };
+GlobalDependencyProperty AnimatedVisualPlayerProperties::s_AnimationOptimizationProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_AutoPlayProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_DiagnosticsProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_DurationProperty{ nullptr };
@@ -31,16 +31,16 @@ AnimatedVisualPlayerProperties::AnimatedVisualPlayerProperties()
 
 void AnimatedVisualPlayerProperties::EnsureProperties()
 {
-    if (!s_AnimationsCacheModeProperty)
+    if (!s_AnimationOptimizationProperty)
     {
-        s_AnimationsCacheModeProperty =
+        s_AnimationOptimizationProperty =
             InitializeDependencyProperty(
-                L"AnimationsCacheMode",
-                winrt::name_of<winrt::AnimationsCacheModeEnum>(),
+                L"AnimationOptimization",
+                winrt::name_of<winrt::PlayerAnimationOptimization>(),
                 winrt::name_of<winrt::AnimatedVisualPlayer>(),
                 false /* isAttached */,
-                ValueHelper<winrt::AnimationsCacheModeEnum>::BoxValueIfNecessary(winrt::AnimationsCacheModeEnum::Always),
-                winrt::PropertyChangedCallback(&OnAnimationsCacheModePropertyChanged));
+                ValueHelper<winrt::PlayerAnimationOptimization>::BoxValueIfNecessary(winrt::PlayerAnimationOptimization::Latency),
+                winrt::PropertyChangedCallback(&OnAnimationOptimizationPropertyChanged));
     }
     if (!s_AutoPlayProperty)
     {
@@ -145,7 +145,7 @@ void AnimatedVisualPlayerProperties::EnsureProperties()
 
 void AnimatedVisualPlayerProperties::ClearProperties()
 {
-    s_AnimationsCacheModeProperty = nullptr;
+    s_AnimationOptimizationProperty = nullptr;
     s_AutoPlayProperty = nullptr;
     s_DiagnosticsProperty = nullptr;
     s_DurationProperty = nullptr;
@@ -157,12 +157,12 @@ void AnimatedVisualPlayerProperties::ClearProperties()
     s_StretchProperty = nullptr;
 }
 
-void AnimatedVisualPlayerProperties::OnAnimationsCacheModePropertyChanged(
+void AnimatedVisualPlayerProperties::OnAnimationOptimizationPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::AnimatedVisualPlayer>();
-    winrt::get_self<AnimatedVisualPlayer>(owner)->OnAnimationsCacheModePropertyChanged(args);
+    winrt::get_self<AnimatedVisualPlayer>(owner)->OnAnimationOptimizationPropertyChanged(args);
 }
 
 void AnimatedVisualPlayerProperties::OnAutoPlayPropertyChanged(
@@ -205,17 +205,17 @@ void AnimatedVisualPlayerProperties::OnStretchPropertyChanged(
     winrt::get_self<AnimatedVisualPlayer>(owner)->OnStretchPropertyChanged(args);
 }
 
-void AnimatedVisualPlayerProperties::AnimationsCacheMode(winrt::AnimationsCacheModeEnum const& value)
+void AnimatedVisualPlayerProperties::AnimationOptimization(winrt::PlayerAnimationOptimization const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_AnimationsCacheModeProperty, ValueHelper<winrt::AnimationsCacheModeEnum>::BoxValueIfNecessary(value));
+    static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_AnimationOptimizationProperty, ValueHelper<winrt::PlayerAnimationOptimization>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::AnimationsCacheModeEnum AnimatedVisualPlayerProperties::AnimationsCacheMode()
+winrt::PlayerAnimationOptimization AnimatedVisualPlayerProperties::AnimationOptimization()
 {
-    return ValueHelper<winrt::AnimationsCacheModeEnum>::CastOrUnbox(static_cast<AnimatedVisualPlayer*>(this)->GetValue(s_AnimationsCacheModeProperty));
+    return ValueHelper<winrt::PlayerAnimationOptimization>::CastOrUnbox(static_cast<AnimatedVisualPlayer*>(this)->GetValue(s_AnimationOptimizationProperty));
 }
 
 void AnimatedVisualPlayerProperties::AutoPlay(bool value)

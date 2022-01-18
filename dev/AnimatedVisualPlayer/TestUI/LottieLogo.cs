@@ -34,7 +34,7 @@ namespace AnimatedVisuals
                     new LottieLogo_AnimatedVisual(
                         compositor
                         );
-                v.CreateAnimations(0.0);
+                v.CreateAnimations();
                 return v;
             }
 
@@ -209,9 +209,9 @@ namespace AnimatedVisuals
             Vector2KeyFrameAnimation _radiusVector2Animation;
             Vector2KeyFrameAnimation _shapeVisibilityAnimation_04;
 
-            public void CreateAnimations(double progressHint)
+            public void CreateAnimations()
             {
-                float currentProgress = (float)progressHint;
+                float currentProgress = (float)0;
                 StartProgressBoundAnimation(_containerShape_00, "Offset", OffsetVector2Animation_01(), RootProgress(),currentProgress);
                 StartProgressBoundAnimation(_containerShape_00, "Scale", ShapeVisibilityAnimation_00(), RootProgress(),currentProgress);
                 StartProgressBoundAnimation(_containerShape_01, "Offset", OffsetVector2Animation_00(), RootProgress(),currentProgress);
