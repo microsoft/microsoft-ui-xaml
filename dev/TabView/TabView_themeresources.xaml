@@ -11,7 +11,6 @@
             <Color x:Key="TabFillColorInactivePrimary">#00000000</Color>
             <Color x:Key="TabFillColorInactiveSecondary">#0A000000</Color>
 
-
             <SolidColorBrush x:Key="TabFillColorActiveLayerBrush" Color="{StaticResource TabFillColorActiveLayer}" />
             <SolidColorBrush x:Key="TabFillColorActiveDragBrush" Color="{StaticResource TabFillColorActiveDrag}" />
             <SolidColorBrush x:Key="TabFillColorInactivePrimaryBrush" Color="{StaticResource TabFillColorInactivePrimary}" />
@@ -227,6 +226,13 @@
                     <GradientStop Offset="1.0" Color="{ThemeResource SystemColorHighlightColor}"/>
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
+
+            <!-- Colors copied from Default theme to match list of keys. Should not
+                 be using these keys. These are set to Red to notify that.-->
+            <Color x:Key="TabFillColorActiveLayer">#FF0000</Color>
+            <Color x:Key="TabFillColorActiveDrag">#FF0000</Color>
+            <Color x:Key="TabFillColorInactivePrimary">#FF0000</Color>
+            <Color x:Key="TabFillColorInactiveSecondary">#FF0000</Color>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
