@@ -25,18 +25,16 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ChildrenInTabFocusOrderIterable.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BuildTreeScheduler.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CustomProperty.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryRecycleArgs.h" Condition="$(BuildingWithBuildExe) != 'true'" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryRecycleArgsDownlevel.h" Condition="$(BuildingWithBuildExe) == 'true'" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryRecycleArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsSourceView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementAnimator.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementClearingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementIndexChangedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementPreparedEventArgs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryGetArgs.h" Condition="$(BuildingWithBuildExe) != 'true'" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryGetArgsDownlevel.h" Condition="$(BuildingWithBuildExe) == 'true'" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryGetArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsSourceViewFactory.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ItemTemplateWrapper.h" Condition="$(BuildingWithBuildExe) != 'true'" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ItemTemplateWrapper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)LayoutContextAdapter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NonVirtualizingLayout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NonvirtualizingLayoutContext.h" />
@@ -94,8 +92,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ChildrenInTabFocusOrderIterable.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BuildTreeScheduler.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)CustomProperty.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ElementFactoryRecycleArgs.cpp" Condition="$(BuildingWithBuildExe) != 'true'" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ElementFactoryRecycleArgsDownlevel.cpp" Condition="$(BuildingWithBuildExe) == 'true'" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ElementFactoryRecycleArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsSourceView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ElementAnimator.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementClearingEventArgs.cpp" />
@@ -104,12 +101,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsSourceViewFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsRepeaterScrollHost.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ElementManager.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ItemTemplateWrapper.cpp" Condition="$(BuildingWithBuildExe) != 'true'" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ItemTemplateWrapper.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)LayoutContextAdapter.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NonVirtualizingLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NonvirtualizingLayoutContext.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ElementFactoryGetArgs.cpp" Condition="$(BuildingWithBuildExe) != 'true'" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ElementFactoryGetArgsDownlevel.cpp" Condition="$(BuildingWithBuildExe) == 'true'" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ElementFactoryGetArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SelectionModelChildrenRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)UniformGridLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FlowLayout.cpp" />
