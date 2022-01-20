@@ -3,6 +3,7 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.UI.Xaml.Common.props" />
+  <Import Project="$(MSBuildThisFileDirectory)..\..\HybridCRT.props" />
 
   <PropertyGroup  Label="Globals">
     <ProjectGuid>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</ProjectGuid>
@@ -13,11 +14,64 @@
     <MdMergeNamespaceMergeDepth>3</MdMergeNamespaceMergeDepth>
     <ProjectWinMDName>Microsoft.UI.winmd</ProjectWinMDName>
     <DependencyPropertyCodeGenOutputDirectory>$(MSBuildThisFileDirectory)..\Generated</DependencyPropertyCodeGenOutputDirectory>
+    <UseCrtSDKReferenceStaticWarning>false</UseCrtSDKReferenceStaticWarning>
   </PropertyGroup>
 
   <Import Condition="'$(Configuration)' == 'Release'" Project="$(MSBuildProjectDirectory)\..\..\PGO.compile.props" />
   <Import Condition="'$(PGOBuildMode)' == 'Optimize'" Project="$(MSBuildProjectDirectory)\..\..\tools\MUXPGODatabase\PGO.version.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+
+  <PropertyGroup>
+    <StlDefinitions>
+      _ITERATOR_DEBUG_LEVEL=0;
+    </StlDefinitions>
+  </PropertyGroup>
+  <PropertyGroup>
+    <WindowsSDKArch>$(Platform)</WindowsSDKArch>
+    <WindowsSDKArch Condition="'$(Platform)' == 'Win32'">x86</WindowsSDKArch>
+    <VisualStudioLibPath>$(VCToolsInstallDir)lib\$(WindowsSDKArch)\</VisualStudioLibPath>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <!-- <ClCompile>
+      <RuntimeLibrary>$(RuntimeLibrary)</RuntimeLibrary>
+      <PreprocessorDefinitions>$(CrtDefinitions) $(StlDefinitions) $(ClMidlDefinitions) $(AllowRuntimeLibraryMismatch) %(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Midl>    
+      <PreprocessorDefinitions>$(ClMidlDefinitions) %(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>     -->
+    <Link>
+      <IgnoreSpecificDefaultLibraries>
+        libucrt.lib;
+        libucrtd.lib;
+        libcmt.lib;
+        libcmtd.lib;
+        libcpmt.lib;
+        libcpmtd.lib;
+        ucrt.lib;
+        ucrtd.lib;
+        msvcrt.lib;
+        msvcrtd.lib;
+        msvcprt.lib;
+        msvcprtd.lib;
+        vccorlib.lib;
+        vccorlibd.lib;
+        %(IgnoreSpecificDefaultLibraries)
+      </IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <CrtLib Include="$(UCRTPath)\ucrt.lib"/>
+    <CrtLib Include="$(VisualStudioLibPath)libcmt.lib"/>
+    <CrtLib Include="$(VisualStudioLibPath)libcpmt.lib"/>
+    <CrtLib Include="$(VisualStudioLibPath)libvcruntime.lib"/>
+  </ItemGroup>
+  <ItemGroup>
+    <Link Include="@(CrtLib)"/>
+  </ItemGroup>
+
   
   <ItemDefinitionGroup>
     <Link>
@@ -34,29 +88,30 @@
   <ImportGroup Label="Shared">
     <Import Project="..\TestHooks\TestHooks.vcxitems" Label="Shared" />
     <Import Project="..\Common\Common.vcxitems" Label="Shared" />
+    <Import Project="..\ColorPicker\ColorPicker.vcxitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true' Or $(FeatureColorPickerEnabled) == 'productOnly'" />
+    <Import Project="..\Collections\Collections.vcxitems" Label="Shared" Condition="$(FeatureCollectionsEnabled) == 'true' Or $(FeatureCollectionsEnabled) == 'productOnly'" />
+    <Import Project="..\Effects\Microsoft.UI.Private.Composition.Effects.vcxitems" Label="Shared" Condition="$(FeatureEffectsEnabled) == 'true' Or $(FeatureEffectsEnabled) == 'productOnly'" />
+    <Import Project="..\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" Condition="$(FeatureResourceHelperEnabled) == 'true' Or $(FeatureResourceHelperEnabled) == 'productOnly'" />
+    <Import Project="..\Materials\Acrylic\AcrylicBrush.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
+    <Import Project="..\Materials\Reveal\RevealBrush.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
+    <Import Project="..\Materials\Backdrop\SystemBackdropComponent.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
+    <Import Project="..\Telemetry\Telemetry.vcxitems" Label="Shared" />
+    <Import Project="..\Lights\Lights.vcxitems" Label="Shared" Condition="$(FeatureLightsEnabled) == 'true' Or $(FeatureLightsEnabled) == 'productOnly'" />
+
     <Import Project="..\CommonStyles\CommonStyles.vcxitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true' Or $(FeatureCommonStylesEnabled) == 'productOnly'" />
     <Import Project="..\RatingControl\RatingControl.vcxitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true' Or $(FeatureRatingControlEnabled) == 'productOnly'" />
     <Import Project="..\InfoBadge\InfoBadge.vcxitems" Label="Shared" Condition="$(FeatureInfoBadgeEnabled) == 'true' Or $(FeatureInfoBadgeEnabled) == 'productOnly'" />
     <Import Project="..\NavigationView\NavigationView.vcxitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true' Or $(FeatureNavigationViewEnabled) == 'productOnly'" />
-    <Import Project="..\ColorPicker\ColorPicker.vcxitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true' Or $(FeatureColorPickerEnabled) == 'productOnly'" />
-    <Import Project="..\Collections\Collections.vcxitems" Label="Shared" Condition="$(FeatureCollectionsEnabled) == 'true' Or $(FeatureCollectionsEnabled) == 'productOnly'" />
     <Import Project="..\CommandBarFlyout\CommandBarFlyout.vcxitems" Label="Shared" Condition="$(FeatureCommandBarFlyoutEnabled) == 'true' Or $(FeatureCommandBarFlyoutEnabled) == 'productOnly'" />
-    <Import Project="..\Effects\Microsoft.UI.Private.Composition.Effects.vcxitems" Label="Shared" Condition="$(FeatureEffectsEnabled) == 'true' Or $(FeatureEffectsEnabled) == 'productOnly'" />
     <Import Project="..\PersonPicture\PersonPicture.vcxitems" Label="Shared" Condition="$(FeaturePersonPictureEnabled) == 'true' Or $(FeaturePersonPictureEnabled) == 'productOnly'" />
-    <Import Project="..\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" Condition="$(FeatureResourceHelperEnabled) == 'true' Or $(FeatureResourceHelperEnabled) == 'productOnly'" />
     <Import Project="..\PullToRefresh\RefreshContainer\RefreshContainer.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true' Or $(FeaturePullToRefreshEnabled) == 'productOnly'" />
     <Import Project="..\PullToRefresh\RefreshVisualizer\RefreshVisualizer.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true' Or $(FeaturePullToRefreshEnabled) == 'productOnly'" />
     <Import Project="..\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\ScrollViewerIRefreshInfoProviderAdapter.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true' Or $(FeaturePullToRefreshEnabled) == 'productOnly'" />
     <Import Project="..\MenuBar\MenuBar.vcxitems" Label="Shared" Condition="$(FeatureMenuBarEnabled) == 'true' Or $(FeatureMenuBarEnabled) == 'productOnly'" />
-    <Import Project="..\Materials\Acrylic\AcrylicBrush.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
-    <Import Project="..\Materials\Reveal\RevealBrush.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
-    <Import Project="..\Materials\Backdrop\SystemBackdropComponent.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
     <Import Project="..\TreeView\TreeView.vcxitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true' Or $(FeatureTreeViewEnabled) == 'productOnly'" />
-    <Import Project="..\Telemetry\Telemetry.vcxitems" Label="Shared" />
     <Import Project="..\ParallaxView\ParallaxView.vcxitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true' Or $(FeatureParallaxViewEnabled) == 'productOnly'" />
     <Import Project="..\ScrollPresenter\ScrollPresenter.vcxitems" Label="Shared" Condition="$(FeatureScrollPresenterEnabled) == 'true' Or $(FeatureScrollPresenterEnabled) == 'productOnly'" />
     <Import Project="..\ScrollView\ScrollView.vcxitems" Label="Shared" Condition="$(FeatureScrollViewEnabled) == 'true' Or $(FeatureScrollViewEnabled) == 'productOnly'" />
-    <Import Project="..\Lights\Lights.vcxitems" Label="Shared" Condition="$(FeatureLightsEnabled) == 'true' Or $(FeatureLightsEnabled) == 'productOnly'" />
     <Import Project="..\Repeater\Repeater.vcxitems" Label="Shared" Condition="$(FeatureRepeaterEnabled) == 'true' Or $(FeatureRepeaterEnabled) == 'productOnly'" />
     <Import Project="..\SwipeControl\SwipeControl.vcxitems" Label="Shared" Condition="$(FeatureSwipeControlEnabled) == 'true' Or $(FeatureSwipeControlEnabled) == 'productOnly'" />
     <Import Project="..\TwoPaneView\TwoPaneView.vcxitems" Label="Shared" Condition="$(FeatureTwoPaneViewEnabled) == 'true' Or $(FeatureTwoPaneViewEnabled) == 'productOnly'" />
