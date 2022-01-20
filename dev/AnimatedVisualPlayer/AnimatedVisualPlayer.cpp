@@ -120,7 +120,7 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
                     if (m_owner) 
                     {                        
                         // If optimization is set to Resources - destroy animations immediately after player stops.
-                        if (m_owner->AnimationOptimization() == winrt::PlayerAnimationOptimization::Resources) 
+                        if (m_owner->AnimatedVisualPlayerProperties::AnimationOptimization() == winrt::PlayerAnimationOptimization::Resources)
                         {
                             m_owner->DestroyAnimations();
                         }
@@ -747,7 +747,7 @@ void AnimatedVisualPlayer::SetProgress(double progress)
     }
 
     // If optimization is set to Resources - destroy annimations immediately.
-    if (AnimationOptimization() == winrt::PlayerAnimationOptimization::Resources) {
+    if (AnimatedVisualPlayerProperties::AnimationOptimization() == winrt::PlayerAnimationOptimization::Resources) {
         DestroyAnimations();
     }
 }
@@ -941,7 +941,7 @@ void AnimatedVisualPlayer::UpdateContent()
     winrt::IInspectable diagnostics{};
     winrt::IAnimatedVisual animatedVisual;
 
-    const bool createAnimations = AnimationOptimization() == winrt::PlayerAnimationOptimization::Latency;
+    const bool createAnimations = AnimatedVisualPlayerProperties::AnimationOptimization() == winrt::PlayerAnimationOptimization::Latency;
 
     if (auto source3 = source.try_as<winrt::IAnimatedVisualSource3>())
     {
