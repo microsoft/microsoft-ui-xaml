@@ -139,10 +139,6 @@
                         </ResourceDictionary>
                     </controls:TabView.Resources>
 
-                    <controls:TabView.TabStripHeader>
-                        <TextBlock Grid.Column="0" Text="Left" Margin="6,3,6,0" VerticalAlignment="Center" FontSize="14"/>
-                    </controls:TabView.TabStripHeader>
-
                     <controls:TabView.TabStripFooter>
                         <Grid>
                             <Grid.ColumnDefinitions>
