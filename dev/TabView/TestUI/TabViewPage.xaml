@@ -53,6 +53,10 @@
                 <Button x:Name="ScrollTabViewToTheRight" AutomationProperties.Name="ScrollTabViewToTheRight" Content="Scroll TabView To the Right" Margin="0,0,0,8" Click="TabViewScrollToTheRightButton_Click" />
 
                 <Button x:Name="ShortLongTextButton" AutomationProperties.Name="ShortLongTextButton" Content="Short/Long Text" Margin="0,0,0,8" Click="ShortLongTextButton_Click" />
+                <StackPanel Orientation="Horizontal">
+                    <Button Click="SetColorsButton_Click" Content="Set Colors"/>
+                    <Button Click="ClearColorsButton_Click" Content="Clear Colors"/>
+                </StackPanel>
 
                 <Border HorizontalAlignment="Stretch" Height="3" Background="{ThemeResource SystemChromeGrayColor}" Margin="0,8,0,8"/>
 
@@ -109,11 +113,6 @@
                     <Button x:Name="GetScrollIncreaseButtonToolTipButton" AutomationProperties.Name="GetScrollIncreaseButtonToolTipButton" Content="TooltipScrollIncreaseButton" Click="GetScrollIncreaseButtonToolTipButton_Click"/>
                     <TextBlock x:Name="ScrollIncreaseButtonToolTipTextBlock" AutomationProperties.Name="ScrollIncreaseButtonToolTipTextBlock" Margin="4,0,0,0" Text=""/>
                 </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                    <Button x:Name="GetSecondTabHeaderForegroundButton" AutomationProperties.Name="GetSecondTabHeaderForegroundButton" Content="SecondTabHeaderForeground" Click="GetSecondTabHeaderForegroundButton_Click" />
-                    <TextBlock x:Name="SecondTabHeaderForegroundTextBlock" AutomationProperties.Name="SecondTabHeaderForegroundTextBlock" Margin="4,0,0,0" Text=""/>
-                </StackPanel>
             </StackPanel>
 
             <Grid Grid.Column="1">
@@ -134,6 +133,12 @@
                     TabDroppedOutside="TabViewTabDroppedOutside"
                     AddTabButtonClick="AddButtonClick">
 
+                    <controls:TabView.Resources>
+                        <ResourceDictionary>
+                            <SolidColorBrush x:Key="TabViewItemHeaderBackgroundSelected" Color="#88FFFFFF"/>
+                        </ResourceDictionary>
+                    </controls:TabView.Resources>
+
                     <controls:TabView.TabStripFooter>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -153,37 +158,33 @@
 
                         <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
                             <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
-                            <StackPanel Orientation="Horizontal">
+                            <StackPanel>
                                 <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton"
-                                        Margin="8" Click="TabViewSizingPageButton_Click"
+                                        Margin="4" Click="TabViewSizingPageButton_Click"
                                         FontSize="20">TabView Sizing Page</Button>
                                 <Button x:Name="TabViewTabClosingBehaviorButton" AutomationProperties.Name="TabViewTabClosingBehaviorButton"
-                                        Margin="8" Click="TabViewTabClosingBehaviorButton_Click"
+                                        Margin="4" Click="TabViewTabClosingBehaviorButton_Click"
                                         FontSize="20">TabView Tab Closing behavior Page</Button>
                                 <Button x:Name="TabViewTabItemsSourcePageButton" AutomationProperties.Name="TabViewTabItemsSourcePageButton"
-                                        Margin="8" Click="TabViewTabItemsSourcePageButton_Click"
+                                        Margin="4" Click="TabViewTabItemsSourcePageButton_Click"
                                         FontSize="20">TabView TabItemsSource Page</Button>
                             </StackPanel>
                         </StackPanel>
                     </controls:TabViewItem>
 
                     <controls:TabViewItem x:Name="SecondTab" Header="SecondTab" IsClosable="True">
-                        <controls:TabViewItem.Resources>
-                            <!-- Do not remove or change this! We are verifying this resource in a TabView InteractionTest. -->
-                            <SolidColorBrush x:Key="TabViewItemHeaderForeground" Color="#FF008000" />
-                        </controls:TabViewItem.Resources>
                         <controls:TabViewItem.IconSource>
                             <controls:SymbolIconSource Symbol="Shop"/>
                         </controls:TabViewItem.IconSource>
 
-                        <StackPanel Padding="16">
+                        <StackPanel Padding="16" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
                             <TextBlock>Shop text</TextBlock>
                             <Button Content="SecondTabButton" AutomationProperties.Name="SecondTabButton"/>
                         </StackPanel>
                     </controls:TabViewItem>
 
                     <controls:TabViewItem x:Name="LongHeaderTab" AutomationProperties.Name="LongHeaderTab" Header="Long Header No Icon">
-                        <StackPanel Padding="16">
+                        <StackPanel Padding="16" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
                             <TextBlock >Emoji text</TextBlock>
                             <Button Content="Button 3"/>
                         </StackPanel>
@@ -194,7 +195,7 @@
                             <controls:SymbolIconSource Symbol="Video"/>
                         </controls:TabViewItem.IconSource>
 
-                        <StackPanel>
+                        <StackPanel Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
                             <TextBlock Padding="16">This tab can't be closed.</TextBlock>
                         </StackPanel>
                     </controls:TabViewItem>
@@ -204,7 +205,7 @@
                             <controls:SymbolIconSource Symbol="Admin"/>
                         </controls:TabViewItem.IconSource>
 
-                        <StackPanel>
+                        <StackPanel Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
                             <TextBlock Padding="16">This tab can't be selected.</TextBlock>
                         </StackPanel>
                     </controls:TabViewItem>
@@ -214,7 +215,9 @@
                             <controls:SymbolIconSource Symbol="Contact"/>
                         </controls:TabViewItem.IconSource>
 
-                        <TextBlock x:Name="LastTabContent" AutomationProperties.Name="LastTabContent" Padding="16">Contact text</TextBlock>
+                        <StackPanel Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
+                            <TextBlock x:Name="LastTabContent" AutomationProperties.Name="LastTabContent" Padding="16">Contact text</TextBlock>
+                        </StackPanel>
                     </controls:TabViewItem>
 
                 </controls:TabView>
@@ -265,7 +268,7 @@
                                     <controls:SymbolIconSource Symbol="Placeholder"/>
                                 </controls:TabViewItem.IconSource>
 
-                                <TextBlock Padding="16">Content</TextBlock>
+                                <TextBlock Padding="16" Text="Content"/>
                             </controls:TabViewItem>
 
                         </controls:TabView.TabItems>

@@ -22,6 +22,11 @@
 
 #include <winuser.h>
 #include <uiautomationclient.h>
+#include <WebView2Interop.h>
+
+static constexpr wstring_view s_error_wv2_closed{ L"Cannot create CoreWebView2 for Closed WebView2 element."sv };
+static constexpr wstring_view s_error_cwv2_not_present{ L"Failed because a valid CoreWebView2 is not present. Make sure one was created, for example by calling EnsureCoreWebView2Async() API."sv };
+static constexpr wstring_view s_error_cwv2_not_present_closed{ L"Failed because a valid CoreWebView2 is not present. One existed, but has been closed."sv };
 
 WebView2::WebView2()
 {
@@ -167,7 +172,7 @@ void WebView2::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const
             }
             else
             {
-                throw winrt::hresult_error(RO_E_CLOSED, L"Cannot create CoreWebView2 (via Source) for Closed WebView2 element.");
+                throw winrt::hresult_error(RO_E_CLOSED, s_error_wv2_closed);
             }
         }
     }
@@ -393,7 +398,7 @@ void WebView2::ResetPointerHelper(const winrt::PointerRoutedEventArgs& args)
 
     if (m_isPointerOver)
     {
-        m_isPointerOver = true;
+        m_isPointerOver = false;
         winrt::CoreWindow::GetForCurrentThread().PointerCursor(m_oldCursor);
         m_oldCursor = nullptr;
     }
@@ -425,7 +430,7 @@ void WebView2::ResetPointerHelper(const winrt::PointerRoutedEventArgs& args)
 
 bool WebView2::ShouldNavigate(const winrt::Uri& uri)
 {
-    return uri != nullptr && uri.ToString() != m_stopNavigateOnUriChanged;
+    return uri != nullptr && uri.RawUri() != m_stopNavigateOnUriChanged;
 }
 
 winrt::IAsyncAction WebView2::OnSourceChanged(winrt::Uri providedUri)
@@ -465,7 +470,7 @@ winrt::IAsyncAction WebView2::OnSourceChanged(winrt::Uri providedUri)
         // Try to apply latest source (could have changed during the co_await's above)
         if (m_isClosed)
         {
-            throw winrt::hresult_error(RO_E_CLOSED, L"Cannot create CoreWebView2 (via Source) for Closed WebView2 element.");
+            throw winrt::hresult_error(RO_E_CLOSED, s_error_wv2_closed);
         }
         const auto updatedUri = this->Source();
         if (!updatedUri.Equals(providedUri) && ShouldNavigate(updatedUri))
@@ -661,7 +666,7 @@ winrt::IAsyncAction WebView2::CreateCoreObjects()
 
     if (m_isClosed)
     {
-        throw winrt::hresult_error(RO_E_CLOSED, L"Cannot create CoreWebView2 (via Source) for Closed WebView2 element.");
+        throw winrt::hresult_error(RO_E_CLOSED, s_error_wv2_closed);
     }
     else
     {
@@ -816,13 +821,10 @@ HWND WebView2::EnsureTemporaryHostHwnd()
 void WebView2::CreateMissingAnaheimWarning()
 {
     auto warning = winrt::TextBlock();
-    warning.Text(L"A suitable version of Microsoft Edge WebView2 Runtime was not detected. ");
+    warning.Text(ResourceAccessor::GetLocalizedStringResource(SR_WarningSuitableWebView2NotFound));
     warning.Inlines().Append(winrt::LineBreak());
-    auto moreText = winrt::Run();
-    moreText.Text(L"Please install from: ");
-    warning.Inlines().Append(moreText);
     auto linkText = winrt::Run();
-    linkText.Text(L"Download WebView2 Runtime");
+    linkText.Text(ResourceAccessor::GetLocalizedStringResource(SR_DownloadWebView2Runtime));
     auto hyperlink = winrt::Hyperlink();
     hyperlink.Inlines().Append(linkText);
     auto url = winrt::Uri(L"https://aka.ms/winui3/webview2download/");
@@ -1536,7 +1538,7 @@ winrt::IAsyncOperation<winrt::hstring> WebView2::ExecuteScriptAsync(winrt::hstri
     }
     else
     {
-        throw winrt::hresult_illegal_method_call(L"ExecuteScriptAsync() failed because a valid CoreWebView2 is not present.");
+        throw winrt::hresult_illegal_method_call(std::wstring(L"ExecuteScriptAsync(): ").append(s_error_cwv2_not_present));
     }
 
     co_return returnedValue;
@@ -1629,11 +1631,11 @@ void WebView2::Reload()
     {
         if (m_everHadCoreWebView)
         {
-            throw winrt::hresult_illegal_method_call(L"Reload() failed because a valid CoreWebView2 is not present. (and never had a CoreWebView)");
+            throw winrt::hresult_illegal_method_call(std::wstring(L"Reload(): ").append(s_error_cwv2_not_present_closed));
         }
         else
         {
-            throw winrt::hresult_illegal_method_call(L"Reload() failed because a valid CoreWebView2 is not present. (unloaded core webview)");
+            throw winrt::hresult_illegal_method_call(std::wstring(L"Reload(): ").append(s_error_cwv2_not_present));
         }
     }
 }
@@ -1646,7 +1648,7 @@ void WebView2::NavigateToString(winrt::hstring htmlContent)
     }
     else
     {
-        throw winrt::hresult_illegal_method_call(L"NavigateToString() failed because a valid CoreWebView2 is not present.");
+        throw winrt::hresult_illegal_method_call(std::wstring(L"NavigateToString(): ").append(s_error_cwv2_not_present));
     }
 }
 

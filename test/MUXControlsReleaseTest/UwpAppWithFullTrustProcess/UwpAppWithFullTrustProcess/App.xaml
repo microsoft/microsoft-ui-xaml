@@ -1,0 +1,10 @@
+﻿<Application
+    x:Class="UwpAppWithFullTrustProcess.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:UwpAppWithFullTrustProcess"
+    RequestedTheme="Light">
+    <Application.Resources>
+        <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+    </Application.Resources>
+</Application>

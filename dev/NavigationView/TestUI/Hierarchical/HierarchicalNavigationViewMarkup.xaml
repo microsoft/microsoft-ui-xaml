@@ -7,6 +7,7 @@
     xmlns:muxcontrols="using:Microsoft.UI.Xaml.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 5)"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -80,7 +81,7 @@
                 </muxcontrols:NavigationViewItem>
 
             </muxcontrols:NavigationView.MenuItems>
-            <StackPanel Margin="10,10,0,0">
+            <StackPanel Margin="10,10,0,0" contract5Present:Spacing="5">
                 <TextBlock x:Name="SelectedItemLabel" AutomationProperties.Name="SelectedItemLabel" Text="uninitialized"/>
                 <Button Content="Get Selected Item Label" x:Name="GetSelectedItemLabelButton" AutomationProperties.Name="GetSelectedItemLabelButton" Click="PrintSelectedItem"/>
                 <Button Content="Collapse Selected Item" Click="CollapseSelectedItem"/>
@@ -97,9 +98,9 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center">Last Expanding:</TextBlock>
+                        <TextBlock Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center" Text="Last Expanding:"/>
                         <TextBlock Grid.Column="1" Margin="0,0,10,0" x:Name="TextBlockExpandingItem"  AutomationProperties.Name="TextBlockExpandingItem" Text="N/A"/>
-                        <TextBlock Grid.Column="2" Margin="0,0,5,0" VerticalAlignment="Center">Expanding Item and Container match:</TextBlock>
+                        <TextBlock Grid.Column="2" Margin="0,0,5,0" VerticalAlignment="Center" Text=">Expanding Item and Container match:"/>
                         <TextBlock Grid.Column="3" x:Name="TextblockExpandingItemAndContainerMatch"  AutomationProperties.Name="TextblockExpandingItemAndContainerMatch" Text="N/A"/>
                     </Grid>
                     <Grid x:Name="CollapsedEventStates">
@@ -109,9 +110,9 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center">Last Collapsed:</TextBlock>
+                        <TextBlock Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center" Text="Last Collapsed:"/>
                         <TextBlock Grid.Column="1" Margin="0,0,10,0" x:Name="TextBlockCollapsedItem" AutomationProperties.Name="TextBlockCollapsedItem" Text="N/A"/>
-                        <TextBlock Grid.Column="2" Margin="0,0,5,0"  VerticalAlignment="Center">Collapsed Item and Container match:</TextBlock>
+                        <TextBlock Grid.Column="2" Margin="0,0,5,0"  VerticalAlignment="Center" Text="Collapsed Item and Container match:"/>
                         <TextBlock Grid.Column="3" x:Name="TextblockCollapsedItemAndContainerMatch" AutomationProperties.Name="TextblockCollapsedItemAndContainerMatch" Text="N/A"/>
                     </Grid>
                 </StackPanel>
@@ -121,8 +122,8 @@
                     <StackPanel Orientation="Horizontal">
                         <Button x:Name="GetMenuItem1ChildrenFlyoutCornerRadiusButton" AutomationProperties.Name="GetMenuItem1ChildrenFlyoutCornerRadiusButton" Content="GetMenuItem1ChildrenFlyoutCornerRadius"
                                 Click="GetMenuItem1ChildrenFlyoutCornerRadiusButton_Click"/>
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">CornerRadius:</TextBlock>
-                        <TextBlock x:Name="MenuItem1ChildrenFlyoutCornerRadiusTextBlock" AutomationProperties.Name="MenuItem1ChildrenFlyoutCornerRadiusTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center">-</TextBlock>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="CornerRadius:"/>
+                        <TextBlock x:Name="MenuItem1ChildrenFlyoutCornerRadiusTextBlock" AutomationProperties.Name="MenuItem1ChildrenFlyoutCornerRadiusTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center" Text="-"/>
                     </StackPanel>
                 </StackPanel>
 

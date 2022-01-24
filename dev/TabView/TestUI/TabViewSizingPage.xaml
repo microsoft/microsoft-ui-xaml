@@ -37,10 +37,10 @@
                 <controls:TabView TabWidthMode="SizeToContent" TabCloseRequested="Tabs_TabCloseRequested" AddTabButtonClick="Tabview_AddTabButtonClick" >
                     <controls:TabView.TabItems>
                         <controls:TabViewItem Header="Tab A">
-                            <TextBlock>TabA</TextBlock>
+                            <TextBlock Text="TabA"/>
                         </controls:TabViewItem>
                         <controls:TabViewItem Header="Tab B">
-                            <TextBlock>TabB</TextBlock>
+                            <TextBlock Text="TabB"/>
                         </controls:TabViewItem>
                     </controls:TabView.TabItems>
                     <controls:TabView.TabStripFooter>
@@ -67,10 +67,10 @@
                 <controls:TabView TabWidthMode="Equal" TabCloseRequested="Tabs_TabCloseRequested" AddTabButtonClick="Tabview_AddTabButtonClick" >
                     <controls:TabView.TabItems>
                         <controls:TabViewItem Header="Tab A">
-                            <TextBlock>TabA</TextBlock>
+                            <TextBlock Text="TabA"/>
                         </controls:TabViewItem>
                         <controls:TabViewItem Header="Tab B">
-                            <TextBlock>TabB</TextBlock>
+                            <TextBlock Text="TabB"/>
                         </controls:TabViewItem>
                     </controls:TabView.TabItems>
                     <controls:TabView.TabStripFooter>
@@ -96,10 +96,10 @@
                 <controls:TabView TabWidthMode="SizeToContent" TabCloseRequested="Tabs_TabCloseRequested" AddTabButtonClick="Tabview_AddTabButtonClick" >
                     <controls:TabView.TabItems>
                         <controls:TabViewItem Header="Tab A">
-                            <TextBlock>TabA</TextBlock>
+                            <TextBlock Text="TabA"/>
                         </controls:TabViewItem>
                         <controls:TabViewItem Header="Tab B">
-                            <TextBlock>TabB</TextBlock>
+                            <TextBlock Text="TabB"/>
                         </controls:TabViewItem>
                     </controls:TabView.TabItems>
                     <controls:TabView.TabStripFooter>
@@ -124,10 +124,10 @@
                 <controls:TabView TabWidthMode="Equal" TabCloseRequested="Tabs_TabCloseRequested" AddTabButtonClick="Tabview_AddTabButtonClick" >
                     <controls:TabView.TabItems>
                         <controls:TabViewItem Header="Tab A">
-                            <TextBlock>TabA</TextBlock>
+                            <TextBlock Text="TabA"/>
                         </controls:TabViewItem>
                         <controls:TabViewItem Header="Tab B">
-                            <TextBlock>TabB</TextBlock>
+                            <TextBlock Text="TabB"/>
                         </controls:TabViewItem>
                     </controls:TabView.TabItems>
                     <controls:TabView.TabStripFooter>
@@ -152,16 +152,16 @@
                 <controls:TabView x:Name="TabViewEqual" AutomationProperties.Name="TabViewEqual" HorizontalAlignment="Left" TabWidthMode="Equal" TabCloseRequested="Tabs_TabCloseRequested" AddTabButtonClick="Tabview_AddTabButtonClick" >
                     <controls:TabView.TabItems>
                         <controls:TabViewItem Header="Tab A">
-                            <TextBlock>TabA</TextBlock>
+                            <TextBlock Text="TabA"/>
                         </controls:TabViewItem>
                         <controls:TabViewItem Header="Tab B">
-                            <TextBlock>TabB</TextBlock>
+                            <TextBlock Text="TabB"/>
                         </controls:TabViewItem>
                         <controls:TabViewItem Header="Tab C">
-                            <TextBlock>TabC</TextBlock>
+                            <TextBlock Text="TabC"/>
                         </controls:TabViewItem>
                         <controls:TabViewItem Header="Tab D">
-                            <TextBlock>TabD</TextBlock>
+                            <TextBlock Text="TabD"/>
                         </controls:TabViewItem>
                     </controls:TabView.TabItems>
                     <controls:TabView.TabStripFooter>
@@ -186,16 +186,16 @@
                 <controls:TabView x:Name="TabViewSizeToContent" AutomationProperties.Name="TabViewSizeToContent" HorizontalAlignment="Left" TabWidthMode="SizeToContent" TabCloseRequested="Tabs_TabCloseRequested" AddTabButtonClick="Tabview_AddTabButtonClick" >
                     <controls:TabView.TabItems>
                         <controls:TabViewItem Header="Tab A Long Name">
-                            <TextBlock>TabA</TextBlock>
+                            <TextBlock Text="TabA"/>
                         </controls:TabViewItem>
                         <controls:TabViewItem Header="Tab B Even Longer Name">
-                            <TextBlock>TabB</TextBlock>
+                            <TextBlock Text="TabB"/>
                         </controls:TabViewItem>
                         <controls:TabViewItem Header="Tab C Super Super Long Name">
-                            <TextBlock>TabC</TextBlock>
+                            <TextBlock Text="TabC"/>
                         </controls:TabViewItem>
                         <controls:TabViewItem Header="Tab D Reasonably Long Too">
-                            <TextBlock>TabD</TextBlock>
+                            <TextBlock Text="TabD"/>
                         </controls:TabViewItem>
                     </controls:TabView.TabItems>
                     <controls:TabView.TabStripFooter>

@@ -16,7 +16,13 @@
 
 #include "XamlMetadataProvider.h"
 #include "XamlMetadataProviderGenerated.h"
+
+
+#ifndef MUX_EXPERIMENTAL
 #include "XamlControlsResources.h"
+#else
+#include "ExperimentalXamlControlsResources.h"
+#endif
 
 <#
     ClearIndent();

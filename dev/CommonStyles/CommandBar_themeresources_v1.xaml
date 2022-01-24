@@ -845,7 +845,7 @@
                             </Grid>
                             <Button x:Name="MoreButton"
                             Foreground="{TemplateBinding Foreground}"
-                            Style="{StaticResource EllipsisButton}"
+                            Style="{ThemeResource EllipsisButton}"
                             Padding="{ThemeResource CommandBarMoreButtonMargin}"
                             MinHeight="{ThemeResource AppBarThemeCompactHeight}"
                             VerticalAlignment="Top"
@@ -1667,7 +1667,7 @@
                             </Grid>
                             <Button x:Name="MoreButton"
                                 Foreground="{TemplateBinding Foreground}"
-                                Style="{StaticResource EllipsisButton}"
+                                Style="{ThemeResource EllipsisButton}"
                                 Padding="{ThemeResource CommandBarMoreButtonMargin}"
                                 MinHeight="{ThemeResource AppBarThemeCompactHeight}"
                                 VerticalAlignment="Top"

@@ -338,7 +338,7 @@ namespace MUXControlsTestApp
         public void SetTabViewWidth_Click(object sender, RoutedEventArgs e)
         {
             // This is the smallest width that fits our content without any scrolling.
-            Tabs.Width = 744;
+            Tabs.Width = 752;
         }
 
         public void GetScrollButtonsVisible_Click(object sender, RoutedEventArgs e)
@@ -409,6 +409,21 @@ namespace MUXControlsTestApp
             FirstTab.Header = "s";
             LongHeaderTab.Header = "long long long long long long long long";
         }
+        private void SetColorsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var foregroundBrush = new SolidColorBrush();
+            foregroundBrush.Color = Colors.Blue;
+            SecondTab.Foreground = foregroundBrush;
+            var backgroundBrush = new SolidColorBrush();
+            backgroundBrush.Color = Colors.Purple;
+            SecondTab.Background = backgroundBrush;
+        }
+
+        private void ClearColorsButton_Click(object sender, RoutedEventArgs e)
+        {
+            SecondTab.ClearValue(ForegroundProperty);
+            SecondTab.ClearValue(BackgroundProperty);
+        }
 
         private void GetScrollDecreaseButtonToolTipButton_Click(object sender, RoutedEventArgs e)
         {
@@ -423,15 +438,6 @@ namespace MUXControlsTestApp
             if (VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollIncreaseButton") is RepeatButton scrollIncreaseButton)
             {
                 GetToolTipStringForUIElement(scrollIncreaseButton, ScrollIncreaseButtonToolTipTextBlock);
-            }
-        }
-
-        private void GetSecondTabHeaderForegroundButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (FindVisualChildByName(SecondTab, "ContentPresenter") is ContentPresenter presenter
-                && presenter.Foreground is SolidColorBrush brush)
-            {
-                SecondTabHeaderForegroundTextBlock.Text = brush.Color.ToString();
             }
         }
     }

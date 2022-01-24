@@ -562,22 +562,6 @@ void PipsPager::OnGotFocus(const winrt::RoutedEventArgs& args)
     }
 }
 
-// In order to avoid switching visibility of the navigation buttons while moving focus inside the Pager,
-// we'll check if the next focused element is inside the Pager.
-void PipsPager::LosingFocus(const IInspectable& sender, const winrt::LosingFocusEventArgs& args)
-{
-    if (const auto repeater = m_pipsPagerRepeater.get())
-    {
-        if (const auto nextFocusElement = args.NewFocusedElement().try_as<winrt::UIElement>())
-        {
-            m_ifNextFocusElementInside = repeater.GetElementIndex(nextFocusElement) != -1
-                || nextFocusElement == m_previousPageButton.get()
-                || nextFocusElement == m_nextPageButton.get();
-
-        }
-    }
-}
-
 void PipsPager::OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::GettingFocusEventArgs& args)
 {
     if (const auto repeater = m_pipsPagerRepeater.get())
@@ -615,11 +599,8 @@ void PipsPager::OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::
 
 void PipsPager::OnLostFocus(const winrt::RoutedEventArgs& args)
 {
-    if (!m_ifNextFocusElementInside)
-    {
-        m_isFocused = false;
-        UpdateNavigationButtonVisualStates();
-    }
+    m_isFocused = false;
+    UpdateNavigationButtonVisualStates();
 }
 
 void PipsPager::OnPointerEntered(const winrt::PointerRoutedEventArgs& args)

@@ -125,4 +125,12 @@
     <value>Tăng</value>
     <comment>Automation name for the up button</comment>
   </data>
+  <data name="NumberBoxMaximumValueStatus" xml:space="preserve">
+    <value>Tối đa</value>
+    <comment>Maximum value declaration</comment>
+  </data>
+  <data name="NumberBoxMinimumValueStatus" xml:space="preserve">
+    <value>Tối thiểu</value>
+    <comment>Minimum value declaration</comment>
+  </data>
 </root>

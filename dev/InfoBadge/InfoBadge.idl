@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass InfoBadgeTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
@@ -14,7 +14,7 @@ unsealed runtimeclass InfoBadgeTemplateSettings : Windows.UI.Xaml.DependencyObje
     static Windows.UI.Xaml.DependencyProperty IconElementProperty{ get; };
 }
 
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
