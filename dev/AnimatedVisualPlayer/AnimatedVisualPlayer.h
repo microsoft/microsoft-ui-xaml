@@ -16,6 +16,7 @@ struct AnimatedVisualPlayer:
     public ReferenceTracker<AnimatedVisualPlayer, DeriveFromPanelHelper_base, winrt::AnimatedVisualPlayer, winrt::IAnimatedVisualPlayer2>,
     public AnimatedVisualPlayerProperties
 {
+    using AnimatedVisualPlayerProperties::AnimationOptimization;
     friend class AnimatedVisualPlayerProperties;
 
     AnimatedVisualPlayer();
