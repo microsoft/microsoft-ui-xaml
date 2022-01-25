@@ -826,13 +826,13 @@ void AnimatedVisualPlayer::CreateAnimations() {
 }
 
 void AnimatedVisualPlayer::DestroyAnimations() {
-    if (!m_isAnimationsCreated || m_animatedVisual == nullptr)
+    if (!m_isAnimationsCreated || m_animatedVisual == nullptr || !SharedHelpers::IsRS5OrHigher())
     {
         return;
     }
 
     // Call RequestCommit to make sure that previous compositor calls complete before destroying animations.
-    // RequestCommitAsync is available only for RS4+ but m_animatedVisual is not null guarantees that we are at least RS5+
+    // RequestCommitAsync is available only for RS4+
     m_rootVisual.Compositor().RequestCommitAsync().Completed(
         [&, createAnimationsCounter = m_createAnimationsCounter](auto, auto) {
             // Check if there was any CreateAnimations call after DestroyAnimations.
