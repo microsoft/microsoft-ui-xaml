@@ -783,7 +783,6 @@ void AnimatedVisualPlayer::OnAutoPlayPropertyChanged(
 void AnimatedVisualPlayer::OnAnimationOptimizationPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    // We do not support animated visuals below RS5, so nothing to do.
     if (!SharedHelpers::IsRS5OrHigher())
     {
         return;
