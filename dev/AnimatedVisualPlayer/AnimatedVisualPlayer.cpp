@@ -783,6 +783,12 @@ void AnimatedVisualPlayer::OnAutoPlayPropertyChanged(
 void AnimatedVisualPlayer::OnAnimationOptimizationPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
+    // We do not support animated visuals below RS5, so nothing to do.
+    if (!SharedHelpers::IsRS5OrHigher())
+    {
+        return;
+    }
+
     auto optimization = unbox_value<winrt::PlayerAnimationOptimization>(args.NewValue());
 
     if (m_nowPlaying)
@@ -804,7 +810,7 @@ void AnimatedVisualPlayer::OnAnimationOptimizationPropertyChanged(
 void AnimatedVisualPlayer::CreateAnimations() {
     m_createAnimationsCounter++;
 
-    if (m_isAnimationsCreated) 
+    if (m_isAnimationsCreated)
     {
         return;
     }
@@ -821,12 +827,13 @@ void AnimatedVisualPlayer::CreateAnimations() {
 }
 
 void AnimatedVisualPlayer::DestroyAnimations() {
-    if (!m_isAnimationsCreated)
+    if (!m_isAnimationsCreated || m_animatedVisual == nullptr)
     {
         return;
     }
 
     // Call RequestCommit to make sure that previous compositor calls complete before destroying animations.
+    // RequestCommitAsync is available only for RS4+ but m_animatedVisual is not null guarantees that we are at least RS5+
     m_rootVisual.Compositor().RequestCommitAsync().Completed(
         [&, createAnimationsCounter = m_createAnimationsCounter](auto, auto) {
             // Check if there was any CreateAnimations call after DestroyAnimations.
@@ -947,11 +954,15 @@ void AnimatedVisualPlayer::UpdateContent()
     {
         animatedVisual = source3.TryCreateAnimatedVisual(m_rootVisual.Compositor(), diagnostics, createAnimations);
 		m_isAnimationsCreated = createAnimations;
+        m_animatedVisual.set(animatedVisual);
     }
     else
     {
         animatedVisual = source.TryCreateAnimatedVisual(m_rootVisual.Compositor(), diagnostics);
 		m_isAnimationsCreated = true;
+
+        // m_animatedVisual should be updated before DestroyAnimations call
+        m_animatedVisual.set(animatedVisual);
 
         // Destroy animations if we don't need them.
         // Old IAnimatedVisualSource interface always creates them.
@@ -959,7 +970,6 @@ void AnimatedVisualPlayer::UpdateContent()
             DestroyAnimations();
         }
     }
-    m_animatedVisual.set(animatedVisual);
 
     if (!animatedVisual)
     {
