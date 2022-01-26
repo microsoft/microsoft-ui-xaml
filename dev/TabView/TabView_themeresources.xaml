@@ -6,22 +6,12 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
-            <Color x:Key="TabFillColorActiveLayer">#B3FFFFFF</Color>
-            <Color x:Key="TabFillColorActiveDrag">#F9F9F9</Color>
-            <Color x:Key="TabFillColorInactivePrimary">#00000000</Color>
-            <Color x:Key="TabFillColorInactiveSecondary">#0A000000</Color>
-
-            <SolidColorBrush x:Key="TabFillColorActiveLayerBrush" Color="{StaticResource TabFillColorActiveLayer}" />
-            <SolidColorBrush x:Key="TabFillColorActiveDragBrush" Color="{StaticResource TabFillColorActiveDrag}" />
-            <SolidColorBrush x:Key="TabFillColorInactivePrimaryBrush" Color="{StaticResource TabFillColorInactivePrimary}" />
-            <SolidColorBrush x:Key="TabFillColorInactiveSecondaryBrush" Color="{StaticResource TabFillColorInactiveSecondary}" />
-
             <StaticResource x:Key="TabViewBackground"                                       ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackground"                             ResourceKey="TabFillColorInactivePrimaryBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"                     ResourceKey="TabFillColorActiveLayerBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundPointerOver"                  ResourceKey="TabFillColorInactiveSecondaryBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundPressed"                      ResourceKey="TabFillColorActiveLayerBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundDisabled"                     ResourceKey="TabFillColorInactivePrimaryBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackground"                             ResourceKey="LayerOnMicaAltFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"                     ResourceKey="LayerOnMicaAltFillColorDefaultBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundPointerOver"                  ResourceKey="LayerOnMicaAltFillColorSecondaryBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundPressed"                      ResourceKey="LayerOnMicaAltFillColorDefaultBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundDisabled"                     ResourceKey="LayerOnMicaAltFillColorTransparentBrush" />
             <StaticResource x:Key="TabViewItemHeaderForeground"                             ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundPressed"                      ResourceKey="TextFillColorTertiaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundSelected"                     ResourceKey="TextFillColorPrimaryBrush" />
@@ -82,22 +72,12 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Dark">
-            <Color x:Key="TabFillColorActiveLayer">#733A3A3A</Color>
-            <Color x:Key="TabFillColorActiveDrag">#2C2C2C</Color>
-            <Color x:Key="TabFillColorInactivePrimary">#00FFFFFF</Color>
-            <Color x:Key="TabFillColorInactiveSecondary">#0FFFFFFF</Color>
-
-            <SolidColorBrush x:Key="TabFillColorActiveLayerBrush" Color="{StaticResource TabFillColorActiveLayer}" />
-            <SolidColorBrush x:Key="TabFillColorActiveDragBrush" Color="{StaticResource TabFillColorActiveDrag}" />
-            <SolidColorBrush x:Key="TabFillColorInactivePrimaryBrush" Color="{StaticResource TabFillColorInactivePrimary}" />
-            <SolidColorBrush x:Key="TabFillColorInactiveSecondaryBrush" Color="{StaticResource TabFillColorInactiveSecondary}" />
-            
             <StaticResource x:Key="TabViewBackground"                                       ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackground"                             ResourceKey="TabFillColorInactivePrimary" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"                     ResourceKey="TabFillColorActiveLayer" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundPointerOver"                  ResourceKey="TabFillColorInactiveSecondary" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundPressed"                      ResourceKey="TabFillColorActiveLayer" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundDisabled"                     ResourceKey="TabFillColorInactivePrimary" />
+            <StaticResource x:Key="TabViewItemHeaderBackground"                             ResourceKey="LayerOnMicaAltFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"                     ResourceKey="LayerOnMicaAltFillColorDefaultBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundPointerOver"                  ResourceKey="LayerOnMicaAltFillColorSecondaryBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundPressed"                      ResourceKey="LayerOnMicaAltFillColorDefaultBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundDisabled"                     ResourceKey="LayerOnMicaAltFillColorTransparentBrush" />
             <StaticResource x:Key="TabViewItemHeaderForeground"                             ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundPressed"                      ResourceKey="TextFillColorTertiaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundSelected"                     ResourceKey="TextFillColorPrimaryBrush" />
@@ -158,11 +138,6 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <SolidColorBrush x:Key="TabFillColorActiveLayerBrush" Color="{ThemeResource SystemControlHighlightChromeHighBrush}" />
-            <SolidColorBrush x:Key="TabFillColorActiveDragBrush" Color="{ThemeResource SystemControlHighlightChromeHighBrush}" />
-            <SolidColorBrush x:Key="TabFillColorInactivePrimaryBrush" Color="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
-            <SolidColorBrush x:Key="TabFillColorInactiveSecondaryBrush" Color="{ThemeResource SystemControlHighlightChromeHighBrush}" />
-
             <StaticResource x:Key="TabViewBackground"                                       ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="TabViewItemHeaderBackground"                             ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"                     ResourceKey="SystemControlHighlightChromeHighBrush" />
@@ -227,12 +202,6 @@
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
 
-            <!-- Colors copied from Default theme to match list of keys. Should not
-                 be using these keys. These are set to Red to notify that.-->
-            <Color x:Key="TabFillColorActiveLayer">#FF0000</Color>
-            <Color x:Key="TabFillColorActiveDrag">#FF0000</Color>
-            <Color x:Key="TabFillColorInactivePrimary">#FF0000</Color>
-            <Color x:Key="TabFillColorInactiveSecondary">#FF0000</Color>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
