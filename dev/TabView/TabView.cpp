@@ -782,18 +782,15 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
 
 void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
 {
-    if(!m_isDragging)
+    if (auto&& listView = m_listView.get())
     {
-        if (auto&& listView = m_listView.get())
-        {
-            SelectedIndex(listView.SelectedIndex());
-            SelectedItem(listView.SelectedItem());
-        }
-
-        UpdateTabContent();
-
-        m_selectionChangedEventSource(*this, args);
+        SelectedIndex(listView.SelectedIndex());
+        SelectedItem(listView.SelectedItem());
     }
+
+    UpdateTabContent();
+
+    m_selectionChangedEventSource(*this, args);
 }
 
 winrt::TabViewItem TabView::FindTabViewItemFromDragItem(const winrt::IInspectable& item)
