@@ -23,15 +23,7 @@ TabViewListView::TabViewListView()
 
 void TabViewListView::OnSelectedIndexPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
-    winrt::VisualStateManager::GoToState(
-        *this,
-        (SelectedIndex() == 0) ? L"LeftBottomBorderLineShort" : L"LeftBottomBorderLineNormal",
-        false /*useTransitions*/);
-
-    winrt::VisualStateManager::GoToState(
-        *this,
-        (SelectedIndex() == (int)(Items().Size() - 1)) ? L"RightBottomBorderLineShort" : L"RightBottomBorderLineNormal",
-        false /*useTransitions*/);
+    UpdateBottomBorderVisualState();
 }
 
 // IItemsControlOverrides
@@ -60,6 +52,7 @@ void TabViewListView::OnItemsChanged(winrt::IInspectable const& item)
         const auto internalTabView = winrt::get_self<TabView>(tabView);
         internalTabView->OnItemsChanged(item);
     }
+    UpdateBottomBorderVisualState();
 }
 
 void TabViewListView::PrepareContainerForItemOverride(const winrt::DependencyObject& element, const winrt::IInspectable& item)
@@ -91,4 +84,17 @@ void TabViewListView::OnContainerContentChanging(const winrt::IInspectable& send
         const auto internalTabView = winrt::get_self<TabView>(tabView);
         internalTabView->UpdateTabContent();
     }
+}
+
+void TabViewListView::UpdateBottomBorderVisualState()
+{
+    winrt::VisualStateManager::GoToState(
+        *this,
+        (SelectedIndex() == 0) ? L"LeftBottomBorderLineShort" : L"LeftBottomBorderLineNormal",
+        false /*useTransitions*/);
+
+    winrt::VisualStateManager::GoToState(
+        *this,
+        (SelectedIndex() == (int)(Items().Size() - 1)) ? L"RightBottomBorderLineShort" : L"RightBottomBorderLineNormal",
+        false /*useTransitions*/);
 }

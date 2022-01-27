@@ -19,5 +19,6 @@ public:
 private:
     void OnContainerContentChanging(const winrt::IInspectable& sender, const winrt::ContainerContentChangingEventArgs& args);
     void OnSelectedIndexPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void UpdateBottomBorderVisualState();
 };
 
