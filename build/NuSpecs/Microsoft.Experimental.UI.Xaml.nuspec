@@ -26,6 +26,6 @@
     <file target="build\$ID$.targets" src="MUXControls-Experimental-Nuget-Common.targets"/>
     <file target="buildTransitive\$ID$.targets" src="MUXControls-Experimental-Nuget-Common.targets"/>
 
-    <file target="build\native\$ID$.targets" src="MUXControls-Nuget-Native.targets"/>
+    <file target="build\native\$ID$.targets" src="MUXControls-Experimental-Nuget-Native.targets"/>
   </files>
 </package>

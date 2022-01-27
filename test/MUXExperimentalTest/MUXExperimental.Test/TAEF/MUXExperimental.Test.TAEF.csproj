@@ -12,7 +12,7 @@
     <ProjectGuid>{14018522-0223-4334-87D2-C343074DDD48}</ProjectGuid>
     <DefineConstants>$(DefineConstants);USING_TAEF</DefineConstants>
   </PropertyGroup>
-  <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
+  <ItemGroup>
     <Reference Include="TE.Managed">
       <HintPath>$(TaefRootDirectory)TE.Managed.dll</HintPath>
     </Reference>
