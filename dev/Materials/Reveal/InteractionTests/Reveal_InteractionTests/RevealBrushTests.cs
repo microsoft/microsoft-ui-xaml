@@ -341,7 +341,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
+        //[TestMethod]
         public void RevealButtonStates_Values()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone2))
