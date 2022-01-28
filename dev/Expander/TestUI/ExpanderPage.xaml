@@ -38,7 +38,7 @@
 
             <controls:Expander AutomationProperties.Name="ExpanderWithButtons" IsExpanded="False" Margin="12" MaxWidth="{ThemeResource FlyoutThemeMaxWidth}">
                 <controls:Expander.Header>
-                    <ToggleButton>This is a toggle button in the header</ToggleButton>
+                    <ToggleButton>This is a Togglebutton in the header</ToggleButton>
                 </controls:Expander.Header>
                 <StackPanel>
                     <TextBlock TextWrapping="Wrap" Text="Content. This is long content to test wrapping on the content section, this content should be wrapping after the control expands to max width."/>

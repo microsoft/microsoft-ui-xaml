@@ -18,7 +18,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Microsoft.UI.Private.Composition.Effects_impl.h" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="$(MSBuildThisFileDirectory)Microsoft.UI.Private.Composition.Effects.idl" Condition="$(BuildingWithBuildExe) != 'true'">
+    <Midl Include="$(MSBuildThisFileDirectory)Microsoft.UI.Private.Composition.Effects.idl" >
       <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..;$(MiniWindowsSDKIncludePath)</AdditionalIncludeDirectories>
       <AdditionalMetadataDirectories Condition="'$(MiniWindowsSDKWinMDPath)'!=''">$(MiniWindowsSDKWinMDPath)</AdditionalMetadataDirectories>
       <OutputDirectory>$(OutDir)</OutputDirectory>

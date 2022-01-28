@@ -224,7 +224,10 @@ template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
     if (!isAPIContractVxAvailableInitialized)
     {
         isAPIContractVxAvailableInitialized = true;
-        isAPIContractVxAvailable = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
+        // The CBS package is only ever used as a part of the Windows build. Therefore, we can assume that
+        // all API contracts are present since we can never be running these binaries on a windows build
+        // that does not match the windows sdk these binaries were compiled against.
+        isAPIContractVxAvailable = IsInCBSPackage() ? true : winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
     }
 
     return isAPIContractVxAvailable;

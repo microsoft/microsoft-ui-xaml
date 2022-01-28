@@ -164,6 +164,9 @@ private:
 
     int GetItemCount();
 
+    void UpdateBottomBorderLineVisualStates();
+    void UpdateTabBottomBorderLineVisualStates();
+
     winrt::TabViewItem FindTabViewItemFromDragItem(const winrt::IInspectable& item);
 
     bool m_updateTabWidthOnPointerLeave{ false };
@@ -215,4 +218,6 @@ private:
     winrt::hstring m_tabCloseButtonTooltipText{};
 
     winrt::Size previousAvailableSize{};
+
+    bool m_isDragging{ false };
 };
