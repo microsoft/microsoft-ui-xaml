@@ -13,12 +13,6 @@ parameters:
   # if 'useBuildOutputFromBuildId' is set, we will default to using a build from this pipeline:
   useBuildOutputFromPipeline: $(System.DefinitionId)
   matrix: 
-    Debug_x86:
-      buildPlatform: 'x86'
-      buildConfiguration: 'debug'
-      openHelixTargetQueues: 'Windows.10.Amd64.Client21H1.Open.xaml'
-      closedHelixTargetQueues: 'Windows.10.Amd64.Client21H1.xaml'
-      
     Release_x86:
       buildPlatform: 'x86'
       buildConfiguration: 'release'

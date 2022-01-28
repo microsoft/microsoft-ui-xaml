@@ -390,7 +390,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
+        //[TestMethod]
         public void RevealButtonStates_FastRelease_Values()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone2))
@@ -426,7 +426,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
+        //[TestMethod]
         public void RevealButtonStates_SlowRelease_Values()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone2))
@@ -463,7 +463,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
 
-        [TestMethod]
+        //[TestMethod]
         public void RevealHoverLightPosition_Values()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))

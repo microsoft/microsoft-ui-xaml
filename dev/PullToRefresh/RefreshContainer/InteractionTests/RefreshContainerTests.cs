@@ -267,13 +267,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
+        //[TestMethod]
         public void InteractionOnImageTest()
         {
             InteractionOnImageTestPrivate(withInfoProvider: false);
         }
 
-        [TestMethod]
+        //[TestMethod]
         public void InteractionOnImageWithInfoProviderTest()
         {
             InteractionOnImageTestPrivate(withInfoProvider: true);
