@@ -134,6 +134,7 @@ private:
 
     void OnListViewLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnTabStripPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnTabStripPointerEntered(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
 
     void OnListViewDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args);
@@ -163,9 +164,13 @@ private:
 
     int GetItemCount();
 
+    void UpdateBottomBorderLineVisualStates();
+    void UpdateTabBottomBorderLineVisualStates();
+
     winrt::TabViewItem FindTabViewItemFromDragItem(const winrt::IInspectable& item);
 
     bool m_updateTabWidthOnPointerLeave{ false };
+    bool m_pointerInTabstrip{ false };
 
     tracker_ref<winrt::ColumnDefinition> m_leftContentColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_tabColumn{ this };
@@ -186,6 +191,7 @@ private:
 
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::ListView::PointerExited_revoker m_tabStripPointerExitedRevoker{};
+    winrt::ListView::PointerEntered_revoker m_tabStripPointerEnteredRevoker{};
     winrt::Selector::SelectionChanged_revoker m_listViewSelectionChangedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_listViewGettingFocusRevoker{};
 
@@ -212,4 +218,6 @@ private:
     winrt::hstring m_tabCloseButtonTooltipText{};
 
     winrt::Size previousAvailableSize{};
+
+    bool m_isDragging{ false };
 };

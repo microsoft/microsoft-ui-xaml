@@ -12,6 +12,14 @@ MicaController::~MicaController()
     {
         try
         {
+            if (auto xamlWindow = target.try_as<winrt::Windows::UI::Xaml::Window>())
+            {
+                // Workaround for null ref exception in Window::get_SystemBackdrop when the Window is shutting down.
+                // GenerateRawElementProviderRuntimeId will trigger an exception caught below and thus prevent the 
+                // crashing target.SystemBackdrop() call.
+                auto const runtimeId = winrt::Automation::Peers::AutomationPeer::GenerateRawElementProviderRuntimeId();
+            }
+
             // If we are going away and we own the backdrop, clear it.
             if (target.SystemBackdrop() == m_currentBrush)
             {
@@ -43,7 +51,7 @@ bool MicaController::SetTarget(winrt::Windows::UI::Xaml::Window const& xamlWindo
         return false;
     }
 
-    m_windowHandler = std::make_unique<SystemBackdropComponentInternal::XamlWindowHandler>(this, xamlWindow);
+    m_windowHandler = winrt::make_self<SystemBackdropComponentInternal::XamlWindowHandler>(this, xamlWindow);
 
     // Ensure we are in the correct policy state only *after* creating the appropriate WindowHandler.
     // If we start in high contrast mode, the controller will query the window handler for the correct system fallback color.

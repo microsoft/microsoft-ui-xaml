@@ -1,0 +1,133 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.Experimental.UI.Xaml.Controls"
+    xmlns:contract8Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,8)"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
+
+    <Style TargetType="local:TitleBar">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:TitleBar">
+
+                    <Grid x:Name="LayoutRoot" Height="{ThemeResource TitleBarCompactHeight}" Background="Transparent">
+                        <VisualStateManager.VisualStateGroups>
+
+                            <VisualStateGroup x:Name="ActivationStateGroup">
+                                <VisualState x:Name="Activated"/>
+                                <VisualState x:Name="Deactivated">
+                                    <VisualState.Setters>
+                                        <Setter Target="TitleText.Foreground" Value="{ThemeResource TitleBarDeactivatedForegroundBrush}"/>
+                                        <Setter Target="BackButton.Foreground" Value="{ThemeResource TitleBarDeactivatedForegroundBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="BackButtonVisibilityGroup">
+                                <VisualState x:Name="BackButtonVisible"/>
+                                <VisualState x:Name="BackButtonCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="BackButton.Visibility" Value="Collapsed"/>
+                                        <Setter Target="Icon.Margin" Value="16,0,0,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="IconVisibilityGroup">
+                                <VisualState x:Name="IconVisible"/>
+                                <VisualState x:Name="IconCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="Icon.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="TitleTextVisibilityGroup">
+                                <VisualState x:Name="TitleTextVisible" />
+                                <VisualState x:Name="TitleTextCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="TitleText.Visibility" Value="Collapsed" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="FullScreenGroup">
+                                <VisualState x:Name="TitleBarVisible"/>
+                                <VisualState x:Name="TitleBarCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="LayoutRoot.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="HeightGroup">
+                                <VisualState x:Name="CompactHeight"/>
+                                <VisualState x:Name="ExpandedHeight">
+                                    <VisualState.Setters>
+                                        <Setter Target="LayoutRoot.Height" Value="{ThemeResource TitleBarExpandedHeight}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                        </VisualStateManager.VisualStateGroups>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid Grid.Column="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/> <!-- 0: back button -->
+                                <ColumnDefinition Width="Auto"/> <!-- 1: icon -->
+                                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TitleColumnGridLength}"/> <!-- 2: title -->
+                                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.CustomColumnGridLength}"/>    <!-- 3: custom content -->
+                            </Grid.ColumnDefinitions>
+                            
+                            <Button x:Name="BackButton"
+                                Grid.Column="0"
+                                Style="{ThemeResource TitleBarBackButtonStyle}"
+                                IsEnabled="{TemplateBinding IsBackEnabled}"
+                                ToolTipService.ToolTip="Back"/>
+
+                            <Viewbox x:Name="Icon"
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                MaxWidth="16"
+                                MaxHeight="16"
+                                Margin="4,0,0,0"
+                                Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}" />
+
+                            <TextBlock x:Name="TitleText"
+                                Grid.Column="2"
+                                Text="{TemplateBinding Title}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Foreground="{ThemeResource TitleBarForegroundBrush}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="NoWrap"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Margin="16,0,16,2"
+                                MinWidth="48"/>
+
+                                <Grid x:Name="DragRegion"
+                                Grid.Column="1"
+                                Grid.ColumnSpan="3"
+                                Background="Transparent"/>
+
+                            <ContentPresenter x:Name="CustomContentPresenter"
+                                Grid.Column="3"
+                                Content="{TemplateBinding CustomContent}"/>
+
+                        </Grid>
+                    </Grid>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

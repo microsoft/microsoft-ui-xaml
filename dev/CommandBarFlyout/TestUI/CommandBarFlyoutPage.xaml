@@ -14,12 +14,17 @@
         <Grid.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                 <GradientStop Color="Red" Offset="0.000" />
-                <GradientStop Color="Orange" Offset="0.167" />
-                <GradientStop Color="Yellow" Offset="0.333" />
-                <GradientStop Color="Green" Offset="0.500" />
-                <GradientStop Color="Blue" Offset="0.667" />
+                <GradientStop Color="Red" Offset="0.166" />
+                <GradientStop Color="DarkOrange" Offset="0.167" />
+                <GradientStop Color="DarkOrange" Offset="0.332" />
+                <GradientStop Color="Goldenrod" Offset="0.333" />
+                <GradientStop Color="Goldenrod" Offset="0.499" />
+                <GradientStop Color="SeaGreen" Offset="0.500" />
+                <GradientStop Color="SeaGreen" Offset="0.666" />
+                <GradientStop Color="MediumBlue" Offset="0.667" />
+                <GradientStop Color="MediumBlue" Offset="0.832" />
                 <GradientStop Color="Indigo" Offset="0.833" />
-                <GradientStop Color="Violet" Offset="1.000" />
+                <GradientStop Color="Indigo" Offset="1.000" />
             </LinearGradientBrush>
         </Grid.Background>
         <Grid.RowDefinitions>
@@ -209,12 +214,29 @@
                 <Button x:Name="FlyoutTarget3" Content="Show tall CommandBarFlyout" Margin="10" Click="OnFlyoutTarget3Click" />
                 <Button x:Name="FlyoutTarget4" Content="Show max-width CommandBarFlyout" Margin="10" Click="OnFlyoutTarget4Click" />
                 <Button x:Name="FlyoutTarget5" Content="Show CommandBarFlyout with sub-menu" Margin="10" Click="OnFlyoutTarget5Click" />
-                <Button x:Name="FlyoutTarget6" Content="Show CommandBarFlyout with no primary commands" Margin="10" Click="OnFlyoutTarget6Click" />
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="FlyoutTarget6" Content="Show CommandBarFlyout with no primary commands" Margin="10" Click="OnFlyoutTarget6Click" />
+                    <Button x:Name="EditCommandCount6" Content="Add / Remove Primary Command" Click="OnEditCommandCount6Click" />
+                </StackPanel>
                 <Button x:Name="FlyoutTarget7" Content="Show CommandBarFlyout with non-focusable primary commands" Margin="10" Click="OnFlyoutTarget7Click" />
                 <Button x:Name="FlyoutTarget8" Content="Show CommandBarFlyout with no secondary commands" Margin="10" Click="OnFlyoutTarget8Click" />
                 <Button x:Name="FlyoutTarget9" Content="Show CommandBarFlyout with AlwaysExpanded" Margin="10" Click="OnFlyoutTarget9Click" />
                 <contract13Present:Button x:Name="FlyoutTarget10" Content="Show Windows.UI.Xaml.Controls.CommandBarFlyout" Margin="10" Click="OnFlyoutTarget10Click" />
-                <CheckBox x:Name="IsRTLCheckBox" Content="Is Page in RightToLeft FlowDirection?" AutomationProperties.AutomationId="IsRTLCheckBox" Margin="10" Checked="IsRTLCheckBox_Checked" Unchecked="IsRTLCheckBox_Unchecked" />
+                <CheckBox x:Name="IsRTLCheckBox" Content="Is Page in RightToLeft FlowDirection?" AutomationProperties.AutomationId="IsRTLCheckBox" Margin="10,10,10,2" Checked="IsRTLCheckBox_Checked" Unchecked="IsRTLCheckBox_Unchecked" />
+                <StackPanel Orientation="Horizontal" Margin="10,0,10,2">
+                    <CheckBox x:Name="AddPrimaryCommandDynamicallyCheckBox" Content="Add Primary Commands Dynamically?" AutomationProperties.AutomationId="AddPrimaryCommandDynamicallyCheckBox" />
+                    <CheckBox x:Name="PrimaryCommandDynamicallyAddedCheckBox" Content="Primary Commands Added?" AutomationProperties.AutomationId="PrimaryCommandDynamicallyAddedCheckBox" Margin="5,0,0,0" />
+                </StackPanel>
+                <CheckBox x:Name="ClearPrimaryCommandsCheckBox" Content="Clear Primary Commands Asynchronously?" AutomationProperties.AutomationId="ClearPrimaryCommandsCheckBox" Margin="10,0,10,2" />
+                <StackPanel Orientation="Horizontal" Margin="10,0,10,2">
+                    <CheckBox x:Name="UseSecondaryCommandDynamicLabelCheckBox" Content="Use Secondary Command with Dynamic Label?" AutomationProperties.AutomationId="UseSecondaryCommandDynamicLabelCheckBox" />
+                    <CheckBox x:Name="SecondaryCommandDynamicLabelChangedCheckBox" Content="Label Changed?" AutomationProperties.AutomationId="SecondaryCommandDynamicLabelChangedCheckBox" Margin="5,0,0,0" />
+                    <TextBlock Text="Timer Interval (ms):" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="DynamicLabelTimerIntervalTextBox" Text="1500" Margin="5,0,0,0" AutomationProperties.AutomationId="DynamicLabelTimerIntervalTextBox"/>
+                    <TextBlock Text="Change Count:" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="DynamicLabelChangeCountTextBox" Text="4" Margin="5,0,0,0" AutomationProperties.AutomationId="DynamicLabelChangeCountTextBox"/>
+                </StackPanel>
+                <CheckBox x:Name="ClearSecondaryCommandsCheckBox" Content="Clear Secondary Commands Asynchronously?" AutomationProperties.AutomationId="ClearSecondaryCommandsCheckBox" Margin="10,0,10,2" />
             </StackPanel>
         </ScrollViewer>
         <StackPanel Grid.Row="1">

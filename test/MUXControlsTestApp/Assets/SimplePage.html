@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Simple Page</title>
+<style>
+h1 {
+    background-color: #0080ff
+}
+h2 {
+    background-color: #00ff80
+}
+</style>
+    <script>
+        function getFocus()
+        {
+            if (document.hasFocus())
+            {
+                var id = document.activeElement.id;
+                if (id == "hyperlink1")
+                {
+                    return 'w1B';
+                }
+                else
+                {
+                    return 'unhandledWebviewControl';
+                }
+            }
+            else
+            {
+                return 'n/a';
+            }
+        };
+
+        function navigateToTextPage()
+        {
+            window.location.assign('SimplePageWithText.html');
+        }
+        window.onresize = function()
+        {
+            window.chrome.webview.postMessage("Webview resized.");
+        };
+
+        function getWindowXPosition()
+        {
+            return window.screenX;
+        }
+
+        function getWindowYPosition()
+        {
+            return window.screenY;
+        };
+
+        function getWindowWidth()
+        {
+            return window.innerWidth;
+        }
+
+        function getWindowHeight()
+        {
+            return window.innerHeight;
+        }
+
+        function updateLanguage()
+        {
+            var userLang = navigator.language || navigator.UserLanguage;
+            document.getElementById("languageInfo").innerHTML = userLang;
+        };
+
+        function getLanguage()
+        {
+            return document.getElementById("languageInfo").innerHTML;
+        };
+
+
+    </script>
+</head>
+<body onload="updateLanguage()">
+    <div id="rectangle" style="width:100px; height:100px; background-color:#ff8000"></div>
+    <h1><a id="hyperlink1" href="http://www.bing.com/">Visit Bing!</a> </h1>
+    <h2><a href="http://www.microsoft.com/">Visit Microsoft!</a> </h2>
+    <input id="button" type="submit" name="button" class="largeButton" onclick="navigateToTextPage();" value="Navigate Locally" />
+    Language : <h2 id="languageInfo">unknown</h2>
+</body>
+</html>

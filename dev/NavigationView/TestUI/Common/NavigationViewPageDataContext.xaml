@@ -10,7 +10,6 @@
     mc:Ignorable="d">
 
     <StackPanel Orientation="Horizontal">
-       
         <muxcontrols:NavigationView
             x:Name="NavView"
             AutomationProperties.Name="NavView"
@@ -19,12 +18,12 @@
             PaneDisplayMode="Left">
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
-                    <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">DataContext of SelectedItem:</TextBlock>
+                    <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="DataContext of SelectedItem:"/>
                     <TextBlock x:Name="NavViewSelectedDataContext" AutomationProperties.Name="NavViewSelectedDataContext" VerticalAlignment="Center"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <Button x:Name="GetNavViewActiveVisualStates" AutomationProperties.Name="GetNavViewActiveVisualStates" Content="GetNavViewActiveVisualStates" Click="GetNavViewActiveVisualStates_Click"/>
-                    <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">NavView Active VisualStates:</TextBlock>
+                    <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="NavView Active VisualStates:"/>
                     <TextBlock x:Name="NavViewActiveVisualStatesResult" AutomationProperties.Name="NavViewActiveVisualStatesResult" VerticalAlignment="Center"/>
                 </StackPanel>
             </StackPanel>

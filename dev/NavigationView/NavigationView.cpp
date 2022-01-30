@@ -3,6 +3,8 @@
 
 #include "pch.h"
 #include "common.h"
+#include <mutex>
+#include <thread>
 
 #include "NavigationView.h"
 #include "Vector.h"
@@ -178,7 +180,8 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     if (isFromDestructor)
     {
         m_selectionChangedRevoker.revoke();
-        m_autoSuggestBoxSuggestionChosenRevoker.revoke();
+        m_autoSuggestBoxQuerySubmittedRevoker.revoke();
+        ClearAllNavigationViewItemRevokers();
     }
 }
 
@@ -220,13 +223,15 @@ NavigationView::NavigationView()
 
     m_navigationViewItemsFactory = winrt::make_self<NavigationViewItemsFactory>();
 
-    s_NavigationViewItemRevokersProperty =
-        InitializeDependencyProperty(
-            L"NavigationViewItemRevokers",
-            winrt::name_of<winrt::IInspectable>(),
-            winrt::name_of<winrt::NavigationViewItem>(),
-            true /* isAttached */,
-            nullptr /* defaultValue */);
+    std::call_once(s_NavigationViewItemRevokersPropertySet, [this]() {
+        s_NavigationViewItemRevokersProperty =
+            InitializeDependencyProperty(
+                L"NavigationViewItemRevokers",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::NavigationViewItem>(),
+                true /* isAttached */,
+                nullptr /* defaultValue */);
+        });
 }
 
 void NavigationView::OnSelectionModelChildrenRequested(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelChildrenRequestedEventArgs& e)
@@ -1253,14 +1258,7 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
             }();
             winrt::get_self<NavigationViewItem>(nvi)->PropagateDepthToChildren(childDepth);
 
-            // Register for item events
-            auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
-            nviRevokers->tappedRevoker = nvi.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
-            nviRevokers->keyDownRevoker = nvi.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
-            nviRevokers->gotFocusRevoker = nvi.GotFocus(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemOnGotFocus });
-            nviRevokers->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItemBase::IsSelectedProperty(), { this, &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
-            nviRevokers->isExpandedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItem::IsExpandedProperty(), { this, &NavigationView::OnNavigationViewItemExpandedPropertyChanged });
-            nvi.SetValue(s_NavigationViewItemRevokersProperty, nviRevokers.as<winrt::IInspectable>());
+            SetNavigationViewItemRevokers(nvi);
         }
     }
 }
@@ -1295,8 +1293,7 @@ void NavigationView::OnRepeaterElementClearing(const winrt::ItemsRepeater& ir, c
         nvibImpl->IsTopLevelItem(false);
         if (auto nvi = nvib.try_as<winrt::NavigationViewItem>())
         {
-            // Revoke all the events that we were listing to on the item
-            nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
+            ClearNavigationViewItemRevokers(nvi);
         }
     }
 }
@@ -1388,6 +1385,7 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
 void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt::SizeChangedEventArgs const& args)
 {
     const auto width = args.NewSize().Width;
+    UpdateOpenPaneWidth(width);
     UpdateAdaptiveLayout(width);
     UpdateTitleBarPadding();
     UpdateBackAndCloseButtonsVisibility();
@@ -1397,6 +1395,17 @@ void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt:
 void NavigationView::OnItemsContainerSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
 {
     UpdatePaneLayout();
+}
+
+void NavigationView::UpdateOpenPaneWidth(double width)
+{
+    if (!IsTopNavigationView() && m_rootSplitView)
+    {
+        m_openPaneWidth = std::max(0.0, std::min(width, OpenPaneLength()));
+
+        const auto templateSettings = GetTemplateSettings();
+        templateSettings->OpenPaneWidth(m_openPaneWidth);
+    }
 }
 
 // forceSetDisplayMode: On first call to SetDisplayMode, force setting to initial values
@@ -1427,7 +1436,7 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
         {
             displayMode = winrt::NavigationViewDisplayMode::Expanded;
         }
-        else if (width < CompactModeThresholdWidth())
+        else if (width > 0 && width < CompactModeThresholdWidth())
         {
             displayMode = winrt::NavigationViewDisplayMode::Minimal;
         }
@@ -1472,6 +1481,11 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
         && displayMode == winrt::NavigationViewDisplayMode::Compact)
     {
         m_initialListSizeStateSet = false;
+        ClosePane();
+    }
+
+    if (displayMode == winrt::NavigationViewDisplayMode::Minimal)
+    {
         ClosePane();
     }
 }
@@ -1803,7 +1817,7 @@ void NavigationView::UpdatePaneButtonsWidths()
     }();
  
     templateSettings->PaneToggleButtonWidth(newButtonWidths);
-    templateSettings->SmallerPaneToggleButtonWidth(newButtonWidths - 8);
+    templateSettings->SmallerPaneToggleButtonWidth(std::max(0.0, newButtonWidths - 8));
 }
 
 void NavigationView::OnBackButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
@@ -1946,7 +1960,10 @@ void NavigationView::UpdatePaneTitleFrameworkElementParents()
             const auto third = SetPaneTitleFrameworkElementParent(paneTitleTopPane, paneTitleFrameworkElement, !isTopNavigationView || isPaneToggleButtonVisible);
             first ? first() : second ? second() : third ? third() : []() {}();
 
-            paneTitleTopPane.Visibility(third && paneTitleSize != 0 ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+            if (paneTitleTopPane)
+            {
+                paneTitleTopPane.Visibility(third && paneTitleSize != 0 ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+            }
         }
     }
 }
@@ -3117,7 +3134,10 @@ void NavigationView::TopNavigationViewItemContentChanged()
 {
     if (m_appliedTemplate)
     {
-        m_topDataProvider.InvalidWidthCache();
+        if (!MenuItemsSource())
+        {
+            m_topDataProvider.InvalidWidthCache();
+        }
         InvalidateMeasure();
     }
 }
@@ -3381,6 +3401,35 @@ void NavigationView::UpdateLeftNavigationOnlyVisualState(bool useTransitions)
     winrt::VisualStateManager::GoToState(*this, isToggleButtonVisible || !m_isLeftPaneTitleEmpty ? L"TogglePaneButtonVisible" : L"TogglePaneButtonCollapsed", false /*useTransitions*/);
 }
 
+void NavigationView::SetNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi)
+{
+    auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
+    nviRevokers->tappedRevoker = nvi.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
+    nviRevokers->keyDownRevoker = nvi.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
+    nviRevokers->gotFocusRevoker = nvi.GotFocus(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemOnGotFocus });
+    nviRevokers->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItemBase::IsSelectedProperty(), { this, &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
+    nviRevokers->isExpandedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItem::IsExpandedProperty(), { this, &NavigationView::OnNavigationViewItemExpandedPropertyChanged });
+
+    nvi.SetValue(s_NavigationViewItemRevokersProperty, nviRevokers.as<winrt::IInspectable>());
+
+    m_itemsWithRevokerObjects.insert(nvi);
+}
+
+void NavigationView::ClearNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi)
+{
+    nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
+    m_itemsWithRevokerObjects.erase(nvi);
+}
+
+void NavigationView::ClearAllNavigationViewItemRevokers()
+{
+    for (auto const nvi : m_itemsWithRevokerObjects)
+    {
+        nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
+    }
+    m_itemsWithRevokerObjects.clear();
+}
+
 void NavigationView::InvalidateTopNavPrimaryLayout()
 {
     if (m_appliedTemplate && IsTopNavigationView())
@@ -3518,8 +3567,10 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::
     {
         const auto actualWidth = GetTopNavigationViewActualWidth();
         const auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
-        MUX_ASSERT(desiredWidth <= actualWidth);
-
+        // This assert triggers on the InfoBadge page, however it seems to recover fine, disabling the assert for now.
+        // Github issue: https://github.com/microsoft/microsoft-ui-xaml/issues/5771
+        // MUX_ASSERT(desiredWidth <= actualWidth);
+        
         // Calculate selected item size
         auto selectedItemIndex = s_itemNotFound;
         auto selectedItemWidth = 0.f;
@@ -3974,11 +4025,11 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         InvalidateTopNavPrimaryLayout();
         if (args.OldValue())
         {
-            m_autoSuggestBoxSuggestionChosenRevoker.revoke();
+            m_autoSuggestBoxQuerySubmittedRevoker.revoke();
         }
         if (const auto newAutoSuggestBox = args.NewValue().try_as<winrt::AutoSuggestBox>())
         {
-            m_autoSuggestBoxSuggestionChosenRevoker = newAutoSuggestBox.SuggestionChosen(winrt::auto_revoke, {this, &NavigationView::OnAutoSuggestBoxSuggestionChosen });
+            m_autoSuggestBoxQuerySubmittedRevoker = newAutoSuggestBox.QuerySubmitted(winrt::auto_revoke, {this, &NavigationView::OnAutoSuggestBoxQuerySubmitted });
         }
         UpdateVisualState(false);
     }
@@ -4020,6 +4071,10 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     else if (property == s_PaneFooterProperty)
     {
         UpdatePaneLayout();
+    }
+    else if (property == s_OpenPaneLengthProperty)
+    {
+        UpdateOpenPaneWidth(ActualWidth());
     }
 }
 
@@ -4379,13 +4434,13 @@ void NavigationView::UpdatePaneToggleSize()
             {
                 if (splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay && IsPaneOpen())
                 {
-                    width = OpenPaneLength();
-                    togglePaneButtonWidth = OpenPaneLength() - ((ShouldShowBackButton() || ShouldShowCloseButton()) ? c_backButtonWidth : 0);
+                    width = m_openPaneWidth;
+                    togglePaneButtonWidth = m_openPaneWidth - ((ShouldShowBackButton() || ShouldShowCloseButton()) ? c_backButtonWidth : 0);
                 }
                 else if (!(splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay && !IsPaneOpen()))
                 {
-                    width = OpenPaneLength();
-                    togglePaneButtonWidth = OpenPaneLength();
+                    width = m_openPaneWidth;
+                    togglePaneButtonWidth = m_openPaneWidth;
                 }
             }
 
@@ -4725,10 +4780,10 @@ void NavigationView::UpdateTitleBarPadding()
     }
 }
 
-void NavigationView::OnAutoSuggestBoxSuggestionChosen(const winrt::AutoSuggestBox& sender, const winrt::Windows::UI::Xaml::Controls::AutoSuggestBoxSuggestionChosenEventArgs& args)
+void NavigationView::OnAutoSuggestBoxQuerySubmitted(const winrt::AutoSuggestBox& sender, const winrt::Windows::UI::Xaml::Controls::AutoSuggestBoxQuerySubmittedEventArgs& args)
 {
-    // When in compact or minimal, we want to close pane when an item gets selected.
-    if (DisplayMode() != winrt::NavigationViewDisplayMode::Expanded && args.SelectedItem() != nullptr)
+    // When in compact or minimal, we want to close pane when an item gets chosen.
+    if (DisplayMode() != winrt::NavigationViewDisplayMode::Expanded && args.ChosenSuggestion() != nullptr)
     {
         ClosePane();
     }
@@ -4867,11 +4922,11 @@ void NavigationView::UpdatePaneShadow()
         // Ensure shadow is as wide as the pane when it is open
         if (DisplayMode() == winrt::NavigationViewDisplayMode::Compact)
         {
-            shadowReceiver.Width(OpenPaneLength());
+            shadowReceiver.Width(m_openPaneWidth);
         }
         else
         {
-            shadowReceiver.Width(OpenPaneLength() - shadowReceiverMargin.Right);
+            shadowReceiver.Width(m_openPaneWidth - shadowReceiverMargin.Right);
         }
         shadowReceiver.Margin(shadowReceiverMargin);
     }

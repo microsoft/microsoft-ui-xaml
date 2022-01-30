@@ -37,6 +37,7 @@
                                         <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}"/>
                                         <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}"/>
                                         <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}"/>
+                                        <contract6Present:Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -45,6 +46,7 @@
                                         <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}"/>
                                         <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}"/>
                                         <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}"/>
+                                        <contract6Present:Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
@@ -52,6 +54,7 @@
                                         <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}"/>
                                         <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}"/>
                                         <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}"/>
+                                        <contract6Present:Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -132,7 +135,7 @@
                             x:Name="TextBlock"
                             Grid.Column="1"
                             Text="{TemplateBinding Text}"
-                            TextTrimming="Clip"
+                            TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}"
                             Foreground="{TemplateBinding Foreground}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -279,7 +282,7 @@
                                 Grid.Column="1"
                                 Foreground="{TemplateBinding Foreground}"
                                 Text="{TemplateBinding Text}"
-                                TextTrimming="Clip"
+                                TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                             <FontIcon x:Name="SubItemChevron"

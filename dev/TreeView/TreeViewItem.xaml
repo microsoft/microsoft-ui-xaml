@@ -35,20 +35,31 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenterGrid.Background" Value="{ThemeResource TreeViewItemBackgroundPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TreeViewItemForegroundPointerOver}" />
+                                        <Setter Target="SelectionIndicator.Fill" Value="{ThemeResource TreeViewItemSelectionIndicatorForegroundPointerOver}" />
+                                        <Setter Target="CollapsedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundPointerOver}" />
+                                        <Setter Target="ExpandedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundPointerOver}" />
                                         <Setter Target="ContentPresenterGrid.BorderBrush" Value="{ThemeResource TreeViewItemBorderBrushPointerOver}" />
+                                         <Setter Target="SelectionIndicator.Opacity" Value="0" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenterGrid.Background" Value="{ThemeResource TreeViewItemBackgroundPressed}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TreeViewItemForegroundPressed}" />
+                                        <Setter Target="SelectionIndicator.Fill" Value="{ThemeResource TreeViewItemSelectionIndicatorForegroundPressed}" />
+                                        <Setter Target="CollapsedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundPressed}" />
+                                        <Setter Target="ExpandedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundPressed}" />
                                         <Setter Target="ContentPresenterGrid.BorderBrush" Value="{ThemeResource TreeViewItemBorderBrushPressed}" />
+                                        <Setter Target="SelectionIndicator.Opacity" Value="0" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Selected">
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenterGrid.Background" Value="{ThemeResource TreeViewItemBackgroundSelected}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TreeViewItemForegroundSelected}" />
+                                        <Setter Target="SelectionIndicator.Fill" Value="{ThemeResource TreeViewItemSelectionIndicatorForeground}" />
+                                        <Setter Target="CollapsedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundSelected}" />
+                                        <Setter Target="ExpandedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundSelected}" />
                                         <Setter Target="ContentPresenterGrid.BorderBrush" Value="{ThemeResource TreeViewItemBorderBrushSelected}" />
                                         <Setter Target="SelectionIndicator.Opacity" Value="1" />
                                     </VisualState.Setters>
@@ -57,6 +68,9 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenterGrid.Background" Value="{ThemeResource TreeViewItemBackgroundDisabled}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TreeViewItemForegroundDisabled}" />
+                                        <Setter Target="SelectionIndicator.Fill" Value="{ThemeResource TreeViewItemSelectionIndicatorForegroundDisabled}" />
+                                        <Setter Target="CollapsedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundDisabled}" />
+                                        <Setter Target="ExpandedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundDisabled}" />
                                         <Setter Target="ContentPresenterGrid.BorderBrush" Value="{ThemeResource TreeViewItemBorderBrushDisabled}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -64,6 +78,9 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenterGrid.Background" Value="{ThemeResource TreeViewItemBackgroundSelectedPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedPointerOver}" />
+                                        <Setter Target="SelectionIndicator.Fill" Value="{ThemeResource TreeViewItemSelectionIndicatorForegroundPointerOver}" />
+                                        <Setter Target="CollapsedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedPointerOver}" />
+                                        <Setter Target="ExpandedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedPointerOver}" />
                                         <Setter Target="ContentPresenterGrid.BorderBrush" Value="{ThemeResource TreeViewItemBorderBrushSelectedPointerOver}" />
                                         <Setter Target="SelectionIndicator.Opacity" Value="1" />
                                     </VisualState.Setters>
@@ -72,6 +89,9 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenterGrid.Background" Value="{ThemeResource TreeViewItemBackgroundSelectedPressed}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedPressed}" />
+                                        <Setter Target="SelectionIndicator.Fill" Value="{ThemeResource TreeViewItemSelectionIndicatorForegroundPressed}" />
+                                        <Setter Target="CollapsedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedPressed}" />
+                                        <Setter Target="ExpandedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedPressed}" />
                                         <Setter Target="ContentPresenterGrid.BorderBrush" Value="{ThemeResource TreeViewItemBorderBrushSelectedPressed}" />
                                         <Setter Target="SelectionIndicator.Opacity" Value="1" />
                                     </VisualState.Setters>
@@ -80,7 +100,11 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenterGrid.Background" Value="{ThemeResource TreeViewItemBackgroundSelectedDisabled}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedDisabled}" />
+                                        <Setter Target="SelectionIndicator.Fill" Value="{ThemeResource TreeViewItemSelectionIndicatorForegroundDisabled}" />
+                                        <Setter Target="CollapsedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedDisabled}" />
+                                        <Setter Target="ExpandedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedDisabled}" />
                                         <Setter Target="ContentPresenterGrid.BorderBrush" Value="{ThemeResource TreeViewItemBorderBrushSelectedDisabled}" />
+                                        <Setter Target="SelectionIndicator.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ReorderedPlaceholder">
@@ -175,7 +199,8 @@
                                 Width="Auto"
                                 Opacity="{TemplateBinding GlyphOpacity}"
                                 Background="Transparent">
-                                <TextBlock Foreground="{TemplateBinding GlyphBrush}"
+                                <TextBlock x:Name="CollapsedGlyph"
+                                    Foreground="{TemplateBinding GlyphBrush}"
                                     Width="12"
                                     Height="12"
                                     Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.CollapsedGlyphVisibility}"
@@ -187,7 +212,8 @@
                                     AutomationProperties.AccessibilityView="Raw"
                                     IsTextScaleFactorEnabled="False"
                                     IsHitTestVisible="False"/>
-                                <TextBlock Foreground="{TemplateBinding GlyphBrush}"
+                                <TextBlock x:Name="ExpandedGlyph"
+                                    Foreground="{TemplateBinding GlyphBrush}"
                                     Width="12"
                                     Height="12"
                                     Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.ExpandedGlyphVisibility}" 

@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "SwipeControl.h"
+#include "SwipeControlInteractionTrackerOwner.h"
 #include "SwipeItems.h"
 #include "Vector.h"
 #include "SwipeItem.h"
@@ -28,7 +29,7 @@ SwipeControl::SwipeControl()
 
 SwipeControl::~SwipeControl()
 {
-    DetachEventHandlers();
+    DetachEventHandlers(true /*useSafeGet*/);
 
     if (auto lastInteractedWithSwipeControl = s_lastInteractedWithSwipeControl.get())
     {
@@ -107,7 +108,7 @@ void SwipeControl::OnApplyTemplate()
 {
     ThrowIfHasVerticalAndHorizontalContent(/*setIsHorizontal*/ true);
 
-    DetachEventHandlers();
+    DetachEventHandlers(false /*useSafeGet*/);
     GetTemplateParts();
     EnsureClip();
     AttachEventHandlers();
@@ -157,9 +158,7 @@ winrt::Size SwipeControl::MeasureOverride(winrt::Size const& availableSize)
 }
 #pragma endregion
 
-#pragma region IInteractionTrackerOwner
 void SwipeControl::CustomAnimationStateEntered(
-    winrt::InteractionTracker const& /*sender*/,
     winrt::InteractionTrackerCustomAnimationStateEnteredArgs const& /*args*/)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
@@ -177,14 +176,12 @@ void SwipeControl::CustomAnimationStateEntered(
 }
 
 void SwipeControl::RequestIgnored(
-    winrt::InteractionTracker const& /*sender*/,
     winrt::InteractionTrackerRequestIgnoredArgs const& /*args*/)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 }
 
 void SwipeControl::IdleStateEntered(
-    winrt::InteractionTracker const& /*sender*/,
     winrt::InteractionTrackerIdleStateEnteredArgs const& /*args*/)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
@@ -230,7 +227,6 @@ void SwipeControl::IdleStateEntered(
 }
 
 void SwipeControl::InteractingStateEntered(
-    winrt::InteractionTracker const& /*sender*/,
     winrt::InteractionTrackerInteractingStateEnteredArgs const& /*args*/)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
@@ -260,7 +256,6 @@ void SwipeControl::InteractingStateEntered(
 }
 
 void SwipeControl::InertiaStateEntered(
-    winrt::InteractionTracker const& /*sender*/,
     winrt::InteractionTrackerInertiaStateEnteredArgs const& args)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
@@ -323,7 +318,6 @@ void SwipeControl::InertiaStateEntered(
 }
 
 void SwipeControl::ValuesChanged(
-    winrt::InteractionTracker const& /*sender*/,
     winrt::InteractionTrackerValuesChangedArgs const& args)
 {
     SWIPECONTROL_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
@@ -371,7 +365,6 @@ void SwipeControl::ValuesChanged(
     }
     UpdateThresholdReached(value);
 }
-#pragma endregion
 
 #pragma region TestHookHelpers
 winrt::SwipeControl SwipeControl::GetLastInteractedWithSwipeControl()
@@ -550,7 +543,7 @@ void SwipeControl::AttachEventHandlers()
     m_inputEaterTappedToken = m_inputEater.get().Tapped({ this, &SwipeControl::InputEaterGridTapped });
 }
 
-void SwipeControl::DetachEventHandlers()
+void SwipeControl::DetachEventHandlers(bool useSafeGet)
 {
     SWIPECONTROL_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
@@ -568,7 +561,10 @@ void SwipeControl::DetachEventHandlers()
 
     if (m_onSwipeContentStackPanelSizeChangedToken.value != 0)
     {
-        m_swipeContentStackPanel.get().SizeChanged(m_onSwipeContentStackPanelSizeChangedToken);
+        if (auto swipeContentStackPanel = useSafeGet ? m_swipeContentStackPanel.safe_get() : m_swipeContentStackPanel.get())
+        {
+            swipeContentStackPanel.SizeChanged(m_onSwipeContentStackPanelSizeChangedToken);
+        }
         m_onSwipeContentStackPanelSizeChangedToken.value = 0;
     }
 
@@ -578,9 +574,12 @@ void SwipeControl::DetachEventHandlers()
         m_onPointerPressedEventHandler.set(nullptr);
     }
 
-    if (m_inputEater.safe_get() && m_inputEaterTappedToken.value != 0)
+    if (m_inputEaterTappedToken.value != 0)
     {
-        m_inputEater.safe_get().Tapped(m_inputEaterTappedToken);
+        if (auto inputEater = useSafeGet ? m_inputEater.safe_get() : m_inputEater.get())
+        {
+            inputEater.Tapped(m_inputEaterTappedToken);
+        }
         m_inputEaterTappedToken.value = 0;
     }
 
@@ -700,7 +699,7 @@ void SwipeControl::AttachDismissingHandlers()
                     true /*handledEventsToo*/);
             }
 
-            m_xamlRootChangedRevoker = xamlRoot.Changed(winrt::auto_revoke, { this, &SwipeControl::CurrentXamlRootChanged });
+            m_xamlRootChangedRevoker = RegisterXamlRootChanged(xamlRoot, { this, &SwipeControl::CurrentXamlRootChanged });
         }
     }
     else
@@ -827,7 +826,10 @@ void SwipeControl::InitializeInteractionTracker()
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    winrt::IInteractionTrackerOwner interactionTrackerOwner = *this;
+    if (!m_interactionTrackerOwner)
+    {
+        m_interactionTrackerOwner = winrt::make_self<SwipeControlInteractionTrackerOwner>(*this).try_as<winrt::IInteractionTrackerOwner>();
+    }
 
     if (!m_compositor)
     {
@@ -849,7 +851,7 @@ void SwipeControl::InitializeInteractionTracker()
         m_visualInteractionSource.get().PositionYChainingMode(winrt::InteractionChainingMode::Never);
     }
 
-    m_interactionTracker.set(winrt::InteractionTracker::CreateWithOwner(m_compositor.get(), interactionTrackerOwner));
+    m_interactionTracker.set(winrt::InteractionTracker::CreateWithOwner(m_compositor.get(), m_interactionTrackerOwner));
     m_interactionTracker.get().InteractionSources().Add(m_visualInteractionSource.get());
     m_interactionTracker.get().Properties().InsertBoolean(s_isFarOpenPropertyName, false);
     m_interactionTracker.get().Properties().InsertBoolean(s_isNearOpenPropertyName, false);
@@ -1046,7 +1048,7 @@ void SwipeControl::CloseWithoutAnimation()
     m_interactionTracker.get().TryUpdatePosition({ 0.0f, 0.0f, 0.0f });
     if (wasIdle)
     {
-        IdleStateEntered(nullptr, nullptr);
+        IdleStateEntered(nullptr);
     }
 }
 

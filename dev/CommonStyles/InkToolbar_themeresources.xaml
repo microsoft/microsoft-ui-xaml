@@ -23,6 +23,10 @@
             <StaticResource x:Key="InkToolbarFlyoutItemPressedSelectedBackgroundThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="InkToolbarFlyoutItemHoverSelectedBackgroundThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="InkToolbarFlyoutItemSelectedBackgroundThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonBackgroundChecked" ResourceKey="AccentFillColorDefaultBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonBackgroundCheckedDisabled" ResourceKey="AccentFillColorDisabledBrush"/>
             <!--Foreground-->
             <StaticResource x:Key="InkToolbarButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="InkToolbarButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
@@ -39,6 +43,10 @@
             <StaticResource x:Key="InkToolbarFlyoutItemHoverForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="InkToolbarFlyoutItemPressedForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="InkToolbarFlyoutItemSelectedForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonForegroundChecked" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonForegroundCheckedPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush"/>
             <!-- BorderBrush -->
             <Thickness x:Key="InkToolbarButtonBorderThemeThickness">0</Thickness>
             <StaticResource x:Key="InkToolbarButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
@@ -54,6 +62,10 @@
             <StaticResource x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" ResourceKey="InkToolbarFlyoutItemBorderSelectedThemeBrush" />
             <StaticResource x:Key="InkToolbarAccentColorForegroundThemeBrush" ResourceKey="AccentTextFillColorPrimaryBrush" />
             <StaticResource x:Key="InkToolbarAccentHoverColorForegroundThemeBrush" ResourceKey="AccentTextFillColorSecondaryBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonBorderBrushChecked" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonBorderBrushCheckedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonBorderBrushCheckedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonBorderBrushCheckedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <!--Background-->
@@ -74,6 +86,10 @@
             <StaticResource x:Key="InkToolbarFlyoutItemPressedSelectedBackgroundThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="InkToolbarFlyoutItemHoverSelectedBackgroundThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="InkToolbarFlyoutItemSelectedBackgroundThemeBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonBackgroundChecked" ResourceKey="AccentFillColorDefaultBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonBackgroundCheckedDisabled" ResourceKey="AccentFillColorDisabledBrush"/>
             <!--Foreground-->
             <StaticResource x:Key="InkToolbarButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="InkToolbarButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
@@ -90,6 +106,10 @@
             <StaticResource x:Key="InkToolbarFlyoutItemHoverForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="InkToolbarFlyoutItemPressedForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="InkToolbarFlyoutItemSelectedForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonForegroundChecked" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonForegroundCheckedPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush"/>
             <!-- BorderBrush -->
             <Thickness x:Key="InkToolbarButtonBorderThemeThickness">0</Thickness>
             <StaticResource x:Key="InkToolbarButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
@@ -105,6 +125,10 @@
             <StaticResource x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" ResourceKey="InkToolbarFlyoutItemBorderSelectedThemeBrush" />            
             <StaticResource x:Key="InkToolbarAccentColorForegroundThemeBrush" ResourceKey="AccentTextFillColorPrimaryBrush" />
             <StaticResource x:Key="InkToolbarAccentHoverColorForegroundThemeBrush" ResourceKey="AccentTextFillColorSecondaryBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonBorderBrushChecked" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonBorderBrushCheckedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonBorderBrushCheckedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonBorderBrushCheckedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="InkToolbarFlyoutItemBackgroundThemeBrush" Color="{ThemeResource SystemColorWindowColor}" />
@@ -138,6 +162,10 @@
             <StaticResource x:Key="InkToolbarButtonSelectedBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="InkToolbarButtonSelectedBackgroundPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="InkToolbarButtonSelectedBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonBackgroundChecked" ResourceKey="AccentFillColorDefaultBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonBackgroundCheckedDisabled" ResourceKey="AccentFillColorDisabledBrush"/>
             <!-- Foreground -->
             <StaticResource x:Key="InkToolbarButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="InkToolbarButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
@@ -147,6 +175,10 @@
             <StaticResource x:Key="InkToolbarButtonSelectedForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="InkToolbarButtonSelectedForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="InkToolbarButtonSelectedForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonForegroundChecked" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonForegroundCheckedPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush"/>
+            <StaticResource x:Key="InkToolBarToggleButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush"/>
             <!-- BorderBrush -->
             <Thickness x:Key="InkToolbarButtonBorderThemeThickness">1</Thickness>
             <StaticResource x:Key="InkToolbarButtonBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
@@ -157,6 +189,10 @@
             <StaticResource x:Key="InkToolbarButtonSelectedBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealListLowBorderBrush" />
             <StaticResource x:Key="InkToolbarButtonSelectedBorderBrushPressed" ResourceKey="SystemControlTransparentRevealListLowBorderBrush" />
             <StaticResource x:Key="InkToolbarButtonSelectedBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonBorderBrushChecked" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonBorderBrushCheckedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonBorderBrushCheckedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="InkToolBarToggleButtonBorderBrushCheckedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -215,6 +251,7 @@
         <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="Padding" Value="2,2,2,2" />
         <Setter Property="Margin" Value="2,2,2,2" />
+        <Setter Property="IsTextScaleFactorEnabled" Value="False" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
     </Style>
 
@@ -896,8 +933,8 @@
                     <Grid x:Name="RootElement"
                         Background="{TemplateBinding Background}"
                         Width="{StaticResource InkToolbarButtonWidth}"
-                        Height="{StaticResource InkToolbarButtonHeight}">
-
+                        Height="{StaticResource InkToolbarButtonHeight}"
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -934,10 +971,7 @@
                                         <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonSelectedBackground}" />
                                         <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonSelectedBorderBrush}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonSelectedForeground}" />
-                                        <Setter Target="CheckedContent.Foreground" Value="{ThemeResource InkToolbarButtonSelectedForeground}" />
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
-                                        <Setter Target="Content.Opacity" Value="0" />
-                                        <Setter Target="CheckedContent.Opacity" Value="1" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -947,10 +981,7 @@
                                         <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonSelectedBackgroundPointerOver}" />
                                         <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonSelectedBorderBrushPointerOver}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonSelectedForegroundPointerOver}" />
-                                        <Setter Target="CheckedContent.Foreground" Value="{ThemeResource InkToolbarButtonSelectedForegroundPointerOver}" />
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
-                                        <Setter Target="Content.Opacity" Value="0" />
-                                        <Setter Target="CheckedContent.Opacity" Value="1" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -960,10 +991,7 @@
                                         <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonSelectedBackgroundPressed}" />
                                         <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonSelectedBorderBrushPressed}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonSelectedForegroundPressed}" />
-                                        <Setter Target="CheckedContent.Foreground" Value="{ThemeResource InkToolbarButtonSelectedForegroundPressed}" />
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
-                                        <Setter Target="Content.Opacity" Value="0" />
-                                        <Setter Target="CheckedContent.Opacity" Value="1" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -973,10 +1001,7 @@
                                         <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonSelectedBackgroundDisabled}" />
                                         <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonSelectedBorderBrushDisabled}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonSelectedForegroundDisabled}" />
-                                        <Setter Target="CheckedContent.Foreground" Value="{ThemeResource InkToolbarButtonSelectedForegroundDisabled}" />
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
-                                        <Setter Target="Content.Opacity" Value="0" />
-                                        <Setter Target="CheckedContent.Opacity" Value="1" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1776,6 +1801,37 @@
                                     </VisualState.Setters>
                                 </VisualState>
 
+                                <VisualState x:Name="Checked">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootElement.Background" Value="{ThemeResource InkToolBarToggleButtonBackgroundChecked}" />
+                                        <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolBarToggleButtonBorderBrushChecked}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource InkToolBarToggleButtonForegroundChecked}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="CheckedPointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootElement.Background" Value="{ThemeResource InkToolBarToggleButtonBackgroundCheckedPointerOver}" />
+                                        <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolBarToggleButtonBorderBrushCheckedPointerOver}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource InkToolBarToggleButtonForegroundCheckedPointerOver}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="CheckedPressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootElement.Background" Value="{ThemeResource InkToolBarToggleButtonBackgroundCheckedPressed}" />
+                                        <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolBarToggleButtonBorderBrushCheckedPressed}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource InkToolBarToggleButtonForegroundCheckedPressed}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="CheckedDisabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootElement.Background" Value="{ThemeResource InkToolBarToggleButtonBackgroundCheckedDisabled}" />
+                                        <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolBarToggleButtonBorderBrushCheckedDisabled}" />
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource InkToolBarToggleButtonForegroundCheckedDisabled}" />
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="FlowDirectionStates">
@@ -1783,7 +1839,6 @@
                                 <VisualState x:Name="RightToLeft" />
 
                             </VisualStateGroup>
-
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle x:Name="ContentBackground" Fill="Transparent" />
                         <ContentPresenter x:Name="Content"

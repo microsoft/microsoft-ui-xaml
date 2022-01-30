@@ -130,7 +130,10 @@ void SplitButton::UpdateVisualStates(bool useTransitions)
     // change visual state
     auto primaryButton = m_primaryButton.get();
     auto secondaryButton = m_secondaryButton.get();
-    if (primaryButton && secondaryButton)
+    if (!IsEnabled()) {
+        winrt::VisualStateManager::GoToState(*this, L"Disabled", useTransitions);
+    }
+    else if (primaryButton && secondaryButton)
     {
         if (m_isFlyoutOpen)
         {

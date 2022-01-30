@@ -24,14 +24,26 @@
         
         <StackPanel Margin="20,0,0,0" VerticalAlignment="Top" Padding="8"
                     BorderThickness="1" BorderBrush="{ThemeResource SystemChromeDisabledLowColor}">
-            <TextBlock Text="Options"  Style="{ThemeResource StandardGroupHeader}"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+            </Grid>
+            <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
             <CheckBox x:Name="isEnabled" Content="IsEnabled" IsChecked="True" />
-            <CheckBox x:Name="isTodayHighlighted" Content="IsTodayHighlighted" IsChecked="True" />
-            <CheckBox x:Name="isTodayBlackedOut" Content="IsTodayBlackedOut" IsChecked="False" Checked="IsTodayBlackedOut_Checked" Unchecked="IsTodayBlackedOut_Unchecked" />
-            <CheckBox x:Name="isSundayBlackedOut" Content="IsSundayBlackedOut" IsChecked="True" Checked="IsSundayBlackedOut_Checked" Unchecked="IsSundayBlackedOut_Unchecked" />
-            <CheckBox x:Name="isGroupLabelVisible" Content="IsGroupLabelVisible" IsChecked="True" />
-            <CheckBox x:Name="isOutOfScopeEnabled" Content="IsOutOfScopeEnabled" IsChecked="True" />
-            <CheckBox x:Name="hasDensityBars" Content="HasDensityBars" IsChecked="False" Checked="HasDensityBars_Checked" Unchecked="HasDensityBars_Unchecked" />
+            <CheckBox x:Name="isTodayHighlighted" Grid.Row="1" Content="IsTodayHighlighted" IsChecked="True" />
+            <CheckBox x:Name="isTodayBlackedOut" Grid.Row="2" Content="IsTodayBlackedOut" IsChecked="False" Checked="IsTodayBlackedOut_Checked" Unchecked="IsTodayBlackedOut_Unchecked" />
+            <CheckBox x:Name="isSundayBlackedOut" Grid.Row="3" Content="IsSundayBlackedOut" IsChecked="True" Checked="IsSundayBlackedOut_Checked" Unchecked="IsSundayBlackedOut_Unchecked" />
+            <CheckBox x:Name="isGroupLabelVisible" Grid.Column="1" Content="IsGroupLabelVisible" IsChecked="True" />
+            <CheckBox x:Name="isOutOfScopeEnabled" Grid.Row="1" Grid.Column="1" Content="IsOutOfScopeEnabled" IsChecked="True" />
+            <CheckBox x:Name="hasDensityBars" Grid.Row="2" Grid.Column="1" Content="HasDensityBars" IsChecked="False" Checked="HasDensityBars_Checked" Unchecked="HasDensityBars_Unchecked" />
             
             <ComboBox
                 x:Name="selectionMode"
@@ -44,13 +56,38 @@
                 <x:String>Multiple</x:String>
             </ComboBox>
 
+            <ComboBox
+                x:Name="firstDayOfWeek"
+                Margin="0,2,0,0"
+                Header="FirstDayOfWeek"
+                SelectedIndex="0"
+                SelectionChanged="FirstDayOfWeek_SelectionChanged">
+                <x:String>Sunday</x:String>
+                <x:String>Monday</x:String>
+            </ComboBox>
+
+            <ComboBox
+                x:Name="language"
+                Margin="0,2,0,0"
+                Header="Language"
+                SelectedIndex="0"
+                SelectionChanged="Language_SelectionChanged">
+                <x:String>en-US</x:String>
+                <x:String>fr-FR</x:String>
+                <x:String>de-DE</x:String>
+            </ComboBox>
+
             <ComboBox x:Name="calendarIdentifier" Margin="0,2,0,0" Header="CalendarIdentifier" Width="220" />
 
             <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                <TextBlock Text="Width:" VerticalAlignment="Center"/>
+                <TextBlock Text="Size:" VerticalAlignment="Center"/>
                 <TextBox x:Name="calendarWidth" Text="600" Margin="2" VerticalAlignment="Center" MinWidth="60"/>
-                <Button x:Name="getCalendarWidth" Content="Get" Margin="2" Click="GetCalendarWidth_Click" VerticalAlignment="Center"/>
-                <Button x:Name="setCalendarWidth" Content="Set" Margin="2" Click="SetCalendarWidth_Click" VerticalAlignment="Center"/>
+                <TextBox x:Name="calendarHeight" Text="600" Margin="2" VerticalAlignment="Center" MinWidth="60"/>
+                <TextBlock Text="ActualSize:" VerticalAlignment="Center"/>
+                <TextBlock x:Name="calendarActualWidth" Text="600" Margin="2" VerticalAlignment="Center" MinWidth="60"/>
+                <TextBlock x:Name="calendarActualHeight" Text="600" Margin="2" VerticalAlignment="Center" MinWidth="60"/>
+                <Button x:Name="getCalendarSize" Content="Get" Margin="2" Click="GetCalendarSize_Click" VerticalAlignment="Center"/>
+                <Button x:Name="setCalendarSize" Content="Set" Margin="2" Click="SetCalendarSize_Click" VerticalAlignment="Center"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,2,0,0">

@@ -45,9 +45,13 @@
                 </StackPanel.Resources>
                 <TextBlock Text="Actions" Style="{ThemeResource StandardGroupHeader}"/>
                 <Button x:Name="PlayButton" Click="PlayButton_Click">Play forwards from 0 to 1</Button>
+                <Button x:Name="PlayHalfButton" Click="PlayHalfButton_Click">Play forwards from 0.0 to 0.5</Button>
                 <Button x:Name="ToZeroKeyframeAnimationPlayButton" Click="ToZeroKeyframeAnimationPlayButton_Click">Play forwards from 0.35 to 0</Button>
                 <Button x:Name="AroundTheEndAnimationPlayButton" Click="AroundTheEndAnimationPlayButton_Click">Play forwards from 0.35 to 0.3</Button>
                 <Button x:Name="FromOneKeyframeAnimationPlayButton" Click="FromOneKeyframeAnimationPlayButton_Click">Play forwards from 1 to 0.35</Button>
+                <Button x:Name="SetProgressButton" Click="SetProgressButton_Click">Set progress to 0.4</Button>
+                <Button x:Name="SwitchCacheModeButton" Click="SwitchCacheModeButton_Click">Switch cache mode</Button>
+                <Button x:Name="StopButton" Click="StopButton_Click">Stop</Button>
                 <Button x:Name="ReverseNegativePlaybackRateAnimationPlayButton" Click="ReverseNegativePlaybackRateAnimationPlayButton_Click">Play backwards from 1 to 0.5 then forwards from 0.5 to 1</Button>
                 <Button x:Name="ReversePositivePlaybackRateAnimationPlayButton" Click="ReversePositivePlaybackRateAnimationPlayButton_Click">Play forwards from 0 to 0.5 then backwards from 0.5 to 0</Button>
                 <Button x:Name="FallenBackButton" Click="FallenBackButton_ClickAsync">Fall back</Button>

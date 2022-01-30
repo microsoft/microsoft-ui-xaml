@@ -388,6 +388,11 @@ namespace MUXControlsTestApp
         {
             this.ColorPicker.FlowDirection = FlowDirection.LeftToRight;
         }
+
+        private void OrientationComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            this.ColorPicker.Orientation = ((e.AddedItems[0] as ComboBoxItem).Content as string) == "Horizontal" ? Orientation.Horizontal : Orientation.Vertical;
+        }
     }
 
     public class MyColorSpectrum : ColorSpectrum

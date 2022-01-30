@@ -4,6 +4,8 @@ variables:
   rerunPassesRequiredToAvoidFailure: 5
 jobs:
 - job: Setup
+  pool:
+    vmImage: 'windows-latest'
   steps:
     - task: powershell@2
       name: checkPayload
@@ -20,8 +22,12 @@ jobs:
       eq(variables['useBuildOutputFromBuildId'],''),
       ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
     )
-  pool:
-    name: 'windevbuildagents'
+  pool: 
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPoolOSS-L
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPool-L
+    demands: ImageOverride -equals WinDevVS16-9
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10

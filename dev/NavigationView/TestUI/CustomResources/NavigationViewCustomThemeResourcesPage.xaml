@@ -157,10 +157,10 @@
 
                     <StackPanel Orientation="Horizontal" Margin="0 5">
                         <Button x:Name="GetHeaderContentMargin" AutomationProperties.Name="GetHeaderContentMargin" Content="GetHeaderContentMargin" Click="GetHeaderContentMargin_Click"/>
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">HeaderContent.Margin: </TextBlock>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="HeaderContent.Margin: "/>
                         <TextBlock x:Name="HeaderContentMarginResult" AutomationProperties.Name="HeaderContentMarginResult" VerticalAlignment="Center"/>
                         <Button x:Name="GetNavViewActiveVisualStates" AutomationProperties.Name="GetNavViewActiveVisualStates" Content="GetNavViewActiveVisualStates" Click="GetNavViewActiveVisualStates_Click"/>
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">NavView Active VisualStates: </TextBlock>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text=">NavView Active VisualStates: "/>
                         <TextBlock x:Name="NavViewActiveVisualStatesResult" AutomationProperties.Name="NavViewActiveVisualStatesResult" VerticalAlignment="Center"/>
                     </StackPanel>
                     

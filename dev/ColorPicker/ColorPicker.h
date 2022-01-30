@@ -36,6 +36,7 @@ private:
     void OnMinMaxSaturationChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void OnMinMaxValueChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void OnColorSpectrumComponentsChanged(winrt::DependencyPropertyChangedEventArgs const& args);
+    void OnOrientationChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
     // ColorPicker event handlers
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);

@@ -24,6 +24,9 @@ parameters:
     Release_arm:
       buildPlatform: 'arm'
       buildConfiguration: 'Release'
+    Release_arm64:
+      buildPlatform: 'arm64'
+      buildConfiguration: 'Release'
 
 jobs:
 - job: ${{ parameters.buildJobName }}
@@ -31,8 +34,12 @@ jobs:
     - ${{if parameters.dependsOn }}:
       - ${{ parameters.dependsOn }}
 
-  pool:
-    vmImage: 'windows-2019'
+  pool: 
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPoolOSS-S
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPool-S
+    demands: ImageOverride -equals WinDevVS16-9
   strategy:
     maxParallel: 10
     matrix: ${{ parameters.matrix }}

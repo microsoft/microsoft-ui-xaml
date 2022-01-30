@@ -32,16 +32,16 @@
       <Type>ThemeResources</Type>
       <Priority>1</Priority>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)Deprecated_themeresources.xaml" >
+    <Page Include="$(MSBuildThisFileDirectory)Deprecated_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-	<Page Include="$(MSBuildThisFileDirectory)Deprecated_themeresources_any.xaml" >
+    <Page Include="$(MSBuildThisFileDirectory)Deprecated_themeresources_any.xaml">
       <ControlsResourcesVersion>Any</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
-	  <Priority>1</Priority>
+      <Priority>1</Priority>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)Hyperlink_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
@@ -118,11 +118,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)SplitView_themeresources.xaml">
-      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)ToggleSwitch_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -167,7 +162,6 @@
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>21H1</Version>
       <Type>ThemeResources</Type>
-      <RequireInsiderSDK>true</RequireInsiderSDK>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
@@ -178,7 +172,6 @@
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>21H1</Version>
       <Type>ThemeResources</Type>
-      <RequireInsiderSDK>true</RequireInsiderSDK>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_v1.xaml">
       <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
@@ -284,7 +277,6 @@
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>21H1</Version>
       <Type>ThemeResources</Type>
-      <RequireInsiderSDK>true</RequireInsiderSDK>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)CalendarView_themeresources_v1.xaml">
       <ControlsResourcesVersion>Version1</ControlsResourcesVersion>

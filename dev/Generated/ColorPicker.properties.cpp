@@ -31,6 +31,7 @@ GlobalDependencyProperty ColorPickerProperties::s_MaxValueProperty{ nullptr };
 GlobalDependencyProperty ColorPickerProperties::s_MinHueProperty{ nullptr };
 GlobalDependencyProperty ColorPickerProperties::s_MinSaturationProperty{ nullptr };
 GlobalDependencyProperty ColorPickerProperties::s_MinValueProperty{ nullptr };
+GlobalDependencyProperty ColorPickerProperties::s_OrientationProperty{ nullptr };
 GlobalDependencyProperty ColorPickerProperties::s_PreviousColorProperty{ nullptr };
 
 ColorPickerProperties::ColorPickerProperties()
@@ -239,6 +240,17 @@ void ColorPickerProperties::EnsureProperties()
                 ValueHelper<int>::BoxValueIfNecessary(0),
                 winrt::PropertyChangedCallback(&OnMinValuePropertyChanged));
     }
+    if (!s_OrientationProperty)
+    {
+        s_OrientationProperty =
+            InitializeDependencyProperty(
+                L"Orientation",
+                winrt::name_of<winrt::Orientation>(),
+                winrt::name_of<winrt::ColorPicker>(),
+                false /* isAttached */,
+                ValueHelper<winrt::Orientation>::BoxValueIfNecessary(winrt::Orientation::Vertical),
+                winrt::PropertyChangedCallback(&OnOrientationPropertyChanged));
+    }
     if (!s_PreviousColorProperty)
     {
         s_PreviousColorProperty =
@@ -272,6 +284,7 @@ void ColorPickerProperties::ClearProperties()
     s_MinHueProperty = nullptr;
     s_MinSaturationProperty = nullptr;
     s_MinValueProperty = nullptr;
+    s_OrientationProperty = nullptr;
     s_PreviousColorProperty = nullptr;
 }
 
@@ -412,6 +425,14 @@ void ColorPickerProperties::OnMinSaturationPropertyChanged(
 }
 
 void ColorPickerProperties::OnMinValuePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnOrientationPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -659,6 +680,19 @@ void ColorPickerProperties::MinValue(int value)
 int ColorPickerProperties::MinValue()
 {
     return ValueHelper<int>::CastOrUnbox(static_cast<ColorPicker*>(this)->GetValue(s_MinValueProperty));
+}
+
+void ColorPickerProperties::Orientation(winrt::Orientation const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<ColorPicker*>(this)->SetValue(s_OrientationProperty, ValueHelper<winrt::Orientation>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::Orientation ColorPickerProperties::Orientation()
+{
+    return ValueHelper<winrt::Orientation>::CastOrUnbox(static_cast<ColorPicker*>(this)->GetValue(s_OrientationProperty));
 }
 
 void ColorPickerProperties::PreviousColor(winrt::IReference<winrt::Color> const& value)

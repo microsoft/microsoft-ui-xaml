@@ -13,6 +13,10 @@
     <license type="file">license.txt</license>
     <projectUrl>https://github.com/microsoft/microsoft-ui-xaml</projectUrl>
     <iconUrl>https://aka.ms/winui_icon</iconUrl>
+
+    <dependencies>
+      <dependency id="Microsoft.Web.WebView2" version="[1.0.1018-prerelease,)" />
+    </dependencies>  
   </metadata>
   <files>
     <file src="readme.txt"/>
@@ -34,5 +38,6 @@
 
     <!-- This is here for C++ based projects, see http://nugetdocsbeta.azurewebsites.net/ndocs/guides/create-uwp-packages -->
     <file target="build\native\$ID$.targets" src="MUXControls-Nuget-Native.targets"/>
+    <file target="buildTransitive\native\$ID$.targets" src="MUXControls-Nuget-Native.targets"/>
   </files>
 </package>

@@ -4,6 +4,7 @@
 using Common;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 
@@ -546,7 +547,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout");
 
                 Log.Comment("Tapping on a button to show the CommandBarFlyout.");
-                InputHelper.Tap(showCommandBarFlyoutButton);
+                showCommandBarFlyoutButton.InvokeAndWait();
 
                 // Pre-RS5, CommandBarFlyouts always open expanded,
                 // so we don't need to tap on the more button in that case.
@@ -873,7 +874,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with AlwaysExpanded");
 
                 Log.Comment("Tapping on a button to show the CommandBarFlyout.");
-                InputHelper.Tap(showCommandBarFlyoutButton);
+                showCommandBarFlyoutButton.InvokeAndWait();
 
                 Log.Comment("Press Right key to move focus to last primary command: Underline.");
                 for (int i = 0; i < 5; i++)
@@ -907,6 +908,180 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Tapping on a button to hide the CommandBarFlyout.");
                 InputHelper.Tap(showCommandBarFlyoutButton);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyDynamicSecondaryCommandLabel()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                return;
+            }
+
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Log.Comment("Retrieving FlyoutTarget6");
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with no primary commands");
+
+                Log.Comment("Retrieving IsFlyoutOpenCheckBox");
+                ToggleButton isFlyoutOpenCheckBox = FindElement.ById<ToggleButton>("IsFlyoutOpenCheckBox");
+
+                Log.Comment("Retrieving UseSecondaryCommandDynamicLabelCheckBox");
+                ToggleButton useSecondaryCommandDynamicLabelCheckBox = FindElement.ById<ToggleButton>("UseSecondaryCommandDynamicLabelCheckBox");
+
+                Log.Comment("SecondaryCommandDynamicLabelChangedCheckBox");
+                ToggleButton secondaryCommandDynamicLabelChangedCheckBox = FindElement.ById<ToggleButton>("SecondaryCommandDynamicLabelChangedCheckBox");
+
+                Log.Comment("Retrieving DynamicLabelTimerIntervalTextBox");
+                Edit dynamicLabelTimerIntervalTextBox = new Edit(FindElement.ById("DynamicLabelTimerIntervalTextBox"));
+
+                Log.Comment("Retrieving DynamicLabelChangeCountTextBox");
+                Edit dynamicLabelChangeCountTextBox = new Edit(FindElement.ById("DynamicLabelChangeCountTextBox"));
+
+                Verify.AreEqual(ToggleState.Off, isFlyoutOpenCheckBox.ToggleState);
+
+                Log.Comment("Change the first command bar element's Label property asynchronously after the command bar is opened");
+                useSecondaryCommandDynamicLabelCheckBox.Check();
+
+                Log.Comment("Setting DynamicLabelTimerIntervalTextBox to 1s");
+                dynamicLabelTimerIntervalTextBox.SetValue("1000");
+
+                Log.Comment("Setting DynamicLabelChangeCountTextBox to 1 single change");
+                dynamicLabelChangeCountTextBox.SetValue("1");                
+                Wait.ForIdle();
+
+                Verify.AreEqual(ToggleState.Off, secondaryCommandDynamicLabelChangedCheckBox.ToggleState);
+
+                Log.Comment("Invoking button 'Show CommandBarFlyout with no primary commands' to show the Flyout6 command bar.");
+                showCommandBarFlyoutButton.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual(ToggleState.On, isFlyoutOpenCheckBox.ToggleState);
+
+                Button undoButton6 = FindElement.ById<Button>("UndoButton6");
+                Verify.IsNotNull(undoButton6);
+
+                UIObject commandBarElementsContainer = undoButton6.Parent;
+                Verify.IsNotNull(commandBarElementsContainer);
+
+                Rectangle initialBoundingRectangle = commandBarElementsContainer.BoundingRectangle;
+
+                Log.Comment("Initial commandBarElementsContainer.BoundingRectangle.Width=" + initialBoundingRectangle.Width);
+                Log.Comment("Initial commandBarElementsContainer.BoundingRectangle.Height=" + initialBoundingRectangle.Height);
+
+                Verify.AreEqual(ToggleState.Off, secondaryCommandDynamicLabelChangedCheckBox.ToggleState);
+
+                Log.Comment("Waiting for SecondaryCommandDynamicLabelChangedCheckBox becoming checked indicating the asynchronous Label property change occurred");
+                secondaryCommandDynamicLabelChangedCheckBox.GetToggledWaiter().Wait();
+                Wait.ForIdle();
+
+                Rectangle finalBoundingRectangle = commandBarElementsContainer.BoundingRectangle;
+
+                Log.Comment("Final commandBarElementsContainer.BoundingRectangle.Width=" + finalBoundingRectangle.Width);
+                Log.Comment("Final commandBarElementsContainer.BoundingRectangle.Height=" + finalBoundingRectangle.Height);
+
+                Log.Comment("Hitting Escape key to close the command bar.");
+                KeyboardHelper.PressKey(Key.Escape);
+                Wait.ForIdle();
+
+                Verify.AreEqual(ToggleState.Off, isFlyoutOpenCheckBox.ToggleState);
+
+                Log.Comment("Verifying the command bar flyout width was increased to accommodate the longer label.");
+                Verify.IsGreaterThan(finalBoundingRectangle.Width, initialBoundingRectangle.Width);
+                Verify.AreEqual(finalBoundingRectangle.Height, initialBoundingRectangle.Height);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyIsFlyoutKeyboardAccessibleWithNoPrimaryCommands()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                return;
+            }
+
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButtonWithNoPrimaryCommands = FindElement.ByName<Button>("Show CommandBarFlyout with no primary commands");
+
+                Log.Comment("Tap on a button to show the CommandBarFlyout.");
+                showCommandBarFlyoutButtonWithNoPrimaryCommands.InvokeAndWait();
+
+                Button undoButton6 = FindElement.ById<Button>("UndoButton6");
+                var undoButtonElement = AutomationElement.FocusedElement;
+                Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton6.AutomationId);
+                
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                
+                if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
+                {
+                    // rs2 does not loop through menuflyout items, so focus stays on the first button.
+                    Log.Comment("Press Up key to make sure it does not go to hidden controls.");
+                    Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton6.AutomationId);
+                }
+                else
+                {
+                    Log.Comment("Press Up key to make sure commands loops focus to last secondary command: Favorite.");
+                    Button favoriteToggleButton6 = FindElement.ById<Button>("FavoriteToggleButton6");
+                    var favoriteToggleElement = AutomationElement.FocusedElement;
+                    Verify.AreEqual(favoriteToggleElement.Current.AutomationId, favoriteToggleButton6.AutomationId);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyAddPrimaryCommandsDynamically()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                return;
+            }
+
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with no primary commands");
+                ToggleButton addPrimaryCommandDynamicallyCheckBox = FindElement.ById<ToggleButton>("AddPrimaryCommandDynamicallyCheckBox");
+                ToggleButton clearPrimaryCommandsCheckBox = FindElement.ById<ToggleButton>("ClearPrimaryCommandsCheckBox");
+                ToggleButton primaryCommandDynamicallyAddedCheckBox = FindElement.ById<ToggleButton>("PrimaryCommandDynamicallyAddedCheckBox");
+                Edit dynamicLabelTimerIntervalTextBox = new Edit(FindElement.ById("DynamicLabelTimerIntervalTextBox"));
+                Edit dynamicLabelChangeCountTextBox = new Edit(FindElement.ById("DynamicLabelChangeCountTextBox"));
+
+                Log.Comment("Setting DynamicLabelTimerIntervalTextBox to 1s");
+                dynamicLabelTimerIntervalTextBox.SetValue("1000");
+
+                Log.Comment("Setting DynamicLabelChangeCountTextBox to 1 single change");
+                dynamicLabelChangeCountTextBox.SetValue("1");
+                Wait.ForIdle();
+
+                Log.Comment("Set Flyout6 to add Primary Commands dynamically");
+                addPrimaryCommandDynamicallyCheckBox.Check();
+                Wait.ForIdle();
+
+                Log.Comment("Invoke FlyoutTarget 6 to Show CommandBarFlyout with no primary commands");
+                showCommandBarFlyoutButton.Click();
+
+                Log.Comment("Waiting for SecondaryCommandDynamicLabelChangedCheckBox becoming checked indicating the asynchronous Label property change occurred");
+                primaryCommandDynamicallyAddedCheckBox.GetToggledWaiter().Wait();
+                Wait.ForIdle();
+
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+
+                Log.Comment("Verifying Primary Commands is added and MoreButton is actionable");
+
+                Button moreButton = FindElement.ById<Button>("MoreButton");
+                var moreButtonElement = AutomationElement.FocusedElement;
+                Verify.AreEqual(moreButtonElement.Current.AutomationId, moreButton.AutomationId);
+
+                Log.Comment("Dismissing flyout");
+                KeyboardHelper.PressKey(Key.Escape);
             }
         }
     }

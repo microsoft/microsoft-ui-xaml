@@ -105,7 +105,7 @@
                                 <VisualState x:Name="Updating" />
                                 <VisualState x:Name="UpdatingError">
                                     <VisualState.Setters>
-                                        <Setter Target="DeterminateProgressBarIndicator.Fill" Value="{ThemeResource ProgressBarErrorForegroundColor}" />
+                                        <Setter Target="DeterminateProgressBarIndicator.(Shape.Fill).(SolidColorBrush.Color)" Value="{ThemeResource ProgressBarErrorForegroundColor}" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -229,7 +229,7 @@
                                     <Rectangle
                                         x:Name="ProgressBarTrack"
                                         Fill="{TemplateBinding Background}"
-                                        Height="{StaticResource ProgressBarTrackHeight}"
+                                        Height="{ThemeResource ProgressBarTrackHeight}"
                                         Width="{TemplateBinding Width}"
                                         VerticalAlignment="Center"
                                         RadiusX="{Binding Source={StaticResource ProgressBarTrackCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"

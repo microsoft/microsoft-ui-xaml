@@ -102,7 +102,7 @@ namespace MUXControls.TestAppUtils
         {
             if (visitor.ShouldVisitPropertiesForNode(node))
             {
-                var properties = node.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                var properties = node.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).OrderBy(x => x.Name);
                 foreach (var property in properties)
                 {
                     if (visitor.ShouldVisitProperty(property))

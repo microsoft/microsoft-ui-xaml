@@ -123,30 +123,61 @@ namespace MUXControlsTestApp
             CalendarViewSelectionMode selectionMode;
             if (Enum.TryParse<CalendarViewSelectionMode>((sender as ComboBox).SelectedItem.ToString(), out selectionMode))
             {
-                if (PageCalendar != null)
+                if (PageCalendar != null && PageCalendar.SelectionMode != selectionMode)
                 {
                     PageCalendar.SelectionMode = selectionMode;
                 }
-                if (PageCalendar2 != null)
+                if (PageCalendar2 != null && PageCalendar2.SelectionMode != selectionMode)
                 {
                     PageCalendar2.SelectionMode = selectionMode;
                 }
             }
         }
 
-        private void GetCalendarWidth_Click(object sender, RoutedEventArgs e)
+        private void FirstDayOfWeek_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            calendarWidth.Text = PageCalendar2.Width.ToString();
+            Windows.Globalization.DayOfWeek weekDay = firstDayOfWeek.SelectedIndex == 0 ? Windows.Globalization.DayOfWeek.Sunday : Windows.Globalization.DayOfWeek.Monday;
+
+            if (PageCalendar != null && PageCalendar.FirstDayOfWeek != weekDay)
+            {
+                PageCalendar.FirstDayOfWeek = weekDay;
+            }
+            if (PageCalendar2 != null && PageCalendar2.FirstDayOfWeek != weekDay)
+            {
+                PageCalendar2.FirstDayOfWeek = weekDay;
+            }
         }
 
-        private void SetCalendarWidth_Click(object sender, RoutedEventArgs e)
+        private void Language_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string newLanguage = language.SelectedValue as string;
+
+            if (PageCalendar != null && newLanguage != PageCalendar.Language)
+            {
+                PageCalendar.Language = newLanguage;
+            }
+            if (PageCalendar2 != null && newLanguage != PageCalendar2.Language)
+            {
+                PageCalendar2.Language = newLanguage;
+            }
+        }
+
+        private void GetCalendarSize_Click(object sender, RoutedEventArgs e)
+        {
+            calendarWidth.Text = PageCalendar2.Width.ToString();
+            calendarActualWidth.Text = PageCalendar2.ActualWidth.ToString();
+            calendarHeight.Text = PageCalendar2.Height.ToString();
+            calendarActualHeight.Text = PageCalendar2.ActualHeight.ToString();
+        }
+
+        private void SetCalendarSize_Click(object sender, RoutedEventArgs e)
         {
             PageCalendar2.Width = Double.Parse(calendarWidth.Text);
+            PageCalendar2.Height = Double.Parse(calendarHeight.Text);
         }
 
         private void SetDayItemMargin_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 string[] thicknessParts = dayItemMargin.Text.Split(',');
@@ -163,12 +194,10 @@ namespace MUXControlsTestApp
                     float.Parse(thicknessParts[2]),
                     float.Parse(thicknessParts[3]));
             }
-#endif
         }
 
         private void SetMonthYearItemMargin_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 string[] thicknessParts = monthYearItemMargin.Text.Split(',');
@@ -185,12 +214,10 @@ namespace MUXControlsTestApp
                     float.Parse(thicknessParts[2]),
                     float.Parse(thicknessParts[3]));
             }
-#endif
         }
 
         private void SetFirstOfMonthLabelMargin_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 string[] thicknessParts = firstOfMonthLabelMargin.Text.Split(',');
@@ -207,12 +234,10 @@ namespace MUXControlsTestApp
                     float.Parse(thicknessParts[2]),
                     float.Parse(thicknessParts[3]));
             }
-#endif
         }
 
         private void SetFirstOfYearDecadeLabelMargin_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 string[] thicknessParts = firstOfYearDecadeLabelMargin.Text.Split(',');
@@ -229,7 +254,6 @@ namespace MUXControlsTestApp
                     float.Parse(thicknessParts[2]),
                     float.Parse(thicknessParts[3]));
             }
-#endif
         }
 
         private void GetDayItemFontSize_Click(object sender, RoutedEventArgs e)
@@ -274,23 +298,19 @@ namespace MUXControlsTestApp
 
         private void SetCalendarItemCornerRadius_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 PageCalendar2.CalendarItemCornerRadius = PageCalendar.CalendarItemCornerRadius = new CornerRadius(double.Parse(calendarItemCornerRadius.Text));
             }
-#endif
         }
 
         private void ResetCalendarItemCornerRadius_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 PageCalendar.ClearValue(CalendarView.CalendarItemCornerRadiusProperty);
                 PageCalendar2.ClearValue(CalendarView.CalendarItemCornerRadiusProperty);
             }
-#endif
         }
 
         private void GetCalendarItemBorderThickness_Click(object sender, RoutedEventArgs e)
@@ -345,7 +365,6 @@ namespace MUXControlsTestApp
                 case 36: // CalendarViewDayItem.Background
                     return null;
                 default:
-#if USE_INSIDER_SDK
                     if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
                     {
                         switch (brushPropertyName.SelectedIndex)
@@ -392,7 +411,6 @@ namespace MUXControlsTestApp
                                 return null;
                         }
                     }
-#endif // USE_INSIDER_SDK
                     return null;
             }
         }
@@ -487,7 +505,6 @@ namespace MUXControlsTestApp
                     SetBackgrounds(PageCalendar, solidColorBrush);
                     SetBackgrounds(PageCalendar2, solidColorBrush);
                     break;
-#if USE_INSIDER_SDK
                 default:
                     if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
                     {
@@ -553,7 +570,6 @@ namespace MUXControlsTestApp
                         }
                     }
                     break;
-#endif // USE_INSIDER_SDK
             }
         }
 

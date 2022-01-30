@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSettings
+  id="b924e60c-07ac-4b08-bf83-82852801b90b"
+  name="Expander_APITests"
+  enableDefaultDataCollectors="false"
+  xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Description><!--_locID_text="Description1"-->These are default test settings for a local test run.</Description>
+  <Deployment enabled="false" />
+</TestSettings>

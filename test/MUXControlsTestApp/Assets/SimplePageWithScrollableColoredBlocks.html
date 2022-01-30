@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Page With Scrollable Color Blocks</title>
+    <style>
+        #section1 {
+            height: 1000px;
+            width: 1500px;
+            background-color: #ff0000;
+        }
+
+        #section2 {
+            height: 1000px;
+            width: 1500px;
+            background-color: #0000ff;
+        }
+    </style>
+    <script>
+        window.onscroll = function()
+        {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+                // End of page reached.
+                window.chrome.webview.postMessage("End of page reached.");
+            }
+            else if (window.scrollX >= document.body.offsetWidth) {
+                // Horizontal scrolling reached end of page.
+                window.chrome.webview.postMessage("Far side of page reached.");
+            }
+        };
+
+        function sendTouchMessage()
+        {
+            var zoom = window.visualViewport.scale;
+            // Try division method
+            window.chrome.webview.postMessage("Tap received, zoom: " + zoom);
+        };
+
+        function onContextMenu()
+        {
+            window.chrome.webview.postMessage("Long press received.");
+        };
+    </script>
+</head>
+<body>
+    <div id="section1">
+        <button ontouchstart="sendTouchMessage()" oncontextmenu="onContextMenu()" id="enterInput" style="height: 40%; width: 40%;"> Touch only button </button>
+    </div>
+    <div id="section2"></div>
+</body>
+</html>

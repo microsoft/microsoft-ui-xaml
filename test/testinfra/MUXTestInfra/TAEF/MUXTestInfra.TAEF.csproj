@@ -1,13 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v2.1</TargetFrameworkVersion>
-
+    <TargetFrameworkVersion>v3.1</TargetFrameworkVersion>
     <DefineConstants>$(DefineConstants);USING_TAEF</DefineConstants>
     <DefineConstants Condition="$(SolutionName) == 'MUXControlsInnerLoop'">$(DefineConstants);INNERLOOP_BUILD</DefineConstants>
-
     <TaefRootDirectory>$(NuGetPackageRoot)taef.redist.wlk\10.31.180822002\build\Binaries\x86\CoreClr\</TaefRootDirectory>
   </PropertyGroup>
 
@@ -35,7 +32,6 @@
     <Version>0.0.4</Version>
   </PropertyGroup>
 
-
   <ItemGroup>
     <Reference Include="Windows.winmd">
       <HintPath>$(WindowsMetadataPath)\windows.winmd</HintPath>
@@ -46,7 +42,7 @@
   <ItemGroup>
     <PackageReference Include="TAEF.Redist.Wlk" Version="10.31.180822002" />
     <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
-    <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="4.7.0" />
   </ItemGroup>
 
   <Import Project="..\MUXTestInfra.Shared.projitems" />

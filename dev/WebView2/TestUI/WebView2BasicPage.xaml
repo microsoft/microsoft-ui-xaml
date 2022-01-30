@@ -1,0 +1,199 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.WebView2BasicPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="5,5,155,-315">
+        <Grid.Resources>
+            <local:EnumToStringConverter x:Name="EnumToStringConverter"/>
+            <local:UriToStringConverter x:Name="UriToStringConverter"/>
+        </Grid.Resources>
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" Margin="0,5,15,5">
+                    <TextBlock Text="Test Name:" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="TestNameComboBox" AutomationProperties.AutomationId="TestNameComboBox" SelectionChanged="TestNameComboBox_SelectionChanged" VerticalAlignment="Center" Width="100">
+                        <ComboBox.Items>
+                            <!-- Please keep this list alphabetaized!-->
+                            <ComboBoxItem AutomationProperties.Name="AddHostObjectToScriptTest">AddHostObjectToScriptTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="BasicFlingTouchTest">BasicFlingTouchTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="BasicKeyboardTest">BasicKeyboardTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="BasicLongPressTouchTest">BasicLongPressTouchTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="BasicPanTouchTest">BasicPanTouchTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="BasicRenderingTest">BasicRenderingTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="BasicStretchTouchTest">BasicStretchTouchTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="BasicTapTouchTest">BasicTapTouchTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="CloseThenDPIChangeTest">CloseThenDPIChangeTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="CopyPasteTest">CopyPasteTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="CoreProcessFailedTest">CoreProcessFailedTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="CoreWebView2InitializedTest">CoreWebView2InitializedTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="CoreWebView2Initialized_FailedTest">CoreWebView2Initialized_FailedTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="CursorUpdateTest">CursorUpdateTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="ExecuteScriptTest">ExecuteScriptTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="Focus_BackAndForthTabTest">Focus_BackAndForthTabTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="Focus_BasicTabTest">Focus_BasicTabTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="Focus_MouseActivateTest">Focus_MouseActivateTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="Focus_ReverseTabTest">Focus_ReverseTabTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="GoBackAndForwardTest">GoBackAndForwardTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="HostNameToFolderMappingTest">HostNameToFolderMappingTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="MouseCaptureTest">MouseCaptureTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="MouseLeftClickTest">MouseLeftClickTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="MouseMiddleClickTest">MouseMiddleClickTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="MouseRightClickTest">MouseRightClickTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="MouseWheelScrollTest">MouseWheelScrollTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="MouseXButton1ClickTest">MouseXButton1ClickTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="MouseXButton2ClickTest">MouseXButton2ClickTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="MoveTest">MoveTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="MultipleWebviews_BasicRenderingTest">MultipleWebviews_BasicRenderingTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="MultipleWebviews_FocusTest">MultipleWebviews_FocusTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="MultipleWebviews_LanguageTest">MultipleWebviews_LanguageTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="NavigateToLocalImageTest">NavigateToLocalImageTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="NavigateToStringTest">NavigateToStringTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="NavigateToVideoTest">NavigateToVideoTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="NavigationErrorTest">NavigationErrorTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="NavigationStartingTest">NavigationStartingTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="NonAsciiUriTest">NonAsciiUriTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="ParentVisibilityHiddenTest">ParentVisibilityHiddenTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="ParentVisibilityTurnedOnTest">ParentVisibilityTurnedOnTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="PointerReleaseWithoutPressTest">PointerReleaseWithoutPressTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="QueryCoreWebView2BasicTest">QueryCoreWebView2BasicTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="ReloadTest">ReloadTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="RenderProcessFailedTest">RenderProcessFailedTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="ReparentElementTest">ReparentElementTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="ResizeTest">ResizeTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="ScaledTouchTest">ScaledTouchTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="SourceBeforeLoadTest">SourceBeforeLoadTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="SourceBindingTest">SourceBindingTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="SpecificTouchTest">SpecificTouchTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="UserAgentTest">UserAgentTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="VisibilityHiddenTest">VisibilityHiddenTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="VisibilityTurnedOnTest">VisibilityTurnedOnTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="WebMessageReceivedTest">WebMessageReceivedTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="WebView2CleanedUpTest">WebView2CleanedUpTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="WindowHiddenTest">WindowHiddenTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="WindowlessPopupTest">WindowlessPopupTest</ComboBoxItem>
+                        </ComboBox.Items>
+                    </ComboBox>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,15,0">
+                    <TextBlock Text="Test Result:    " FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="TestResult" AutomationProperties.AutomationId="TestResult" IsReadOnly="true" Width="150" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,15,0">
+                    <Button x:Name="CompleteTestButton" AutomationProperties.AutomationId="CompleteTest" Content="Complete Test" Click="CompleteCurrentTest" Margin="0,0,5,0"/>
+                    <TextBox x:Name="CleanupResultTextBox" AutomationProperties.AutomationId="CleanupResultTextBox" IsReadOnly="true" Width="100" VerticalAlignment="Center"/>
+                    <Button x:Name="CleanupTestButton" AutomationProperties.AutomationId="CleanupTest" Content="Clean up Test" Click="CleanupCurrentTest" Margin="0,0,5,0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,15,0">
+                    <TextBlock Text="Message Log:    " FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="MessageLog" AutomationProperties.AutomationId="MessageLog" IsReadOnly="true" Width="200" VerticalAlignment="Center"/>
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
+                <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
+                    <TextBlock Text="Status1:    " FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="Status1" AutomationProperties.AutomationId="Status1" Width="150" Visibility="Visible" Background="#66C71F1F" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
+                    <TextBlock Text="Status2:    " FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="Status2" AutomationProperties.AutomationId="Status2" Width="150" Visibility="Visible" Background="#66C71F1F" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
+                    <TextBlock Text="Status3:    " FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="Status3" AutomationProperties.AutomationId="Status3" Width="150" Visibility="Visible" Background="#66C71F1F" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,5,0">
+                    <TextBlock Text="Message Received:    " FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center" FontSize="7" TextWrapping="Wrap" Width="50"/>
+                    <CheckBox x:Name="MessageReceived" AutomationProperties.AutomationId="MessageReceived" Width="150" Visibility="Visible" VerticalAlignment="Center" IsChecked="False"/>
+                </StackPanel>
+            </StackPanel>
+            <Border BorderBrush="Black" BorderThickness="2" HorizontalAlignment="Left" x:Name="TestContentsBorder">
+                <StackPanel Orientation="Vertical" Margin="5">
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
+                        <Button x:Name="NavigateToStringButton" AutomationProperties.AutomationId="NavigateToStringButton" Content="Navigate to String!" Click="OnNavigateToStringButtonClicked" Margin="1,0,1,0"/>
+                        <Button x:Name="VideoButton" AutomationProperties.AutomationId="VideoButton" Content="Video" Click="OnVideoButtonClicked" Margin="1,0,1,0"/>
+                        <Button x:Name="SetSourceButton"  AutomationProperties.AutomationId="SetSourceButton" Content="Load URI!" Click="OnSetSourceButtonClicked" Margin="1,0,1,0"/>
+                        <Button x:Name="EnsureCWV2Button"  AutomationProperties.AutomationId="EnsureCWV2Button" Content="EnsureCWV2" Click="OnEnsureCWV2ButtonClicked" Margin="1,0,1,0"/>
+                        <Button x:Name="GoBackButton" AutomationProperties.AutomationId="GoBackButton" Margin="1,0,1,0" contract7Present:CornerRadius="25" Click="OnGoBackButtonClicked" IsEnabled="{Binding ElementName=MyWebView2, Path=CanGoBack, Mode=OneWay}">
+                            <SymbolIcon Symbol="Back" />
+                        </Button>
+                        <Button x:Name="GoForwardButton" AutomationProperties.AutomationId="GoForwardButton" Margin="1,0,1,0" contract7Present:CornerRadius="25" Click="OnGoForwardButtonClicked" IsEnabled="{Binding ElementName=MyWebView2, Path=CanGoForward, Mode=OneWay}">
+                            <SymbolIcon Symbol="Forward" />
+                        </Button>
+                        <TextBox x:Name="UriTextBox" AutomationProperties.AutomationId="UriTextBox" Width="400" Margin="4,0,4,0" Text="http://www.bing.com/" KeyDown="UpdateSourceOnEnter"/>
+                        <Button x:Name="AddWebViewButton" AutomationProperties.AutomationId="AddWebViewButton" Content="+" Margin="1,0,1,0" contract7Present:CornerRadius="25" ToolTipService.ToolTip="Add webview" Click="OnAddWebviewButtonClicked" />
+                        <ToggleButton x:Name="RotateScaleButton" Content="Rotate and Scale" Margin="1,0,10,0" Checked="TransformWebView" Unchecked="ResetTransformWebView" />
+                        <Slider x:Name="WebViewBorderWidthSlider" Margin="0,0,10,0" Width="100" Minimum="0.0" Maximum="670.0" StepFrequency="1.0" Value="670.0" HorizontalAlignment="Left" ToolTipService.ToolTip="Adjust Webview Border Width"/>
+                        <ToggleButton x:Name="ResizeWebViewVisualButton" AutomationProperties.AutomationId="ResizeWebViewVisualButton" Content="Resize visual" Checked="OnResizeWebViewVisualButtonClicked" Unchecked="ResetWebViewVisual" Margin="1,0,1,0"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,5" BorderBrush="Black">
+                        <TextBlock Text="Source (binding):" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="ActualUriTextBlock" AutomationProperties.AutomationId="ActualUriTextBlock" Width="1200" IsTextSelectionEnabled="True" Text="{Binding ElementName=MyWebView2, Path=Source, Mode=TwoWay, Converter={StaticResource UriToStringConverter}}"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,5" BorderBrush="Black">
+                        <TextBlock Text="Document Title:" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <Button x:Name="GetDocumentTitleButton" Content="Get" AutomationProperties.AutomationId="GetDocumentTitleButton" Margin="1,0,1,0" contract7Present:CornerRadius="25" Click="OnGetDocumentTitleButtonClicked"/>
+                        <TextBlock x:Name="DocumentTitleTextBlock" AutomationProperties.AutomationId="DocumentTitleTextBlock" Width="1200" IsTextSelectionEnabled="True"/>
+                    </StackPanel>                    
+
+
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
+                        <TextBlock Text="Focus: " FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,15,0">
+                            <TextBlock x:Name="UpdateAnaheimFocusTextBlock" AutomationProperties.Name="UpdateAnaheimFocusTextBlock" contract7Present:HorizontalTextAlignment="Center" Margin="0,0,5,0">
+                        <Run Text="Web "/><LineBreak/><Run Text="(Hover)" />
+                        <ToolTipService.ToolTip>
+                            <ToolTip x:Name="UpdatingAnaheimFocusToolTip" Content="Updating Anaheim Focus..." Opened="UpdatingAnaheimFocusToolTipOpened"/>
+                        </ToolTipService.ToolTip>
+                            </TextBlock>
+                            <TextBlock x:Name="UpdateAnaheimFocusTextBlock2" AutomationProperties.Name="UpdateAnaheimFocusTextBlock2" contract7Present:HorizontalTextAlignment="Center" Margin="0,0,5,0">
+                        <Run Text="Web2 "/><LineBreak/><Run Text="(Hover)" />
+                        <ToolTipService.ToolTip>
+                            <ToolTip x:Name="UpdatingAnaheimFocusToolTip2" Content="Updating Anaheim Focus..." Opened="UpdatingAnaheimFocusToolTipOpenedMultipleWebview"/>
+                        </ToolTipService.ToolTip>
+                            </TextBlock>
+                            <TextBox x:Name="AnaheimFocusTextBox" AutomationProperties.AutomationId="AnaheimFocusTextBox" Width="80" TextAlignment="Left"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,15,0">
+                            <TextBlock Text="Xaml Focus:" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                            <TextBox x:Name="XamlFocus" AutomationProperties.AutomationId="XamlFocus" Width="80" Visibility="Visible" Text="{Binding ElementName=MyWebView2, Path=FocusState, Converter={StaticResource EnumToStringConverter}}" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <TextBlock Text="Clipboard: " FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBox x:Name="CopyPasteTextBox1" Text="PasteTest" Margin="0,0,5,0"/>
+                            <TextBox x:Name="CopyPasteTextBox2" PlaceholderText="PasteBox2" Margin="0,0,5,0"/>
+                            <TextBox x:Name="Bool1" Margin="0,0,5,0"/>
+                            <TextBox x:Name="Bool2" Margin="0,0,5,0"/>
+                            <ToggleButton x:Name="ToggleWebViewVisibilityButton" AutomationProperties.AutomationId="ToggleWebViewVisibilityButton" Content="Hide WebView" Checked="OnToggleWebViewVisibilityButtonClicked" Unchecked="ResetWebViewVisibility" Margin="1,0,1,0"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel Orientation="Vertical">
+                            <ScrollViewer x:Name="webviewScroller" Margin="1">
+                                <StackPanel x:Name="WebView2Collection" Orientation="Vertical" Margin="0,0,50,0">
+                                </StackPanel>
+                            </ScrollViewer>
+                        </StackPanel>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="RTB:" FontWeight="Bold" FontSize="11" Margin="0,2,0,2"/>
+                            <Border Width="400" Height="320" BorderBrush="Blue" x:Name="RTBBorder" AutomationProperties.AutomationId="RTBBorder" BorderThickness="1" HorizontalAlignment="Left" Visibility="Visible">
+                                <Image x:Name="ShowRtb1" AutomationProperties.AutomationId="ShowRtb1" Stretch="None" HorizontalAlignment="Left"/>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Grid>
+</local:TestPage>

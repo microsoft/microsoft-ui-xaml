@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Simple Page With Image</title>
+
+        <script>
+            function checkIfImageLoaded(event)
+            {
+                event.preventDefault();
+                var iframe = document.getElementById("image_iframe");
+                var image = iframe.contentDocument || iframe.contentWindow.document;
+
+                if (image == null)
+                {
+                    window.chrome.webview.postMessage("Image not loaded.");
+                }
+                else
+                {
+                    window.chrome.webview.postMessage("Image loaded in iframe.");
+                }
+
+                window.setTimeout(checkIfImageLoaded, 100);
+            }
+        </script>
+    </head>
+
+    <body>
+        <iframe id="image_iframe" src="https://testapp.example/LargeWisteria.jpg" width="600" height="300" onload="checkIfImageLoaded(event);"></iframe>
+    </body>
+</html>
