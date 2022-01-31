@@ -148,6 +148,7 @@ private:
 
     bool RequestCloseCurrentTab();
     bool SelectNextTab(int increment);
+    void BringSelectedTabIntoView();
 
     void UpdateSelectedItem();
     void UpdateSelectedIndex();
