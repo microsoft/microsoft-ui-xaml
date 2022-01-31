@@ -1255,14 +1255,25 @@ void WebView2::FireCoreWebView2Initialized(winrt::hresult exception)
     m_coreWebView2InitializedEventSource(*this, *eventArgs);
 }
 
-void WebView2::HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, const winrt::RoutedEventArgs&) noexcept
+void WebView2::HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, const winrt::RoutedEventArgs&)
 {
     if (m_coreWebView && m_xamlFocusChangeInfo.m_isPending)
     {
         // In current CoreWebView2 API, MoveFocus is not expected to fail, so set m_webHasFocus here rather than
         // in asynchronous (MOJO/cross-proc) CoreWebView2 GotFocus event.
         m_webHasFocus = true;
-        m_coreWebViewController.MoveFocus(m_xamlFocusChangeInfo.m_storedMoveFocusReason);
+        try
+        {
+            m_coreWebViewController.MoveFocus(m_xamlFocusChangeInfo.m_storedMoveFocusReason);
+        }
+        catch (winrt::hresult_error e)
+        {
+            if (e.code().value != E_INVALIDARG)
+            {
+                throw;
+            }
+        }
+
         m_xamlFocusChangeInfo.m_isPending = false;
     }
 }
