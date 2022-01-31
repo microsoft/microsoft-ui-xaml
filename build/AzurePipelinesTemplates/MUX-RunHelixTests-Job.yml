@@ -13,22 +13,16 @@ parameters:
   # if 'useBuildOutputFromBuildId' is set, we will default to using a build from this pipeline:
   useBuildOutputFromPipeline: $(System.DefinitionId)
   matrix: 
-    Debug_x86:
-      buildPlatform: 'x86'
-      buildConfiguration: 'debug'
-      # %3b is the escape code for ';' which is used as the delimiter
-      openHelixTargetQueues: 'windows.10.amd64.clientrs2.open.xaml%3bwindows.10.amd64.clientrs5.open.xaml'
-      closedHelixTargetQueues: 'windows.10.amd64.clientrs2.xaml%3bwindows.10.amd64.clientrs5.xaml'
     Release_x86:
       buildPlatform: 'x86'
       buildConfiguration: 'release'
-      openHelixTargetQueues: 'windows.10.amd64.client19h1.open.xaml%3bwindows.10.amd64.clientrs3.open.xaml'
-      closedHelixTargetQueues: 'windows.10.amd64.client19h1.xaml%3bwindows.10.amd64.clientrs3.xaml'
+      openHelixTargetQueues: 'windows.10.amd64.clientrs5.open.xaml'
+      closedHelixTargetQueues: 'bwindows.10.amd64.clientrs5.xaml'
     Release_x64:
       buildPlatform: 'x64'
       buildConfiguration: 'release'
-      openHelixTargetQueues: 'windows.10.amd64.clientrs4.open.xaml'
-      closedHelixTargetQueues: 'windows.10.amd64.clientrs4.xaml'
+      openHelixTargetQueues: 'Windows.10.Amd64.Client21H1.Open.xaml'
+      closedHelixTargetQueues: 'Windows.10.Amd64.Client21H1.xaml'
 
 jobs:
 - job: ${{ parameters.name }}
@@ -42,7 +36,7 @@ jobs:
     matrix: ${{ parameters.matrix }}
   variables:
     artifactsDir: $(Build.SourcesDirectory)\Artifacts
-    helixCommonArgs: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixType=${{parameters.helixType}} /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory) /p:rerunPassesRequiredToAvoidFailure=${{parameters.rerunPassesRequiredToAvoidFailure}}'
+    helixCommonArgs: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixType=${{parameters.helixType}}$(buildPlatform)$(buildConfiguration) /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory) /p:rerunPassesRequiredToAvoidFailure=${{parameters.rerunPassesRequiredToAvoidFailure}}'
 
       
   steps:
