@@ -367,18 +367,24 @@ void TabViewItem::OnHeaderChanged()
 
 void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 {
-    if (IsSelected() && args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Mouse)
+    if (args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Mouse)
     {
-        auto pointerPoint = args.GetCurrentPoint(*this);
-        if (pointerPoint.Properties().IsLeftButtonPressed())
+        m_isCheckingforMouseDrag = true;
+
+        if (IsSelected())
         {
-            auto isCtrlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
-            if (isCtrlDown)
+            auto pointerPoint = args.GetCurrentPoint(*this);
+            if (pointerPoint.Properties().IsLeftButtonPressed())
             {
-                // Return here so the base class will not pick it up, but let it remain unhandled so someone else could handle it.
-                return;
+                auto isCtrlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+                if (isCtrlDown)
+                {
+                    // Return here so the base class will not pick it up, but let it remain unhandled so someone else could handle it.
+                    return;
+                }
             }
         }
+       
     }
 
     __super::OnPointerPressed(args);
@@ -393,9 +399,21 @@ void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
     }
 }
 
+void TabViewItem::OnPointerMoved(winrt::PointerRoutedEventArgs const& args)
+{
+    __super::OnPointerMoved(args);
+
+    if (m_isCheckingforMouseDrag)
+    {
+        this->Background(winrt::SolidColorBrush(winrt::Colors::Red()));
+    }
+}
+
 void TabViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerReleased(args);
+
+    m_isCheckingforMouseDrag = false;
 
     if (m_hasPointerCapture)
     {

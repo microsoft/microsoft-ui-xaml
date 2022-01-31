@@ -833,6 +833,7 @@ void TabView::OnListViewDragItemsStarting(const winrt::IInspectable& sender, con
 
     auto item = args.Items().GetAt(0);
     auto tab = FindTabViewItemFromDragItem(item);
+    //tab.Background(winrt::SolidColorBrush(winrt::Colors::Red()));
     auto myArgs = winrt::make_self<TabViewTabDragStartingEventArgs>(args, item, tab);
 
     m_tabDragStartingEventSource(*this, *myArgs);

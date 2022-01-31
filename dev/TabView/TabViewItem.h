@@ -33,6 +33,7 @@ public:
     void OnPointerEntered(winrt::PointerRoutedEventArgs const& args);
     void OnPointerExited(winrt::PointerRoutedEventArgs const& args);
     void OnPointerPressed(winrt::PointerRoutedEventArgs const& args);
+    void OnPointerMoved(winrt::PointerRoutedEventArgs const& args);
     void OnPointerReleased(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCanceled(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
@@ -83,6 +84,7 @@ private:
     bool m_hasPointerCapture = false;
     bool m_isMiddlePointerButtonPressed = false;
     bool m_isDragging = false;
+    bool m_isCheckingforMouseDrag = false;
     bool m_isPointerOver = false;
 
     void UpdateShadow();
