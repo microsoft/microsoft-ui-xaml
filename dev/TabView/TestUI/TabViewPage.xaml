@@ -133,6 +133,12 @@
                     TabDroppedOutside="TabViewTabDroppedOutside"
                     AddTabButtonClick="AddButtonClick">
 
+                    <controls:TabView.Resources>
+                        <ResourceDictionary>
+                            <SolidColorBrush x:Key="TabViewItemHeaderBackgroundSelected" Color="AliceBlue"/>
+                        </ResourceDictionary>
+                    </controls:TabView.Resources>
+
                     <controls:TabView.TabStripFooter>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -166,20 +172,20 @@
                         </StackPanel>
                     </controls:TabViewItem>
 
-                    <controls:TabViewItem x:Name="SecondTab" Header="SecondTab" IsClosable="True" Foreground="Red" Background="Green">
+                    <controls:TabViewItem x:Name="SecondTab" Header="SecondTab" IsClosable="True">
                         <controls:TabViewItem.IconSource>
                             <controls:SymbolIconSource Symbol="Shop"/>
                         </controls:TabViewItem.IconSource>
 
-                        <StackPanel Padding="16">
-                            <TextBlock Text="Shop text"/>
+                        <StackPanel Padding="16" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
+                            <TextBlock>Shop text</TextBlock>
                             <Button Content="SecondTabButton" AutomationProperties.Name="SecondTabButton"/>
                         </StackPanel>
                     </controls:TabViewItem>
 
                     <controls:TabViewItem x:Name="LongHeaderTab" AutomationProperties.Name="LongHeaderTab" Header="Long Header No Icon">
-                        <StackPanel Padding="16">
-                            <TextBlock Text="Emoji text"/>
+                        <StackPanel Padding="16" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
+                            <TextBlock >Emoji text</TextBlock>
                             <Button Content="Button 3"/>
                         </StackPanel>
                     </controls:TabViewItem>
@@ -189,8 +195,8 @@
                             <controls:SymbolIconSource Symbol="Video"/>
                         </controls:TabViewItem.IconSource>
 
-                        <StackPanel>
-                            <TextBlock Padding="16" Text="This tab can't be closed."/>
+                        <StackPanel Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
+                            <TextBlock Padding="16">This tab can't be closed.</TextBlock>
                         </StackPanel>
                     </controls:TabViewItem>
 
@@ -199,8 +205,8 @@
                             <controls:SymbolIconSource Symbol="Admin"/>
                         </controls:TabViewItem.IconSource>
 
-                        <StackPanel>
-                            <TextBlock Padding="16" Text="This tab can't be selected."/>
+                        <StackPanel Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
+                            <TextBlock Padding="16">This tab can't be selected.</TextBlock>
                         </StackPanel>
                     </controls:TabViewItem>
 
@@ -209,7 +215,9 @@
                             <controls:SymbolIconSource Symbol="Contact"/>
                         </controls:TabViewItem.IconSource>
 
-                        <TextBlock x:Name="LastTabContent" AutomationProperties.Name="LastTabContent" Padding="16" Text="Contact text"/>
+                        <StackPanel Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
+                            <TextBlock x:Name="LastTabContent" AutomationProperties.Name="LastTabContent" Padding="16">Contact text</TextBlock>
+                        </StackPanel>
                     </controls:TabViewItem>
 
                 </controls:TabView>

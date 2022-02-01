@@ -13,6 +13,14 @@ interface IAnimatedVisual
 
 [MUX_PUBLIC]
 [webhosthidden]
+interface IAnimatedVisual2 requires IAnimatedVisual
+{
+    void CreateAnimations();
+    void DestroyAnimations();
+};
+
+[MUX_PUBLIC]
+[webhosthidden]
 interface IAnimatedVisualSource
 {
     IAnimatedVisual TryCreateAnimatedVisual(
@@ -28,6 +36,16 @@ interface IDynamicAnimatedVisualSource
     event Windows.Foundation.TypedEventHandler<IDynamicAnimatedVisualSource, Object> AnimatedVisualInvalidated;
 };
 
+[MUX_PUBLIC]
+[webhosthidden]
+interface IAnimatedVisualSource3
+{
+    IAnimatedVisual2 TryCreateAnimatedVisual(
+        Windows.UI.Composition.Compositor compositor,
+        out Object diagnostics,
+        Boolean createAnimations);
+};
+
 [MUX_INTERNAL]
 [webhosthidden]
 interface ISelfPlayingAnimatedVisual
@@ -41,6 +59,14 @@ interface ISelfPlayingAnimatedVisual
     void SetProgress(Double progress);
     void SetProgressObject(Windows.UI.Composition.CompositionPropertySet compositionPropertySet);
     void SetSize(Windows.Foundation.Size size);
+};
+
+[MUX_PUBLIC]
+[webhosthidden]
+enum PlayerAnimationOptimization
+{
+    Latency,
+    Resources
 };
 
 [MUX_PUBLIC]
@@ -68,6 +94,13 @@ unsealed runtimeclass AnimatedVisualPlayer
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Double PlaybackRate;
 
+    [MUX_PUBLIC_V2]
+    {
+        [MUX_DEFAULT_VALUE("winrt::PlayerAnimationOptimization::Latency")]
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        PlayerAnimationOptimization AnimationOptimization;
+    }
+
     Windows.UI.Composition.CompositionObject ProgressObject{ get; };
 
     [MUX_DEFAULT_VALUE("winrt::Stretch::Uniform")]
@@ -90,6 +123,11 @@ unsealed runtimeclass AnimatedVisualPlayer
     static Windows.UI.Xaml.DependencyProperty PlaybackRateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SourceProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty StretchProperty{ get; };
+
+    [MUX_PUBLIC_V2]
+    {
+        static Windows.UI.Xaml.DependencyProperty AnimationOptimizationProperty{ get; };
+    }
 }
 
 }

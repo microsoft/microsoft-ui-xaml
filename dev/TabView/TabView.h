@@ -148,6 +148,7 @@ private:
 
     bool RequestCloseCurrentTab();
     bool SelectNextTab(int increment);
+    void BringSelectedTabIntoView();
 
     void UpdateSelectedItem();
     void UpdateSelectedIndex();
@@ -163,6 +164,9 @@ private:
     void OnListViewGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
 
     int GetItemCount();
+
+    void UpdateBottomBorderLineVisualStates();
+    void UpdateTabBottomBorderLineVisualStates();
 
     winrt::TabViewItem FindTabViewItemFromDragItem(const winrt::IInspectable& item);
 
@@ -215,4 +219,6 @@ private:
     winrt::hstring m_tabCloseButtonTooltipText{};
 
     winrt::Size previousAvailableSize{};
+
+    bool m_isDragging{ false };
 };

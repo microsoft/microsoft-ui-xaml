@@ -1,9 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildProjectDirectory)\..\..\mux.controls.props" Condition="Exists('$(MSBuildProjectDirectory)\..\..\mux.controls.props') And $(BuildingWithBuildExe) != 'true'" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\mux.controls.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\environment.props" />
-  <Import Project="$(MSBuildProjectDirectory)\..\..\SdkVersion.props" Condition="$(BuildingWithBuildExe) == 'true'" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\FeatureAreas.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{92081f61-98bb-4105-a90f-b6d524b4f5c9}</ProjectGuid>

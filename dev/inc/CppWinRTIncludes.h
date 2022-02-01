@@ -422,7 +422,9 @@ namespace winrt
     using ListViewItemPresenter = winrt::Windows::UI::Xaml::Controls::Primitives::ListViewItemPresenter;
     using OrientedVirtualizingPanel = winrt::Windows::UI::Xaml::Controls::Primitives::OrientedVirtualizingPanel;
     using Popup = winrt::Windows::UI::Xaml::Controls::Primitives::Popup;
+    using PopupPlacementMode = winrt::Windows::UI::Xaml::Controls::Primitives::PopupPlacementMode;
     using IPopup3 = winrt::Windows::UI::Xaml::Controls::Primitives::IPopup3;
+    using IPopup4 = winrt::Windows::UI::Xaml::Controls::Primitives::IPopup4;
     using RangeBase = winrt::Windows::UI::Xaml::Controls::Primitives::RangeBase;
     using RangeBaseValueChangedEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs;
     using RepeatButton = winrt::Windows::UI::Xaml::Controls::Primitives::RepeatButton;

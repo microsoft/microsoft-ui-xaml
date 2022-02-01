@@ -117,6 +117,15 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
             // Subscribe to the batch completed event.
             m_batchCompletedToken = m_batch.Completed([this](winrt::IInspectable const&, winrt::CompositionBatchCompletedEventArgs const&)
                 {
+                    if (m_owner) 
+                    {                        
+                        // If optimization is set to Resources - destroy animations immediately after player stops.
+                        if (m_owner->AnimationOptimization() == winrt::PlayerAnimationOptimization::Resources)
+                        {
+                            m_owner->DestroyAnimations();
+                        }
+                    }
+
                     // Complete the play when the batch completes.
                     //
                     // The "this" pointer is guaranteed to be valid because:
@@ -622,12 +631,20 @@ winrt::IAsyncAction AnimatedVisualPlayer::PlayAsync(double fromProgress, double 
         co_return;
     }
 
+    // Make sure that animations are created.
+    CreateAnimations();
+
     // Used to detect reentrance.
     const auto version = ++m_playAsyncVersion;
 
-    // Cause any other plays to return. 
+    // Complete m_nowPlaying if it is still running.
+    // Identical to Stop() call but without destroying the animations.
     // WARNING - this call may cause reentrance via the IsPlaying DP.
-    Stop();
+    if (m_nowPlaying)
+    {
+        m_progressPropertySet.InsertScalar(L"Progress", static_cast<float>(m_currentPlayFromProgress));
+        m_nowPlaying->Complete();
+    }
 
     if (version != m_playAsyncVersion)
     {
@@ -707,6 +724,9 @@ void AnimatedVisualPlayer::SetProgress(double progress)
         return;
     }
 
+    // Make sure that animations are created.
+    CreateAnimations();
+
     auto clampedProgress = std::clamp(static_cast<float>(progress), 0.0F, 1.0F);
 
     // WARNING: Reentrance via IsPlaying DP may occur from this point down to the end of the method
@@ -724,6 +744,11 @@ void AnimatedVisualPlayer::SetProgress(double progress)
     if (m_nowPlaying)
     {
         m_nowPlaying->Complete();
+    }
+
+    // If optimization is set to Resources - destroy annimations immediately.
+    if (AnimationOptimization() == winrt::PlayerAnimationOptimization::Resources) {
+        DestroyAnimations();
     }
 }
 
@@ -753,6 +778,81 @@ void AnimatedVisualPlayer::OnAutoPlayPropertyChanged(
         const auto looped = true;
         auto ignore = PlayAsync(from, to, looped);
     }
+}
+
+void AnimatedVisualPlayer::OnAnimationOptimizationPropertyChanged(
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    if (!SharedHelpers::IsRS5OrHigher())
+    {
+        return;
+    }
+
+    auto optimization = unbox_value<winrt::PlayerAnimationOptimization>(args.NewValue());
+
+    if (m_nowPlaying)
+    {
+        // If there is something in play right now we should not create/destroy animations.
+        return;
+    }
+
+    if (optimization == winrt::PlayerAnimationOptimization::Resources)
+    {
+        DestroyAnimations();
+    }
+    else if (optimization == winrt::PlayerAnimationOptimization::Latency)
+    {
+        CreateAnimations();
+    }
+}
+
+void AnimatedVisualPlayer::CreateAnimations() {
+    m_createAnimationsCounter++;
+
+    if (m_isAnimationsCreated)
+    {
+        return;
+    }
+
+    // Check if current animated visual supports creating animations and create them.
+    if (const auto& animatedVisual = m_animatedVisual.get())
+    {
+        if (const auto& animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>())
+        {
+            animatedVisual2.CreateAnimations();
+            m_isAnimationsCreated = true;
+        }
+    }
+}
+
+void AnimatedVisualPlayer::DestroyAnimations() {
+    if (!m_isAnimationsCreated || m_animatedVisual == nullptr || !SharedHelpers::IsRS5OrHigher())
+    {
+        return;
+    }
+
+    // Call RequestCommit to make sure that previous compositor calls complete before destroying animations.
+    // RequestCommitAsync is available only for RS4+
+    m_rootVisual.Compositor().RequestCommitAsync().Completed(
+        [&, createAnimationsCounter = m_createAnimationsCounter](auto, auto) {
+            // Check if there was any CreateAnimations call after DestroyAnimations.
+            // We should not destroy animations in this case,
+            // they will be destroyed by the following DestroyAnimations call.
+            if (createAnimationsCounter != m_createAnimationsCounter) {
+                return;
+            }
+
+            // Check if current animated visual supports destroyig animations.
+            if (const auto& animatedVisual = m_animatedVisual.get())
+            {
+                if (const auto& animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>())
+                {
+                    animatedVisual2.DestroyAnimations();
+                    m_isAnimationsCreated = false;
+                }
+            }
+        }
+    );
 }
 
 void AnimatedVisualPlayer::OnFallbackContentPropertyChanged(
@@ -845,8 +945,30 @@ void AnimatedVisualPlayer::UpdateContent()
     }
 
     winrt::IInspectable diagnostics{};
-    auto animatedVisual = source.TryCreateAnimatedVisual(m_rootVisual.Compositor(), diagnostics);
-    m_animatedVisual.set(animatedVisual);
+    winrt::IAnimatedVisual animatedVisual;
+
+    const bool createAnimations = AnimationOptimization() == winrt::PlayerAnimationOptimization::Latency;
+
+    if (auto source3 = source.try_as<winrt::IAnimatedVisualSource3>())
+    {
+        animatedVisual = source3.TryCreateAnimatedVisual(m_rootVisual.Compositor(), diagnostics, createAnimations);
+		m_isAnimationsCreated = createAnimations;
+        m_animatedVisual.set(animatedVisual);
+    }
+    else
+    {
+        animatedVisual = source.TryCreateAnimatedVisual(m_rootVisual.Compositor(), diagnostics);
+		m_isAnimationsCreated = true;
+
+        // m_animatedVisual should be updated before DestroyAnimations call
+        m_animatedVisual.set(animatedVisual);
+
+        // Destroy animations if we don't need them.
+        // Old IAnimatedVisualSource interface always creates them.
+        if (!createAnimations) {
+            DestroyAnimations();
+        }
+    }
 
     if (!animatedVisual)
     {
