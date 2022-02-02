@@ -1259,8 +1259,6 @@ void WebView2::HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, c
 {
     if (m_coreWebView && m_xamlFocusChangeInfo.m_isPending)
     {
-        // In current CoreWebView2 API, MoveFocus is not expected to fail, so set m_webHasFocus here rather than
-        // in asynchronous (MOJO/cross-proc) CoreWebView2 GotFocus event.
         m_webHasFocus = true;
         try
         {
@@ -1268,6 +1266,12 @@ void WebView2::HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, c
         }
         catch (winrt::hresult_error e)
         {
+            // Occasionally, a request to restore the minimized window does not complete. This triggers
+            // FocusManager to set Xaml Focus to WV2 and consequently into CWV2 MoveFocus() call above, 
+            // which in turn will attempt ::SetFocus() on InputHWND, and that will fail with E_INVALIDARG
+            // since that HWND remains minimized. Work around by ignoring this error here. Sine the app
+            // is minimized, focus state is not relevant - the next (successful) attempt to restrore the app
+            // will set focus into WV2/CWV2 correctly.
             if (e.code().value != E_INVALIDARG)
             {
                 throw;
