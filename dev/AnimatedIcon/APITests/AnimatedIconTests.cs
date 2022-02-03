@@ -427,5 +427,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 layoutUpdatedEvent.Set();
             }
         }
+    
+        [TestMethod]
+        public void ChangingSourcePropertyChanges()
+        {
+            AnimatedIcon icon = null;
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon();
+                Content = new StackPanel() {
+                    Children = { icon }
+                };
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Icon width will be zero if the source property is not set.
+                Verify.IsTrue(Math.Abs(icon.ActualSize.Y) < 0.1);
+                icon.Source = new AnimatedChevronDownSmallVisualSource();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Icon will have a width if the AnimatedIcon also updated the visual tree to rerender.
+                Verify.IsTrue(Math.Abs(icon.ActualSize.Y) > 10);
+            });
+        }
     }
 }
