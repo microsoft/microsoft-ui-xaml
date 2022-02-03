@@ -35,7 +35,7 @@
                             <ComboBoxItem AutomationProperties.Name="CoreProcessFailedTest">CoreProcessFailedTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="CoreWebView2InitializedTest">CoreWebView2InitializedTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="CoreWebView2Initialized_FailedTest">CoreWebView2Initialized_FailedTest</ComboBoxItem>
-                            <ComboBoxItem AutomationProperties.Name="CreateWebView2OffTree">CreateWebView2OffTree</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="CreateWebView2OffTreeTest">CreateWebView2OffTreeTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="CursorUpdateTest">CursorUpdateTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="ExecuteScriptTest">ExecuteScriptTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="Focus_BackAndForthTabTest">Focus_BackAndForthTabTest</ComboBoxItem>

@@ -2079,16 +2079,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "D")]
-        public void CreateWebView2OffTree()
+        public void CreateWebView2OffTreeTest()
         {
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 // Remove the existing webview that was already added to the xaml tree
-                ChooseTest("CreateWebView2OffTree", false /* waitForLoadCompleted */);
+                ChooseTest("CreateWebView2OffTreeTest", false /* waitForLoadCompleted */);
 
                 // Create a new webview, and call EnsureCoreWebView2Async() on it without adding it to the tree.
                 // Then, add it to the tree so we can see it, and navigate
-                CompleteTestAndWaitForResult("CreateWebView2OffTree");
+                CompleteTestAndWaitForResult("CreateWebView2OffTreeTest");
                 WaitForLoadCompleted();
 
                 // Clear the cache so we can find the new webview
@@ -2115,7 +2115,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 PointerInput.Release(PointerButtons.Primary);
                 Wait.ForIdle();
 
-                WaitForWebMessageResult("CreateWebView2OffTree");
+                WaitForWebMessageResult("CreateWebView2OffTreeTest");
             }
         }
         
