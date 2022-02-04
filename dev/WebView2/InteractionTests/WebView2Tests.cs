@@ -2144,9 +2144,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 PointerInput.Press(PointerButtons.Primary);
                 PointerInput.Release(PointerButtons.Primary);
 
-                Verify.AreEqual(webview, UIObject.Focused);
-                Verify.IsTrue(webview.HasKeyboardFocus);
-
+                // On app side, ensure the right option was selected
                 CompleteTestAndWaitForResult("HtmlDropdownTest");
             }
         }

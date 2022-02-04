@@ -146,9 +146,7 @@
                         <TextBlock Text="Document Title:" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
                         <Button x:Name="GetDocumentTitleButton" Content="Get" AutomationProperties.AutomationId="GetDocumentTitleButton" Margin="1,0,1,0" contract7Present:CornerRadius="25" Click="OnGetDocumentTitleButtonClicked"/>
                         <TextBlock x:Name="DocumentTitleTextBlock" AutomationProperties.AutomationId="DocumentTitleTextBlock" Width="1200" IsTextSelectionEnabled="True"/>
-                    </StackPanel>                    
-
-
+                    </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
                         <TextBlock Text="Focus: " FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
                         <StackPanel Orientation="Horizontal" Margin="0,0,15,0">

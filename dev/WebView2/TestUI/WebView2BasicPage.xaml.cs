@@ -860,7 +860,8 @@ namespace MUXControlsTestApp
                 Width = 670,
                 Height = 370,
                 BorderBrush = new SolidColorBrush(Colors.Blue),
-                BorderThickness = new Thickness(1)
+                BorderThickness = new Thickness(1),
+                Name = webviewName + "Border"
             };
             border.Child = webView2;
 
@@ -1796,6 +1797,14 @@ namespace MUXControlsTestApp
                             // Add the webview to the tree so we can see it
                             var border = FindName("MyWebView2Border") as Border;
                             border.Child = webView2;
+                        }
+                        break;
+                    case TestList.HtmlDropdownTest:
+                        {
+                            var selctedOption = await MyWebView2.ExecuteScriptAsync("getSelectedOption();");
+                            logger.Verify(selctedOption.Equals("\"2\""),
+                                string.Format("Test {0} Failed, Expected option \"2\" to be selcted, actually got {1}",
+                                    selectedTest, selctedOption));;
                         }
                         break;
 
