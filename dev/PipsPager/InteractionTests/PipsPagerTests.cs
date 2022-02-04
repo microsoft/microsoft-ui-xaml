@@ -326,7 +326,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 elements = new PipsPagerElements();
                 Button getButtonSizesButton = elements.GetPipsPagerButtonSizesButton();
                 getButtonSizesButton.InvokeAndWait();
-                
+
                 TextBlock horizontalOrientationPipsPagerButtonWidth = elements.GetHorizontalOrientationPipsPagerButtonWidthTextBlock();
                 TextBlock horizontalOrientationPipsPagerButtonHeight = elements.GetHorizontalOrientationPipsPagerButtonHeightTextBlock();
 
@@ -362,6 +362,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.AreEqual("20", horizontalOrientationPipsPagerButtonWidth.DocumentText);
                 Verify.AreEqual("12", horizontalOrientationPipsPagerButtonHeight.DocumentText);
+            }
+        }
+
+
+        [TestMethod]
+        [TestProperty("TestSuite", "F")]
+        public void PipsPagerRTLDoesNotCrash()
+        {
+            using (var setup = new TestSetupHelper("PipsPager Tests"))
+            {
+                elements = new PipsPagerElements();
+                TestSetupHelper.SetInnerFrameFlowDirection(FlowDirection.RightToLeft);
+                SetNextPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
+                InputHelper.LeftClick(elements.GetNextPageButton());
             }
         }
     }

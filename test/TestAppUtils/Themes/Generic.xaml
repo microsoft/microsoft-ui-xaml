@@ -61,6 +61,12 @@
                                         IsChecked="True" Margin="0,0,4,0"
                                         AutomationProperties.AutomationId="__InnerFrameInLabDimensions"
                                         Content="Render innerframe in lab dimensions"/>
+                                    <ToggleButton
+                                        x:Name="EnableRTL"
+                                        IsChecked="False" Margin="0,0,4,0"
+                                        AutomationProperties.AutomationId="__EnableRTL"
+                                        IsTabStop="False"
+                                        Content="Enable RTL"/>
 
                                     <TextBlock x:Name="CurrentPageTextBlock" AutomationProperties.AutomationId="__CurrentPage"  FontSize="18" VerticalAlignment="Center" Margin="10,0,0,0"/>
                                 </StackPanel>
