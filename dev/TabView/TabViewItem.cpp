@@ -213,6 +213,9 @@ void TabViewItem::OnTabDragStarting(const winrt::IInspectable& sender, const win
 void TabViewItem::OnTabDragCompleted(const winrt::IInspectable& sender, const winrt::TabViewTabDragCompletedEventArgs& args)
 {
     m_isDragging = false;
+
+    winrt::VisualStateManager::GoToState(*this, L"DragDropVisualNotVisible"sv, false);
+
     UpdateShadow();
     UpdateForeground();
 }
@@ -405,7 +408,8 @@ void TabViewItem::OnPointerMoved(winrt::PointerRoutedEventArgs const& args)
 
     if (m_isCheckingforMouseDrag)
     {
-        winrt::VisualStateManager::GoToState(*this, L"Dragging"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"DragDropVisualVisible"sv, false);
+
         m_isCheckingforMouseDrag = false;
     }
 }
@@ -414,7 +418,6 @@ void TabViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerReleased(args);
 
-    winrt::VisualStateManager::GoToState(*this, L"NotDragging"sv, false);
     m_isCheckingforMouseDrag = false;
 
     if (m_hasPointerCapture)

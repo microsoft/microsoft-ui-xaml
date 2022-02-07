@@ -236,7 +236,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <controls:TabView x:Name="DataBindingTabView" IsAddTabButtonVisible="false" Background="#66336699" SelectedIndex="2">
+                    <controls:TabView x:Name="DataBindingTabView" IsAddTabButtonVisible="false" Background="#66336699" SelectedIndex="2" CanDragTabs="True">
                         <controls:TabView.Resources>
                             <ResourceDictionary>
                                 <StaticResource x:Key="TabViewItemHeaderBackgroundSelected" ResourceKey="SystemAccentColor"/>
