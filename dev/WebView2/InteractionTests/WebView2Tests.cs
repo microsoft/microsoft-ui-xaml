@@ -775,7 +775,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Shift+Tab w1 -> x1");
                 using (var xamlFocusWaiter = new FocusAcquiredWaiter("TabStopButton1"))
                 {
-                    KeyboardHelper.PressKey(Key.Tab);
+                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                     xamlFocusWaiter.Wait();
                     Log.Comment("Focus is on " + UIObject.Focused);
                     Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
@@ -2138,7 +2138,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 PointerInput.Press(PointerButtons.Primary);
                 PointerInput.Release(PointerButtons.Primary);
 
-                var newPoint = new Point(point.X, bounds.Y + bounds.Height - 10);
+                var newPoint = new Point(point.X, point.Y + 110);
                 Log.Comment("Move mouse to another dropdown option");
                 PointerInput.Move(newPoint);
                 PointerInput.Press(PointerButtons.Primary);
