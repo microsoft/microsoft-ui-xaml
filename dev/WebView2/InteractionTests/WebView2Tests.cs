@@ -2121,19 +2121,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         
         [TestMethod]
         [TestProperty("TestSuite", "D")]
+        [TestProperty("Ignore", "True")] // Passes locally, test can be run manually
         public void HtmlDropdownTest()
         {
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("HtmlDropdownTest");
 
-                // Click on the select (dropdown) element, which is huge and covers the center of the WebView2
+                // Click on the select (dropdown) element, which covers the center of the WebView2
                 var webview = FindElement.ById("MyWebView2");
                 Rectangle bounds = webview.BoundingRectangle;
-                // TODO_WebView2Input - Task 30555367 - Stack Overflow in WebView2 pointer tests when (MUXC) test infra calls WV2.GetClickablePoint()
-                //                      Workaround to avoid any calls to WebView2.GetClickablePoint
                 var point = new Point(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2);
-                Log.Comment("Move mouse to ({0}, {1})", bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2);
+                Log.Comment("Move mouse to ({0}, {1})", point.X, point.Y);
                 PointerInput.Move(point);
                 PointerInput.Press(PointerButtons.Primary);
                 PointerInput.Release(PointerButtons.Primary);
@@ -2141,6 +2140,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var newPoint = new Point(point.X, point.Y + 110);
                 Log.Comment("Move mouse to another dropdown option");
                 PointerInput.Move(newPoint);
+                Log.Comment("Click other option");
                 PointerInput.Press(PointerButtons.Primary);
                 PointerInput.Release(PointerButtons.Primary);
 
