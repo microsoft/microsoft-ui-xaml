@@ -730,8 +730,9 @@ winrt::IAsyncAction WebView2::CreateCoreEnvironment() noexcept
 
     if (!m_options)
     {
-        // NOTE: To enable Anaheim logging, add: m_options.AdditionalBrowserArguments(L"--enable-logging=stderr --v=1");
+        // NOTE: To enable Anaheim logging, add to m_options.AdditionalBrowserArguments() "--enable-logging=stderr --v=1";
         m_options = winrt::CoreWebView2EnvironmentOptions();
+        m_options.AdditionalBrowserArguments(L"--enable-features=OverlayScrollbar,OverlayScrollbarWinStyle,OverlayScrollbarWinStyleAnimation");
 
         auto applicationLanguagesList = winrt::ApplicationLanguages::Languages();
         if (applicationLanguagesList.Size() > 0)
