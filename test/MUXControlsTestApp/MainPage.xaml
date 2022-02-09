@@ -60,7 +60,7 @@
         </ScrollViewer>
         <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center">
             <CheckBox x:Name="LongAnimationsDisabled" AutomationProperties.AutomationId="LongAnimationsDisabled" Content="Long Animations Disabled" Checked="LongAnimationsDisabled_Checked" Unchecked="LongAnimationsDisabled_Unchecked" Margin="10,0,0,0"/>
-
+            <Button x:Name="GarbageCollection" Content="GarbageCollection" VerticalAlignment="Center" Click="GarbageCollection_Click" Margin="5"/>
             <ComboBox
                 x:Name="LanguageChooser"
                 Header="Languages"

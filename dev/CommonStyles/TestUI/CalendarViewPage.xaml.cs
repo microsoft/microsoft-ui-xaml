@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Common;
 using System;
 using System.Collections.Generic;
 using Windows.Globalization;
@@ -78,21 +77,25 @@ namespace MUXControlsTestApp
         {
             if (hasDensityBars.IsChecked.Value)
             {
-                bool isToday = dayItem.Date.Date.Equals(DateTime.Now.Date);
+                Calendar calendar = new Calendar();
+                calendar.SetDateTime(dayItem.Date);
+                
+                DateTime today = DateTime.Now.Date;
+                bool isToday = calendar.Day == today.Day && calendar.Month == today.Month && calendar.Year == today.Year;
 
-                if (dayItem.Date.Day % 6 == 0 || isToday)
+                if (calendar.Day % 6 == 0 || isToday)
                 {
                     List<Color> densityColors = new List<Color>();
 
                     densityColors.Add(Colors.Green);
                     densityColors.Add(Colors.Green);
 
-                    if (dayItem.Date.Day % 4 == 0 || isToday)
+                    if (calendar.Day % 4 == 0 || isToday)
                     {
                         densityColors.Add(Colors.Blue);
                         densityColors.Add(Colors.Blue);
                     }
-                    if (dayItem.Date.Day % 9 == 0 || isToday)
+                    if (calendar.Day % 9 == 0 || isToday)
                     {
                         densityColors.Add(Colors.Orange);
                     }
@@ -113,9 +116,20 @@ namespace MUXControlsTestApp
 
         private void SetBlackout(CalendarViewDayItem dayItem)
         {
-            dayItem.IsBlackout = 
-                (isSundayBlackedOut.IsChecked.Value && dayItem.Date.DayOfWeek == System.DayOfWeek.Sunday) ||
-                (isTodayBlackedOut.IsChecked.Value && dayItem.Date.Date.Equals(DateTime.Now.Date));
+            Calendar calendar = new Calendar();
+
+            calendar.SetDateTime(dayItem.Date);
+            
+            bool isBlackout = isSundayBlackedOut.IsChecked.Value && calendar.DayOfWeek == Windows.Globalization.DayOfWeek.Sunday;
+
+            if (!isBlackout && isTodayBlackedOut.IsChecked.Value)
+            {
+                Calendar calendarToday = new Calendar();
+                calendarToday.SetToNow();
+                isBlackout = calendar.Day == calendarToday.Day && calendar.Month == calendarToday.Month && calendar.Year == calendarToday.Year;
+            }
+
+            dayItem.IsBlackout = isBlackout;
         }
 
         private void SelectionMode_SelectionChanged(object sender, SelectionChangedEventArgs e)

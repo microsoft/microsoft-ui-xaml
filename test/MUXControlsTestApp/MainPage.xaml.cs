@@ -222,6 +222,13 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void GarbageCollection_Click(object sender, RoutedEventArgs e)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+        }
+
         private void LanguageChooser_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             MUXControlsTestApp.App.LanguageOverride = (string)((ComboBoxItem)LanguageChooser.SelectedItem).Content;
