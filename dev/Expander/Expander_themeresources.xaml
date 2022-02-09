@@ -348,8 +348,7 @@
                             ContentTransitions="{TemplateBinding ContentTransitions}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                            Foreground="{TemplateBinding Foreground}"
-                            AutomationProperties.AccessibilityView="Raw">
+                            Foreground="{TemplateBinding Foreground}">
                         </ContentPresenter>
 
                         <Border
@@ -620,8 +619,7 @@
                             ContentTransitions="{TemplateBinding ContentTransitions}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                            Foreground="{TemplateBinding Foreground}"
-                            AutomationProperties.AccessibilityView="Raw">
+                            Foreground="{TemplateBinding Foreground}">
                         </ContentPresenter>
 
                         <Border

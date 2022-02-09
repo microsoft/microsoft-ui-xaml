@@ -59,6 +59,7 @@
                             <ComboBoxItem AutomationProperties.Name="NavigateToVideoTest">NavigateToVideoTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NavigationErrorTest">NavigationErrorTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NavigationStartingTest">NavigationStartingTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="NonAsciiUriTest">NonAsciiUriTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="ParentVisibilityHiddenTest">ParentVisibilityHiddenTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="ParentVisibilityTurnedOnTest">ParentVisibilityTurnedOnTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="PointerReleaseWithoutPressTest">PointerReleaseWithoutPressTest</ComboBoxItem>
@@ -71,6 +72,7 @@
                             <ComboBoxItem AutomationProperties.Name="SourceBeforeLoadTest">SourceBeforeLoadTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="SourceBindingTest">SourceBindingTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="SpecificTouchTest">SpecificTouchTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="UserAgentTest">UserAgentTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="VisibilityHiddenTest">VisibilityHiddenTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="VisibilityTurnedOnTest">VisibilityTurnedOnTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="WebMessageReceivedTest">WebMessageReceivedTest</ComboBoxItem>

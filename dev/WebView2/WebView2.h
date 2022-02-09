@@ -146,7 +146,7 @@ private:
     void HandlePointerCaptureLost(const winrt::Windows::Foundation::IInspectable&, const winrt::PointerRoutedEventArgs& args);
     void HandleKeyDown(const winrt::Windows::Foundation::IInspectable&, const winrt::KeyRoutedEventArgs& e);
     void HandleGettingFocus(const winrt::Windows::Foundation::IInspectable&, const winrt::GettingFocusEventArgs& args) noexcept;
-    void HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, const winrt::RoutedEventArgs&) noexcept;
+    void HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, const winrt::RoutedEventArgs&);
     void HandleAcceleratorKeyActivated(const winrt::Windows::UI::Core::CoreDispatcher&, const winrt::AcceleratorKeyEventArgs& args) noexcept;
     void HandleXamlRootChanged();
     void HandleSizeChanged(const winrt::IInspectable& /*sender*/, const winrt::SizeChangedEventArgs& args);

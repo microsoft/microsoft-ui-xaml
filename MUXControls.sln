@@ -38,36 +38,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{5EF3865D
 		Build.cmd = Build.cmd
 		tools\CheckCompatibility.cmd = tools\CheckCompatibility.cmd
 		tools\CheckCompatibility.ps1 = tools\CheckCompatibility.ps1
-		tools\CodeGenHelpers.psm1 = tools\CodeGenHelpers.psm1
 		DevCmd.cmd = DevCmd.cmd
 		tools\ExtractPackageDependencies.cmd = tools\ExtractPackageDependencies.cmd
 		tools\ExtractPackageDependencies.ps1 = tools\ExtractPackageDependencies.ps1
-		tools\GenerateAppxDependenciesXML.cmd = tools\GenerateAppxDependenciesXML.cmd
-		tools\GenerateAppxDependenciesXML.ps1 = tools\GenerateAppxDependenciesXML.ps1
 		tools\GenerateNewProperty.ps1 = tools\GenerateNewProperty.ps1
-		tools\GenerateSystemDllImageResources.ps1 = tools\GenerateSystemDllImageResources.ps1
-		tools\GenerateSystemDllStringResources.ps1 = tools\GenerateSystemDllStringResources.ps1
 		tools\GenerateVisualVerificationUpdates.ps1 = tools\GenerateVisualVerificationUpdates.ps1
-		tools\GenerateXamlMetadata.ps1 = tools\GenerateXamlMetadata.ps1
-		tools\GenerateXamlMetadataWindowsCodeGen.ps1 = tools\GenerateXamlMetadataWindowsCodeGen.ps1
-		tools\LaunchXde.cmd = tools\LaunchXde.cmd
-		tools\LaunchXde.ps1 = tools\LaunchXde.ps1
 		tools\MakeAppxHelper.cmd = tools\MakeAppxHelper.cmd
-		tools\MakeVSIXHelper.cmd = tools\MakeVSIXHelper.cmd
 		nuget.config = nuget.config
 		tools\NugetWrapper.cmd = tools\NugetWrapper.cmd
-		tools\PkgGen.cmd = tools\PkgGen.cmd
-		tools\PostBuild.cmd = tools\PostBuild.cmd
-		tools\PostBuildWrapper.cmd = tools\PostBuildWrapper.cmd
-		tools\PostTestsWrapper.cmd = tools\PostTestsWrapper.cmd
 		tools\PowershellWrapper.cmd = tools\PowershellWrapper.cmd
 		tools\ps.bat = tools\ps.bat
 		tools\PSProfile.ps1 = tools\PSProfile.ps1
-		tools\PublishChunk.cmd = tools\PublishChunk.cmd
 		tools\PublishNupkg.cmd = tools\PublishNupkg.cmd
-		RunTests.ps1 = RunTests.ps1
-		tools\sign.cmd = tools\sign.cmd
-		tools\UninstallVSIX.cmd = tools\UninstallVSIX.cmd
 		tools\Utils.psm1 = tools\Utils.psm1
 	EndProjectSection
 EndProject
@@ -597,6 +579,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Expander_TestUI", "dev\Expa
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Expander_InteractionTests", "dev\Expander\InteractionTests\Expander_InteractionTests.shproj", "{D6DF4AB9-FACC-4E51-8C57-6B1F96919365}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Expander_APITests", "dev\Expander\APITests\Expander_APITests.shproj", "{0589A608-FB9C-49BF-9EA3-06CA805F3A9D}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InfoBar", "InfoBar", "{CEFD707F-6686-4CF4-8D4C-B5FECD50D739}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InfoBar", "dev\InfoBar\InfoBar.vcxitems", "{CCC102B7-F5EF-479D-94F1-008D189448B1}"
@@ -675,12 +659,15 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WebView2_InteractionTests",
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ProgressRing_APITests", "dev\ProgressRing\APITests\ProgressRing_APITests.shproj", "{222EF6F6-0845-49E7-81F2-9686CEF85C67}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ProgressBar_APITests", "dev\ProgressBar\APITests\ProgressBar_APITests.shproj", "{DD024665-31DA-4290-993E-2E46EB370C77}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
 		dev\ParallaxView\TestUI\ParallaxView_TestUI.projitems*{00c52fd5-42fd-33b4-84a0-795c9b5a014d}*SharedItemsImports = 13
 		dev\lights\ApiTests\Lights_ApiTests\Lights_ApiTests.projitems*{02ed27be-97e4-4327-bb96-8b3fa6869c48}*SharedItemsImports = 13
 		dev\RadioButtons\APITests\RadioButtons_APITests.projitems*{0352711a-d79a-4d82-8255-916d29522ae0}*SharedItemsImports = 13
+		dev\Expander\APITests\Expander_APITests.projitems*{0589a608-fb9c-49bf-9ea3-06ca805f3a9d}*SharedItemsImports = 13
 		dev\Telemetry\Telemetry.vcxitems*{0db22ba9-6053-459b-baf5-e82ea1c78ab3}*SharedItemsImports = 9
 		dev\ScrollPresenter\TestUI\ScrollPresenter_TestUI.projitems*{0ec52fd5-42fe-3eb4-84e0-79ec9b5a014e}*SharedItemsImports = 13
 		dev\ProgressBar\ProgressBar.vcxitems*{0f61c8bd-d066-4812-a02b-e95ce18a985d}*SharedItemsImports = 9
@@ -891,6 +878,7 @@ Global
 		dev\DropDownButton\InteractionTests\DropDownButton_InteractionTests.projitems*{d9ac3716-5608-40d0-999f-26f4b544be33}*SharedItemsImports = 13
 		dev\AnimatedIcon\APITests\AnimatedIcon_APITests.projitems*{db15ff28-ab3a-4fed-a1d5-004a095a3fd5}*SharedItemsImports = 13
 		dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.projitems*{dbec0be4-ba3f-41c9-a303-af98201be6dc}*SharedItemsImports = 13
+		dev\ProgressBar\APITests\ProgressBar_APITests.projitems*{dd024665-31da-4290-993e-2e46eb370c77}*SharedItemsImports = 13
 		dev\PullToRefresh\RefreshContainer\TestUI\RefreshContainer_TestUI.projitems*{ddb468e4-7b64-4301-8fcb-1bebbb1e689f}*SharedItemsImports = 13
 		dev\ImageIcon\TestUI\ImageIcon_TestUI.projitems*{dde1c022-6f9a-4067-89c2-81f2eeaf249f}*SharedItemsImports = 13
 		dev\CommonManaged\CommonManaged.projitems*{de061ed1-947e-487c-81b8-32e92e85b95f}*SharedItemsImports = 13
@@ -913,6 +901,7 @@ Global
 		dev\CommonStyles\APITests\CommonStyles_ApiTests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\CommonStyles\TestUI\CommonStyles_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\DropDownButton\TestUI\DropDownButton_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\Expander\APITests\Expander_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\Expander\TestUI\Expander_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\IconSource\APITests\IconSource_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\ImageIcon\APITests\ImageIcon_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
@@ -940,6 +929,7 @@ Global
 		dev\PersonPicture\TestUI\PersonPicture_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\PipsPager\APITests\PipsPager_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\PipsPager\TestUI\PipsPager_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\ProgressBar\APITests\ProgressBar_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\ProgressBar\TestUI\ProgressBar_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\ProgressRing\APITests\ProgressRing_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\ProgressRing\TestUI\ProgressRing_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
@@ -1014,6 +1004,7 @@ Global
 		dev\CommonStyles\APITests\CommonStyles_ApiTests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\CommonStyles\TestUI\CommonStyles_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\DropDownButton\TestUI\DropDownButton_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\Expander\APITests\Expander_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\Expander\TestUI\Expander_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\IconSource\APITests\IconSource_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\ImageIcon\APITests\ImageIcon_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
@@ -1041,6 +1032,7 @@ Global
 		dev\PersonPicture\TestUI\PersonPicture_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\PipsPager\APITests\PipsPager_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\PipsPager\TestUI\PipsPager_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\ProgressBar\APITests\ProgressBar_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\ProgressBar\TestUI\ProgressBar_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\ProgressRing\APITests\ProgressRing_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\ProgressRing\TestUI\ProgressRing_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
@@ -1644,6 +1636,7 @@ Global
 		{EC3B6F65-32C6-4BC8-8902-EE0B397E2787} = {84BB4F12-73FD-4E4A-8724-C2C060DF5E82}
 		{50C1F1D3-20AA-49A8-9E4C-CF4E5811A1D8} = {84BB4F12-73FD-4E4A-8724-C2C060DF5E82}
 		{D6DF4AB9-FACC-4E51-8C57-6B1F96919365} = {84BB4F12-73FD-4E4A-8724-C2C060DF5E82}
+		{0589A608-FB9C-49BF-9EA3-06CA805F3A9D} = {84BB4F12-73FD-4E4A-8724-C2C060DF5E82}
 		{CEFD707F-6686-4CF4-8D4C-B5FECD50D739} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{CCC102B7-F5EF-479D-94F1-008D189448B1} = {CEFD707F-6686-4CF4-8D4C-B5FECD50D739}
 		{32DFAF1E-C2EC-4C52-A4D8-B3A3946242B4} = {CEFD707F-6686-4CF4-8D4C-B5FECD50D739}
@@ -1683,6 +1676,7 @@ Global
 		{3E535832-73B4-45B2-B550-34CB14B2C262} = {1E54C076-7240-463A-A1B1-404187ABCDEB}
 		{2B05A80E-7C01-449C-8345-7D3B3B2143E5} = {1E54C076-7240-463A-A1B1-404187ABCDEB}
 		{222EF6F6-0845-49E7-81F2-9686CEF85C67} = {4194505E-4848-4FC4-97D1-0BABF32A11C4}
+		{DD024665-31DA-4290-993E-2E46EB370C77} = {19693508-50A7-4C98-BCCB-327ED07C0F4F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}

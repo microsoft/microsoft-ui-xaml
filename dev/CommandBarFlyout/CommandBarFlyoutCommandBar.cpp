@@ -896,7 +896,9 @@ void CommandBarFlyoutCommandBar::PopulateAccessibleControls()
         m_verticallyAccessibleControls.Clear();
     }
 
-    for (winrt::ICommandBarElement const& command : PrimaryCommands())
+    const auto primaryCommands = PrimaryCommands();
+
+    for (winrt::ICommandBarElement const& command : primaryCommands)
     {
         if (auto const& commandAsControl = command.try_as<winrt::Control>())
         {
@@ -907,8 +909,11 @@ void CommandBarFlyoutCommandBar::PopulateAccessibleControls()
 
     if (auto const& moreButton = m_moreButton.get())
     {
-        m_horizontallyAccessibleControls.Append(moreButton);
-        m_verticallyAccessibleControls.Append(moreButton);
+        if (primaryCommands.Size() > 0)
+        {
+            m_horizontallyAccessibleControls.Append(moreButton);
+            m_verticallyAccessibleControls.Append(moreButton);
+        }
     }
 
     for (winrt::ICommandBarElement const& command : SecondaryCommands())

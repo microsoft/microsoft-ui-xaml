@@ -35,9 +35,9 @@ WinUI is planned to ship roughly every 4 months, with monthly pre-release builds
  
 ## WinUI 2 Controls Library
 
-The next release of the **WinUI 2 Controls Library** will be v2.7, ETA Fall 2021. 
+The next release of the **WinUI 2 Controls Library** will be v2.8, aiming to release in early 2022. 
 
-WinUI 2.7 will include new Xaml features and fixes for UWP apps.  You can find a list of currently planned work in the [WinUI 2.7 milestone](https://github.com/microsoft/microsoft-ui-xaml/milestone/12).
+WinUI 2.8 will include new Xaml features and fixes for UWP apps.  You can find a list of currently planned work in the [WinUI 2.8 milestone](https://github.com/microsoft/microsoft-ui-xaml/milestone/14).
 
 For installation instructions see [Getting started with the Windows UI Library](https://docs.microsoft.com/en-us/windows/apps/winui/winui2/getting-started).
 
@@ -55,7 +55,7 @@ It focuses on enabling three main use cases:
 3. **Enabling other frameworks**
     * Providing the native implementation for other frameworks like [React Native](https://github.com/Microsoft/react-native-windows) when running on Windows
 
-WinUI 3 is available as a part of the [Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk) for building stable and supported desktop/Win32 apps for production scenarios. The latest release is the Windows App SDK 0.8, which you can download and read more about at the documentation linked below:
+WinUI 3 is available as a part of the [Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk) for building stable and supported desktop/Win32 apps for production scenarios. The latest release is the Windows App SDK 1.0, which you can download and read more about at the documentation linked below:
 
 [Stable release channel for the Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk/stable-channel)
 
@@ -66,13 +66,17 @@ There's also a version of WinUI 3 available that includes experimental features.
 
 
 ## WinUI 3 Feature Roadmap
-The image below lists out what the WinUI team plans to ship in 2021.
+The images below list out what the WinUI team has shipped in 2021. Stay tuned for an updated visual roadmap for 2022.
 
 The Windows App SDK ships experimental, preview, and stable builds (with WinUI 3 as a component). You can read more about the shipping schedule and cadence in our [Release Channels doc](https://docs.microsoft.com/windows/apps/windows-app-sdk/release-channels). For more details on when specific features will become available, see the feature roadmap table below. 
 
-For WinUI 2, you can plan to see frequent pre-releases (see our [Releases](https://github.com/microsoft/microsoft-ui-xaml/releases) page for more info), along with three stable releases this year.
+![Winui 3 roadmap](images/winui3-roadmap1021.jpg)
 
-![Winui roadmap](images/roadmap0621.jpg)
+**Note: We have deprecated Windows App SDK 1.0 Preview 1 and 2 from NuGet due to a critical bug affecting the system PATH variable. Please view these [notes](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/preview-channel#important-issue-impacting-10-preview-1-and-preview-2) for the specific issue and mitigation.**
+
+For WinUI 2, you can plan to see frequent pre-releases (see our [Releases](https://github.com/microsoft/microsoft-ui-xaml/releases) page for more info), along with two stable releases this year.
+
+![Winui 2 roadmap](images/winui2-roadmap1021.jpg)
 
 
 We know that for many of our developers, the choice to adopt WinUI 3 is dependent on certain features and capabilities. The table below outlines the status on WinUI 3 features, and the expected date they'll be available to you. 
@@ -92,34 +96,36 @@ For questions or status updates on either features listed here, or features not 
 
 Blank -  Not available
 
+**WinUI 3 - Windows App SDK 1.0** is our latest release. 
 
-**WinUI 3 - Windows App SDK 0.8** is our latest release. 
+| Customer Capability                                    | Project Reunion 0.5 <br/>(March 2021) | Windows App SDK 0.8 <br/>(June 2021) | Windows App SDK 1.0 <br/> (November 2021) | Planned for Windows App SDK 1.1 | Planned for a future update |
+| ------------------------------------------------------ | -------------------------------- | ------------------------------- | ----------------------------- | --------------------------- | --------------------------- |
+| Supported in any app using the Windows App SDK         | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
+| Contains new Windows 11 controls/styles from WinUI 2.6 |            |            | &#128994;                       | &#128994;          | &#128994;     |
+| Supports MSIX Deployment                               | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
+| Supports Unpackaged (non-MSIX) Deployment              |            |            | &#128994;                       | &#128994;          | &#128994;     |
+| Works downlevel to Windows 10 version 1809 and above   | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
+| Supports the latest .NET                               | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
+| ARM64 support                                          | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
+| `<SwapChainPanel> `                                    | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
+| Intellisense, Hot Reload, Live Visual Tree             | &#128311; | &#128311; | &#128994;[^1]  | &#128994;          | &#128994;     |
+| Chromium-based WebView2                                | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
+| Title bar customization                                | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
+| Fluent Shadows                                         | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;
+| Input validation for data fields                       | &#128311; | &#128311; | &#128311;              | &#128311; | &#128994;     |
+| Supports multiple top-level windows on the same thread | &#128311; | &#128311; | &#128311;              | &#128994;          | &#128994;     |
+| Support multiple top-level windows on separate threads | &#128311; | &#128311; | &#128311;              | &#128311; | &#128994;     |
+| Drag and drop                                          | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
+| RenderTargetBitmap                                     | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
+| Mouse cursor customization                             | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
+| Animated Gif support                                   | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
+| VirtualSurfaceImageSource (VSIS) support               | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
+| In-app acrylic                                         | &#128994;          | &#128994;          | &#128994;                       | &#128994;          | &#128994;     |
+| Background acrylic                                     |            |            |                         | &#128994;          | &#128994;     |
+| Mica                                                   |            |            |                         | &#128994;          | &#128994;     |
+| XAML Islands                                           |            | &#128311;           |    &#128311;                     | &#128311; | &#128994;     |
+| Media Controls (e.g. `<MediaPlayerElement>`)           |            |            |                         |            | &#128994;     |
+| `<InkCanvas>`                                          |            |            |                         |            | &#128994;     |
+| `<MapControl>`                                         |            |            |                         |            | &#129002; |
 
-| Customer Capability                                    | Project Reunion 0.5 <br/>(March 2021) | Windows App SDK 0.8 <br/>(June 2021) | Windows App SDK 1.0 <br/>(Q4 2021) | Planned for a future update |
-| ------------------------------------------------------ | -------------------------------- | ------------------------------- | ----------------------------- | --------------------------- |
-| Supported in any app using the Windows App SDK         | &#128994;                              | &#128994;                             | &#128994;                           |      &#128994;                       |
-| Supports MSIX Deployment                               | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
-| Supports Unpackaged (non-MSIX) Deployment              |                                 |                                | &#128994;                           | &#128994;                         |
-| Works downlevel to Windows 10 version 1809 and above   | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
-| Supports the latest .NET                               | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
-| ARM64 support                                          | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
-| `<SwapChainPanel> `                                      | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
-| Intellisense, Hot Reload, Live Visual Tree             | &#128311;                              | &#128311;                             | &#128994;                           | &#128994;                         |
-| Chromium-based WebView2                                | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
-| Title bar customization                                | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
-| Fluent Shadows                                         | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
-| Input validation for data fields                       | &#128311;                              | &#128311;                             | &#128311;                           | &#128994;                         |
-| Supports multiple top-level windows on the same thread | &#128311;                              | &#128311;                             | &#128994;                           | &#128994;                         |
-| Support multiple top-level windows on separate threads | &#128311;                              | &#128311;                             | &#128311;                           | &#128994;                         |
-| Drag and drop                                          | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
-| RenderTargetBitmap                                     | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
-| Mouse cursor customization                             | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
-| Animated Gif support                                   | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
-| VirtualSurfaceImageSource (VSIS) support               | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
-| In-app acrylic                                         | &#128994;                              | &#128994;                             | &#128994;                           | &#128994;                         |
-| Background acrylic                                     |                                 |                                |  &#129002;                 | &#128994;                         |
-| Contains new Windows 11 controls/styles from WinUI 2.6 |                                 |                                | &#128994;                           | &#128994;                         |
-| XAML Islands                                           |                                 |                                |                    | &#128994;                         |
-| Media Controls (e.g. `<MediaPlayerElement>`)             |                                 |                                |                              | &#128994;                         |
-| `<InkCanvas>`                                            |                                 |                                |                              | &#128994;                         |
-| `<MapControl>`                                           |                                 |                                |                              |  &#129002;                     |
+[^1]: Supported in packaged apps only

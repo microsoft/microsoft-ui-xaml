@@ -1005,7 +1005,7 @@
                                   Margin=1,1,1,1
                                   Name=PlaceholderTextContentPresenter
                                   Padding=10,5,6,6
-                                  RenderSize=266,31
+                                  RenderSize=262,31
                                   Visibility=Visible
                                 [Windows.UI.Xaml.Controls.ContentPresenter]
                                     Background=[NULL]
@@ -1019,7 +1019,7 @@
                                     Foreground=#9E000000
                                     Margin=10,5,6,6
                                     Padding=0,0,0,0
-                                    RenderSize=250,20
+                                    RenderSize=246,20
                                     Visibility=Visible
                               [Windows.UI.Xaml.Controls.Button]
                                   Background=#B3FFFFFF
@@ -1444,18 +1444,6 @@
                                               RenderSize=0,0
                                               Visibility=Collapsed
                                               Width=40
-                                            [Microsoft.UI.Xaml.Controls.AnimatedIcon]
-                                                FocusVisualPrimaryBrush=#E4000000
-                                                FocusVisualPrimaryThickness=2,2,2,2
-                                                FocusVisualSecondaryBrush=#B3FFFFFF
-                                                FocusVisualSecondaryThickness=1,1,1,1
-                                                Foreground=#E4000000
-                                                Height=12
-                                                Margin=0,0,0,0
-                                                Name=ExpandCollapseChevronIcon
-                                                RenderSize=0,0
-                                                Visibility=Visible
-                                                Width=12
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
                                               BorderBrush=[NULL]
@@ -1716,18 +1704,6 @@
                                               RenderSize=0,0
                                               Visibility=Collapsed
                                               Width=40
-                                            [Microsoft.UI.Xaml.Controls.AnimatedIcon]
-                                                FocusVisualPrimaryBrush=#E4000000
-                                                FocusVisualPrimaryThickness=2,2,2,2
-                                                FocusVisualSecondaryBrush=#B3FFFFFF
-                                                FocusVisualSecondaryThickness=1,1,1,1
-                                                Foreground=#E4000000
-                                                Height=12
-                                                Margin=0,0,0,0
-                                                Name=ExpandCollapseChevronIcon
-                                                RenderSize=0,0
-                                                Visibility=Visible
-                                                Width=12
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
                                               BorderBrush=[NULL]
@@ -2260,18 +2236,6 @@
                                               RenderSize=0,0
                                               Visibility=Collapsed
                                               Width=40
-                                            [Microsoft.UI.Xaml.Controls.AnimatedIcon]
-                                                FocusVisualPrimaryBrush=#E4000000
-                                                FocusVisualPrimaryThickness=2,2,2,2
-                                                FocusVisualSecondaryBrush=#B3FFFFFF
-                                                FocusVisualSecondaryThickness=1,1,1,1
-                                                Foreground=#E4000000
-                                                Height=12
-                                                Margin=0,0,0,0
-                                                Name=ExpandCollapseChevronIcon
-                                                RenderSize=0,0
-                                                Visibility=Visible
-                                                Width=12
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
                                               BorderBrush=[NULL]

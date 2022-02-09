@@ -699,7 +699,7 @@ void SwipeControl::AttachDismissingHandlers()
                     true /*handledEventsToo*/);
             }
 
-            m_xamlRootChangedRevoker = xamlRoot.Changed(winrt::auto_revoke, { this, &SwipeControl::CurrentXamlRootChanged });
+            m_xamlRootChangedRevoker = RegisterXamlRootChanged(xamlRoot, { this, &SwipeControl::CurrentXamlRootChanged });
         }
     }
     else

@@ -398,7 +398,7 @@ void WebView2::ResetPointerHelper(const winrt::PointerRoutedEventArgs& args)
 
     if (m_isPointerOver)
     {
-        m_isPointerOver = true;
+        m_isPointerOver = false;
         winrt::CoreWindow::GetForCurrentThread().PointerCursor(m_oldCursor);
         m_oldCursor = nullptr;
     }
@@ -430,7 +430,7 @@ void WebView2::ResetPointerHelper(const winrt::PointerRoutedEventArgs& args)
 
 bool WebView2::ShouldNavigate(const winrt::Uri& uri)
 {
-    return uri != nullptr && uri.ToString() != m_stopNavigateOnUriChanged;
+    return uri != nullptr && uri.RawUri() != m_stopNavigateOnUriChanged;
 }
 
 winrt::IAsyncAction WebView2::OnSourceChanged(winrt::Uri providedUri)
@@ -821,13 +821,10 @@ HWND WebView2::EnsureTemporaryHostHwnd()
 void WebView2::CreateMissingAnaheimWarning()
 {
     auto warning = winrt::TextBlock();
-    warning.Text(L"A suitable version of Microsoft Edge WebView2 Runtime was not detected. ");
+    warning.Text(ResourceAccessor::GetLocalizedStringResource(SR_WarningSuitableWebView2NotFound));
     warning.Inlines().Append(winrt::LineBreak());
-    auto moreText = winrt::Run();
-    moreText.Text(L"Please install from: ");
-    warning.Inlines().Append(moreText);
     auto linkText = winrt::Run();
-    linkText.Text(L"Download WebView2 Runtime");
+    linkText.Text(ResourceAccessor::GetLocalizedStringResource(SR_DownloadWebView2Runtime));
     auto hyperlink = winrt::Hyperlink();
     hyperlink.Inlines().Append(linkText);
     auto url = winrt::Uri(L"https://aka.ms/winui3/webview2download/");
@@ -1258,14 +1255,28 @@ void WebView2::FireCoreWebView2Initialized(winrt::hresult exception)
     m_coreWebView2InitializedEventSource(*this, *eventArgs);
 }
 
-void WebView2::HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, const winrt::RoutedEventArgs&) noexcept
+void WebView2::HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, const winrt::RoutedEventArgs&)
 {
     if (m_coreWebView && m_xamlFocusChangeInfo.m_isPending)
     {
-        // In current CoreWebView2 API, MoveFocus is not expected to fail, so set m_webHasFocus here rather than
-        // in asynchronous (MOJO/cross-proc) CoreWebView2 GotFocus event.
-        m_webHasFocus = true;
-        m_coreWebViewController.MoveFocus(m_xamlFocusChangeInfo.m_storedMoveFocusReason);
+        try
+        {
+            m_coreWebViewController.MoveFocus(m_xamlFocusChangeInfo.m_storedMoveFocusReason);
+            m_webHasFocus = true;
+        }
+        catch (winrt::hresult_error e)
+        {
+            // Occasionally, a request to restore the minimized window does not complete. This triggers
+            // FocusManager to set Xaml Focus to WV2 and consequently into CWV2 MoveFocus() call above, 
+            // which in turn will attempt ::SetFocus() on InputHWND, and that will fail with E_INVALIDARG
+            // since that HWND remains minimized. Work around by ignoring this error here. Since the app
+            // is minimized, focus state is not relevant - the next (successful) attempt to restrore the app
+            // will set focus into WV2/CWV2 correctly.
+            if (e.code().value != E_INVALIDARG)
+            {
+                throw;
+            }
+        }
         m_xamlFocusChangeInfo.m_isPending = false;
     }
 }

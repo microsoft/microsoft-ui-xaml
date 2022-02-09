@@ -153,6 +153,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 VerifyUIAName("Some UIA name");
+                numberBox.Minimum = 0;
+                numberBox.Maximum = 10;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyUIAName("Some UIA name Minimum0 Maximum10");
+                numberBox.Minimum = 50;
+                numberBox.Maximum = 100;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyUIAName("Some UIA name Minimum50 Maximum100");
             });
 
             void VerifyUIAName(string value)
