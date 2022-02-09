@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "TestWinFormsXamlIsland": {
+      "commandName": "Project",
+      "remoteDebugEnabled": false,
+      "remoteDebugMachine": "10.226.79.137",
+      "authenticationMode": "None",
+      "nativeDebugging": true
+    }
+  }
+}

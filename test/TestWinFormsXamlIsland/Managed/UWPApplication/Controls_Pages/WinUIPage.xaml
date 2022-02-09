@@ -1,0 +1,55 @@
+﻿<Page
+    x:Class="ManagedUWP.WinUIPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid x:Name="rootPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="LightGray">
+        <Grid.Resources>
+            <muxc:CommandBarFlyout x:Name="desktopCommandBarFlyout">
+                <muxc:CommandBarFlyout.SecondaryCommands>
+                    <AppBarButton Label="View" Icon="View">
+                        <AppBarButton.Flyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Large icons" Icon="Flag" KeyboardAcceleratorTextOverride="Ctrl+Shift+2"/>
+                                <MenuFlyoutItem Text="Medium icons" Icon="Accept" KeyboardAcceleratorTextOverride="Ctrl+Shift+3"/>
+                                <MenuFlyoutItem Text="Small icons" Icon="Account" KeyboardAcceleratorTextOverride="Ctrl+Shift+4"/>
+                                <MenuFlyoutItem Text="Auto arrange icons"/>
+                                <MenuFlyoutItem Text="Align icons to grid"/>
+                                <MenuFlyoutItem Text="Show desktop icons"/>
+                            </MenuFlyout>
+                        </AppBarButton.Flyout>
+                    </AppBarButton>
+                    <AppBarButton Label="Sort by" Icon="Sort">
+                        <AppBarButton.Flyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Name"/>
+                                <MenuFlyoutItem Text="Size"/>
+                                <MenuFlyoutItem Text="Item type"/>
+                                <MenuFlyoutItem Text="Date modified"/>
+                            </MenuFlyout>
+                        </AppBarButton.Flyout>
+                    </AppBarButton>
+                    <AppBarButton Label="Refresh" Icon="Refresh"/>
+                    <AppBarButton Label="New" Icon="NewFolder">
+                        <AppBarButton.Flyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Folder" Icon="Folder"/>
+                                <MenuFlyoutItem Text="Shortcut" Icon="Shop"/>
+                                <MenuFlyoutItem Text="Compressed (zipped) Folder" Icon="ZeroBars"/>
+                            </MenuFlyout>
+                        </AppBarButton.Flyout>
+                    </AppBarButton>
+                    <AppBarButton Label="Display settings" Icon="Setting"/>
+                    <AppBarButton Label="Personalize" Icon="Permissions"/>
+                    <AppBarButton Label="Open in Windows Terminal"/>
+                    <AppBarButton Label="Show more options" Icon="OpenWith" KeyboardAcceleratorTextOverride="Shift+F10"/>
+                </muxc:CommandBarFlyout.SecondaryCommands>
+            </muxc:CommandBarFlyout>
+        </Grid.Resources>
+    </Grid>
+</Page>

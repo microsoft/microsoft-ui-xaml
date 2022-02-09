@@ -1,0 +1,10 @@
+﻿<toolkit:XamlApplication
+    x:Class="UWPApplication.App"
+    xmlns:toolkit="using:Microsoft.Toolkit.Win32.UI.XamlHost"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:UWPApplication">
+        <Application.Resources>
+            <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+        </Application.Resources>
+</toolkit:XamlApplication>
