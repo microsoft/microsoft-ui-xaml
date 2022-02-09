@@ -41,6 +41,10 @@
       <GenerateMapFile>true</GenerateMapFile>
       <LinkTimeCodeGeneration Condition="'$(Configuration)'=='Release'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <AdditionalOptions Condition="'$(Configuration)'=='Release'">/debugtype:cv,fixup %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_x64_Desktop)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_x86_Desktop)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='arm'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_arm_Desktop)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='arm64'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_arm64_Desktop)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
       <DisableSpecificWarnings>4100;4189;4467;4702;6326;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -457,14 +461,14 @@
       <RS4StylePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS4' And '%(Type)' == 'DefaultStyle'" />
       <RS5StylePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS5' And '%(Type)' == 'DefaultStyle'" />
       <NineteenH1StylePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '19H1' And '%(Type)' == 'DefaultStyle'" />
-      <TwentyOneH1StylePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '21H1' And '%(Type)' == 'DefaultStyle' And ('%(RequireInsiderSDK)' == 'false' or '$(UseInsiderSDK)' == 'true')" />
+      <TwentyOneH1StylePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '21H1' And '%(Type)' == 'DefaultStyle'" />
       <RS1ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS1' And '%(Type)' == 'ThemeResources'" />
       <RS2ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS2' And '%(Type)' == 'ThemeResources'" />
       <RS3ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS3' And '%(Type)' == 'ThemeResources'" />
       <RS4ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS4' And '%(Type)' == 'ThemeResources'" />
       <RS5ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS5' And '%(Type)' == 'ThemeResources'" />
       <NineteenH1ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '19H1' And '%(Type)' == 'ThemeResources'" />
-      <TwentyOneH1ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '21H1' And '%(Type)' == 'ThemeResources' And ('%(RequireInsiderSDK)' == 'false' or '$(UseInsiderSDK)' == 'true')" />
+      <TwentyOneH1ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '21H1' And '%(Type)' == 'ThemeResources'" />
     </ItemGroup>
   </Target>
   <PropertyGroup>
@@ -582,7 +586,41 @@
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == '21h1_compact_themeresources_v1' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)\Themes\21h1_compact_themeresources_v1.xbf'))" />
     </ItemGroup>
     <Message Condition="'@(PageToBeCompiled)' != ''" Text="CustomCompile with min version %(PageToBeCompiled.MinSDKVersionRequired) for Pages: @(PageToBeCompiled)" />
-    <CompileXaml Condition="'@(PageToBeCompiled)' != ''" LanguageSourceExtension="$(DefaultLanguageSourceExtension)" Language="$(Language)" RootNamespace="$(RootNamespace)" XamlPages="@(PageToBeCompiled)" XamlApplications="@(ApplicationDefinition)" SdkXamlPages="@(SdkXamlItems)" PriIndexName="$(PriIndexName)" ProjectName="$(XamlProjectName)" IsPass1="False" DisableXbfGeneration="False" CodeGenerationControlFlags="$(XamlCodeGenerationControlFlags)" ClIncludeFiles="@(ClInclude)" CIncludeDirectories="$(XamlCppIncludeDirectories)" LocalAssembly="$(LocalAssembly)" ProjectPath="$(MSBuildProjectFullPath)" OutputPath="$(XamlGeneratedOutputPath)" OutputType="$(OutputType)" ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)" ReferenceAssemblies="@(XamlReferencesToCompile)" ForceSharedStateShutdown="False" CompileMode="RealBuildPass2" XAMLFingerprint="$(XAMLFingerprint)" FingerprintIgnorePaths="$(XAMLFingerprintIgnorePaths)" VCInstallDir="$(VCInstallDir)" WindowsSdkPath="$(WindowsSdkPath)" GenXbf32Path="$(GenXbfPath)" SavedStateFile="$(XamlSavedStateFilePath)" RootsLog="$(XamlRootsLog)" SuppressWarnings="$(SuppressXamlWarnings)" XamlResourceMapName="$(XamlResourceMapName)" XamlComponentResourceLocation="$(XamlComponentResourceLocation)" TargetPlatformMinVersion="%(PageToBeCompiled.MinSDKVersionRequired)" PlatformXmlDir="$(PlatformXmlDir)">
+    <CompileXaml 
+        Condition="'@(PageToBeCompiled)' != ''" 
+        LanguageSourceExtension="$(DefaultLanguageSourceExtension)" 
+        Language="$(Language)" 
+        RootNamespace="$(RootNamespace)" 
+        XamlPages="@(PageToBeCompiled)" 
+        XamlApplications="@(ApplicationDefinition)" 
+        SdkXamlPages="@(SdkXamlItems)" 
+        PriIndexName="$(PriIndexName)" 
+        ProjectName="$(XamlProjectName)" 
+        IsPass1="False" 
+        DisableXbfGeneration="False" 
+        CodeGenerationControlFlags="$(XamlCodeGenerationControlFlags)" 
+        ClIncludeFiles="@(ClInclude)" 
+        CIncludeDirectories="$(XamlCppIncludeDirectories)" 
+        LocalAssembly="$(LocalAssembly)" 
+        ProjectPath="$(MSBuildProjectFullPath)" 
+        OutputPath="$(XamlGeneratedOutputPath)" 
+        OutputType="$(OutputType)" 
+        ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)" 
+        ReferenceAssemblies="@(XamlReferencesToCompile)" 
+        ForceSharedStateShutdown="False" 
+        CompileMode="RealBuildPass2" 
+        XAMLFingerprint="$(XAMLFingerprint)" 
+        FingerprintIgnorePaths="$(XAMLFingerprintIgnorePaths)" 
+        VCInstallDir="$(VCInstallDir)" 
+        WindowsSdkPath="$(WindowsSdkPath)" 
+        GenXbf32Path="$(GenXbfPath)" 
+        SavedStateFile="$(XamlSavedStateFilePath)" 
+        RootsLog="$(XamlRootsLog)" 
+        SuppressWarnings="$(SuppressXamlWarnings)" 
+        XamlResourceMapName="$(XamlResourceMapName)" 
+        XamlComponentResourceLocation="$(XamlComponentResourceLocation)" 
+        TargetPlatformMinVersion="%(PageToBeCompiled.MinSDKVersionRequired)" 
+        PlatformXmlDir="$(PlatformXmlDir)">
       <Output Condition=" '$(ManagedAssembly)'!='false' " ItemName="Compile" TaskParameter="GeneratedCodeFiles" />
       <Output Condition=" '$(ManagedAssembly)'=='false' " ItemName="XamlGFiles" TaskParameter="GeneratedCodeFiles" />
       <!-- FileWrites is used in Microsoft.Common.Targets for "Clean" build -->

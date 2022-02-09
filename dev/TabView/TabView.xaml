@@ -43,7 +43,7 @@
                                 XYFocusKeyboardNavigation="Enabled">
 
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" x:Name="LeftContentColumn"/>
+                                <ColumnDefinition Width="Auto" MinWidth="2"  x:Name="LeftContentColumn"/>
                                 <ColumnDefinition Width="Auto" x:Name="TabColumn"/>
                                 <ColumnDefinition Width="Auto" x:Name="AddButtonColumn"/>
                                 <ColumnDefinition Width="*" x:Name="RightContentColumn"/>
@@ -98,6 +98,7 @@
 
                         <ContentPresenter x:Name="TabContentPresenter"
                             Grid.Row="1"
+                            Background="{ThemeResource TabViewItemHeaderBackgroundSelected}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}" />
                     </Grid>
@@ -241,7 +242,7 @@
 
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" MinWidth="2" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
@@ -424,7 +425,8 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:TabViewItem">
                     <Grid x:Name="LayoutRoot"
-                            Padding="{TemplateBinding Padding}">
+                            Padding="{TemplateBinding Padding}"
+                            UseLayoutRounding="False">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition x:Name="LeftColumn" Width="Auto"/>
                             <ColumnDefinition Width="*" />

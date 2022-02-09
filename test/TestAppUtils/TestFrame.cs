@@ -31,6 +31,7 @@ namespace MUXControlsTestApp
         private Button _goFullScreenInvokerButton = null;
         private Button _toggleThemeButton = null;
         private ToggleButton _innerFrameInLabDimensions = null;
+        private ToggleButton _enableRTL = null;
         private TextBlock _currentPageTextBlock = null;
         private Type _mainPageType = null;
         private ContentPresenter _pagePresenter = null;
@@ -123,6 +124,18 @@ namespace MUXControlsTestApp
                 _innerFrameInLabDimensions_Unchecked(null, null);
             }
 
+            _enableRTL = (ToggleButton)GetTemplateChild("EnableRTL");
+            _enableRTL.Checked += _enableRTL_Checked;
+            _enableRTL.Unchecked += _enableRTL_Unchecked;
+            if (_enableRTL.IsChecked == true)
+            {
+                _enableRTL_Checked(null, null);
+            }
+            else
+            {
+                _enableRTL_Unchecked(null, null);
+            }
+
             _goBackInvokerButton = (Button)GetTemplateChild("GoBackInvokerButton");
             _goBackInvokerButton.Click += GoBackInvokerButton_Click;
 
@@ -132,22 +145,6 @@ namespace MUXControlsTestApp
             _goFullScreenInvokerButton = (Button)GetTemplateChild("FullScreenInvokerButton");
             _goFullScreenInvokerButton.Click += GoFullScreenInvokeButton_Click;
             _keyInputReceived = (CheckBox)GetTemplateChild("KeyInputReceived");
-        }
-
-        private void _innerFrameInLabDimensions_Click(object sender, RoutedEventArgs e)
-        {
-            if(double.IsInfinity(_pagePresenter.MaxWidth))
-            {
-                // Not CI mode, so enter it now
-                _pagePresenter.MaxWidth = 1024;
-                _pagePresenter.MaxHeight = 664;
-            }
-            else
-            {
-                // We are already in "CI mode"
-                _pagePresenter.ClearValue(MaxWidthProperty);
-                _pagePresenter.ClearValue(MaxHeightProperty);
-            }
         }
 
         private void _innerFrameInLabDimensions_Checked(object sender, RoutedEventArgs e)
@@ -162,6 +159,16 @@ namespace MUXControlsTestApp
             // Leave CI mode
             _pagePresenter.ClearValue(MaxWidthProperty);
             _pagePresenter.ClearValue(MaxHeightProperty);
+        }
+
+        private void _enableRTL_Checked(object sender, RoutedEventArgs e)
+        {
+            _pagePresenter.FlowDirection = FlowDirection.RightToLeft;
+        }
+
+        private void _enableRTL_Unchecked(object sender, RoutedEventArgs e)
+        {
+            _pagePresenter.FlowDirection = FlowDirection.LeftToRight;
         }
 
         private void ToggleThemeButton_Click(object sender,RoutedEventArgs e)
