@@ -17,8 +17,8 @@ the LottieGen tool to generate code from a JSON file that was created from Adobe
 There are some performance issues with the current implementation of LottieGen and AnimatedVisualPlayer: 
 1)	Complex Lottie animations can instantiate a lot of composition animations 
 which may impact performance and overall battery life. 
-2)	Lottie files that have a lot of complex animations even when they are paused
-have some cost to performance. 
+2)	Lottie files that have a lot of complex animations
+have some cost to performance even when they are paused. 
 The Idle (paused) Lottie animations use the same amount of CPU resources as
 when they are playing the actual animation.
 
