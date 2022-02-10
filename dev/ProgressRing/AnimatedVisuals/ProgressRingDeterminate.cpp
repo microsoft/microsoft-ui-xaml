@@ -270,9 +270,10 @@ namespace
         {
             const auto result = CreateScalarKeyFrameAnimation(0.0F, 9.99999975E-05F, StepThenHoldEasingFunction());
             result.InsertKeyFrame(0.00833333377F, 9.99999975E-05F, HoldThenStepEasingFunction());
-            result.InsertKeyFrame(0.5F, 0.5F, CubicBezierEasingFunction_0());
+            result.InsertKeyFrame(0.25F, 0.25F, CubicBezierEasingFunction_0());
+            result.InsertKeyFrame(0.5F, 0.5F, _cubicBezierEasingFunction_0);
             result.InsertKeyFrame(0.75F, 0.75F, _cubicBezierEasingFunction_0);
-            result.InsertKeyFrame(0.983333349F, 0.949999988F, _cubicBezierEasingFunction_0);
+            result.InsertKeyFrame(0.983333349F, 0.96666666F, _cubicBezierEasingFunction_0);
             result.InsertKeyFrame(0.991666675F, 1.0F, _cubicBezierEasingFunction_0);
             return result;
         }
