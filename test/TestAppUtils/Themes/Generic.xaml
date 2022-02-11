@@ -67,7 +67,13 @@
                                         AutomationProperties.AutomationId="__EnableRTL"
                                         IsTabStop="False"
                                         Content="Enable RTL"/>
-
+                                    <Button x:Name="GarbageCollection"
+                                        VerticalAlignment="Stretch" Margin="0,0,4,0"
+                                        Style="{ThemeResource AccentButtonStyle}"
+                                        IsTabStop="False"
+                                        Content="Garbage Collection"
+                                        Click="GarbageCollection_Click"/>
+                                    
                                     <TextBlock x:Name="CurrentPageTextBlock" AutomationProperties.AutomationId="__CurrentPage"  FontSize="18" VerticalAlignment="Center" Margin="10,0,0,0"/>
                                 </StackPanel>
 
