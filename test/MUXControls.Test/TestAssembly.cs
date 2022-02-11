@@ -37,7 +37,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
     public class TestAssembly
     {
         [AssemblyInitialize]
-        [TestProperty("CoreClrProfile", ".NETCoreApp2.1")]
+        [TestProperty("CoreClrProfile", ".netcoreapp3.1")]
         [TestProperty("RunFixtureAs:Assembly", "ElevatedUserOrSystem")]
         [TestProperty("Hosting:Mode", "UAP")]
         [TestProperty("HelixWorkItemCreation", "CreateWorkItemPerTestClass")]

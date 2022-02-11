@@ -44,6 +44,8 @@ public:
     winrt::TabView GetParentTabView();
     void SetParentTabView(winrt::TabView const& tabView);
 
+    void StartBringTabIntoView();
+
 private:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::ToolTip> m_toolTip{ this };
@@ -57,6 +59,9 @@ private:
     void OnHeaderChanged();
     void OnIconSourceChanged();
     void UpdateWidthModeVisualState();
+
+    void OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args);
+    void UpdateTabGeometry();
 
     bool m_firstTimeSettingToolTip{ true };
 

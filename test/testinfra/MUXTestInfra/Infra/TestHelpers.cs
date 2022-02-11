@@ -176,19 +176,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
                 Log.Comment("__TestContentLoadedCheckBox checkbox checked, page has loaded");
 
-                ToggleButton tb = new ToggleButton(FindElement.ById("__InnerFrameInLabDimensions"));
-                if (tb.ToggleState != ToggleState.On && shouldRestrictInnerFrameSize)
-                {
-                    Log.Comment("toggling the __InnerFrameInLabDimensions toggle button to On.");
-                    tb.Toggle();
-                    Wait.ForIdle();
-                }
-                else if (tb.ToggleState != ToggleState.Off && !shouldRestrictInnerFrameSize)
-                {
-                    Log.Comment("toggling the __InnerFrameInLabDimensions toggle button to Off.");
-                    tb.Toggle();
-                    Wait.ForIdle();
-                }
+                SetInnerFrameInLabDimensions(shouldRestrictInnerFrameSize);
 
                 OpenedTestPages++;
             }
@@ -244,6 +232,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                         throw new InvalidOperationException("All attempts to set up test failed.");
                     }
                 }
+            }
+        }
+        public static void SetInnerFrameInLabDimensions(bool shouldRestrictInnerFrameSize)
+        {
+            ToggleButton tb = new ToggleButton(FindElement.ById("__InnerFrameInLabDimensions"));
+            if (tb.ToggleState != ToggleState.On && shouldRestrictInnerFrameSize)
+            {
+                Log.Comment("toggling the __InnerFrameInLabDimensions toggle button to On.");
+                tb.Toggle();
+                Wait.ForIdle();
+            }
+            else if (tb.ToggleState != ToggleState.Off && !shouldRestrictInnerFrameSize)
+            {
+                Log.Comment("toggling the __InnerFrameInLabDimensions toggle button to Off.");
+                tb.Toggle();
+                Wait.ForIdle();
+            }
+        }
+
+        public static void SetInnerFrameFlowDirection(FlowDirection flowDirection)
+        {
+            ToggleButton tb = new ToggleButton(FindElement.ById("__EnableRTL"));
+            if (tb.ToggleState != ToggleState.On && flowDirection == FlowDirection.RightToLeft)
+            {
+                Log.Comment("toggling the __EnableRTL toggle button to On.");
+                tb.Toggle();
+                Wait.ForIdle();
+            }
+            else if (tb.ToggleState != ToggleState.Off && flowDirection == FlowDirection.LeftToRight)
+            {
+                Log.Comment("toggling the __EnableRTL toggle button to Off.");
+                tb.Toggle();
+                Wait.ForIdle();
             }
         }
 

@@ -27,6 +27,7 @@ public:
     void OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIsBackButtonVisiblePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnCustomContentPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnTitlePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
     void UpdateVisibility();
@@ -35,6 +36,7 @@ private:
     void UpdateBackButton();
     void UpdateHeight();
     void UpdateTheme();
+    void UpdateTitle();
 
     void OnWindowActivated(const winrt::IInspectable& sender, const winrt::WindowActivatedEventArgs& args);
     void OnTitleBarMetricsChanged(const winrt::IInspectable& sender, const winrt::IInspectable& args);
