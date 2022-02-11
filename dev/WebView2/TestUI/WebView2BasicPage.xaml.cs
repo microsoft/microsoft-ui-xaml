@@ -195,7 +195,7 @@ namespace MUXControlsTestApp
             AddHostObjectToScriptTest,
             UserAgentTest,
             NonAsciiUriTest,
-            CreateWebView2OffTreeTest,
+            OffTreeWebViewInputTest,
             HtmlDropdownTest,
         };
 
@@ -258,7 +258,7 @@ namespace MUXControlsTestApp
             { TestList.AddHostObjectToScriptTest, 0 },
             { TestList.UserAgentTest, 0 },
             { TestList.NonAsciiUriTest, 7 },
-            { TestList.CreateWebView2OffTreeTest, 1 },
+            { TestList.OffTreeWebViewInputTest, 1 },
             { TestList.HtmlDropdownTest, 5 },
         };
 
@@ -688,7 +688,7 @@ namespace MUXControlsTestApp
                         WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[test]]);
                     }
                     break;
-                case TestList.CreateWebView2OffTreeTest:
+                case TestList.OffTreeWebViewInputTest:
                     {
                         // Remove existing webview
                         RemoveWebViewEventHandlers(MyWebView2);
@@ -1115,7 +1115,7 @@ namespace MUXControlsTestApp
                         expectedStringResult = "Example property from host object";
                         break;
 
-                    case TestList.CreateWebView2OffTreeTest:
+                    case TestList.OffTreeWebViewInputTest:
                         expectedStringResult = "Left mouse button clicked.";
                         break;
 
@@ -1773,7 +1773,7 @@ namespace MUXControlsTestApp
                         }
                         break;
 
-                    case TestList.CreateWebView2OffTreeTest:
+                    case TestList.OffTreeWebViewInputTest:
                         {
                             // Create a new webview
                             ApplicationTheme appTheme = Application.Current.RequestedTheme;
