@@ -43,6 +43,7 @@
                             <ComboBoxItem AutomationProperties.Name="Focus_ReverseTabTest">Focus_ReverseTabTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="GoBackAndForwardTest">GoBackAndForwardTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="HostNameToFolderMappingTest">HostNameToFolderMappingTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="HtmlDropdownTest">HtmlDropdownTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="MouseCaptureTest">MouseCaptureTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="MouseLeftClickTest">MouseLeftClickTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="MouseMiddleClickTest">MouseMiddleClickTest</ComboBoxItem>
@@ -58,8 +59,10 @@
                             <ComboBoxItem AutomationProperties.Name="NavigateToStringTest">NavigateToStringTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NavigateToVideoTest">NavigateToVideoTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NavigationErrorTest">NavigationErrorTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="NavigationStartingInvalidTest">NavigationStartingInvalidTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NavigationStartingTest">NavigationStartingTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NonAsciiUriTest">NonAsciiUriTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="OffTreeWebViewInputTest">OffTreeWebViewInputTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="ParentVisibilityHiddenTest">ParentVisibilityHiddenTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="ParentVisibilityTurnedOnTest">ParentVisibilityTurnedOnTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="PointerReleaseWithoutPressTest">PointerReleaseWithoutPressTest</ComboBoxItem>
@@ -143,25 +146,11 @@
                         <TextBlock Text="Document Title:" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
                         <Button x:Name="GetDocumentTitleButton" Content="Get" AutomationProperties.AutomationId="GetDocumentTitleButton" Margin="1,0,1,0" contract7Present:CornerRadius="25" Click="OnGetDocumentTitleButtonClicked"/>
                         <TextBlock x:Name="DocumentTitleTextBlock" AutomationProperties.AutomationId="DocumentTitleTextBlock" Width="1200" IsTextSelectionEnabled="True"/>
-                    </StackPanel>                    
-
-
+                    </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
                         <TextBlock Text="Focus: " FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
                         <StackPanel Orientation="Horizontal" Margin="0,0,15,0">
-                            <TextBlock x:Name="UpdateAnaheimFocusTextBlock" AutomationProperties.Name="UpdateAnaheimFocusTextBlock" contract7Present:HorizontalTextAlignment="Center" Margin="0,0,5,0">
-                        <Run Text="Web "/><LineBreak/><Run Text="(Hover)" />
-                        <ToolTipService.ToolTip>
-                            <ToolTip x:Name="UpdatingAnaheimFocusToolTip" Content="Updating Anaheim Focus..." Opened="UpdatingAnaheimFocusToolTipOpened"/>
-                        </ToolTipService.ToolTip>
-                            </TextBlock>
-                            <TextBlock x:Name="UpdateAnaheimFocusTextBlock2" AutomationProperties.Name="UpdateAnaheimFocusTextBlock2" contract7Present:HorizontalTextAlignment="Center" Margin="0,0,5,0">
-                        <Run Text="Web2 "/><LineBreak/><Run Text="(Hover)" />
-                        <ToolTipService.ToolTip>
-                            <ToolTip x:Name="UpdatingAnaheimFocusToolTip2" Content="Updating Anaheim Focus..." Opened="UpdatingAnaheimFocusToolTipOpenedMultipleWebview"/>
-                        </ToolTipService.ToolTip>
-                            </TextBlock>
-                            <TextBox x:Name="AnaheimFocusTextBox" AutomationProperties.AutomationId="AnaheimFocusTextBox" Width="80" TextAlignment="Left"/>
+                            <TextBox x:Name="AnaheimFocusTextBox" AutomationProperties.AutomationId="AnaheimFocusTextBox" Width="120" TextAlignment="Left"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,15,0">
                             <TextBlock Text="Xaml Focus:" Margin="0,0,5,0" VerticalAlignment="Center"/>
@@ -187,8 +176,10 @@
                         </StackPanel>
                         <StackPanel Orientation="Vertical">
                             <TextBlock Text="RTB:" FontWeight="Bold" FontSize="11" Margin="0,2,0,2"/>
-                            <Border Width="400" Height="320" BorderBrush="Blue" x:Name="RTBBorder" AutomationProperties.AutomationId="RTBBorder" BorderThickness="1" HorizontalAlignment="Left" Visibility="Visible">
-                                <Image x:Name="ShowRtb1" AutomationProperties.AutomationId="ShowRtb1" Stretch="None" HorizontalAlignment="Left"/>
+                            <Border Width="400" Height="320" BorderBrush="Blue" BorderThickness="1" HorizontalAlignment="Left" Visibility="Visible">
+                                <ScrollViewer x:Name="focusScrollViewer" VerticalScrollBarVisibility="Visible">
+                                    <TextBlock x:Name="focusLog" ></TextBlock>
+                                </ScrollViewer>
                             </Border>
                         </StackPanel>
                     </StackPanel>
