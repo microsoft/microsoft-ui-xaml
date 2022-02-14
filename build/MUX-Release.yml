@@ -37,6 +37,7 @@ jobs:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
+    sbomdir: $(Build.ArtifactStagingDirectory)\sbom\$(buildConfiguration)\$(buildPlatform)
   steps:
 
   # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
@@ -61,10 +62,12 @@ jobs:
     parameters:
       signOutput: true
 
+  - script: |
+     mkdir $(sbomdir)
   - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
     displayName: 'Generate SBOM manifest'
     inputs:
-      BuildDropPath: $(Build.ArtifactStagingDirectory)\sbom\$(buildConfiguration)\$(buildPlatform)
+      BuildDropPath: $(sbomdir)
 
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
