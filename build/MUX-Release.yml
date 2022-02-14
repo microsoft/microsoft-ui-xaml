@@ -64,7 +64,7 @@ jobs:
   - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
     displayName: 'Generate SBOM manifest'
     inputs:
-      BuildDropPath: $(Build.ArtifactStagingDirectory)
+      BuildDropPath: $(Build.ArtifactStagingDirectory)\sbom\$(buildConfiguration)\$(buildPlatform)
 
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
