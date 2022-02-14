@@ -1,6 +1,7 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 variables:
   minimumExpectedTestsExecutedCount: 35  # Sanity check for minimum expected tests to be reported
+  Packaging.EnableSBOMSigning: true
 jobs:
 - job: Build
   # Skip the build job if we are reusing the output of a previous build.
