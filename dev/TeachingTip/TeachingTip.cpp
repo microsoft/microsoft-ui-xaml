@@ -857,9 +857,6 @@ void TeachingTip::IsOpenChangedToOpen()
         CreateExpandAnimation();
     }
 
-    // We are about to begin the process of trying to open the teaching tip, so notify that we are no longer idle.
-    SetIsIdle(false);
-
     //If the developer defines their TeachingTip in a resource dictionary it is possible that it's template will have never been applied
     if (!m_isTemplateApplied)
     {
@@ -890,6 +887,8 @@ void TeachingTip::IsOpenChangedToOpen()
         {
             if (!popup.IsOpen())
             {
+                // We are about to begin the process of trying to open the teaching tip, so notify that we are no longer idle.
+                SetIsIdle(false);
                 UpdatePopupRequestedTheme();
                 popup.Child(m_rootElement.get());
                 if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
