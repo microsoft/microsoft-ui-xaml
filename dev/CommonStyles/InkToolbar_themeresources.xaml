@@ -1512,7 +1512,7 @@
                         Height="{StaticResource InkToolbarButtonHeight}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}" >
                         
-                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
 
