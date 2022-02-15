@@ -102,6 +102,7 @@ jobs:
   - task: PkgESSecComp@10
     displayName: 'Security and Compliance tasks'
     inputs:
+      errOnBugs: true
       areaPath: 'OS\WDX\DXP\WinDev\Controls'
       iterationPath: OS
       secCompConfigFromTask: |
@@ -112,7 +113,7 @@ jobs:
             - toolName: CFGCheck
               enable: false
             - toolName: Policheck
-              enable: true
+              enable: false
             - toolName: CredScan
               enable: false 
 
