@@ -2,13 +2,13 @@ name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 variables:
   minimumExpectedTestsExecutedCount: 35  # Sanity check for minimum expected tests to be reported
 jobs:
-- job: ComponentDetection
-  pool:
-    vmImage: 'windows-2019'
+# - job: ComponentDetection
+#   pool:
+#     vmImage: 'windows-2019'
 
-  steps:
-  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-    displayName: 'Component Detection'
+#   steps:
+#   - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+#     displayName: 'Component Detection'
 
 - job: Build
   # Skip the build job if we are reusing the output of a previous build.
@@ -25,20 +25,20 @@ jobs:
   strategy:
     maxParallel: 10
     matrix:
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-        PGOBuildMode: 'Optimize'
+      # Release_x86:
+      #   buildPlatform: 'x86'
+      #   buildConfiguration: 'Release'
+      #   PGOBuildMode: 'Optimize'
       Release_x64:
         buildPlatform: 'x64'
         buildConfiguration: 'Release'
         PGOBuildMode: 'Optimize'
-      Release_Arm:
-        buildPlatform: 'arm'
-        buildConfiguration: 'Release'
-      Release_Arm64:
-        buildPlatform: 'arm64'
-        buildConfiguration: 'Release'
+      # Release_Arm:
+      #   buildPlatform: 'arm'
+      #   buildConfiguration: 'Release'
+      # Release_Arm64:
+      #   buildPlatform: 'arm64'
+      #   buildConfiguration: 'Release'
 
   variables:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
@@ -80,6 +80,24 @@ jobs:
     inputs:
       result: PoliCheck.xml
       optionsFC: 1 # scan comments
+
+  - task: CopyFiles@1
+    inputs:
+      SourceFolder: '$(Agent.BuildDirectory)'
+      Contents: |
+        **\PoliCheck.xml
+      TargetFolder: $(Build.ArtifactStagingDirectory)
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: Policheck
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@2
+    displayName: 'Post Analysis'
+    inputs:
+      AllTools: false
+      PoliCheck: true
 
   # - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
   #   parameters:
