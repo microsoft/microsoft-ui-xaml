@@ -79,9 +79,7 @@ namespace MUXControlsTestApp
                 _currentPageTextBlock.Text = (e.Parameter is string ? e.Parameter as string : "");
             }
 
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
+            GarbageCollection_Click(null, null);
         }
 
         protected override void OnApplyTemplate()
@@ -181,6 +179,13 @@ namespace MUXControlsTestApp
             }
             // Invert theme
             contentAsFrameworkElement.RequestedTheme = (contentAsFrameworkElement.RequestedTheme == ElementTheme.Light) ? ElementTheme.Dark : ElementTheme.Light;
+        }
+
+        private void GarbageCollection_Click(object sender, RoutedEventArgs e)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
         }
 
         private void GoFullScreenInvokeButton_Click(object sender, RoutedEventArgs e)

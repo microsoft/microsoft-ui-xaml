@@ -2,9 +2,15 @@
 #include "common.h"
 
 #include "MicaController.h"
+#include "RuntimeProfiler.h"
 #include "SystemBackdropBrushFactory.h"
 
 #include "MicaController.g.cpp"
+
+MicaController::MicaController()
+{
+    __RP_Marker_ClassById(RuntimeProfiler::ProfId_MicaController);
+}
 
 MicaController::~MicaController()
 {

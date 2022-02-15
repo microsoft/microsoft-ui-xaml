@@ -1747,7 +1747,21 @@ void WebView2::HandleRendered(const winrt::IInspectable& /*sender*/, const winrt
 
 void WebView2::CheckAndUpdateWebViewPosition()
 {
-    if (!m_coreWebViewController) return;
+    if (!m_coreWebViewController)
+    {
+        return;
+    }
+
+    // Skip this work if WebView2 has just been removed from the tree - otherwise the CWV2.Bounds update could cause a flicker.
+    //
+    // After WebView2 is removed from the tree, this handler gets run one more time during the frame's render pass 
+    // (WebView2::HandleRendered()). The removed element's ActualWidth or ActualHeight could now evaluate to zero 
+    // (if Width or Height weren't explicitly set), causing 0-sized Bounds to get applied below and clear the web content, 
+    // producing a flicker that last until DComp Commit for this frame is processed by the compositor.
+    if (!this->IsLoaded())
+    {
+        return;
+    }
 
     // Check if the position of the WebView within the window has changed
     auto transform = TransformToVisual(nullptr);
