@@ -118,9 +118,9 @@ jobs:
             - toolName: CFGCheck
               enable: false
             - toolName: Policheck
-              enable: false
+              enable: true
             - toolName: CredScan
-              enable: false 
+              enable: true 
 
   # - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
   #   parameters:
