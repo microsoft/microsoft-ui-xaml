@@ -46,6 +46,11 @@ jobs:
     publishDir : $(Build.ArtifactStagingDirectory)
   steps:
 
+  - task: PkgESSetupBuild@12
+    displayName: Package ES - Setup Build
+    inputs:
+      disableOutputRedirect: true
+
   # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
   - task: DownloadPackage@1
     displayName: 'Download Microsoft.Telemetry.Inbox.Native'
@@ -64,63 +69,75 @@ jobs:
     failOnStderr: true
     displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
 
-  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
-    parameters:
-      signOutput: true
+  - template: AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml
 
-  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
+  - task: NuGetAuthenticate@0
 
-# Create Nuget Package
-- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
-  parameters:
-    jobName: CreateNugetPackage
-    dependsOn: Build
-    signOutput: true
-    useReleaseTag: '$(MUXFinalRelease)'
-    prereleaseVersionTag: prerelease
+  - task: NodeTool@0
 
-- template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
-  parameters:
-    dependsOn: Build
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@2
+    displayName: 'Run PoliCheck'
+    inputs:
+      result: PoliCheck.xml
+      optionsFC: 1 # scan comments
 
-# Build solution that depends on nuget package
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildNugetPkgTests'
-    buildArtifactName: 'NugetPkgTestsDrop'
-    runTestJobName: 'RunNugetPkgTestsInHelix'
-    helixType: 'test/nuget'
-    dependsOn: CreateNugetPackage
-    useFrameworkPkg: false
+  # - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+  #   parameters:
+  #     signOutput: true
 
-# Framework package tests
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildFrameworkPkgTests'
-    buildArtifactName: 'FrameworkPkgTestsDrop'
-    runTestJobName: 'RunFrameworkPkgTestsInHelix'
-    helixType: 'test/frpkg'
-    dependsOn: CreateNugetPackage
-    useFrameworkPkg: true
+  # - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
-- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
-  parameters:
-    dependsOn:
-    - RunNugetPkgTestsInHelix
-    - RunFrameworkPkgTestsInHelix
-    rerunPassesRequiredToAvoidFailure: 5
-    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+# # Create Nuget Package
+# - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+#   parameters:
+#     jobName: CreateNugetPackage
+#     dependsOn: Build
+#     signOutput: true
+#     useReleaseTag: '$(MUXFinalRelease)'
+#     prereleaseVersionTag: prerelease
 
-# NuGet package WACK tests
-- template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
-  parameters:
-    name: 'NugetPkgWACKTests'
-    dependsOn: BuildNugetPkgTests
-    artifactName: 'NugetPkgTestsDrop'
+# - template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
+#   parameters:
+#     dependsOn: Build
 
-# Framework package WACK tests
-- template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
-  parameters:
-    name: 'FrameworkPkgWACKTests'
-    dependsOn: BuildFrameworkPkgTests
-    artifactName: 'FrameworkPkgTestsDrop'
+# # Build solution that depends on nuget package
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     buildJobName: 'BuildNugetPkgTests'
+#     buildArtifactName: 'NugetPkgTestsDrop'
+#     runTestJobName: 'RunNugetPkgTestsInHelix'
+#     helixType: 'test/nuget'
+#     dependsOn: CreateNugetPackage
+#     useFrameworkPkg: false
+
+# # Framework package tests
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     buildJobName: 'BuildFrameworkPkgTests'
+#     buildArtifactName: 'FrameworkPkgTestsDrop'
+#     runTestJobName: 'RunFrameworkPkgTestsInHelix'
+#     helixType: 'test/frpkg'
+#     dependsOn: CreateNugetPackage
+#     useFrameworkPkg: true
+
+# - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+#   parameters:
+#     dependsOn:
+#     - RunNugetPkgTestsInHelix
+#     - RunFrameworkPkgTestsInHelix
+#     rerunPassesRequiredToAvoidFailure: 5
+#     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+
+# # NuGet package WACK tests
+# - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+#   parameters:
+#     name: 'NugetPkgWACKTests'
+#     dependsOn: BuildNugetPkgTests
+#     artifactName: 'NugetPkgTestsDrop'
+
+# # Framework package WACK tests
+# - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+#   parameters:
+#     name: 'FrameworkPkgWACKTests'
+#     dependsOn: BuildFrameworkPkgTests
+#     artifactName: 'FrameworkPkgTestsDrop'
