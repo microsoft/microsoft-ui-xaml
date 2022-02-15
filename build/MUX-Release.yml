@@ -93,11 +93,27 @@ jobs:
       PathtoPublish: $(Build.ArtifactStagingDirectory)
       artifactName: Policheck
 
-  - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@2
-    displayName: 'Post Analysis'
+  # - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@2
+  #   displayName: 'Post Analysis'
+  #   inputs:
+  #     AllTools: false
+  #     PoliCheck: true
+
+  - task: PkgESSecComp@10
+    displayName: 'Security and Compliance tasks'
     inputs:
-      AllTools: false
-      PoliCheck: true
+      fileNewBugs: false
+      secCompConfigFromTask: |
+        # Set the tools to false if they should not run in the build
+        tools:
+            - toolName: CheckCFlags
+              enable: false
+            - toolName: CFGCheck
+              enable: false
+            - toolName: Policheck
+              enable: true
+            - toolName: CredScan
+              enable: false 
 
   # - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
   #   parameters:
