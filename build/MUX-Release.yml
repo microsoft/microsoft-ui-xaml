@@ -75,6 +75,10 @@ jobs:
 
   - task: NodeTool@0
 
+  # temp. this needs to be after nuget restore.
+  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+    displayName: 'Component Detection'
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@2
     displayName: 'Run PoliCheck'
     inputs:
@@ -102,6 +106,7 @@ jobs:
   - task: PkgESSecComp@10
     displayName: 'Security and Compliance tasks'
     inputs:
+      fileNewBugs: true
       errOnBugs: true
       areaPath: 'OS\WDX\DXP\WinDev\Controls'
       iterationPath: OS

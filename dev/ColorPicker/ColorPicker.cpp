@@ -24,7 +24,7 @@ ColorPicker::ColorPicker()
 void ColorPicker::OnApplyTemplate()
 {
     // Testing policheck:
-    // poop
+    // capitals
     winrt::IControlProtected thisAsControlProtected = *this;
 
     m_colorSpectrum.set(GetTemplateChildT<winrt::ColorSpectrum>(L"ColorSpectrum", thisAsControlProtected));
