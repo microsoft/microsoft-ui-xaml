@@ -429,7 +429,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
     
         [TestMethod]
-        public void ChangingSourcePropertyChanges()
+        public void ChangingSourcePropertyChangesRenderSize()
         {
             AnimatedIcon icon = null;
             RunOnUIThread.Execute(() =>
@@ -445,8 +445,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // Icon width will be zero if the source property is not set.
-                Verify.IsTrue(Math.Abs(icon.ActualSize.Y) < 0.1);
+                // Icon height will be zero if the source property is not set.
+                Verify.IsTrue(Math.Abs(icon.ActualHeight) < 0.1);
                 icon.Source = new AnimatedChevronDownSmallVisualSource();
             });
 
@@ -454,8 +454,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // Icon will have a width if the AnimatedIcon also updated the visual tree to rerender.
-                Verify.IsTrue(Math.Abs(icon.ActualSize.Y) > 10);
+                // Icon will have a height if the AnimatedIcon also updated the visual tree to rerender.
+                Verify.IsTrue(Math.Abs(icon.ActualHeight) > 10);
             });
         }
     }
