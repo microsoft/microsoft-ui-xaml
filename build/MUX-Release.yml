@@ -98,27 +98,27 @@ jobs:
   - task: NodeTool@0
 
 
-  # temp. this needs to be after nuget restore.
-  # - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-  #   displayName: 'Component Detection'
+  temp. this needs to be after nuget restore.
+  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+    displayName: 'Component Detection'
 
-  # - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@2
-  #   displayName: 'Run PoliCheck'
-  #   inputs:
-  #     result: PoliCheck.xml
-  #     optionsFC: 1 # scan comments
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@2
+    displayName: 'Run PoliCheck'
+    inputs:
+      result: PoliCheck.xml
+      optionsFC: 1 # scan comments
 
-  # - task: CopyFiles@1
-  #   inputs:
-  #     SourceFolder: '$(Agent.BuildDirectory)'
-  #     Contents: |
-  #       **\PoliCheck.xml
-  #     TargetFolder: $(Build.ArtifactStagingDirectory)
+  - task: CopyFiles@1
+    inputs:
+      SourceFolder: '$(Agent.BuildDirectory)'
+      Contents: |
+        **\PoliCheck.xml
+      TargetFolder: $(Build.ArtifactStagingDirectory)
 
-  # - task: PublishBuildArtifacts@1
-  #   inputs:
-  #     PathtoPublish: $(Build.ArtifactStagingDirectory)
-  #     artifactName: Policheck
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: Policheck
 
   # - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@2
   #   displayName: 'Post Analysis'
@@ -135,6 +135,10 @@ jobs:
       areaPath: 'OS\WDX\DXP\WinDev\Controls'
       iterationPath: OS
       secCompConfigFromTask: |
+        # Overrides default build sources directory
+        sourceTargetOverrideAll: $(Build.SourcesDirectory)
+        # Overrides default build binaries directory when "Scan all" option is specified
+        binariesTargetOverrideAll: $(Build.SourcesDirectory)\BuildOutput
         # Set the tools to false if they should not run in the build
         tools:
             - toolName: CheckCFlags
