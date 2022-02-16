@@ -98,7 +98,7 @@ jobs:
   - task: NodeTool@0
 
 
-  temp. this needs to be after nuget restore.
+  # temp. this needs to be after nuget restore.
   - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
     displayName: 'Component Detection'
 
