@@ -25,14 +25,17 @@ jobs:
   strategy:
     maxParallel: 10
     matrix:
+      Debug_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Debug'
       # Release_x86:
       #   buildPlatform: 'x86'
       #   buildConfiguration: 'Release'
       #   PGOBuildMode: 'Optimize'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-        PGOBuildMode: 'Optimize'
+      # Release_x64:
+      #   buildPlatform: 'x64'
+      #   buildConfiguration: 'Release'
+      #   PGOBuildMode: 'Optimize'
       # Release_Arm:
       #   buildPlatform: 'arm'
       #   buildConfiguration: 'Release'
@@ -45,11 +48,6 @@ jobs:
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
   steps:
-
-  - task: PkgESSetupBuild@12
-    displayName: Package ES - Setup Build
-    inputs:
-      disableOutputRedirect: true
 
   # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
   - task: DownloadPackage@1
@@ -69,33 +67,58 @@ jobs:
     failOnStderr: true
     displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
 
+  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+    parameters:
+      signOutput: true
+
+  # Copies output from PREfast SDL Native Rules task to expected location for consumption by PkgESSecComp
+  - task: CopyFiles@1
+    displayName: 'Copy PREfast xml files to SDLNativeRulesDir'
+    inputs:
+      SourceFolder: '$(buildOutputDir)'
+      Contents: |
+        **\*.nativecodeanalysis.xml
+      TargetFolder: '$(Agent.BuildDirectory)\_sdt\logs\SDLNativeRules'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish artifact: PreFast'
+    inputs:
+      PathtoPublish: '$(Agent.BuildDirectory)\_sdt\logs\SDLNativeRules'
+      artifactName: PreFast
+
   - template: AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml
+
+  - task: PkgESSetupBuild@12
+    displayName: Package ES - Setup Build
+    inputs:
+      disableOutputRedirect: true
 
   - task: NuGetAuthenticate@0
 
   - task: NodeTool@0
 
+
   # temp. this needs to be after nuget restore.
-  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-    displayName: 'Component Detection'
+  # - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+  #   displayName: 'Component Detection'
 
-  - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@2
-    displayName: 'Run PoliCheck'
-    inputs:
-      result: PoliCheck.xml
-      optionsFC: 1 # scan comments
+  # - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@2
+  #   displayName: 'Run PoliCheck'
+  #   inputs:
+  #     result: PoliCheck.xml
+  #     optionsFC: 1 # scan comments
 
-  - task: CopyFiles@1
-    inputs:
-      SourceFolder: '$(Agent.BuildDirectory)'
-      Contents: |
-        **\PoliCheck.xml
-      TargetFolder: $(Build.ArtifactStagingDirectory)
+  # - task: CopyFiles@1
+  #   inputs:
+  #     SourceFolder: '$(Agent.BuildDirectory)'
+  #     Contents: |
+  #       **\PoliCheck.xml
+  #     TargetFolder: $(Build.ArtifactStagingDirectory)
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      PathtoPublish: $(Build.ArtifactStagingDirectory)
-      artifactName: Policheck
+  # - task: PublishBuildArtifacts@1
+  #   inputs:
+  #     PathtoPublish: $(Build.ArtifactStagingDirectory)
+  #     artifactName: Policheck
 
   # - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@2
   #   displayName: 'Post Analysis'
@@ -106,7 +129,7 @@ jobs:
   - task: PkgESSecComp@10
     displayName: 'Security and Compliance tasks'
     inputs:
-      fileNewBugs: true
+      fileNewBugs: false
       errOnBugs: true
       areaPath: 'OS\WDX\DXP\WinDev\Controls'
       iterationPath: OS
@@ -118,13 +141,9 @@ jobs:
             - toolName: CFGCheck
               enable: false
             - toolName: Policheck
-              enable: true
+              enable: false
             - toolName: CredScan
-              enable: true 
-
-  # - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
-  #   parameters:
-  #     signOutput: true
+              enable: false
 
   # - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
