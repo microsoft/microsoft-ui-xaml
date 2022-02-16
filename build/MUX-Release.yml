@@ -131,19 +131,22 @@ jobs:
     inputs:
       fileNewBugs: false
       errOnBugs: true
+      scanAll: true
       areaPath: 'OS\WDX\DXP\WinDev\Controls'
       iterationPath: OS
       secCompConfigFromTask: |
         # Set the tools to false if they should not run in the build
         tools:
             - toolName: CheckCFlags
-              enable: false
+              enable: true
             - toolName: CFGCheck
               enable: false
             - toolName: Policheck
               enable: false
             - toolName: CredScan
               enable: false
+            - toolName: XFGCheck
+              enable: true
 
   # - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
