@@ -72,17 +72,17 @@ body:
       multiple: true
       options:
         - "Windows Insider Build (xxxxx)"
-        - "Windows 11: Build 22000"
-        - "Windows 10: Build 19044"
-        - "Windows 10: Build 19043"
-        - "Windows 10: Build 19042"
-        - "Windows 10: Build 19041"
-        - "Windows 10: Build 18363"
-        - "Windows 10: Build 18362"
-        - "Windows 10: Build 17763"
-        - "Windows 10: Build 17134"
-        - "Windows 10: Build 16299"
-        - "Windows 10: Build 15063"
+        - "Windows 11 (21H2): Build 22000"
+        - "Windows 10 (21H2): Build 19044"
+        - "Windows 10 (21H1): Build 19043"
+        - "Windows 10 (20H2): Build 19042"
+        - "Windows 10 (2004): Build 19041"
+        - "Windows 10 (1909): Build 18363"
+        - "Windows 10 (1903): Build 18362"
+        - "Windows 10 (1809): Build 17763"
+        - "Windows 10 (1803): Build 17134"
+        - "Windows 10 (1709): Build 16299"
+        - "Windows 10 (1703): Build 15063"
   - type: textarea
     attributes:
       label: Additional context
