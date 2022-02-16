@@ -17,6 +17,7 @@
         <Setter Property="GlyphBrush" Value="{ThemeResource TreeViewItemForeground}"/>
         <Setter Property="MinHeight" Value="{ThemeResource TreeViewItemMinHeight}"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="FocusVisualMargin" Value="0,-1,0,-1"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TreeViewItem">
