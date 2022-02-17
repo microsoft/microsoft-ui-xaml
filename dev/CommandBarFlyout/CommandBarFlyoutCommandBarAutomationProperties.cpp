@@ -18,7 +18,7 @@
 
         if (auto automationPropertiesStatics9 = automationPropertiesStatics.try_as<winrt::IAutomationPropertiesStatics9>())
         {
-            automationPropertiesStatics9.SetControlType(senderAsUIE, unbox_value<winrt::AutomationControlType>(args.NewValue()));
+            automationPropertiesStatics9.SetAutomationControlType(senderAsUIE, unbox_value<winrt::AutomationControlType>(args.NewValue()));
         }
     }
 }

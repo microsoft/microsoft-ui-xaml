@@ -135,7 +135,7 @@
 
                     <controls:TabView.Resources>
                         <ResourceDictionary>
-                            <SolidColorBrush x:Key="TabViewItemHeaderBackgroundSelected" Color="#88FFFFFF"/>
+                            <SolidColorBrush x:Key="TabViewItemHeaderBackgroundSelected" Color="AliceBlue"/>
                         </ResourceDictionary>
                     </controls:TabView.Resources>
 

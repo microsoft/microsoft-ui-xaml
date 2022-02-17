@@ -78,7 +78,7 @@ namespace MUXControlsTestApp
             IsPlayingTextBoxBeforePlaying.Text = Player.IsPlaying.ToString();
 
             // Start playing and concurrently get the IsPlaying state.
-            Task task1 = Player.PlayAsync(0, 1, false).AsTask();
+            Task task1 = Player.PlayAsync(from, to, false).AsTask();
             Task task2 = GetIsPlayingAsync();
 
             // Wait for playing to finish.
@@ -99,6 +99,13 @@ namespace MUXControlsTestApp
             PlayForward(0, 1, ProgressTextBox);
         }
 
+        // Play from 0 to 1.
+        void PlayHalfButton_Click(object sender, RoutedEventArgs e)
+        {
+            IsPlayingTextBoxBeforePlaying.Text = Player.IsPlaying.ToString();
+            PlayForward(0, 0.5, ProgressTextBox);
+        }
+
         // Play forwards from 0.35 to 0.
         void ToZeroKeyframeAnimationPlayButton_Click(object sender, RoutedEventArgs e)
         {
@@ -117,12 +124,36 @@ namespace MUXControlsTestApp
             PlayForward(1, 0.35, FromOneKeyframeAnimationProgressTextBox);
         }
 
+        void SetProgressButton_Click(object sender, RoutedEventArgs e)
+        {
+            Player.SetProgress(0.4);
+        }
+
+        void SwitchCacheModeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Player.AnimationOptimization == Microsoft.UI.Xaml.Controls.PlayerAnimationOptimization.Latency)
+            {
+                Player.AnimationOptimization = Microsoft.UI.Xaml.Controls.PlayerAnimationOptimization.Resources;
+                SwitchCacheModeButton.Content = "Switch Optimization (Current: Resources)";
+            }
+            else if (Player.AnimationOptimization == Microsoft.UI.Xaml.Controls.PlayerAnimationOptimization.Resources)
+            {
+                Player.AnimationOptimization = Microsoft.UI.Xaml.Controls.PlayerAnimationOptimization.Latency;
+                SwitchCacheModeButton.Content = "Switch Optimization (Current: Latency)";
+            }
+        }
+
+        void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+            Player.Stop();
+        }
+
         // Play backwards from 1 to 0.5 then forwards from 0.5 to 1.
         async void ReverseNegativePlaybackRateAnimationPlayButton_Click(object sender, RoutedEventArgs e)
         {
             // Start playing backwards from 1 to 0.
             Player.PlaybackRate = -1;
-            Task task1 = Player.PlayAsync(0, 1, false).AsTask();
+            Task task1 = Player.PlayAsync(0.0, 1.0, false).AsTask();
 
             // Reverse direction after half of the animation duration.
             Task task2 = DelayForHalfAnimationDurationThenReverse();

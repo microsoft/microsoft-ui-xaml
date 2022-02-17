@@ -4,7 +4,6 @@
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);USING_TAEF</DefineConstants>
     <ProjectGuid>{DEDC1E4F-CFA5-4443-83EB-E79D425DF7E7}</ProjectGuid>
-    <IsTaefTestProject Condition="'$(IsTDPConfiguration)' == 'true'">true</IsTaefTestProject>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
