@@ -44,8 +44,6 @@ public:
     winrt::TabView GetParentTabView();
     void SetParentTabView(winrt::TabView const& tabView);
 
-    void StartBringTabIntoView();
-
 private:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::ToolTip> m_toolTip{ this };
