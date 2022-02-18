@@ -169,7 +169,7 @@ jobs:
   - task: PkgESSecComp@10
     displayName: 'Security and Compliance tasks'
     inputs:
-      fileNewBugs: false
+      fileNewBugs: true
       errOnBugs: true
       scanAll: true
       taskLogVerbosity: Diagnostic
