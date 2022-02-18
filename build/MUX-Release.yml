@@ -138,23 +138,25 @@ jobs:
 
 
 
-  # - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@2
-  #   displayName: 'Run PoliCheck'
-  #   inputs:
-  #     result: PoliCheck.xml
-  #     optionsFC: 1 # scan comments
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@2
+    displayName: 'Run PoliCheck'
+    inputs:
+      result: PoliCheck.xml
+      optionsFC: 1 # scan comments
 
-  # - task: CopyFiles@1
-  #   inputs:
-  #     SourceFolder: '$(Agent.BuildDirectory)'
-  #     Contents: |
-  #       **\PoliCheck.xml
-  #     TargetFolder: $(Build.ArtifactStagingDirectory)
+  - task: CopyFiles@1
+    inputs:
+      SourceFolder: '$(Agent.BuildDirectory)'
+      Contents: |
+        **\PoliCheck.xml
+      TargetFolder: $(Build.ArtifactStagingDirectory)
 
-  # - task: PublishBuildArtifacts@1
-  #   inputs:
-  #     PathtoPublish: $(Build.ArtifactStagingDirectory)
-  #     artifactName: Policheck
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: Policheck
+
+
 
   # - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@2
   #   displayName: 'Post Analysis'
@@ -186,9 +188,9 @@ jobs:
             - toolName: CFGCheck
               enable: false
             - toolName: Policheck
-              enable: false
+              enable: true
             - toolName: CredScan
-              enable: false
+              enable: true
             - toolName: XFGCheck
               enable: false
 
