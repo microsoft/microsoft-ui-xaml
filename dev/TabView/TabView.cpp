@@ -288,11 +288,7 @@ void TabView::UpdateTabBottomBorderLineVisualStates()
         }
         else if (selectedIndex != -1)
         {
-            if (i == selectedIndex)
-            {
-                state = L"NoBottomBorderLine";
-            }
-            else if (i == selectedIndex - 1)
+            if (i == selectedIndex - 1)
             {
                 state = L"LeftOfSelectedTab";
             }

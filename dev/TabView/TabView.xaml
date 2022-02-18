@@ -43,7 +43,7 @@
                                 XYFocusKeyboardNavigation="Enabled">
 
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" MinWidth="2"  x:Name="LeftContentColumn"/>
+                                <ColumnDefinition Width="Auto" x:Name="LeftContentColumn"/>
                                 <ColumnDefinition Width="Auto" x:Name="TabColumn"/>
                                 <ColumnDefinition Width="Auto" x:Name="AddButtonColumn"/>
                                 <ColumnDefinition Width="*" x:Name="RightContentColumn"/>
@@ -242,7 +242,7 @@
 
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" MinWidth="2" />
+                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
