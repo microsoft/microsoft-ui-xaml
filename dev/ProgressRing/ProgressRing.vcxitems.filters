@@ -6,10 +6,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingTemplateSettings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRingTemplateSettings.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingDeterminate.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingIndeterminate.cpp">
       <Filter>AnimatedVisuals</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingIndeterminate.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingDeterminate.cpp">
       <Filter>AnimatedVisuals</Filter>
     </ClCompile>
   </ItemGroup>
@@ -19,10 +19,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRingTemplateSettings.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRing.properties.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingDeterminate.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingIndeterminate.h">
       <Filter>AnimatedVisuals</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingIndeterminate.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingDeterminate.h">
       <Filter>AnimatedVisuals</Filter>
     </ClInclude>
   </ItemGroup>

@@ -8,6 +8,7 @@ using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
+using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -23,10 +24,8 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 
-using TextBlock = Microsoft.Windows.Apps.Test.Foundation.Controls.TextBlock;
 using Button = Microsoft.Windows.Apps.Test.Foundation.Controls.Button;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
@@ -127,7 +126,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             int retval = NativeMethods.GetAvailableCoreWebView2BrowserVersionString(string.Empty, out browserVersionPtr);
             if (retval != (int)NativeMethods.HResults.S_OK)
             {
-                Log.Warning("WebView2Tests Init: Error: got hresult {0} retrieving GetAvailableCoreWebView2BrowserVersionString", retval);
+                Log.Warning("WebView2Tests Init: Error: got hresult {0:x8} retrieving GetAvailableCoreWebView2BrowserVersionString", retval);
             }
             else if (browserVersionPtr == IntPtr.Zero)
             {
@@ -328,15 +327,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 waiter.TryWait();
             }
 
-            for (int i = 0; i <= 2; i++)
-            {
-                if (expectedValue != result.Value)
-                {
-                    Log.Comment($"CompleteTestAndWaitForResult: Expected '{expectedValue}', result was '{result.Value}'. Waiting...");
-                    Thread.Sleep(TimeSpan.FromMilliseconds(500));
-                }
-            }
-
             Verify.AreEqual(expectedValue, result.Value);
         }
 
@@ -376,6 +366,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private static void DoSelectAllByKeyboard()
         {
+            Log.Comment("Do Select All");
             KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
             TextInput.SendText("a");
             KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
@@ -383,6 +374,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private static void CopySelected()
         {
+            Log.Comment("Do Copy");
             KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
             TextInput.SendText("c");
             KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
@@ -390,6 +382,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private static void PasteClipboard()
         {
+            Log.Comment("Do Paste");
             KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
             TextInput.SendText("v");
             KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
@@ -429,51 +422,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private static void WaitForFocus(string target)
         {
             var anaheimFocusTextBox = new Edit(FindElement.ById("AnaheimFocusTextBox"));
-            TextBlock updateAnaheimFocusTextBlock = FindElement.ByName<TextBlock>("UpdateAnaheimFocusTextBlock");
-            int numRetries = 0;
-            while (anaheimFocusTextBox.GetText() != target && (numRetries < 20))
-            {
-                // Poll the tooltip. This is a temporary method that will be replaced when task 23527231 is completed making WebMessageReceivedHandler available.
-                InputHelper.MoveMouse(anaheimFocusTextBox, 0, 0);
-                InputHelper.MoveMouse(updateAnaheimFocusTextBlock, 0, 0);
-                numRetries++;
-            }
+            var expectedFocusMessage = "Focus on: " + target;
+            WaitForTextBoxValue(anaheimFocusTextBox, expectedFocusMessage);
+            Log.Comment("Focus is on " + UIObject.Focused);
+            Verify.AreEqual(anaheimFocusTextBox.Value, expectedFocusMessage);
         }
 
-        // Replace calls to WaitForFocusOnSecondWebview with waiters when task 23527231 is completed making WebMessageReceivedHandler available.
-        private static void WaitForFocusOnSecondWebview(string target)
+        // 'target' and 'tabs' should be in accordance with the html page being navigated on.
+        private static void SetWebViewElementFocus(string target, uint tabs)
         {
-            var anaheimFocusTextBox = new Edit(FindElement.ById("AnaheimFocusTextBox"));
-            TextBlock updateAnaheimFocusTextBlock = FindElement.ByName<TextBlock>("UpdateAnaheimFocusTextBlock2");
-            int numRetries = 0;
-            while (anaheimFocusTextBox.GetText() != target && (numRetries < 20))
-            {
-                // Poll the tooltip. This is a temporary method that will be replaced when task 23527231 is completed making WebMessageReceivedHandler available.
-                InputHelper.MoveMouse(anaheimFocusTextBox, 0, 0);
-                InputHelper.MoveMouse(updateAnaheimFocusTextBlock, 0, 0);
-                numRetries++;
-            }
-        }
-
-        // 'focusValue' and 'tabs' should be in accordance with the html page being navigated on.
-        private static void SetWebViewElementFocus(string focusValue, int tabs)
-        {
-            var anaheimFocusTextBox = new Edit(FindElement.ById("AnaheimFocusTextBox"));
-            TextBlock updateAnaheimFocusTextBlock = FindElement.ByName<TextBlock>("UpdateAnaheimFocusTextBlock");
             Button x1 = new Button(FindElement.ById("TabStopButton1")); // Xaml TabStop 1
-            // TODO_WebView2: Replace waiters when focus logic is implemented by WebMessageReceivedHandler.
-            // Run the 'copy from WebView2' portion of the test on new text.
             x1.SetFocus();
-            // Reset anaheimFocusTextBox
-            InputHelper.MoveMouse(anaheimFocusTextBox, 0, 0);
-            InputHelper.MoveMouse(updateAnaheimFocusTextBlock, 0, 0);
             Wait.ForIdle();
-            Verify.IsTrue(x1.HasKeyboardFocus);
-            for (int tab = 0; tab < tabs; tab++)
-            {
-                KeyboardHelper.PressKey(Key.Tab);
-            }
-            WaitForFocus(focusValue);
+            Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
+
+            KeyboardHelper.PressKey(Key.Tab, ModifierKey.None, tabs);
+            WaitForFocus(target);
         }
 
         [TestMethod]
@@ -491,15 +455,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ChooseTest("BasicRenderingTest");
                 Wait.ForMilliseconds(100); // rendering a webpage takes some time after navigation completed
 
-                // When we run the rendering test, it will fail because we don't have access to a render target bitmap
-                // or a shared visual from the browser.  So while we invoke the test to get the page set up correctly,
-                // we ignore the result.  We will then check for the appropriate pixel(s) using User32 and GDI32 calls
-                // from the test runner (this executable).  We can't do it in the actual test itself because UWP apps
-                // don't seem to have the capability of creating a modifiable device context.
-                // WaitForResult("BasicRenderingTest");
-
-                Log.Comment("BasicRenderingTest Test App Result ignored due to RTB issues with the test.  Verifying from the test runner.");
-                WebView2Temporary.WebView2RenderingVerifier.VerifyInstances("BasicRenderingTest");
+                // To verify, check for the appropriate pixel(s) using User32 and GDI32 calls here in the test runner.
+                WebView2Temporary.WebView2RenderingVerifier.VerifyInstances("BasicRenderingTest"); 
                 CompleteTestAndWaitForResult("BasicRenderingTest");
             }
         }
@@ -683,11 +640,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // For each of the Focus_* tests: 
         // 1) We Tab/Shift+Tab/Click amongst xaml controls(x1, x2) and web controls(w1, w2). 
         // 2) After each such change:
-        //     a. Validate Edge focus state by hovering over UpdateAnaheimFocusTextBlock, which triggers a tooltip handler 
-        //        in the (Xaml) test app, which tests the color of a rectangle in the webpage that reflects the focused web control(w1, w2, or n/a).
-        //     b. Validate Xaml focus using MITA API's directly. Since WebView2 doesn't have accessibility hooked up yet,
-        //       the FocusAcquiredWaiter will not work correctly with it. Such validation is temporarily commented out 
-        //       with the TODO_WebView2_Accessibility tag in the comments.
+        //     a. Validate Edge focus state by waiting for web message sent when an element gets focus
+        //     b. Validate Xaml focus using MITA APIs directly
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void Focus_BasicTabTest()
@@ -702,47 +656,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 ChooseTest("Focus_BasicTabTest");
 
-                var anaheimFocusTextBox = new Edit(FindElement.ById("AnaheimFocusTextBox"));
-                TextBlock updateAnaheimFocusTextBlock = FindElement.ByName<TextBlock>("UpdateAnaheimFocusTextBlock");
-
                 Button x1 = new Button(FindElement.ById("TabStopButton1"));     // Xaml TabStop 1
                 Button x2 = new Button(FindElement.ById("TabStopButton2"));     // Xaml TabStop 2
-                UIObject webviewControl = new UIObject(FindElement.ById("MyWebView2"));
 
                 Log.Comment("Description: x1 -> w1 -> w2 -> x2 ");
                 Log.Comment("Focus on x1");
                 x1.SetFocus();
                 Wait.ForIdle();
-                Verify.IsTrue(x1.HasKeyboardFocus);
-
-                //
-                // NOTE: Comments marked with "TODO_WebView2_Accessibility" are validation that should be enabled once accessibility is hooked up.
-                //
-                // TODO_WebView2_Accessibility: using (var xamlFocusWaiter = new FocusAcquiredWaiter(UICondition.CreateFromId("MyWebView2")))
-
+                Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
 
                 Log.Comment("Tab x1 -> w1");
                 KeyboardHelper.PressKey(Key.Tab);
-                // TODO_WebView2_Accessibility: xamlFocusWaiter.Wait();
-
-                // Trigger update of TextBox with Anaheim focus state
                 WaitForFocus("w1");
 
-                // TODO_WebView2_Accessibility: Verify.IsTrue(webviewControl.HasKeyboardFocus);
                 Log.Comment("Tab w1 -> w2");
                 KeyboardHelper.PressKey(Key.Tab);
-
                 WaitForFocus("w2");
 
-                // TODO_WebView2_Accessibility: Verify.IsTrue(webviewControl.HasKeyboardFocus);
-
-                // TODO_WebView2_Accessibility: using (var xamlFocusWaiter = new FocusAcquiredWaiter(UICondition.CreateFromId("x2")))=
                 Log.Comment("Tab w2 -> x2");
-                KeyboardHelper.PressKey(Key.Tab);
-                // TODO_WebView2_Accessibility : xamlFocusWaiter.Wait();
-                WaitForFocus("n/a");
-
-                Verify.IsTrue(x2.HasKeyboardFocus);
+                using (var xamlFocusWaiter = new FocusAcquiredWaiter("TabStopButton2"))
+                {
+                    KeyboardHelper.PressKey(Key.Tab);
+                    xamlFocusWaiter.Wait();
+                    Log.Comment("Focus is on " + UIObject.Focused);
+                    Verify.IsTrue(x2.HasKeyboardFocus, "TabStopButton2 has keyboard focus");
+                }
 
                 CompleteTestAndWaitForResult("Focus_BasicTabTest");
             }
@@ -763,44 +701,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 ChooseTest("Focus_ReverseTabTest");
 
-                var anaheimFocusTextBox = new Edit(FindElement.ById("AnaheimFocusTextBox"));
-                TextBlock updateAnaheimFocusTextBlock = FindElement.ByName<TextBlock>("UpdateAnaheimFocusTextBlock");
-
                 Button x1 = new Button(FindElement.ById("TabStopButton1"));     // Xaml TabStop 1
                 Button x2 = new Button(FindElement.ById("TabStopButton2"));     // Xaml TabStop 2
-                UIObject webviewControl = new UIObject(FindElement.ById("MyWebView2"));
 
                 Log.Comment("Description: x2 shift-> w2 shift-> w1 shift-> x1");
                 Log.Comment("Focus on x2");
                 x2.SetFocus();
                 Wait.ForIdle();
-                Verify.IsTrue(x2.HasKeyboardFocus);
+                Verify.IsTrue(x2.HasKeyboardFocus, "TabStopButton2 has keyboard focus");
 
-                // TODO_WebView2_Accessibility: using (var xamlFocusWaiter = new FocusAcquiredWaiter(UICondition.CreateFromId("MyWebView2")))
                 Log.Comment("Shift+Tab x2 -> w2");
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
-                // TODO_WebView2_Accessibility: xamlFocusWaiter.Wait();
-
-                // Hover over UpdaetAnaheimFocusTextBlock to trigger update of TextBox with Anaheim focus state
-                InputHelper.MoveMouse(anaheimFocusTextBox, 0, 0);
-                InputHelper.MoveMouse(updateAnaheimFocusTextBlock, 0, 0);
                 WaitForFocus("w2");
 
-                // TODO_WebView2_Accessibility: Verify.IsTrue(webviewControl.HasKeyboardFocus);
                 Log.Comment("Shift+Tab w2 -> w1");
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
-
                 WaitForFocus("w1");
-                // TODO_WebView2_Accessibility: Verify.IsTrue(webviewControl.HasKeyboardFocus);
 
-                // TODO_WebView2_Accessibility: using (var xamlFocusWaiter = new FocusAcquiredWaiter(UICondition.CreateFromId("x1")))
                 Log.Comment("Shift+Tab w1 -> x1");
-                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
-                // TODO_WebView2_Accessibility: xamlFocusWaiter.Wait();
+                using (var xamlFocusWaiter = new FocusAcquiredWaiter("TabStopButton1"))
+                {
 
-                WaitForFocus("n/a");
-
-                Verify.IsTrue(x1.HasKeyboardFocus);
+                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                    xamlFocusWaiter.Wait();
+                    Log.Comment("Focus is on " + UIObject.Focused);
+                    Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
+                }
 
                 CompleteTestAndWaitForResult("Focus_ReverseTabTest");
             }
@@ -821,59 +747,46 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 ChooseTest("Focus_BackAndForthTabTest");
 
-                var anaheimFocusTextBox = new Edit(FindElement.ById("AnaheimFocusTextBox"));
-                TextBlock updateAnaheimFocusTextBlock = FindElement.ByName<TextBlock>("UpdateAnaheimFocusTextBlock");
-
                 Button x1 = new Button(FindElement.ById("TabStopButton1"));     // Xaml TabStop 1
-                Button x2 = new Button(FindElement.ById("TabStopButton2"));     // Xaml TabStop 2
-                UIObject webviewControl = new UIObject(FindElement.ById("MyWebView2"));
 
                 Log.Comment("Description: x1 -> w1 shift-> x1 -> w1 -> x1");
                 Log.Comment("Focus on x1");
                 x1.SetFocus();
                 Wait.ForIdle();
-                Verify.IsTrue(x1.HasKeyboardFocus);
+                Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
 
-                // TODO_WebView2_Accessibility: (var xamlFocusWaiter = new FocusAcquiredWaiter(UICondition.CreateFromId("MyWebView2")))
                 Log.Comment("Tab x1 -> w1");
                 KeyboardHelper.PressKey(Key.Tab);
-                // TODO_WebView2_Accessibility: xamlFocusWaiter.Wait();
-
-                // Hover over UpdaetAnaheimFocusTextBlock to trigger update of TextBox with Anaheim focus state
                 WaitForFocus("w1");
-                // TODO_WebView2_Accessibility: Verify.IsTrue(webviewControl.HasKeyboardFocus);
 
-                // TODO_WebView2_Accessibility: using (var xamlFocusWaiter = new FocusAcquiredWaiter(UICondition.CreateFromId("x1")))
                 Log.Comment("Shift+Tab w1 -> x1");
-                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
-                // TODO_WebView2_Accessibility: xamlFocusWaiter.Wait();
+                using (var xamlFocusWaiter = new FocusAcquiredWaiter("TabStopButton1"))
+                {
+                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                    xamlFocusWaiter.Wait();
+                    Log.Comment("Focus is on " + UIObject.Focused);
+                    Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
+                }
 
-                WaitForFocus("n/a");
-                Verify.IsTrue(x1.HasKeyboardFocus);
-
-                // TODO_WebView2_Accessibility: using (var xamlFocusWaiter = new FocusAcquiredWaiter(UICondition.CreateFromId("MyWebView2")))
                 Log.Comment("Tab x1 -> w1");
                 KeyboardHelper.PressKey(Key.Tab);
-                // TODO_WebView2_Accessibility: xamlFocusWaiter.Wait();
-
-                // Hover over UpdaetAnaheimFocusTextBlock to trigger update of TextBox with Anaheim focus state
                 WaitForFocus("w1");
 
-                // TODO_WebView2_Accessibility: Verify.IsTrue(webviewControl.HasKeyboardFocus);
                 Log.Comment("Shift+Tab w1 -> x1");
-                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
-
-                WaitForFocus("n/a");
-
-                Verify.IsTrue(x1.HasKeyboardFocus);
+                using (var xamlFocusWaiter = new FocusAcquiredWaiter("TabStopButton1"))
+                {
+                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                    xamlFocusWaiter.Wait();
+                    Log.Comment("Focus is on " + UIObject.Focused);
+                    Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
+                }
 
                 CompleteTestAndWaitForResult("Focus_BackAndForthTabTest");
             }
         }
 
         // See comment on Focus_BasicTabTest() for details on test mechanism.
-        [TestMethod] 
-        [TestProperty("Ignore", "True")] // Task 32016751: [WebView2] Re-enable Focus_MouseActivateTest and MouseCaptureTest
+        [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void Focus_MouseActivateTest()
         {
@@ -887,20 +800,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 ChooseTest("Focus_MouseActivateTest");
 
-                var anaheimFocusTextBox = new Edit(FindElement.ById("AnaheimFocusTextBox"));
-                TextBlock updateAnaheimFocusTextBlock = FindElement.ByName<TextBlock>("UpdateAnaheimFocusTextBlock");
-
                 Button x1 = new Button(FindElement.ById("TabStopButton1"));     // Xaml TabStop 1
-                Button x2 = new Button(FindElement.ById("TabStopButton2"));     // Xaml TabStop 2
                 UIObject webviewControl = new UIObject(FindElement.ById("MyWebView2"));
 
                 Log.Comment("Test1: Focus on x1, Click on w1, Shift+Tab w2 -> w1, Click on x2");
                 Log.Comment("Focus on x1");
                 x1.SetFocus();
                 Wait.ForIdle();
-                Verify.IsTrue(x1.HasKeyboardFocus);
+                Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
 
-                // TODO_WebView2_Accessibility: using (var xamlFocusWaiter = new FocusAcquiredWaiter(UICondition.CreateFromId("MyWebView2")))
                 Log.Comment("Click on w2");
 
                 Rectangle bounds = webviewControl.BoundingRectangle;
@@ -911,29 +819,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.MoveMouse(webviewControl, -bounds.Width / 2 + w2_offsetX, -bounds.Height / 2 + w2_offsetY);
                 PointerInput.Press(PointerButtons.Primary);
                 PointerInput.Release(PointerButtons.Primary);
-                Wait.ForIdle();
-                // TODO_WebView2_Accessibility: xamlFocusWaiter.Wait();
 
-                // Hover over UpdaetAnaheimFocusTextBlock to trigger update of TextBox with Anaheim focus state
                 WaitForFocus("w2");
 
                 Log.Comment("Shift+Tab w2 -> w1");
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
-
                 WaitForFocus("w1");
 
-                // TODO_WebView2_Accessibility: Verify.IsTrue(webviewControl.HasKeyboardFocus);
-
-                // TODO_WebView2_Accessibility: using (var xamlFocusWaiter = new FocusAcquiredWaiter(UICondition.CreateFromId("x2")))
-
-                Log.Comment("Click on x2");
-                InputHelper.MoveMouse(x2, 10, 10);
-                PointerInput.Press(PointerButtons.Primary);
-                PointerInput.Release(PointerButtons.Primary);
-                Wait.ForIdle();
-                // TODO_WebView2_Accessibility: xamlFocusWaiter.Wait();
-
-                WaitForFocus("n/a");
+                Log.Comment("Click on x1");
+                using (var xamlFocusWaiter = new FocusAcquiredWaiter("TabStopButton1"))
+                {
+                    InputHelper.MoveMouse(x1, 10, 10);
+                    PointerInput.Press(PointerButtons.Primary);
+                    PointerInput.Release(PointerButtons.Primary);
+                    xamlFocusWaiter.Wait();
+                    Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
+                }
 
                 CompleteTestAndWaitForResult("Focus_MouseActivateTest");
             }
@@ -970,9 +871,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 ChooseTest("MultipleWebviews_FocusTest");
 
-                var anaheimFocusTextBox = new Edit(FindElement.ById("AnaheimFocusTextBox"));
-                TextBlock updateAnaheimFocusTextBlock = FindElement.ByName<TextBlock>("UpdateAnaheimFocusTextBlock");
-
                 Button x1 = new Button(FindElement.ById("TabStopButton1"));     // Xaml TabStop 1
                 Button x2 = new Button(FindElement.ById("TabStopButton2"));     // Xaml TabStop 2
                 UIObject webviewControl = new UIObject(FindElement.ById("MyWebView2"));
@@ -984,38 +882,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 Verify.IsTrue(x1.HasKeyboardFocus);
 
-                //
-                // NOTE: Comments marked with "TODO_WebView2_Accessibility" are validation that should be enabled once accessibility is hooked up.
-                //
-                // TODO_WebView2_Accessibility: using (var xamlFocusWaiter = new FocusAcquiredWaiter(UICondition.CreateFromId("MyWebView2")))
-                // Expected focused element will have suffix 'B' if it belong to the second webview control (MyWebView2B) otherwise it will have no suffix.
                 Log.Comment("Tab tabstop1 -> MyWebView2");
                 KeyboardHelper.PressKey(Key.Tab);
-                // TODO_WebView2_Accessibility: xamlFocusWaiter.Wait();
-
-                // Hover over UpdaetAnaheimFocusTextBlock to trigger update of TextBox with Anaheim focus state
                 WaitForFocus("w1");
-
-                // TODO_WebView2_Accessibility: Verify.IsTrue(webviewControl.HasKeyboardFocus);
 
                 Log.Comment("Tab to move to next element within first webview page");
                 KeyboardHelper.PressKey(Key.Tab);
-                Log.Comment("Tab MyWebView2 -> tabstop2");
-                KeyboardHelper.PressKey(Key.Tab);
-                Wait.ForIdle();
-                Verify.IsTrue(x2.HasKeyboardFocus);
 
-                // TODO_WebView2_Accessibility: Verify.IsTrue(webviewControl.HasKeyboardFocus);
-                // TODO_WebView2_Accessibility: using (var xamlFocusWaiter = new FocusAcquiredWaiter(UICondition.CreateFromId("x2")))
+                Log.Comment("Tab MyWebView2 -> tabstop2");
+                using (var xamlFocusWaiter = new FocusAcquiredWaiter("TabStopButton2"))
+                {
+                    KeyboardHelper.PressKey(Key.Tab);
+                    xamlFocusWaiter.Wait();
+                    Verify.IsTrue(x2.HasKeyboardFocus, "TabStopButton2 has keyboard focus");
+                }
+
                 Log.Comment("Tab tabstop2 -> MyWebView2B");
                 KeyboardHelper.PressKey(Key.Tab);
-                // TODO_WebView2_Accessibility xamlFocusWaiter.Wait();
+                WaitForFocus("w1B");
 
-                WaitForFocusOnSecondWebview("w1B");
-
-                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
-                Wait.ForIdle();
-                Verify.IsTrue(x2.HasKeyboardFocus);
+                using (var xamlFocusWaiter = new FocusAcquiredWaiter("TabStopButton2"))
+                {
+                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                    xamlFocusWaiter.Wait();
+                    Verify.IsTrue(x2.HasKeyboardFocus, "TabStopButton2 has keyboard focus");
+                }
 
                 CompleteTestAndWaitForResult("MultipleWebviews_FocusTest");
             }
@@ -1041,8 +932,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] // TODO: Investigate why LanguageTest is failing on latest WebView2 runtime
-        //[TestProperty("TestSuite", "B")]
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        [TestProperty("Ignore", "True")] // TODO: Investigate why LanguageTest is failing on latest WebView2 runtime
         public void MultipleWebviews_LanguageTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
@@ -1077,13 +969,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
-                var result = new Edit(FindElement.ById("TestResult"));
                 ChooseTest("CopyPasteTest");
 
                 var CopyPasteTextBox1 = new Edit(FindElement.ById("CopyPasteTextBox1"));
                 var CopyPasteTextBox2 = new Edit(FindElement.ById("CopyPasteTextBox2"));
 
                 // Copy text to SimpleInputPage's text box page.
+                Log.Comment("Copy and paste text to SimpleInputPage's text box page...");
                 CopyPasteTextBox1.SetFocus();
                 DoSelectAllByKeyboard();
                 CopySelected();
@@ -1094,6 +986,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 using (var clearClipboardWaiter = new ValueChangedEventWaiter(CopyPasteTextBox2, "Clear"))
                 {
                     // "Clear" clipboard by copying text between TextBoxes on Xaml page.
+                    Log.Comment("Clear clipboard by copying text between TextBoxes on Xaml page...");
                     CopyPasteTextBox1.SetValue("Clear");
                     CopyPasteTextBox1.SetFocus();
                     Wait.ForIdle();
@@ -1112,6 +1005,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetWebViewElementFocus("w2", 2);
                 using (var pasteTestWaiter = new ValueChangedEventWaiter(CopyPasteTextBox2, "PasteTest"))
                 {
+                    Log.Comment("Selecting html content from step 1 and copying out of webview for verification...");
                     DoSelectAllByKeyboard();
                     CopySelected();
                     CopyPasteTextBox2.SetFocus();
@@ -1124,6 +1018,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetWebViewElementFocus("w2", 2);
                 using (var copyTestWaiter = new ValueChangedEventWaiter(CopyPasteTextBox1, "CopyTest"))
                 {
+                    Log.Comment("Inject new text into html textbox and copy out to verify copy from webview...");
                     TextInput.SendText("CopyTest");
                     DoSelectAllByKeyboard();
                     CopySelected();
@@ -1155,10 +1050,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Result should be "Hello 123 World" via:
                 // Write Hello Wor after navigating to textbox in webview.
                 Button x1 = new Button(FindElement.ById("TabStopButton1")); // Xaml TabStop 1
-                Log.Comment("Set focus on x1 and verify it has keyboard focus...");
                 x1.SetFocus();
                 Wait.ForIdle();
-                Verify.IsTrue(x1.HasKeyboardFocus);
+                Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
 
                 Log.Comment("Tab to w1...");
                 KeyboardHelper.PressKey(Key.Tab);
@@ -1189,13 +1083,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 TextInput.SendText("m");
 
                 // Copy out to PasteBox1 for verification.
-                Log.Comment("Select All by keyboard...");
                 DoSelectAllByKeyboard();
-                Log.Comment("Copy selected...");
                 CopySelected();
-                Log.Comment("Move focus to CopyPasteTextBox2...");
                 CopyPasteTextBox2.SetFocus();
-                Log.Comment("Paste clipboard...");
                 PasteClipboard();
 
                 string expectedText = "Hello 123 Worm";
@@ -1220,17 +1110,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
-                var result = new Edit(FindElement.ById("TestResult"));
-                Button x1 = new Button(FindElement.ById("TabStopButton1")); // Xaml TabStop 1
                 ChooseTest("WebMessageReceivedTest");
 
                 // Tab to button
+                Button x1 = new Button(FindElement.ById("TabStopButton1")); // Xaml TabStop 1
                 x1.SetFocus();
                 Wait.ForIdle();
-                Verify.IsTrue(x1.HasKeyboardFocus);
+                Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
                 KeyboardHelper.PressKey(Key.Tab);
                 KeyboardHelper.PressKey(Key.Tab);
                 WaitForFocus("b1");
+
                 // Trigger WebMessage from button press.
                 KeyboardHelper.PressKey(Key.Enter);
 
@@ -1251,25 +1141,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
-                var webview = FindElement.ById("MyWebView2");
-                Verify.IsNotNull(webview, "Webview control not found");
-                var result = new Edit(FindElement.ById("TestResult"));
-                Button x1 = new Button(FindElement.ById("TabStopButton1")); // Xaml TabStop 1
                 ChooseTest("MouseCaptureTest");
 
                 var CopyPasteTextBox2 = new Edit(FindElement.ById("CopyPasteTextBox2"));
-                UIObject webviewControl = new UIObject(FindElement.ById("MyWebView2"));
-                Rectangle bounds = webviewControl.BoundingRectangle;
+                Rectangle bounds = FindElement.ById("MyWebView2").BoundingRectangle;
                 // Offsets map pointer to the start of the textbox
                 const int w2_offsetX = 30;
                 const int w2_offsetY = 60;
 
                 // Inject text into text box.
+                Button x1 = new Button(FindElement.ById("TabStopButton1")); // Xaml TabStop 1
                 x1.SetFocus();
                 Wait.ForIdle();
-                Verify.IsTrue(x1.HasKeyboardFocus);
+                Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
                 KeyboardHelper.PressKey(Key.Tab);
                 WaitForFocus("w1");
+
                 TextInput.SendText("MouseCaptureResult");
 
                 // Select text with mouse left-click, drag to outside of wv2, then release
@@ -1403,8 +1290,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // [TestMethod] // TODO: Investigate why this test is not completing on 19H1
+        [TestMethod]
         [TestProperty("TestSuite", "B")]
+        [TestProperty("Ignore", "True")] // TODO: Investigate why this test is not completing on 19H1
         public void NavigationStartingTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
@@ -1417,6 +1305,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 ChooseTest("NavigationStartingTest");
                 CompleteTestAndWaitForResult("NavigationStartingTest");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void NavigationStartingInvalidTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("NavigationStartingInvalidTest");
+                CompleteTestAndWaitForResult("NavigationStartingInvalidTest");
             }
         }
 
@@ -1966,7 +1865,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // Navigates popup to a page
                 CompleteTestAndWaitForResult("WindowlessPopupTest");
-                Wait.ForIdle();
 
                 // Click button in webview to verify interaction works
                 var webview = FindElement.ById("popWebView2");
@@ -2113,7 +2011,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] // Test fails because .NET UWP doesn't support Object -> VARIANT marshalling.
+        [TestMethod] // Test fails because .NET UWP doesn't support Object -> VARIANT marshalling.
         [TestProperty("TestSuite", "D")]
         [TestProperty("Ignore", "True")] // 32510465
         public void AddHostObjectToScriptTest()
@@ -2176,6 +2074,78 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
 
                 Verify.AreEqual(count, 1);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void OffTreeWebViewInputTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                // Remove the existing webview that was already added to the xaml tree
+                ChooseTest("OffTreeWebViewInputTest", false /* waitForLoadCompleted */);
+
+                // Create a new webview, and call EnsureCoreWebView2Async() on it without adding it to the tree.
+                // Then, add it to the tree so we can see it, and navigate
+                CompleteTestAndWaitForResult("OffTreeWebViewInputTest");
+                WaitForLoadCompleted();
+
+                // Clear the cache so we can find the new webview
+                ElementCache.Clear();
+                var webview = FindElement.ById("MyWebView2");
+
+                // Click in the webview, to ensure we can interact with it, and its HWNDs are parented correctly
+                Rectangle bounds = webview.BoundingRectangle;
+                Log.Comment("Bounds = X:{0}, Y:{1}, Width:{2}, Height:{3}", bounds.X, bounds.Y, bounds.Width, bounds.Height);
+                // TODO_WebView2Input - Task 30555367 - Stack Overflow in WebView2 pointer tests when (MUXC) test infra calls WV2.GetClickablePoint()
+                //                      Workaround to avoid any calls to WebView2.GetClickablePoint
+                /*
+                var point = webview.GetClickablePoint();
+                Log.Comment("ClickablePoint = X:{0}, Y:{1}", point.X, point.Y);
+                // Move mouse to top left coordinate (location of web button) relative from the center of webview
+                InputHelper.MoveMouse(webview,
+                    -bounds.Width/2 + 20, -bounds.Height/2 + 20);
+                */
+                var point = new Point(bounds.X + 20, bounds.Y + 20);
+                Log.Comment("Move mouse to ({0}, {1})", bounds.X + 20, bounds.Y + 20);
+                PointerInput.Move(point);
+
+                PointerInput.Press(PointerButtons.Primary);
+                PointerInput.Release(PointerButtons.Primary);
+                Wait.ForIdle();
+
+                WaitForWebMessageResult("OffTreeWebViewInputTest");
+            }
+        }
+        
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        [TestProperty("Ignore", "True")] // Passes locally, test can be run manually
+        public void HtmlDropdownTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("HtmlDropdownTest");
+
+                // Click on the select (dropdown) element, which covers the center of the WebView2
+                var webview = FindElement.ById("MyWebView2");
+                Rectangle bounds = webview.BoundingRectangle;
+                var point = new Point(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2);
+                Log.Comment("Move mouse to ({0}, {1})", point.X, point.Y);
+                PointerInput.Move(point);
+                PointerInput.Press(PointerButtons.Primary);
+                PointerInput.Release(PointerButtons.Primary);
+
+                var newPoint = new Point(point.X, point.Y + 110);
+                Log.Comment("Move mouse to another dropdown option");
+                PointerInput.Move(newPoint);
+                Log.Comment("Click other option");
+                PointerInput.Press(PointerButtons.Primary);
+                PointerInput.Release(PointerButtons.Primary);
+
+                // On app side, ensure the right option was selected
+                CompleteTestAndWaitForResult("HtmlDropdownTest");
             }
         }
 
@@ -2261,7 +2231,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToCoreObjectsWebView2" }))
             {
                 ChooseTest("BasicCoreObjectCreationAndDestructionTest", false /* waitForLoadCompleted */);
-                Wait.ForIdle();
 
                 Button resetCounts_Button = new Button(FindElement.ById("ResetCounts_Button"));
                 resetCounts_Button.Invoke();
@@ -2668,7 +2637,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToCoreObjectsWebView2" }))
             {
                 ChooseTest("ConcurrentCreationRequestsTest", false /* waitForLoadCompleted */);
-                Wait.ForIdle();
 
                 var coreWebView2InitializedCount = new Edit(FindElement.ById("CoreWebView2InitializedCount"));
                 var ensureCoreWebView2CompletionCount = new Edit(FindElement.ById("EnsureCoreWebView2CompletionCount")); 
@@ -2826,7 +2794,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToCoreObjectsWebView2" }))
             {
                 ChooseTest("EdgeProcessFailedTest", false /* waitForLoadCompleted */);
-                Wait.ForIdle();
 
                 var coreWebView2InitializedCount = new Edit(FindElement.ById("CoreWebView2InitializedCount"));
                 var ensureCoreWebView2CompletionCount = new Edit(FindElement.ById("EnsureCoreWebView2CompletionCount")); 
@@ -2988,7 +2955,7 @@ namespace WebView2Temporary
 
         static void CheckWindowPixel(IntPtr targetHwnd, string testName)
         {
-            Log.Comment("Checking hwnd 0x{0:x6} for rendering.");
+            Log.Comment("Checking hwnd 0x{0:x6} for rendering.", targetHwnd);
 
             var targetRect = new NativeMethods.RECT();
             _ = NativeMethods.GetWindowRect(targetHwnd, ref targetRect);

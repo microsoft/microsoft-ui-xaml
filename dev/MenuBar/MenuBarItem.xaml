@@ -16,6 +16,7 @@
         <Setter Property="IsTabStop" Value="True"/>
         <Setter Property="ExitDisplayModeOnAccessKeyInvoked" Value="False"/>
         <Setter Property="UseSystemFocusVisuals" Value="True"/>
+        <Setter Property="FocusVisualMargin" Value="-3"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:MenuBarItem">
@@ -69,6 +70,8 @@
 
                         <Border x:Name="Background"
                             Background="{TemplateBinding Background}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             BorderBrush="{TemplateBinding BorderBrush}"/>
 

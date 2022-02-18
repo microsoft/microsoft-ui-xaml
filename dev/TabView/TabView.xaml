@@ -425,7 +425,8 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:TabViewItem">
                     <Grid x:Name="LayoutRoot"
-                            Padding="{TemplateBinding Padding}">
+                            Padding="{TemplateBinding Padding}"
+                            UseLayoutRounding="False">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition x:Name="LeftColumn" Width="Auto"/>
                             <ColumnDefinition Width="*" />

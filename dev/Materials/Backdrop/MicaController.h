@@ -7,7 +7,7 @@
 
 struct MicaController : winrt::implementation::MicaControllerT<MicaController>, SystemBackdropComponentInternal::ISystemBackdropController
 {
-    MicaController() = default;
+    MicaController();
     ~MicaController();
 
     bool SetTarget(winrt::Windows::UI::Xaml::Window const& xamlWindow);

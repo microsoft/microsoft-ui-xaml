@@ -1,15 +1,8 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 variables:
   minimumExpectedTestsExecutedCount: 35  # Sanity check for minimum expected tests to be reported
+  Packaging.EnableSBOMSigning: true
 jobs:
-- job: ComponentDetection
-  pool:
-    vmImage: 'windows-2019'
-
-  steps:
-  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-    displayName: 'Component Detection'
-
 - job: Build
   # Skip the build job if we are reusing the output of a previous build.
   # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
@@ -44,6 +37,7 @@ jobs:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
+    sbomdir: $(Build.ArtifactStagingDirectory)\sbom\$(buildConfiguration)\$(buildPlatform)
   steps:
 
   # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
@@ -67,6 +61,13 @@ jobs:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
     parameters:
       signOutput: true
+
+  - script: |
+     mkdir $(sbomdir)
+  - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+    displayName: 'Generate SBOM manifest'
+    inputs:
+      BuildDropPath: $(sbomdir)
 
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
