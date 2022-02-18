@@ -73,12 +73,12 @@ jobs:
   #     signOutput: true
 
 
-  # - template: AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml
-
   - task: PkgESSetupBuild@12
     displayName: Package ES - Setup Build
     inputs:
       disableOutputRedirect: true
+
+  - template: AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml
 
   - task: NuGetAuthenticate@0
 
@@ -184,13 +184,13 @@ jobs:
             - toolName: CheckCFlags
               enable: true
             - toolName: CFGCheck
-              enable: true
+              enable: false
             - toolName: Policheck
               enable: false
             - toolName: CredScan
               enable: false
             - toolName: XFGCheck
-              enable: true
+              enable: false
 
   # - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
