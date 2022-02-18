@@ -172,6 +172,7 @@ jobs:
       fileNewBugs: false
       errOnBugs: true
       scanAll: true
+      taskLogVerbosity: Diagnostic
       areaPath: 'OS\WDX\DXP\WinDev\Controls'
       iterationPath: OS
       secCompConfigFromTask: |
