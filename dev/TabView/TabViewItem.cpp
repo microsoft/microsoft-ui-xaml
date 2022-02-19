@@ -168,7 +168,10 @@ void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sen
 
 void TabViewItem::OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
-    UpdateForeground();
+    m_dispatcherHelper.RunAsync([strongThis = get_strong()]()
+    {
+        strongThis->UpdateTabGeometry();
+    });
 }
 
 void TabViewItem::UpdateForeground()
