@@ -80,8 +80,8 @@
                             Foreground="{TemplateBinding Foreground}"
                             FontWeight="{TemplateBinding FontWeight}"
                             TextLineBounds="Tight"
+                            TextAlignment="Center"
                             VerticalAlignment="Center"
-                            HorizontalAlignment="Center"
                             IsTextScaleFactorEnabled="False"
                             Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ActualInitials}" />
 
