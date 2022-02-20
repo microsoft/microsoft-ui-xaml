@@ -138,7 +138,10 @@ void TabViewItem::OnLoaded(const winrt::IInspectable& sender, const winrt::Route
 
 void TabViewItem::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args)
 {
-    UpdateTabGeometry();
+    m_dispatcherHelper.RunAsync([strongThis = get_strong()]()
+    {
+        strongThis->UpdateTabGeometry();
+    });
 }
 
 void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
