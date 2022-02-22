@@ -1816,6 +1816,16 @@ void WebView2::CheckAndUpdateWebViewPosition()
         (m_webViewScaledSize.Y) });
 }
 
+winrt::Rect WebView2::GetBoundingRectangle()
+{
+    return winrt::Rect({
+        (m_webViewScaledPosition.X),
+        (m_webViewScaledPosition.Y),
+        (m_webViewScaledSize.X),
+        (m_webViewScaledSize.Y) });
+    }
+}
+
 void WebView2::SetCoreWebViewAndVisualSize(const float width, const float height)
 {
 #ifdef WINUI3
