@@ -34,7 +34,7 @@
             <StaticResource x:Key="TreeViewItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TreeViewItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
 
-            <StaticResource x:Key="TreeViewItemBorderBrushMultiSelectSelected" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TreeViewItemMultiSelectBorderBrushSelected" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TreeViewItemCheckBoxBackgroundSelected" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TreeViewItemCheckBoxBorderSelected" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TreeViewItemCheckGlyphSelected" ResourceKey="TextFillColorSecondaryBrush" />
@@ -80,7 +80,7 @@
             <StaticResource x:Key="TreeViewItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TreeViewItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
 
-            <StaticResource x:Key="TreeViewItemBorderBrushMultiSelectSelected" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TreeViewItemMultiSelectBorderBrushSelected" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TreeViewItemCheckBoxBackgroundSelected" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TreeViewItemCheckBoxBorderSelected" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TreeViewItemCheckGlyphSelected" ResourceKey="TextFillColorSecondaryBrush" />
@@ -126,7 +126,7 @@
             <StaticResource x:Key="TreeViewItemBorderBrushSelectedPressed" ResourceKey="SystemColorButtonFaceColorBrush" />
             <StaticResource x:Key="TreeViewItemBorderBrushSelectedDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
 
-            <StaticResource x:Key="TreeViewItemBorderBrushMultiSelectSelected" ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="TreeViewItemMultiSelectBorderBrushSelected" ResourceKey="SystemColorButtonTextColorBrush" />
             <StaticResource x:Key="TreeViewItemCheckBoxBackgroundSelected" ResourceKey="SystemColorWindowColorBrush" />
             <StaticResource x:Key="TreeViewItemCheckBoxBorderSelected" ResourceKey="SystemColorButtonTextColorBrush" />
             <StaticResource x:Key="TreeViewItemCheckGlyphSelected" ResourceKey="SystemColorWindowTextColorBrush" />
