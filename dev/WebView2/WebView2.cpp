@@ -1792,7 +1792,8 @@ void WebView2::CheckAndUpdateWebViewPosition()
         return;
     }
 
-    // Check if the position of the WebView within the window has changed
+    // Check if the position of the WebView2 within the window has changed
+    bool changed = false;
     auto transform = TransformToVisual(nullptr);
     auto topLeft = transform.TransformPoint(winrt::Point(0, 0));
 
@@ -1803,17 +1804,27 @@ void WebView2::CheckAndUpdateWebViewPosition()
     {
         m_webViewScaledPosition.X = scaledTopLeftX;
         m_webViewScaledPosition.Y = scaledTopLeftY;
+        changed = true;
     }
 
-    m_webViewScaledSize.X = ceil(static_cast<float>(ActualWidth()) * m_rasterizationScale);
-    m_webViewScaledSize.Y = ceil(static_cast<float>(ActualHeight()) * m_rasterizationScale);
+    auto scaledSizeX = ceil(static_cast<float>(ActualWidth()) * m_rasterizationScale);
+    auto scaledSizeY = ceil(static_cast<float>(ActualHeight()) * m_rasterizationScale);
+    if (scaledSizeX != m_webViewScaledSize.X || scaledSizeY != m_webViewScaledSize.Y)
+    {
+        m_webViewScaledSize.X = scaledSizeX;
+        m_webViewScaledSize.Y = scaledSizeY;
+        changed = true;
+    }
 
-    // We create the Bounds using X, Y, width, and height
-    m_coreWebViewController.Bounds({
-        (m_webViewScaledPosition.X),
-        (m_webViewScaledPosition.Y),
-        (m_webViewScaledSize.X),
-        (m_webViewScaledSize.Y) });
+    if (changed)
+    {
+        // We create the Bounds using X, Y, width, and height
+        m_coreWebViewController.Bounds({
+            (m_webViewScaledPosition.X),
+            (m_webViewScaledPosition.Y),
+            (m_webViewScaledSize.X),
+            (m_webViewScaledSize.Y) });
+    }
 }
 
 winrt::Rect WebView2::GetBoundingRectangle()
@@ -1823,7 +1834,6 @@ winrt::Rect WebView2::GetBoundingRectangle()
         (m_webViewScaledPosition.Y),
         (m_webViewScaledSize.X),
         (m_webViewScaledSize.Y) });
-    }
 }
 
 void WebView2::SetCoreWebViewAndVisualSize(const float width, const float height)
