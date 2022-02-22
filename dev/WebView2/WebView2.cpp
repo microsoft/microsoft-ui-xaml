@@ -1505,6 +1505,38 @@ void WebView2::TryCompleteInitialization()
             [this](auto&&, auto&&) { UpdateDefaultBackgroundColor(); });
     }
 
+    AddChildPanel();
+    CreateAndSetVisual();
+
+    // If we were recreating the webview after a core process failure, indicate that we have now recovered
+    m_isCoreFailure_BrowserExited_State = false;
+}
+
+void WebView2::AddChildPanel()
+{
+    auto panelContent = winrt::Grid();
+    panelContent.Background(winrt::SolidColorBrush(winrt::Colors::Transparent()));
+    panelContent.Height(this->ActualHeight());
+    panelContent.Width(this->ActualWidth());
+    Content(panelContent);
+}
+
+void WebView2::ResizeChildPanel()
+{
+    auto content = this->Content();
+    if (content)
+    {
+        auto panelContent = content.as<winrt::Grid>();
+        if (panelContent)
+        {
+            panelContent.Height(this->ActualHeight());
+            panelContent.Width(this->ActualWidth());
+        }
+    }
+}
+
+void WebView2::CreateAndSetVisual()
+{
 #ifdef WINUI3
     if (!m_systemVisualBridge)
     {
@@ -1534,10 +1566,6 @@ void WebView2::TryCompleteInitialization()
     auto coreWebView2CompositionControllerInterop = m_coreWebViewCompositionController.as<ICoreWebView2CompositionControllerInterop>();
     winrt::check_hresult(coreWebView2CompositionControllerInterop->put_RootVisualTarget(m_visual.as<::IUnknown>().get()));
 #endif
-
-
-    // If we were recreating the webview after a core process failure, indicate that we have now recovered
-    m_isCoreFailure_BrowserExited_State = false;
 }
 
 winrt::IAsyncOperation<winrt::hstring> WebView2::ExecuteScriptAsync(winrt::hstring javascriptCode)
@@ -1730,6 +1758,7 @@ void WebView2::HandleXamlRootChanged()
 void WebView2::HandleSizeChanged(const winrt::IInspectable& /*sender*/, const winrt::SizeChangedEventArgs& args)
 {
     SetCoreWebViewAndVisualSize(args.NewSize().Width, args.NewSize().Height);
+    ResizeChildPanel();
 }
 
 void WebView2::HandleRendered(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)

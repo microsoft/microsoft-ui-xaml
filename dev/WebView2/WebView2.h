@@ -155,6 +155,9 @@ private:
     void XamlRootChangedHelper(bool forceUpdate);
     void TryCompleteInitialization();
     void DisconnectFromRootVisualTarget();
+    void CreateAndSetVisual();
+    void AddChildPanel();
+    void ResizeChildPanel();
 
     void CheckAndUpdateWebViewPosition();
     void CheckAndUpdateWindowPosition();
