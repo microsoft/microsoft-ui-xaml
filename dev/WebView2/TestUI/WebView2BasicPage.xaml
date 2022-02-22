@@ -175,7 +175,7 @@
                             </ScrollViewer>
                         </StackPanel>
                         <StackPanel Orientation="Vertical">
-                            <TextBlock Text="RTB:" FontWeight="Bold" FontSize="11" Margin="0,2,0,2"/>
+                            <TextBlock Text="Focus:" FontWeight="Bold" FontSize="11" Margin="0,2,0,2"/>
                             <Border Width="400" Height="320" BorderBrush="Blue" BorderThickness="1" HorizontalAlignment="Left" Visibility="Visible">
                                 <ScrollViewer x:Name="focusScrollViewer" VerticalScrollBarVisibility="Visible">
                                     <TextBlock x:Name="focusLog" ></TextBlock>

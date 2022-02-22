@@ -880,7 +880,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Focus on tabstop1");
                 x1.SetFocus();
                 Wait.ForIdle();
-                Verify.IsTrue(x1.HasKeyboardFocus);
+                Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
 
                 Log.Comment("Tab tabstop1 -> MyWebView2");
                 KeyboardHelper.PressKey(Key.Tab);
@@ -1167,13 +1167,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 PointerInput.Press(PointerButtons.Primary);
                 PointerInput.Move(outsidePoint);
                 PointerInput.Release(PointerButtons.Primary);
-                Wait.ForIdle();
 
                 // Move mouse back across text
                 // If the WebView did not correctly handle captured mouse input then the text will be deselected
                 // due to the WebView still thinking that the mouse's left-button is pressed.
                 PointerInput.Move(startPoint);
-                Wait.ForIdle();
 
                 using (var pasteTestWaiter = new ValueChangedEventWaiter(CopyPasteTextBox2, "MouseCaptureResult"))
                 {
@@ -1338,7 +1336,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Ignore", "True")] // Task 31708332: WebView2 Touch Tests still failing on Helix
-        [TestProperty("Ignore", "True")]  //Task 31704068: Unreliable tests: WebView2 BasicTapTouchTest, BasicFlingTouchTest, BasicLongPressTouchTest
         [TestProperty("TestSuite", "B")]
         public void BasicTapTouchTest()
         {
@@ -1366,7 +1363,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Ignore", "True")] // Task 31708332: WebView2 Touch Tests still failing on Helix
-        [TestProperty("Ignore", "True")]  //Task 31704068: Unreliable tests: WebView2 BasicTapTouchTest, BasicFlingTouchTest, BasicLongPressTouchTest
         [TestProperty("TestSuite", "B")]
         public void BasicFlingTouchTest()
         {
@@ -1553,7 +1549,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 CompleteTestAndWaitForResult("ReparentElementTest");
 
                 // Ensure that the moved WebView is still visible
-                Log.Comment("ReparentElementTest Test App Result ignored due to RTB issues with the test.  Verifying from the test runner.");
                 WebView2Temporary.WebView2RenderingVerifier.VerifyInstances("ReparentElementTest");
             }
         }
@@ -2013,7 +2008,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod] // Test fails because .NET UWP doesn't support Object -> VARIANT marshalling.
         [TestProperty("TestSuite", "D")]
-        [TestProperty("Ignore", "True")] // 32510465
+        [TestProperty("Ignore", "True")]
         public void AddHostObjectToScriptTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
