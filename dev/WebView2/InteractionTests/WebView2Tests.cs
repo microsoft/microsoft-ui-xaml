@@ -2157,6 +2157,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ElementCache.Clear();
                 var webview = FindElement.ById("MyWebView2");
                 Verify.IsTrue(webview.IsOffscreen == false);
+
+                // Click in the webview to ensure we can interact with it
+                Rectangle bounds = webview.BoundingRectangle;
+                Log.Comment("Bounds = X:{0}, Y:{1}, Width:{2}, Height:{3}", bounds.X, bounds.Y, bounds.Width, bounds.Height);
+                var point = new Point(bounds.X + 20, bounds.Y + 20);
+                Log.Comment("Move mouse to ({0}, {1})", bounds.X + 20, bounds.Y + 20);
+                PointerInput.Move(point);
+
+                PointerInput.Press(PointerButtons.Primary);
+                PointerInput.Release(PointerButtons.Primary);
+                Wait.ForIdle();
+
+                WaitForWebMessageResult("HiddenThenVisibleTest");
             }
         }
 
@@ -2173,6 +2186,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ElementCache.Clear();
                 var webview = FindElement.ById("MyWebView2");
                 Verify.IsTrue(webview.IsOffscreen == false);
+
+                // Click in the webview to ensure we can interact with it
+                Rectangle bounds = webview.BoundingRectangle;
+                Log.Comment("Bounds = X:{0}, Y:{1}, Width:{2}, Height:{3}", bounds.X, bounds.Y, bounds.Width, bounds.Height);
+                var point = new Point(bounds.X + 20, bounds.Y + 20);
+                Log.Comment("Move mouse to ({0}, {1})", bounds.X + 20, bounds.Y + 20);
+                PointerInput.Move(point);
+
+                PointerInput.Press(PointerButtons.Primary);
+                PointerInput.Release(PointerButtons.Primary);
+                Wait.ForIdle();
+
+                WaitForWebMessageResult("ParentHiddenThenVisibleTest");
             }
         }
 

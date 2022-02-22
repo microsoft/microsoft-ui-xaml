@@ -262,8 +262,8 @@ namespace MUXControlsTestApp
             { TestList.NonAsciiUriTest, 7 },
             { TestList.OffTreeWebViewInputTest, 1 },
             { TestList.HtmlDropdownTest, 5 },
-            { TestList.HiddenThenVisibleTest, 0 },
-            { TestList.ParentHiddenThenVisibleTest, 0 },
+            { TestList.HiddenThenVisibleTest, 1 },
+            { TestList.ParentHiddenThenVisibleTest, 1 },
         };
 
         readonly string[] TestPageNames =
@@ -1179,6 +1179,11 @@ namespace MUXControlsTestApp
                         break;
 
                     case TestList.OffTreeWebViewInputTest:
+                        expectedStringResult = "Left mouse button clicked.";
+                        break;
+
+                    case TestList.HiddenThenVisibleTest:
+                    case TestList.ParentHiddenThenVisibleTest:
                         expectedStringResult = "Left mouse button clicked.";
                         break;
 
