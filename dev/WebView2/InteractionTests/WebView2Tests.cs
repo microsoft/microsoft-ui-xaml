@@ -2144,10 +2144,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void HiddenThenVisibleTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("HiddenThenVisibleTest");
+                CompleteTestAndWaitForResult("HiddenThenVisibleTest");
+
+                // Clear the cache so we can find the new webview
+                ElementCache.Clear();
+                var webview = FindElement.ById("MyWebView2");
+                Verify.IsTrue(webview.IsOffscreen == false);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void ParentHiddenThenVisibleTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("ParentHiddenThenVisibleTest");
+                CompleteTestAndWaitForResult("ParentHiddenThenVisibleTest");
+
+                // Clear the cache so we can find the new webview
+                ElementCache.Clear();
+                var webview = FindElement.ById("MyWebView2");
+                Verify.IsTrue(webview.IsOffscreen == false);
+            }
+        }
+
         private static void BeginSubTest(string testName, string testDescription)
         {
             Log.Comment(Environment.NewLine + testName + ": " + testDescription);
-            
+
             Log.Comment("Resetting event and exception counts...");
             Button resetCounts_Button = new Button(FindElement.ById("ResetCounts_Button"));
             resetCounts_Button.Invoke();
