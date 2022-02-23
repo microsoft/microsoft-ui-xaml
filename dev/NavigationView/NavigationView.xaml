@@ -362,7 +362,7 @@
                                                 <Flyout.FlyoutPresenterStyle>
                                                     <Style TargetType="FlyoutPresenter">
                                                         <Setter Property="Padding" Value="{ThemeResource TopNavigationViewOverflowMenuPadding}" />
-                                                        <!-- Set negative top margin to make the flyout align exactly with the button -->
+                                                        
                                                         <Setter Property="Margin" Value="0,0,0,0" />
                                                         <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
                                                         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
