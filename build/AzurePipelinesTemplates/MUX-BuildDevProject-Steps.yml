@@ -39,7 +39,7 @@ steps:
   # Copies output from PREfast SDL Native Rules task to expected location for consumption by PkgESSecComp
   - task: CopyFiles@1
     displayName: 'Copy nativecodeanalysis xml files'
-    condition: eq($(buildConfiguration), 'Debug')
+    condition: eq(variables['buildConfiguration'], 'Debug')
     inputs:
       SourceFolder: '$(buildOutputDir)'
       Contents: |
@@ -48,7 +48,7 @@ steps:
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish artifact: nativecodeanalysis'
-    condition: eq($(buildConfiguration), 'Debug')
+    condition: eq(variables['buildConfiguration'], 'Debug')
     inputs:
       PathtoPublish: '$(Agent.BuildDirectory)\nativecodeanalysis'
       artifactName: nativecodeanalysis
