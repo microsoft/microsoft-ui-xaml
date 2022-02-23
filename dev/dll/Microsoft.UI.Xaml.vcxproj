@@ -22,9 +22,9 @@
     <ClCompile>
       <AdditionalOptions>/ZH:SHA_256 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
-    <ResourceCompile>
+    <!-- <ResourceCompile>
       <AdditionalOptions>/ZH:SHA_256 %(AdditionalOptions)</AdditionalOptions>
-    </ResourceCompile>
+    </ResourceCompile> -->
   </ItemDefinitionGroup>
   <ItemGroup>
     <Midl Include="..\..\idl\Microsoft.UI.Xaml.idl" />
