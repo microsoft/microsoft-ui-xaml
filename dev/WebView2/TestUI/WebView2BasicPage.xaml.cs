@@ -541,7 +541,7 @@ namespace MUXControlsTestApp
                     {
                         AddWebViewControl("MyWebView2B");
                         AddWebViewControl("MyWebView2C");
-                        WebView2Common.LoadWebPage(MyWebView2, TestPageNames[0]);
+                        WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[test]]);
                     }
                     break;
                 case TestList.MultipleWebviews_FocusTest:
@@ -707,7 +707,7 @@ namespace MUXControlsTestApp
                         };
 
                         // Add a new, collapsed WebView2 into the tree
-                        var uri = WebView2Common.GetTestPageUri("SimplePage.html");
+                        var uri = WebView2Common.GetTestPageUri(TestPageNames[TestInfoDictionary[test]]);
                         var newWebView2 = new WebView2() {
                             Name = "MyWebView2",
                             Margin = new Thickness(8, 8, 8, 8),
@@ -737,7 +737,7 @@ namespace MUXControlsTestApp
                         };
 
                         // Add a new WebView2 into the tree
-                        var uri = WebView2Common.GetTestPageUri("SimplePage.html");
+                        var uri = WebView2Common.GetTestPageUri(TestPageNames[TestInfoDictionary[test]]);
                         var newWebView2 = new WebView2() {
                             Name = "MyWebView2",
                             Margin = new Thickness(8, 8, 8, 8),
