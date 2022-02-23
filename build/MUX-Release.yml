@@ -172,13 +172,13 @@ jobs:
             - toolName: CheckCFlags
               enable: true
             - toolName: CFGCheck
-              enable: false
+              enable: true
             - toolName: Policheck
               enable: true
             - toolName: CredScan
               enable: true
             - toolName: XFGCheck
-              enable: true
+              enable: false
 
 # # Create Nuget Package
 # - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
