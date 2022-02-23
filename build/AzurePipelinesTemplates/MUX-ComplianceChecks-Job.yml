@@ -15,13 +15,13 @@ jobs:
     artifactsDir: $(Build.SourcesDirectory)\Artifacts
 
   steps:
-  
+
   - task: PkgESSetupBuild@12
     displayName: Package ES - Setup Build
     inputs:
       disableOutputRedirect: true
 
-  - template: AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml
+  - template: MUX-InstallNuget-Steps.yml
 
   - task: NuGetAuthenticate@0
 
