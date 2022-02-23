@@ -2,196 +2,86 @@ name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 variables:
   minimumExpectedTestsExecutedCount: 35  # Sanity check for minimum expected tests to be reported
 jobs:
-# - job: Build
-#   # Skip the build job if we are reusing the output of a previous build.
-#   # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
-#   condition:
-#     eq(variables['useBuildOutputFromBuildId'],'')
-#   pool: 
-#     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-#       name: WinDevPoolOSS-L
-#     ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-#       name: WinDevPool-L
-#     demands: ImageOverride -equals WinDevVS16-9
-#   timeoutInMinutes: 120
-#   strategy:
-#     maxParallel: 10
-#     matrix:
-#       Debug_x86:
-#         buildPlatform: 'x86'
-#         buildConfiguration: 'Debug'
-#       # Release_x86:
-#       #   buildPlatform: 'x86'
-#       #   buildConfiguration: 'Release'
-#       #   PGOBuildMode: 'Optimize'
-#       # Release_x64:
-#       #   buildPlatform: 'x64'
-#       #   buildConfiguration: 'Release'
-#       #   PGOBuildMode: 'Optimize'
-#       # Release_Arm:
-#       #   buildPlatform: 'arm'
-#       #   buildConfiguration: 'Release'
-#       # Release_Arm64:
-#       #   buildPlatform: 'arm64'
-#       #   buildConfiguration: 'Release'
-
-#   variables:
-#     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
-#     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
-#     publishDir : $(Build.ArtifactStagingDirectory)
-#     artifactsDir: $(Build.SourcesDirectory)\Artifacts
-#   steps:
-
-#   # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
-#   - task: DownloadPackage@1
-#     displayName: 'Download Microsoft.Telemetry.Inbox.Native'
-#     inputs:
-#       feed: '/3415933f-ac0d-4766-8c0a-3f4c247c25f5'                         # 0
-#       view: 'ef61a1c1-003b-4a27-bde5-beec8301021b'                          # Release
-#       definition: '2fe60c09-c66f-4275-ae2d-f015c7170c72'                    # Microsoft.Telemetry.Inbox.Native
-#       version: '10.0.18362.1-190318-1202.19h1-release.amd64fre'             # latest version
-#       downloadPath: '$(System.DefaultWorkingDirectory)'                     # download and extract to repo root
-
-#   # Replace the stubbed MicrosoftTelemetry.h with the real one
-#   # Delete the existing stubbed MicrosoftTelemetry.h first, to ensure that if it is no longer at the expected path that the task, and build, fails
-#   - script: |
-#      del $(System.DefaultWorkingDirectory)\dev\telemetry\MicrosoftTelemetry.h
-#      move /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dev\telemetry\
-#     failOnStderr: true
-#     displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
-
-#   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
-#     parameters:
-#       signOutput: true
-
-#   # - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
-
-- job: Compliance
-  # dependsOn: Build
+- job: Build
+  # Skip the build job if we are reusing the output of a previous build.
+  # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
+  condition:
+    eq(variables['useBuildOutputFromBuildId'],'')
   pool: 
-    name: WinDevPool-L
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPoolOSS-L
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPool-L
     demands: ImageOverride -equals WinDevVS16-9
+  timeoutInMinutes: 120
+  strategy:
+    maxParallel: 10
+    matrix:
+      Debug_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Debug'
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+        PGOBuildMode: 'Optimize'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+        PGOBuildMode: 'Optimize'
+      Release_Arm:
+        buildPlatform: 'arm'
+        buildConfiguration: 'Release'
+      Release_Arm64:
+        buildPlatform: 'arm64'
+        buildConfiguration: 'Release'
 
   variables:
+    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+    buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
     artifactsDir: $(Build.SourcesDirectory)\Artifacts
   steps:
-  - task: PkgESSetupBuild@12
-    displayName: Package ES - Setup Build
+
+  # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
+  - task: DownloadPackage@1
+    displayName: 'Download Microsoft.Telemetry.Inbox.Native'
     inputs:
-      disableOutputRedirect: true
+      feed: '/3415933f-ac0d-4766-8c0a-3f4c247c25f5'                         # 0
+      view: 'ef61a1c1-003b-4a27-bde5-beec8301021b'                          # Release
+      definition: '2fe60c09-c66f-4275-ae2d-f015c7170c72'                    # Microsoft.Telemetry.Inbox.Native
+      version: '10.0.18362.1-190318-1202.19h1-release.amd64fre'             # latest version
+      downloadPath: '$(System.DefaultWorkingDirectory)'                     # download and extract to repo root
 
-  - template: AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml
+  # Replace the stubbed MicrosoftTelemetry.h with the real one
+  # Delete the existing stubbed MicrosoftTelemetry.h first, to ensure that if it is no longer at the expected path that the task, and build, fails
+  - script: |
+     del $(System.DefaultWorkingDirectory)\dev\telemetry\MicrosoftTelemetry.h
+     move /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dev\telemetry\
+    failOnStderr: true
+    displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
 
-  - task: NuGetAuthenticate@0
+  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+    parameters:
+      signOutput: true
 
-  - task: NodeTool@0
+  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
-  - task: DownloadBuildArtifacts@0 
-    inputs: 
-      buildType: specific
-      buildVersionToDownload: specific
-      project: $(System.TeamProjectId)
-      pipeline: 72016
-      buildId: 45211358
-      artifactName: cbs
-      downloadPath: '$(artifactsDir)'
+# Create Nuget Package
+- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+  parameters:
+    jobName: CreateNugetPackage
+    dependsOn: Build
+    signOutput: true
+    useReleaseTag: '$(MUXFinalRelease)'
+    prereleaseVersionTag: prerelease
 
-  - task: DownloadBuildArtifacts@0 
-    inputs: 
-      buildType: specific
-      buildVersionToDownload: specific
-      project: $(System.TeamProjectId)
-      pipeline: 72016
-      buildId: 45528860
-      artifactName: nativecodeanalysis
-      downloadPath: '$(artifactsDir)'
+- template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
+  parameters:
+    dependsOn: Build
 
-
-
-  # - task: DownloadBuildArtifacts@0 
-  #   inputs: 
-  #     artifactName: nativecodeanalysis
-  #     downloadPath: '$(artifactsDir)'
-
-  - task: CopyFiles@1
-    displayName: 'Copy nativecodeanalysis xml files to SDLNativeRulesDir'
-    inputs:
-      SourceFolder: '$(artifactsDir)\nativecodeanalysis'
-      Contents: |
-        **\*.nativecodeanalysis.xml
-      TargetFolder: '$(Agent.BuildDirectory)\_sdt\logs\SDLNativeRules'
-
-  - task: securedevelopmentteam.vss-secure-development-tools.build-task-prefast.SDLNativeRules@3
-    displayName: 'Run the PREfast SDL Native Rules for MSBuild'
-    inputs:
-      copyLogsOnly: true
-  
-
-
-
-  - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@2
-    displayName: 'Run PoliCheck'
-    inputs:
-      result: PoliCheck.xml
-      optionsFC: 1 # scan comments
-
-  - task: CopyFiles@1
-    inputs:
-      SourceFolder: '$(Agent.BuildDirectory)'
-      Contents: |
-        **\PoliCheck.xml
-      TargetFolder: $(Build.ArtifactStagingDirectory)
-
-  - task: PublishBuildArtifacts@1
-    inputs:
-      PathtoPublish: $(Build.ArtifactStagingDirectory)
-      artifactName: Policheck
-
-
-
-
-  - task: PkgESSecComp@10
-    displayName: 'Security and Compliance tasks'
-    inputs:
-      fileNewBugs: true
-      errOnBugs: true
-      scanAll: true
-      taskLogVerbosity: Diagnostic
-      areaPath: 'OS\WDX\DXP\WinDev\Controls'
-      iterationPath: OS
-      secCompConfigFromTask: |
-        # Overrides default build sources directory
-        sourceTargetOverrideAll: $(Build.SourcesDirectory)
-
-        # Overrides default build binaries directory when "Scan all" option is specified
-        binariesTargetOverrideAll: $(artifactsDir)\cbs
-
-        # Set the tools to false if they should not run in the build
-        tools:
-            - toolName: CheckCFlags
-              enable: true
-            - toolName: CFGCheck
-              enable: true
-            - toolName: Policheck
-              enable: true
-            - toolName: CredScan
-              enable: true
-            - toolName: XFGCheck
-              enable: false
-
-# # Create Nuget Package
-# - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
-#   parameters:
-#     jobName: CreateNugetPackage
-#     dependsOn: Build
-#     signOutput: true
-#     useReleaseTag: '$(MUXFinalRelease)'
-#     prereleaseVersionTag: prerelease
-
-# - template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
-#   parameters:
-#     dependsOn: Build
+- template: AzurePipelinesTemplates\MUX-ComplianceChecks-Job.yml
+  parameters:
+    dependsOn: CreateVPack
 
 # # Build solution that depends on nuget package
 # - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
