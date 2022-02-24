@@ -362,8 +362,6 @@
                                                 <Flyout.FlyoutPresenterStyle>
                                                     <Style TargetType="FlyoutPresenter">
                                                         <Setter Property="Padding" Value="{ThemeResource TopNavigationViewOverflowMenuPadding}" />
-                                                        
-                                                        <Setter Property="Margin" Value="0,0,0,0" />
                                                         <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
                                                         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
                                                         <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />

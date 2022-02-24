@@ -1218,9 +1218,9 @@
                     <Grid
                         x:Name="LayoutRoot"
                         Height="36"
-				  Margin="{StaticResource NavigationViewItemButtonMargin}"
-				  contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
-				  contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                        Margin="{StaticResource NavigationViewItemButtonMargin}"
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                         Background="{TemplateBinding Background}"
                         Control.IsTemplateFocusTarget="True">
                         <Grid.Resources>
