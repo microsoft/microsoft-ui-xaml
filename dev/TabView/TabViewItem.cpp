@@ -372,11 +372,13 @@ void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 {
     if (args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Mouse)
     {
+        auto pointerPoint = args.GetCurrentPoint(*this);
+
         m_isCheckingforMouseDrag = true;
+        m_lastMouseLeftButtonDownPosition = pointerPoint.Position();
 
         if (IsSelected())
         {
-            auto pointerPoint = args.GetCurrentPoint(*this);
             if (pointerPoint.Properties().IsLeftButtonPressed())
             {
                 auto isCtrlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
@@ -387,7 +389,6 @@ void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
                 }
             }
         }
-       
     }
 
     __super::OnPointerPressed(args);
@@ -406,7 +407,7 @@ void TabViewItem::OnPointerMoved(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerMoved(args);
 
-    if (m_isCheckingforMouseDrag)
+    if (m_isCheckingforMouseDrag && IsOutsideDragRectangle(args.GetCurrentPoint(*this).Position(), m_lastMouseLeftButtonDownPosition))
     {
         winrt::VisualStateManager::GoToState(*this, L"DragDropVisualVisible"sv, false);
 
@@ -437,6 +438,20 @@ void TabViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
             }
         }
     }
+}
+
+bool TabViewItem::IsOutsideDragRectangle(winrt::Point const& testPoint, winrt::Point const& dragRectangleCenter)
+{
+    double dx = abs(testPoint.X - dragRectangleCenter.X);
+    double dy = abs(testPoint.Y - dragRectangleCenter.Y);
+
+    double maxDx = GetSystemMetrics(SM_CXDRAG);
+    double maxDy = GetSystemMetrics(SM_CYDRAG);
+
+    maxDx *= m_tabViewItemMouseDragThresholdMultiplier;
+    maxDy *= m_tabViewItemMouseDragThresholdMultiplier;
+
+    return (dx > maxDx || dy > maxDy);
 }
 
 void TabViewItem::HideLeftAdjacentTabSeparator()

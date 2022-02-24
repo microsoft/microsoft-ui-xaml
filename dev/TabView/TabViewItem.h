@@ -69,6 +69,7 @@ private:
     winrt::ButtonBase::Click_revoker m_closeButtonClickRevoker{};
     winrt::TabView::TabDragStarting_revoker m_tabDragStartingRevoker{};
     winrt::TabView::TabDragCompleted_revoker m_tabDragCompletedRevoker{};
+    winrt::Point m_lastMouseLeftButtonDownPosition{};
 
     void OnCloseButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
@@ -80,6 +81,9 @@ private:
 
     void HideLeftAdjacentTabSeparator();
     void RestoreLeftAdjacentTabSeparatorVisibility();
+
+    bool IsOutsideDragRectangle(const winrt::Point& testPoint, const winrt::Point& dragRectangleCenter);
+    double m_tabViewItemMouseDragThresholdMultiplier{ 2.0 };
 
     bool m_hasPointerCapture = false;
     bool m_isMiddlePointerButtonPressed = false;
