@@ -788,18 +788,31 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToBottomImpl()
 
 void TeachingTip::OnIsOpenChanged()
 {
-    SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong()]() 
+    if (m_ignoreNextIsOpenChanged) {
+        m_ignoreNextIsOpenChanged = false;
+    }
+    else
     {
-        if (strongThis->IsOpen())
+        SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong()]()
         {
-            strongThis->IsOpenChangedToOpen();
-        }
-        else
-        {
-            strongThis->IsOpenChangedToClose();
-        }
-        TeachingTipTestHooks::NotifyOpenedStatusChanged(*strongThis);
-    });
+            if (strongThis->m_isIdle) {
+                if (strongThis->IsOpen())
+                {
+                    strongThis->IsOpenChangedToOpen();
+                }
+                else
+                {
+                    strongThis->IsOpenChangedToClose();
+                }
+                TeachingTipTestHooks::NotifyOpenedStatusChanged(*strongThis);
+            }
+            else
+            {
+                strongThis->m_ignoreNextIsOpenChanged = true;
+                strongThis->IsOpen(!strongThis->IsOpen());
+            }
+        });
+    }
 }
 
 void TeachingTip::IsOpenChangedToOpen()
@@ -844,9 +857,6 @@ void TeachingTip::IsOpenChangedToOpen()
         CreateExpandAnimation();
     }
 
-    // We are about to begin the process of trying to open the teaching tip, so notify that we are no longer idle.
-    SetIsIdle(false);
-
     //If the developer defines their TeachingTip in a resource dictionary it is possible that it's template will have never been applied
     if (!m_isTemplateApplied)
     {
@@ -877,6 +887,8 @@ void TeachingTip::IsOpenChangedToOpen()
         {
             if (!popup.IsOpen())
             {
+                // We are about to begin the process of trying to open the teaching tip, so notify that we are no longer idle.
+                SetIsIdle(false);
                 UpdatePopupRequestedTheme();
                 popup.Child(m_rootElement.get());
                 if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
