@@ -17,6 +17,7 @@
         <Setter Property="GlyphBrush" Value="{ThemeResource TreeViewItemForeground}"/>
         <Setter Property="MinHeight" Value="{ThemeResource TreeViewItemMinHeight}"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="FocusVisualMargin" Value="0,-1,0,-1"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TreeViewItem">
@@ -126,6 +127,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="MultiSelectCheckBox.Visibility" Value="Visible" />
                                         <Setter Target="MultiSelectGrid.Background" Value="{ThemeResource TreeViewItemBackgroundSelected}" />
+                                        <Setter Target="MultiSelectGrid.BorderBrush" Value="{ThemeResource TreeViewItemMultiSelectBorderBrushSelected}" />
                                         <Setter Target="ExpandCollapseChevron.Padding" Value="0,0,14,0" />
                                         <Setter Target="ContentPresenterGrid.Padding" Value="0" />
                                     </VisualState.Setters>
@@ -154,7 +156,13 @@
                             contract7Present:RadiusY="2"/>
 
 
-                        <Grid x:Name="MultiSelectGrid" Padding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.Indentation}">
+                        <Grid
+                            x:Name="MultiSelectGrid"
+                            Margin="{ThemeResource TreeViewItemMultiSelectSelectedItemBorderMargin}"
+                            Padding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.Indentation}"
+                            BorderBrush="Transparent"
+                            BorderThickness="{ThemeResource TreeViewItemBorderThemeThickness}"
+                            contract7Present:CornerRadius="{ThemeResource ControlCornerRadius}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
@@ -162,16 +170,18 @@
                             </Grid.ColumnDefinitions>
                             
                             <Grid Grid.Column="0">
-                                <CheckBox x:Name="MultiSelectCheckBox"
-                                            Width="32"
-                                            MinWidth="32"
-                                            MinHeight="{ThemeResource TreeViewItemMultiSelectCheckBoxMinHeight}"
-                                            Margin="10,0,0,0"
-                                            VerticalAlignment="Center"
-                                            Visibility="Collapsed"
-                                            IsTabStop="False"
-                                            AutomationProperties.AccessibilityView="Raw" />
-                                <Border x:Name="MultiArrangeOverlayTextBorder"
+                                <CheckBox
+                                    x:Name="MultiSelectCheckBox"
+                                    Width="32"
+                                    MinWidth="32"
+                                    MinHeight="{ThemeResource TreeViewItemMultiSelectCheckBoxMinHeight}"
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Visibility="Collapsed"
+                                    IsTabStop="False"
+                                    AutomationProperties.AccessibilityView="Raw" />
+                                <Border
+                                    x:Name="MultiArrangeOverlayTextBorder"
                                     Visibility="Collapsed"
                                     IsHitTestVisible="False"
                                     MinWidth="20"
@@ -182,7 +192,8 @@
                                     BorderThickness="1"
                                     BorderBrush="{ThemeResource SystemControlBackgroundChromeWhiteBrush}"
                                     CornerRadius="{ThemeResource ControlCornerRadius}">
-                                    <TextBlock x:Name="MultiArrangeOverlayText"
+                                    <TextBlock
+                                        x:Name="MultiArrangeOverlayText"
                                         Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.DragItemsCount}"
                                         Style="{ThemeResource CaptionTextBlockStyle}"
                                         Foreground="{ThemeResource SystemControlForegroundChromeWhiteBrush}"
@@ -193,13 +204,15 @@
                                 </Border>
                             </Grid>
 
-                            <Grid x:Name="ExpandCollapseChevron"
+                            <Grid
+                                x:Name="ExpandCollapseChevron"
                                 Grid.Column="1"
                                 Padding="14,0"
                                 Width="Auto"
                                 Opacity="{TemplateBinding GlyphOpacity}"
                                 Background="Transparent">
-                                <TextBlock x:Name="CollapsedGlyph"
+                                <TextBlock
+                                    x:Name="CollapsedGlyph"
                                     Foreground="{TemplateBinding GlyphBrush}"
                                     Width="12"
                                     Height="12"
@@ -212,7 +225,8 @@
                                     AutomationProperties.AccessibilityView="Raw"
                                     IsTextScaleFactorEnabled="False"
                                     IsHitTestVisible="False"/>
-                                <TextBlock x:Name="ExpandedGlyph"
+                                <TextBlock
+                                    x:Name="ExpandedGlyph"
                                     Foreground="{TemplateBinding GlyphBrush}"
                                     Width="12"
                                     Height="12"
@@ -227,7 +241,8 @@
                                     IsHitTestVisible="False"/>
                             </Grid>
 
-                            <ContentPresenter x:Name="ContentPresenter"
+                            <ContentPresenter
+                                x:Name="ContentPresenter"
                                 Grid.Column="2"
                                 ContentTransitions="{TemplateBinding ContentTransitions}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
