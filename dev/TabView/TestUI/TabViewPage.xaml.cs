@@ -10,6 +10,8 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI;
 using System.Windows.Input;
 using Windows.UI.Xaml.Automation;
+using Windows.UI.Xaml.Shapes;
+using System.Reflection;
 
 using TabView = Microsoft.UI.Xaml.Controls.TabView;
 using TabViewItem = Microsoft.UI.Xaml.Controls.TabViewItem;
@@ -55,7 +57,15 @@ namespace MUXControlsTestApp
                 itemSource.Add(item);
             }
             DataBindingTabView.TabItemsSource = itemSource;
+
+            backgroundColorCache = BackgroundGrid.Background;
+            activeTabContentBackgroundBrushCache = FirstTabContent.Background;
+            CacheFirstTabSelectedBackgroundPathFill();
         }
+
+        private Brush backgroundColorCache;
+        private Brush activeTabSelectedBackgroundPathBrushCache;
+        private Brush activeTabContentBackgroundBrushCache;
 
         protected async override void OnNavigatedTo(Windows.UI.Xaml.Navigation.NavigationEventArgs args) 
         {
@@ -409,6 +419,96 @@ namespace MUXControlsTestApp
             FirstTab.Header = "s";
             LongHeaderTab.Header = "long long long long long long long long";
         }
+
+        private void HomeTabOverlapCheck_Click(object sender, RoutedEventArgs e)
+        {
+            var redBrush = new SolidColorBrush();
+            redBrush.Color = Colors.Red;
+            BackgroundGrid.Background = redBrush;
+
+            var tabBrush = new SolidColorBrush();
+            tabBrush.Color = Colors.Blue;
+            SetFirstTabSelectedBackgroundPathFill(tabBrush);
+
+            var contentBrush = new SolidColorBrush();
+            contentBrush.Color = Colors.Green;
+            FirstTabContent.Background = contentBrush;
+        }
+
+        private void SetActiveTabTransparent_Click(object sender, RoutedEventArgs e)
+        {
+            var tabBrush = new SolidColorBrush();
+            tabBrush.Color = Colors.Transparent;
+            SetFirstTabSelectedBackgroundPathFill(tabBrush);
+        }
+
+        private void SetActiveContentTransparent_Click(object sender, RoutedEventArgs e)
+        {
+            var contentBrush = new SolidColorBrush();
+            contentBrush.Color = Colors.Transparent;
+            FirstTabContent.Background = contentBrush;
+        }
+
+        private void ClearOverlapCheck_Click(object sender, RoutedEventArgs e)
+        {
+            BackgroundGrid.Background = backgroundColorCache;
+
+            if(activeTabSelectedBackgroundPathBrushCache != null)
+            {
+                FrameworkElement selectedBackgroundPath = FindFrameworkElementWithName("SelectedBackgroundPath", FirstTab);
+                if(selectedBackgroundPath != null)
+                {
+                    (selectedBackgroundPath as Path).Fill = activeTabSelectedBackgroundPathBrushCache;
+                }
+            }
+
+            if(activeTabContentBackgroundBrushCache != null)
+            {
+                FirstTabContent.Background = activeTabContentBackgroundBrushCache;
+            }
+        }
+
+        private void CacheFirstTabSelectedBackgroundPathFill()
+        {
+            FrameworkElement selectedBackgroundPath = FindFrameworkElementWithName("SelectedBackgroundPath", FirstTab);
+            if(selectedBackgroundPath != null)
+            {
+                activeTabSelectedBackgroundPathBrushCache = (selectedBackgroundPath as Path).Fill;
+            }
+        }
+
+        private void SetFirstTabSelectedBackgroundPathFill(Brush newBrush)
+        {
+            FrameworkElement selectedBackgroundPath = FindFrameworkElementWithName("SelectedBackgroundPath", FirstTab);
+            if(selectedBackgroundPath != null)
+            {
+                (selectedBackgroundPath as Path).Fill = newBrush;
+            }
+        }
+
+        private FrameworkElement FindFrameworkElementWithName(string name, DependencyObject startNode)
+        {
+            int count = VisualTreeHelper.GetChildrenCount(startNode);
+            for (int i = 0; i < count; i++)
+            {
+                DependencyObject current = VisualTreeHelper.GetChild(startNode, i);
+                if ((current.GetType()).Equals(typeof(FrameworkElement)) || (current.GetType().GetTypeInfo().IsSubclassOf(typeof(FrameworkElement))))
+                {
+                    FrameworkElement fe = (FrameworkElement)current;
+                    if(fe.Name == name)
+                    {
+                        return fe;
+                    }
+                }
+                var result = FindFrameworkElementWithName(name, current);
+                if(result != null)
+                {
+                    return result;
+                }
+            }
+            return null;
+        }
+
         private void SetColorsButton_Click(object sender, RoutedEventArgs e)
         {
             var foregroundBrush = new SolidColorBrush();

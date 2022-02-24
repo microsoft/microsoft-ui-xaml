@@ -105,8 +105,7 @@ void TabViewItem::UpdateTabGeometry()
 {
     auto const templateSettings = winrt::get_self<TabViewItemTemplateSettings>(TabViewTemplateSettings());
 
-    // Need to increment actual height by 1 due to 'SelectedBackgroundPath' not being drawn correctly in non-100% scale factors
-    auto const height = ActualHeight() + 1;
+    auto const height = ActualHeight();
     auto const popupRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*this, box_value(c_overlayCornerRadiusKey)));
     auto const leftCorner = popupRadius.TopLeft;
     auto const rightCorner = popupRadius.TopRight;
@@ -116,11 +115,11 @@ void TabViewItem::UpdateTabGeometry()
     
     WCHAR strOut[1024];
     StringCchPrintf(strOut, ARRAYSIZE(strOut), data,
-        height - 1,
+        height,
         leftCorner, leftCorner, leftCorner, leftCorner, leftCorner,
         ActualWidth() - (leftCorner + rightCorner),
         rightCorner, rightCorner, rightCorner, rightCorner,
-        height - (4 + rightCorner + 1));
+        height - (4 + rightCorner));
 
     const auto geometry = winrt::XamlReader::Load(strOut).try_as<winrt::Geometry>();
 

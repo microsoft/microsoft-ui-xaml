@@ -10,7 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid x:Name="BackgroundGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -53,6 +53,11 @@
                 <Button x:Name="ScrollTabViewToTheRight" AutomationProperties.Name="ScrollTabViewToTheRight" Content="Scroll TabView To the Right" Margin="0,0,0,8" Click="TabViewScrollToTheRightButton_Click" />
 
                 <Button x:Name="ShortLongTextButton" AutomationProperties.Name="ShortLongTextButton" Content="Short/Long Text" Margin="0,0,0,8" Click="ShortLongTextButton_Click" />
+                <Button x:Name="HomeTabOverlapCheck" AutomationProperties.Name="HomeTabOverlapCheck" Content="Set HomeTabOverlapCheck" Margin="0,0,0,8" Click="HomeTabOverlapCheck_Click" />
+                <Button x:Name="SetActiveTabTransparent" AutomationProperties.Name="SetActiveTabTransparent" Content="Set ActiveTab Transparent" Margin="0,0,0,8" Click="SetActiveTabTransparent_Click" />
+                <Button x:Name="SetActiveContentTransparent" AutomationProperties.Name="SetActiveContentTransparent" Content="Set ActiveContent Transparent" Margin="0,0,0,8" Click="SetActiveContentTransparent_Click" />
+                <Button x:Name="ClearOverlapCheck" AutomationProperties.Name="ClearOverlapCheck" Content="Clear OverlapCheck" Margin="0,0,0,8" Click="ClearOverlapCheck_Click" />
+                
                 <StackPanel Orientation="Horizontal">
                     <Button Click="SetColorsButton_Click" Content="Set Colors"/>
                     <Button Click="ClearColorsButton_Click" Content="Clear Colors"/>
