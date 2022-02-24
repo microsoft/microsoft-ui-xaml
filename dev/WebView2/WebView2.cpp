@@ -1505,7 +1505,13 @@ void WebView2::TryCompleteInitialization()
             [this](auto&&, auto&&) { UpdateDefaultBackgroundColor(); });
     }
 
+    // WebView2 in WinUI 2 is a ContentControl that either renders its web content to a SpriteVisual, or in the case that
+    // the WebView2 Runtime is not installed, renders a message to that effect as its Content. In the case where the
+    // WebView2 starts with Visibility.Collapsed, hit testing code has trouble seeing the WebView2 if it does not have
+    // Content. To work around this, give the WebView2 a transparent Grid as Content that hit testing can find. The size
+    // of this Grid must be kept in sync with the size of the WebView2 (see ResizeChildPanel()).
     AddChildPanel();
+
     CreateAndSetVisual();
 
     // If we were recreating the webview after a core process failure, indicate that we have now recovered
