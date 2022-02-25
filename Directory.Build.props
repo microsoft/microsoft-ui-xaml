@@ -8,7 +8,7 @@
     <IsDebugTestConfiguration>false</IsDebugTestConfiguration>
     <IsDebugTestConfiguration Condition="'$(Configuration)' == 'Debug_test'">true</IsDebugTestConfiguration>
     <Configuration Condition="'$(Configuration)' == 'Debug_test'">Debug</Configuration>
-    
+
     <BaseOutputPath>$(MSBuildThisFileDirectory)BuildOutput\$(Configuration)\</BaseOutputPath>
     <BaseOutputPath Condition="'$(Configuration)' == 'Debug_test'">$(MSBuildThisFileDirectory)BuildOutput\Debug\</BaseOutputPath>
     <OutDir>$(BaseOutputPath)\$(Platform)\</OutDir>
