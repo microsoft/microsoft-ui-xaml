@@ -833,24 +833,28 @@ void WebView2::CreateMissingAnaheimWarning()
     Content(warning);
 }
 
-// We could have a child TextBlock (see CreateMissingAnaheimWarning), make sure it is visited by Measure pass.
+// We could have a child Grid (see AddChildPanel) or a child TextBlock (see CreateMissingAnaheimWarning).
+// Make sure it is visited by the Measure pass.
 winrt::Size WebView2::MeasureOverride(winrt::Size const& availableSize)
 {
-    //if (auto child = Content().try_as<winrt::FrameworkElement>())
-    //{
-    //    Content().Measure(availableSize);
-    //}
+    if (auto child = Content().try_as<winrt::FrameworkElement>())
+    {
+        child.Measure(availableSize);
+        return availableSize;
+    }
 
     return __super::MeasureOverride(availableSize);
 }
 
-// We could have a child TextBlock (see CreateMissingAnaheimWarning), make sure it is visited by Arrange pass.
+// We could have a child Grid (see AddChildPanel) or a child TextBlock (see CreateMissingAnaheimWarning).
+// Make sure it is visited by the Arrange pass.
 winrt::Size WebView2::ArrangeOverride(winrt::Size const& finalSize)
 {
-    //if (auto child = Content().try_as<winrt::FrameworkElement>())
-    //{
-    //    Content().Arrange(winrt::Rect{ winrt::Point{0,0}, finalSize });
-    //}
+    if (auto child = Content().try_as<winrt::FrameworkElement>())
+    {
+        child.Arrange(winrt::Rect{ winrt::Point{0,0}, finalSize });
+        return finalSize;
+    }
 
     return __super::ArrangeOverride(finalSize);
 }
@@ -1522,23 +1526,7 @@ void WebView2::AddChildPanel()
 {
     auto panelContent = winrt::Grid();
     panelContent.Background(winrt::SolidColorBrush(winrt::Colors::Transparent()));
-    panelContent.Height(this->ActualHeight());
-    panelContent.Width(this->ActualWidth());
     Content(panelContent);
-}
-
-void WebView2::ResizeChildPanel()
-{
-    auto content = this->Content();
-    if (content)
-    {
-        auto panelContent = content.as<winrt::Grid>();
-        if (panelContent)
-        {
-            panelContent.Height(this->ActualHeight());
-            panelContent.Width(this->ActualWidth());
-        }
-    }
 }
 
 void WebView2::CreateAndSetVisual()
@@ -1764,7 +1752,6 @@ void WebView2::HandleXamlRootChanged()
 void WebView2::HandleSizeChanged(const winrt::IInspectable& /*sender*/, const winrt::SizeChangedEventArgs& args)
 {
     SetCoreWebViewAndVisualSize(args.NewSize().Width, args.NewSize().Height);
-    ResizeChildPanel();
 }
 
 void WebView2::HandleRendered(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)

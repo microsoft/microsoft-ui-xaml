@@ -159,7 +159,6 @@ private:
     void DisconnectFromRootVisualTarget();
     void CreateAndSetVisual();
     void AddChildPanel();
-    void ResizeChildPanel();
 
     void CheckAndUpdateWebViewPosition();
     void CheckAndUpdateWindowPosition();
