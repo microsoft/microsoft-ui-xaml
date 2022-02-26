@@ -11,6 +11,7 @@
 #include "SharedHelpers.h"
 
 static constexpr auto c_overlayCornerRadiusKey = L"OverlayCornerRadius"sv;
+static constexpr int c_targetRectWidthIncrement = 2;
 
 TabViewItem::TabViewItem()
 {
@@ -137,7 +138,10 @@ void TabViewItem::OnLoaded(const winrt::IInspectable& sender, const winrt::Route
 
 void TabViewItem::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args)
 {
-    UpdateTabGeometry();
+    m_dispatcherHelper.RunAsync([strongThis = get_strong()]()
+    {
+        strongThis->UpdateTabGeometry();
+    });
 }
 
 void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
@@ -151,7 +155,7 @@ void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sen
     if (IsSelected())
     {
         SetValue(winrt::Canvas::ZIndexProperty(), box_value(20));
-        StartBringIntoView();
+        StartBringTabIntoView();
     }
     else
     {
@@ -500,4 +504,12 @@ void TabViewItem::OnIconSourceChanged()
         templateSettings->IconElement(nullptr);
         winrt::VisualStateManager::GoToState(*this, L"NoIcon"sv, false);
     }
+}
+
+void TabViewItem::StartBringTabIntoView()
+{
+    // we need to set the TargetRect to be slightly wider than the TabViewItem size in order to avoid cutting off the end of the Tab
+    winrt::BringIntoViewOptions options;
+    options.TargetRect(winrt::Rect{ 0, 0, DesiredSize().Width + c_targetRectWidthIncrement, DesiredSize().Height});
+    StartBringIntoView(options);
 }

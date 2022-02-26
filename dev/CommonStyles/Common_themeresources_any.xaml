@@ -604,10 +604,10 @@
             <SolidColorBrush x:Key="LayerOnAcrylicFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="LayerOnAccentAcrylicFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
 
-            <SolidColorBrush x:Key="LayerOnMicaAltFillColorDefaultBrush" Color="{ThemeResource SystemControlHighlightChromeHighBrush}" />
-            <SolidColorBrush x:Key="LayerOnMicaAltFillColorSecondaryBrush" Color="{ThemeResource SystemControlHighlightChromeHighBrush}" />
-            <SolidColorBrush x:Key="LayerOnMicaAltFillColorTertiaryBrush" Color="{ThemeResource SystemControlHighlightChromeHighBrush}" />
-            <SolidColorBrush x:Key="LayerOnMicaAltFillColorTransparentBrush" Color="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
+            <SolidColorBrush x:Key="LayerOnMicaAltFillColorDefaultBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="LayerOnMicaAltFillColorSecondaryBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="LayerOnMicaAltFillColorTertiaryBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="LayerOnMicaAltFillColorTransparentBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
 
             <SolidColorBrush x:Key="SolidBackgroundFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="SolidBackgroundFillColorSecondaryBrush" Color="{ThemeResource SystemColorWindowColor}" />

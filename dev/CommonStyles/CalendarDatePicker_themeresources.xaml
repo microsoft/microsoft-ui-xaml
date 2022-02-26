@@ -30,7 +30,7 @@
             <StaticResource x:Key="CalendarDatePickerBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
             <StaticResource x:Key="CalendarDatePickerBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
             <StaticResource x:Key="CalendarDatePickerBackgroundFocused" ResourceKey="ControlFillColorDefaultBrush" />
-            
+
             <StaticResource x:Key="CalendarDatePickerBorderBrush" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="CalendarDatePickerBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="CalendarDatePickerBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
@@ -57,7 +57,7 @@
             <StaticResource x:Key="CalendarDatePickerBackgroundPressed" ResourceKey="SystemColorWindowColorBrush" />
             <StaticResource x:Key="CalendarDatePickerBackgroundDisabled" ResourceKey="SystemColorWindowColorBrush" />
             <StaticResource x:Key="CalendarDatePickerBackgroundFocused" ResourceKey="SystemColorHighlightColorBrush" />
-            
+
             <StaticResource x:Key="CalendarDatePickerBorderBrush" ResourceKey="SystemColorButtonTextColorBrush" />
             <StaticResource x:Key="CalendarDatePickerBorderBrushPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
             <StaticResource x:Key="CalendarDatePickerBorderBrushPressed" ResourceKey="SystemColorHighlightColorBrush" />
@@ -87,7 +87,7 @@
             <StaticResource x:Key="CalendarDatePickerBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
             <StaticResource x:Key="CalendarDatePickerBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
             <StaticResource x:Key="CalendarDatePickerBackgroundFocused" ResourceKey="ControlFillColorDefaultBrush" />
-            
+
             <StaticResource x:Key="CalendarDatePickerBorderBrush" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="CalendarDatePickerBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="CalendarDatePickerBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
@@ -177,13 +177,7 @@
                             <VisualStateGroup x:Name="FocusStates">
                                 <VisualState x:Name="Unfocused" />
                                 <VisualState x:Name="PointerFocused" />
-                                <VisualState x:Name="Focused">
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Background" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CalendarDatePickerBackgroundFocused}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="Focused"/>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="SelectionStates">
                                 <VisualState x:Name="Unselected" />

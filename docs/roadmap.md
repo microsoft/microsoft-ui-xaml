@@ -127,5 +127,6 @@ Blank -  Not available
 | Media Controls (e.g. `<MediaPlayerElement>`)           |            |            |                         |            | &#128994;     |
 | `<InkCanvas>`                                          |            |            |                         |            | &#128994;     |
 | `<MapControl>`                                         |            |            |                         |            | &#129002; |
+| XAML designer                                          |            |            |                         |            | &#129002; |
 
 [^1]: Supported in packaged apps only
