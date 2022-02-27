@@ -48,7 +48,7 @@
         Margin=0,0,0,0
         Name=InitialsTextBlock
         Padding=0,0,0,0
-        RenderSize=100,30
+        RenderSize=46,30
         Visibility=Visible
     [Windows.UI.Xaml.Controls.Grid]
         Background=[NULL]
