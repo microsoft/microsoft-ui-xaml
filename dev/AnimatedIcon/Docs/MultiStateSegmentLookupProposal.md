@@ -63,10 +63,10 @@ Animated Icon is initially being published With a single state property, which h
 
 In order to specify an animation for every state transitions the Lottie author will need to specify 120 markers with the following format:
 
-|  [FromState]To[ToState]Start	 |       [FromState]To[ToState]End   |
+| [FromState]To[ToState]Start        | [FromState]To[ToState]End        |
 |:---:|:---:|
 | NormalDraggingToHoverDraggingStart | HoverDraggingToNormalDraggingEnd |
-| NormalDraggingToNormalOnStart            | NormalDraggingToNormalOnEnd            |
+| NormalDraggingToNormalOnStart      | NormalDraggingToNormalOnEnd      |
 
 ## Requirements
 

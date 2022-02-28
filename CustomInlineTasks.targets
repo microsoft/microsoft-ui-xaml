@@ -30,12 +30,12 @@
                 for (int i = 0; i < SourceFiles.Length; i++)
                 {
                     string text = File.ReadAllText(SourceFiles[i]);
-                    
+
                     for (int j = 0; j < Patterns.Length; j++)
                     {
                         text = text.Replace(Patterns[j], Replacements[j]);
                     }
-                    
+
                     File.WriteAllText(DestinationFiles[i], text);
                 }
             }

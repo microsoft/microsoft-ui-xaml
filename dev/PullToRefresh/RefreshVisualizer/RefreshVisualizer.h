@@ -31,7 +31,7 @@ public:
 
 private:
     //////////////////////////////////////////////////////
-    ////	OnDependencyPropertyChanged	handlers	//////
+    ////  OnDependencyPropertyChanged    handlers   //////
     //////////////////////////////////////////////////////
     void OnRefreshInfoProviderChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
@@ -71,7 +71,7 @@ private:
     bool IsPullDirectionFar();
 
     //////////////////////////////////////////////////////
-    ////	         DependencyPropertyBackers      //////
+    ////             DependencyPropertyBackers      //////
     //////////////////////////////////////////////////////
     winrt::RefreshVisualizerOrientation m_orientation{ winrt::RefreshVisualizerOrientation::Auto };
     winrt::RefreshVisualizerState m_state{ winrt::RefreshVisualizerState::Idle };
@@ -79,13 +79,13 @@ private:
     tracker_ref<winrt::UIElement> m_content{ this };
 
     ///////////////////////////////////////////////
-    /////////	Event Tokens and Sources   ////////
+    /////////   Event Tokens and Sources   ////////
     ///////////////////////////////////////////////
     winrt::event_token m_RefreshInfoProvider_InteractingForRefreshChangedToken{};
     winrt::event_token m_RefreshInfoProvider_InteractionRatioChangedToken{};
 
     ///////////////////////////////////////////////
-    /////////	Internal Reference Vars   /////////
+    /////////   Internal Reference Vars   /////////
     ///////////////////////////////////////////////
     bool m_isInteractingForRefresh{ false };
     double m_executionRatio{ 0.8f };

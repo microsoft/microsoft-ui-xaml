@@ -51,19 +51,19 @@ An icon button template which has been updated to support using an animated icon
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
                                     <VisualState x:Name="Normal">
-	                                    <VisualState.Setters>
-		                                    <Setter Target="Icon.(AnimatedIcon.State)" Value="Normal"/>
-	                                    </VisualSTate.Setters>
+                                        <VisualState.Setters>
+                                            <Setter Target="Icon.(AnimatedIcon.State)" Value="Normal"/>
+                                        </VisualSTate.Setters>
                                     </VisualState>
                                     <VisualState x:Name="PointerOver">
-		                                <VisualState.Setters>
-		                                    <Setter Target="Icon.(AnimatedIcon.State)" Value="Hover"/>
-	                                    </VisualSTate.Setters>
+                                        <VisualState.Setters>
+                                            <Setter Target="Icon.(AnimatedIcon.State)" Value="Hover"/>
+                                        </VisualSTate.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Pressed">
-		                                <VisualState.Setters>
-		                                    <Setter Target="Icon.(AnimatedIcon.State)" Value="Pressed"/>
-	                                    </VisualSTate.Setters>
+                                        <VisualState.Setters>
+                                            <Setter Target="Icon.(AnimatedIcon.State)" Value="Pressed"/>
+                                        </VisualSTate.Setters>
                                     </VisualState>
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>
@@ -117,5 +117,5 @@ Downsides:
 
 Red Flags:
 - Adobe After Effects does not support multiple markers being placed on the same frame. I see two options to resolve this:
-	- Ask Designer to add all of the state names to a single markers comment, ie: "RestToHoverStart,HoverToRestEnd". This would require additional work from lottie gen.
-	- Do not allow designers to have animations which share end points.
+  - Ask Designer to add all of the state names to a single markers comment, ie: "RestToHoverStart,HoverToRestEnd". This would require additional work from lottie gen.
+  - Do not allow designers to have animations which share end points.
