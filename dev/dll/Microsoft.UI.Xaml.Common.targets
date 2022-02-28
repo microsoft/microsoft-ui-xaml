@@ -41,6 +41,7 @@
       <GenerateMapFile>true</GenerateMapFile>
       <LinkTimeCodeGeneration Condition="'$(Configuration)'=='Release'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <AdditionalOptions Condition="'$(Configuration)'=='Release'">/debugtype:cv,fixup %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Brepro %(AdditionalOptions)</AdditionalOptions>
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_x64_Desktop)</AdditionalLibraryDirectories>
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_x86_Desktop)</AdditionalLibraryDirectories>
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='arm'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_arm_Desktop)</AdditionalLibraryDirectories>
@@ -74,7 +75,7 @@
         $(MiniWindowsSDKIncludePath);
       </AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++17 /bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions>/Wv:18 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Wv:18 /ZH:SHA_256 /Brepro %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)'=='Release'">%(AdditionalOptions) /d2FH4</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>

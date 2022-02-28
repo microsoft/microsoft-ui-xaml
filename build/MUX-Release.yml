@@ -18,6 +18,9 @@ jobs:
   strategy:
     maxParallel: 10
     matrix:
+      Debug_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Debug'
       Release_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Release'
@@ -37,6 +40,7 @@ jobs:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
+    artifactsDir: $(Build.SourcesDirectory)\Artifacts
     sbomdir: $(Build.ArtifactStagingDirectory)\sbom\$(buildConfiguration)\$(buildPlatform)
   steps:
 
@@ -83,6 +87,10 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
   parameters:
     dependsOn: Build
+
+- template: AzurePipelinesTemplates\MUX-ComplianceChecks-Job.yml
+  parameters:
+    dependsOn: CreateVPack
 
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
