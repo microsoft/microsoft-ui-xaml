@@ -22,6 +22,7 @@
         <StackPanel>
             <TextBlock Text="Common tests"/>
             <Button x:Name="NavigationViewPage" AutomationProperties.Name="NavigationView Test" Margin="2" HorizontalAlignment="Stretch">NavigationView Test</Button>
+            <Button x:Name="NavigationViewPerformancePage" AutomationProperties.Name="NavigationViewPerformance Test" Margin="2" HorizontalAlignment="Stretch">NavigationViewPerformance Test</Button>
             <Button x:Name="NavigationViewInfoBadgePage" AutomationProperties.Name="NavigationView Info Badge Test" Margin="2" HorizontalAlignment="Stretch">NavigationView InfoBadge Test</Button>
             <Button x:Name="NavigationViewCompactPaneLengthTestPage" AutomationProperties.Name="NavigationView compact pane length test" Margin="2" HorizontalAlignment="Stretch">NavigationView compact pane length test</Button>
             <Button x:Name="NavigationViewPageDataContext" AutomationProperties.Name="NavigationViewPageDataContext" Margin="2" HorizontalAlignment="Stretch">NavigationView DataContext</Button>
