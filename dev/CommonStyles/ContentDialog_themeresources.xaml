@@ -279,7 +279,7 @@
                                                 Content="{TemplateBinding Title}"
                                                 ContentTemplate="{TemplateBinding TitleTemplate}"
                                                 FontSize="20"
-                                                FontFamily="XamlAutoFontFamily"
+                                                FontFamily="{StaticResource ContentControlThemeFontFamily}"
                                                 FontWeight="SemiBold"
                                                 Foreground="{TemplateBinding Foreground}"
                                                 HorizontalAlignment="Left"
