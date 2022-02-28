@@ -72,16 +72,18 @@ body:
       description: Which Windows versions did you see the issue on?
       multiple: true
       options:
-        - "Insider Build (xxxxx)"
-        - "May 2021 Update (19043)"
-        - "October 2020 Update (19042)"
-        - "May 2020 Update (19041)"
-        - "November 2019 Update (18363)"
-        - "May 2019 Update (18362)"
-        - "October 2018 Update (17763)"
-        - "April 2018 Update (17134)"
-        - "Fall Creators Update (16299)"
-        - "Creators Update (15063)"
+        - "Windows Insider Build (xxxxx)"
+        - "Windows 11 (21H2): Build 22000"
+        - "Windows 10 (21H2): Build 19044"
+        - "Windows 10 (21H1): Build 19043"
+        - "Windows 10 (20H2): Build 19042"
+        - "Windows 10 (2004): Build 19041"
+        - "Windows 10 (1909): Build 18363"
+        - "Windows 10 (1903): Build 18362"
+        - "Windows 10 (1809): Build 17763"
+        - "Windows 10 (1803): Build 17134"
+        - "Windows 10 (1709): Build 16299"
+        - "Windows 10 (1703): Build 15063"
   - type: textarea
     attributes:
       label: Additional context
