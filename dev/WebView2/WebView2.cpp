@@ -837,11 +837,11 @@ void WebView2::CreateMissingAnaheimWarning()
 // Make sure it is visited by the Measure pass.
 winrt::Size WebView2::MeasureOverride(winrt::Size const& availableSize)
 {
-    if (auto child = Content().try_as<winrt::FrameworkElement>())
-    {
-        child.Measure(availableSize);
-        return availableSize;
-    }
+    //if (auto child = Content().try_as<winrt::FrameworkElement>())
+    //{
+    //    child.Measure(availableSize);
+    //    return child.DesiredSize;
+    //}
 
     return __super::MeasureOverride(availableSize);
 }
