@@ -53,6 +53,7 @@ static constexpr auto c_navViewCloseButton = L"NavigationViewCloseButton"sv;
 static constexpr auto c_navViewCloseButtonToolTip = L"NavigationViewCloseButtonToolTip"sv;
 static constexpr auto c_paneShadowReceiverCanvas = L"PaneShadowReceiver"sv;
 static constexpr auto c_flyoutRootGrid = L"FlyoutRootGrid"sv;
+static constexpr auto c_settingsItemTag = L"Settings"sv;
 
 // DisplayMode Top specific items
 static constexpr auto c_topNavMenuItemsHost = L"TopNavMenuItemsHost"sv;
@@ -1317,7 +1318,7 @@ void NavigationView::CreateAndHookEventsToSettings()
     // Do localization for settings item label and Automation Name
     auto localizedSettingsName = ResourceAccessor::GetLocalizedStringResource(SR_SettingsButtonName);
     winrt::AutomationProperties::SetName(settingsItem, localizedSettingsName);
-    settingsItem.Tag(box_value(localizedSettingsName));
+    settingsItem.Tag(box_value(c_settingsItemTag));
     UpdateSettingsItemToolTip();
 
     // Add the name only in case of horizontal nav
