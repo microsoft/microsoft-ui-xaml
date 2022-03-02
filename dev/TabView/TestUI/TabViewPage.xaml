@@ -185,6 +185,7 @@
                         <StackPanel Padding="16" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
                             <TextBlock>Shop text</TextBlock>
                             <Button Content="SecondTabButton" AutomationProperties.Name="SecondTabButton"/>
+                            <controls:ProgressRing IsActive="True"/>
                         </StackPanel>
                     </controls:TabViewItem>
 
@@ -192,6 +193,7 @@
                         <StackPanel Padding="16" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
                             <TextBlock >Emoji text</TextBlock>
                             <Button Content="Button 3"/>
+                            <controls:ProgressRing IsActive="True"/>
                         </StackPanel>
                     </controls:TabViewItem>
 
