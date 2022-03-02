@@ -4042,6 +4042,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         UpdatePaneTitleFrameworkElementParents();
         UpdateBackAndCloseButtonsVisibility();
         UpdatePaneToggleButtonVisibility();
+        UpdateTitleBarPadding();
         UpdateVisualState();
     }
     else if (property == s_IsSettingsVisibleProperty)
