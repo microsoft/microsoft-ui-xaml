@@ -3,8 +3,6 @@
 
 #include "pch.h"
 #include "common.h"
-#include <mutex>
-#include <thread>
 
 #include "NavigationView.h"
 #include "Vector.h"
@@ -223,7 +221,8 @@ NavigationView::NavigationView()
 
     m_navigationViewItemsFactory = winrt::make_self<NavigationViewItemsFactory>();
 
-    std::call_once(s_NavigationViewItemRevokersPropertySet, [this]() {
+    static const auto s_NavigationViewItemRevokersPropertyInit = []()
+    {
         s_NavigationViewItemRevokersProperty =
             InitializeDependencyProperty(
                 L"NavigationViewItemRevokers",
@@ -231,7 +230,8 @@ NavigationView::NavigationView()
                 winrt::name_of<winrt::NavigationViewItem>(),
                 true /* isAttached */,
                 nullptr /* defaultValue */);
-        });
+        return false;
+    }();
 }
 
 void NavigationView::OnSelectionModelChildrenRequested(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelChildrenRequestedEventArgs& e)
@@ -3423,7 +3423,7 @@ void NavigationView::ClearNavigationViewItemRevokers(const winrt::NavigationView
 
 void NavigationView::ClearAllNavigationViewItemRevokers()
 {
-    for (auto const nvi : m_itemsWithRevokerObjects)
+    for (const auto& nvi : m_itemsWithRevokerObjects)
     {
         nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
     }
