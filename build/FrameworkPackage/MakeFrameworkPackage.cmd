@@ -12,8 +12,8 @@ pushd %~dp0
 powershell -ExecutionPolicy Unrestricted -NoLogo -NoProfile -Command "&{ %~dpn0.ps1 %*; exit $lastexitcode  }"
 
 if %ERRORLEVEL% NEQ 0 (
-	@echo ##vso[task.logissue type=error;] MakeFrameworkPackage failed with exit code %ERRORLEVEL%
-	goto END
+    @echo ##vso[task.logissue type=error;] MakeFrameworkPackage failed with exit code %ERRORLEVEL%
+    goto END
 )
 
 :END

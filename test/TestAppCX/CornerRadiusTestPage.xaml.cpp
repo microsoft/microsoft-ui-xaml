@@ -23,5 +23,5 @@ using namespace Windows::UI::Xaml::Navigation;
 
 CornerRadiusTestPage::CornerRadiusTestPage()
 {
-	InitializeComponent();
+    InitializeComponent();
 }

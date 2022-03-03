@@ -10,6 +10,9 @@ steps:
       buildOutputDir: $(buildOutputDir)
       publishDir: $(publishDir)
 
+  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+    displayName: 'Component Detection'
+
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
     displayName: 'NuGet restore MUXExperimental.sln'
     inputs:
@@ -32,6 +35,24 @@ steps:
     inputs:
       PathtoPublish: $(Build.SourcesDirectory)/MUXExperimental.sln.$(buildPlatform).$(buildConfiguration).binlog
       artifactName: drop
+
+  # Copies output from PREfast SDL Native Rules task to expected location for consumption by PkgESSecComp
+  # These are processed by the Compliance Job (defined in MUX-ComplianceChecks-Job.yml)
+  # Note, only Debug builds are configured to run the code analysis tool.
+  - task: CopyFiles@1
+    displayName: 'Copy nativecodeanalysis xml files'
+    condition: eq(variables['buildConfiguration'], 'Debug')
+    inputs:
+      SourceFolder: '$(buildOutputDir)'
+      Contents: |
+        **\*.nativecodeanalysis.xml
+      TargetFolder: '$(Agent.BuildDirectory)\nativecodeanalysis'
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish artifact: nativecodeanalysis'
+    condition: eq(variables['buildConfiguration'], 'Debug')
+    inputs:
+      PathtoPublish: '$(Agent.BuildDirectory)\nativecodeanalysis'
+      artifactName: nativecodeanalysis
 
   - ${{ if eq( parameters.signOutput, true) }}:
     - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1

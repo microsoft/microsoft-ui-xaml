@@ -3,8 +3,6 @@
 
 #include "pch.h"
 #include "common.h"
-#include <mutex>
-#include <thread>
 
 #include "NavigationView.h"
 #include "Vector.h"
@@ -55,6 +53,7 @@ static constexpr auto c_navViewCloseButton = L"NavigationViewCloseButton"sv;
 static constexpr auto c_navViewCloseButtonToolTip = L"NavigationViewCloseButtonToolTip"sv;
 static constexpr auto c_paneShadowReceiverCanvas = L"PaneShadowReceiver"sv;
 static constexpr auto c_flyoutRootGrid = L"FlyoutRootGrid"sv;
+static constexpr auto c_settingsItemTag = L"Settings"sv;
 
 // DisplayMode Top specific items
 static constexpr auto c_topNavMenuItemsHost = L"TopNavMenuItemsHost"sv;
@@ -223,7 +222,8 @@ NavigationView::NavigationView()
 
     m_navigationViewItemsFactory = winrt::make_self<NavigationViewItemsFactory>();
 
-    std::call_once(s_NavigationViewItemRevokersPropertySet, [this]() {
+    static const auto s_NavigationViewItemRevokersPropertyInit = []()
+    {
         s_NavigationViewItemRevokersProperty =
             InitializeDependencyProperty(
                 L"NavigationViewItemRevokers",
@@ -231,7 +231,8 @@ NavigationView::NavigationView()
                 winrt::name_of<winrt::NavigationViewItem>(),
                 true /* isAttached */,
                 nullptr /* defaultValue */);
-        });
+        return false;
+    }();
 }
 
 void NavigationView::OnSelectionModelChildrenRequested(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelChildrenRequestedEventArgs& e)
@@ -1317,7 +1318,7 @@ void NavigationView::CreateAndHookEventsToSettings()
     // Do localization for settings item label and Automation Name
     auto localizedSettingsName = ResourceAccessor::GetLocalizedStringResource(SR_SettingsButtonName);
     winrt::AutomationProperties::SetName(settingsItem, localizedSettingsName);
-    settingsItem.Tag(box_value(localizedSettingsName));
+    settingsItem.Tag(box_value(c_settingsItemTag));
     UpdateSettingsItemToolTip();
 
     // Add the name only in case of horizontal nav
@@ -3423,7 +3424,7 @@ void NavigationView::ClearNavigationViewItemRevokers(const winrt::NavigationView
 
 void NavigationView::ClearAllNavigationViewItemRevokers()
 {
-    for (auto const nvi : m_itemsWithRevokerObjects)
+    for (const auto& nvi : m_itemsWithRevokerObjects)
     {
         nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
     }

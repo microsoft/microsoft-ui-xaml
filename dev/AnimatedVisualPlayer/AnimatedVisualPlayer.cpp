@@ -118,7 +118,7 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
             m_batchCompletedToken = m_batch.Completed([this](winrt::IInspectable const&, winrt::CompositionBatchCompletedEventArgs const&)
                 {
                     if (m_owner) 
-                    {                        
+                    {
                         // If optimization is set to Resources - destroy animations immediately after player stops.
                         if (m_owner->AnimationOptimization() == winrt::PlayerAnimationOptimization::Resources)
                         {
@@ -952,13 +952,13 @@ void AnimatedVisualPlayer::UpdateContent()
     if (auto source3 = source.try_as<winrt::IAnimatedVisualSource3>())
     {
         animatedVisual = source3.TryCreateAnimatedVisual(m_rootVisual.Compositor(), diagnostics, createAnimations);
-		m_isAnimationsCreated = createAnimations;
+        m_isAnimationsCreated = createAnimations;
         m_animatedVisual.set(animatedVisual);
     }
     else
     {
         animatedVisual = source.TryCreateAnimatedVisual(m_rootVisual.Compositor(), diagnostics);
-		m_isAnimationsCreated = true;
+        m_isAnimationsCreated = true;
 
         // m_animatedVisual should be updated before DestroyAnimations call
         m_animatedVisual.set(animatedVisual);

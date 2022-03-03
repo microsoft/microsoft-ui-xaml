@@ -7,11 +7,11 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="TabViewBackground"                                       ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackground"                             ResourceKey="LayerOnMicaAltFillColorTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"                     ResourceKey="LayerOnMicaAltFillColorDefaultBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundPointerOver"                  ResourceKey="LayerOnMicaAltFillColorSecondaryBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundPressed"                      ResourceKey="LayerOnMicaAltFillColorDefaultBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundDisabled"                     ResourceKey="LayerOnMicaAltFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackground"                             ResourceKey="LayerOnMicaBaseAltFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"                     ResourceKey="SolidBackgroundFillColorTertiaryBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundPointerOver"                  ResourceKey="LayerOnMicaBaseAltFillColorSecondaryBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundPressed"                      ResourceKey="LayerOnMicaBaseAltFillColorDefaultBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundDisabled"                     ResourceKey="LayerOnMicaBaseAltFillColorTransparentBrush" />
             <StaticResource x:Key="TabViewItemHeaderForeground"                             ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundPressed"                      ResourceKey="TextFillColorTertiaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundSelected"                     ResourceKey="TextFillColorPrimaryBrush" />
@@ -73,11 +73,11 @@
 
         <ResourceDictionary x:Key="Dark">
             <StaticResource x:Key="TabViewBackground"                                       ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackground"                             ResourceKey="LayerOnMicaAltFillColorTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"                     ResourceKey="LayerOnMicaAltFillColorDefaultBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundPointerOver"                  ResourceKey="LayerOnMicaAltFillColorSecondaryBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundPressed"                      ResourceKey="LayerOnMicaAltFillColorDefaultBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundDisabled"                     ResourceKey="LayerOnMicaAltFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackground"                             ResourceKey="LayerOnMicaBaseAltFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"                     ResourceKey="SolidBackgroundFillColorTertiaryBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundPointerOver"                  ResourceKey="LayerOnMicaBaseAltFillColorSecondaryBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundPressed"                      ResourceKey="LayerOnMicaBaseAltFillColorDefaultBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundDisabled"                     ResourceKey="LayerOnMicaBaseAltFillColorTransparentBrush" />
             <StaticResource x:Key="TabViewItemHeaderForeground"                             ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundPressed"                      ResourceKey="TextFillColorTertiaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundSelected"                     ResourceKey="TextFillColorPrimaryBrush" />

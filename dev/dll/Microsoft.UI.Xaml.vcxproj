@@ -1,10 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.UI.Xaml.Common.props" />
-
-  <PropertyGroup  Label="Globals">
+  <PropertyGroup Label="Globals">
     <ProjectGuid>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</ProjectGuid>
     <Keyword>DynamicLibrary</Keyword>
     <TargetName>$(MUXTargetName)</TargetName>
@@ -14,15 +12,16 @@
     <ProjectWinMDName>Microsoft.UI.winmd</ProjectWinMDName>
     <DependencyPropertyCodeGenOutputDirectory>$(MSBuildThisFileDirectory)..\Generated</DependencyPropertyCodeGenOutputDirectory>
   </PropertyGroup>
-
   <Import Condition="'$(Configuration)' == 'Release'" Project="$(MSBuildProjectDirectory)\..\..\PGO.compile.props" />
   <Import Condition="'$(PGOBuildMode)' == 'Optimize'" Project="$(MSBuildProjectDirectory)\..\..\tools\MUXPGODatabase\PGO.version.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  
   <ItemDefinitionGroup>
     <Link>
       <ModuleDefinitionFile>Microsoft.UI.Xaml.def</ModuleDefinitionFile>
     </Link>
+    <ClCompile>
+      <AdditionalOptions>/ZH:SHA_256 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Midl Include="..\..\idl\Microsoft.UI.Xaml.idl" />
@@ -113,6 +112,5 @@
       <ControlsResourcesVersion1>true</ControlsResourcesVersion1>
     </CompactPage>
   </ItemGroup>
-
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.UI.Xaml.Common.targets" />
 </Project>
