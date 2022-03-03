@@ -99,6 +99,8 @@ public:
 
     winrt::CoreWebView2 CoreWebView2();     // Getter for CoreWebView2 property (read-only)
 
+    winrt::Rect GetBoundingRectangle();
+
 private:
     bool ShouldNavigate(const winrt::Uri& uri);
     winrt::IAsyncAction OnSourceChanged(winrt::Uri providedUri);
@@ -155,6 +157,8 @@ private:
     void XamlRootChangedHelper(bool forceUpdate);
     void TryCompleteInitialization();
     void DisconnectFromRootVisualTarget();
+    void CreateAndSetVisual();
+    void AddChildPanel();
 
     void CheckAndUpdateWebViewPosition();
     void CheckAndUpdateWindowPosition();
