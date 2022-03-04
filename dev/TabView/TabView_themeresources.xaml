@@ -53,11 +53,11 @@
             <StaticResource x:Key="TabViewItemHeaderPointerOverCloseButtonForeground"       ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderSelectedCloseButtonForeground"          ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderDisabledCloseButtonForeground"          ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrush"                 ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushPointerOver"      ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushPressed"          ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushSelected"         ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushDisabled"         ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrush"                 ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushPointerOver"      ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushPressed"          ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushSelected"         ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushDisabled"         ResourceKey="SubtleFillColorTransparentBrush" />
 
             <!-- Note: These theme resources below are no longer used and might be removed in a future WinUI update. -->
             <StaticResource x:Key="TabViewButtonBackgroundActiveTab"                        ResourceKey="SubtleFillColorTransparentBrush" />
@@ -125,11 +125,11 @@
             <StaticResource x:Key="TabViewItemHeaderPointerOverCloseButtonForeground"       ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderSelectedCloseButtonForeground"          ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="TabViewItemHeaderDisabledCloseButtonForeground"          ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrush"                 ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushPointerOver"      ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushPressed"          ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushSelected"         ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushDisabled"         ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrush"                 ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushPointerOver"      ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushPressed"          ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushSelected"         ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushDisabled"         ResourceKey="SubtleFillColorTransparentBrush" />
 
             <!-- Note: These theme resources below are no longer used and might be removed in a future WinUI update. -->
             <StaticResource x:Key="TabViewButtonBackgroundActiveTab"                        ResourceKey="SubtleFillColorTransparentBrush" />
@@ -186,9 +186,9 @@
             <StaticResource x:Key="TabViewItemHeaderCloseButtonBackground"                  ResourceKey="SystemColorButtonFaceColorBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonBackgroundPressed"           ResourceKey="SystemColorButtonFaceColorBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonBackgroundPointerOver"       ResourceKey="SystemColorButtonFaceColorBrush" />
-            <StaticResource x:Key="TabViewItemHeaderPressedCloseButtonBackground"           ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderPointerOverCloseButtonBackground"       ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderSelectedCloseButtonBackground"          ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderPressedCloseButtonBackground"           ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderPointerOverCloseButtonBackground"       ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderSelectedCloseButtonBackground"          ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TabViewItemHeaderDisabledCloseButtonBackground"          ResourceKey="SystemColorWindowColorBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonForeground"                  ResourceKey="SystemColorButtonTextColorBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonForegroundPressed"           ResourceKey="SystemColorButtonTextColorBrush" />
@@ -197,14 +197,14 @@
             <StaticResource x:Key="TabViewItemHeaderPointerOverCloseButtonForeground"       ResourceKey="SystemColorHighlightTextColorBrush" />
             <StaticResource x:Key="TabViewItemHeaderSelectedCloseButtonForeground"          ResourceKey="SystemColorHighlightColorBrush" />
             <StaticResource x:Key="TabViewItemHeaderDisabledCloseButtonForeground"          ResourceKey="SystemColorGrayTextColorBrush" />
-            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrush"                 ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrush"                 ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushPointerOver"      ResourceKey="SystemColorButtonTextColorBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushPressed"          ResourceKey="SystemColorButtonTextColorBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushSelected"         ResourceKey="SystemColorButtonTextColorBrush" />
-            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushDisabled"         ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="TabViewItemHeaderCloseButtonBorderBrushDisabled"         ResourceKey="SubtleFillColorTransparentBrush" />
 
             <!-- Note: These theme resources below are no longer used and might be removed in a future WinUI update. -->
-            <StaticResource x:Key="TabViewButtonBackgroundActiveTab"                        ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="TabViewButtonBackgroundActiveTab"                        ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TabViewButtonForegroundActiveTab"                        ResourceKey="SystemControlBackgroundBaseMediumBrush" />
 
             <SolidColorBrush x:Key="TabViewBorderBrush"                                     Color="{ThemeResource SystemColorHighlightColor}" />
