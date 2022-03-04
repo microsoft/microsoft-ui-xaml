@@ -529,6 +529,13 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
 
 void NavigationViewItem::UpdateVisualStateForChevron()
 {
+    if(!HasChildren())
+    {
+        return;
+    }
+
+    GetPresenter()->LoadChevron();
+
     if (auto const presenter = m_navigationViewItemPresenter.get())
     {
         enum class PointerStateValue{ Normal, PointerOver, Pressed };
