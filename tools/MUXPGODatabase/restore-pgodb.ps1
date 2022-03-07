@@ -1,11 +1,7 @@
-# Param(
-#     [Parameter(Position=0, Mandatory=$true)]
-#     [string] $NuGetConfigPath
-# )
-# TODO: fix
-
-$repoRoot = $script:MyInvocation.MyCommand.Path | Split-Path -Parent | Split-Path -Parent | Split-Path -Parent
-$NuGetConfigPath = Join-Path $repoRoot "nuget.config"
+Param(
+    [Parameter(Position=0, Mandatory=$true)]
+    [string] $NuGetConfigPath
+)
 
 . .\version.ps1
 . .\template.ps1
@@ -17,8 +13,6 @@ function Get-AvailablePackages ( $package )
 
     $output = ( & nuget.exe list $package -prerelease -allversions -configfile $NuGetConfigPath )
 
-
-
     if ( $LastExitCode -ne 0 )
     {
         throw "FAILED: nuget.exe list"
@@ -28,7 +22,7 @@ function Get-AvailablePackages ( $package )
     {
         $name, $version = $line.Split(" ")
 
-        # TODO: fix
+        # Some packages on the feed use an old versioning scheme. Skip the package if it does not include a -foo portion in the version.
         if($version.Contains("-"))
         {
             if ( $name -eq $package )
