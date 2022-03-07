@@ -29,7 +29,7 @@ function Get-AvailablePackages ( $package )
         $name, $version = $line.Split(" ")
 
         # TODO: fix
-        if(($version -ne "2.0.0") -and  ($version -ne "0.0.3"))
+        if($version.Contains("-"))
         {
             if ( $name -eq $package )
             {
