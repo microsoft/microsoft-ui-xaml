@@ -529,15 +529,23 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
 
 void NavigationViewItem::UpdateVisualStateForChevron()
 {
-    if(!HasChildren())
-    {
-        return;
-    }
-
-    GetPresenter()->LoadChevron();
-
     if (auto const presenter = m_navigationViewItemPresenter.get())
     {
+        // If NVI has never had children, we want to bypass all Chevron visual state logic so that we don't load it 
+        if(!m_hasHadChildren) 
+        { 
+            if(HasChildren())
+            {
+                m_hasHadChildren = true;
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        winrt::get_self<NavigationViewItemPresenter>(presenter)->LoadChevron();
+
         enum class PointerStateValue{ Normal, PointerOver, Pressed };
         enum class ChevronStateValue { ChevronHidden, ChevronVisibleOpen, ChevronVisibleClosed };
         const auto pointerStateValue = [this, isEnabled = IsEnabled(), isSelected = IsSelected()]()

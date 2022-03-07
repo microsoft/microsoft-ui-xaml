@@ -160,4 +160,6 @@ private:
     bool m_isPointerOver{ false };
 
     bool m_isRepeaterParentedToFlyout{ false };
+    // used to bypass all Chevron visual state logic in order to keep it unloaded 
+    bool m_hasHadChildren{ false };
 };
