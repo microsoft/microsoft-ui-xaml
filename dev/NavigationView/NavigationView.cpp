@@ -180,7 +180,6 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     {
         m_selectionChangedRevoker.revoke();
         m_autoSuggestBoxQuerySubmittedRevoker.revoke();
-        ClearAllNavigationViewItemRevokers();
     }
 }
 
@@ -1292,10 +1291,6 @@ void NavigationView::OnRepeaterElementClearing(const winrt::ItemsRepeater& ir, c
         auto const nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
         nvibImpl->Depth(0);
         nvibImpl->IsTopLevelItem(false);
-        if (auto nvi = nvib.try_as<winrt::NavigationViewItem>())
-        {
-            ClearNavigationViewItemRevokers(nvi);
-        }
     }
 }
 
@@ -3405,46 +3400,13 @@ void NavigationView::UpdateLeftNavigationOnlyVisualState(bool useTransitions)
 void NavigationView::SetNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi)
 {
     auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
-    nviRevokers->tappedRevoker = nvi.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
-    nviRevokers->keyDownRevoker = nvi.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
-    nviRevokers->gotFocusRevoker = nvi.GotFocus(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemOnGotFocus });
-    nviRevokers->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItemBase::IsSelectedProperty(), { this, &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
-    nviRevokers->isExpandedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItem::IsExpandedProperty(), { this, &NavigationView::OnNavigationViewItemExpandedPropertyChanged });
+    nviRevokers->tappedRevoker = nvi.Tapped(winrt::auto_revoke, { get_weak(), &NavigationView::OnNavigationViewItemTapped });
+    nviRevokers->keyDownRevoker = nvi.KeyDown(winrt::auto_revoke, { get_weak(), &NavigationView::OnNavigationViewItemKeyDown });
+    nviRevokers->gotFocusRevoker = nvi.GotFocus(winrt::auto_revoke, { get_weak(), &NavigationView::OnNavigationViewItemOnGotFocus });
+    nviRevokers->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItemBase::IsSelectedProperty(), { get_weak(), &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
+    nviRevokers->isExpandedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItem::IsExpandedProperty(), { get_weak(), &NavigationView::OnNavigationViewItemExpandedPropertyChanged });
 
     nvi.SetValue(s_NavigationViewItemRevokersProperty, nviRevokers.as<winrt::IInspectable>());
-
-    m_itemsWithRevokerObjects.insert(nvi);
-}
-
-void NavigationView::ClearNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi)
-{
-    RevokeNavigationViewItemRevokers(nvi);
-    nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
-    m_itemsWithRevokerObjects.erase(nvi);
-}
-
-void NavigationView::ClearAllNavigationViewItemRevokers() noexcept
-{
-    for (const auto& nvi : m_itemsWithRevokerObjects)
-    {
-        try
-        {
-            RevokeNavigationViewItemRevokers(nvi);
-            nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
-        }
-        catch (...) {}
-    }
-    m_itemsWithRevokerObjects.clear();
-}
-
-void NavigationView::RevokeNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi)
-{
-    if (auto const revokers = nvi.GetValue(s_NavigationViewItemRevokersProperty))
-    {
-        if (auto const revokersAsNVIR = revokers.try_as<NavigationViewItemRevokers>()) {
-            revokersAsNVIR->RevokeAll();
-        }
-    }
 }
 
 void NavigationView::InvalidateTopNavPrimaryLayout()
