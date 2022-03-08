@@ -3418,17 +3418,33 @@ void NavigationView::SetNavigationViewItemRevokers(const winrt::NavigationViewIt
 
 void NavigationView::ClearNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi)
 {
+    RevokeNavigationViewItemRevokers(nvi);
     nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
     m_itemsWithRevokerObjects.erase(nvi);
 }
 
-void NavigationView::ClearAllNavigationViewItemRevokers()
+void NavigationView::ClearAllNavigationViewItemRevokers() noexcept
 {
     for (const auto& nvi : m_itemsWithRevokerObjects)
     {
-        nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
+        try
+        {
+            RevokeNavigationViewItemRevokers(nvi);
+            nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
+        }
+        catch (...) {}
     }
     m_itemsWithRevokerObjects.clear();
+}
+
+void NavigationView::RevokeNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi)
+{
+    if (auto const revokers = nvi.GetValue(s_NavigationViewItemRevokersProperty))
+    {
+        if (auto const revokersAsNVIR = revokers.try_as<NavigationViewItemRevokers>()) {
+            revokersAsNVIR->RevokeAll();
+        }
+    }
 }
 
 void NavigationView::InvalidateTopNavPrimaryLayout()
