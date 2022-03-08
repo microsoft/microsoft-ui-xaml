@@ -22,13 +22,9 @@ function Get-AvailablePackages ( $package )
     {
         $name, $version = $line.Split(" ")
 
-        # Some packages on the feed use an old versioning scheme. Skip the package if it does not include a -foo portion in the version.
-        if($version.Contains("-"))
+        if ( $name -eq $package )
         {
-            if ( $name -eq $package )
-            {
-                $result += ( MakeVersionFromString $version )
-            }
+            $result += ( MakeVersionFromString $version )
         }
     }
 
