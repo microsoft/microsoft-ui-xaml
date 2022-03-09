@@ -2,6 +2,16 @@ name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 variables:
   minimumExpectedTestsExecutedCount: 35  # Sanity check for minimum expected tests to be reported
   Packaging.EnableSBOMSigning: true
+
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: refs/heads/main
+  - repository: templates_onebranch
+    type: git
+    name: OneBranch.Pipelines/GovernedTemplates
+    ref: refs/heads/main
 jobs:
 - job: Build
   # Skip the build job if we are reusing the output of a previous build.
@@ -21,20 +31,20 @@ jobs:
       Debug_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Debug'
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-        PGOBuildMode: 'Optimize'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-        PGOBuildMode: 'Optimize'
-      Release_Arm:
-        buildPlatform: 'arm'
-        buildConfiguration: 'Release'
-      Release_Arm64:
-        buildPlatform: 'arm64'
-        buildConfiguration: 'Release'
+      # Release_x86:
+      #   buildPlatform: 'x86'
+      #   buildConfiguration: 'Release'
+      #   PGOBuildMode: 'Optimize'
+      # Release_x64:
+      #   buildPlatform: 'x64'
+      #   buildConfiguration: 'Release'
+      #   PGOBuildMode: 'Optimize'
+      # Release_Arm:
+      #   buildPlatform: 'arm'
+      #   buildConfiguration: 'Release'
+      # Release_Arm64:
+      #   buildPlatform: 'arm64'
+      #   buildConfiguration: 'Release'
 
   variables:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
@@ -62,74 +72,87 @@ jobs:
     failOnStderr: true
     displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
 
-  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
-    parameters:
-      signOutput: true
+  - template: v2/Steps/PackageES/Windows.SDL.Sources.Analysis.OS.Undocked.yml@templates_onebranch
+      parameters:
+          globalsdl:
+              codeql:                                          # run codeql
+                  tsandjs:
+                    enabled: true
+                  python:
+                    enabled: true
+                  psscriptanalyzer:
+                    enable: false
+              prefast:                                         # run prefast
+                  enabled: true
 
-  - script: |
-     mkdir $(sbomdir)
-  - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
-    displayName: 'Generate SBOM manifest'
-    inputs:
-      BuildDropPath: $(sbomdir)
+  # - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+  #   parameters:
+  #     signOutput: true
 
-  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
+  # - script: |
+  #    mkdir $(sbomdir)
+  # - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+  #   displayName: 'Generate SBOM manifest'
+  #   inputs:
+  #     BuildDropPath: $(sbomdir)
 
-# Create Nuget Package
-- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
-  parameters:
-    jobName: CreateNugetPackage
-    dependsOn: Build
-    signOutput: true
-    useReleaseTag: '$(MUXFinalRelease)'
-    prereleaseVersionTag: prerelease
+  # - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
-- template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
-  parameters:
-    dependsOn: Build
+# # Create Nuget Package
+# - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+#   parameters:
+#     jobName: CreateNugetPackage
+#     dependsOn: Build
+#     signOutput: true
+#     useReleaseTag: '$(MUXFinalRelease)'
+#     prereleaseVersionTag: prerelease
 
-- template: AzurePipelinesTemplates\MUX-ComplianceChecks-Job.yml
-  parameters:
-    dependsOn: CreateVPack
+# - template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
+#   parameters:
+#     dependsOn: Build
 
-# Build solution that depends on nuget package
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildNugetPkgTests'
-    buildArtifactName: 'NugetPkgTestsDrop'
-    runTestJobName: 'RunNugetPkgTestsInHelix'
-    helixType: 'test/nuget'
-    dependsOn: CreateNugetPackage
-    useFrameworkPkg: false
+# - template: AzurePipelinesTemplates\MUX-ComplianceChecks-Job.yml
+#   parameters:
+#     dependsOn: CreateVPack
 
-# Framework package tests
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildFrameworkPkgTests'
-    buildArtifactName: 'FrameworkPkgTestsDrop'
-    runTestJobName: 'RunFrameworkPkgTestsInHelix'
-    helixType: 'test/frpkg'
-    dependsOn: CreateNugetPackage
-    useFrameworkPkg: true
+# # Build solution that depends on nuget package
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     buildJobName: 'BuildNugetPkgTests'
+#     buildArtifactName: 'NugetPkgTestsDrop'
+#     runTestJobName: 'RunNugetPkgTestsInHelix'
+#     helixType: 'test/nuget'
+#     dependsOn: CreateNugetPackage
+#     useFrameworkPkg: false
 
-- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
-  parameters:
-    dependsOn:
-    - RunNugetPkgTestsInHelix
-    - RunFrameworkPkgTestsInHelix
-    rerunPassesRequiredToAvoidFailure: 5
-    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+# # Framework package tests
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     buildJobName: 'BuildFrameworkPkgTests'
+#     buildArtifactName: 'FrameworkPkgTestsDrop'
+#     runTestJobName: 'RunFrameworkPkgTestsInHelix'
+#     helixType: 'test/frpkg'
+#     dependsOn: CreateNugetPackage
+#     useFrameworkPkg: true
 
-# NuGet package WACK tests
-- template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
-  parameters:
-    name: 'NugetPkgWACKTests'
-    dependsOn: BuildNugetPkgTests
-    artifactName: 'NugetPkgTestsDrop'
+# - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+#   parameters:
+#     dependsOn:
+#     - RunNugetPkgTestsInHelix
+#     - RunFrameworkPkgTestsInHelix
+#     rerunPassesRequiredToAvoidFailure: 5
+#     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
 
-# Framework package WACK tests
-- template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
-  parameters:
-    name: 'FrameworkPkgWACKTests'
-    dependsOn: BuildFrameworkPkgTests
-    artifactName: 'FrameworkPkgTestsDrop'
+# # NuGet package WACK tests
+# - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+#   parameters:
+#     name: 'NugetPkgWACKTests'
+#     dependsOn: BuildNugetPkgTests
+#     artifactName: 'NugetPkgTestsDrop'
+
+# # Framework package WACK tests
+# - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+#   parameters:
+#     name: 'FrameworkPkgWACKTests'
+#     dependsOn: BuildFrameworkPkgTests
+#     artifactName: 'FrameworkPkgTestsDrop'
