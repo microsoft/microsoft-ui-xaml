@@ -1,0 +1,8 @@
+{​​​​​
+    "instanceUrl": "https://microsoft.visualstudio.com",
+    "projectName": "os",
+    "areaPath": "OS\\WDX\\DXP\\WinDev\\Controls",
+    "iterationPath": "OS",
+    "notificationAliases": [ "kmahone@microsoft.com" ],
+    "ignoreBranchName": true
+}

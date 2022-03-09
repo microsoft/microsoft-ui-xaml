@@ -54,6 +54,8 @@ jobs:
     sbomdir: $(Build.ArtifactStagingDirectory)\sbom\$(buildConfiguration)\$(buildPlatform)
   steps:
 
+  - checkout: self
+
   # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
   - task: DownloadPackage@1
     displayName: 'Download Microsoft.Telemetry.Inbox.Native'
@@ -82,10 +84,6 @@ jobs:
     parameters:
       globalsdl:
         codeql:                                          # run codeql
-          tsandjs:
-            enabled: true
-          python:
-            enabled: true
           psscriptanalyzer:
             enable: false
         prefast:                                         # run prefast
