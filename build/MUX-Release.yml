@@ -64,13 +64,19 @@ jobs:
       version: '10.0.18362.1-190318-1202.19h1-release.amd64fre'             # latest version
       downloadPath: '$(System.DefaultWorkingDirectory)'                     # download and extract to repo root
 
-  # Replace the stubbed MicrosoftTelemetry.h with the real one
-  # Delete the existing stubbed MicrosoftTelemetry.h first, to ensure that if it is no longer at the expected path that the task, and build, fails
-  - script: |
-     del $(System.DefaultWorkingDirectory)\dev\telemetry\MicrosoftTelemetry.h
-     move /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dev\telemetry\
-    failOnStderr: true
-    displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
+  # # Replace the stubbed MicrosoftTelemetry.h with the real one
+  # # Delete the existing stubbed MicrosoftTelemetry.h first, to ensure that if it is no longer at the expected path that the task, and build, fails
+  # - script: |
+  #    del $(System.DefaultWorkingDirectory)\dev\telemetry\MicrosoftTelemetry.h
+  #    move /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dev\telemetry\
+  #   failOnStderr: true
+  #   displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
+
+  - template: MUX-InstallNuget-Steps.yml
+
+  - task: NuGetAuthenticate@0
+
+  - task: NodeTool@0
 
   - template: v2/Steps/PackageES/Windows.SDL.Sources.Analysis.OS.Undocked.yml@templates_onebranch
     parameters:
