@@ -3,10 +3,10 @@ REM %~dp0 is position of script file
 
 
 if exist %~dp0"..\..\BuildOutput\Debug\x86\Microsoft.UI.Xaml" (
-	call %~dp0..\..\tools\MakeAppxHelper.cmd x86 debug %*
+    call %~dp0..\..\tools\MakeAppxHelper.cmd x86 debug %*
 )
 if exist %~dp0"..\..\BuildOutput\Release\x86\Microsoft.UI.Xaml" (
-	call %~dp0..\..\tools\MakeAppxHelper.cmd x86 release%*
+    call %~dp0..\..\tools\MakeAppxHelper.cmd x86 release%*
 )
 if exist %~dp0"..\..\BuildOutput\Debug\x64\Microsoft.UI.Xaml" (
   call %~dp0..\..\tools\MakeAppxHelper.cmd x64 debug %*

@@ -102,7 +102,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 {
                     ComboBox languageChooserComboBox = new ComboBox(languageChooser);
 
-					languageChooserComboBox.SelectItemById(Options.LanguageOverride);
+                    languageChooserComboBox.SelectItemById(Options.LanguageOverride);
                 }
             }
         }
@@ -293,7 +293,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             TestEnvironment.LogVerbose("TestSetupHelper.Dispose()");
             TestCleanupHelper.TestSetupHelperPendingDisposals--;
 
-            while(OpenedTestPages > 0)
+            while (OpenedTestPages > 0)
             {
                 GoBack();
                 OpenedTestPages--;

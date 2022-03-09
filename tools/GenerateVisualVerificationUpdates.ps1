@@ -83,7 +83,7 @@ if($BuildId)
     if($baseNameList.Count -lt 1)
     {
         Write-Host "No verification files were found, did you call the script on the correct directory?"
-	}
+    }
     
     $staging = New-TemporaryDirectory
     foreach($baseName in $baseNameList)
@@ -125,11 +125,11 @@ if($BuildId)
                 {
                     $currentVersionedVerificationFileIndexForI = $currentVerificationFilesIndexesLessThanI[0]
                     $currentVersionedVerificationFileForI = $currentVersionedVerificationFiles | Where {$_.Name.StartsWith("$baseName-$currentVersionedVerificationFileIndexForI.")}
-                    $finalVersionedVerificationFiles += $currentVersionedVerificationFileForI        
+                    $finalVersionedVerificationFiles += $currentVersionedVerificationFileForI
                 }
                 else
                 {
-                    $finalVersionedVerificationFiles += $currentBaseVerificationFile				
+                    $finalVersionedVerificationFiles += $currentBaseVerificationFile
                 }
             }
         }

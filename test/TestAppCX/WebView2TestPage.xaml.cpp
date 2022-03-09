@@ -27,7 +27,7 @@ using namespace Windows::UI::Xaml::Navigation;
 
 WebView2TestPage::WebView2TestPage()
 {
-	InitializeComponent();
+    InitializeComponent();
 }
 
 void WebView2TestPage::OnGo(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)

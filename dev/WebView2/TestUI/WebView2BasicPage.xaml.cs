@@ -197,6 +197,8 @@ namespace MUXControlsTestApp
             NonAsciiUriTest,
             OffTreeWebViewInputTest,
             HtmlDropdownTest,
+            HiddenThenVisibleTest,
+            ParentHiddenThenVisibleTest
         };
 
         // Map of TestList entry to its webpage (index in TestPageNames[])
@@ -260,6 +262,8 @@ namespace MUXControlsTestApp
             { TestList.NonAsciiUriTest, 7 },
             { TestList.OffTreeWebViewInputTest, 1 },
             { TestList.HtmlDropdownTest, 5 },
+            { TestList.HiddenThenVisibleTest, 1 },
+            { TestList.ParentHiddenThenVisibleTest, 1 },
         };
 
         readonly string[] TestPageNames =
@@ -537,7 +541,7 @@ namespace MUXControlsTestApp
                     {
                         AddWebViewControl("MyWebView2B");
                         AddWebViewControl("MyWebView2C");
-                        WebView2Common.LoadWebPage(MyWebView2, TestPageNames[0]);
+                        WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[test]]);
                     }
                     break;
                 case TestList.MultipleWebviews_FocusTest:
@@ -565,9 +569,7 @@ namespace MUXControlsTestApp
                 case TestList.SourceBeforeLoadTest:
                     {
                         // Remove existing WebView, we're going to replace it
-                        RemoveWebViewEventHandlers(MyWebView2);
-                        Border parentBorder = MyWebView2.Parent as Border;
-                        parentBorder.Child = null;
+                        Border parentBorder = RemoveExistingWebViewControl(MyWebView2);
 
                         Uri uri = WebView2Common.GetTestPageUri("SimplePageWithButton.html");
                         var newWebView2 = new WebView2() {
@@ -612,9 +614,7 @@ namespace MUXControlsTestApp
                 case TestList.WindowlessPopupTest:
                     {
                         // Remove existing WebView so it doesn't get confused with the one in the popup
-                        RemoveWebViewEventHandlers(MyWebView2);
-                        Border parentBorder = MyWebView2.Parent as Border;
-                        parentBorder.Child = null;
+                        _ = RemoveExistingWebViewControl(MyWebView2);
 
                         // Create popup contents: a new webview
                         var webviewInPopup = new WebView2() {
@@ -662,9 +662,7 @@ namespace MUXControlsTestApp
                 case TestList.CursorUpdateTest:
                     {
                         // Remove existing WebView, we're going to replace it
-                        RemoveWebViewEventHandlers(MyWebView2);
-                        Border parentBorder = MyWebView2.Parent as Border;
-                        parentBorder.Child = null;
+                        Border parentBorder = RemoveExistingWebViewControl(MyWebView2);
 
                         // Insert webview with public ProtectedCursor
                         var newWebView2 = new WebView2WithCursor() {
@@ -691,10 +689,67 @@ namespace MUXControlsTestApp
                 case TestList.OffTreeWebViewInputTest:
                     {
                         // Remove existing webview
-                        RemoveWebViewEventHandlers(MyWebView2);
-                        Border parentBorder = MyWebView2.Parent as Border;
-                        parentBorder.Child = null;
+                        Border parentBorder = RemoveExistingWebViewControl(MyWebView2);
                         parentBorder.BorderBrush = new SolidColorBrush(Colors.Pink);
+                    }
+                    break;
+                case TestList.HiddenThenVisibleTest:
+                    {
+                        // Remove existing WebView, we're going to replace it with a hidden one
+                        Border parentBorder = RemoveExistingWebViewControl(MyWebView2);
+                        var parentStackPanel = parentBorder.Parent as StackPanel;
+                        parentStackPanel.Children.Remove(parentBorder);
+
+                        // Create a new border that gets its size from the webview
+                        var newBorder = new Border() {
+                            BorderBrush = new SolidColorBrush(Colors.Red),
+                            BorderThickness = new Thickness(5)
+                        };
+
+                        // Add a new, collapsed WebView2 into the tree
+                        var uri = WebView2Common.GetTestPageUri(TestPageNames[TestInfoDictionary[test]]);
+                        var newWebView2 = new WebView2() {
+                            Name = "MyWebView2",
+                            Margin = new Thickness(8, 8, 8, 8),
+                            Width = 670,
+                            Height = 370,
+                            Source = uri,
+                            Visibility = Visibility.Collapsed,
+                        };
+                        AutomationProperties.SetName(newWebView2, "MyWebView2");
+                        newBorder.Child = newWebView2;
+                        parentStackPanel.Children.Add(newBorder);
+                        AddWebViewEventHandlers(newWebView2);
+                    }
+                    break;
+                case TestList.ParentHiddenThenVisibleTest:
+                    {
+                        // Remove existing WebView, we're going to replace it with a hidden one
+                        Border parentBorder = RemoveExistingWebViewControl(MyWebView2);
+                        var parentStackPanel = parentBorder.Parent as StackPanel;
+                        parentStackPanel.Children.Remove(parentBorder);
+
+                        // Create a new, collapsed border that gets its size from the webview
+                        var newBorder = new Border() {
+                            BorderBrush = new SolidColorBrush(Colors.Red),
+                            BorderThickness = new Thickness(5),
+                            Visibility = Visibility.Collapsed
+                        };
+
+                        // Add a new WebView2 into the tree
+                        var uri = WebView2Common.GetTestPageUri(TestPageNames[TestInfoDictionary[test]]);
+                        var newWebView2 = new WebView2() {
+                            Name = "MyWebView2",
+                            Margin = new Thickness(8, 8, 8, 8),
+                            Width = 670,
+                            Height = 370,
+                            Source = uri,
+                            Visibility = Visibility.Visible,
+                        };
+                        AutomationProperties.SetName(newWebView2, "MyWebView2");
+                        newBorder.Child = newWebView2;
+                        parentStackPanel.Children.Add(newBorder);
+                        AddWebViewEventHandlers(newWebView2);
                     }
                     break;
                 default:
@@ -901,6 +956,14 @@ namespace MUXControlsTestApp
             };
             stackPanel.Children.Add(border);
             WebView2Collection.Children.Add(stackPanel);
+        }
+
+        Border RemoveExistingWebViewControl(WebView2 webview)
+        {
+            RemoveWebViewEventHandlers(webview);
+            Border parentBorder = webview.Parent as Border;
+            parentBorder.Child = null;
+            return parentBorder;
         }
 
         void AddWebViewEventHandlers(WebView2 webview)
@@ -1116,6 +1179,11 @@ namespace MUXControlsTestApp
                         break;
 
                     case TestList.OffTreeWebViewInputTest:
+                        expectedStringResult = "Left mouse button clicked.";
+                        break;
+
+                    case TestList.HiddenThenVisibleTest:
+                    case TestList.ParentHiddenThenVisibleTest:
                         expectedStringResult = "Left mouse button clicked.";
                         break;
 
@@ -1805,6 +1873,36 @@ namespace MUXControlsTestApp
                             logger.Verify(selctedOption.Equals("\"2\""),
                                 string.Format("Test {0} Failed, Expected option \"2\" to be selcted, actually got {1}",
                                     selectedTest, selctedOption));;
+                        }
+                        break;
+                    case TestList.HiddenThenVisibleTest:
+                        {
+                            logger.Verify(MyWebView2.Visibility == Visibility.Collapsed,
+                                 string.Format("Test {0}: Incorrect setup, Expected MyWebView2.Visibility to be Collapsed, was {1}",
+                                    selectedTest, MyWebView2.Visibility));
+
+                            // Make WebView2 visible
+                            MyWebView2.Visibility = Visibility.Visible;
+
+                            logger.Verify(MyWebView2.IsHitTestVisible,
+                                 string.Format("Test {0}: Failed, Expected MyWebView2.IsHitTestVisible to be true, was {1}",
+                                    selectedTest, MyWebView2.IsHitTestVisible));
+                        }
+                        break;
+                    case TestList.ParentHiddenThenVisibleTest:
+                        {
+                            var parentBorder = MyWebView2.Parent as Border;
+
+                            logger.Verify(parentBorder.Visibility == Visibility.Collapsed,
+                                 string.Format("Test {0}: Incorrect setup, Expected MyWebView2.Visibility to be Collapsed, was {1}",
+                                    selectedTest, parentBorder.Visibility));
+
+                            // Make WebView2's parent Border visible
+                            parentBorder.Visibility = Visibility.Visible;
+
+                            logger.Verify(MyWebView2.IsHitTestVisible,
+                                 string.Format("Test {0}: Failed, Expected MyWebView2.IsHitTestVisible to be true, was {1}",
+                                    selectedTest, MyWebView2.IsHitTestVisible));
                         }
                         break;
 

@@ -308,7 +308,7 @@
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="*" />
                                             </Grid.RowDefinitions>
-                                            <ContentControl x:Name="Title" Margin="{ThemeResource ContentDialogTitleMargin}" Content="{TemplateBinding Title}" ContentTemplate="{TemplateBinding TitleTemplate}" FontSize="20" FontFamily="XamlAutoFontFamily" FontWeight="Normal" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Left" VerticalAlignment="Top" IsTabStop="False">
+                                            <ContentControl x:Name="Title" Margin="{ThemeResource ContentDialogTitleMargin}" Content="{TemplateBinding Title}" ContentTemplate="{TemplateBinding TitleTemplate}" FontSize="20" FontFamily="{ThemeResource ContentControlThemeFontFamily}" FontWeight="Normal" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Left" VerticalAlignment="Top" IsTabStop="False">
                                                 <ContentControl.Template>
                                                     <ControlTemplate TargetType="ContentControl">
                                                         <ContentPresenter Content="{TemplateBinding Content}" MaxLines="2" TextWrapping="Wrap" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="{TemplateBinding Padding}" ContentTransitions="{TemplateBinding ContentTransitions}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
