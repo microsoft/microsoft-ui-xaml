@@ -3,8 +3,8 @@ parameters:
 
 jobs:
 - job: Compliance
-  dependsOn:
-    - ${{ parameters.dependsOn }}
+  # dependsOn:
+  #   - ${{ parameters.dependsOn }}
 
   pool: 
     name: WinDevPool-L
