@@ -827,30 +827,34 @@ void WebView2::CreateMissingAnaheimWarning()
     linkText.Text(ResourceAccessor::GetLocalizedStringResource(SR_DownloadWebView2Runtime));
     auto hyperlink = winrt::Hyperlink();
     hyperlink.Inlines().Append(linkText);
-    auto url = winrt::Uri(L"https://aka.ms/winui3/webview2download/");
+    auto url = winrt::Uri(L"https://aka.ms/winui2/webview2download/");
     hyperlink.NavigateUri(url);
     warning.Inlines().Append(hyperlink);
     Content(warning);
 }
 
-// We could have a child TextBlock (see CreateMissingAnaheimWarning), make sure it is visited by Measure pass.
+// We could have a child Grid (see AddChildPanel) or a child TextBlock (see CreateMissingAnaheimWarning).
+// Make sure it is visited by the Measure pass.
 winrt::Size WebView2::MeasureOverride(winrt::Size const& availableSize)
 {
     //if (auto child = Content().try_as<winrt::FrameworkElement>())
     //{
-    //    Content().Measure(availableSize);
+    //    child.Measure(availableSize);
+    //    return child.DesiredSize;
     //}
 
     return __super::MeasureOverride(availableSize);
 }
 
-// We could have a child TextBlock (see CreateMissingAnaheimWarning), make sure it is visited by Arrange pass.
+// We could have a child Grid (see AddChildPanel) or a child TextBlock (see CreateMissingAnaheimWarning).
+// Make sure it is visited by the Arrange pass.
 winrt::Size WebView2::ArrangeOverride(winrt::Size const& finalSize)
 {
-    //if (auto child = Content().try_as<winrt::FrameworkElement>())
-    //{
-    //    Content().Arrange(winrt::Rect{ winrt::Point{0,0}, finalSize });
-    //}
+    if (auto child = Content().try_as<winrt::FrameworkElement>())
+    {
+        child.Arrange(winrt::Rect{ winrt::Point{0,0}, finalSize });
+        return finalSize;
+    }
 
     return __super::ArrangeOverride(finalSize);
 }
@@ -1255,14 +1259,28 @@ void WebView2::FireCoreWebView2Initialized(winrt::hresult exception)
     m_coreWebView2InitializedEventSource(*this, *eventArgs);
 }
 
-void WebView2::HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, const winrt::RoutedEventArgs&) noexcept
+void WebView2::HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, const winrt::RoutedEventArgs&)
 {
     if (m_coreWebView && m_xamlFocusChangeInfo.m_isPending)
     {
-        // In current CoreWebView2 API, MoveFocus is not expected to fail, so set m_webHasFocus here rather than
-        // in asynchronous (MOJO/cross-proc) CoreWebView2 GotFocus event.
-        m_webHasFocus = true;
-        m_coreWebViewController.MoveFocus(m_xamlFocusChangeInfo.m_storedMoveFocusReason);
+        try
+        {
+            m_coreWebViewController.MoveFocus(m_xamlFocusChangeInfo.m_storedMoveFocusReason);
+            m_webHasFocus = true;
+        }
+        catch (winrt::hresult_error e)
+        {
+            // Occasionally, a request to restore the minimized window does not complete. This triggers
+            // FocusManager to set Xaml Focus to WV2 and consequently into CWV2 MoveFocus() call above, 
+            // which in turn will attempt ::SetFocus() on InputHWND, and that will fail with E_INVALIDARG
+            // since that HWND remains minimized. Work around by ignoring this error here. Since the app
+            // is minimized, focus state is not relevant - the next (successful) attempt to restrore the app
+            // will set focus into WV2/CWV2 correctly.
+            if (e.code().value != E_INVALIDARG)
+            {
+                throw;
+            }
+        }
         m_xamlFocusChangeInfo.m_isPending = false;
     }
 }
@@ -1491,6 +1509,28 @@ void WebView2::TryCompleteInitialization()
             [this](auto&&, auto&&) { UpdateDefaultBackgroundColor(); });
     }
 
+    // WebView2 in WinUI 2 is a ContentControl that either renders its web content to a SpriteVisual, or in the case that
+    // the WebView2 Runtime is not installed, renders a message to that effect as its Content. In the case where the
+    // WebView2 starts with Visibility.Collapsed, hit testing code has trouble seeing the WebView2 if it does not have
+    // Content. To work around this, give the WebView2 a transparent Grid as Content that hit testing can find. The size
+    // of this Grid must be kept in sync with the size of the WebView2 (see ResizeChildPanel()).
+    AddChildPanel();
+
+    CreateAndSetVisual();
+
+    // If we were recreating the webview after a core process failure, indicate that we have now recovered
+    m_isCoreFailure_BrowserExited_State = false;
+}
+
+void WebView2::AddChildPanel()
+{
+    auto panelContent = winrt::Grid();
+    panelContent.Background(winrt::SolidColorBrush(winrt::Colors::Transparent()));
+    Content(panelContent);
+}
+
+void WebView2::CreateAndSetVisual()
+{
 #ifdef WINUI3
     if (!m_systemVisualBridge)
     {
@@ -1520,10 +1560,6 @@ void WebView2::TryCompleteInitialization()
     auto coreWebView2CompositionControllerInterop = m_coreWebViewCompositionController.as<ICoreWebView2CompositionControllerInterop>();
     winrt::check_hresult(coreWebView2CompositionControllerInterop->put_RootVisualTarget(m_visual.as<::IUnknown>().get()));
 #endif
-
-
-    // If we were recreating the webview after a core process failure, indicate that we have now recovered
-    m_isCoreFailure_BrowserExited_State = false;
 }
 
 winrt::IAsyncOperation<winrt::hstring> WebView2::ExecuteScriptAsync(winrt::hstring javascriptCode)
@@ -1733,9 +1769,24 @@ void WebView2::HandleRendered(const winrt::IInspectable& /*sender*/, const winrt
 
 void WebView2::CheckAndUpdateWebViewPosition()
 {
-    if (!m_coreWebViewController) return;
+    if (!m_coreWebViewController)
+    {
+        return;
+    }
 
-    // Check if the position of the WebView within the window has changed
+    // Skip this work if WebView2 has just been removed from the tree - otherwise the CWV2.Bounds update could cause a flicker.
+    //
+    // After WebView2 is removed from the tree, this handler gets run one more time during the frame's render pass 
+    // (WebView2::HandleRendered()). The removed element's ActualWidth or ActualHeight could now evaluate to zero 
+    // (if Width or Height weren't explicitly set), causing 0-sized Bounds to get applied below and clear the web content, 
+    // producing a flicker that last until DComp Commit for this frame is processed by the compositor.
+    if (!this->IsLoaded())
+    {
+        return;
+    }
+
+    // Check if the position of the WebView2 within the window has changed
+    bool changed = false;
     auto transform = TransformToVisual(nullptr);
     auto topLeft = transform.TransformPoint(winrt::Point(0, 0));
 
@@ -1746,13 +1797,32 @@ void WebView2::CheckAndUpdateWebViewPosition()
     {
         m_webViewScaledPosition.X = scaledTopLeftX;
         m_webViewScaledPosition.Y = scaledTopLeftY;
+        changed = true;
     }
 
-    m_webViewScaledSize.X = ceil(static_cast<float>(ActualWidth()) * m_rasterizationScale);
-    m_webViewScaledSize.Y = ceil(static_cast<float>(ActualHeight()) * m_rasterizationScale);
+    auto scaledSizeX = ceil(static_cast<float>(ActualWidth()) * m_rasterizationScale);
+    auto scaledSizeY = ceil(static_cast<float>(ActualHeight()) * m_rasterizationScale);
+    if (scaledSizeX != m_webViewScaledSize.X || scaledSizeY != m_webViewScaledSize.Y)
+    {
+        m_webViewScaledSize.X = scaledSizeX;
+        m_webViewScaledSize.Y = scaledSizeY;
+        changed = true;
+    }
 
-    // We create the Bounds using X, Y, width, and height
-    m_coreWebViewController.Bounds({
+    if (changed)
+    {
+        // We create the Bounds using X, Y, width, and height
+        m_coreWebViewController.Bounds({
+            (m_webViewScaledPosition.X),
+            (m_webViewScaledPosition.Y),
+            (m_webViewScaledSize.X),
+            (m_webViewScaledSize.Y) });
+    }
+}
+
+winrt::Rect WebView2::GetBoundingRectangle()
+{
+    return winrt::Rect({
         (m_webViewScaledPosition.X),
         (m_webViewScaledPosition.Y),
         (m_webViewScaledSize.X),

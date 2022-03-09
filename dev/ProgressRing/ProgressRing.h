@@ -43,6 +43,7 @@ private:
     void SetLottieForegroundColor(const winrt::IAnimatedVisualSource);
     void SetLottieBackgroundColor(const winrt::IAnimatedVisualSource);
     void OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&);
+    void OnLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
     void UpdateStates();
     void ApplyTemplateSettings();
     void UpdateLottieProgress();

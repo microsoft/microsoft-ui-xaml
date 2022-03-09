@@ -142,6 +142,10 @@ void XamlControlsResources::UpdateSource()
         }
         catch (winrt::hresult_error const& e)
         {
+            // AcrylicBrushes are defined in WUXC other than MUXC, so the resources are quirked. If rs2 or below resources is loaded in OS repo, it crashes here.
+            // Check TargetPlatformVersion and MaxVersionTested to make sure it's a big number > 16299. For example
+            // <TargetPlatformVersion>10.0.17763.0</TargetPlatformVersion>
+            // <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="12.0.0.0" />
             if (e.code() == E_FAIL)
             {
                 MUX_FAIL_FAST_MSG(e.message().c_str());

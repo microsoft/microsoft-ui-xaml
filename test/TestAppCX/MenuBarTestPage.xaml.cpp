@@ -24,5 +24,5 @@ using namespace Windows::UI::Xaml::Navigation;
 
 MenuBarTestPage::MenuBarTestPage()
 {
-	InitializeComponent();
+    InitializeComponent();
 }

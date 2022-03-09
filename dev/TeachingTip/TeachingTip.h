@@ -209,6 +209,7 @@ private:
 
     winrt::Size m_currentXamlRootSize{ 0,0 };
 
+    bool m_ignoreNextIsOpenChanged{ false };
     bool m_isTemplateApplied{ false };
     bool m_createNewPopupOnOpen{ false };
 

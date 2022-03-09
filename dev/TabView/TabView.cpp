@@ -691,11 +691,31 @@ void TabView::OnItemsPresenterSizeChanged(const winrt::IInspectable& sender, con
         // Presenter size didn't change because of item being removed, so update manually
         UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
         UpdateTabWidths();
+        // Make sure that the selected tab is fully in view and not cut off
+        BringSelectedTabIntoView();
+    }
+}
+
+void TabView::BringSelectedTabIntoView()
+{
+    if(SelectedItem())
+    {
+        auto tvi = SelectedItem().try_as<winrt::TabViewItem>();
+        if (!tvi)
+        {
+            tvi = ContainerFromItem(SelectedItem()).try_as<winrt::TabViewItem>();
+        }
+        winrt::get_self<TabViewItem>(tvi)->StartBringTabIntoView();
     }
 }
 
 void TabView::OnItemsChanged(winrt::IInspectable const& item)
 {
+    if(m_isDragging)
+    {
+        return;
+    }
+
     if (auto args = item.as<winrt::IVectorChangedEventArgs>())
     {
         m_tabItemsChangedEventSource(*this, args);
@@ -766,8 +786,6 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
 
 void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
 {
-
-    
     if (auto&& listView = m_listView.get())
     {
         SelectedIndex(listView.SelectedIndex());
@@ -835,6 +853,13 @@ void TabView::OnListViewDrop(const winrt::IInspectable& sender, const winrt::Dra
 void TabView::OnListViewDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args)
 {
     m_isDragging = false;
+
+    // Selection change was disabled during drag, update SelectedIndex now
+    if (auto&& listView = m_listView.get())
+    {
+        SelectedIndex(listView.SelectedIndex());
+        SelectedItem(listView.SelectedItem());
+    }
 
     auto item = args.Items().GetAt(0);
     auto tab = FindTabViewItemFromDragItem(item);
