@@ -13,7 +13,7 @@ resources:
     name: OneBranch.Pipelines/GovernedTemplates
     ref: refs/heads/main
 jobs:
-- Job: Scanning
+- job: Scanning
   pool: 
     name: WinDevPool-L
     demands: ImageOverride -equals WinDevVS16-9
