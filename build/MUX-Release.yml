@@ -73,17 +73,17 @@ jobs:
     displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
 
   - template: v2/Steps/PackageES/Windows.SDL.Sources.Analysis.OS.Undocked.yml@templates_onebranch
-      parameters:
-          globalsdl:
-              codeql:                                          # run codeql
-                  tsandjs:
-                    enabled: true
-                  python:
-                    enabled: true
-                  psscriptanalyzer:
-                    enable: false
-              prefast:                                         # run prefast
-                  enabled: true
+    parameters:
+      globalsdl:
+        codeql:                                          # run codeql
+          tsandjs:
+            enabled: true
+          python:
+            enabled: true
+          psscriptanalyzer:
+            enable: false
+        prefast:                                         # run prefast
+          enabled: true
 
   # - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
   #   parameters:
