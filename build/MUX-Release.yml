@@ -13,16 +13,33 @@ resources:
     name: OneBranch.Pipelines/GovernedTemplates
     ref: refs/heads/main
 jobs:
+- Job: Scanning
+  pool: 
+    name: WinDevPool-L
+    demands: ImageOverride -equals WinDevVS16-9
+
+  steps:
+
+  - checkout: self
+
+  - task: NodeTool@0
+
+  - template: v2/Steps/PackageES/Windows.SDL.Sources.Analysis.OS.Undocked.yml@templates_onebranch
+    parameters:
+      globalsdl:
+        codeql:                                          # run codeql
+          psscriptanalyzer:
+            enable: false
+        prefast:                                         # run prefast
+          enabled: true
+
 - job: Build
   # Skip the build job if we are reusing the output of a previous build.
   # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
   condition:
     eq(variables['useBuildOutputFromBuildId'],'')
   pool: 
-    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: WinDevPoolOSS-L
-    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: WinDevPool-L
+    name: WinDevPool-L
     demands: ImageOverride -equals WinDevVS16-9
   timeoutInMinutes: 120
   strategy:
@@ -66,41 +83,33 @@ jobs:
       version: '10.0.18362.1-190318-1202.19h1-release.amd64fre'             # latest version
       downloadPath: '$(System.DefaultWorkingDirectory)'                     # download and extract to repo root
 
-  # # Replace the stubbed MicrosoftTelemetry.h with the real one
-  # # Delete the existing stubbed MicrosoftTelemetry.h first, to ensure that if it is no longer at the expected path that the task, and build, fails
-  # - script: |
-  #    del $(System.DefaultWorkingDirectory)\dev\telemetry\MicrosoftTelemetry.h
-  #    move /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dev\telemetry\
-  #   failOnStderr: true
-  #   displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
+  # Replace the stubbed MicrosoftTelemetry.h with the real one
+  # Delete the existing stubbed MicrosoftTelemetry.h first, to ensure that if it is no longer at the expected path that the task, and build, fails
+  - script: |
+     del $(System.DefaultWorkingDirectory)\dev\telemetry\MicrosoftTelemetry.h
+     move /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dev\telemetry\
+    failOnStderr: true
+    displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
 
-  - template: AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml
+  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+    parameters:
+      signOutput: true
 
-  - task: NuGetAuthenticate@0
+  - script: |
+     mkdir $(sbomdir)
+  - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+    displayName: 'Generate SBOM manifest'
+    inputs:
+      BuildDropPath: $(sbomdir)
+
+  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
   - task: NodeTool@0
 
-  - template: v2/Steps/PackageES/Windows.SDL.Sources.Analysis.OS.Undocked.yml@templates_onebranch
+  - template: v2/Steps/PackageES/Windows.SDL.Binary.Analysis.OS.Undocked.yml@templates_onebranch
     parameters:
-      globalsdl:
-        codeql:                                          # run codeql
-          psscriptanalyzer:
-            enable: false
-        prefast:                                         # run prefast
-          enabled: true
-
-  # - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
-  #   parameters:
-  #     signOutput: true
-
-  # - script: |
-  #    mkdir $(sbomdir)
-  # - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
-  #   displayName: 'Generate SBOM manifest'
-  #   inputs:
-  #     BuildDropPath: $(sbomdir)
-
-  # - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
+      variables:
+        ob_outputDirectory: $(Build.ArtifactStagingDirectory)\                   # provide path to binaries to be scanned
 
 # # Create Nuget Package
 # - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
