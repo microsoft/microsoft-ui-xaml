@@ -72,7 +72,7 @@ jobs:
   #   failOnStderr: true
   #   displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
 
-  - template: MUX-InstallNuget-Steps.yml
+  - template: AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml
 
   - task: NuGetAuthenticate@0
 
