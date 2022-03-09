@@ -63,6 +63,7 @@ private:
     PropertyChanged_revoker m_automationIdChangedRevoker{};
     winrt::CoreDispatcher::AcceleratorKeyActivated_revoker m_acceleratorKeyActivatedRevoker{};
     winrt::UIElement::PreviewKeyDown_revoker m_previewKeyDownForF6Revoker{};
+    winrt::UIElement::PreviewKeyDown_revoker m_popupPreviewKeyDownForF6Revoker{};
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
     winrt::Button::Click_revoker m_alternateCloseButtonClickedRevoker{};
     winrt::Button::Click_revoker m_actionButtonClickedRevoker{};

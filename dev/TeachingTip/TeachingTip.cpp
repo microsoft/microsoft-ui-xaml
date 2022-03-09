@@ -917,10 +917,28 @@ void TeachingTip::IsOpenChangedToOpen()
                 if (auto const content = xamlRoot.Content())
                 {
                     m_previewKeyDownForF6Revoker = content.PreviewKeyDown(winrt::auto_revoke, { this, &TeachingTip::OnF6PreviewKeyDownClicked });
+                }
+
+                if (auto&& popup = m_popup.get())
+                {
+                    if (auto const popupXamlRoot = popup.XamlRoot())
+                    {
+                        if (xamlRoot != popupXamlRoot)
+                        {
+                            if (auto const content = xamlRoot.Content())
+                            {
+                                m_popupPreviewKeyDownForF6Revoker = content.PreviewKeyDown(winrt::auto_revoke, { this, &TeachingTip::OnF6PreviewKeyDownClicked });
+                            }
+                        }
+                    }
+                }
+
+                if (m_previewKeyDownForF6Revoker || m_popupPreviewKeyDownForF6Revoker)
+                {
                     return;
                 }
             }
-        };
+        }
 
         m_acceleratorKeyActivatedRevoker = Dispatcher().AcceleratorKeyActivated(winrt::auto_revoke, { this, &TeachingTip::OnF6AcceleratorKeyClicked });
         return;
@@ -953,6 +971,7 @@ void TeachingTip::IsOpenChangedToClose()
 
     m_acceleratorKeyActivatedRevoker.revoke();
     m_previewKeyDownForF6Revoker.revoke();
+    m_popupPreviewKeyDownForF6Revoker.revoke();
     m_currentEffectiveTipPlacementMode = winrt::TeachingTipPlacementMode::Auto;
     TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
 }
