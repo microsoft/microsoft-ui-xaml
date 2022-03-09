@@ -1266,7 +1266,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyNVIOutlivingNVDoesNotCrash2()
+        public void VerifyNVIOutlivingNVDoesNotCrash()
         {
             NavigationViewItem menuItem1 = null;
             RunOnUIThread.Execute(() =>
