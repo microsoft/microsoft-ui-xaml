@@ -35,7 +35,7 @@ void NavigationViewItemPresenter::OnApplyTemplate()
 
     if (auto navigationViewItem = GetNavigationViewItem())
     {
-        if(navigationViewItem->HasChildren())
+        if(navigationViewItem->HasPotentialChildren())
         {
             LoadChevron();
         }

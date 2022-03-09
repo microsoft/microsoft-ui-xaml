@@ -106,20 +106,9 @@ void NavigationViewItem::OnApplyTemplate()
         Loaded({ this, &NavigationViewItem::OnLoaded });
     }
 
-    // Retrieve reference to NavigationView
-    if (auto nvImpl = winrt::get_self<NavigationView>(GetNavigationView()))
+    if(HasPotentialChildren())
     {
-        if (auto repeater = GetTemplateChildT<winrt::ItemsRepeater>(c_repeater, controlProtected))
-        {
-            m_repeater.set(repeater);
-
-            // Primary element setup happens in NavigationView
-            m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { nvImpl,  &NavigationView::OnRepeaterElementPrepared });
-            m_repeaterElementClearingRevoker = repeater.ElementClearing(winrt::auto_revoke, { nvImpl, &NavigationView::OnRepeaterElementClearing });
-
-            repeater.ItemTemplate(*(nvImpl->GetNavigationViewItemsFactory()));
-        }
-
+        LoadMenuItemsHost();
         UpdateRepeaterItemsSource();
     }
 
@@ -138,6 +127,39 @@ void NavigationViewItem::OnApplyTemplate()
 
     auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
     NavigationView::CreateAndAttachHeaderAnimation(visual);
+}
+
+void NavigationViewItem::LoadElementsForDisplayingChildren()
+{
+    m_hasHadChildren = true;
+    
+    LoadMenuItemsHost();
+    
+    if(auto nvip = GetPresenter())
+    {
+        nvip->LoadChevron();
+        UpdateVisualStateForChevron();
+    }
+}
+
+void NavigationViewItem::LoadMenuItemsHost()
+{
+    // verify repeater is not already loaded
+    if(m_repeater != nullptr) { return; }
+
+    if (auto nvImpl = winrt::get_self<NavigationView>(GetNavigationView()))
+    {
+        if (auto repeater = GetTemplateChildT<winrt::ItemsRepeater>(c_repeater, *this))
+        {
+            m_repeater.set(repeater);
+
+            // Primary element setup happens in NavigationView
+            m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { nvImpl,  &NavigationView::OnRepeaterElementPrepared });
+            m_repeaterElementClearingRevoker = repeater.ElementClearing(winrt::auto_revoke, { nvImpl, &NavigationView::OnRepeaterElementClearing });
+
+            repeater.ItemTemplate(*(nvImpl->GetNavigationViewItemsFactory()));
+        }
+    }
 }
 
 void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
@@ -295,20 +317,41 @@ void NavigationViewItem::OnInfoBadgePropertyChanged(const winrt::DependencyPrope
     UpdateVisualStateForInfoBadge();
 }
 
+void NavigationViewItem::OnMenuItemsVectorChanged(const winrt::Collections::IObservableVector<winrt::IInspectable>& sender, const winrt::Collections::IVectorChangedEventArgs& args)
+{
+    LoadElementsForDisplayingChildren();
+}
+
 void NavigationViewItem::OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    m_menuItemsVectorChangedRevoker.revoke();
+    if(auto menuItemsVector = MenuItems())
+    {
+        if(auto menuItemsObservableVector = menuItemsVector.as<winrt::IObservableVector<winrt::IInspectable>>())
+        {
+            m_menuItemsVectorChangedRevoker = menuItemsObservableVector.VectorChanged(winrt::auto_revoke, { this, &NavigationViewItem::OnMenuItemsVectorChanged });
+        }
+    }
+    
+    if(MenuItems().Size() > 0)
+    {
+        LoadElementsForDisplayingChildren();
+    }
+    
     UpdateRepeaterItemsSource();
     UpdateVisualStateForChevron();
 }
 
 void NavigationViewItem::OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    LoadElementsForDisplayingChildren();
     UpdateRepeaterItemsSource();
     UpdateVisualStateForChevron();
 }
 
 void NavigationViewItem::OnHasUnrealizedChildrenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    LoadElementsForDisplayingChildren();
     UpdateVisualStateForChevron();
 }
 
@@ -529,20 +572,22 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
 
 void NavigationViewItem::UpdateVisualStateForChevron()
 {
+    if(!m_hasHadChildren) { return; }
+
     if (auto const presenter = m_navigationViewItemPresenter.get())
     {
-        // If NVI has never had children, we want to bypass all Chevron visual state logic so that we don't load it 
-        if(!m_hasHadChildren) 
-        { 
-            if(HasChildren())
-            {
-                m_hasHadChildren = true;
-            }
-            else
-            {
-                return;
-            }
-        }
+        // // If NVI has never had children, we want to bypass all Chevron visual state logic so that we don't load it 
+        // if(!m_hasHadChildren) 
+        // { 
+        //     if(HasChildren())
+        //     {
+        //         m_hasHadChildren = true;
+        //     }
+        //     else
+        //     {
+        //         return;
+        //     }
+        // }
 
         winrt::get_self<NavigationViewItemPresenter>(presenter)->LoadChevron();
 
@@ -641,9 +686,19 @@ void NavigationViewItem::UpdateVisualStateForChevron()
 
 bool NavigationViewItem::HasChildren()
 {
-    return MenuItems().Size() > 0
-        || (MenuItemsSource() != nullptr && m_repeater != nullptr && m_repeater.get().ItemsSourceView().Count() > 0)
-        || HasUnrealizedChildren();
+    return (MenuItems() != nullptr && MenuItems().Size() > 0) || 
+           (MenuItemsSource() != nullptr && 
+            m_repeater != nullptr &&
+            m_repeater.get().ItemsSourceView() != nullptr && 
+            m_repeater.get().ItemsSourceView().Count() > 0) || 
+            HasUnrealizedChildren();
+}
+
+bool NavigationViewItem::HasPotentialChildren()
+{
+    return (MenuItems() != nullptr && MenuItems().Size() > 0) || 
+            MenuItemsSource() != nullptr || 
+            HasUnrealizedChildren();
 }
 
 bool NavigationViewItem::ShouldShowIcon()

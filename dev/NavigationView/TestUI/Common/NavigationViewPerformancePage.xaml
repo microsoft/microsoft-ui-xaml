@@ -12,7 +12,17 @@
     <Grid>
         <muxcontrols:NavigationView PaneTitle="NavViewPerformance Test" Header="TestHeader">
             <muxcontrols:NavigationView.MenuItems>
-                <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home"/>
+                <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home">
+                    <muxcontrols:NavigationViewItem.MenuItems>
+                        <muxcontrols:NavigationViewItem Content="Menu Item 2" x:Name="MI2" SelectsOnInvoked="False" Icon="Save">
+                            <muxcontrols:NavigationViewItem.MenuItems>
+                                <muxcontrols:NavigationViewItem Content="Menu Item 4" x:Name="MI4" Icon="Cut" />
+                                <muxcontrols:NavigationViewItemSeparator />
+                                <muxcontrols:NavigationViewItem Content="Menu Item 5" x:Name="MI5" Icon="Paste" />
+                            </muxcontrols:NavigationViewItem.MenuItems>
+                        </muxcontrols:NavigationViewItem>
+                    </muxcontrols:NavigationViewItem.MenuItems>
+                </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" />
                 <muxcontrols:NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
             </muxcontrols:NavigationView.MenuItems>
