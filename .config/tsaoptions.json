@@ -4,5 +4,6 @@
     "areaPath": "OS\\WDX\\DXP\\WinDev\\Controls",
     "iterationPath": "OS",
     "notificationAliases": [ "kmahone@microsoft.com" ],
-    "ignoreBranchName": true
+    "ignoreBranchName": true,
+    "codebaseName": "microsoft_microsoft-ui-xaml"
 }
