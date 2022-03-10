@@ -82,10 +82,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewPerformancePage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationViewAxeTestPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -177,9 +173,6 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewPage.xaml.cs">
       <DependentUpon>NavigationViewPage.xaml</DependentUpon> 
-    </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewPerformancePage.xaml.cs">
-      <DependentUpon>NavigationViewPerformancePage.xaml</DependentUpon> 
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewAxeTestPage.xaml.cs">
       <DependentUpon>NavigationViewAxeTestPage.xaml</DependentUpon>
