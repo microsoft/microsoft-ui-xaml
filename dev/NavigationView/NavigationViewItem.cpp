@@ -572,25 +572,8 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
 
 void NavigationViewItem::UpdateVisualStateForChevron()
 {
-    if(!m_hasHadChildren) { return; }
-
     if (auto const presenter = m_navigationViewItemPresenter.get())
     {
-        // // If NVI has never had children, we want to bypass all Chevron visual state logic so that we don't load it 
-        // if(!m_hasHadChildren) 
-        // { 
-        //     if(HasChildren())
-        //     {
-        //         m_hasHadChildren = true;
-        //     }
-        //     else
-        //     {
-        //         return;
-        //     }
-        // }
-
-        winrt::get_self<NavigationViewItemPresenter>(presenter)->LoadChevron();
-
         enum class PointerStateValue{ Normal, PointerOver, Pressed };
         enum class ChevronStateValue { ChevronHidden, ChevronVisibleOpen, ChevronVisibleClosed };
         const auto pointerStateValue = [this, isEnabled = IsEnabled(), isSelected = IsSelected()]()
@@ -618,53 +601,59 @@ void NavigationViewItem::UpdateVisualStateForChevron()
         auto const chevronState = HasChildren() && !(m_isClosedCompact && ShouldRepeaterShowInFlyout()) ? (IsExpanded() ? ChevronStateValue::ChevronVisibleOpen : ChevronStateValue::ChevronVisibleClosed) : ChevronStateValue::ChevronHidden;
 
         auto const pointerChevronState = [this, pointerStateValue, chevronState]() {
-            if (chevronState == ChevronStateValue::ChevronHidden)
+            // This Visual State Group will load the chevron in the PointerOver & Pressed state even if it is hidden.
+            // In order to avoid loading the chevron when we dont need it, only execute this if we can confirm chevron is needed.
+            if(m_hasHadChildren)
             {
-                if (pointerStateValue == PointerStateValue::Normal)
+                if (chevronState == ChevronStateValue::ChevronHidden)
                 {
-                    return c_normalChevronHidden;
+                    if (pointerStateValue == PointerStateValue::Normal)
+                    {
+                        return c_normalChevronHidden;
+                    }
+                    else if (pointerStateValue == PointerStateValue::PointerOver)
+                    {
+                        return c_pointerOverChevronHidden;
+                    }
+                    else if (pointerStateValue == PointerStateValue::Pressed)
+                    {
+                        return c_pressedChevronHidden;
+                    }
                 }
-                else if (pointerStateValue == PointerStateValue::PointerOver)
+                else if (chevronState == ChevronStateValue::ChevronVisibleOpen)
                 {
-                    return c_pointerOverChevronHidden;
+                    if (pointerStateValue == PointerStateValue::Normal)
+                    {
+                        return c_normalChevronVisibleOpen;
+                    }
+                    else if (pointerStateValue == PointerStateValue::PointerOver)
+                    {
+                        return c_pointerOverChevronVisibleOpen;
+                    }
+                    else if (pointerStateValue == PointerStateValue::Pressed)
+                    {
+                        return c_pressedChevronVisibleOpen;
+                    }
                 }
-                else if (pointerStateValue == PointerStateValue::Pressed)
+                else if (chevronState == ChevronStateValue::ChevronVisibleClosed)
                 {
-                    return c_pressedChevronHidden;
-                }
-            }
-            else if (chevronState == ChevronStateValue::ChevronVisibleOpen)
-            {
-                if (pointerStateValue == PointerStateValue::Normal)
-                {
-                    return c_normalChevronVisibleOpen;
-                }
-                else if (pointerStateValue == PointerStateValue::PointerOver)
-                {
-                    return c_pointerOverChevronVisibleOpen;
-                }
-                else if (pointerStateValue == PointerStateValue::Pressed)
-                {
-                    return c_pressedChevronVisibleOpen;
-                }
-            }
-            else if (chevronState == ChevronStateValue::ChevronVisibleClosed)
-            {
-                if (pointerStateValue == PointerStateValue::Normal)
-                {
-                    return c_normalChevronVisibleClosed;
-                }
-                else if (pointerStateValue == PointerStateValue::PointerOver)
-                {
-                    return c_pointerOverChevronVisibleClosed;
-                }
-                else if (pointerStateValue == PointerStateValue::Pressed)
-                {
-                    return c_pressedChevronVisibleClosed;
+                    if (pointerStateValue == PointerStateValue::Normal)
+                    {
+                        return c_normalChevronVisibleClosed;
+                    }
+                    else if (pointerStateValue == PointerStateValue::PointerOver)
+                    {
+                        return c_pointerOverChevronVisibleClosed;
+                    }
+                    else if (pointerStateValue == PointerStateValue::Pressed)
+                    {
+                        return c_pressedChevronVisibleClosed;
+                    }
                 }
             }
             return c_normalChevronHidden;
         }();
+
         // Go to the appropriate pointerChevronState
         winrt::VisualStateManager::GoToState(presenter, pointerChevronState, true);
 
