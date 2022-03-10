@@ -135,11 +135,11 @@ jobs:
 #     useReleaseTag: '$(MUXFinalRelease)'
 #     prereleaseVersionTag: prerelease
 
-# - template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
+- template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
 #   parameters:
 #     dependsOn: Build
 
-- template: AzurePipelinesTemplates\MUX-ComplianceChecks-Job.yml
+# - template: AzurePipelinesTemplates\MUX-ComplianceChecks-Job.yml
 #   parameters:
 #     dependsOn: CreateVPack
 

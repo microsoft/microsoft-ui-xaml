@@ -3,19 +3,37 @@ parameters:
 
 jobs:
 - job: CreateVPack
-  dependsOn:
-    - ${{ parameters.dependsOn }}
+  # dependsOn:
+  #   - ${{ parameters.dependsOn }}
   pool:
-    name: WinDevPool-S
+    name: WinDevPool-L
   variables:
     windowsPublicsWinmdVersion: 0.0.2
     internalSDKFeedUrl: https://pkgs.dev.azure.com/microsoft/WinUI/_packaging/WinUIInternalWindowsSDK/nuget/v3/index.json
+    publishDir: $(System.ArtifactsDirectory)\publish
 
   steps:
+  - task: PkgESSetupBuild@12
+    displayName: Package ES - Setup Build
+    inputs:
+      disableOutputRedirect: true
+
+  - template: MUX-InstallNuget-Steps.yml
+
+  - task: NuGetAuthenticate@0
+
+  - task: NodeTool@0
+
   - task: DownloadBuildArtifacts@0 
     inputs: 
       artifactName: drop
       downloadPath: $(System.ArtifactsDirectory)
+
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: 72016
+      buildId: 46168294
 
   # This contains the OS internal version of windows.winmd which is required for us to re-merge our winmd so that it can be used from OS repo.
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
@@ -33,7 +51,7 @@ jobs:
       restoreDirectory: $(Build.SourcesDirectory)\packages
 
   - script: |
-      $(Build.SourcesDirectory)\build\CreateCBSVPack.cmd -releaseFolder $(System.ArtifactsDirectory)\drop\Release -publicsRoot $(Build.SourcesDirectory)\packages\Microsoft.Internal.WinUI.WindowsPublicsWinmd.$(windowsPublicsWinmdVersion)
+      $(Build.SourcesDirectory)\build\CreateCBSVPack.cmd -releaseFolder $(System.ArtifactsDirectory)\drop\Release -publicsRoot $(Build.SourcesDirectory)\packages\Microsoft.Internal.WinUI.WindowsPublicsWinmd.$(windowsPublicsWinmdVersion) -publishDir $(publishDir)
     displayName: CreateCBSVPack.cmd
     failOnStderr: true
     # Note: This task sets the 'vpackversion' variable that is used below.
@@ -41,23 +59,28 @@ jobs:
   - task: PublishBuildArtifacts@1
     displayName: Publish WinUIVpack Artifact
     inputs:
-      PathtoPublish: $(System.ArtifactsDirectory)\drop\release\WinUIVpack
+      PathtoPublish: $(publishDir)\WinUIVpack
       artifactName: WinUIVpack
     # This artifact is not consumed by anyone, but it is useful for debugging purposes.
 
   - task: PublishBuildArtifacts@1
     displayName: Publish CBS Artifact
     inputs:
-      PathtoPublish: $(System.ArtifactsDirectory)\drop\release\cbs
+      PathtoPublish: $(publishDir)\cbs
       artifactName: cbs
     # This artifact is not consumed by anyone, but it is useful for debugging purposes.
+
+  - template: v2/Steps/PackageES/Windows.SDL.Binary.Analysis.OS.Undocked.yml@templates_onebranch
+    parameters:
+      variables:
+        ob_outputDirectory: $(publishDir) # provide path to binaries to be scanned
 
   # Push the VPacks:
   - task: PkgESVPack@12
     displayName: 'Push VPack Microsoft.UI.Xaml'
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
-      sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\WinUIVpack'
+      sourceDirectory: '$(publishDir)\WinUIVpack'
       githubToken: $(WinUI2GitHubToken)
       description: Microsoft.UI.Xaml
       pushPkgName: Microsoft.UI.Xaml
@@ -66,7 +89,7 @@ jobs:
     displayName: 'Push VPack MicrosoftUIXamlInbox_x64'
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
-      sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\x64'
+      sourceDirectory: '$(publishDir)\CBS\x64'
       githubToken: $(WinUI2GitHubToken)
       description: 'MicrosoftUIXamlInbox_x64'
       pushPkgName: 'MicrosoftUIXamlInbox_x64'
@@ -75,7 +98,7 @@ jobs:
     displayName: 'Push VPack MicrosoftUIXamlInbox_x86'
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
-      sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\x86'
+      sourceDirectory: '$(publishDir)\CBS\x86'
       githubToken: $(WinUI2GitHubToken)
       description: 'MicrosoftUIXamlInbox_x86'
       pushPkgName: 'MicrosoftUIXamlInbox_x86'
@@ -84,7 +107,7 @@ jobs:
     displayName: 'Push VPack MicrosoftUIXamlInbox_arm'
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
-      sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\arm'
+      sourceDirectory: '$(publishDir)\CBS\arm'
       githubToken: $(WinUI2GitHubToken)
       description: 'MicrosoftUIXamlInbox_arm'
       pushPkgName: 'MicrosoftUIXamlInbox_arm'
@@ -93,7 +116,7 @@ jobs:
     displayName: 'Push VPack MicrosoftUIXamlInbox_arm64'
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
-      sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\arm64'
+      sourceDirectory: '$(publishDir)\CBS\arm64'
       githubToken: $(WinUI2GitHubToken)
       description: 'MicrosoftUIXamlInbox_arm64'
       pushPkgName: 'MicrosoftUIXamlInbox_arm64'
@@ -102,7 +125,7 @@ jobs:
     displayName: 'Push VPack MicrosoftUIXamlInboxWinmd'
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
-      sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\winmd'
+      sourceDirectory: '$(publishDir)\CBS\winmd'
       githubToken: $(WinUI2GitHubToken)
       description: 'MicrosoftUIXamlInboxWinmd'
       pushPkgName: 'MicrosoftUIXamlInboxWinmd'
