@@ -917,24 +917,6 @@ void TeachingTip::IsOpenChangedToOpen()
                 if (auto const content = xamlRoot.Content())
                 {
                     m_previewKeyDownForF6Revoker = content.PreviewKeyDown(winrt::auto_revoke, { this, &TeachingTip::OnF6PreviewKeyDownClicked });
-                }
-
-                if (auto&& popup = m_popup.get())
-                {
-                    if (auto const popupXamlRoot = popup.XamlRoot())
-                    {
-                        if (xamlRoot != popupXamlRoot)
-                        {
-                            if (auto const content = xamlRoot.Content())
-                            {
-                                m_popupPreviewKeyDownForF6Revoker = content.PreviewKeyDown(winrt::auto_revoke, { this, &TeachingTip::OnF6PreviewKeyDownClicked });
-                            }
-                        }
-                    }
-                }
-
-                if (m_previewKeyDownForF6Revoker || m_popupPreviewKeyDownForF6Revoker)
-                {
                     return;
                 }
             }
@@ -1233,6 +1215,20 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
             m_currentXamlRootSize = xamlRoot.Size();
             m_xamlRoot.set(xamlRoot);
             m_xamlRootChangedRevoker = RegisterXamlRootChanged(xamlRoot, { this, &TeachingTip::XamlRootChanged });
+
+            if (auto&& popup = m_popup.get())
+            {
+                if (auto const popupXamlRoot = popup.XamlRoot())
+                {
+                    if (xamlRoot != popupXamlRoot)
+                    {
+                        if (auto const content = xamlRoot.Content())
+                        {
+                            m_popupPreviewKeyDownForF6Revoker = content.PreviewKeyDown(winrt::auto_revoke, { this, &TeachingTip::OnF6PreviewKeyDownClicked });
+                        }
+                    }
+                }
+            }
         }
     }
     else
