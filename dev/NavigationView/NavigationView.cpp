@@ -3427,6 +3427,10 @@ void NavigationView::ClearAllNavigationViewItemRevokers() noexcept
 {
     for (const auto& nvi : m_itemsWithRevokerObjects)
     {
+        // ClearAllNavigationViewItemRevokers is only called in the destructor, where exceptions cannot be thrown.
+        // If the associated NV has not yet been cleaned up, we must detach these revokers or risk a call into freed
+        // memory being made.  However if they have been cleaned up these calls will throw. In this case we can ignore
+        // those exceptions.
         try
         {
             RevokeNavigationViewItemRevokers(nvi);
